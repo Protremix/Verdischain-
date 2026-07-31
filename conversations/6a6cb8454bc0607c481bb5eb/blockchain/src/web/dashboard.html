@@ -91,6 +91,7 @@ td.mono{font-size:0.75rem}
     <div class="tab" onclick="showTab('contracts',this)">Contracts</div>
     <div class="tab" onclick="showTab('dex',this)">DEX</div>
     <div class="tab" onclick="showTab('eco',this)">Eco</div>
+    <div class="tab" onclick="showTab('trustwallet',this)">Trust Wallet</div>
   </div>
   <div style="padding:20px">
 
@@ -297,6 +298,43 @@ td.mono{font-size:0.75rem}
     <table><thead><tr><th>Validator</th><th>Energy</th><th>CO₂ Offset</th><th>Trees</th><th>Score</th></tr></thead><tbody id="greenTable"></tbody></table>
   </div>
 
+  <!-- Trust Wallet Tab -->
+  <div class="section" id="tab-trustwallet">
+    <h2>Trust Wallet Integration</h2>
+    <div class="card" style="border-color:var(--accent)">
+      <h3>📡 Network Configuration</h3>
+      <p class="subtle">Add Verdis to Trust Wallet as a custom network:</p>
+      <table style="margin-top:8px">
+        <tr><td class="subtle">Network Name</td><td><strong>Verdis</strong></td></tr>
+        <tr><td class="subtle">RPC URL</td><td class="mono">http://localhost:3200/rpc</td></tr>
+        <tr><td class="subtle">Chain ID</td><td><strong>909</strong> (0x38d)</td></tr>
+        <tr><td class="subtle">Symbol</td><td><strong>VRS</strong></td></tr>
+        <tr><td class="subtle">Decimals</td><td>18</td></tr>
+        <tr><td class="subtle">Explorer</td><td class="mono">http://localhost:3200</td></tr>
+      </table>
+    </div>
+    
+    <h3>🔑 Wallet Import</h3>
+    <p class="subtle">Import a Verdis wallet into Trust Wallet using the private key below. Since Verdis uses secp256k1 (same as Ethereum), the same private key works in both.</p>
+    <div id="trustWalletList"></div>
+    
+    <h3 style="margin-top:16px">📋 Setup Instructions</h3>
+    <div class="card" style="font-size:0.85rem;line-height:1.8">
+      <p><strong style="color:var(--accent)">Step 1:</strong> Open Trust Wallet → Settings → Networks → Add Custom Network</p>
+      <p><strong style="color:var(--accent)">Step 2:</strong> Enter the Network Configuration above (RPC URL, Chain ID 909, Symbol VRS)</p>
+      <p><strong style="color:var(--accent)">Step 3:</strong> Go to Settings → Wallets → Import Wallet → Private Key</p>
+      <p><strong style="color:var(--accent)">Step 4:</strong> Paste the private key from one of your Verdis wallets above</p>
+      <p><strong style="color:var(--accent)">Step 5:</strong> Your VRS balance will appear in Trust Wallet!</p>
+    </div>
+    
+    <h3 style="margin-top:16px">🔌 JSON-RPC API</h3>
+    <div class="card">
+      <p class="subtle">The Verdis JSON-RPC endpoint is live at <span class="mono">http://localhost:3200/rpc</span></p>
+      <p class="subtle" style="margin-top:4px">Supported methods:</p>
+      <div id="rpcMethods" style="margin-top:8px;font-size:0.8rem"></div>
+    </div>
+  </div>
+
   </div>
 </div>
 
@@ -318,6 +356,7 @@ function showTab(name, el) {
   if (name === 'contracts') loadContracts();
   if (name === 'tx') loadMempool();
   if (name === 'wallet') loadWalletList();
+  if (name === 'trustwallet') loadTrustWallet();
 }
 
 function toast(msg, ok = true) {
@@ -648,6 +687,45 @@ async function walletSend() {
   document.getElementById('wSendAmount').value = '';
   setTimeout(() => { loadWalletDetails(selectedWalletAddress); loadWalletTxs(selectedWalletAddress); loadWalletList(); }, 6000);
   loadStats();
+}
+
+// Trust Wallet Tab
+async function loadTrustWallet() {
+  try {
+    const info = await fetch(API + '/api/evm/info').then(r => r.json());
+    
+    // Wallet list with EVM addresses and private keys
+    document.getElementById('trustWalletList').innerHTML = info.evmAddresses.map((w, i) => {
+      const isVal = w.balance > 8000000000;
+      return `<div class="card" style="padding:12px">
+        <div class="row" style="justify-content:space-between">
+          <strong>Wallet #${i+1}</strong>
+          <span class="tag ${isVal ? 'green' : ''}">${isVal ? 'Validator' : 'Standard'}</span>
+        </div>
+        <p style="margin-top:8px" class="subtle">EVM Address (Trust Wallet):</p>
+        <p class="mono" style="font-size:0.75rem;word-break:break-all;color:var(--accent)">${w.evmAddress}</p>
+        <p style="margin-top:4px" class="subtle">Native Address:</p>
+        <p class="mono" style="font-size:0.75rem;word-break:break-all">${w.nativeAddress}</p>
+        <p style="margin-top:4px" class="subtle">Private Key (import to Trust Wallet):</p>
+        <p class="mono" style="font-size:0.7rem;word-break:break-all;color:var(--warn)">${w.privateKey}</p>
+        <p style="margin-top:8px">Balance: <strong style="color:var(--accent)">${fmt(w.balance)} VRS</strong></p>
+      </div>`;
+    }).join('');
+    
+    // RPC methods list
+    const methods = [
+      'eth_chainId', 'net_version', 'eth_blockNumber', 'eth_getBalance',
+      'eth_getTransactionCount', 'eth_sendRawTransaction', 'eth_getBlockByNumber',
+      'eth_getBlockByHash', 'eth_getTransactionByHash', 'eth_getTransactionReceipt',
+      'eth_gasPrice', 'eth_estimateGas', 'eth_call', 'eth_syncing', 'eth_mining',
+      'web3_clientVersion', 'eth_getLogs', 'eth_accounts'
+    ];
+    document.getElementById('rpcMethods').innerHTML = methods.map(m => 
+      `<span class="tag green" style="margin:2px">${m}</span>`
+    ).join('');
+  } catch(e) {
+    document.getElementById('trustWalletList').innerHTML = '<p class="subtle">Error loading wallet info</p>';
+  }
 }
 
 // Init

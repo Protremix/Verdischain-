@@ -6,6 +6,7 @@ import { Blockchain } from '../core/consensus';
 import { WalletManager } from '../wallet/wallet';
 import { ContractManager, compileContract } from '../core/vm';
 import { getPublicKeyFromPrivateKey, getAddressFromPublicKey } from '../crypto';
+import { setupJsonRpc, VERDIS_CHAIN_ID, getEvmAddress } from './jsonrpc';
 
 export class BlockchainAPI {
   private app: Express;
@@ -28,6 +29,8 @@ export class BlockchainAPI {
     this.app.use(cors());
     this.app.use(express.json({ limit: '10mb' }));
     this.setupCoreRoutes();
+    // Trust Wallet / EVM JSON-RPC compatibility
+    setupJsonRpc(this.app, this.blockchain, this.walletManager);
   }
 
   public setDEX(dex: any): void {
@@ -255,6 +258,24 @@ export class BlockchainAPI {
       const contract = this.contractManager.getContract(req.params.id);
       if (!contract || !contract.state) { res.status(404).json({ error: 'Contract not found' }); return; }
       res.json(Object.fromEntries(contract.state));
+    });
+
+    // Trust Wallet / EVM Info
+    this.app.get('/api/evm/info', (req: Request, res: Response) => {
+      res.json({
+        chainId: VERDIS_CHAIN_ID,
+        chainName: 'Verdis',
+        rpcUrl: 'http://localhost:3200/rpc',
+        symbol: 'VRS',
+        decimals: 18,
+        explorer: 'http://localhost:3200',
+        evmAddresses: this.walletManager.getAllWallets().map(w => ({
+          nativeAddress: w.address,
+          evmAddress: getEvmAddress(w.publicKey),
+          privateKey: w.privateKey,
+          balance: this.blockchain.getTokenSystem().getBalance(w.address),
+        })),
+      });
     });
 
     // Legacy

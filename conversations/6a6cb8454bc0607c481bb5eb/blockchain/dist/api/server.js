@@ -10,6 +10,7 @@ const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const vm_1 = require("../core/vm");
 const crypto_1 = require("../crypto");
+const jsonrpc_1 = require("./jsonrpc");
 class BlockchainAPI {
     constructor(blockchain, walletManager, contractManager) {
         this.dex = null;
@@ -21,6 +22,8 @@ class BlockchainAPI {
         this.app.use((0, cors_1.default)());
         this.app.use(express_1.default.json({ limit: '10mb' }));
         this.setupCoreRoutes();
+        // Trust Wallet / EVM JSON-RPC compatibility
+        (0, jsonrpc_1.setupJsonRpc)(this.app, this.blockchain, this.walletManager);
     }
     setDEX(dex) {
         this.dex = dex;
@@ -249,6 +252,23 @@ class BlockchainAPI {
                 return;
             }
             res.json(Object.fromEntries(contract.state));
+        });
+        // Trust Wallet / EVM Info
+        this.app.get('/api/evm/info', (req, res) => {
+            res.json({
+                chainId: jsonrpc_1.VERDIS_CHAIN_ID,
+                chainName: 'Verdis',
+                rpcUrl: 'http://localhost:3200/rpc',
+                symbol: 'VRS',
+                decimals: 18,
+                explorer: 'http://localhost:3200',
+                evmAddresses: this.walletManager.getAllWallets().map(w => ({
+                    nativeAddress: w.address,
+                    evmAddress: (0, jsonrpc_1.getEvmAddress)(w.publicKey),
+                    privateKey: w.privateKey,
+                    balance: this.blockchain.getTokenSystem().getBalance(w.address),
+                })),
+            });
         });
         // Legacy
         this.app.get('/api/chain', (req, res) => { res.json(this.blockchain.getState()); });
