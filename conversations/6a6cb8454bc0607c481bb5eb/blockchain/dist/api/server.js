@@ -101,6 +101,52 @@ class BlockchainAPI {
         this.app.get('/api/wallet/:address/staked', (req, res) => {
             res.json({ address: req.params.address, staked: this.blockchain.getTokenSystem().getStaked(req.params.address) });
         });
+        // Wallet Transaction History
+        this.app.get('/api/wallet/:address/transactions', (req, res) => {
+            const address = req.params.address;
+            const chain = this.blockchain.getChain();
+            const txs = [];
+            for (const block of chain) {
+                for (const tx of block.transactions) {
+                    if (tx.from === address || tx.to === address) {
+                        txs.push({
+                            ...tx,
+                            blockIndex: block.header.index,
+                            blockHash: block.hash,
+                            timestamp: block.header.timestamp,
+                            direction: tx.from === address ? 'sent' : 'received'
+                        });
+                    }
+                }
+            }
+            // Also check mempool for pending
+            const mempoolTxs = this.blockchain.getMempool().getTransactions();
+            for (const tx of mempoolTxs) {
+                if (tx.from === address || tx.to === address) {
+                    txs.push({ ...tx, blockIndex: null, blockHash: null, timestamp: tx.timestamp, direction: tx.from === address ? 'sent' : 'received', pending: true });
+                }
+            }
+            res.json(txs.reverse());
+        });
+        // Wallet Full Details
+        this.app.get('/api/wallet/:address/details', (req, res) => {
+            const address = req.params.address;
+            const wallet = this.walletManager.getAllWallets().find(w => w.address === address);
+            const balance = this.blockchain.getTokenSystem().getBalance(address);
+            const staked = this.blockchain.getTokenSystem().getStaked(address);
+            const validator = this.blockchain.getConsensus().getAllValidatorsList().find(v => v.address === address);
+            const greenVal = this.eco ? this.eco.getGreenScore(address) : null;
+            res.json({
+                address,
+                balance,
+                staked,
+                isValidator: !!validator,
+                validatorInfo: validator || null,
+                greenScore: greenVal || null,
+                privateKey: wallet ? wallet.privateKey : null,
+                publicKey: wallet ? wallet.publicKey : null,
+            });
+        });
         // Transactions
         this.app.post('/api/transaction/send', (req, res) => {
             const { privateKey, from, to, amount, fee, data } = req.body;

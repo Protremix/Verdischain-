@@ -96,21 +96,44 @@ td.mono{font-size:0.75rem}
 
   <!-- Wallet Tab -->
   <div class="section active" id="tab-wallet">
-    <h2>Wallet Management</h2>
+    <div class="row" style="margin-bottom:16px;justify-content:space-between">
+      <h2 style="margin:0">My Wallets</h2>
+      <button onclick="createWallet()">+ Create Wallet</button>
+    </div>
     <div class="grid grid-2">
+      <!-- Wallet List -->
       <div>
-        <h3>Create New Wallet</h3>
-        <button onclick="createWallet()">Generate Wallet</button>
+        <h3>Wallet List</h3>
+        <div id="walletList"></div>
       </div>
+      <!-- Wallet Details -->
       <div>
-        <h3>Check Balance</h3>
-        <div class="row">
-          <input id="balAddr" placeholder="Wallet address" class="mono">
-          <button onclick="checkBalance()">Check</button>
-        </div>
-        <div id="balResult" class="subtle"></div>
+        <h3>Wallet Details</h3>
+        <div id="walletDetails"><p class="subtle">Select a wallet to view details</p></div>
       </div>
     </div>
+    <!-- Send Section -->
+    <div id="walletSendSection" style="display:none;margin-top:16px">
+      <h3>Send VRS</h3>
+      <div class="grid grid-2">
+        <input id="wSendTo" placeholder="Recipient address" class="mono">
+        <input id="wSendAmount" type="number" placeholder="Amount (VRS)">
+      </div>
+      <div class="row">
+        <input id="wSendFee" type="number" placeholder="Fee (VRS)" value="1" style="max-width:120px">
+        <button onclick="walletSend()">Send Transaction</button>
+      </div>
+      <div id="wSendResult" style="margin-top:8px"></div>
+    </div>
+    <!-- Transaction History -->
+    <div id="walletTxSection" style="display:none;margin-top:16px">
+      <h3>Transaction History</h3>
+      <table>
+        <thead><tr><th>Tx ID</th><th>Block</th><th>Direction</th><th>Amount</th><th>Fee</th><th>Status</th></tr></thead>
+        <tbody id="walletTxTable"></tbody>
+      </table>
+    </div>
+    <!-- New Wallet Display -->
     <div id="walletDisplay" style="margin-top:16px"></div>
   </div>
 
@@ -294,6 +317,7 @@ function showTab(name, el) {
   if (name === 'dex') loadPools();
   if (name === 'contracts') loadContracts();
   if (name === 'tx') loadMempool();
+  if (name === 'wallet') loadWalletList();
 }
 
 function toast(msg, ok = true) {
@@ -504,9 +528,134 @@ async function createReforest() {
   loadEco(); loadStats();
 }
 
+// === Enhanced Wallet Management ===
+let selectedWalletAddress = null;
+
+async function loadWalletList() {
+  try {
+    const wallets = await fetch(API + '/api/wallets').then(r => r.json());
+    if (!wallets.length) {
+      document.getElementById('walletList').innerHTML = '<p class="subtle">No wallets yet. Create one!</p>';
+      return;
+    }
+    document.getElementById('walletList').innerHTML = wallets.map((w, i) => {
+      const active = w.address === selectedWalletAddress ? 'border-color:var(--accent);background:rgba(0,230,118,0.05)' : '';
+      return `<div class="card" style="padding:12px;cursor:pointer;${active}" onclick="selectWallet('${w.address}')">
+        <div class="row" style="justify-content:space-between">
+          <span class="mono" style="font-size:0.8rem">${trunc(w.address, 20)}</span>
+          <span class="tag ${w.staked > 0 ? 'green' : ''}">${w.staked > 0 ? 'Validator' : 'Wallet'}</span>
+        </div>
+        <p style="margin-top:6px"><strong style="color:var(--accent)">${fmt(w.balance)}</strong> VRS</p>
+        ${w.staked > 0 ? `<p class="subtle" style="font-size:0.75rem">Staked: ${fmt(w.staked)} VRS</p>` : ''}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('walletList').innerHTML = '<p class="subtle">Error loading wallets</p>';
+  }
+}
+
+async function selectWallet(address) {
+  selectedWalletAddress = address;
+  document.getElementById('walletSendSection').style.display = 'block';
+  document.getElementById('walletTxSection').style.display = 'block';
+  loadWalletList();
+  loadWalletDetails(address);
+  loadWalletTxs(address);
+}
+
+async function loadWalletDetails(address) {
+  try {
+    const [details] = await Promise.all([
+      fetch(API + '/api/wallet/' + address + '/details').then(r => r.json()),
+    ]);
+    const d = details;
+    let html = '<div class="card" style="border-color:var(--border)">';
+    html += `<p><span class="subtle">Address</span></p>`;
+    html += `<p class="mono" style="font-size:0.75rem;word-break:break-all">${d.address}</p>`;
+    html += `<div class="grid grid-3" style="margin-top:12px">`;
+    html += `<div><span class="subtle">Balance</span><p style="color:var(--accent);font-size:1.2rem;font-weight:700">${fmt(d.balance)} VRS</p></div>`;
+    html += `<div><span class="subtle">Staked</span><p style="font-size:1.2rem;font-weight:700">${fmt(d.staked)} VRS</p></div>`;
+    html += `<div><span class="subtle">Total</span><p style="font-size:1.2rem;font-weight:700">${fmt(d.balance + d.staked)} VRS</p></div>`;
+    html += `</div>`;
+    if (d.isValidator) {
+      html += `<div style="margin-top:12px"><span class="tag green">✓ Validator</span>`;
+      if (d.validatorInfo) {
+        html += ` <span class="subtle">Blocks: ${d.validatorInfo.blocksProduced || 0} · Rewards: ${fmt(d.validatorInfo.totalRewards)} VRS · Votes: ${fmt(d.validatorInfo.votes)}</span>`;
+      }
+      html += `</div>`;
+    }
+    if (d.greenScore) {
+      html += `<div style="margin-top:8px"><span class="tag green">🌿 Green Validator</span>`;
+      html += ` <span class="subtle">Energy: ${d.greenScore.energySource} · Score: ${d.greenScore.score}/100</span>`;
+      html += `</div>`;
+    }
+    if (d.privateKey) {
+      html += `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">`;
+      html += `<p style="color:var(--warn);font-size:0.75rem">⚠️ Private Key (keep secret!)</p>`;
+      html += `<p class="mono" style="font-size:0.7rem;word-break:break-all;color:var(--muted)">${d.privateKey}</p>`;
+      html += `<p class="subtle" style="font-size:0.7rem;margin-top:4px">Public: ${d.publicKey}</p>`;
+      html += `</div>`;
+    }
+    html += '</div>';
+    document.getElementById('walletDetails').innerHTML = html;
+  } catch(e) {
+    document.getElementById('walletDetails').innerHTML = '<p class="subtle">Error loading details</p>';
+  }
+}
+
+async function loadWalletTxs(address) {
+  try {
+    const txs = await fetch(API + '/api/wallet/' + address + '/transactions').then(r => r.json());
+    if (!txs.length) {
+      document.getElementById('walletTxTable').innerHTML = '<tr><td colspan="6" class="subtle">No transactions yet</td></tr>';
+      return;
+    }
+    document.getElementById('walletTxTable').innerHTML = txs.map(t => {
+      const dir = t.direction === 'sent' ? `<span class="tag red">↑ Sent</span>` : `<span class="tag green">↓ Received</span>`;
+      const status = t.pending ? '<span class="tag yellow">Pending</span>' : `<span class="tag green">Block #${t.blockIndex}</span>`;
+      return `<tr><td class="mono">${trunc(t.id)}</td><td>${t.blockIndex !== null ? '#' + t.blockIndex : '—'}</td><td>${dir}</td><td style="color:var(--accent)">${t.amount} VRS</td><td>${t.fee}</td><td>${status}</td></tr>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('walletTxTable').innerHTML = '<tr><td colspan="6" class="subtle">No transactions found</td></tr>';
+  }
+}
+
+async function walletSend() {
+  if (!selectedWalletAddress) { toast('Select a wallet first', false); return; }
+  const to = document.getElementById('wSendTo').value;
+  const amount = parseFloat(document.getElementById('wSendAmount').value);
+  const fee = parseFloat(document.getElementById('wSendFee').value) || 1;
+  if (!to || !amount) { toast('Enter recipient and amount', false); return; }
+
+  // Get private key for the selected wallet
+  const details = await fetch(API + '/api/wallet/' + selectedWalletAddress + '/details').then(r => r.json());
+  if (!details.privateKey) { toast('Cannot send from this wallet (no private key)', false); return; }
+
+  const res = await fetch(API + '/api/transaction/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ privateKey: details.privateKey, from: selectedWalletAddress, to, amount, fee })
+  }).then(r => r.json());
+
+  if (res.error) {
+    toast(res.error, false);
+    document.getElementById('wSendResult').innerHTML = '<span style="color:var(--danger)">' + res.error + '</span>';
+    return;
+  }
+  toast('Transaction sent!');
+  document.getElementById('wSendResult').innerHTML = '<span class="tag green">Submitted</span> <span class="mono">' + trunc(res.txId) + '</span>';
+  document.getElementById('wSendTo').value = '';
+  document.getElementById('wSendAmount').value = '';
+  setTimeout(() => { loadWalletDetails(selectedWalletAddress); loadWalletTxs(selectedWalletAddress); loadWalletList(); }, 6000);
+  loadStats();
+}
+
 // Init
 loadStats();
+loadWalletList();
 setInterval(loadStats, 5000);
+setInterval(() => { if (selectedWalletAddress) { loadWalletDetails(selectedWalletAddress); loadWalletTxs(selectedWalletAddress); } }, 5000);
+
 </script>
 </body>
 </html>
