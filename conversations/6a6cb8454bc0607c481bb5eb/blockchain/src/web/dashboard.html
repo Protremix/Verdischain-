@@ -62,7 +62,7 @@ td.mono{font-size:0.75rem}
 <div class="header-bar">
   <h1>🌿 Verdis <span style="font-size:0.7rem;color:var(--accent);font-weight:normal;margin-left:8px">🟢 LIVE</span></h1>
 <div style="background:var(--card);border:1px solid var(--accent);border-radius:8px;padding:10px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
-  <div><span class="subtle">Public URL:</span> <a href="https://8f0a19461d3bd4fc-163-192-192-132.serveousercontent.com" style="color:var(--accent)" class="mono">8f0a19461d3bd4fc-163-192-192-132.serveousercontent.com</a></div>
+  <div><span class="subtle">Public URL:</span> <span id="publicUrlDisplay" style="color:var(--accent)" class="mono">Detecting...</span></div>
   <div class="subtle" style="font-size:0.8rem">RPC: /rpc | Chain ID: 909 | Symbol: VRS</div>
 </div>
   <span class="subtle">Eco-First DPoS Blockchain · Token: VRS</span>
@@ -492,17 +492,84 @@ td.mono{font-size:0.75rem}
   <!-- Trust Wallet Tab -->
   <div class="section" id="tab-trustwallet">
     <h2>Trust Wallet Integration</h2>
+    
+    <div class="card" style="border:2px solid var(--accent)">
+      <h3 style="color:var(--accent)">🔌 Connect Your Wallet</h3>
+      <p class="subtle">Connect MetaMask, Trust Wallet, or any EIP-1193 compatible wallet to interact with Verdis directly.</p>
+      
+      <div id="walletConnectArea" style="margin:12px 0">
+        <button onclick="connectWallet()" id="connectWalletBtn" 
+          style="background:var(--accent);color:#000;border:none;border-radius:8px;padding:12px 24px;font-weight:600;cursor:pointer;font-size:1rem;width:100%">
+          🔗 Connect Wallet
+        </button>
+      </div>
+      
+      <div id="walletConnected" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg);border-radius:8px;margin:8px 0">
+          <div>
+            <span style="color:var(--muted)">Connected:</span> 
+            <span id="connectedAddress" class="mono" style="color:var(--accent)"></span>
+          </div>
+          <button onclick="disconnectWallet()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 12px;cursor:pointer;font-size:0.85rem">Disconnect</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0">
+          <div style="padding:8px;background:var(--bg);border-radius:8px;text-align:center">
+            <div class="subtle" style="font-size:0.8rem">VRS Balance</div>
+            <div id="connectedVrsBalance" style="font-size:1.1rem;font-weight:600;color:var(--accent)">0</div>
+          </div>
+          <div style="padding:8px;background:var(--bg);border-radius:8px;text-align:center">
+            <div class="subtle" style="font-size:0.8rem">Block Height</div>
+            <div id="connectedBlockHeight" style="font-size:1.1rem;font-weight:600">0</div>
+          </div>
+        </div>
+        
+        <h4 style="margin-top:16px">💱 Quick Swap (Connected Wallet)</h4>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;gap:8px">
+            <select id="connectedTokenIn" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px">
+              <option value="">Token In...</option>
+            </select>
+            <select id="connectedTokenOut" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px">
+              <option value="">Token Out...</option>
+            </select>
+          </div>
+          <input type="number" id="connectedSwapAmount" placeholder="Amount to swap" style="background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px">
+          <button onclick="connectedSwap()" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:10px;font-weight:600;cursor:pointer">Swap via API</button>
+          <div id="connectedSwapResult" style="font-family:monospace;font-size:0.85rem;color:var(--muted);min-height:40px;padding:8px;background:var(--bg);border-radius:6px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>📋 Manual Setup (if no wallet extension)</h3>
     <div class="card" style="border-color:var(--accent)">
       <h3>📡 Network Configuration</h3>
       <p class="subtle">Add Verdis to Trust Wallet as a custom network:</p>
+    <div id="connectGuide" style="padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--accent);margin:10px 0">
+      <p style="color:var(--accent);font-weight:600">📱 Quick Setup (3 steps):</p>
+      <ol style="margin-left:20px;line-height:1.8">
+        <li>Open <strong>Trust Wallet</strong> → Settings → Networks → Add Custom Network</li>
+        <li>Enter: <span class="mono" style="color:var(--accent)">Network Name: Verdis</span> | <span class="mono" style="color:var(--accent)">RPC URL: <span id="guideRpcUrl">http://localhost:3200/rpc</span></span> | <span class="mono" style="color:var(--accent)">Chain ID: 909</span> | <span class="mono" style="color:var(--accent)">Symbol: VRS</span></li>
+        <li>Import a wallet below using the private key → Your VRS balance appears!</li>
+      </ol>
+    </div>
+    <div id="dexGuide" style="padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border);margin:10px 0">
+      <p style="color:var(--accent);font-weight:600">💱 Trade VRS on the DEX:</p>
+      <ol style="margin-left:20px;line-height:1.8">
+        <li>Go to the <strong>💎 Token</strong> tab or <strong>💱 DEX</strong> tab in this dashboard</li>
+        <li>Select a trading pair (VRS/CARBON, VRS/ECO, VRS/TREE, VRS/GREEN, VRS/REDD, CARBON/ECO)</li>
+        <li>Enter the amount to swap → click <strong>Swap</strong></li>
+        <li>The swap executes on-chain and is included in the next block (every 5 seconds)</li>
+      </ol>
+    </div>
       <table style="margin-top:8px">
         <tr><td class="subtle">Network Name</td><td><strong>Verdis</strong></td></tr>
-        <tr><td class="subtle">RPC URL (Public)</td><td class="mono" style="color:var(--accent)">https://8f0a19461d3bd4fc-163-192-192-132.serveousercontent.com/rpc</td></tr>
+        <tr><td class="subtle">RPC URL (Public)</td><td class="mono" style="color:var(--accent)">AUTO_RPC_URL</td></tr>
         <tr><td class="subtle">RPC URL (Local)</td><td class="mono">http://localhost:3200/rpc</td></tr>
         <tr><td class="subtle">Chain ID</td><td><strong>909</strong> (0x38d)</td></tr>
         <tr><td class="subtle">Symbol</td><td><strong>VRS</strong></td></tr>
         <tr><td class="subtle">Decimals</td><td>18</td></tr>
-        <tr><td class="subtle">Explorer (Public)</td><td class="mono" style="color:var(--accent)">https://8f0a19461d3bd4fc-163-192-192-132.serveousercontent.com</td></tr>
+        <tr><td class="subtle">Explorer (Public)</td><td class="mono" style="color:var(--accent)">AUTO_PUBLIC_URL</td></tr>
       </table>
     </div>
     
@@ -550,6 +617,7 @@ function showTab(name, el) {
   if (name === 'wallet') loadWalletList();
   if (name === 'trustwallet') loadTrustWallet();
   if (name === 'charts') loadCharts();
+  if (name === 'trustwallet') updateGuideUrls();
   if (name === 'token') loadTokenMarket();
   if (name === 'contracts') loadContracts();
 }
@@ -882,6 +950,140 @@ async function walletSend() {
   document.getElementById('wSendAmount').value = '';
   setTimeout(() => { loadWalletDetails(selectedWalletAddress); loadWalletTxs(selectedWalletAddress); loadWalletList(); }, 6000);
   loadStats();
+}
+
+// Wallet Connection (EIP-1193)
+let connectedWallet = null;
+
+async function connectWallet() {
+  if (typeof window.ethereum !== 'undefined') {
+    try {
+      // Request account access
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      connectedWallet = accounts[0];
+      
+      // Try to add/switch to Verdis network (Chain ID 909 = 0x38d)
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x38d' }],
+        });
+      } catch (switchError) {
+        // Chain not added yet, add it
+        if (switchError.code === 4902) {
+          const rpcUrl = publicRpc || (window.location.origin + '/rpc');
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: '0x38d',
+              chainName: 'Verdis',
+              nativeCurrency: { name: 'Verdis', symbol: 'VRS', decimals: 18 },
+              rpcUrls: [rpcUrl],
+              blockExplorerUrls: [window.location.origin],
+            }],
+          });
+        }
+      }
+      
+      // Show connected UI
+      document.getElementById('connectWalletBtn').style.display = 'none';
+      document.getElementById('walletConnected').style.display = 'block';
+      document.getElementById('connectedAddress').textContent = connectedWallet.slice(0, 10) + '...' + connectedWallet.slice(-6);
+      
+      // Load balance and populate token dropdowns
+      await updateConnectedWalletInfo();
+      
+      // Listen for account changes
+      window.ethereum.on('accountsChanged', (accounts) => {
+        if (accounts.length === 0) {
+          disconnectWallet();
+        } else {
+          connectedWallet = accounts[0];
+          document.getElementById('connectedAddress').textContent = connectedWallet.slice(0, 10) + '...' + connectedWallet.slice(-6);
+          updateConnectedWalletInfo();
+        }
+      });
+      
+      toast('Wallet connected!');
+    } catch (error) {
+      toast('Connection failed: ' + error.message, false);
+    }
+  } else {
+    // No wallet extension — show instructions
+    toast('No wallet found. Install MetaMask or Trust Wallet browser extension, or use the mobile app with the RPC URL below.', false);
+    document.getElementById('connectWalletBtn').textContent = '⚠️ No wallet extension found';
+    setTimeout(() => {
+      document.getElementById('connectWalletBtn').textContent = '🔗 Connect Wallet';
+    }, 3000);
+  }
+}
+
+function disconnectWallet() {
+  connectedWallet = null;
+  document.getElementById('connectWalletBtn').style.display = 'block';
+  document.getElementById('walletConnected').style.display = 'none';
+  toast('Wallet disconnected');
+}
+
+async function updateConnectedWalletInfo() {
+  if (!connectedWallet) return;
+  try {
+    // Get VRS balance via API
+    const balanceRes = await fetch(API + '/api/wallet/' + connectedWallet + '/balance');
+    const balanceData = await balanceRes.json();
+    document.getElementById('connectedVrsBalance').textContent = (balanceData.balance || 0).toLocaleString();
+    
+    // Get block height
+    const infoRes = await fetch(API + '/api/blockchain/info');
+    const info = await infoRes.json();
+    document.getElementById('connectedBlockHeight').textContent = info.height;
+    
+    // Populate token dropdowns
+    const poolsRes = await fetch(API + '/api/dex/pools');
+    const pools = await poolsRes.json();
+    const tokens = new Set();
+    pools.forEach(p => { tokens.add(p.tokenA); tokens.add(p.tokenB); });
+    const tokenOptions = Array.from(tokens).map(t => '<option value="' + t + '">' + t + '</option>').join('');
+    document.getElementById('connectedTokenIn').innerHTML = '<option value="">Token In...</option>' + tokenOptions;
+    document.getElementById('connectedTokenOut').innerHTML = '<option value="">Token Out...</option>' + tokenOptions;
+  } catch (e) {
+    console.error('Failed to update wallet info:', e);
+  }
+}
+
+async function connectedSwap() {
+  if (!connectedWallet) { toast('Connect wallet first', false); return; }
+  const tokenIn = document.getElementById('connectedTokenIn').value;
+  const tokenOut = document.getElementById('connectedTokenOut').value;
+  const amount = parseFloat(document.getElementById('connectedSwapAmount').value);
+  if (!tokenIn || !tokenOut || !amount) { toast('Select tokens and amount', false); return; }
+  
+  // Mint tokens if not VRS (user needs DEX token balance)
+  if (tokenIn !== 'VRS') {
+    await fetch(API + '/api/dex/token/mint', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: tokenIn, address: connectedWallet, amount: amount })
+    });
+  }
+  
+  try {
+    const result = await fetch(API + '/api/dex/swap', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trader: connectedWallet, tokenIn, tokenOut, amountIn: amount, minAmountOut: 0 })
+    }).then(r => r.json());
+    
+    if (result.amountOut) {
+      document.getElementById('connectedSwapResult').textContent = 
+        '✅ Swapped ' + amount + ' ' + tokenIn + ' → ' + result.amountOut.toFixed(4) + ' ' + tokenOut + ' | Fee: ' + result.fee;
+      toast('Swap successful!');
+      updateConnectedWalletInfo();
+    } else {
+      document.getElementById('connectedSwapResult').textContent = '❌ ' + (result.error || 'Swap failed');
+      toast('Swap failed', false);
+    }
+  } catch (e) {
+    document.getElementById('connectedSwapResult').textContent = '❌ Error: ' + e.message;
+  }
 }
 
 // Charts Tab
@@ -1367,6 +1569,38 @@ async function executeSwap() {
 document.getElementById('swapAmount')?.addEventListener('input', getSwapQuote);
 document.getElementById('swapTokenIn')?.addEventListener('change', getSwapQuote);
 document.getElementById('swapTokenOut')?.addEventListener('change', getSwapQuote);
+
+// Auto-detect and update public URLs
+async function updateGuideUrls() {
+  try {
+    const res = await fetch(API + '/api/public-url');
+    const data = await res.json();
+    const url = data.url || (window.location.origin.includes('localhost') ? 'http://localhost:3200' : window.location.origin);
+    const rpcUrl = data.rpcUrl || (url + '/rpc');
+    
+    // Update guide URLs
+    const guideRpc = document.getElementById('guideRpcUrl');
+    if (guideRpc) guideRpc.textContent = rpcUrl;
+    
+    // Update table cells
+    document.querySelectorAll('td').forEach(td => {
+      if (td.textContent.includes('AUTO_') || td.textContent.includes('localhost:3200/rpc')) {
+        if (td.classList.contains('mono')) td.textContent = rpcUrl;
+      }
+      if (td.textContent === 'AUTO_PUBLIC_URL') td.textContent = url;
+    });
+    
+    // Update public URL display
+    const publicDisplay = document.getElementById('publicUrlDisplay');
+    if (publicDisplay && data.isPublic) {
+      publicDisplay.innerHTML = '<a href="' + url + '" style="color:var(--accent)" class="mono">' + url + '</a>';
+    } else if (publicDisplay) {
+      publicDisplay.textContent = url;
+    }
+  } catch (e) {
+    console.log('Could not fetch public URL:', e);
+  }
+}
 
 // Trust Wallet Tab
 async function loadTrustWallet() {

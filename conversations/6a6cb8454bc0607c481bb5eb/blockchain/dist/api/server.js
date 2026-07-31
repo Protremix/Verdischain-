@@ -56,6 +56,18 @@ class BlockchainAPI {
             }
             res.send(`<html><body style="background:#0a0e1a;color:#00e676;font-family:sans-serif;padding:2rem"><h1>🌿 Verdis</h1><p>Height: ${this.blockchain.getChainHeight()}</p></body></html>`);
         });
+        // Public URL (auto-detected from request)
+        this.app.get('/api/public-url', (req, res) => {
+            const host = req.get('host') || '';
+            const protocol = req.secure || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
+            const isPublic = !host.includes('localhost') && !host.includes('127.0.0.1');
+            res.json({
+                url: isPublic ? `${protocol}://${host}` : null,
+                rpcUrl: isPublic ? `${protocol}://${host}/rpc` : 'http://localhost:3200/rpc',
+                isPublic,
+                host,
+            });
+        });
         // Blockchain Info
         this.app.get('/api/blockchain/info', (req, res) => {
             const state = this.blockchain.getState();
