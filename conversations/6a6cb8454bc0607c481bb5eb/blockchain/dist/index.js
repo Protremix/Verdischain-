@@ -35,47 +35,56 @@ const consensus = blockchain.getConsensus();
 const tokenSystem = blockchain.getTokenSystem();
 const GENESIS_PER_VALIDATOR = 10000000000; // 10 billion VRS each (50B total from 100B max)
 const STAKE_PER_VALIDATOR = 1000000000; // 1 billion VRS staked per validator
-const validatorsList = [];
+// Track validator wallets for auto-block production
+const validatorWallets = [];
 const energySources = ['solar', 'wind', 'hydro', 'geothermal', 'solar'];
 for (let i = 1; i <= 5; i++) {
-    // a. Create validator wallet
     const wallet = walletManager.createWallet();
-    // b. Allocate genesis tokens
     blockchain.addGenesisAllocation(wallet.address, GENESIS_PER_VALIDATOR);
     wallet.balance = GENESIS_PER_VALIDATOR;
-    // c. Register as validator
     consensus.registerValidator(wallet.publicKey, wallet.address);
-    // d. Stake tokens and vote for self
     tokenSystem.stake(wallet.address, STAKE_PER_VALIDATOR);
     wallet.staked = STAKE_PER_VALIDATOR;
     wallet.balance -= STAKE_PER_VALIDATOR;
     consensus.vote(wallet.address, wallet.address, STAKE_PER_VALIDATOR, tokenSystem);
-    // e. Register as green validator with eco system
     ecoSystem.registerGreenValidator(wallet.address, energySources[i - 1]);
-    validatorsList.push({
-        index: i,
-        address: wallet.address,
+    validatorWallets.push({
+        privateKey: wallet.privateKey,
         publicKey: wallet.publicKey,
-        balance: wallet.balance,
-        staked: wallet.staked,
+        address: wallet.address,
     });
+    console.log(`  Validator #${i}: ${wallet.address.slice(0, 16)}... | Energy: ${energySources[i - 1]}`);
 }
-// === Log bootstrap info ===
 console.log('\n╔══════════════════════════════════════════════════╗');
 console.log('║         🌿 Verdis Network Bootstrapped            ║');
-console.log('╠══════════════════════════════════════════════════╣');
-validatorsList.forEach((v) => {
-    console.log(`║  Validator #${v.index}: ${v.address.slice(0, 16)}...`);
-    console.log(`║    Balance: ${v.balance.toLocaleString()} VRS`);
-    console.log(`║    Staked:  ${v.staked.toLocaleString()} VRS`);
-    console.log(`║    Energy:  ${energySources[v.index - 1]}`);
-});
 console.log('╠══════════════════════════════════════════════════╣');
 console.log(`║  Total Supply:    ${tokenSystem.getTotalSupply().toLocaleString()} VRS`);
 console.log(`║  Max Supply:      ${tokenSystem.getMaxSupply().toLocaleString()} VRS`);
 console.log(`║  Validators:      ${consensus.getAllValidatorsList().length}`);
 console.log(`║  Green Validators: ${ecoSystem.getTopGreenValidators(5).length}`);
 console.log('╚══════════════════════════════════════════════════╝\n');
+// === Auto Block Production ===
+// Every 5 seconds, the current round's validator produces a block
+const BLOCK_INTERVAL_MS = 5000;
+let autoBlockCount = 0;
+function autoProduceBlock() {
+    const producer = consensus.getCurrentProducer();
+    if (!producer)
+        return;
+    // Find the wallet for this validator
+    const wallet = validatorWallets.find(w => w.address === producer.address);
+    if (!wallet)
+        return;
+    const block = blockchain.produceBlock(wallet.privateKey, wallet.publicKey, wallet.address);
+    if (block) {
+        autoBlockCount++;
+        const txCount = block.transactions.length;
+        console.log(`📦 Block #${block.header.index} produced by ${producer.address.slice(0, 12)}... | ${txCount} txs | auto-block #${autoBlockCount}`);
+    }
+    consensus.rotateProducer();
+}
+console.log(`🤖 Auto-block production enabled (every ${BLOCK_INTERVAL_MS / 1000}s)`);
+setInterval(autoProduceBlock, BLOCK_INTERVAL_MS);
 // === Serve Dashboard ===
 const dashboardPath = path_1.default.resolve(__dirname, 'web/dashboard.html');
 if (fs_1.default.existsSync(dashboardPath)) {
