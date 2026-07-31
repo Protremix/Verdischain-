@@ -12,12 +12,18 @@ export class TransactionBuilder {
   private txData: string | null = null;
   private txNonce: number = Date.now();
   private txSignature: string = '';
+  private senderPublicKey: string = '';
   private txRecovery: number = 0;
 
   constructor() {}
 
   public setFrom(sender: string): this {
     this.sender = sender;
+    return this;
+  }
+
+  public setPublicKey(pubKey: string): this {
+    this.senderPublicKey = pubKey;
     return this;
   }
 
@@ -66,6 +72,7 @@ export class TransactionBuilder {
     return {
       id,
       from: this.sender,
+      publicKey: this.senderPublicKey || this.sender,
       to: this.recipient,
       amount: this.txAmount,
       fee: this.txFee,
@@ -107,7 +114,7 @@ export function validateTransaction(tx: Transaction, balances: Map<string, numbe
 
   // Verify signature (skip for genesis/unsigned transactions)
   if (tx.signature && tx.signature !== 'unsigned') {
-    const valid = verify(payload, tx.signature, tx.from);
+    const valid = verify(payload, tx.signature, tx.publicKey || tx.from);
     if (!valid) {
       return { valid: false, error: 'Invalid transaction signature' };
     }

@@ -14,8 +14,9 @@ export declare class BlockchainAPI {
     setDEX(dex: any): void;
     setEco(eco: any): void;
     serveDashboard(filePath?: string): void;
-    private setupMiddleware;
-    private setupRoutes;
+    private setupCoreRoutes;
+    private setupDEXRoutes;
+    private setupEcoRoutes;
     start(port: number): void;
     getApp(): Express;
 }

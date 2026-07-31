@@ -43,6 +43,12 @@ exports.verify = verify;
 exports.signTransaction = signTransaction;
 const secp256k1 = __importStar(require("@noble/secp256k1"));
 const sha256_1 = require("@noble/hashes/sha256");
+const hmac_1 = require("@noble/hashes/hmac");
+// Required for sync signing in @noble/secp256k1 v2.x
+secp256k1.etc.hmacSha256Sync = (key, ...msgs) => {
+    const concat = secp256k1.etc.concatBytes;
+    return (0, hmac_1.hmac)(sha256_1.sha256, key, concat(...msgs));
+};
 /**
  * Computes single SHA-256 hash returned as hex string.
  */
@@ -139,6 +145,7 @@ function signTransaction(privateKey, to, amount, fee, nonce, data = null, public
     return {
         id,
         from: senderAddress,
+        publicKey,
         to,
         amount,
         fee,

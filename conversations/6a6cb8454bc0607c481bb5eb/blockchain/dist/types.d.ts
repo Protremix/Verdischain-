@@ -16,6 +16,7 @@ export interface Block {
 export interface Transaction {
     id: string;
     from: string;
+    publicKey: string;
     to: string;
     amount: number;
     fee: number;

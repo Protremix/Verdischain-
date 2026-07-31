@@ -19,8 +19,9 @@ export interface Block {
 
 export interface Transaction {
   id: string; // tx hash
-  from: string; // sender public key
-  to: string; // recipient public key
+  from: string; // sender address
+  publicKey: string; // sender public key for signature verification
+  to: string; // recipient address
   amount: number;
   fee: number;
   timestamp: number;

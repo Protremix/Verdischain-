@@ -1,6 +1,13 @@
 import * as secp256k1 from '@noble/secp256k1';
 import { sha256 as nobleSha256 } from '@noble/hashes/sha256';
+import { hmac } from '@noble/hashes/hmac';
 import { Transaction } from './types';
+
+// Required for sync signing in @noble/secp256k1 v2.x
+(secp256k1 as any).etc.hmacSha256Sync = (key: Uint8Array, ...msgs: Uint8Array[]) => {
+  const concat = (secp256k1 as any).etc.concatBytes;
+  return hmac(nobleSha256, key, concat(...msgs));
+};
 
 export interface KeyPair {
   privateKey: string;
@@ -115,6 +122,7 @@ export function signTransaction(
   return {
     id,
     from: senderAddress,
+    publicKey,
     to,
     amount,
     fee,

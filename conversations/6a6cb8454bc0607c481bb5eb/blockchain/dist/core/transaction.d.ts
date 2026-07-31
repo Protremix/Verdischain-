@@ -10,9 +10,11 @@ export declare class TransactionBuilder {
     private txData;
     private txNonce;
     private txSignature;
+    private senderPublicKey;
     private txRecovery;
     constructor();
     setFrom(sender: string): this;
+    setPublicKey(pubKey: string): this;
     setTo(recipient: string): this;
     setAmount(amount: number): this;
     setFee(fee: number): this;

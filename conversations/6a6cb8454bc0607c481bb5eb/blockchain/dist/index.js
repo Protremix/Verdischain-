@@ -24,7 +24,7 @@ exports.dex = dex;
 const ecoSystem = new eco_1.EcoSystem();
 exports.ecoSystem = ecoSystem;
 // === API Server ===
-const PORT = 3001;
+const PORT = 3200;
 const apiServer = new server_1.BlockchainAPI(blockchain, walletManager, contractManager);
 exports.apiServer = apiServer;
 apiServer.setDEX(dex);
@@ -89,12 +89,12 @@ else {
 }
 // === Start the node ===
 apiServer.start(PORT);
-console.log('🚀 Verdis is running at http://localhost:3000');
+console.log('🚀 Verdis is running at http://localhost:3200');
 console.log('\n💡 Try these commands:');
-console.log('   curl http://localhost:3000/api/blockchain/info');
-console.log('   curl http://localhost:3000/api/validators');
-console.log('   curl http://localhost:3000/api/eco/impact');
-console.log('   curl -X POST http://localhost:3000/api/wallet/create');
-console.log('   curl http://localhost:3000/api/dex/pools');
+console.log('   curl http://localhost:3200/api/blockchain/info');
+console.log('   curl http://localhost:3200/api/validators');
+console.log('   curl http://localhost:3200/api/eco/impact');
+console.log('   curl -X POST http://localhost:3200/api/wallet/create');
+console.log('   curl http://localhost:3200/api/dex/pools');
 console.log('');
 //# sourceMappingURL=index.js.map
