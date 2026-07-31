@@ -244,4 +244,3 @@ function createGenesisBlock() {
         hash,
     };
 }
-//# sourceMappingURL=block.js.map

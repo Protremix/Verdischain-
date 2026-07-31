@@ -1,102 +1,100 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sha256 = sha256;
-exports.hashTransaction = hashTransaction;
-exports.signTransaction = signTransaction;
-exports.verifySignature = verifySignature;
+exports.doubleSha256 = doubleSha256;
+exports.generateKeyPair = generateKeyPair;
+exports.getPublicKeyFromPrivateKey = getPublicKeyFromPrivateKey;
 exports.getAddressFromPublicKey = getAddressFromPublicKey;
+exports.signTransaction = signTransaction;
 const crypto_1 = require("crypto");
+const secp = require("@noble/secp256k1");
 const hmac_1 = require("@noble/hashes/hmac");
 const sha256_1 = require("@noble/hashes/sha256");
-const secp = __importStar(require("@noble/secp256k1"));
-// Configure secp256k1 HMAC SHA-256 for synchronous signing
+// Configure secp256k1 sync HMAC for @noble/secp256k1 v2
 secp.etc.hmacSha256Sync = (key, ...msgs) => (0, hmac_1.hmac)(sha256_1.sha256, key, secp.etc.concatBytes(...msgs));
 /**
- * Computes SHA-256 hash of given data and returns hex string.
+ * Computes SHA-256 hash of input data and returns a hex string.
  */
 function sha256(data) {
-    return (0, crypto_1.createHash)('sha256').update(data).digest('hex');
-}
-/**
- * Calculates deterministic hash for a transaction object.
- * Hash excludes 'id', 'signature', and 'recovery'.
- */
-function hashTransaction(tx) {
-    const payload = JSON.stringify({
-        from: tx.from,
-        to: tx.to,
-        amount: tx.amount,
-        fee: tx.fee,
-        timestamp: tx.timestamp,
-        nonce: tx.nonce,
-        data: tx.data ?? null,
-    });
-    return sha256(payload);
-}
-/**
- * Signs a transaction hash with a private key using secp256k1.
- */
-function signTransaction(hash, privateKey) {
-    const sig = secp.sign(hash, privateKey);
-    return {
-        signature: sig.toCompactHex(),
-        recovery: sig.recovery,
-    };
-}
-/**
- * Verifies a signature against a transaction hash and public key using secp256k1.
- */
-function verifySignature(hash, signature, publicKey, recovery) {
-    try {
-        return secp.verify(signature, hash, publicKey);
+    if (typeof data === 'string') {
+        return crypto_1.default.createHash('sha256').update(data, 'utf-8').digest('hex');
     }
-    catch {
-        return false;
-    }
+    return crypto_1.default.createHash('sha256').update(data).digest('hex');
 }
 /**
- * Derives an address from a public key string.
+ * Computes double SHA-256 hash of input data and returns a hex string.
+ */
+function doubleSha256(data) {
+    const first = typeof data === 'string'
+        ? crypto_1.default.createHash('sha256').update(data, 'utf-8').digest()
+        : crypto_1.default.createHash('sha256').update(data).digest();
+    return crypto_1.default.createHash('sha256').update(first).digest('hex');
+}
+/**
+ * Generates a real secp256k1 keypair.
+ * Returns private key and compressed public key as hex strings.
+ */
+function generateKeyPair() {
+    const privKeyBytes = secp.utils.randomPrivateKey();
+    const privateKey = Buffer.from(privKeyBytes).toString('hex');
+    const pubKeyBytes = secp.getPublicKey(privKeyBytes, true); // compressed 33-byte
+    const publicKey = Buffer.from(pubKeyBytes).toString('hex');
+    return { privateKey, publicKey };
+}
+/**
+ * Derives the public key from a given private key string.
+ */
+function getPublicKeyFromPrivateKey(privateKey) {
+    const privKeyBytes = Buffer.from(privateKey, 'hex');
+    const pubKeyBytes = secp.getPublicKey(privKeyBytes, true);
+    return Buffer.from(pubKeyBytes).toString('hex');
+}
+/**
+ * Derives a standard 20-byte hex address (0x...) from a public key string.
  */
 function getAddressFromPublicKey(publicKey) {
-    if (!publicKey)
-        return '';
-    if (publicKey.startsWith('RJ') && publicKey.length === 42) {
-        return publicKey;
-    }
-    const hash = sha256(publicKey);
-    return 'RJ' + hash.substring(0, 40);
+    const hash = crypto_1.default.createHash('sha256').update(publicKey, 'hex').digest('hex');
+    return '0x' + hash.slice(0, 40);
 }
-//# sourceMappingURL=crypto.js.map
+/**
+ * Builds and signs a transaction using the sender's private key.
+ */
+function signTransaction(privateKeyOrWallet, to, amount, fee, nonce, data, publicKeyParam) {
+    let privateKey;
+    let publicKey;
+    if (typeof privateKeyOrWallet === 'object' && privateKeyOrWallet !== null) {
+        privateKey = privateKeyOrWallet.privateKey;
+        publicKey = privateKeyOrWallet.publicKey;
+    }
+    else {
+        privateKey = privateKeyOrWallet;
+        publicKey = publicKeyParam || getPublicKeyFromPrivateKey(privateKey);
+    }
+    const timestamp = Date.now();
+    const txData = {
+        from: publicKey,
+        to,
+        amount,
+        fee,
+        timestamp,
+        nonce,
+        data: data ?? null,
+    };
+    const txString = JSON.stringify(txData);
+    const hashHex = crypto_1.default.createHash('sha256').update(txString).digest('hex');
+    const sigObj = secp.sign(hashHex, privateKey);
+    const sigHex = Buffer.from(sigObj.toCompactRawBytes ? sigObj.toCompactRawBytes() : sigObj).toString('hex');
+    const recovery = sigObj.recovery ?? 0;
+    return {
+        id: hashHex,
+        from: publicKey,
+        to,
+        amount,
+        fee,
+        timestamp,
+        nonce,
+        data: data ?? null,
+        signature: sigHex,
+        recovery,
+    };
+}

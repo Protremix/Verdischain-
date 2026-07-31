@@ -1,76 +1,115 @@
-import { secp256k1 } from '@noble/secp256k1';
+import crypto from 'crypto';
+import * as secp from '@noble/secp256k1';
+import { hmac } from '@noble/hashes/hmac';
 import { sha256 as nobleSha256 } from '@noble/hashes/sha256';
+import { Transaction, Wallet } from './types';
 
-export interface KeyPair {
-  privateKey: string;
-  publicKey: string;
-}
+// Configure secp256k1 sync HMAC for @noble/secp256k1 v2
+secp.etc.hmacSha256Sync = (key: Uint8Array, ...msgs: Uint8Array[]) =>
+  hmac(nobleSha256, key, secp.etc.concatBytes(...msgs));
 
 /**
- * Computes single SHA-256 hash returned as hex string.
+ * Computes SHA-256 hash of input data and returns a hex string.
  */
 export function sha256(data: string | Uint8Array): string {
-  const bytes = typeof data === 'string' ? Buffer.from(data, 'utf-8') : data;
-  return Buffer.from(nobleSha256(bytes)).toString('hex');
+  if (typeof data === 'string') {
+    return crypto.createHash('sha256').update(data, 'utf-8').digest('hex');
+  }
+  return crypto.createHash('sha256').update(data).digest('hex');
 }
 
 /**
- * Computes double SHA-256 hash (SHA-256 of SHA-256) returned as hex string.
+ * Computes double SHA-256 hash of input data and returns a hex string.
  */
 export function doubleSha256(data: string | Uint8Array): string {
-  const bytes = typeof data === 'string' ? Buffer.from(data, 'utf-8') : data;
-  const firstHash = nobleSha256(bytes);
-  return Buffer.from(nobleSha256(firstHash)).toString('hex');
+  const first = typeof data === 'string'
+    ? crypto.createHash('sha256').update(data, 'utf-8').digest()
+    : crypto.createHash('sha256').update(data).digest();
+  return crypto.createHash('sha256').update(first).digest('hex');
 }
 
 /**
- * Generates a new secp256k1 key pair.
+ * Generates a real secp256k1 keypair.
+ * Returns private key and compressed public key as hex strings.
  */
-export function generateKeyPair(): KeyPair {
-  const privBytes = secp256k1.utils.randomPrivateKey();
-  const privateKey = Buffer.from(privBytes).toString('hex');
-  const pubBytes = secp256k1.getPublicKey(privBytes, true);
-  const publicKey = Buffer.from(pubBytes).toString('hex');
+export function generateKeyPair(): { privateKey: string; publicKey: string } {
+  const privKeyBytes = secp.utils.randomPrivateKey();
+  const privateKey = Buffer.from(privKeyBytes).toString('hex');
+  const pubKeyBytes = secp.getPublicKey(privKeyBytes, true); // compressed 33-byte
+  const publicKey = Buffer.from(pubKeyBytes).toString('hex');
   return { privateKey, publicKey };
 }
 
 /**
- * Derives a blockchain address from a public key using SHA-256 hash.
+ * Derives the public key from a given private key string.
+ */
+export function getPublicKeyFromPrivateKey(privateKey: string): string {
+  const privKeyBytes = Buffer.from(privateKey, 'hex');
+  const pubKeyBytes = secp.getPublicKey(privKeyBytes, true);
+  return Buffer.from(pubKeyBytes).toString('hex');
+}
+
+/**
+ * Derives a standard 20-byte hex address (0x...) from a public key string.
  */
 export function getAddressFromPublicKey(publicKey: string): string {
-  const pubBytes = Buffer.from(publicKey, 'hex');
-  const hash = nobleSha256(pubBytes);
-  const addressHex = Buffer.from(hash).slice(0, 20).toString('hex');
-  return `0x${addressHex}`;
+  const hash = crypto.createHash('sha256').update(publicKey, 'hex').digest('hex');
+  return '0x' + hash.slice(0, 40);
 }
 
 /**
- * Signs data using secp256k1 private key.
+ * Builds and signs a transaction using the sender's private key.
  */
-export function sign(data: string, privateKey: string): { signature: string; recovery: number } {
-  try {
-    const messageHash = sha256(data);
-    const sig = secp256k1.sign(messageHash, privateKey);
-    return {
-      signature: sig.toCompactHex(),
-      recovery: sig.recovery,
-    };
-  } catch {
-    return {
-      signature: `sig_${privateKey.slice(0, 8)}`,
-      recovery: 0,
-    };
-  }
-}
+export function signTransaction(
+  privateKeyOrWallet: string | Wallet,
+  to: string,
+  amount: number,
+  fee: number,
+  nonce: number,
+  data?: string | null,
+  publicKeyParam?: string
+): Transaction {
+  let privateKey: string;
+  let publicKey: string;
 
-/**
- * Verifies a signature using public key.
- */
-export function verify(data: string, signature: string, publicKey: string): boolean {
-  try {
-    const messageHash = sha256(data);
-    return secp256k1.verify(signature, messageHash, publicKey);
-  } catch {
-    return false;
+  if (typeof privateKeyOrWallet === 'object' && privateKeyOrWallet !== null) {
+    privateKey = privateKeyOrWallet.privateKey;
+    publicKey = privateKeyOrWallet.publicKey;
+  } else {
+    privateKey = privateKeyOrWallet;
+    publicKey = publicKeyParam || getPublicKeyFromPrivateKey(privateKey);
   }
+
+  const timestamp = Date.now();
+  const txData = {
+    from: publicKey,
+    to,
+    amount,
+    fee,
+    timestamp,
+    nonce,
+    data: data ?? null,
+  };
+
+  const txString = JSON.stringify(txData);
+  const hashHex = crypto.createHash('sha256').update(txString).digest('hex');
+
+  const sigObj = secp.sign(hashHex, privateKey);
+  const sigHex = Buffer.from(
+    (sigObj as any).toCompactRawBytes ? (sigObj as any).toCompactRawBytes() : (sigObj as any)
+  ).toString('hex');
+  const recovery = sigObj.recovery ?? 0;
+
+  return {
+    id: hashHex,
+    from: publicKey,
+    to,
+    amount,
+    fee,
+    timestamp,
+    nonce,
+    data: data ?? null,
+    signature: sigHex,
+    recovery,
+  };
 }
