@@ -9,9 +9,11 @@ export declare class BlockchainAPI {
     private contractManager;
     private dashboardHtmlPath?;
     private dex;
+    private marketTracker;
     private eco;
     constructor(blockchain: Blockchain, walletManager: WalletManager, contractManager: ContractManager);
     setDEX(dex: any): void;
+    setMarketTracker(mt: any): void;
     setEco(eco: any): void;
     serveDashboard(filePath?: string): void;
     private setupCoreRoutes;

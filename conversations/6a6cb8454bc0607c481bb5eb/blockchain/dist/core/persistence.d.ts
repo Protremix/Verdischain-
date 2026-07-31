@@ -48,15 +48,16 @@ export interface VerdisState {
     greenScores: any[];
     pools: any[];
     contracts: any[];
+    marketData: any;
 }
 /**
  * Exports the full blockchain state to a serializable object.
  */
-export declare function exportState(blockchain: Blockchain, walletManager: WalletManager, ecoSystem: EcoSystem, dex: DEX, contractManager: ContractManager): VerdisState;
+export declare function exportState(blockchain: Blockchain, walletManager: WalletManager, ecoSystem: EcoSystem, dex: DEX, contractManager: ContractManager, marketTracker?: any): VerdisState;
 /**
  * Saves the full blockchain state to disk.
  */
-export declare function saveState(blockchain: Blockchain, walletManager: WalletManager, ecoSystem: EcoSystem, dex: DEX, contractManager: ContractManager): boolean;
+export declare function saveState(blockchain: Blockchain, walletManager: WalletManager, ecoSystem: EcoSystem, dex: DEX, contractManager: ContractManager, marketTracker?: any): boolean;
 /**
  * Loads the blockchain state from disk and restores all systems.
  * Returns null if no state file exists.
@@ -70,4 +71,4 @@ export declare function restoreState(state: VerdisState, blockchain: Blockchain,
 /**
  * Periodically saves state at a given interval.
  */
-export declare function startAutoSave(blockchain: Blockchain, walletManager: WalletManager, ecoSystem: EcoSystem, dex: DEX, contractManager: ContractManager, intervalMs?: number): NodeJS.Timeout;
+export declare function startAutoSave(blockchain: Blockchain, walletManager: WalletManager, ecoSystem: EcoSystem, dex: DEX, contractManager: ContractManager, intervalMs?: number, marketTracker?: any): NodeJS.Timeout;

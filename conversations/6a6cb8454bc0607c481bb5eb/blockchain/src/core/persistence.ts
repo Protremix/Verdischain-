@@ -56,6 +56,7 @@ export interface VerdisState {
   greenScores: any[];
   pools: any[];
   contracts: any[];
+  marketData: any;
 }
 
 /**
@@ -66,7 +67,8 @@ export function exportState(
   walletManager: WalletManager,
   ecoSystem: EcoSystem,
   dex: DEX,
-  contractManager: ContractManager
+  contractManager: ContractManager,
+  marketTracker?: any
 ): VerdisState {
   const tokenSystem = blockchain.getTokenSystem();
   const consensus = blockchain.getConsensus();
@@ -139,6 +141,7 @@ export function exportState(
     greenScores,
     pools,
     contracts,
+    marketData: marketTracker ? marketTracker.exportData() : null,
   };
 }
 
@@ -150,7 +153,8 @@ export function saveState(
   walletManager: WalletManager,
   ecoSystem: EcoSystem,
   dex: DEX,
-  contractManager: ContractManager
+  contractManager: ContractManager,
+  marketTracker?: any
 ): boolean {
   try {
     // Ensure directory exists
@@ -158,11 +162,11 @@ export function saveState(
       fs.mkdirSync(STATE_DIR, { recursive: true });
     }
 
-    const state = exportState(blockchain, walletManager, ecoSystem, dex, contractManager);
+    const state = exportState(blockchain, walletManager, ecoSystem, dex, contractManager, marketTracker);
     const json = JSON.stringify(state, null, 2);
     fs.writeFileSync(STATE_FILE, json);
 
-    console.log(`💾 State saved: ${state.chain.length} blocks, ${Object.keys(state.balances).length} balances, ${state.wallets.length} wallets, ${state.contracts.length} contracts`);
+    console.log(`💾 State saved: ${state.chain.length} blocks, ${Object.keys(state.balances).length} balances, ${state.wallets.length} wallets, ${state.contracts.length} contracts, ${state.pools.length} pools`);
     return true;
   } catch (error) {
     console.error('❌ Failed to save state:', error);
@@ -291,10 +295,11 @@ export function startAutoSave(
   ecoSystem: EcoSystem,
   dex: DEX,
   contractManager: ContractManager,
-  intervalMs: number = 30000
+  intervalMs: number = 30000,
+  marketTracker?: any
 ): NodeJS.Timeout {
   console.log(`💾 Auto-save enabled (every ${intervalMs / 1000}s)`);
   return setInterval(() => {
-    saveState(blockchain, walletManager, ecoSystem, dex, contractManager);
+    saveState(blockchain, walletManager, ecoSystem, dex, contractManager, marketTracker);
   }, intervalMs);
 }

@@ -98,6 +98,7 @@ td.mono{font-size:0.75rem}
     <div class="tab" onclick="showTab('eco',this)">Eco</div>
     <div class="tab" onclick="showTab('trustwallet',this)">Trust Wallet</div>
     <div class="tab" onclick="showTab('charts',this)">📊 Charts</div>
+    <div class="tab" onclick="showTab('token',this)">💎 Token</div>
   </div>
   <div style="padding:20px">
 
@@ -304,6 +305,84 @@ td.mono{font-size:0.75rem}
     <table><thead><tr><th>Validator</th><th>Energy</th><th>CO₂ Offset</th><th>Trees</th><th>Score</th></tr></thead><tbody id="greenTable"></tbody></table>
   </div>
 
+  <!-- Token Market Tab -->
+  <div class="section" id="tab-token">
+    <h2>💎 VRS Token Market</h2>
+    
+    <div class="grid grid-4" id="tokenStatsGrid">
+      <div class="card stat-tile">
+        <h3>VRS Price</h3>
+        <div class="stat-value" id="statPrice">--</div>
+        <div class="stat-change" id="statPriceChange">--</div>
+      </div>
+      <div class="card stat-tile">
+        <h3>Market Cap</h3>
+        <div class="stat-value" id="statMarketCap">--</div>
+        <div class="stat-subtle">Circulating: <span id="statCirculating">--</span></div>
+      </div>
+      <div class="card stat-tile">
+        <h3>24h Volume</h3>
+        <div class="stat-value" id="statVolume24h">--</div>
+        <div class="stat-subtle">Total: <span id="statTotalVol">--</span></div>
+      </div>
+      <div class="card stat-tile">
+        <h3>Total Liquidity</h3>
+        <div class="stat-value" id="statLiquidity">--</div>
+        <div class="stat-subtle">Swaps: <span id="statTotalSwaps">--</span></div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <h3>VRS Price Chart</h3>
+        <canvas id="chartTokenPrice" height="200"></canvas>
+      </div>
+      <div class="card">
+        <h3>Trading Volume</h3>
+        <canvas id="chartTokenVolume" height="200"></canvas>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Active Liquidity Pools</h3>
+      <div id="poolsList" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Recent Swaps</h3>
+      <div id="recentSwapsList" style="display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto"></div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <h3>Token Info</h3>
+        <div id="tokenInfoTable"></div>
+      </div>
+      <div class="card">
+        <h3>Swap Token</h3>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;gap:8px">
+            <select id="swapTokenIn" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px">
+              <option value="VRS">VRS</option>
+              <option value="CARBON">CARBON</option>
+              <option value="ECO">ECO</option>
+            </select>
+            <span style="align-self:center">→</span>
+            <select id="swapTokenOut" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px">
+              <option value="CARBON">CARBON</option>
+              <option value="VRS">VRS</option>
+              <option value="ECO">ECO</option>
+            </select>
+          </div>
+          <input type="number" id="swapAmount" placeholder="Amount" style="background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px">
+          <input type="text" id="swapTrader" placeholder="Trader address" style="background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px;font-family:monospace;font-size:0.8rem">
+          <div id="swapQuote" style="color:var(--muted);font-size:0.85rem"></div>
+          <button onclick="executeSwap()" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:10px;font-weight:600;cursor:pointer">Execute Swap</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Charts Tab -->
   <div class="section" id="tab-charts">
     <h2>📊 Network Analytics</h2>
@@ -408,6 +487,7 @@ function showTab(name, el) {
   if (name === 'wallet') loadWalletList();
   if (name === 'trustwallet') loadTrustWallet();
   if (name === 'charts') loadCharts();
+  if (name === 'token') loadTokenMarket();
 }
 
 function toast(msg, ok = true) {
@@ -972,6 +1052,177 @@ async function loadCharts() {
     }
   });
 }
+
+function formatNum(n) {
+  if (!n || isNaN(n)) return '--';
+  if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(2) + 'K';
+  return n.toFixed(2);
+}
+
+// Token Market Tab
+async function loadTokenMarket() {
+  const [market, info] = await Promise.all([
+    fetch(API + '/api/token/market').then(r => r.json()),
+    fetch(API + '/api/token/info').then(r => r.json()),
+  ]);
+
+  // Update stats
+  document.getElementById('statPrice').textContent = market.priceUSD ? market.priceUSD.toFixed(6) : '0.001';
+  const change = market.priceChange24h || 0;
+  const changeEl = document.getElementById('statPriceChange');
+  changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+  changeEl.style.color = change >= 0 ? 'var(--accent)' : 'var(--danger)';
+  
+  document.getElementById('statMarketCap').textContent = formatNum(market.marketCap);
+  document.getElementById('statCirculating').textContent = formatNum(market.circulatingSupply);
+  document.getElementById('statVolume24h').textContent = formatNum(market.volume24h);
+  document.getElementById('statTotalVol').textContent = formatNum(market.totalVolume);
+  document.getElementById('statLiquidity').textContent = formatNum(market.liquidity);
+  document.getElementById('statTotalSwaps').textContent = market.totalSwaps;
+
+  // Price chart
+  destroyChart('chartTokenPrice');
+  const priceHistory = market.priceHistory || [];
+  const priceLabels = priceHistory.map((p, i) => '#' + (priceHistory.length - i));
+  const priceData = priceHistory.map(p => p.price);
+  charts.chartTokenPrice = new Chart(document.getElementById('chartTokenPrice'), {
+    type: 'line',
+    data: {
+      labels: priceLabels.length ? priceLabels : ['No data'],
+      datasets: [{
+        label: 'VRS Price',
+        data: priceData.length ? priceData : [0],
+        borderColor: '#00e676',
+        backgroundColor: 'rgba(0, 230, 118, 0.1)',
+        fill: true,
+        tension: 0.3,
+        borderWidth: 2,
+        pointRadius: 1,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#6a7a8f', maxTicksLimit: 10 }, grid: { color: '#1a2845' } },
+        y: { ticks: { color: '#6a7a8f' }, grid: { color: '#1a2845' } },
+      }
+    }
+  });
+
+  // Volume chart (from recent swaps)
+  destroyChart('chartTokenVolume');
+  const swaps = market.recentSwaps || [];
+  const swapLabels = swaps.map((s, i) => '#' + (swaps.length - i));
+  const swapVolumes = swaps.map(s => s.amountIn).reverse();
+  charts.chartTokenVolume = new Chart(document.getElementById('chartTokenVolume'), {
+    type: 'bar',
+    data: {
+      labels: swapLabels.length ? swapLabels.reverse() : ['No data'],
+      datasets: [{
+        label: 'Swap Volume',
+        data: swapVolumes.length ? swapVolumes : [0],
+        backgroundColor: '#2196f3',
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#6a7a8f', maxTicksLimit: 10 }, grid: { display: false } },
+        y: { ticks: { color: '#6a7a8f' }, grid: { color: '#1a2845' } },
+      }
+    }
+  });
+
+  // Pools list
+  const poolsHtml = (market.pools || []).map(p => {
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg);border-radius:8px;border:1px solid var(--border)">
+      <div>
+        <span style="color:var(--accent);font-weight:600">${p.pair}</span>
+        <span style="color:var(--muted);font-size:0.8rem;margin-left:8px">${p.swaps24h} swaps</span>
+      </div>
+      <div style="text-align:right">
+        <div>TVL: ${formatNum(p.tvl)}</div>
+        <div style="color:var(--muted);font-size:0.8rem">Vol 24h: ${formatNum(p.volume24h)}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('poolsList').innerHTML = poolsHtml || '<div style="color:var(--muted)">No pools</div>';
+
+  // Recent swaps
+  const swapsHtml = (market.recentSwaps || []).map(s => {
+    return `<div style="display:flex;justify-content:space-between;padding:6px 10px;background:var(--bg);border-radius:6px;border:1px solid var(--border);font-size:0.85rem">
+      <span>${formatNum(s.amountIn)} ${s.tokenIn} → ${s.amountOut.toFixed(2)} ${s.tokenOut}</span>
+      <span style="color:var(--muted)">Fee: ${s.fee.toFixed(1)} | Block: ${s.blockNumber}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('recentSwapsList').innerHTML = swapsHtml || '<div style="color:var(--muted)">No swaps yet</div>';
+
+  // Token info table
+  const infoHtml = `
+    <table style="width:100%;font-size:0.85rem">
+      <tr><td class="subtle">Name</td><td>${info.name}</td></tr>
+      <tr><td class="subtle">Symbol</td><td class="mono">${info.symbol}</td></tr>
+      <tr><td class="subtle">Decimals</td><td>${info.decimals}</td></tr>
+      <tr><td class="subtle">Chain ID</td><td>${info.chainId}</td></tr>
+      <tr><td class="subtle">Network</td><td>${info.network}</td></tr>
+      <tr><td class="subtle">Total Supply</td><td>${formatNum(info.totalSupply)}</td></tr>
+      <tr><td class="subtle">Max Supply</td><td>${formatNum(info.maxSupply)}</td></tr>
+      <tr><td class="subtle">Circulating</td><td>${formatNum(info.circulatingSupply)}</td></tr>
+      <tr><td class="subtle">Price</td><td style="color:var(--accent)">${info.price ? info.price.toFixed(6) : '--'}</td></tr>
+      <tr><td class="subtle">Market Cap</td><td>${formatNum(info.marketCap)}</td></tr>
+      <tr><td class="subtle">Liquidity</td><td>${formatNum(info.liquidity)}</td></tr>
+      <tr><td class="subtle">Pools</td><td>${info.pools ? info.pools.length : 0}</td></tr>
+      <tr><td class="subtle">Block Height</td><td>${info.blockHeight}</td></tr>
+    </table>`;
+  document.getElementById('tokenInfoTable').innerHTML = infoHtml;
+}
+
+async function getSwapQuote() {
+  const tokenIn = document.getElementById('swapTokenIn').value;
+  const tokenOut = document.getElementById('swapTokenOut').value;
+  const amountIn = parseFloat(document.getElementById('swapAmount').value) || 0;
+  if (amountIn <= 0 || tokenIn === tokenOut) {
+    document.getElementById('swapQuote').textContent = '';
+    return;
+  }
+  try {
+    const q = await fetch(API + '/api/dex/quote?tokenIn=' + tokenIn + '&tokenOut=' + tokenOut + '&amountIn=' + amountIn).then(r => r.json());
+    document.getElementById('swapQuote').innerHTML = 'Expected output: <span style="color:var(--accent)">' + q.amountOut.toFixed(4) + ' ' + tokenOut + '</span> | Fee: ' + q.fee.toFixed(2) + ' | Impact: ' + q.priceImpact.toFixed(3) + '%';
+  } catch (e) {
+    document.getElementById('swapQuote').textContent = 'No pool for this pair';
+  }
+}
+
+async function executeSwap() {
+  const tokenIn = document.getElementById('swapTokenIn').value;
+  const tokenOut = document.getElementById('swapTokenOut').value;
+  const amountIn = parseFloat(document.getElementById('swapAmount').value) || 0;
+  const trader = document.getElementById('swapTrader').value;
+  if (!trader || amountIn <= 0 || tokenIn === tokenOut) { toast('Fill all fields', false); return; }
+  try {
+    const result = await fetch(API + '/api/dex/swap', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trader, tokenIn, tokenOut, amountIn, minAmountOut: 0 })
+    }).then(r => r.json());
+    if (result.success) {
+      toast('Swapped ' + amountIn + ' ' + tokenIn + ' → ' + result.amountOut.toFixed(2) + ' ' + tokenOut);
+      loadTokenMarket();
+    } else {
+      toast(result.error || 'Swap failed', false);
+    }
+  } catch (e) {
+    toast('Swap failed: ' + e.message, false);
+  }
+}
+
+document.getElementById('swapAmount')?.addEventListener('input', getSwapQuote);
+document.getElementById('swapTokenIn')?.addEventListener('change', getSwapQuote);
+document.getElementById('swapTokenOut')?.addEventListener('change', getSwapQuote);
 
 // Trust Wallet Tab
 async function loadTrustWallet() {

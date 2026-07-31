@@ -15,6 +15,7 @@ export class BlockchainAPI {
   private contractManager: ContractManager;
   private dashboardHtmlPath?: string;
   private dex: any = null;
+  private marketTracker: any = null;
   private eco: any = null;
 
   constructor(
@@ -36,6 +37,10 @@ export class BlockchainAPI {
   public setDEX(dex: any): void {
     this.dex = dex;
     this.setupDEXRoutes();
+  }
+
+  public setMarketTracker(mt: any): void {
+    this.marketTracker = mt;
   }
 
   public setEco(eco: any): void {
@@ -317,6 +322,68 @@ export class BlockchainAPI {
 
     this.app.get('/api/dex/pool/:id/stats', (req: Request, res: Response) => {
       res.json(this.dex.getPoolStats(req.params.id));
+    });
+
+    // Market data endpoints
+    this.app.get('/api/token/market', (req: Request, res: Response) => {
+      if (!this.marketTracker) { res.json({ error: 'Market tracker not initialized' }); return; }
+      const ts = this.blockchain.getTokenSystem();
+      res.json(this.marketTracker.getMarketStats('VRS', ts.getTotalSupply(), ts.getMaxSupply()));
+    });
+
+    this.app.get('/api/token/swaps', (req: Request, res: Response) => {
+      if (!this.marketTracker) { res.json([]); return; }
+      const limit = parseInt(req.query.limit as string) || 50;
+      res.json(this.marketTracker.getSwapHistory(limit));
+    });
+
+    this.app.get('/api/token/price-history/:poolId', (req: Request, res: Response) => {
+      if (!this.marketTracker) { res.json([]); return; }
+      res.json(this.marketTracker.getPriceHistory(req.params.poolId));
+    });
+
+    // Token info
+    this.app.get('/api/token/info', (req: Request, res: Response) => {
+      const ts = this.blockchain.getTokenSystem();
+      const chainHeight = this.blockchain.getChainHeight();
+      let pools: any[] = [];
+      let price = 0;
+      let liquidity = 0;
+      if (this.dex) {
+        pools = this.dex.getAllPools();
+        if (pools.length > 0) {
+          for (const p of pools) {
+            if (p.tokenA === 'VRS' || p.tokenB === 'VRS') {
+              price = p.tokenA === 'VRS' ? (p.reserveB / p.reserveA) : (p.reserveA / p.reserveB);
+              liquidity += p.tokenA === 'VRS' ? p.reserveA * 2 : p.reserveB * 2;
+              break;
+            }
+          }
+        }
+      }
+      res.json({
+        name: 'Verdis',
+        symbol: 'VRS',
+        decimals: 18,
+        chainId: 909,
+        totalSupply: ts.getTotalSupply(),
+        maxSupply: ts.getMaxSupply(),
+        circulatingSupply: ts.getTotalSupply(),
+        price,
+        marketCap: price * ts.getTotalSupply(),
+        liquidity,
+        pools: pools.map(p => ({ pair: `${p.tokenA}/${p.tokenB}`, reserveA: p.reserveA, reserveB: p.reserveB })),
+        blockHeight: chainHeight,
+        network: 'Verdis Mainnet',
+        description: 'Eco-friendly L1 blockchain with native AMM DEX, carbon credits, and DPoS consensus',
+        website: 'https://verdis.eco',
+        explorer: 'http://localhost:3200',
+        socials: {
+          twitter: '@VerdisEco',
+          github: 'verdis-eco/blockchain',
+          docs: 'https://docs.verdis.eco',
+        },
+      });
     });
   }
 

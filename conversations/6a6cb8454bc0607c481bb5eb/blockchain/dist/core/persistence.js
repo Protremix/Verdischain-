@@ -23,7 +23,7 @@ const STATE_DIR = path_1.default.dirname(STATE_FILE);
 /**
  * Exports the full blockchain state to a serializable object.
  */
-function exportState(blockchain, walletManager, ecoSystem, dex, contractManager) {
+function exportState(blockchain, walletManager, ecoSystem, dex, contractManager, marketTracker) {
     const tokenSystem = blockchain.getTokenSystem();
     const consensus = blockchain.getConsensus();
     const mempool = blockchain.getMempool();
@@ -85,21 +85,22 @@ function exportState(blockchain, walletManager, ecoSystem, dex, contractManager)
         greenScores,
         pools,
         contracts,
+        marketData: marketTracker ? marketTracker.exportData() : null,
     };
 }
 /**
  * Saves the full blockchain state to disk.
  */
-function saveState(blockchain, walletManager, ecoSystem, dex, contractManager) {
+function saveState(blockchain, walletManager, ecoSystem, dex, contractManager, marketTracker) {
     try {
         // Ensure directory exists
         if (!fs_1.default.existsSync(STATE_DIR)) {
             fs_1.default.mkdirSync(STATE_DIR, { recursive: true });
         }
-        const state = exportState(blockchain, walletManager, ecoSystem, dex, contractManager);
+        const state = exportState(blockchain, walletManager, ecoSystem, dex, contractManager, marketTracker);
         const json = JSON.stringify(state, null, 2);
         fs_1.default.writeFileSync(STATE_FILE, json);
-        console.log(`💾 State saved: ${state.chain.length} blocks, ${Object.keys(state.balances).length} balances, ${state.wallets.length} wallets, ${state.contracts.length} contracts`);
+        console.log(`💾 State saved: ${state.chain.length} blocks, ${Object.keys(state.balances).length} balances, ${state.wallets.length} wallets, ${state.contracts.length} contracts, ${state.pools.length} pools`);
         return true;
     }
     catch (error) {
@@ -205,10 +206,10 @@ function restoreState(state, blockchain, walletManager, ecoSystem, dex, contract
 /**
  * Periodically saves state at a given interval.
  */
-function startAutoSave(blockchain, walletManager, ecoSystem, dex, contractManager, intervalMs = 30000) {
+function startAutoSave(blockchain, walletManager, ecoSystem, dex, contractManager, intervalMs = 30000, marketTracker) {
     console.log(`💾 Auto-save enabled (every ${intervalMs / 1000}s)`);
     return setInterval(() => {
-        saveState(blockchain, walletManager, ecoSystem, dex, contractManager);
+        saveState(blockchain, walletManager, ecoSystem, dex, contractManager, marketTracker);
     }, intervalMs);
 }
 //# sourceMappingURL=persistence.js.map
