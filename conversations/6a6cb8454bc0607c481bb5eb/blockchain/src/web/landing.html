@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis — The Eco-Friendly Blockchain</title>
+<meta name="description" content="Verdis (VRS) is a fully functional L1 blockchain with native DPoS consensus, AMM DEX, carbon credit tracking, and Ethereum-compatible JSON-RPC. Built for sustainability.">
+<meta property="og:title" content="Verdis — The Eco-Friendly Blockchain">
+<meta property="og:description" content="A fully functional L1 blockchain with native DPoS, AMM DEX, and integrated carbon credit tracking.">
+<meta property="og:type" content="website">
+<style>
+:root {
+  --bg: #0a0e1a; --bg2: #13182a; --card: #1a2038; --border: #2a3050;
+  --text: #e8e8e8; --muted: #8892a6; --accent: #00e676; --accent2: #00c853;
+  --blue: #448aff; --purple: #b388ff;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; line-height:1.6; overflow-x:hidden; }
+nav { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(10,14,26,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:1rem 2rem; display:flex; align-items:center; justify-content:space-between; }
+.nav-logo { font-size:1.4rem; font-weight:700; color:var(--accent); text-decoration:none; }
+.nav-links { display:flex; gap:2rem; align-items:center; }
+.nav-links a { color:var(--muted); text-decoration:none; font-size:0.95rem; transition:color 0.2s; }
+.nav-links a:hover { color:var(--accent); }
+.nav-cta { background:var(--accent); color:var(--bg); padding:0.6rem 1.5rem; border-radius:8px; font-weight:600; text-decoration:none; font-size:0.95rem; }
+.nav-cta:hover { transform:translateY(-1px); }
+@media(max-width:768px) { .nav-links a:not(.nav-cta) { display:none; } }
+.hero { min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; padding:6rem 2rem 4rem; background:radial-gradient(ellipse at 50% 30%, rgba(0,230,118,0.08) 0%, transparent 60%); }
+.hero::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 20% 50%, rgba(68,138,255,0.05) 0%, transparent 40%), radial-gradient(circle at 80% 20%, rgba(179,136,255,0.05) 0%, transparent 40%); pointer-events:none; }
+.hero-content { max-width:900px; text-align:center; position:relative; z-index:1; }
+.hero-badge { display:inline-flex; align-items:center; gap:0.5rem; background:var(--bg2); border:1px solid var(--border); padding:0.4rem 1rem; border-radius:999px; font-size:0.85rem; color:var(--accent); margin-bottom:1.5rem; }
+.hero-badge .dot { width:8px; height:8px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.hero h1 { font-size:4rem; font-weight:800; line-height:1.1; margin-bottom:1rem; background:linear-gradient(135deg, var(--accent) 0%, var(--blue) 50%, var(--purple) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.hero p { font-size:1.3rem; color:var(--muted); max-width:600px; margin:0 auto 2rem; }
+.hero-buttons { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; }
+.btn-primary { background:var(--accent); color:var(--bg); padding:1rem 2.5rem; border-radius:10px; font-weight:700; text-decoration:none; font-size:1.05rem; transition:all 0.2s; border:none; cursor:pointer; }
+.btn-primary:hover { background:var(--accent2); transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,230,118,0.2); }
+.btn-secondary { background:transparent; color:var(--text); padding:1rem 2.5rem; border-radius:10px; font-weight:600; text-decoration:none; font-size:1.05rem; border:1px solid var(--border); transition:all 0.2s; }
+.btn-secondary:hover { border-color:var(--accent); color:var(--accent); }
+.stats-bar { background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:2rem; display:flex; justify-content:center; gap:3rem; flex-wrap:wrap; }
+.stat-item { text-align:center; }
+.stat-value { font-size:2rem; font-weight:700; color:var(--accent); }
+.stat-label { font-size:0.85rem; color:var(--muted); margin-top:0.25rem; text-transform:uppercase; letter-spacing:1px; }
+section { padding:5rem 2rem; max-width:1200px; margin:0 auto; }
+.section-title { font-size:2.5rem; font-weight:700; text-align:center; margin-bottom:0.75rem; }
+.section-subtitle { font-size:1.1rem; color:var(--muted); text-align:center; max-width:600px; margin:0 auto 3rem; }
+.features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1.5rem; }
+.feature-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:2rem; transition:all 0.3s; position:relative; overflow:hidden; }
+.feature-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--accent), transparent); opacity:0; transition:opacity 0.3s; }
+.feature-card:hover { border-color:var(--accent); transform:translateY(-4px); }
+.feature-card:hover::before { opacity:1; }
+.feature-icon { font-size:2.5rem; margin-bottom:1rem; }
+.feature-card h3 { font-size:1.25rem; font-weight:600; margin-bottom:0.5rem; }
+.feature-card p { color:var(--muted); font-size:0.95rem; }
+.eco-section { background:linear-gradient(180deg, var(--bg) 0%, var(--bg2) 50%, var(--bg) 100%); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.eco-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:1.5rem; }
+.eco-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:2rem; text-align:center; }
+.eco-number { font-size:3rem; font-weight:800; color:var(--accent); }
+.eco-label { color:var(--muted); margin-top:0.5rem; }
+.security-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1rem; }
+.security-item { display:flex; align-items:flex-start; gap:0.75rem; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.25rem; }
+.security-check { color:var(--accent); font-size:1.2rem; flex-shrink:0; }
+.security-item h4 { font-size:0.95rem; margin-bottom:0.25rem; }
+.security-item p { font-size:0.85rem; color:var(--muted); }
+.dex-section { background:var(--bg2); border-radius:20px; padding:3rem; border:1px solid var(--border); }
+.dex-pools { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin-top:2rem; }
+.pool-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.5rem; text-align:center; }
+.pool-pair { font-size:1.1rem; font-weight:600; margin-bottom:0.5rem; }
+.pool-info { font-size:0.85rem; color:var(--muted); }
+.connect-section { background:linear-gradient(135deg, var(--bg2) 0%, var(--card) 100%); border:1px solid var(--border); border-radius:20px; padding:3rem; text-align:center; }
+.connect-config { background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:2rem; max-width:500px; margin:2rem auto; text-align:left; }
+.config-row { display:flex; justify-content:space-between; padding:0.75rem 0; border-bottom:1px solid var(--border); }
+.config-row:last-child { border-bottom:none; }
+.config-label { color:var(--muted); }
+.config-value { color:var(--accent); font-family:monospace; font-size:0.9rem; }
+footer { border-top:1px solid var(--border); padding:3rem 2rem; text-align:center; color:var(--muted); font-size:0.9rem; }
+footer a { color:var(--accent); text-decoration:none; }
+footer .footer-links { display:flex; justify-content:center; gap:2rem; margin-bottom:1rem; flex-wrap:wrap; }
+.fade-in { opacity:0; transform:translateY(20px); transition:all 0.6s ease; }
+.fade-in.visible { opacity:1; transform:translateY(0); }
+@media(max-width:768px) { .hero h1 { font-size:2.5rem; } .hero p { font-size:1rem; } .stats-bar { gap:1.5rem; } .section-title { font-size:1.8rem; } }
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">Verdis</a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#eco">Eco</a>
+    <a href="#security">Security</a>
+    <a href="#dex">DEX</a>
+    <a href="#connect">Connect</a>
+    <a href="/dashboard" class="nav-cta">Launch Dashboard</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-badge"><span class="dot"></span><span id="liveStatus">Network Live</span></div>
+    <h1>Verdis</h1>
+    <p>The Eco-Friendly Blockchain. A fully functional L1 with native DPoS consensus, AMM-based DEX, and integrated carbon credit tracking. Built for a sustainable future.</p>
+    <div class="hero-buttons">
+      <a href="/dashboard" class="btn-primary">Launch Dashboard</a>
+      <a href="#connect" class="btn-secondary">Connect Wallet</a>
+    </div>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-value" id="statHeight">—</div><div class="stat-label">Block Height</div></div>
+  <div class="stat-item"><div class="stat-value" id="statValidators">—</div><div class="stat-label">Validators</div></div>
+  <div class="stat-item"><div class="stat-value" id="statPools">—</div><div class="stat-label">DEX Pools</div></div>
+  <div class="stat-item"><div class="stat-value" id="statSupply">—</div><div class="stat-label">VRS Supply</div></div>
+  <div class="stat-item"><div class="stat-value">909</div><div class="stat-label">Chain ID</div></div>
+</div>
+
+<section id="features">
+  <h2 class="section-title">Built Different</h2>
+  <p class="section-subtitle">Everything you need from a modern blockchain — with sustainability at its core.</p>
+  <div class="features-grid">
+    <div class="feature-card fade-in"><div class="feature-icon">🌿</div><h3>Eco-Friendly by Design</h3><p>DPoS consensus uses 99% less energy than Proof of Work. Every transaction contributes to carbon offset projects and reforestation.</p></div>
+    <div class="feature-card fade-in"><div class="feature-icon">💱</div><h3>Native AMM DEX</h3><p>Decentralized exchange built directly into the chain. Swap VRS, CARBON, ECO, TREE, GREEN and REDD tokens with 0.3% fees.</p></div>
+    <div class="feature-card fade-in"><div class="feature-icon">🔑</div><h3>DPoS Consensus</h3><p>27 registered validators with delegated voting. 5-second block times with single-block finality. Green validator scoring rewards renewable energy.</p></div>
+    <div class="feature-card fade-in"><div class="feature-icon">📱</div><h3>Wallet Compatible</h3><p>Ethereum JSON-RPC with Keccak256 address derivation. Works with Trust Wallet, MetaMask, and any EVM-compatible wallet. Chain ID 909.</p></div>
+    <div class="feature-card fade-in"><div class="feature-icon">📜</div><h3>Smart Contracts</h3><p>Stack-based virtual machine for deploying and executing smart contracts. Deploy custom logic for DeFi, governance, and more.</p></div>
+    <div class="feature-card fade-in"><div class="feature-icon">💾</div><h3>Persistent State</h3><p>All blocks, balances, DEX pools, and contracts are saved to disk every 30 seconds. The chain survives any restart without data loss.</p></div>
+  </div>
+</section>
+
+<section id="eco" class="eco-section">
+  <h2 class="section-title">Real Environmental Impact</h2>
+  <p class="section-subtitle">Verdis tracks and verifies real-world environmental data on-chain. Every transaction helps fund a greener planet.</p>
+  <div class="eco-grid">
+    <div class="eco-card fade-in"><div class="eco-number" id="ecoCarbon">—</div><div class="eco-label">Tons CO2 Offset</div></div>
+    <div class="eco-card fade-in"><div class="eco-number" id="ecoTrees">—</div><div class="eco-label">Trees Planted</div></div>
+    <div class="eco-card fade-in"><div class="eco-number" id="ecoCredits">—</div><div class="eco-label">Carbon Credits Retired</div></div>
+    <div class="eco-card fade-in"><div class="eco-number" id="ecoValidators">—</div><div class="eco-label">Green Validators</div></div>
+  </div>
+</section>
+
+<section id="security">
+  <h2 class="section-title">Bank-Grade Security</h2>
+  <p class="section-subtitle">13 active security measures protecting every transaction, block, and wallet on the network.</p>
+  <div class="security-grid" id="securityGrid"></div>
+</section>
+
+<section id="dex">
+  <h2 class="section-title">Native DEX</h2>
+  <p class="section-subtitle">Trade tokens directly on-chain. No third-party custody. No bridging. Just pure decentralized trading.</p>
+  <div class="dex-section">
+    <div style="text-align:center"><h3 style="font-size:1.5rem; margin-bottom:0.5rem">Live Trading Pools</h3><p style="color:var(--muted)">Automated Market Maker with 0.3% swap fees</p></div>
+    <div class="dex-pools" id="dexPools"></div>
+  </div>
+</section>
+
+<section id="connect">
+  <h2 class="section-title">Connect Your Wallet</h2>
+  <p class="section-subtitle">Add Verdis to Trust Wallet or MetaMask in under a minute.</p>
+  <div class="connect-section">
+    <h3 style="font-size:1.3rem; margin-bottom:0.5rem">Network Configuration</h3>
+    <p style="color:var(--muted)">Add a custom network in your wallet app:</p>
+    <div class="connect-config">
+      <div class="config-row"><span class="config-label">Network Name</span><span class="config-value">Verdis</span></div>
+      <div class="config-row"><span class="config-label">RPC URL</span><span class="config-value" id="rpcUrl">—</span></div>
+      <div class="config-row"><span class="config-label">Chain ID</span><span class="config-value">909</span></div>
+      <div class="config-row"><span class="config-label">Symbol</span><span class="config-value">VRS</span></div>
+      <div class="config-row"><span class="config-label">Block Explorer</span><span class="config-value" id="explorerUrl">—</span></div>
+    </div>
+    <a href="/dashboard" class="btn-primary" style="display:inline-block">Open Dashboard</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-links">
+    <a href="/dashboard">Dashboard</a>
+    <a href="/api/explorer/stats">Explorer</a>
+    <a href="/api/security/audit">Security</a>
+    <a href="/api/network/info">API</a>
+    <a href="/api/monitoring/health">Health</a>
+  </div>
+  <p>Verdis Network — Chain ID 909 | DPoS | secp256k1 | Keccak256</p>
+  <p style="margin-top:0.5rem">Built with @noble/secp256k1 and @noble/hashes. No mocks. No third-party dependencies.</p>
+</footer>
+
+<script>
+const API = window.location.origin;
+const RPC = API + '/rpc';
+
+async function loadLiveData() {
+  try {
+    const [info, eco, audit, pools] = await Promise.all([
+      fetch(API + '/api/blockchain/info').then(r => r.json()).catch(() => null),
+      fetch(API + '/api/eco/impact').then(r => r.json()).catch(() => null),
+      fetch(API + '/api/security/audit').then(r => r.json()).catch(() => null),
+      fetch(API + '/api/dex/pools').then(r => r.json()).catch(() => null),
+    ]);
+    if (info) {
+      document.getElementById('statHeight').textContent = info.height;
+      document.getElementById('statValidators').textContent = info.validatorCount || '—';
+      document.getElementById('statSupply').textContent = (info.totalSupply / 1e9).toFixed(1) + 'B';
+    }
+    if (eco) {
+      document.getElementById('ecoCarbon').textContent = (eco.carbonOffset || 0).toLocaleString();
+      document.getElementById('ecoTrees').textContent = (eco.treesPlanted || 0).toLocaleString();
+      document.getElementById('ecoCredits').textContent = (eco.creditsRetired || 0).toLocaleString();
+      document.getElementById('ecoValidators').textContent = (eco.greenValidators || 0);
+    }
+    if (pools && pools.length) {
+      document.getElementById('statPools').textContent = pools.length;
+      document.getElementById('dexPools').innerHTML = pools.map(p => {
+        return '<div class="pool-card"><div class="pool-pair">' + p.tokenA + '/' + p.tokenB + '</div><div class="pool-info">' + (p.reserveA/1e6).toFixed(2) + ' ' + p.tokenA + '<br>' + (p.reserveB/1e6).toFixed(2) + ' ' + p.tokenB + '</div></div>';
+      }).join('');
+    }
+    if (audit && audit.checks) {
+      document.getElementById('securityGrid').innerHTML = Object.entries(audit.checks).map(([k, v]) => {
+        const label = k.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase());
+        return '<div class="security-item"><span class="security-check">✅</span><div><h4>' + label + '</h4><p>' + v.description + '</p></div></div>';
+      }).join('');
+    }
+    document.getElementById('rpcUrl').textContent = RPC;
+    document.getElementById('explorerUrl').textContent = API;
+  } catch (e) { console.error('Load error:', e); }
+}
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+loadLiveData();
+setInterval(loadLiveData, 15000);
+</script>
+</body>
+</html>

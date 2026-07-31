@@ -96,8 +96,20 @@ export class BlockchainAPI {
   }
 
   private setupCoreRoutes(): void {
-    // Dashboard
+    // Landing page (marketing site)
     this.app.get('/', (req: Request, res: Response) => {
+      const landingPath = path.resolve(__dirname, '../web/landing.html');
+      if (fs.existsSync(landingPath)) { res.sendFile(landingPath); return; }
+      const landingAlt = path.resolve(__dirname, '../../src/web/landing.html');
+      if (fs.existsSync(landingAlt)) { res.sendFile(landingAlt); return; }
+      // Fallback to dashboard if no landing page
+      const dashPath = path.resolve(__dirname, '../web/dashboard.html');
+      if (fs.existsSync(dashPath)) { res.sendFile(dashPath); return; }
+      res.send('<html><body style="background:#0a0e1a;color:#00e676;font-family:sans-serif;padding:2rem"><h1>Verdis</h1><p>Height: ' + this.blockchain.getChainHeight() + '</p></body></html>');
+    });
+
+    // Dashboard (app)
+    this.app.get('/dashboard', (req: Request, res: Response) => {
       if (this.dashboardHtmlPath && fs.existsSync(this.dashboardHtmlPath)) {
         res.sendFile(this.dashboardHtmlPath);
         return;

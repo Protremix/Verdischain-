@@ -78,8 +78,28 @@ class BlockchainAPI {
         }
     }
     setupCoreRoutes() {
-        // Dashboard
+        // Landing page (marketing site)
         this.app.get('/', (req, res) => {
+            const landingPath = path_1.default.resolve(__dirname, '../web/landing.html');
+            if (fs_1.default.existsSync(landingPath)) {
+                res.sendFile(landingPath);
+                return;
+            }
+            const landingAlt = path_1.default.resolve(__dirname, '../../src/web/landing.html');
+            if (fs_1.default.existsSync(landingAlt)) {
+                res.sendFile(landingAlt);
+                return;
+            }
+            // Fallback to dashboard if no landing page
+            const dashPath = path_1.default.resolve(__dirname, '../web/dashboard.html');
+            if (fs_1.default.existsSync(dashPath)) {
+                res.sendFile(dashPath);
+                return;
+            }
+            res.send('<html><body style="background:#0a0e1a;color:#00e676;font-family:sans-serif;padding:2rem"><h1>Verdis</h1><p>Height: ' + this.blockchain.getChainHeight() + '</p></body></html>');
+        });
+        // Dashboard (app)
+        this.app.get('/dashboard', (req, res) => {
             if (this.dashboardHtmlPath && fs_1.default.existsSync(this.dashboardHtmlPath)) {
                 res.sendFile(this.dashboardHtmlPath);
                 return;
