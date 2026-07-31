@@ -282,6 +282,41 @@ class BlockchainAPI {
         if (!this.dex)
             return;
         this.app.get('/api/dex/pools', (req, res) => { res.json(this.dex.getAllPools()); });
+        // Mint DEX tokens (for non-native tokens like CARBON, ECO, TREE, GREEN, etc.)
+        this.app.post('/api/dex/token/mint', (req, res) => {
+            try {
+                const { token, address, amount } = req.body;
+                if (!token || !address || !amount || amount <= 0) {
+                    res.status(400).json({ success: false, error: 'Missing token, address, or amount' });
+                    return;
+                }
+                if (token === 'VRS') {
+                    res.status(400).json({ success: false, error: 'Cannot mint VRS. VRS is the native token.' });
+                    return;
+                }
+                const balance = this.dex.depositToken(token, address, amount);
+                res.json({ success: true, token, address, balance, minted: amount });
+            }
+            catch (error) {
+                res.status(400).json({ success: false, error: error.message });
+            }
+        });
+        // Get DEX token balance
+        this.app.get('/api/dex/token/balance/:token/:address', (req, res) => {
+            const balance = this.dex.getTokenBalance(req.params.token, req.params.address);
+            res.json({ token: req.params.token, address: req.params.address, balance });
+        });
+        // Get all DEX token balances for an address
+        this.app.get('/api/dex/token/balances/:address', (req, res) => {
+            const tokens = ['CARBON', 'ECO', 'TREE', 'GREEN', 'REDD'];
+            const balances = {};
+            for (const t of tokens) {
+                const bal = this.dex.getTokenBalance(t, req.params.address);
+                if (bal > 0)
+                    balances[t] = bal;
+            }
+            res.json({ address: req.params.address, balances });
+        });
         this.app.post('/api/dex/pool/create', (req, res) => {
             const { tokenA, tokenB } = req.body;
             res.json({ success: true, pool: this.dex.createPool(tokenA, tokenB) });
