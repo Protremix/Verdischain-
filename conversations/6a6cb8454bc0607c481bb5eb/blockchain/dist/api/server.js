@@ -17,6 +17,7 @@ class BlockchainAPI {
         this.dex = null;
         this.marketTracker = null;
         this.eco = null;
+        this.startTime = Date.now();
         this.blockchain = blockchain;
         this.walletManager = walletManager;
         this.contractManager = contractManager;
@@ -337,6 +338,67 @@ a:hover { text-decoration:underline; }
                 return;
             }
             res.json({ apiKey: this.security.getAdminApiKey() });
+        });
+        // Monitoring / Health check (public)
+        this.app.get('/api/monitoring/health', (req, res) => {
+            const now = Date.now();
+            const uptime = now - this.startTime;
+            const chain = this.blockchain.getChain();
+            const lastBlock = chain[chain.length - 1];
+            const lastBlockTime = lastBlock ? lastBlock.header.timestamp : 0;
+            const blockStaleness = now - lastBlockTime;
+            const mempoolSize = this.blockchain.getMempool().size();
+            // Determine health status
+            const isHealthy = blockStaleness < 30000 && this.blockchain.isChainValid();
+            const status = isHealthy ? 'healthy' : 'unhealthy';
+            // Calculate TPS (transactions per second over last 100 blocks)
+            const recentBlocks = chain.slice(-100);
+            const recentTxCount = recentBlocks.reduce((sum, b) => sum + b.transactions.length, 0);
+            const timeSpan = recentBlocks.length > 1 ?
+                (recentBlocks[recentBlocks.length - 1].header.timestamp - recentBlocks[0].header.timestamp) / 1000 : 1;
+            const tps = timeSpan > 0 ? (recentTxCount / timeSpan).toFixed(2) : '0.00';
+            res.json({
+                status,
+                timestamp: now,
+                uptime: {
+                    seconds: Math.floor(uptime / 1000),
+                    human: Math.floor(uptime / 3600000) + 'h ' + Math.floor((uptime % 3600000) / 60000) + 'm ' + Math.floor((uptime % 60000) / 1000) + 's',
+                },
+                chain: {
+                    height: this.blockchain.getChainHeight(),
+                    totalBlocks: chain.length,
+                    chainValid: this.blockchain.isChainValid(),
+                    lastBlockTime,
+                    blockStalenessMs: blockStaleness,
+                    blockStalenessHuman: blockStaleness < 1000 ? blockStaleness + 'ms' : Math.floor(blockStaleness / 1000) + 's',
+                    blockTime: 5000,
+                },
+                consensus: {
+                    validators: this.blockchain.getConsensus().getAllValidatorsList().length,
+                    topValidators: this.blockchain.getConsensus().getTopValidators().length,
+                },
+                mempool: {
+                    size: mempoolSize,
+                    maxSize: 1000,
+                },
+                dex: {
+                    pools: this.dex ? this.dex.getAllPools().length : 0,
+                },
+                performance: {
+                    tps: parseFloat(tps),
+                    avgBlockTx: recentBlocks.length > 0 ? (recentTxCount / recentBlocks.length).toFixed(2) : '0',
+                },
+                version: '1.0.0',
+                network: 'verdis',
+                chainId: 909,
+            });
+        });
+        // Uptime badge (simple text for monitoring tools)
+        this.app.get('/api/monitoring/uptime', (req, res) => {
+            const uptime = Date.now() - this.startTime;
+            const isHealthy = this.blockchain.isChainValid();
+            res.setHeader('Content-Type', 'text/plain');
+            res.send(isHealthy ? 'OK' : 'ERROR');
         });
         // Blockchain Info
         this.app.get('/api/blockchain/info', (req, res) => {

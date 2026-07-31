@@ -13,6 +13,7 @@ export declare class BlockchainAPI {
     private marketTracker;
     private eco;
     security: SecurityManager;
+    startTime: number;
     constructor(blockchain: Blockchain, walletManager: WalletManager, contractManager: ContractManager);
     private requireAdminAuth;
     private strictRateLimit;
