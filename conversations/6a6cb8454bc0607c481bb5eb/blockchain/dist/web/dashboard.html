@@ -1356,7 +1356,7 @@ async function loadSecurity() {
   try {
     const pubRes = await fetch(API + '/api/public-url');
     const pubData = await pubRes.json();
-    const baseUrl = pubData.url || window.location.origin;
+    const baseUrl = (pubData.url && pubData.url.includes('serveo')) ? 'https://verdis.eco' : (pubData.url || window.location.origin);
     document.getElementById('networkInfoUrl').textContent = baseUrl + '/api/network/info';
   } catch (e) {
     document.getElementById('networkInfoUrl').textContent = window.location.origin + '/api/network/info';

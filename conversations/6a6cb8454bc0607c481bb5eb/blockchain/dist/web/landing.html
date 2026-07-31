@@ -6,6 +6,8 @@
 <title>Verdis — The Eco-Friendly Blockchain</title>
 <meta name="description" content="Verdis (VRS) is a fully functional L1 blockchain with native DPoS consensus, AMM DEX, carbon credit tracking, and Ethereum-compatible JSON-RPC. Built for sustainability.">
 <meta property="og:title" content="Verdis — The Eco-Friendly Blockchain">
+<meta property="og:url" content="https://verdis.eco">
+<meta property="og:image" content="https://verdis.eco/api/eco/impact">
 <meta property="og:description" content="A fully functional L1 blockchain with native DPoS, AMM DEX, and integrated carbon credit tracking.">
 <meta property="og:type" content="website">
 <style>
@@ -179,7 +181,7 @@ footer .footer-links { display:flex; justify-content:center; gap:2rem; margin-bo
     <a href="/api/network/info">API</a>
     <a href="/api/monitoring/health">Health</a>
   </div>
-  <p>Verdis Network — Chain ID 909 | DPoS | secp256k1 | Keccak256</p>
+  <p><a href="https://verdis.eco">verdis.eco</a> — Chain ID 909 | DPoS | secp256k1 | Keccak256</p>
   <p style="margin-top:0.5rem">Built with @noble/secp256k1 and @noble/hashes. No mocks. No third-party dependencies.</p>
 </footer>
 
@@ -218,8 +220,8 @@ async function loadLiveData() {
         return '<div class="security-item"><span class="security-check">✅</span><div><h4>' + label + '</h4><p>' + v.description + '</p></div></div>';
       }).join('');
     }
-    document.getElementById('rpcUrl').textContent = RPC;
-    document.getElementById('explorerUrl').textContent = API;
+    document.getElementById('rpcUrl').textContent = API.includes('localhost') || API.includes('serveo') ? 'https://verdis.eco/rpc' : API + '/rpc';
+    document.getElementById('explorerUrl').textContent = API.includes('localhost') || API.includes('serveo') ? 'https://verdis.eco' : API;
   } catch (e) { console.error('Load error:', e); }
 }
 
