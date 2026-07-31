@@ -345,10 +345,22 @@ export class BlockchainAPI {
     });
 
     this.app.post('/api/dex/swap', (req: Request, res: Response) => {
-      const { trader, tokenIn, tokenOut, amountIn, minAmountOut } = req.body;
-      const result = this.dex.swap(trader, tokenIn, tokenOut, amountIn, minAmountOut || 0);
-      if (result.error) { res.status(400).json(result); return; }
-      res.json(result);
+      try {
+        const { trader, tokenIn, tokenOut, amountIn, minAmountOut } = req.body;
+        const result = this.dex.swap(trader, tokenIn, tokenOut, amountIn, minAmountOut || 0);
+        if (result.error) { res.status(400).json(result); return; }
+        // Record swap in market tracker
+        if (this.marketTracker) {
+          this.marketTracker.recordSwap(
+            trader, tokenIn, tokenOut, amountIn,
+            result.amountOut, result.fee, result.pool.id,
+            this.blockchain.getChainHeight()
+          );
+        }
+        res.json({ success: true, ...result });
+      } catch (error) {
+        res.status(400).json({ success: false, error: (error as Error).message });
+      }
     });
 
     this.app.get('/api/dex/quote', (req: Request, res: Response) => {
