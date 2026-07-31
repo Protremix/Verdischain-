@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Verdis — Eco Blockchain Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0a0f1a;--card:#0f1a2e;--border:#1a2845;--text:#e0e6ed;--muted:#6a7a8f;--accent:#00e676;--accent2:#00c853;--danger:#ff4444;--warn:#ffaa00;--radius:12px}
@@ -92,6 +93,7 @@ td.mono{font-size:0.75rem}
     <div class="tab" onclick="showTab('dex',this)">DEX</div>
     <div class="tab" onclick="showTab('eco',this)">Eco</div>
     <div class="tab" onclick="showTab('trustwallet',this)">Trust Wallet</div>
+    <div class="tab" onclick="showTab('charts',this)">📊 Charts</div>
   </div>
   <div style="padding:20px">
 
@@ -298,6 +300,49 @@ td.mono{font-size:0.75rem}
     <table><thead><tr><th>Validator</th><th>Energy</th><th>CO₂ Offset</th><th>Trees</th><th>Score</th></tr></thead><tbody id="greenTable"></tbody></table>
   </div>
 
+  <!-- Charts Tab -->
+  <div class="section" id="tab-charts">
+    <h2>📊 Network Analytics</h2>
+    
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>Block Height Over Time</h3>
+        <canvas id="chartBlockHeight" height="180"></canvas>
+      </div>
+      <div class="card">
+        <h3>Validator Block Production</h3>
+        <canvas id="chartValidatorBlocks" height="180"></canvas>
+      </div>
+    </div>
+    
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <h3>Token Distribution</h3>
+        <canvas id="chartTokenDist" height="180"></canvas>
+      </div>
+      <div class="card">
+        <h3>Carbon Credits by Status</h3>
+        <canvas id="chartCarbon" height="180"></canvas>
+      </div>
+    </div>
+    
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <h3>Green Validator Scores</h3>
+        <canvas id="chartGreenScores" height="180"></canvas>
+      </div>
+      <div class="card">
+        <h3>Reforestation Progress</h3>
+        <canvas id="chartReforestation" height="180"></canvas>
+      </div>
+    </div>
+    
+    <div class="card" style="margin-top:16px">
+      <h3>DEX Liquidity Pool Reserves</h3>
+      <canvas id="chartDexPools" height="200"></canvas>
+    </div>
+  </div>
+
   <!-- Trust Wallet Tab -->
   <div class="section" id="tab-trustwallet">
     <h2>Trust Wallet Integration</h2>
@@ -357,6 +402,7 @@ function showTab(name, el) {
   if (name === 'tx') loadMempool();
   if (name === 'wallet') loadWalletList();
   if (name === 'trustwallet') loadTrustWallet();
+  if (name === 'charts') loadCharts();
 }
 
 function toast(msg, ok = true) {
@@ -687,6 +733,239 @@ async function walletSend() {
   document.getElementById('wSendAmount').value = '';
   setTimeout(() => { loadWalletDetails(selectedWalletAddress); loadWalletTxs(selectedWalletAddress); loadWalletList(); }, 6000);
   loadStats();
+}
+
+// Charts Tab
+let charts = {};
+
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+const chartColors = {
+  green: '#00e676',
+  blue: '#2196f3',
+  orange: '#ff9800',
+  purple: '#9c27b0',
+  cyan: '#00bcd4',
+  red: '#ff4444',
+  yellow: '#ffd600',
+  pink: '#e91e63',
+  teal: '#009688',
+  lime: '#cddc39',
+};
+
+async function loadCharts() {
+  const [info, validators, eco, pools] = await Promise.all([
+    fetch(API + '/api/blockchain/info').then(r => r.json()),
+    fetch(API + '/api/validators').then(r => r.json()),
+    fetch(API + '/api/eco/impact').then(r => r.json()),
+    fetch(API + '/api/dex/pools').then(r => r.json()).catch(() => []),
+  ]);
+  
+  // Get last 10 blocks for block height chart
+  const height = info.height || 0;
+  const blockLabels = [];
+  const blockData = [];
+  const startBlock = Math.max(0, height - 19);
+  for (let i = startBlock; i <= height; i++) {
+    blockLabels.push('#' + i);
+    blockData.push(i);
+  }
+  
+  // 1. Block Height Chart
+  destroyChart('chartBlockHeight');
+  charts.chartBlockHeight = new Chart(document.getElementById('chartBlockHeight'), {
+    type: 'line',
+    data: {
+      labels: blockLabels,
+      datasets: [{
+        label: 'Block Height',
+        data: blockData,
+        borderColor: chartColors.green,
+        backgroundColor: 'rgba(0, 230, 118, 0.1)',
+        fill: true,
+        tension: 0.3,
+        borderWidth: 2,
+        pointRadius: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#6a7a8f', maxTicksLimit: 10 }, grid: { color: '#1a2845' } },
+        y: { ticks: { color: '#6a7a8f' }, grid: { color: '#1a2845' } },
+      }
+    }
+  });
+  
+  // 2. Validator Block Production (bar chart)
+  destroyChart('chartValidatorBlocks');
+  const valLabels = validators.map((v, i) => 'V' + (i + 1));
+  const valBlocks = validators.map(v => v.blocksProduced || 0);
+  charts.chartValidatorBlocks = new Chart(document.getElementById('chartValidatorBlocks'), {
+    type: 'bar',
+    data: {
+      labels: valLabels,
+      datasets: [{
+        label: 'Blocks Produced',
+        data: valBlocks,
+        backgroundColor: chartColors.green,
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#6a7a8f' }, grid: { display: false } },
+        y: { ticks: { color: '#6a7a8f' }, grid: { color: '#1a2845' } },
+      }
+    }
+  });
+  
+  // 3. Token Distribution (doughnut)
+  destroyChart('chartTokenDist');
+  const wallets = await fetch(API + '/api/wallets').then(r => r.json());
+  const walletLabels = wallets.map((w, i) => 'Wallet ' + (i + 1));
+  const walletBalances = wallets.map(w => w.balance || 0);
+  const walletStaked = wallets.map(w => w.staked || 0);
+  const colorList = [chartColors.green, chartColors.blue, chartColors.orange, chartColors.purple, chartColors.cyan, chartColors.yellow, chartColors.pink, chartColors.teal];
+  charts.chartTokenDist = new Chart(document.getElementById('chartTokenDist'), {
+    type: 'doughnut',
+    data: {
+      labels: walletLabels,
+      datasets: [{
+        data: walletBalances,
+        backgroundColor: colorList.slice(0, wallets.length),
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'right', labels: { color: '#6a7a8f', font: { size: 10 } } } }
+    }
+  });
+  
+  // 4. Carbon Credits by Status
+  destroyChart('chartCarbon');
+  const carbonCredits = (await fetch(API + '/api/eco/carbon-credits').then(r => r.json()).catch(() => []));
+  const statusCounts = {};
+  for (const cc of carbonCredits) {
+    statusCounts[cc.status] = (statusCounts[cc.status] || 0) + 1;
+  }
+  const statusLabels = Object.keys(statusCounts);
+  const statusData = Object.values(statusCounts);
+  charts.chartCarbon = new Chart(document.getElementById('chartCarbon'), {
+    type: 'doughnut',
+    data: {
+      labels: statusLabels.length ? statusLabels : ['No Data'],
+      datasets: [{
+        data: statusData.length ? statusData : [1],
+        backgroundColor: statusLabels.length ? statusLabels.map((s, i) => {
+          if (s === 'minted') return chartColors.green;
+          if (s === 'retired') return chartColors.blue;
+          if (s === 'sold') return chartColors.orange;
+          return colorList[i % colorList.length];
+        }) : ['#1a2845'],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'right', labels: { color: '#6a7a8f', font: { size: 10 } } } }
+    }
+  });
+  
+  // 5. Green Validator Scores
+  destroyChart('chartGreenScores');
+  const greenValidators = (await fetch(API + '/api/eco/green-scores').then(r => r.json()).catch(() => []));
+  const greenLabels = greenValidators.map((g, i) => 'V' + (i + 1) + ' (' + g.energySource + ')');
+  const greenScores = greenValidators.map(g => g.score || 0);
+  charts.chartGreenScores = new Chart(document.getElementById('chartGreenScores'), {
+    type: 'bar',
+    data: {
+      labels: greenLabels,
+      datasets: [{
+        label: 'Green Score',
+        data: greenScores,
+        backgroundColor: greenValidators.map((g, i) => {
+          const colors = { solar: chartColors.yellow, wind: chartColors.cyan, hydro: chartColors.blue, geothermal: chartColors.orange };
+          return colors[g.energySource] || colorList[i % colorList.length];
+        }),
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#6a7a8f', font: { size: 9 } }, grid: { display: false } },
+        y: { ticks: { color: '#6a7a8f' }, grid: { color: '#1a2845' } },
+      }
+    }
+  });
+  
+  // 6. Reforestation Progress
+  destroyChart('chartReforestation');
+  const reforest = (await fetch(API + '/api/eco/reforestation').then(r => r.json()).catch(() => []));
+  const reforestLabels = reforest.map(r => r.projectName || r.projectId?.slice(0, 12) || '?');
+  const reforestTrees = reforest.map(r => r.treesPlanted || 0);
+  charts.chartReforestation = new Chart(document.getElementById('chartReforestation'), {
+    type: 'bar',
+    data: {
+      labels: reforestLabels.length ? reforestLabels : ['No Projects Yet'],
+      datasets: [{
+        label: 'Trees Planted',
+        data: reforestTrees.length ? reforestTrees : [0],
+        backgroundColor: chartColors.green,
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#6a7a8f', font: { size: 9 } }, grid: { display: false } },
+        y: { ticks: { color: '#6a7a8f' }, grid: { color: '#1a2845' } },
+      }
+    }
+  });
+  
+  // 7. DEX Pool Reserves
+  destroyChart('chartDexPools');
+  const poolLabels = pools.map(p => p.tokenA + '/' + p.tokenB);
+  const poolReserveA = pools.map(p => p.reserveA || 0);
+  const poolReserveB = pools.map(p => p.reserveB || 0);
+  charts.chartDexPools = new Chart(document.getElementById('chartDexPools'), {
+    type: 'bar',
+    data: {
+      labels: poolLabels.length ? poolLabels : ['No Pools Yet'],
+      datasets: [
+        {
+          label: 'Reserve A',
+          data: poolReserveA.length ? poolReserveA : [0],
+          backgroundColor: chartColors.green,
+          borderWidth: 0,
+        },
+        {
+          label: 'Reserve B',
+          data: poolReserveB.length ? poolReserveB : [0],
+          backgroundColor: chartColors.blue,
+          borderWidth: 0,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#6a7a8f' } } },
+      scales: {
+        x: { ticks: { color: '#6a7a8f' }, grid: { display: false } },
+        y: { ticks: { color: '#6a7a8f' }, grid: { color: '#1a2845' } },
+      }
+    }
+  });
 }
 
 // Trust Wallet Tab

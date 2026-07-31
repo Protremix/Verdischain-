@@ -363,6 +363,10 @@ export class BlockchainAPI {
       res.json(this.eco.getTopGreenValidators(parseInt(req.query.n as string) || 10));
     });
 
+    this.app.get('/api/eco/green-scores', (req: Request, res: Response) => {
+      res.json(this.eco.getAllGreenScores());
+    });
+
     this.app.get('/api/eco/green/:address', (req: Request, res: Response) => {
       res.json(this.eco.getGreenScore(req.params.address) || { error: 'No green score found' });
     });

@@ -344,6 +344,9 @@ class BlockchainAPI {
         this.app.get('/api/eco/green/top', (req, res) => {
             res.json(this.eco.getTopGreenValidators(parseInt(req.query.n) || 10));
         });
+        this.app.get('/api/eco/green-scores', (req, res) => {
+            res.json(this.eco.getAllGreenScores());
+        });
         this.app.get('/api/eco/green/:address', (req, res) => {
             res.json(this.eco.getGreenScore(req.params.address) || { error: 'No green score found' });
         });

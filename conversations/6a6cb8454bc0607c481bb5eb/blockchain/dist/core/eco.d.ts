@@ -146,6 +146,10 @@ export declare class EcoSystem {
      */
     getTopGreenValidators(n: number): GreenScore[];
     /**
+     * Returns all green scores.
+     */
+    getAllGreenScores(): GreenScore[];
+    /**
      * Creates a new reforestation project tracking tree planting targets.
      */
     createReforestationProject(owner: string, name: string, location: {

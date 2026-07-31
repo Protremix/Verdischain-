@@ -433,6 +433,13 @@ export class EcoSystem {
     return list.slice(0, Math.max(0, n));
   }
 
+  /**
+   * Returns all green scores.
+   */
+  public getAllGreenScores(): GreenScore[] {
+    return Array.from(this.greenScores.values());
+  }
+
   // ==========================================
   // REFORESTATION VERIFICATION METHODS
   // ==========================================
