@@ -79,6 +79,86 @@ export class BlockchainAPI {
       });
     });
 
+    // Unified search (block number, block hash, tx hash, or address)
+    this.app.get('/api/explorer/search', (req: Request, res: Response) => {
+      const q = (req.query.q as string || '').trim();
+      if (!q) { res.status(400).json({ error: 'Query required' }); return; }
+      
+      // Try as block number
+      if (/^\d+$/.test(q)) {
+        const block = this.blockchain.getBlockByIndex(parseInt(q));
+        if (block) { res.json({ type: 'block', data: block }); return; }
+      }
+      
+      // Try as block hash
+      const blockByHash = this.blockchain.getBlockByHash(q);
+      if (blockByHash) { res.json({ type: 'block', data: blockByHash }); return; }
+      
+      // Try as transaction hash
+      const receipt = this.blockchain.getTransactionReceipt(q);
+      if (receipt && receipt.tx) {
+        res.json({ type: 'transaction', data: { ...receipt.tx, blockIndex: receipt.block?.header.index } });
+        return;
+      }
+      
+      // Try as wallet address (0x prefix or public key)
+      if (q.startsWith('0x') || q.startsWith('03') || q.startsWith('02')) {
+        const balance = this.blockchain.getTokenSystem().getBalance(q);
+        const wallet = this.walletManager.getAllWallets().find(w => w.address === q || w.publicKey === q);
+        const validator = this.blockchain.getConsensus().getAllValidatorsList().find(v => v.address === q);
+        
+        if (wallet || balance > 0 || validator) {
+          // Search transactions in blocks for this address
+          const chain = this.blockchain.getChain();
+          const txs: any[] = [];
+          for (const block of chain) {
+            for (const tx of block.transactions) {
+              if (tx.from === q || tx.to === q) {
+                txs.push({ ...tx, blockIndex: block.header.index, blockHash: block.hash });
+              }
+            }
+          }
+          
+          res.json({ 
+            type: 'address', 
+            data: { 
+              address: q, 
+              balance,
+              wallet: wallet ? { publicKey: wallet.publicKey, address: wallet.address } : null,
+              isValidator: !!validator,
+              validatorInfo: validator || null,
+              transactionCount: txs.length,
+              transactions: txs.slice(-20).reverse()
+            } 
+          });
+          return;
+        }
+      }
+      
+      res.status(404).json({ error: 'Not found' });
+    });
+
+    // Explorer stats
+    this.app.get('/api/explorer/stats', (req: Request, res: Response) => {
+      const chain = this.blockchain.getChain();
+      let totalTx = 0;
+      for (const b of chain) totalTx += b.transactions.length;
+      
+      res.json({
+        blockHeight: this.blockchain.getChainHeight(),
+        totalBlocks: chain.length,
+        totalTransactions: totalTx,
+        totalSupply: this.blockchain.getTokenSystem().getTotalSupply(),
+        maxSupply: this.blockchain.getTokenSystem().getMaxSupply(),
+        validators: this.blockchain.getConsensus().getAllValidatorsList().length,
+        mempoolSize: this.blockchain.getMempool().size(),
+        activeWallets: this.walletManager.getAllWallets().length,
+        dexPools: this.dex.getAllPools().length,
+        contracts: this.contractManager.getAllContracts().length,
+        chainValid: this.blockchain.isChainValid(),
+      });
+    });
+
     // Blockchain Info
     this.app.get('/api/blockchain/info', (req: Request, res: Response) => {
       const state = this.blockchain.getState();

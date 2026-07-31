@@ -100,6 +100,7 @@ td.mono{font-size:0.75rem}
     <div class="tab" onclick="showTab('charts',this)">📊 Charts</div>
     <div class="tab" onclick="showTab('token',this)">💎 Token</div>
     <div class="tab" onclick="showTab('contracts',this)">📜 Contracts</div>
+    <div class="tab" onclick="showTab('explorer',this)">🔍 Explorer</div>
   </div>
   <div style="padding:20px">
 
@@ -489,6 +490,47 @@ td.mono{font-size:0.75rem}
     </div>
   </div>
 
+  <!-- Block Explorer Tab -->
+  <div class="section" id="tab-explorer">
+    <h2>🔍 Block Explorer</h2>
+    
+    <!-- Search bar -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;gap:8px">
+        <input type="text" id="explorerSearch" placeholder="Search by block number, block hash, transaction ID, or wallet address..." 
+          style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:12px;font-family:monospace"
+          onkeypress="if(event.key==='Enter')explorerSearch()">
+        <button onclick="explorerSearch()" style="background:var(--accent);color:#000;border:none;border-radius:8px;padding:12px 24px;font-weight:600;cursor:pointer">Search</button>
+      </div>
+    </div>
+
+    <!-- Chain stats -->
+    <div class="grid grid-4" style="margin-bottom:16px" id="explorerStats"></div>
+
+    <!-- Search results -->
+    <div id="explorerResults" style="display:none">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 id="explorerResultTitle">Search Results</h3>
+          <button onclick="closeExplorerResults()" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 12px;cursor:pointer">Clear</button>
+        </div>
+        <div id="explorerResultContent"></div>
+      </div>
+    </div>
+
+    <!-- Recent blocks -->
+    <div class="card" style="margin-top:16px">
+      <h3>📋 Recent Blocks</h3>
+      <div id="explorerBlocks" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+
+    <!-- Mempool -->
+    <div class="card" style="margin-top:16px">
+      <h3>⏳ Mempool <span id="mempoolBadge" style="font-size:0.75rem;color:var(--muted)">(0 pending)</span></h3>
+      <div id="explorerMempool" style="display:flex;flex-direction:column;gap:4px"></div>
+    </div>
+  </div>
+
   <!-- Trust Wallet Tab -->
   <div class="section" id="tab-trustwallet">
     <h2>Trust Wallet Integration</h2>
@@ -613,6 +655,7 @@ function showTab(name, el) {
   if (name === 'eco') loadEco();
   if (name === 'dex') loadPools();
   if (name === 'contracts') loadContracts();
+  if (name === 'explorer') loadExplorer();
   if (name === 'tx') loadMempool();
   if (name === 'wallet') loadWalletList();
   if (name === 'trustwallet') loadTrustWallet();
@@ -620,6 +663,7 @@ function showTab(name, el) {
   if (name === 'trustwallet') updateGuideUrls();
   if (name === 'token') loadTokenMarket();
   if (name === 'contracts') loadContracts();
+  if (name === 'explorer') loadExplorer();
 }
 
 function toast(msg, ok = true) {
@@ -1084,6 +1128,187 @@ async function connectedSwap() {
   } catch (e) {
     document.getElementById('connectedSwapResult').textContent = '❌ Error: ' + e.message;
   }
+}
+
+// Block Explorer
+async function loadExplorer() {
+  // Load stats
+  try {
+    const stats = await fetch(API + '/api/explorer/stats').then(r => r.json());
+    const statsHtml = [
+      { label: 'Block Height', value: stats.blockHeight, icon: '⛓️' },
+      { label: 'Total Blocks', value: stats.totalBlocks, icon: '📦' },
+      { label: 'Total TXs', value: stats.totalTransactions, icon: '💸' },
+      { label: 'Supply', value: (stats.totalSupply / 1e9).toFixed(1) + 'B', icon: '💰' },
+      { label: 'Validators', value: stats.validators, icon: '🔑' },
+      { label: 'Wallets', value: stats.activeWallets, icon: '👛' },
+      { label: 'DEX Pools', value: stats.dexPools, icon: '💱' },
+      { label: 'Contracts', value: stats.contracts, icon: '📜' },
+    ].map(s => `
+      <div style="padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border);text-align:center">
+        <div style="font-size:1.3rem">${s.icon}</div>
+        <div style="font-size:1.1rem;font-weight:600;color:var(--accent)">${s.value}</div>
+        <div style="font-size:0.75rem;color:var(--muted)">${s.label}</div>
+      </div>
+    `).join('');
+    document.getElementById('explorerStats').innerHTML = statsHtml;
+  } catch (e) { console.error('Explorer stats error:', e); }
+
+  // Load recent blocks
+  try {
+    const blocks = await fetch(API + '/api/blockchain/blocks?limit=15').then(r => r.json());
+    const blocksHtml = blocks.map(b => {
+      const time = new Date(b.header.timestamp).toLocaleTimeString();
+      const txCount = b.transactions.length;
+      const valShort = b.header.validator.slice(0, 16) + '...';
+      return `
+        <div onclick="explorerShowBlock(${b.header.index})" 
+          style="display:grid;grid-template-columns:60px 1fr 80px 120px 100px;gap:8px;padding:10px;background:var(--bg);border-radius:6px;cursor:pointer;border:1px solid transparent"
+          onmouseover="this.style.borderColor='var(--accent)'"
+          onmouseout="this.style.borderColor='transparent'">
+          <div style="font-weight:600;color:var(--accent)">#${b.header.index}</div>
+          <div class="mono" style="font-size:0.8rem;color:var(--muted)">${b.hash.slice(0,24)}...</div>
+          <div style="font-size:0.85rem">${txCount} tx</div>
+          <div class="mono" style="font-size:0.75rem;color:var(--muted)">${valShort}</div>
+          <div style="font-size:0.8rem;color:var(--muted)">${time}</div>
+        </div>
+      `;
+    }).join('');
+    document.getElementById('explorerBlocks').innerHTML = blocksHtml;
+  } catch (e) { console.error('Blocks error:', e); }
+
+  // Load mempool
+  try {
+    const mempool = await fetch(API + '/api/mempool').then(r => r.json());
+    document.getElementById('mempoolBadge').textContent = '(' + mempool.length + ' pending)';
+    if (mempool.length === 0) {
+      document.getElementById('explorerMempool').innerHTML = '<div style="color:var(--muted);padding:8px;text-align:center">No pending transactions</div>';
+    } else {
+      document.getElementById('explorerMempool').innerHTML = mempool.map(tx => `
+        <div style="display:grid;grid-template-columns:1fr 1fr 80px 80px;gap:8px;padding:8px;background:var(--bg);border-radius:6px;font-size:0.85rem">
+          <div class="mono" style="color:var(--muted)">${tx.id.slice(0,20)}...</div>
+          <div class="mono">${tx.from.slice(0,16)}... → ${tx.to.slice(0,16)}...</div>
+          <div style="color:var(--accent)">${tx.amount} VRS</div>
+          <div style="color:var(--muted)">Fee: ${tx.fee}</div>
+        </div>
+      `).join('');
+    }
+  } catch (e) { console.error('Mempool error:', e); }
+}
+
+async function explorerSearch() {
+  const q = document.getElementById('explorerSearch').value.trim();
+  if (!q) return;
+  
+  document.getElementById('explorerResults').style.display = 'block';
+  document.getElementById('explorerResultTitle').textContent = 'Searching...';
+  document.getElementById('explorerResultContent').innerHTML = '<div style="color:var(--muted);padding:20px">Searching for "' + q + '"...</div>';
+  
+  try {
+    const res = await fetch(API + '/api/explorer/search?q=' + encodeURIComponent(q));
+    const result = await res.json();
+    
+    if (result.error) {
+      document.getElementById('explorerResultTitle').textContent = '❌ Not Found';
+      document.getElementById('explorerResultContent').innerHTML = '<div style="color:var(--muted);padding:20px">No results found for "' + q + '". Try a block number, block hash, transaction ID, or wallet address.</div>';
+      return;
+    }
+    
+    if (result.type === 'block') {
+      const b = result.data;
+      document.getElementById('explorerResultTitle').textContent = '📦 Block #' + b.header.index;
+      document.getElementById('explorerResultContent').innerHTML = `
+        <table style="width:100%;border-collapse:collapse">
+          <tr><td style="padding:8px;color:var(--muted);width:140px">Block Height</td><td style="padding:8px;font-weight:600;color:var(--accent)">${b.header.index}</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Block Hash</td><td class="mono" style="padding:8px;font-size:0.85rem">${b.hash}</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Previous Hash</td><td class="mono" style="padding:8px;font-size:0.85rem">${b.header.previousHash}</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Timestamp</td><td style="padding:8px">${new Date(b.header.timestamp).toLocaleString()}</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Merkle Root</td><td class="mono" style="padding:8px;font-size:0.85rem">${b.header.merkleRoot}</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Validator</td><td class="mono" style="padding:8px;font-size:0.85rem">${b.header.validator}</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Signature</td><td class="mono" style="padding:8px;font-size:0.8rem">${b.header.validatorSignature}</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Transactions</td><td style="padding:8px">${b.transactions.length} transaction(s)</td></tr>
+        </table>
+        ${b.transactions.length > 0 ? `
+          <h4 style="margin-top:16px">Transactions in this block</h4>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            ${b.transactions.map(tx => `
+              <div onclick="explorerSearchTx('${tx.id}')" style="display:grid;grid-template-columns:1fr 1fr 80px 80px;gap:8px;padding:8px;background:var(--bg);border-radius:6px;cursor:pointer;font-size:0.85rem">
+                <div class="mono" style="color:var(--muted)">${tx.id.slice(0,20)}...</div>
+                <div class="mono">${tx.from.slice(0,12)}... → ${tx.to.slice(0,12)}...</div>
+                <div style="color:var(--accent)">${tx.amount} VRS</div>
+                <div style="color:var(--muted)">Fee: ${tx.fee}</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : '<div style="color:var(--muted);padding:12px">No transactions in this block</div>'}
+      `;
+    } else if (result.type === 'transaction') {
+      const tx = result.data;
+      document.getElementById('explorerResultTitle').textContent = '💸 Transaction';
+      document.getElementById('explorerResultContent').innerHTML = `
+        <table style="width:100%;border-collapse:collapse">
+          <tr><td style="padding:8px;color:var(--muted);width:140px">TX ID</td><td class="mono" style="padding:8px;font-size:0.85rem">${tx.id}</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">From</td><td class="mono" style="padding:8px;font-size:0.85rem">${tx.from}</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">To</td><td class="mono" style="padding:8px;font-size:0.85rem">${tx.to}</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Amount</td><td style="padding:8px;font-weight:600;color:var(--accent)">${tx.amount} VRS</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Fee</td><td style="padding:8px">${tx.fee} VRS</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Block</td><td style="padding:8px"><a onclick="explorerShowBlock(${tx.blockIndex})" style="color:var(--accent);cursor:pointer">#${tx.blockIndex || 'Pending'}</a></td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Timestamp</td><td style="padding:8px">${new Date(tx.timestamp).toLocaleString()}</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Nonce</td><td class="mono" style="padding:8px;font-size:0.85rem">${tx.nonce}</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Signature</td><td class="mono" style="padding:8px;font-size:0.8rem">${tx.signature}</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Public Key</td><td class="mono" style="padding:8px;font-size:0.8rem">${tx.publicKey}</td></tr>
+        </table>
+      `;
+    } else if (result.type === 'address') {
+      const a = result.data;
+      document.getElementById('explorerResultTitle').textContent = '👤 Address';
+      document.getElementById('explorerResultContent').innerHTML = `
+        <table style="width:100%;border-collapse:collapse">
+          <tr><td style="padding:8px;color:var(--muted);width:140px">Address</td><td class="mono" style="padding:8px;font-size:0.85rem;color:var(--accent)">${a.address}</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Balance</td><td style="padding:8px;font-weight:600;color:var(--accent)">${a.balance.toLocaleString()} VRS</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Is Validator</td><td style="padding:8px">${a.isValidator ? '✅ Yes' : 'No'}</td></tr>
+          ${a.validatorInfo ? `
+            <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Blocks Produced</td><td style="padding:8px">${a.validatorInfo.blocksProduced}</td></tr>
+            <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Total Rewards</td><td style="padding:8px">${a.validatorInfo.totalRewards} VRS</td></tr>
+            <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Votes</td><td style="padding:8px">${a.validatorInfo.votes.toLocaleString()}</td></tr>
+            <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Is Producer</td><td style="padding:8px">${a.validatorInfo.isProducer ? '✅ Active' : 'Inactive'}</td></tr>
+          ` : ''}
+          <tr style="border-top:1px solid var(--border)"><td style="padding:8px;color:var(--muted)">Transactions</td><td style="padding:8px">${a.transactionCount} total</td></tr>
+        </table>
+        ${a.transactions && a.transactions.length > 0 ? `
+          <h4 style="margin-top:16px">Recent Transactions</h4>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            ${a.transactions.map(tx => `
+              <div onclick="explorerSearchTx('${tx.id}')" style="display:grid;grid-template-columns:60px 1fr 1fr 80px;gap:8px;padding:8px;background:var(--bg);border-radius:6px;cursor:pointer;font-size:0.85rem">
+                <div style="color:var(--muted)">#${tx.blockIndex}</div>
+                <div class="mono" style="color:var(--muted)">${tx.id.slice(0,16)}...</div>
+                <div class="mono">${tx.from === a.address ? 'OUT → ' + tx.to.slice(0,12) : 'IN ← ' + tx.from.slice(0,12)}...</div>
+                <div style="color:${tx.from === a.address ? 'var(--destructive)' : 'var(--accent)'}">${tx.from === a.address ? '-' : '+'}${tx.amount} VRS</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : '<div style="color:var(--muted);padding:12px">No transactions found for this address</div>'}
+      `;
+    }
+  } catch (e) {
+    document.getElementById('explorerResultTitle').textContent = '❌ Error';
+    document.getElementById('explorerResultContent').innerHTML = '<div style="color:var(--destructive);padding:20px">Error: ' + e.message + '</div>';
+  }
+}
+
+function explorerShowBlock(index) {
+  document.getElementById('explorerSearch').value = index;
+  explorerSearch();
+}
+
+async function explorerSearchTx(txId) {
+  document.getElementById('explorerSearch').value = txId;
+  explorerSearch();
+}
+
+function closeExplorerResults() {
+  document.getElementById('explorerResults').style.display = 'none';
+  document.getElementById('explorerSearch').value = '';
 }
 
 // Charts Tab
