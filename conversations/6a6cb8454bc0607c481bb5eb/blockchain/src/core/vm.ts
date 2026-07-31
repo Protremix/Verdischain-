@@ -84,7 +84,8 @@ export class StackVM {
    * Loads value from contract persistent state.
    */
   public load(key: string): any {
-    return this.state.get(key);
+    const val = this.state.get(key);
+    return val === undefined ? 0 : val;
   }
 
   /**

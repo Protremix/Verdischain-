@@ -73,7 +73,8 @@ class StackVM {
      * Loads value from contract persistent state.
      */
     load(key) {
-        return this.state.get(key);
+        const val = this.state.get(key);
+        return val === undefined ? 0 : val;
     }
     /**
      * Stores value in contract persistent state.
