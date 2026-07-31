@@ -24,7 +24,7 @@ exports.dex = dex;
 const ecoSystem = new eco_1.EcoSystem();
 exports.ecoSystem = ecoSystem;
 // === API Server ===
-const PORT = 3000;
+const PORT = 3001;
 const apiServer = new server_1.BlockchainAPI(blockchain, walletManager, contractManager);
 exports.apiServer = apiServer;
 apiServer.setDEX(dex);
