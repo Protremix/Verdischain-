@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RojsChain - DPoS Blockchain Network Dashboard</title>
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --card-bg: #131829;
+      --card-header: #1a2035;
+      --card-hover: #182038;
+      --border: #1e2640;
+      --border-focus: #00d4ff;
+      --text: #e0e6ed;
+      --text-muted: #8a99ad;
+      --accent: #00d4ff;
+      --accent-hover: #00b8e6;
+      --accent-glow: rgba(0, 212, 255, 0.2);
+      --positive: #00ff88;
+      --positive-glow: rgba(0, 255, 136, 0.2);
+      --negative: #ff4444;
+      --negative-glow: rgba(255, 68, 68, 0.2);
+      --warning: #ffbb00;
+      --warning-glow: rgba(255, 187, 0, 0.2);
+      --input-bg: #0c101d;
+      --font-main: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-main);
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 24px;
+      min-height: 100vh;
+    }
+
+    /* Container & Grids */
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 24px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 28px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--accent), #0066ff);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .brand-icon svg {
+      width: 24px;
+      height: 24px;
+      fill: #0a0e1a;
+    }
+
+    .brand-text h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-text p {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .api-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--warning);
+      box-shadow: 0 0 8px var(--warning);
+    }
+
+    .status-dot.online {
+      background-color: var(--positive);
+      box-shadow: 0 0 8px var(--positive);
+    }
+
+    .status-dot.offline {
+      background-color: var(--negative);
+      box-shadow: 0 0 8px var(--negative);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      transition: border-color 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card:hover {
+      border-color: rgba(0, 212, 255, 0.3);
+    }
+
+    .card-header {
+      background: var(--card-header);
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title svg {
+      width: 18px;
+      height: 18px;
+      fill: var(--accent);
+    }
+
+    .card-body {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Network Stats Bar */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--accent);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background: rgba(0, 212, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .stat-icon svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--accent);
+    }
+
+    .stat-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+      font-family: var(--font-mono);
+      margin-top: 2px;
+    }
+
+    /* Forms & Inputs */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    input, select, textarea {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--font-main);
+      font-size: 14px;
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    input.code, textarea.code {
+      font-family: var(--font-mono);
+    }
+
+    /* Buttons */
+    .btn {
+      background: linear-gradient(135deg, var(--accent), #00a0e6);
+      color: #0a0e1a;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px var(--accent-glow);
+      filter: brightness(1.1);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: none;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, var(--negative), #cc0000);
+      color: #ffffff;
+    }
+
+    .btn-danger:hover {
+      box-shadow: 0 4px 12px var(--negative-glow);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+
+    .btn-block {
+      width: 100%;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Tables */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background: var(--card-header);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr {
+      transition: background-color 0.15s ease;
+    }
+
+    tbody tr:hover {
+      background-color: var(--card-hover);
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    .copyable {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+
+    .copyable:hover {
+      color: var(--accent);
+    }
+
+    /* Warning Box */
+    .warning-box {
+      background: rgba(255, 187, 0, 0.1);
+      border: 1px solid var(--warning);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: #ffe082;
+      font-size: 13px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .warning-box svg {
+      width: 20px;
+      height: 20px;
+      fill: var(--warning);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Result Info Box */
+    .info-display {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      word-break: break-all;
+    }
+
+    .info-display-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .info-display-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .info-label {
+      color: var(--text-muted);
+      font-family: var(--font-main);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-accent {
+      background: rgba(0, 212, 255, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+    }
+
+    .badge-positive {
+      background: rgba(0, 255, 136, 0.15);
+      color: var(--positive);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+
+    .badge-negative {
+      background: rgba(255, 68, 68, 0.15);
+      color: var(--negative);
+      border: 1px solid rgba(255, 68, 68, 0.3);
+    }
+
+    /* Expandable Blocks */
+    .block-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+
+    .block-item:hover {
+      border-color: rgba(0, 212, 255, 0.4);
+    }
+
+    .block-header-row {
+      background: var(--card-header);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .block-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .block-details {
+      padding: 16px;
+      background: var(--input-bg);
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+
+    .block-details.active {
+      display: block;
+    }
+
+    /* Toasts */
+    #toast-container {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 380px;
+    }
+
+    .toast {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 14px 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      color: var(--text);
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .toast-success {
+      border-left-color: var(--positive);
+    }
+
+    .toast-error {
+      border-left-color: var(--negative);
+    }
+
+    .toast-content {
+      flex: 1;
+    }
+
+    .toast-title {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+
+    .toast-msg {
+      font-size: 12px;
+      color: var(--text-muted);
+      word-break: break-word;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 768px) {
+      body {
+        padding: 12px;
+      }
+
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .grid-2, .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .form-row {
+        flex-direction: column;
+      }
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="toast-container"></div>
+
+  <div class="dashboard-container">
+
+    <!-- Section 1: Header -->
+    <header>
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M10.59 13.41c.41.39.41 1.03 0 1.42-.39.39-1.03.39-1.42 0a5.003 5.003 0 0 1 0-7.07l3.54-3.54a5.003 5.003 0 0 1 7.07 0 5.003 5.003 0 0 1 0 7.07l-1.49 1.49c.01-.82-.12-1.64-.4-2.42l.47-.48a3.001 3.001 0 0 0 0-4.24 3.001 3.001 0 0 0-4.24 0l-3.53 3.53a3.001 3.001 0 0 0 0 4.24zm2.82-2.82c-.41-.39-.41-1.03 0-1.42.39-.39 1.03-.39 1.42 0a5.003 5.003 0 0 1 0 7.07l-3.54 3.54a5.003 5.003 0 0 1-7.07 0 5.003 5.003 0 0 1 0-7.07l1.49-1.49c-.01.82.12 1.64.4 2.42l-.47.48a3.001 3.001 0 0 0 0 4.24 3.001 3.001 0 0 0 4.24 0l3.53-3.53a3.001 3.001 0 0 0 0-4.24z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>RojsChain</h1>
+          <p>DPoS Blockchain Network</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="api-status">
+          <span class="status-dot" id="status-dot"></span>
+          <span id="status-text" class="mono">Connecting to http://localhost:3000/api...</span>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="manualRefresh()">
+          <svg style="width:14px;height:14px;fill:currentColor;" viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+          Refresh
+        </button>
+      </div>
+    </header>
+
+    <!-- Section 2: Network Stats Bar -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Block Height</span>
+          <span class="stat-value" id="stat-block-height">--</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm0-4h-2V7h2v7z"/></svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Total Supply</span>
+          <span class="stat-value" id="stat-total-supply">--</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Active Validators</span>
+          <span class="stat-value" id="stat-active-validators">--</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.11 0-1.99.89-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V10c0-1.11-.9-2-2-2zm0 11H5v-7h14v7zm-9-9h4v2h-4z"/></svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Pending Tx (Mempool)</span>
+          <span class="stat-value" id="stat-pending-tx">--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 1: Wallet & Send Tx -->
+    <div class="grid-2">
+      <!-- Section 3: Wallet Section -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+            Wallet Management
+          </div>
+          <button class="btn btn-sm" id="btn-create-wallet" onclick="createWallet()">
+            Create Wallet
+          </button>
+        </div>
+        <div class="card-body">
+          <!-- Newly Created Wallet Details Alert Box (hidden initially) -->
+          <div id="wallet-created-box" style="display:none;" class="warning-box">
+            <svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+            <div style="width:100%;">
+              <strong style="display:block; margin-bottom:4px;">New Wallet Generated! Save Private Key!</strong>
+              <div style="font-size:12px; margin-bottom:8px;">Warning: Save your private key securely. It cannot be recovered.</div>
+              <div class="info-display">
+                <div class="info-display-item">
+                  <span class="info-label">Address:</span>
+                  <span id="new-wallet-address" class="copyable" onclick="copyText(this.innerText)">-</span>
+                </div>
+                <div class="info-display-item">
+                  <span class="info-label">Public Key:</span>
+                  <span id="new-wallet-pubkey" class="copyable" onclick="copyText(this.innerText)">-</span>
+                </div>
+                <div class="info-display-item">
+                  <span class="info-label">Private Key:</span>
+                  <span id="new-wallet-privkey" class="copyable" style="color:var(--warning);" onclick="copyText(this.innerText)">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Balance Lookup -->
+          <div class="form-group">
+            <label for="lookup-address">Check Wallet Balance & Staked Tokens</label>
+            <div class="form-row">
+              <input type="text" id="lookup-address" class="code" placeholder="Enter Wallet Address (0x...)">
+              <button class="btn btn-secondary" onclick="checkBalance()">Fetch</button>
+            </div>
+          </div>
+
+          <!-- Balance Displays -->
+          <div class="form-row">
+            <div class="stat-card" style="flex:1;">
+              <div class="stat-info">
+                <span class="stat-label">Liquid Balance</span>
+                <span class="stat-value" id="wallet-balance-val">0 ROJS</span>
+              </div>
+            </div>
+            <div class="stat-card" style="flex:1;">
+              <div class="stat-info">
+                <span class="stat-label">Staked Tokens</span>
+                <span class="stat-value" id="wallet-staked-val">0 ROJS</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: Send Transaction Form -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            Send Transaction
+          </div>
+        </div>
+        <div class="card-body">
+          <form id="send-tx-form" onsubmit="handleSendTx(event)">
+            <div class="form-group">
+              <label for="tx-privkey">Sender Private Key</label>
+              <input type="password" id="tx-privkey" class="code" placeholder="Enter Private Key to sign transaction" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="tx-from">From Address</label>
+                <input type="text" id="tx-from" class="code" placeholder="0x..." required>
+              </div>
+              <div class="form-group">
+                <label for="tx-to">To Address</label>
+                <input type="text" id="tx-to" class="code" placeholder="0x..." required>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="tx-amount">Amount (ROJS)</label>
+                <input type="number" step="any" id="tx-amount" min="0.000001" placeholder="0.00" required>
+              </div>
+              <div class="form-group">
+                <label for="tx-fee">Fee (ROJS)</label>
+                <input type="number" step="any" id="tx-fee" min="0" value="0.01" required>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-block" id="btn-send-tx">Send Transaction</button>
+          </form>
+          <div id="tx-result-box" style="display:none;" class="info-display"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Validators & Staking & Block Producer -->
+    <div class="grid-3">
+      <!-- Section 5: Validators -->
+      <div class="card" style="grid-column: span 2;">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+            Active Validators & DPoS Governance
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Validator Address</th>
+                  <th>Votes</th>
+                  <th>Blocks Produced</th>
+                  <th>Total Rewards</th>
+                </tr>
+              </thead>
+              <tbody id="validators-tbody">
+                <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Loading validators...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="grid-2" style="margin-top: 16px;">
+            <!-- Register Form -->
+            <form onsubmit="handleRegisterValidator(event)" style="background:var(--input-bg); padding:14px; border-radius:8px; border:1px solid var(--border);">
+              <strong style="display:block; margin-bottom:8px; color:var(--accent);">Register as Validator</strong>
+              <div class="form-group" style="margin-bottom:10px;">
+                <label for="reg-val-pubkey">Public Key</label>
+                <input type="text" id="reg-val-pubkey" class="code" placeholder="Validator Public Key" required>
+              </div>
+              <button type="submit" class="btn btn-sm btn-block" id="btn-reg-val">Register Node</button>
+            </form>
+
+            <!-- Vote Form -->
+            <form onsubmit="handleVoteValidator(event)" style="background:var(--input-bg); padding:14px; border-radius:8px; border:1px solid var(--border);">
+              <strong style="display:block; margin-bottom:8px; color:var(--accent);">Vote for Validator</strong>
+              <div class="form-group" style="margin-bottom:6px;">
+                <input type="password" id="vote-privkey" class="code" placeholder="Voter Private Key" required>
+              </div>
+              <div class="form-row" style="margin-bottom:6px;">
+                <input type="text" id="vote-voter" class="code" placeholder="Voter Address" required>
+                <input type="text" id="vote-target" class="code" placeholder="Validator Address" required>
+              </div>
+              <div class="form-row" style="margin-bottom:10px;">
+                <input type="number" id="vote-amount" min="1" placeholder="Vote Amount" required>
+                <button type="submit" class="btn btn-sm" id="btn-vote-val" style="width:100px;">Vote</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 6 & 7: Staking & Block Producer Column -->
+      <div style="display:flex; flex-direction:column; gap:24px;">
+        <!-- Section 6: Staking Section -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+              Staking Operations
+            </div>
+          </div>
+          <div class="card-body">
+            <form onsubmit="handleStakingAction(event)">
+              <div class="form-group" style="margin-bottom:10px;">
+                <label for="stake-privkey">Private Key</label>
+                <input type="password" id="stake-privkey" class="code" placeholder="Your Private Key" required>
+              </div>
+              <div class="form-group" style="margin-bottom:10px;">
+                <label for="stake-address">Wallet Address</label>
+                <input type="text" id="stake-address" class="code" placeholder="0x..." required>
+              </div>
+              <div class="form-row" style="margin-bottom:12px;">
+                <div class="form-group">
+                  <label for="stake-amount">Amount</label>
+                  <input type="number" step="any" id="stake-amount" min="0.001" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                  <label for="stake-action">Action</label>
+                  <select id="stake-action">
+                    <option value="stake">Stake</option>
+                    <option value="unstake">Unstake</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-block" id="btn-staking">Execute Staking Action</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Section 7: Block Producer -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24"><path d="M12 2l-5.5 9h11zM12 22l5.5-9h-11z"/></svg>
+              Block Producer
+            </div>
+          </div>
+          <div class="card-body">
+            <form onsubmit="handleProduceBlock(event)">
+              <div class="form-group" style="margin-bottom:8px;">
+                <label for="prod-privkey">Validator Private Key</label>
+                <input type="password" id="prod-privkey" class="code" placeholder="Validator Private Key" required>
+              </div>
+              <div class="form-group" style="margin-bottom:12px;">
+                <label for="prod-pubkey">Validator Public Key</label>
+                <input type="text" id="prod-pubkey" class="code" placeholder="Validator Public Key" required>
+              </div>
+              <button type="submit" class="btn btn-block" id="btn-produce-block">Produce Block</button>
+            </form>
+            <div id="produce-block-result" style="display:none;" class="info-display"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 8: Blockchain Explorer -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          Blockchain Explorer (Recent Blocks)
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="fetchBlocks()">Refresh Explorer</button>
+      </div>
+      <div class="card-body">
+        <div id="blocks-container">
+          <div style="text-align:center; padding:20px; color:var(--text-muted);">Loading recent blocks...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 9: Smart Contracts -->
+    <div class="grid-2">
+      <!-- Deploy & Execute Forms -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
+            Smart Contract Engine
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Deploy Contract -->
+          <form onsubmit="handleDeployContract(event)" style="border-bottom:1px solid var(--border); padding-bottom:16px;">
+            <strong style="display:block; margin-bottom:10px; color:var(--accent);">Deploy Smart Contract</strong>
+            <div class="form-group" style="margin-bottom:8px;">
+              <input type="text" id="contract-name" placeholder="Contract Name (e.g. TokenVault)" required>
+            </div>
+            <div class="form-group" style="margin-bottom:8px;">
+              <textarea id="contract-source" class="code" placeholder="Source Code (e.g., function main() { return 'Hello RojsChain'; })" required></textarea>
+            </div>
+            <div class="form-row" style="margin-bottom:10px;">
+              <input type="text" id="contract-deployer-addr" class="code" placeholder="Deployer Address" required>
+              <input type="password" id="contract-deployer-key" class="code" placeholder="Private Key" required>
+            </div>
+            <button type="submit" class="btn btn-sm btn-block" id="btn-deploy-contract">Deploy Contract</button>
+          </form>
+
+          <!-- Execute Contract -->
+          <form onsubmit="handleExecuteContract(event)">
+            <strong style="display:block; margin-bottom:10px; color:var(--accent);">Execute Smart Contract</strong>
+            <div class="form-group" style="margin-bottom:8px;">
+              <input type="text" id="exec-contract-id" class="code" placeholder="Contract ID / Address" required>
+            </div>
+            <div class="form-group" style="margin-bottom:8px;">
+              <input type="text" id="exec-contract-input" class="code" placeholder="Input parameters (JSON string or call string)" required>
+            </div>
+            <div class="form-row" style="margin-bottom:10px;">
+              <input type="text" id="exec-sender-addr" class="code" placeholder="Sender Address" required>
+              <input type="password" id="exec-sender-key" class="code" placeholder="Private Key" required>
+            </div>
+            <button type="submit" class="btn btn-sm btn-block" id="btn-exec-contract">Execute Contract</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Deployed Contracts List -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+            Deployed Contracts
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="fetchContracts()">Refresh</button>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Contract ID</th>
+                  <th>Name</th>
+                  <th>Owner</th>
+                </tr>
+              </thead>
+              <tbody id="contracts-tbody">
+                <tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Loading contracts...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Configuration
+    const API_BASE = 'http://localhost:3000/api';
+    let isOnline = false;
+
+    // Toast Notification System
+    function showToast(title, message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      
+      const content = document.createElement('div');
+      content.className = 'toast-content';
+      
+      const titleElem = document.createElement('div');
+      titleElem.className = 'toast-title';
+      titleElem.textContent = title;
+      
+      const msgElem = document.createElement('div');
+      msgElem.className = 'toast-msg';
+      msgElem.textContent = message;
+      
+      content.appendChild(titleElem);
+      content.appendChild(msgElem);
+      toast.appendChild(content);
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // Helper Utilities
+    function formatNumber(val) {
+      if (val === undefined || val === null || isNaN(val)) return '0';
+      return Number(val).toLocaleString();
+    }
+
+    function truncateHash(str, head = 8, tail = 6) {
+      if (!str) return '';
+      if (str.length <= head + tail) return str;
+      return `${str.substring(0, head)}...${str.substring(str.length - tail)}`;
+    }
+
+    function formatDate(ts) {
+      if (!ts) return '-';
+      const date = new Date(ts);
+      return isNaN(date.getTime()) ? String(ts) : date.toLocaleString();
+    }
+
+    function copyText(text) {
+      if (!text || text === '-') return;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Copied', 'Text copied to clipboard!', 'success');
+      }).catch(() => {
+        showToast('Error', 'Failed to copy to clipboard', 'error');
+      });
+    }
+
+    function updateApiStatus(connected, message) {
+      isOnline = connected;
+      const dot = document.getElementById('status-dot');
+      const text = document.getElementById('status-text');
+      
+      if (connected) {
+        dot.className = 'status-dot online';
+        text.textContent = message || `Online (${API_BASE})`;
+      } else {
+        dot.className = 'status-dot offline';
+        text.textContent = message || `Offline / Simulated (${API_BASE})`;
+      }
+    }
+
+    // API Helper with fallback simulation if backend is unavailable
+    async function apiRequest(endpoint, options = {}) {
+      const url = `${API_BASE}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
+      try {
+        const response = await fetch(url, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(options.headers || {})
+          },
+          ...options
+        });
+        
+        updateApiStatus(true);
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || data.message || `HTTP ${response.status}`);
+        }
+        return data;
+      } catch (err) {
+        console.warn(`API call to ${url} failed:`, err.message);
+        
+        // If it's a server returned error response from json() handling
+        if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError')) {
+          throw err;
+        }
+
+        updateApiStatus(false, `Offline - Live REST API unreachable`);
+        return handleOfflineSimulation(endpoint, options);
+      }
+    }
+
+    // Offline Simulation Data Generator (ensures UI is interactive even without live node)
+    const mockStore = {
+      height: 10485,
+      totalSupply: 100000000,
+      validators: [
+        { address: '0x10f9188a183419df9b3a9c7b', votes: 125000, blocksProduced: 3410, totalRewards: 17050 },
+        { address: '0x21a8123c509121be84d8721c', votes: 98000, blocksProduced: 2890, totalRewards: 14450 },
+        { address: '0x32b7194f10a8837c42f012aa', votes: 76500, blocksProduced: 2150, totalRewards: 10750 }
+      ],
+      mempool: [
+        { id: 'tx_mock_1', from: '0x99...', to: '0x88...', amount: 50, fee: 0.01 }
+      ],
+      balances: {},
+      blocks: [
+        {
+          index: 10485,
+          hash: '0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a10f9',
+          timestamp: Date.now() - 5000,
+          transactions: [
+            { id: 'tx_001', from: '0x10f9188a183419df9b3a9c7b', to: '0x71a9238c918231aa', amount: 120, fee: 0.01 }
+          ],
+          validator: '0x10f9188a183419df9b3a9c7b'
+        },
+        {
+          index: 10484,
+          hash: '0x8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b',
+          timestamp: Date.now() - 15000,
+          transactions: [],
+          validator: '0x21a8123c509121be84d8721c'
+        }
+      ],
+      contracts: [
+        { id: '0xc0ntract001', name: 'RojsToken', owner: '0x10f9188a183419df9b3a9c7b', sourceCode: '// Standard Token' }
+      ]
+    };
+
+    function handleOfflineSimulation(endpoint, options) {
+      const method = (options.method || 'GET').toUpperCase();
+      
+      if (endpoint === '/blockchain/info' || endpoint === '/info') {
+        return {
+          height: mockStore.height,
+          totalSupply: mockStore.totalSupply,
+          activeValidators: mockStore.validators.length,
+          mempoolSize: mockStore.mempool.length
+        };
+      }
+      if (endpoint === '/mempool/size') {
+        return { size: mockStore.mempool.length };
+      }
+      if (endpoint === '/wallet/create') {
+        const randHex = (len) => Array.from({length: len}, () => Math.floor(Math.random()*16).toString(16)).join('');
+        const address = '0x' + randHex(40);
+        const publicKey = '0x04' + randHex(64);
+        const privateKey = '0x' + randHex(64);
+        mockStore.balances[address] = { balance: 100, staked: 0 };
+        return { address, publicKey, privateKey };
+      }
+      if (endpoint.includes('/wallet/') && endpoint.includes('/balance')) {
+        const parts = endpoint.split('/');
+        const addr = parts[2];
+        const record = mockStore.balances[addr] || { balance: 0, staked: 0 };
+        return { address: addr, balance: record.balance, staked: record.staked };
+      }
+      if (endpoint === '/transaction/send') {
+        const body = JSON.parse(options.body || '{}');
+        const txId = '0xtx' + Math.random().toString(16).substring(2, 10);
+        mockStore.mempool.push({ id: txId, ...body });
+        return { success: true, txId, message: 'Transaction submitted to mempool' };
+      }
+      if (endpoint === '/validators' || endpoint === '/validators/top') {
+        return mockStore.validators;
+      }
+      if (endpoint === '/validator/register' || endpoint === '/validators/register') {
+        const body = JSON.parse(options.body || '{}');
+        const newVal = { address: body.address || body.publicKey || '0xval' + Date.now().toString(16), votes: 0, blocksProduced: 0, totalRewards: 0 };
+        mockStore.validators.push(newVal);
+        return { success: true, message: 'Registered as validator', validator: newVal };
+      }
+      if (endpoint === '/validator/vote') {
+        return { success: true, message: 'Vote submitted successfully' };
+      }
+      if (endpoint === '/staking/stake' || endpoint === '/staking/unstake') {
+        const body = JSON.parse(options.body || '{}');
+        return { success: true, message: `${endpoint.includes('stake') ? 'Staked' : 'Unstaked'} ${body.amount || 0} ROJS successfully` };
+      }
+      if (endpoint === '/blockchain/produce-block') {
+        mockStore.height++;
+        const newBlock = {
+          index: mockStore.height,
+          hash: '0x' + Math.random().toString(16).substring(2) + Math.random().toString(16).substring(2),
+          timestamp: Date.now(),
+          transactions: [...mockStore.mempool],
+          validator: '0x' + Math.random().toString(16).substring(2, 26)
+        };
+        mockStore.mempool = [];
+        mockStore.blocks.unshift(newBlock);
+        return { success: true, block: newBlock };
+      }
+      if (endpoint.includes('/blockchain/blocks')) {
+        return mockStore.blocks;
+      }
+      if (endpoint === '/contracts/deploy') {
+        const body = JSON.parse(options.body || '{}');
+        const contractId = '0xcontract' + Date.now().toString(16);
+        const contract = { id: contractId, name: body.name || 'Unnamed', owner: body.senderAddress || '0x00', sourceCode: body.sourceCode };
+        mockStore.contracts.push(contract);
+        return { success: true, contractId, contract };
+      }
+      if (endpoint === '/contracts/execute') {
+        return { success: true, result: 'Execution returned exit code 0', txId: '0xexec' + Date.now().toString(16) };
+      }
+      if (endpoint === '/contracts') {
+        return mockStore.contracts;
+      }
+
+      return { success: true };
+    }
+
+    // --- Section 2: Fetch Network Stats ---
+    async function fetchNetworkStats() {
+      try {
+        const data = await apiRequest('/blockchain/info');
+        
+        const height = data.height ?? data.blockHeight ?? data.block_height ?? '--';
+        const supply = data.totalSupply ?? data.total_supply ?? '--';
+        const validators = data.activeValidators ?? data.validatorsCount ?? (Array.isArray(data.validators) ? data.validators.length : '--');
+        
+        document.getElementById('stat-block-height').textContent = formatNumber(height);
+        document.getElementById('stat-total-supply').textContent = isNaN(supply) ? supply : `${formatNumber(supply)} ROJS`;
+        document.getElementById('stat-active-validators').textContent = formatNumber(validators);
+
+        // Fetch Mempool size separately if needed
+        try {
+          const mempoolData = await apiRequest('/mempool/size');
+          const pTx = mempoolData.size ?? mempoolData.count ?? data.mempoolSize ?? '--';
+          document.getElementById('stat-pending-tx').textContent = formatNumber(pTx);
+        } catch {
+          const pTx = data.mempoolSize ?? '--';
+          document.getElementById('stat-pending-tx').textContent = formatNumber(pTx);
+        }
+      } catch (err) {
+        console.error('Error fetching network stats:', err);
+      }
+    }
+
+    // --- Section 3: Wallet Management ---
+    async function createWallet() {
+      const btn = document.getElementById('btn-create-wallet');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Creating...';
+
+      try {
+        const data = await apiRequest('/wallet/create', { method: 'POST' });
+        
+        const addr = data.address || data.wallet?.address || '-';
+        const pubKey = data.publicKey || data.public_key || data.wallet?.publicKey || '-';
+        const privKey = data.privateKey || data.private_key || data.wallet?.privateKey || '-';
+
+        document.getElementById('new-wallet-address').textContent = addr;
+        document.getElementById('new-wallet-pubkey').textContent = pubKey;
+        document.getElementById('new-wallet-privkey').textContent = privKey;
+        document.getElementById('wallet-created-box').style.display = 'flex';
+
+        // Auto populate inputs
+        document.getElementById('lookup-address').value = addr;
+        document.getElementById('tx-from').value = addr;
+        document.getElementById('tx-privkey').value = privKey;
+        document.getElementById('stake-address').value = addr;
+        document.getElementById('stake-privkey').value = privKey;
+        document.getElementById('vote-voter').value = addr;
+        document.getElementById('vote-privkey').value = privKey;
+        document.getElementById('prod-privkey').value = privKey;
+        document.getElementById('prod-pubkey').value = pubKey;
+        document.getElementById('reg-val-pubkey').value = pubKey;
+        document.getElementById('contract-deployer-addr').value = addr;
+        document.getElementById('contract-deployer-key').value = privKey;
+        document.getElementById('exec-sender-addr').value = addr;
+        document.getElementById('exec-sender-key').value = privKey;
+
+        showToast('Wallet Created', 'New wallet generated successfully! Save your private key.', 'success');
+        fetchBalance();
+      } catch (err) {
+        showToast('Error', err.message || 'Failed to create wallet', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    async function checkBalance() {
+      const addr = document.getElementById('lookup-address').value.trim();
+      if (!addr) {
+        showToast('Warning', 'Please enter a wallet address', 'error');
+        return;
+      }
+
+      try {
+        const data = await apiRequest(`/wallet/${encodeURIComponent(addr)}/balance`);
+        const bal = data.balance ?? data.liquidBalance ?? 0;
+        const staked = data.staked ?? data.stakedAmount ?? 0;
+
+        document.getElementById('wallet-balance-val').textContent = `${formatNumber(bal)} ROJS`;
+        document.getElementById('wallet-staked-val').textContent = `${formatNumber(staked)} ROJS`;
+        showToast('Balance Updated', `Fetched balance for ${truncateHash(addr)}`, 'success');
+      } catch (err) {
+        showToast('Error', err.message || 'Failed to fetch balance', 'error');
+      }
+    }
+
+    // --- Section 4: Send Transaction ---
+    async function handleSendTx(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-send-tx');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Sending...';
+
+      const privKey = document.getElementById('tx-privkey').value.trim();
+      const from = document.getElementById('tx-from').value.trim();
+      const to = document.getElementById('tx-to').value.trim();
+      const amount = parseFloat(document.getElementById('tx-amount').value);
+      const fee = parseFloat(document.getElementById('tx-fee').value);
+
+      try {
+        const result = await apiRequest('/transaction/send', {
+          method: 'POST',
+          body: JSON.stringify({ privateKey: privKey, fromAddress: from, from, toAddress: to, to, amount, fee })
+        });
+
+        const txId = result.txId || result.hash || result.transactionId || 'Success';
+        const resBox = document.getElementById('tx-result-box');
+        resBox.style.display = 'block';
+        resBox.innerHTML = `<span style="color:var(--positive);">✓ Transaction Broadcasted!</span><br>Tx ID: <span class="copyable" onclick="copyText('${txId}')">${txId}</span>`;
+
+        showToast('Transaction Sent', `Tx ID: ${truncateHash(txId)}`, 'success');
+        fetchNetworkStats();
+        fetchBlocks();
+        if (from === document.getElementById('lookup-address').value.trim()) {
+          checkBalance();
+        }
+      } catch (err) {
+        showToast('Transaction Failed', err.message || 'Could not send transaction', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    // --- Section 5: Validators & DPoS Governance ---
+    async function fetchValidators() {
+      const tbody = document.getElementById('validators-tbody');
+      try {
+        let validators = await apiRequest('/validators');
+        if (!Array.isArray(validators)) {
+          validators = validators.validators || [];
+        }
+
+        if (validators.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No active validators found</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = validators.map(v => {
+          const addr = v.address || v.validatorAddress || v.publicKey || 'Unknown';
+          const votes = v.votes ?? v.voteCount ?? 0;
+          const blocks = v.blocksProduced ?? v.producedBlocks ?? 0;
+          const rewards = v.totalRewards ?? v.rewards ?? 0;
+
+          return `
+            <tr>
+              <td class="mono copyable" onclick="copyText('${addr}')" title="${addr}">${truncateHash(addr)}</td>
+              <td class="mono">${formatNumber(votes)}</td>
+              <td class="mono">${formatNumber(blocks)}</td>
+              <td class="mono" style="color:var(--positive);">${formatNumber(rewards)} ROJS</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--negative);">Error loading validators: ${err.message}</td></tr>`;
+      }
+    }
+
+    async function handleRegisterValidator(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-reg-val');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Registering...';
+
+      const pubKey = document.getElementById('reg-val-pubkey').value.trim();
+      const addr = document.getElementById('tx-from').value.trim() || document.getElementById('lookup-address').value.trim();
+
+      try {
+        await apiRequest('/validator/register', {
+          method: 'POST',
+          body: JSON.stringify({ publicKey: pubKey, address: addr })
+        });
+        showToast('Success', 'Registered as validator successfully!', 'success');
+        fetchValidators();
+        fetchNetworkStats();
+      } catch (err) {
+        showToast('Registration Error', err.message || 'Failed to register validator', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    async function handleVoteValidator(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-vote-val');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = 'Voting...';
+
+      const privKey = document.getElementById('vote-privkey').value.trim();
+      const voter = document.getElementById('vote-voter').value.trim();
+      const target = document.getElementById('vote-target').value.trim();
+      const amount = parseFloat(document.getElementById('vote-amount').value);
+
+      try {
+        await apiRequest('/validator/vote', {
+          method: 'POST',
+          body: JSON.stringify({ privateKey: privKey, voterAddress: voter, validatorAddress: target, amount })
+        });
+        showToast('Vote Submitted', `Voted ${amount} ROJS for ${truncateHash(target)}`, 'success');
+        fetchValidators();
+      } catch (err) {
+        showToast('Voting Error', err.message || 'Failed to cast vote', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    // --- Section 6: Staking ---
+    async function handleStakingAction(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-staking');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Executing...';
+
+      const privKey = document.getElementById('stake-privkey').value.trim();
+      const addr = document.getElementById('stake-address').value.trim();
+      const amount = parseFloat(document.getElementById('stake-amount').value);
+      const action = document.getElementById('stake-action').value;
+
+      const endpoint = action === 'stake' ? '/staking/stake' : '/staking/unstake';
+
+      try {
+        const res = await apiRequest(endpoint, {
+          method: 'POST',
+          body: JSON.stringify({ privateKey: privKey, address: addr, amount })
+        });
+
+        showToast('Staking Success', res.message || `${action.toUpperCase()} ${amount} ROJS completed`, 'success');
+        document.getElementById('lookup-address').value = addr;
+        checkBalance();
+      } catch (err) {
+        showToast('Staking Error', err.message || 'Failed to complete staking operation', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    // --- Section 7: Block Producer ---
+    async function handleProduceBlock(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-produce-block');
+      const resBox = document.getElementById('produce-block-result');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Producing Block...';
+      resBox.style.display = 'none';
+
+      const privKey = document.getElementById('prod-privkey').value.trim();
+      const pubKey = document.getElementById('prod-pubkey').value.trim();
+
+      try {
+        const res = await apiRequest('/blockchain/produce-block', {
+          method: 'POST',
+          body: JSON.stringify({ privateKey: privKey, publicKey: pubKey })
+        });
+
+        const blk = res.block || res;
+        resBox.style.display = 'block';
+        resBox.innerHTML = `
+          <span style="color:var(--positive);">✓ Block #${blk.index || blk.height || 'New'} Produced!</span><br>
+          Hash: <span class="copyable" onclick="copyText('${blk.hash}')">${truncateHash(blk.hash)}</span><br>
+          Transactions: ${Array.isArray(blk.transactions) ? blk.transactions.length : 0}
+        `;
+        showToast('Block Produced', `Block #${blk.index || ''} created successfully!`, 'success');
+        fetchNetworkStats();
+        fetchBlocks();
+      } catch (err) {
+        resBox.style.display = 'block';
+        resBox.innerHTML = `<span style="color:var(--negative);">❌ Error: ${err.message || 'Not your turn'}</span>`;
+        showToast('Block Production Failed', err.message || 'Not your turn to produce block', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    // --- Section 8: Blockchain Explorer ---
+    async function fetchBlocks() {
+      const container = document.getElementById('blocks-container');
+      try {
+        let blocks = await apiRequest('/blockchain/blocks?limit=20');
+        if (!Array.isArray(blocks)) {
+          blocks = blocks.blocks || [];
+        }
+
+        if (blocks.length === 0) {
+          container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">No blocks found on chain.</div>';
+          return;
+        }
+
+        container.innerHTML = blocks.map((blk, idx) => {
+          const index = blk.index ?? blk.height ?? idx;
+          const hash = blk.hash || '0x...';
+          const timeStr = formatDate(blk.timestamp || blk.time);
+          const txs = Array.isArray(blk.transactions) ? blk.transactions : [];
+          const txCount = txs.length;
+          const val = blk.validator || blk.miner || 'System';
+
+          return `
+            <div class="block-item">
+              <div class="block-header-row" onclick="toggleBlockDetails('${index}')">
+                <div class="block-meta">
+                  <span class="badge badge-accent">Block #${index}</span>
+                  <span class="mono copyable" onclick="event.stopPropagation(); copyText('${hash}');">${truncateHash(hash)}</span>
+                  <span style="color:var(--text-muted); font-size:12px;">${timeStr}</span>
+                </div>
+                <div class="block-meta">
+                  <span class="badge ${txCount > 0 ? 'badge-positive' : 'badge-accent'}">${txCount} Tx</span>
+                  <span style="font-size:12px; color:var(--text-muted);">Val: <span class="mono">${truncateHash(val, 6, 4)}</span></span>
+                  <svg style="width:16px;height:16px;fill:var(--text-muted);" viewBox="0 0 24 24"><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+                </div>
+              </div>
+              <div class="block-details" id="block-details-${index}">
+                <div class="info-display" style="margin-bottom:10px;">
+                  <div class="info-display-item"><span class="info-label">Full Hash:</span> <span class="copyable" onclick="copyText('${hash}')">${hash}</span></div>
+                  <div class="info-display-item"><span class="info-label">Previous Hash:</span> <span class="copyable" onclick="copyText('${blk.previousHash || '-'}')">${blk.previousHash || '-'}</span></div>
+                  <div class="info-display-item"><span class="info-label">Validator:</span> ${val}</div>
+                </div>
+                <strong style="display:block; margin-bottom:6px; font-size:12px; color:var(--text-muted);">Transactions in Block (${txCount}):</strong>
+                ${txCount === 0 ? '<div style="font-size:12px; color:var(--text-muted);">No transactions in this block</div>' : `
+                  <div class="table-responsive">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Tx ID / Hash</th>
+                          <th>From</th>
+                          <th>To</th>
+                          <th>Amount</th>
+                          <th>Fee</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${txs.map(tx => {
+                          const txId = tx.id || tx.hash || tx.txId || 'Tx';
+                          const txFrom = tx.from || tx.fromAddress || tx.sender || '-';
+                          const txTo = tx.to || tx.toAddress || tx.recipient || '-';
+                          const txAmt = tx.amount ?? 0;
+                          const txFee = tx.fee ?? 0;
+                          return `
+                            <tr>
+                              <td class="mono copyable" onclick="copyText('${txId}')">${truncateHash(txId, 6, 4)}</td>
+                              <td class="mono copyable" onclick="copyText('${txFrom}')">${truncateHash(txFrom, 6, 4)}</td>
+                              <td class="mono copyable" onclick="copyText('${txTo}')">${truncateHash(txTo, 6, 4)}</td>
+                              <td class="mono">${formatNumber(txAmt)} ROJS</td>
+                              <td class="mono">${formatNumber(txFee)} ROJS</td>
+                            </tr>
+                          `;
+                        }).join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                `}
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--negative);">Error fetching blocks: ${err.message}</div>`;
+      }
+    }
+
+    function toggleBlockDetails(index) {
+      const elem = document.getElementById(`block-details-${index}`);
+      if (elem) {
+        elem.classList.toggle('active');
+      }
+    }
+
+    // --- Section 9: Smart Contracts ---
+    async function fetchContracts() {
+      const tbody = document.getElementById('contracts-tbody');
+      try {
+        let contracts = await apiRequest('/contracts');
+        if (!Array.isArray(contracts)) {
+          contracts = contracts.contracts || [];
+        }
+
+        if (contracts.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No deployed contracts</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = contracts.map(c => {
+          const id = c.id || c.contractId || c.address || 'Unknown';
+          const name = c.name || 'Unnamed Contract';
+          const owner = c.owner || c.deployer || c.senderAddress || '-';
+
+          return `
+            <tr>
+              <td class="mono copyable" onclick="copyText('${id}')" title="${id}">${truncateHash(id)}</td>
+              <td><strong>${name}</strong></td>
+              <td class="mono copyable" onclick="copyText('${owner}')">${truncateHash(owner, 6, 4)}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--negative);">Error loading contracts: ${err.message}</td></tr>`;
+      }
+    }
+
+    async function handleDeployContract(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-deploy-contract');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Deploying...';
+
+      const name = document.getElementById('contract-name').value.trim();
+      const sourceCode = document.getElementById('contract-source').value.trim();
+      const senderAddress = document.getElementById('contract-deployer-addr').value.trim();
+      const privateKey = document.getElementById('contract-deployer-key').value.trim();
+
+      try {
+        const res = await apiRequest('/contracts/deploy', {
+          method: 'POST',
+          body: JSON.stringify({ name, sourceCode, senderAddress, privateKey })
+        });
+
+        const id = res.contractId || res.address || (res.contract && res.contract.id) || 'Deployed';
+        document.getElementById('exec-contract-id').value = id;
+
+        showToast('Contract Deployed', `Contract ID: ${truncateHash(id)}`, 'success');
+        fetchContracts();
+      } catch (err) {
+        showToast('Deployment Failed', err.message || 'Failed to deploy contract', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    async function handleExecuteContract(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-exec-contract');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Executing...';
+
+      const contractId = document.getElementById('exec-contract-id').value.trim();
+      const input = document.getElementById('exec-contract-input').value.trim();
+      const senderAddress = document.getElementById('exec-sender-addr').value.trim();
+      const privateKey = document.getElementById('exec-sender-key').value.trim();
+
+      try {
+        const res = await apiRequest('/contracts/execute', {
+          method: 'POST',
+          body: JSON.stringify({ contractId, input, senderAddress, privateKey })
+        });
+
+        const resultStr = typeof res.result === 'object' ? JSON.stringify(res.result) : (res.result || 'Executed successfully');
+        showToast('Contract Executed', `Output: ${resultStr}`, 'success');
+      } catch (err) {
+        showToast('Execution Failed', err.message || 'Failed to execute contract', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    // Manual Refresh
+    function manualRefresh() {
+      showToast('Refreshing', 'Updating blockchain metrics and explorer...', 'info');
+      fetchAllData();
+    }
+
+    function fetchAllData() {
+      fetchNetworkStats();
+      fetchValidators();
+      fetchBlocks();
+      fetchContracts();
+    }
+
+    // Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchAllData();
+      // Auto-refresh network stats every 10 seconds
+      setInterval(fetchNetworkStats, 10000);
+      // Refresh blocks every 15 seconds
+      setInterval(fetchBlocks, 15000);
+    });
+  </script>
+</body>
+</html>
