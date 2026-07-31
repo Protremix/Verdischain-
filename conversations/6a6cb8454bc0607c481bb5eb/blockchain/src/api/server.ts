@@ -217,7 +217,7 @@ export class BlockchainAPI {
 
     this.app.post('/api/contract/:id/execute', (req: Request, res: Response) => {
       const { input } = req.body;
-      const result = this.contractManager.execute(req.params.id, input, new Map());
+      const result = this.contractManager.execute(req.params.id, input);
       res.json(result);
     });
 
@@ -234,7 +234,7 @@ export class BlockchainAPI {
     });
 
     this.app.get('/api/contracts', (req: Request, res: Response) => {
-      res.json(this.contractManager.getContracts().map(c => ({
+      res.json(this.contractManager.getAllContracts().map(c => ({
         id: c.id,
         name: c.name,
         owner: c.owner,
@@ -243,7 +243,7 @@ export class BlockchainAPI {
     });
 
     this.app.get('/api/contract/:id/state', (req: Request, res: Response) => {
-      const state = this.contractManager.getContractState(req.params.id);
+      const state = this.contractManager.getContract(req.params.id)?.state;
       if (!state) { res.status(404).json({ error: 'Contract not found' }); return; }
       res.json(Object.fromEntries(state));
     });

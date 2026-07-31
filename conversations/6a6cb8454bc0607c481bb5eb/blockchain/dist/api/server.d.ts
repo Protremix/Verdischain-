@@ -8,9 +8,13 @@ export declare class BlockchainAPI {
     private walletManager;
     private contractManager;
     private dashboardHtmlPath?;
+    private dex;
+    private eco;
     constructor(blockchain: Blockchain, walletManager: WalletManager, contractManager: ContractManager);
-    private setupMiddleware;
+    setDEX(dex: any): void;
+    setEco(eco: any): void;
     serveDashboard(filePath?: string): void;
+    private setupMiddleware;
     private setupRoutes;
     start(port: number): void;
     getApp(): Express;

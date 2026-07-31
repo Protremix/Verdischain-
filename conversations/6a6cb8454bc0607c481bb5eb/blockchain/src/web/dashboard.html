@@ -1,91 +1,512 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verdis - Blockchain Explorer & Dashboard</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #0b0f19;
-      color: #e2e8f0;
-      margin: 0;
-      padding: 24px;
-    }
-    header {
-      border-bottom: 1px solid #1e293b;
-      padding-bottom: 16px;
-      margin-bottom: 24px;
-    }
-    h1 {
-      color: #38bdf8;
-      margin: 0 0 8px 0;
-    }
-    p {
-      color: #94a3b8;
-      margin: 0;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-      margin-bottom: 24px;
-    }
-    .card {
-      background: #1e293b;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    .card h2 {
-      margin-top: 0;
-      font-size: 1rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #94a3b8;
-    }
-    .metric {
-      font-size: 2rem;
-      font-weight: bold;
-      color: #f8fafc;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis — Eco Blockchain Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0f1a;--card:#0f1a2e;--border:#1a2845;--text:#e0e6ed;--muted:#6a7a8f;--accent:#00e676;--accent2:#00c853;--danger:#ff4444;--warn:#ffaa00;--radius:12px}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;padding:20px;max-width:1400px;margin:0 auto}
+.mono{font-family:'JetBrains Mono','Fira Code',monospace}
+h1{font-size:1.5rem;display:flex;align-items:center;gap:8px}
+h2{font-size:1.1rem;margin-bottom:12px;color:var(--accent);text-transform:uppercase;letter-spacing:1px}
+h3{font-size:0.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+a{color:var(--accent);text-decoration:none}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.grid{display:grid;gap:12px}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:900px){.grid-4,.grid-3,.grid-2{grid-template-columns:1fr}}
+.stat{text-align:center}
+.stat .val{font-size:1.6rem;font-weight:700;color:var(--accent)}
+.stat .lbl{font-size:0.75rem;color:var(--muted);margin-top:4px}
+input,select,textarea{width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.9rem;margin-bottom:8px;font-family:inherit}
+input:focus,textarea:focus{outline:none;border-color:var(--accent)}
+button{padding:10px 20px;background:var(--accent);color:#000;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.9rem;transition:0.2s}
+button:hover{background:var(--accent2);transform:translateY(-1px)}
+button.sec{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+button.sec:hover{background:rgba(0,230,118,0.1)}
+.row{display:flex;gap:8px;align-items:center}
+.row>input{flex:1}
+table{width:100%;border-collapse:collapse;font-size:0.85rem}
+th{text-align:left;padding:8px;color:var(--muted);border-bottom:1px solid var(--border);text-transform:uppercase;font-size:0.7rem}
+td{padding:8px;border-bottom:1px solid var(--border)}
+td.mono{font-size:0.75rem}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:600}
+.tag.green{background:rgba(0,230,118,0.15);color:var(--accent)}
+.tag.red{background:rgba(255,68,68,0.15);color:var(--danger)}
+.tag.yellow{background:rgba(255,170,0,0.15);color:var(--warn)}
+.toast{position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:8px;font-weight:500;z-index:999;opacity:0;transition:0.3s}
+.toast.show{opacity:1}
+.toast.ok{background:var(--accent);color:#000}
+.toast.err{background:var(--danger);color:#fff}
+.tab{display:inline-block;padding:8px 16px;cursor:pointer;border-radius:8px 8px 0 0;font-size:0.85rem;color:var(--muted);transition:0.2s}
+.tab.active{background:var(--card);color:var(--accent);border:1px solid var(--border)}
+.tab:hover{color:var(--text)}
+.tabbar{display:flex;gap:2px;margin-bottom:-1px}
+.section{display:none}
+.section.active{display:block}
+.bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.bar>div{height:100%;background:var(--accent);border-radius:4px;transition:width 0.5s}
+.section-title{font-size:1.1rem;margin:24px 0 8px;color:var(--accent)}
+.truncate{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle}
+.header-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.subtle{color:var(--muted);font-size:0.8rem}
+</style>
 </head>
 <body>
-  <header>
-    <h1>🚀 Verdis Network Dashboard</h1>
-    <p>Real-time Blockchain Explorer & Node Status</p>
-  </header>
 
-  <div class="grid">
-    <div class="card">
-      <h2>Block Height</h2>
-      <div class="metric" id="blockHeight">1</div>
+<div class="header-bar">
+  <h1>🌿 Verdis</h1>
+  <span class="subtle">Eco-First DPoS Blockchain · Token: VRS</span>
+</div>
+
+<!-- Network Stats -->
+<div class="grid grid-4">
+  <div class="card stat"><div class="val" id="height">—</div><div class="lbl">Block Height</div></div>
+  <div class="card stat"><div class="val" id="supply">—</div><div class="lbl">Total Supply (VRS)</div></div>
+  <div class="card stat"><div class="val" id="validators">—</div><div class="lbl">Active Validators</div></div>
+  <div class="card stat"><div class="val" id="mempool">—</div><div class="lbl">Pending Txs</div></div>
+</div>
+
+<!-- Eco Impact Stats -->
+<div class="grid grid-4">
+  <div class="card stat"><div class="val" id="co2">0 t</div><div class="lbl">CO₂ Offset</div></div>
+  <div class="card stat"><div class="val" id="trees">0</div><div class="lbl">Trees Planted</div></div>
+  <div class="card stat"><div class="val" id="area">0 ha</div><div class="lbl">Land Restored</div></div>
+  <div class="card stat"><div class="val" id="greenVals">0</div><div class="lbl">Green Validators</div></div>
+</div>
+
+<!-- Tabs -->
+<div class="card" style="padding:0;overflow:hidden">
+  <div class="tabbar" style="padding:12px 12px 0">
+    <div class="tab active" onclick="showTab('wallet',this)">Wallet</div>
+    <div class="tab" onclick="showTab('tx',this)">Send</div>
+    <div class="tab" onclick="showTab('validators',this)">Validators</div>
+    <div class="tab" onclick="showTab('stake',this)">Staking</div>
+    <div class="tab" onclick="showTab('produce',this)">Produce Block</div>
+    <div class="tab" onclick="showTab('explorer',this)">Explorer</div>
+    <div class="tab" onclick="showTab('contracts',this)">Contracts</div>
+    <div class="tab" onclick="showTab('dex',this)">DEX</div>
+    <div class="tab" onclick="showTab('eco',this)">Eco</div>
+  </div>
+  <div style="padding:20px">
+
+  <!-- Wallet Tab -->
+  <div class="section active" id="tab-wallet">
+    <h2>Wallet Management</h2>
+    <div class="grid grid-2">
+      <div>
+        <h3>Create New Wallet</h3>
+        <button onclick="createWallet()">Generate Wallet</button>
+      </div>
+      <div>
+        <h3>Check Balance</h3>
+        <div class="row">
+          <input id="balAddr" placeholder="Wallet address" class="mono">
+          <button onclick="checkBalance()">Check</button>
+        </div>
+        <div id="balResult" class="subtle"></div>
+      </div>
     </div>
-    <div class="card">
-      <h2>Active Validators</h2>
-      <div class="metric" id="validators">5</div>
-    </div>
-    <div class="card">
-      <h2>Total Supply</h2>
-      <div class="metric" id="totalSupply">50,000,000,000 VRS</div>
-    </div>
+    <div id="walletDisplay" style="margin-top:16px"></div>
   </div>
 
-  <script>
-    async function loadStats() {
-      try {
-        const res = await fetch('/api/chain');
-        const data = await res.json();
-        document.getElementById('blockHeight').innerText = data.currentHeight !== undefined ? data.currentHeight : 1;
-        document.getElementById('validators').innerText = data.validatorCount || 5;
-        document.getElementById('totalSupply').innerText = (data.totalSupply || 50000000000).toLocaleString() + ' VRS';
-      } catch (e) {
-        console.error('Error loading stats:', e);
-      }
-    }
-    loadStats();
-    setInterval(loadStats, 3000);
-  </script>
+  <!-- Send Tab -->
+  <div class="section" id="tab-tx">
+    <h2>Send Transaction</h2>
+    <input id="txPriv" placeholder="Private Key" class="mono">
+    <input id="txFrom" placeholder="From (address or pubkey)" class="mono">
+    <input id="txTo" placeholder="To (address)" class="mono">
+    <div class="grid grid-2">
+      <input id="txAmount" type="number" placeholder="Amount (VRS)">
+      <input id="txFee" type="number" placeholder="Fee (VRS)" value="1">
+    </div>
+    <button onclick="sendTx()">Send Transaction</button>
+    <div id="txResult" style="margin-top:12px"></div>
+    <h3 style="margin-top:16px">Pending Transactions</h3>
+    <div id="mempoolList"></div>
+  </div>
+
+  <!-- Validators Tab -->
+  <div class="section" id="tab-validators">
+    <h2>Validators (Super Representatives)</h2>
+    <table>
+      <thead><tr><th>Address</th><th>Votes</th><th>Blocks</th><th>Rewards</th></tr></thead>
+      <tbody id="validatorTable"></tbody>
+    </table>
+    <h3 style="margin-top:16px">Register as Validator</h3>
+    <div class="row">
+      <input id="valPubKey" placeholder="Your public key" class="mono">
+      <input id="valAddr" placeholder="Your address" class="mono">
+      <button onclick="registerValidator()">Register</button>
+    </div>
+    <h3 style="margin-top:12px">Vote for Validator</h3>
+    <input id="voteVoter" placeholder="Your address" class="mono">
+    <input id="voteValidator" placeholder="Validator address" class="mono">
+    <input id="voteAmount" type="number" placeholder="Amount to stake">
+    <button onclick="voteValidator()">Vote</button>
+  </div>
+
+  <!-- Staking Tab -->
+  <div class="section" id="tab-stake">
+    <h2>Stake VRS Tokens</h2>
+    <input id="stakeAddr" placeholder="Your address" class="mono">
+    <input id="stakeAmount" type="number" placeholder="Amount">
+    <select id="stakeAction">
+      <option value="stake">Stake</option>
+      <option value="unstake">Unstake</option>
+    </select>
+    <button onclick="doStake()">Submit</button>
+    <div id="stakeResult" style="margin-top:12px"></div>
+  </div>
+
+  <!-- Produce Block Tab -->
+  <div class="section" id="tab-produce">
+    <h2>Produce Block</h2>
+    <p class="subtle">Only the current round's validator can produce a block.</p>
+    <input id="prodPriv" placeholder="Validator private key" class="mono">
+    <input id="prodPub" placeholder="Validator public key" class="mono">
+    <input id="prodAddr" placeholder="Validator address" class="mono">
+    <button onclick="produceBlock()">Produce Block</button>
+    <div id="prodResult" style="margin-top:12px"></div>
+  </div>
+
+  <!-- Explorer Tab -->
+  <div class="section" id="tab-explorer">
+    <h2>Block Explorer</h2>
+    <table>
+      <thead><tr><th>#</th><th>Hash</th><th>Txs</th><th>Validator</th><th>Time</th></tr></thead>
+      <tbody id="blockTable"></tbody>
+    </table>
+    <div id="blockDetail" style="margin-top:12px"></div>
+  </div>
+
+  <!-- Contracts Tab -->
+  <div class="section" id="tab-contracts">
+    <h2>Smart Contracts</h2>
+    <h3>Deploy Contract</h3>
+    <input id="contractName" placeholder="Contract name">
+    <input id="contractOwner" placeholder="Owner address" class="mono">
+    <textarea id="contractSource" placeholder="PUSH 5&#10;PUSH 10&#10;ADD&#10;LOG&#10;HALT" rows="6" style="font-family:monospace"></textarea>
+    <button onclick="deployContract()">Deploy</button>
+    <h3 style="margin-top:16px">Execute Contract</h3>
+    <input id="execId" placeholder="Contract ID" class="mono">
+    <input id="execInput" placeholder="Input data (JSON)">
+    <button onclick="execContract()">Execute</button>
+    <h3 style="margin-top:16px">Deployed Contracts</h3>
+    <div id="contractList"></div>
+  </div>
+
+  <!-- DEX Tab -->
+  <div class="section" id="tab-dex">
+    <h2>Decentralized Exchange (AMM)</h2>
+    <h3>Liquidity Pools</h3>
+    <div id="poolList"></div>
+    <h3 style="margin-top:16px">Create Pool</h3>
+    <div class="grid grid-2">
+      <input id="poolTokenA" placeholder="Token A (e.g. VRS)">
+      <input id="poolTokenB" placeholder="Token B (e.g. CARBON)">
+    </div>
+    <button onclick="createPool()">Create Pool</button>
+    <h3 style="margin-top:16px>Add Liquidity</h3>
+    <input id="liqProvider" placeholder="Your address" class="mono">
+    <div class="grid grid-2">
+      <input id="liqTokenA" placeholder="Token A">
+      <input id="liqTokenB" placeholder="Token B">
+    </div>
+    <div class="grid grid-2">
+      <input id="liqAmtA" type="number" placeholder="Amount A">
+      <input id="liqAmtB" type="number" placeholder="Amount B">
+    </div>
+    <button onclick="addLiquidity()">Add Liquidity</button>
+    <h3 style="margin-top:16px">Swap Tokens</h3>
+    <input id="swapTrader" placeholder="Your address" class="mono">
+    <div class="grid grid-2">
+      <input id="swapTokenIn" placeholder="Token In">
+      <input id="swapTokenOut" placeholder="Token Out">
+    </div>
+    <div class="grid grid-2">
+      <input id="swapAmtIn" type="number" placeholder="Amount In">
+      <input id="swapMinOut" type="number" placeholder="Min Amount Out">
+    </div>
+    <button onclick="swapTokens()">Swap</button>
+    <div id="swapResult" style="margin-top:12px"></div>
+  </div>
+
+  <!-- Eco Tab -->
+  <div class="section" id="tab-eco">
+    <h2>Eco Features</h2>
+    <h3>Carbon Credits</h3>
+    <div class="grid grid-2">
+      <input id="ccSeller" placeholder="Seller address" class="mono">
+      <select id="ccType">
+        <option value="reforestation">Reforestation</option>
+        <option value="renewable_energy">Renewable Energy</option>
+        <option value="methane_capture">Methane Capture</option>
+        <option value="direct_air_capture">Direct Air Capture</option>
+        <option value="ocean_restoration">Ocean Restoration</option>
+      </select>
+      <input id="ccAmount" type="number" placeholder="Tons of CO₂">
+      <input id="ccPrice" type="number" placeholder="Price per ton (VRS)">
+      <input id="ccLocation" placeholder="Location">
+    </div>
+    <button onclick="mintCarbon()">Mint Carbon Credit</button>
+    <h3 style="margin-top:16px">Available Credits</h3>
+    <table><thead><tr><th>ID</th><th>Type</th><th>Tons</th><th>Price</th><th>Status</th></tr></thead><tbody id="carbonTable"></tbody></table>
+
+    <h3 style="margin-top:16px">Reforestation Projects</h3>
+    <div class="grid grid-2">
+      <input id="rfOwner" placeholder="Owner address" class="mono">
+      <input id="rfName" placeholder="Project name">
+      <input id="rfCountry" placeholder="Country">
+      <input id="rfArea" type="number" placeholder="Area (hectares)">
+      <input id="rfTarget" type="number" placeholder="Trees target">
+      <input id="rfLat" type="number" placeholder="Latitude">
+      <input id="rfLng" type="number" placeholder="Longitude">
+    </div>
+    <button onclick="createReforest()">Create Project</button>
+    <table style="margin-top:12px"><thead><tr><th>Project</th><th>Location</th><th>Trees</th><th>Target</th><th>CO₂ (t)</th><th>Status</th></tr></thead><tbody id="reforestTable"></tbody></table>
+
+    <h3 style="margin-top:16px">Green Validator Scores</h3>
+    <table><thead><tr><th>Validator</th><th>Energy</th><th>CO₂ Offset</th><th>Trees</th><th>Score</th></tr></thead><tbody id="greenTable"></tbody></table>
+  </div>
+
+  </div>
+</div>
+
+<div class="subtle" style="text-align:center;margin-top:20px">Verdis Blockchain · DPoS Consensus · 100% Eco-Focused · Powered by secp256k1</div>
+
+<script>
+const API = '';
+let currentWallet = null;
+
+function showTab(name, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+  if (name === 'explorer') loadBlocks();
+  if (name === 'validators') loadValidators();
+  if (name === 'eco') loadEco();
+  if (name === 'dex') loadPools();
+  if (name === 'contracts') loadContracts();
+  if (name === 'tx') loadMempool();
+}
+
+function toast(msg, ok = true) {
+  const t = document.createElement('div');
+  t.className = 'toast ' + (ok ? 'ok' : 'err');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+function trunc(str, n = 12) {
+  if (!str) return '—';
+  return str.length > n ? str.slice(0, n) + '…' + str.slice(-6) : str;
+}
+
+function fmt(n) { return Number(n || 0).toLocaleString(); }
+
+async function loadStats() {
+  try {
+    const [info, eco] = await Promise.all([
+      fetch(API + '/api/blockchain/info').then(r => r.json()),
+      fetch(API + '/api/eco/impact').then(r => r.json().catch(() => ({})))
+    ]);
+    document.getElementById('height').textContent = info.height || 0;
+    document.getElementById('supply').textContent = fmt(info.totalSupply);
+    document.getElementById('validators').textContent = info.validatorCount || 0;
+    document.getElementById('mempool').textContent = info.mempoolSize || 0;
+    document.getElementById('co2').textContent = fmt(eco.totalCO2Offset) + ' t';
+    document.getElementById('trees').textContent = fmt(eco.totalTrees);
+    document.getElementById('area').textContent = fmt(eco.totalArea) + ' ha';
+    document.getElementById('greenVals').textContent = eco.greenValidators || 0;
+  } catch (e) {}
+}
+
+// Wallet
+async function createWallet() {
+  const res = await fetch(API + '/api/wallet/create', { method: 'POST' }).then(r => r.json());
+  currentWallet = res;
+  document.getElementById('walletDisplay').innerHTML = `
+    <div class="card" style="border-color:var(--accent)">
+      <h3>⚠️ Save your private key — it cannot be recovered!</h3>
+      <p class="mono" style="word-break:break-all;font-size:0.8rem;color:var(--warn)">Private: ${res.privateKey}</p>
+      <p class="mono" style="word-break:break-all;font-size:0.8rem;margin-top:6px">Public: ${res.publicKey}</p>
+      <p class="mono" style="word-break:break-all;font-size:0.8rem;margin-top:6px;color:var(--accent)">Address: ${res.address}</p>
+      <p class="subtle" style="margin-top:6px">Balance: ${fmt(res.balance)} VRS</p>
+    </div>`;
+  toast('Wallet created!');
+  loadStats();
+}
+
+async function checkBalance() {
+  const addr = document.getElementById('balAddr').value;
+  const res = await fetch(API + '/api/wallet/' + addr + '/balance').then(r => r.json());
+  const staked = await fetch(API + '/api/wallet/' + addr + '/staked').then(r => r.json());
+  document.getElementById('balResult').innerHTML = `Balance: <strong style="color:var(--accent)">${fmt(res.balance)} VRS</strong> · Staked: <strong>${fmt(staked.staked || 0)} VRS</strong>`;
+}
+
+// Send
+async function sendTx() {
+  const body = {
+    privateKey: document.getElementById('txPriv').value,
+    from: document.getElementById('txFrom').value,
+    to: document.getElementById('txTo').value,
+    amount: parseFloat(document.getElementById('txAmount').value),
+    fee: parseFloat(document.getElementById('txFee').value) || 1
+  };
+  const res = await fetch(API + '/api/transaction/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json());
+  if (res.error) { toast(res.error, false); document.getElementById('txResult').innerHTML = '<span style="color:var(--danger)">' + res.error + '</span>'; return; }
+  toast('Transaction submitted: ' + trunc(res.txId));
+  document.getElementById('txResult').innerHTML = '<span class="tag green">Submitted</span> TX: <span class="mono">' + res.txId + '</span>';
+  loadMempool();
+  loadStats();
+}
+
+async function loadMempool() {
+  const txs = await fetch(API + '/api/mempool').then(r => r.json());
+  document.getElementById('mempoolList').innerHTML = txs.length ? txs.map(t => `<div class="card" style="padding:10px"><span class="mono">${trunc(t.id)}</span> · ${t.amount} VRS · ${trunc(t.from)} → ${trunc(t.to)} · Fee: ${t.fee}</div>`).join('') : '<p class="subtle">No pending transactions</p>';
+}
+
+// Validators
+async function loadValidators() {
+  const vals = await fetch(API + '/api/validators').then(r => r.json());
+  document.getElementById('validatorTable').innerHTML = vals.map(v => `<tr><td class="mono">${trunc(v.address)}</td><td>${fmt(v.votes)}</td><td>${v.blocksProduced || 0}</td><td>${fmt(v.totalRewards)}</td></tr>`).join('');
+}
+
+async function registerValidator() {
+  const res = await fetch(API + '/api/validators/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ publicKey: document.getElementById('valPubKey').value, address: document.getElementById('valAddr').value }) }).then(r => r.json());
+  toast(res.success ? 'Registered as validator!' : 'Failed', !!res.success);
+  loadValidators(); loadStats();
+}
+
+async function voteValidator() {
+  const res = await fetch(API + '/api/validators/vote', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ voterAddress: document.getElementById('voteVoter').value, validatorAddress: document.getElementById('voteValidator').value, amount: parseFloat(document.getElementById('voteAmount').value) }) }).then(r => r.json());
+  toast(res.success ? 'Vote cast!' : 'Vote failed', !!res.success);
+  loadValidators();
+}
+
+// Staking
+async function doStake() {
+  const res = await fetch(API + '/api/stake', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ address: document.getElementById('stakeAddr').value, amount: parseFloat(document.getElementById('stakeAmount').value), action: document.getElementById('stakeAction').value }) }).then(r => r.json());
+  toast(res.success ? 'Stake updated!' : 'Failed', !!res.success);
+  document.getElementById('stakeResult').innerHTML = res.success ? '<span class="tag green">Success</span>' : '<span class="tag red">' + (res.error || 'Failed') + '</span>';
+}
+
+// Block Production
+async function produceBlock() {
+  const res = await fetch(API + '/api/blockchain/produce', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ privateKey: document.getElementById('prodPriv').value, publicKey: document.getElementById('prodPub').value, address: document.getElementById('prodAddr').value }) }).then(r => r.json());
+  if (res.error) { toast(res.error, false); document.getElementById('prodResult').innerHTML = '<span style="color:var(--danger)">' + res.error + '</span>'; return; }
+  toast('Block #' + (res.block?.header?.index || 'produced') + ' created!');
+  document.getElementById('prodResult').innerHTML = '<span class="tag green">Block produced</span> #' + (res.block?.header?.index) + ' · ' + (res.block?.transactions?.length || 0) + ' txs · hash: <span class="mono">' + trunc(res.block?.hash) + '</span>';
+  loadStats();
+}
+
+// Explorer
+async function loadBlocks() {
+  const blocks = await fetch(API + '/api/blockchain/blocks?limit=20').then(r => r.json());
+  if (!Array.isArray(blocks)) return;
+  document.getElementById('blockTable').innerHTML = blocks.map(b => `<tr style="cursor:pointer" onclick="showBlock(${b.header.index})"><td>${b.header.index}</td><td class="mono">${trunc(b.hash)}</td><td>${b.transactions.length}</td><td class="mono">${trunc(b.header.validator)}</td><td>${new Date(b.header.timestamp || 0).toLocaleString()}</td></tr>`).join('');
+}
+
+async function showBlock(index) {
+  const block = await fetch(API + '/api/blockchain/block/' + index).then(r => r.json());
+  let html = '<div class="card" style="margin-top:12px"><h3>Block #' + index + '</h3>';
+  html += '<p class="mono" style="word-break:break-all;font-size:0.8rem">Hash: ' + block.hash + '</p>';
+  html += '<p class="mono" style="word-break:break-all;font-size:0.8rem">Prev: ' + block.header.previousHash + '</p>';
+  html += '<p>Validator: <span class="mono">' + trunc(block.header.validator) + '</span></p>';
+  html += '<p>Timestamp: ' + new Date(block.header.timestamp).toLocaleString() + '</p>';
+  html += '<h3 style="margin-top:12px">Transactions (' + block.transactions.length + ')</h3>';
+  if (block.transactions.length) {
+    html += '<table><thead><tr><th>ID</th><th>From</th><th>To</th><th>Amount</th><th>Fee</th></tr></thead><tbody>';
+    block.transactions.forEach(t => html += `<tr><td class="mono">${trunc(t.id)}</td><td class="mono">${trunc(t.from)}</td><td class="mono">${trunc(t.to)}</td><td>${t.amount}</td><td>${t.fee}</td></tr>`);
+    html += '</tbody></table>';
+  } else { html += '<p class="subtle">No transactions in this block</p>'; }
+  html += '</div>';
+  document.getElementById('blockDetail').innerHTML = html;
+}
+
+// Contracts
+async function deployContract() {
+  const res = await fetch(API + '/api/contract/deploy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ owner: document.getElementById('contractOwner').value, name: document.getElementById('contractName').value, source: document.getElementById('contractSource').value }) }).then(r => r.json());
+  toast(res.success ? 'Contract deployed!' : 'Deploy failed', !!res.success);
+  if (res.contractId) document.getElementById('execId').value = res.contractId;
+  loadContracts();
+}
+
+async function execContract() {
+  const input = document.getElementById('execInput').value;
+  const res = await fetch(API + '/api/contract/' + document.getElementById('execId').value + '/execute', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ input }) }).then(r => r.json());
+  toast(res.error ? res.error : 'Execution complete!', !res.error);
+}
+
+async function loadContracts() {
+  const contracts = await fetch(API + '/api/contracts').then(r => r.json());
+  document.getElementById('contractList').innerHTML = contracts.length ? contracts.map(c => `<div class="card" style="padding:10px"><strong>${c.name}</strong> · <span class="mono">${trunc(c.id)}</span> · Owner: <span class="mono">${trunc(c.owner)}</span></div>`).join('') : '<p class="subtle">No contracts deployed yet</p>';
+}
+
+// DEX
+async function loadPools() {
+  const pools = await fetch(API + '/api/dex/pools').then(r => r.json().catch(() => []));
+  document.getElementById('poolList').innerHTML = pools.length ? pools.map(p => `<div class="card" style="padding:10px"><strong>${p.tokenA}/${p.tokenB}</strong> · Reserve: ${fmt(p.reserveA)} / ${fmt(p.reserveB)} · LP: ${fmt(p.totalLP)}</div>`).join('') : '<p class="subtle">No pools created yet</p>';
+}
+
+async function createPool() {
+  const res = await fetch(API + '/api/dex/pool/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tokenA: document.getElementById('poolTokenA').value, tokenB: document.getElementById('poolTokenB').value }) }).then(r => r.json());
+  toast(res.success ? 'Pool created!' : 'Failed', !!res.success);
+  loadPools();
+}
+
+async function addLiquidity() {
+  const res = await fetch(API + '/api/dex/liquidity/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider: document.getElementById('liqProvider').value, tokenA: document.getElementById('liqTokenA').value, tokenB: document.getElementById('liqTokenB').value, amountA: parseFloat(document.getElementById('liqAmtA').value), amountB: parseFloat(document.getElementById('liqAmtB').value) }) }).then(r => r.json());
+  toast(res.lpTokens ? 'Liquidity added! LP tokens: ' + res.lpTokens : 'Failed', !!res.lpTokens);
+  loadPools();
+}
+
+async function swapTokens() {
+  const res = await fetch(API + '/api/dex/swap', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trader: document.getElementById('swapTrader').value, tokenIn: document.getElementById('swapTokenIn').value, tokenOut: document.getElementById('swapTokenOut').value, amountIn: parseFloat(document.getElementById('swapAmtIn').value), minAmountOut: parseFloat(document.getElementById('swapMinOut').value) || 0 }) }).then(r => r.json());
+  if (res.error) { toast(res.error, false); document.getElementById('swapResult').innerHTML = '<span style="color:var(--danger)">' + res.error + '</span>'; return; }
+  toast('Swap complete!');
+  document.getElementById('swapResult').innerHTML = '<span class="tag green">Swapped</span> Received: <strong>' + fmt(res.amountOut) + '</strong> · Fee: ' + res.fee;
+  loadPools();
+}
+
+// Eco
+async function loadEco() {
+  // Carbon credits
+  const credits = await fetch(API + '/api/eco/carbon/credits').then(r => r.json().catch(() => []));
+  document.getElementById('carbonTable').innerHTML = credits.length ? credits.map(c => `<tr><td class="mono">${trunc(c.id)}</td><td>${c.projectType}</td><td>${c.amount}</td><td>${c.price}</td><td><span class="tag ${c.status === 'available' ? 'green' : c.status === 'retired' ? 'red' : 'yellow'}">${c.status}</span></td></tr>`).join('') : '<tr><td colspan="5" class="subtle">No carbon credits yet</td></tr>';
+
+  // Reforestation
+  const projects = await fetch(API + '/api/eco/reforest/projects').then(r => r.json().catch(() => []));
+  document.getElementById('reforestTable').innerHTML = projects.length ? projects.map(p => `<tr><td>${p.name}</td><td>${p.location?.country || '—'}</td><td>${fmt(p.treesPlanted)}</td><td>${fmt(p.treesTarget)}</td><td>${fmt(p.co2Sequestered)}</td><td><span class="tag ${p.status === 'verified' ? 'green' : 'yellow'}">${p.status}</span></td></tr>`).join('') : '<tr><td colspan="6" class="subtle">No reforestation projects yet</td></tr>';
+
+  // Green validators
+  const green = await fetch(API + '/api/eco/green/top?n=20').then(r => r.json().catch(() => []));
+  document.getElementById('greenTable').innerHTML = green.length ? green.map(g => `<tr><td class="mono">${trunc(g.address)}</td><td>${g.energySource || '—'}</td><td>${fmt(g.carbonOffset)}</td><td>${fmt(g.treesPlanted)}</td><td><div class="bar" style="width:60px"><div style="width:${g.score}%"></div></div> ${g.score}/100</td></tr>`).join('') : '<tr><td colspan="5" class="subtle">No green validators registered</td></tr>';
+}
+
+async function mintCarbon() {
+  const res = await fetch(API + '/api/eco/carbon/mint', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ seller: document.getElementById('ccSeller').value, projectType: document.getElementById('ccType').value, amount: parseFloat(document.getElementById('ccAmount').value), price: parseFloat(document.getElementById('ccPrice').value), location: document.getElementById('ccLocation').value }) }).then(r => r.json());
+  toast(res.success ? 'Carbon credit minted!' : 'Failed', !!res.success);
+  loadEco(); loadStats();
+}
+
+async function createReforest() {
+  const res = await fetch(API + '/api/eco/reforest/create', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ owner: document.getElementById('rfOwner').value, name: document.getElementById('rfName').value, location: { lat: parseFloat(document.getElementById('rfLat').value), lng: parseFloat(document.getElementById('rfLng').value), country: document.getElementById('rfCountry').value }, area: parseFloat(document.getElementById('rfArea').value), treesTarget: parseInt(document.getElementById('rfTarget').value), species: [] }) }).then(r => r.json());
+  toast(res.success ? 'Reforestation project created!' : 'Failed', !!res.success);
+  loadEco(); loadStats();
+}
+
+// Init
+loadStats();
+setInterval(loadStats, 5000);
+</script>
 </body>
 </html>
