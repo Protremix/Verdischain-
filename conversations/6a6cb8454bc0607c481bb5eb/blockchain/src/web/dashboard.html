@@ -60,7 +60,11 @@ td.mono{font-size:0.75rem}
 <body>
 
 <div class="header-bar">
-  <h1>🌿 Verdis</h1>
+  <h1>🌿 Verdis <span style="font-size:0.7rem;color:var(--accent);font-weight:normal;margin-left:8px">🟢 LIVE</span></h1>
+<div style="background:var(--card);border:1px solid var(--accent);border-radius:8px;padding:10px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+  <div><span class="subtle">Public URL:</span> <a href="https://8f0a19461d3bd4fc-163-192-192-132.serveousercontent.com" style="color:var(--accent)" class="mono">8f0a19461d3bd4fc-163-192-192-132.serveousercontent.com</a></div>
+  <div class="subtle" style="font-size:0.8rem">RPC: /rpc | Chain ID: 909 | Symbol: VRS</div>
+</div>
   <span class="subtle">Eco-First DPoS Blockchain · Token: VRS</span>
 </div>
 
@@ -351,11 +355,12 @@ td.mono{font-size:0.75rem}
       <p class="subtle">Add Verdis to Trust Wallet as a custom network:</p>
       <table style="margin-top:8px">
         <tr><td class="subtle">Network Name</td><td><strong>Verdis</strong></td></tr>
-        <tr><td class="subtle">RPC URL</td><td class="mono">http://localhost:3200/rpc</td></tr>
+        <tr><td class="subtle">RPC URL (Public)</td><td class="mono" style="color:var(--accent)">https://8f0a19461d3bd4fc-163-192-192-132.serveousercontent.com/rpc</td></tr>
+        <tr><td class="subtle">RPC URL (Local)</td><td class="mono">http://localhost:3200/rpc</td></tr>
         <tr><td class="subtle">Chain ID</td><td><strong>909</strong> (0x38d)</td></tr>
         <tr><td class="subtle">Symbol</td><td><strong>VRS</strong></td></tr>
         <tr><td class="subtle">Decimals</td><td>18</td></tr>
-        <tr><td class="subtle">Explorer</td><td class="mono">http://localhost:3200</td></tr>
+        <tr><td class="subtle">Explorer (Public)</td><td class="mono" style="color:var(--accent)">https://8f0a19461d3bd4fc-163-192-192-132.serveousercontent.com</td></tr>
       </table>
     </div>
     
@@ -366,7 +371,7 @@ td.mono{font-size:0.75rem}
     <h3 style="margin-top:16px">📋 Setup Instructions</h3>
     <div class="card" style="font-size:0.85rem;line-height:1.8">
       <p><strong style="color:var(--accent)">Step 1:</strong> Open Trust Wallet → Settings → Networks → Add Custom Network</p>
-      <p><strong style="color:var(--accent)">Step 2:</strong> Enter the Network Configuration above (RPC URL, Chain ID 909, Symbol VRS)</p>
+      <p><strong style="color:var(--accent)">Step 2:</strong> Enter the Network Configuration above (use the Public RPC URL, Chain ID 909, Symbol VRS)</p>
       <p><strong style="color:var(--accent)">Step 3:</strong> Go to Settings → Wallets → Import Wallet → Private Key</p>
       <p><strong style="color:var(--accent)">Step 4:</strong> Paste the private key from one of your Verdis wallets above</p>
       <p><strong style="color:var(--accent)">Step 5:</strong> Your VRS balance will appear in Trust Wallet!</p>
