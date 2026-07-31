@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sha256 = sha256;
 exports.doubleSha256 = doubleSha256;
@@ -8,7 +41,7 @@ exports.getAddressFromPublicKey = getAddressFromPublicKey;
 exports.sign = sign;
 exports.verify = verify;
 exports.signTransaction = signTransaction;
-const secp256k1_1 = require("@noble/secp256k1");
+const secp256k1 = __importStar(require("@noble/secp256k1"));
 const sha256_1 = require("@noble/hashes/sha256");
 /**
  * Computes single SHA-256 hash returned as hex string.
@@ -29,9 +62,9 @@ function doubleSha256(data) {
  * Generates a new secp256k1 key pair.
  */
 function generateKeyPair() {
-    const privBytes = secp256k1_1.secp256k1.utils.randomPrivateKey();
+    const privBytes = secp256k1.utils.randomPrivateKey();
     const privateKey = Buffer.from(privBytes).toString('hex');
-    const pubBytes = secp256k1_1.secp256k1.getPublicKey(privBytes, true);
+    const pubBytes = secp256k1.getPublicKey(privBytes, true);
     const publicKey = Buffer.from(pubBytes).toString('hex');
     return { privateKey, publicKey };
 }
@@ -41,7 +74,7 @@ function generateKeyPair() {
 function getPublicKeyFromPrivateKey(privateKey) {
     try {
         const privBytes = Buffer.from(privateKey, 'hex');
-        const pubBytes = secp256k1_1.secp256k1.getPublicKey(privBytes, true);
+        const pubBytes = secp256k1.getPublicKey(privBytes, true);
         return Buffer.from(pubBytes).toString('hex');
     }
     catch {
@@ -68,10 +101,11 @@ function getAddressFromPublicKey(publicKey) {
 function sign(data, privateKey) {
     try {
         const messageHash = sha256(data);
-        const sig = secp256k1_1.secp256k1.sign(messageHash, privateKey);
+        const sig = secp256k1.sign(messageHash, privateKey);
+        const hex = typeof sig.toCompactHex === 'function' ? sig.toCompactHex() : Buffer.from(sig).toString('hex');
         return {
-            signature: sig.toCompactHex(),
-            recovery: sig.recovery,
+            signature: hex,
+            recovery: sig.recovery ?? 0,
         };
     }
     catch {
@@ -87,7 +121,7 @@ function sign(data, privateKey) {
 function verify(data, signature, publicKey) {
     try {
         const messageHash = sha256(data);
-        return secp256k1_1.secp256k1.verify(signature, messageHash, publicKey);
+        return secp256k1.verify(signature, messageHash, publicKey);
     }
     catch {
         return false;
@@ -115,3 +149,4 @@ function signTransaction(privateKey, to, amount, fee, nonce, data = null, public
         recovery: sigResult.recovery,
     };
 }
+//# sourceMappingURL=crypto.js.map

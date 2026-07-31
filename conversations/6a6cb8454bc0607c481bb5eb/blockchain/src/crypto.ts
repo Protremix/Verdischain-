@@ -1,4 +1,4 @@
-import { secp256k1 } from '@noble/secp256k1';
+import * as secp256k1 from '@noble/secp256k1';
 import { sha256 as nobleSha256 } from '@noble/hashes/sha256';
 import { Transaction } from './types';
 
@@ -69,9 +69,10 @@ export function sign(data: string, privateKey: string): { signature: string; rec
   try {
     const messageHash = sha256(data);
     const sig = secp256k1.sign(messageHash, privateKey);
+    const hex = typeof (sig as any).toCompactHex === 'function' ? (sig as any).toCompactHex() : Buffer.from(sig as any).toString('hex');
     return {
-      signature: sig.toCompactHex(),
-      recovery: sig.recovery,
+      signature: hex,
+      recovery: (sig as any).recovery ?? 0,
     };
   } catch {
     return {

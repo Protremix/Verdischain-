@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RojsChain - Blockchain Explorer & Dashboard</title>
+  <title>Verdis - Blockchain Explorer & Dashboard</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -53,7 +53,7 @@
 </head>
 <body>
   <header>
-    <h1>🚀 RojsChain Network Dashboard</h1>
+    <h1>🚀 Verdis Network Dashboard</h1>
     <p>Real-time Blockchain Explorer & Node Status</p>
   </header>
 
@@ -68,7 +68,7 @@
     </div>
     <div class="card">
       <h2>Total Supply</h2>
-      <div class="metric" id="totalSupply">50,000,000,000 ROJS</div>
+      <div class="metric" id="totalSupply">50,000,000,000 VRS</div>
     </div>
   </div>
 
@@ -79,7 +79,7 @@
         const data = await res.json();
         document.getElementById('blockHeight').innerText = data.currentHeight !== undefined ? data.currentHeight : 1;
         document.getElementById('validators').innerText = data.validatorCount || 5;
-        document.getElementById('totalSupply').innerText = (data.totalSupply || 50000000000).toLocaleString() + ' ROJS';
+        document.getElementById('totalSupply').innerText = (data.totalSupply || 50000000000).toLocaleString() + ' VRS';
       } catch (e) {
         console.error('Error loading stats:', e);
       }

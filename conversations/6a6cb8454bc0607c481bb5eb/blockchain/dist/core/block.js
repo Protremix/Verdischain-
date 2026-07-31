@@ -221,7 +221,7 @@ function isChainValid(chain) {
     return true;
 }
 /**
- * Creates the genesis block for RojsChain.
+ * Creates the genesis block for Verdis.
  * Index 0, previousHash all zeros, empty transactions, validator 'genesis', timestamp 0.
  */
 function createGenesisBlock() {
@@ -244,3 +244,4 @@ function createGenesisBlock() {
         hash,
     };
 }
+//# sourceMappingURL=block.js.map

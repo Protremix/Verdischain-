@@ -265,7 +265,7 @@ export function isChainValid(chain: Block[]): boolean {
 }
 
 /**
- * Creates the genesis block for RojsChain.
+ * Creates the genesis block for Verdis.
  * Index 0, previousHash all zeros, empty transactions, validator 'genesis', timestamp 0.
  */
 export function createGenesisBlock(): Block {

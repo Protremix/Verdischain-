@@ -1,56 +1,42 @@
-import { Block, Transaction, Validator, Stake } from '../types';
-export interface ChainInfo {
-    height: number;
-    totalSupply: number;
-    maxSupply: number;
-    validatorCount: number;
-    blockReward: number;
-}
-export interface TransactionReceipt {
-    transaction: Transaction;
-    blockIndex: number;
-    blockHash: string;
-    confirmations: number;
-    status: 'confirmed' | 'pending';
-}
+import { Block, Transaction, Validator, BlockchainState } from '../types';
 export declare class TokenSystem {
-    private totalSupply;
-    private maxSupply;
-    getTotalSupply(): number;
-    getMaxSupply(): number;
+    private balances;
+    private stakes;
+    getBalance(address: string): number;
+    setBalance(address: string, amount: number): void;
+    addBalance(address: string, amount: number): void;
+    getStaked(address: string): number;
+    stake(address: string, amount: number): void;
+    getBalancesMap(): Map<string, number>;
 }
-export declare class DPoSConsensus {
-    private activeValidators;
-    getValidators(): Validator[];
+export declare class Consensus {
+    private validators;
+    private stakes;
+    registerValidator(publicKey: string, address?: string): Validator;
+    vote(voterAddress: string, validatorAddressOrKey: string, amount: number, tokenSystem?: TokenSystem): void;
+    getValidators(): Map<string, Validator>;
+    getAllValidatorsList(): Validator[];
+}
+export declare class Mempool {
+    private pendingTransactions;
+    addTransaction(tx: Transaction): boolean;
+    getPendingTransactions(): Transaction[];
+    clear(): void;
 }
 export declare class Blockchain {
     private chain;
+    private consensus;
+    private tokenSystem;
     private mempool;
-    private validators;
-    private stakes;
-    private balances;
-    private totalSupply;
     private maxSupply;
-    private blockReward;
+    private totalSupply;
     constructor();
     private createGenesisBlock;
-    getBalance(address: string): number;
-    getStakedAmount(address: string): number;
-    submitTransaction(tx: Transaction): string;
-    getTransactionReceipt(txId: string): TransactionReceipt | null;
-    getMempool(): Transaction[];
-    getMempoolSize(): number;
-    getChainInfo(): ChainInfo;
-    getChainHeight(): number;
-    getBlocks(limit?: number, offset?: number): Block[];
-    getBlockByIndex(index: number): Block | null;
-    getBlockByHash(hash: string): Block | null;
-    getValidators(): Validator[];
-    getTopValidators(limit?: number): Validator[];
-    registerValidator(publicKey: string): Validator;
-    voteForValidator(voterAddress: string, validatorAddress: string, amount: number, privateKey: string): Stake;
-    stake(address: string, amount: number): boolean;
-    unstake(address: string, amount: number): boolean;
-    produceBlock(publicKey: string, privateKey: string): Block;
-    allocateGenesis(address: string, amount: number): boolean;
+    addGenesisAllocation(address: string, amount: number): void;
+    getConsensus(): Consensus;
+    getTokenSystem(): TokenSystem;
+    getMempool(): Mempool;
+    getChain(): Block[];
+    getLatestBlock(): Block;
+    getState(): BlockchainState;
 }

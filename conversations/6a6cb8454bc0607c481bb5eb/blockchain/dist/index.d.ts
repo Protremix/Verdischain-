@@ -1,0 +1,11 @@
+import { Blockchain } from './core/consensus';
+import { ContractManager } from './core/vm';
+import { BlockchainAPI } from './api/server';
+import { WalletManager } from './wallet/wallet';
+import { DEX, LiquidityPool, CarbonCreditToken } from './core/dex';
+declare const blockchain: Blockchain;
+declare const contractManager: ContractManager;
+declare const walletManager: WalletManager;
+declare const dex: DEX;
+declare const apiServer: BlockchainAPI;
+export { blockchain, contractManager, walletManager, apiServer, dex, DEX, LiquidityPool, CarbonCreditToken };

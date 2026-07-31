@@ -1,32 +1,17 @@
-import express from 'express';
+import { Express } from 'express';
 import { Blockchain } from '../core/consensus';
-import { TokenSystem, DPoSConsensus } from '../core/consensus';
+import { WalletManager } from '../wallet/wallet';
 import { ContractManager } from '../core/vm';
-/**
- * REST API Server for RojsChain blockchain platform.
- * Exposes full blockchain functionality via Express endpoints.
- */
 export declare class BlockchainAPI {
     private app;
     private blockchain;
+    private walletManager;
     private contractManager;
-    private port;
-    constructor(blockchain: Blockchain, contractManager: ContractManager, port: number);
-    /**
-     * Configures Express middlewares.
-     */
+    private dashboardHtmlPath?;
+    constructor(blockchain: Blockchain, walletManager: WalletManager, contractManager: ContractManager);
     private setupMiddleware;
-    /**
-     * Sets up all REST API endpoints.
-     */
+    serveDashboard(filePath?: string): void;
     private setupRoutes;
-    /**
-     * Starts the Express REST server on the designated port.
-     */
-    start(): void;
-    /**
-     * Returns the underlying Express application instance.
-     */
-    getApp(): express.Application;
+    start(port: number): void;
+    getApp(): Express;
 }
-export { TokenSystem, DPoSConsensus };

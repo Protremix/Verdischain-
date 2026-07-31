@@ -55,9 +55,9 @@ export class BlockchainAPI {
       res.send(`
         <!DOCTYPE html>
         <html>
-        <head><title>RojsChain Dashboard</title></head>
+        <head><title>Verdis Dashboard</title></head>
         <body style="font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 2rem;">
-          <h1>🚀 RojsChain Node Running</h1>
+          <h1>🚀 Verdis Node Running</h1>
           <p>Status: Active</p>
           <p>Height: ${this.blockchain.getChain().length - 1}</p>
         </body>

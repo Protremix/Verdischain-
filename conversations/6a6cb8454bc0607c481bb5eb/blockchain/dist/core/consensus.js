@@ -1,245 +1,167 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Blockchain = exports.DPoSConsensus = exports.TokenSystem = void 0;
-const sha256_1 = require("@noble/hashes/sha256");
+exports.Blockchain = exports.Mempool = exports.Consensus = exports.TokenSystem = void 0;
+const crypto_1 = __importDefault(require("crypto"));
 class TokenSystem {
     constructor() {
-        this.totalSupply = 1000000000;
-        this.maxSupply = 2000000000;
-    }
-    getTotalSupply() {
-        return this.totalSupply;
-    }
-    getMaxSupply() {
-        return this.maxSupply;
-    }
-}
-exports.TokenSystem = TokenSystem;
-class DPoSConsensus {
-    constructor() {
-        this.activeValidators = new Map();
-    }
-    getValidators() {
-        return Array.from(this.activeValidators.values());
-    }
-}
-exports.DPoSConsensus = DPoSConsensus;
-class Blockchain {
-    constructor() {
-        this.chain = [];
-        this.mempool = [];
-        this.validators = new Map();
-        this.stakes = [];
         this.balances = new Map();
-        this.totalSupply = 100000000;
-        this.maxSupply = 1000000000;
-        this.blockReward = 10;
-        this.createGenesisBlock();
-    }
-    createGenesisBlock() {
-        const genesisHeader = {
-            index: 0,
-            previousHash: '0'.repeat(64),
-            timestamp: Date.now(),
-            merkleRoot: '0'.repeat(64),
-            validator: 'genesis',
-            validatorSignature: 'genesis_sig',
-            difficulty: 1,
-            nonce: 0,
-        };
-        const genesisBlock = {
-            header: genesisHeader,
-            transactions: [],
-            hash: Buffer.from((0, sha256_1.sha256)(Buffer.from(JSON.stringify(genesisHeader)))).toString('hex'),
-        };
-        this.chain.push(genesisBlock);
+        this.stakes = new Map();
     }
     getBalance(address) {
         return this.balances.get(address) || 0;
     }
-    getStakedAmount(address) {
-        return this.stakes
-            .filter((s) => s.voter === address)
-            .reduce((acc, s) => acc + s.amount, 0);
+    setBalance(address, amount) {
+        this.balances.set(address, amount);
     }
-    submitTransaction(tx) {
-        if (!tx || !tx.id)
-            throw new Error('Invalid transaction');
-        this.mempool.push(tx);
-        return tx.id;
+    addBalance(address, amount) {
+        const current = this.getBalance(address);
+        this.balances.set(address, current + amount);
     }
-    getTransactionReceipt(txId) {
-        // Check blocks
-        for (const block of this.chain) {
-            const tx = block.transactions.find((t) => t.id === txId);
-            if (tx) {
-                return {
-                    transaction: tx,
-                    blockIndex: block.header.index,
-                    blockHash: block.hash,
-                    confirmations: this.chain.length - block.header.index,
-                    status: 'confirmed',
-                };
-            }
+    getStaked(address) {
+        return this.stakes.get(address) || 0;
+    }
+    stake(address, amount) {
+        const currentBal = this.getBalance(address);
+        if (currentBal >= amount) {
+            this.balances.set(address, currentBal - amount);
         }
-        // Check mempool
-        const pendingTx = this.mempool.find((t) => t.id === txId);
-        if (pendingTx) {
-            return {
-                transaction: pendingTx,
-                blockIndex: -1,
-                blockHash: '',
-                confirmations: 0,
-                status: 'pending',
-            };
-        }
-        return null;
+        const currentStaked = this.getStaked(address);
+        this.stakes.set(address, currentStaked + amount);
     }
-    getMempool() {
-        return [...this.mempool];
+    getBalancesMap() {
+        return this.balances;
     }
-    getMempoolSize() {
-        return this.mempool.length;
+}
+exports.TokenSystem = TokenSystem;
+class Consensus {
+    constructor() {
+        this.validators = new Map();
+        this.stakes = [];
     }
-    getChainInfo() {
-        return {
-            height: this.chain.length,
-            totalSupply: this.totalSupply,
-            maxSupply: this.maxSupply,
-            validatorCount: this.validators.size,
-            blockReward: this.blockReward,
-        };
-    }
-    getChainHeight() {
-        return this.chain.length;
-    }
-    getBlocks(limit = 20, offset = 0) {
-        return this.chain.slice(offset, offset + limit);
-    }
-    getBlockByIndex(index) {
-        if (index < 0 || index >= this.chain.length)
-            return null;
-        return this.chain[index];
-    }
-    getBlockByHash(hash) {
-        return this.chain.find((b) => b.hash === hash) || null;
-    }
-    getValidators() {
-        return Array.from(this.validators.values());
-    }
-    getTopValidators(limit = 27) {
-        const list = Array.from(this.validators.values());
-        list.sort((a, b) => b.votes - a.votes);
-        return list.slice(0, limit);
-    }
-    registerValidator(publicKey) {
-        if (!publicKey)
-            throw new Error('Public key is required to register validator');
-        const existing = this.validators.get(publicKey);
-        if (existing)
+    registerValidator(publicKey, address) {
+        const valAddress = address || publicKey;
+        const existing = this.validators.get(publicKey) || this.validators.get(valAddress);
+        if (existing) {
             return existing;
+        }
         const validator = {
             publicKey,
-            address: `0x${publicKey.slice(0, 20)}`,
+            address: valAddress,
             votes: 0,
             isProducer: true,
             blocksProduced: 0,
             totalRewards: 0,
         };
         this.validators.set(publicKey, validator);
+        this.validators.set(valAddress, validator);
         return validator;
     }
-    voteForValidator(voterAddress, validatorAddress, amount, privateKey) {
-        if (!voterAddress || !validatorAddress || !privateKey)
-            throw new Error('Missing required voting fields');
-        if (amount <= 0)
-            throw new Error('Vote amount must be greater than zero');
-        const voterBalance = this.getBalance(voterAddress);
-        if (voterBalance < amount) {
-            throw new Error('Insufficient balance to vote');
+    vote(voterAddress, validatorAddressOrKey, amount, tokenSystem) {
+        const validator = this.validators.get(validatorAddressOrKey);
+        if (validator) {
+            validator.votes += amount;
         }
-        this.balances.set(voterAddress, voterBalance - amount);
-        const stake = {
+        this.stakes.push({
             voter: voterAddress,
-            validator: validatorAddress,
+            validator: validatorAddressOrKey,
             amount,
             timestamp: Date.now(),
-        };
-        this.stakes.push(stake);
-        // Update validator vote count
-        for (const val of this.validators.values()) {
-            if (val.address === validatorAddress || val.publicKey === validatorAddress) {
-                val.votes += amount;
-            }
-        }
-        return stake;
+        });
     }
-    stake(address, amount) {
-        if (!address)
-            throw new Error('Address is required');
-        if (amount <= 0)
-            throw new Error('Stake amount must be greater than zero');
-        const balance = this.getBalance(address);
-        if (balance < amount)
-            throw new Error('Insufficient balance to stake');
-        this.balances.set(address, balance - amount);
+    getValidators() {
+        return this.validators;
+    }
+    getAllValidatorsList() {
+        const uniqueValidators = new Set();
+        for (const validator of this.validators.values()) {
+            uniqueValidators.add(validator);
+        }
+        return Array.from(uniqueValidators);
+    }
+}
+exports.Consensus = Consensus;
+class Mempool {
+    constructor() {
+        this.pendingTransactions = [];
+    }
+    addTransaction(tx) {
+        this.pendingTransactions.push(tx);
         return true;
     }
-    unstake(address, amount) {
-        if (!address)
-            throw new Error('Address is required');
-        if (amount <= 0)
-            throw new Error('Unstake amount must be greater than zero');
-        const currentStaked = this.getStakedAmount(address);
-        if (currentStaked < amount)
-            throw new Error('Unstake amount exceeds total staked');
-        const currentBalance = this.getBalance(address);
-        this.balances.set(address, currentBalance + amount);
-        return true;
+    getPendingTransactions() {
+        return [...this.pendingTransactions];
     }
-    produceBlock(publicKey, privateKey) {
-        if (!publicKey || !privateKey)
-            throw new Error('Public key and private key are required to produce block');
-        const lastBlock = this.chain[this.chain.length - 1];
-        const newIndex = lastBlock.header.index + 1;
-        const txsToInclude = [...this.mempool];
-        this.mempool = [];
-        const header = {
-            index: newIndex,
-            previousHash: lastBlock.hash,
-            timestamp: Date.now(),
-            merkleRoot: Buffer.from((0, sha256_1.sha256)(Buffer.from(JSON.stringify(txsToInclude)))).toString('hex'),
-            validator: publicKey,
-            validatorSignature: `sig_${privateKey.slice(0, 8)}`,
-            difficulty: 1,
-            nonce: 0,
-        };
-        const blockHash = Buffer.from((0, sha256_1.sha256)(Buffer.from(JSON.stringify(header)))).toString('hex');
-        const block = {
-            header,
-            transactions: txsToInclude,
-            hash: blockHash,
-        };
-        this.chain.push(block);
-        // Award block reward
-        const validator = this.validators.get(publicKey);
-        if (validator) {
-            validator.blocksProduced += 1;
-            validator.totalRewards += this.blockReward;
-        }
-        return block;
+    clear() {
+        this.pendingTransactions = [];
     }
-    allocateGenesis(address, amount) {
-        if (this.chain.length > 1) {
-            throw new Error('Genesis allocation is only allowed before any blocks are produced');
+}
+exports.Mempool = Mempool;
+class Blockchain {
+    constructor() {
+        this.chain = [];
+        this.consensus = new Consensus();
+        this.tokenSystem = new TokenSystem();
+        this.mempool = new Mempool();
+        this.maxSupply = 100000000000; // 100 Billion
+        this.totalSupply = 0;
+        this.createGenesisBlock();
+    }
+    createGenesisBlock() {
+        const genesisBlock = {
+            header: {
+                index: 0,
+                previousHash: '0'.repeat(64),
+                timestamp: Date.now(),
+                merkleRoot: '0'.repeat(64),
+                validator: 'GENESIS',
+                validatorSignature: '',
+                difficulty: 1,
+                nonce: 0,
+            },
+            transactions: [],
+            hash: crypto_1.default.createHash('sha256').update('GENESIS_BLOCK').digest('hex'),
+        };
+        this.chain.push(genesisBlock);
+    }
+    addGenesisAllocation(address, amount) {
+        if (this.totalSupply + amount > this.maxSupply) {
+            throw new Error('Genesis allocation exceeds maximum supply limit');
         }
-        if (!address)
-            throw new Error('Address is required');
-        if (amount <= 0)
-            throw new Error('Allocation amount must be greater than zero');
-        const currentBalance = this.getBalance(address);
-        this.balances.set(address, currentBalance + amount);
-        return true;
+        this.tokenSystem.addBalance(address, amount);
+        this.totalSupply += amount;
+    }
+    getConsensus() {
+        return this.consensus;
+    }
+    getTokenSystem() {
+        return this.tokenSystem;
+    }
+    getMempool() {
+        return this.mempool;
+    }
+    getChain() {
+        return this.chain;
+    }
+    getLatestBlock() {
+        return this.chain[this.chain.length - 1];
+    }
+    getState() {
+        return {
+            chain: this.chain,
+            mempool: this.mempool.getPendingTransactions(),
+            validators: this.consensus.getValidators(),
+            stakes: [],
+            balances: this.tokenSystem.getBalancesMap(),
+            contracts: new Map(),
+            totalSupply: this.totalSupply,
+            maxSupply: this.maxSupply,
+            blockReward: 50,
+            validatorCount: this.consensus.getAllValidatorsList().length,
+            currentHeight: this.chain.length - 1,
+        };
     }
 }
 exports.Blockchain = Blockchain;

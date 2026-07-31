@@ -1,25 +1,40 @@
 import { Transaction } from './types';
+export interface KeyPair {
+    privateKey: string;
+    publicKey: string;
+}
 /**
- * Computes SHA-256 hash of given data and returns hex string.
+ * Computes single SHA-256 hash returned as hex string.
  */
-export declare function sha256(data: string | Uint8Array | Buffer): string;
+export declare function sha256(data: string | Uint8Array): string;
 /**
- * Calculates deterministic hash for a transaction object.
- * Hash excludes 'id', 'signature', and 'recovery'.
+ * Computes double SHA-256 hash (SHA-256 of SHA-256) returned as hex string.
  */
-export declare function hashTransaction(tx: Omit<Transaction, 'id' | 'signature' | 'recovery'> | Transaction): string;
+export declare function doubleSha256(data: string | Uint8Array): string;
 /**
- * Signs a transaction hash with a private key using secp256k1.
+ * Generates a new secp256k1 key pair.
  */
-export declare function signTransaction(hash: string, privateKey: string): {
+export declare function generateKeyPair(): KeyPair;
+/**
+ * Derives public key hex string from a private key hex string.
+ */
+export declare function getPublicKeyFromPrivateKey(privateKey: string): string;
+/**
+ * Derives a blockchain address from a public key using SHA-256 hash.
+ */
+export declare function getAddressFromPublicKey(publicKey: string): string;
+/**
+ * Signs data using secp256k1 private key.
+ */
+export declare function sign(data: string, privateKey: string): {
     signature: string;
     recovery: number;
 };
 /**
- * Verifies a signature against a transaction hash and public key using secp256k1.
+ * Verifies a signature using public key.
  */
-export declare function verifySignature(hash: string, signature: string, publicKey: string, recovery?: number): boolean;
+export declare function verify(data: string, signature: string, publicKey: string): boolean;
 /**
- * Derives an address from a public key string.
+ * Signs a transaction with a private key and constructs a Transaction object.
  */
-export declare function getAddressFromPublicKey(publicKey: string): string;
+export declare function signTransaction(privateKey: string, to: string, amount: number, fee: number, nonce: number, data?: string | null, publicKeyOverride?: string): Transaction;
