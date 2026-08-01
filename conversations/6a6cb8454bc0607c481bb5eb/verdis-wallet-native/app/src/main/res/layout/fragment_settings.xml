@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#050A08"
+    android:fillViewport="true"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#F0FDF4"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Network Settings Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="20dp"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:boxBackgroundColor="#0F1914"
+                app:boxStrokeColor="#00FF88"
+                android:hint="RPC Endpoint"
+                app:hintTextColor="#8BA898">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_rpc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textUri"
+                    android:textColor="#F0FDF4"
+                    android:fontFamily="monospace"
+                    android:textSize="13sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:boxBackgroundColor="#0F1914"
+                app:boxStrokeColor="#00FF88"
+                android:hint="Chain ID"
+                app:hintTextColor="#8BA898">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_chain_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:textColor="#F0FDF4"
+                    android:fontFamily="monospace"
+                    android:enabled="false" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:boxBackgroundColor="#0F1914"
+                app:boxStrokeColor="#00FF88"
+                android:hint="Explorer URL"
+                app:hintTextColor="#8BA898">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_explorer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textUri"
+                    android:textColor="#F0FDF4"
+                    android:fontFamily="monospace"
+                    android:textSize="13sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+
+        <!-- Wallet Security Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="20dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PRIVATE KEY (ENCRYPTED ON DEVICE)"
+                android:textSize="11sp"
+                android:textColor="#8BA898"
+                android:textAllCaps="true"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/et_private_key"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:textColor="#F0FDF4"
+                android:fontFamily="monospace"
+                android:textSize="11sp"
+                android:background="@drawable/bg_input"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_show_key"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Show Key"
+                android:textColor="#F0FDF4"
+                android:textSize="14sp"
+                app:backgroundTint="@android:color/transparent"
+                app:strokeColor="#00FF88"
+                app:strokeWidth="1dp"
+                app:cornerRadius="10dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_disconnect"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Disconnect Wallet"
+                android:textColor="#FF5F5F"
+                android:textSize="14sp"
+                app:backgroundTint="@android:color/transparent"
+                app:strokeColor="#FF5F5F"
+                app:strokeWidth="1dp"
+                app:cornerRadius="10dp"
+                android:layout_marginTop="8dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_version"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Verdis Wallet v1.0.0"
+            android:textSize="12sp"
+            android:textColor="#547363"
+            android:textAlignment="center"
+            android:gravity="center"
+            android:layout_marginTop="20dp" />
+
+    </LinearLayout>
+</ScrollView>

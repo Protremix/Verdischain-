@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#050A08"
+    android:gravity="center"
+    android:padding="32dp">
+
+    <!-- Logo -->
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginBottom="32dp"
+        android:src="@drawable/ic_launcher_foreground" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Verdis Wallet"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:textColor="#F0FDF4"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="The world's first fully green, carbon-negative blockchain. Native wallet with DEX trading, carbon credits, and DPoS staking."
+        android:textSize="14sp"
+        android:textColor="#8BA898"
+        android:textAlignment="center"
+        android:lineSpacingExtra="4dp"
+        android:layout_marginBottom="40dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_create"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Create New Wallet"
+        android:textColor="#050A08"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:backgroundTint="#00FF88"
+        app:cornerRadius="12dp"
+        app:icon="@android:drawable/ic_menu_add"
+        app:iconTint="#050A08"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_import"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Import Wallet"
+        android:textColor="#F0FDF4"
+        android:textSize="15sp"
+        app:backgroundTint="@android:color/transparent"
+        app:strokeColor="#00FF88"
+        app:strokeWidth="1dp"
+        app:cornerRadius="12dp"
+        android:layout_marginTop="12dp"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
+
+</LinearLayout>

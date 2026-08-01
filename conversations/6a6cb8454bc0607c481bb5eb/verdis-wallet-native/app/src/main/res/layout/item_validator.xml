@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/bg_card"
+    android:padding="14dp"
+    android:layout_marginBottom="8dp"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:id="@+id/validator_rank"
+        android:layout_width="24dp"
+        android:layout_height="wrap_content"
+        android:text="1"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#547363"
+        android:layout_marginEnd="12dp" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/validator_addr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0x..."
+            android:textSize="13sp"
+            android:fontFamily="monospace"
+            android:textColor="#F0FDF4" />
+
+        <TextView
+            android:id="@+id/validator_stats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Blocks: 0 · Votes: 0"
+            android:textSize="11sp"
+            android:textColor="#8BA898" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/validator_score"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="#00FF88"
+        android:background="@drawable/bg_score_badge"
+        android:padding="4dp" />
+</LinearLayout>

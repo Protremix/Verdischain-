@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/bg_card"
+    android:padding="12dp"
+    android:layout_marginBottom="8dp"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:id="@+id/tx_dir"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/bg_tx_in"
+        android:text="↓"
+        android:textSize="18sp"
+        android:textColor="#00FF88"
+        android:gravity="center"
+        android:layout_marginEnd="12dp" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tx_addr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0x..."
+            android:textSize="13sp"
+            android:fontFamily="monospace"
+            android:textColor="#F0FDF4" />
+
+        <TextView
+            android:id="@+id/tx_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="11sp"
+            android:textColor="#547363" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tx_amount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0.00"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:fontFamily="monospace"
+        android:textColor="#00FF88" />
+</LinearLayout>

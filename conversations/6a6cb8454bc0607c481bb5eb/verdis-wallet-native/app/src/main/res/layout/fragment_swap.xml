@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#050A08"
+    android:fillViewport="true"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="VerdisSwap DEX"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#F0FDF4"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Swap Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="20dp"
+            android:layout_marginBottom="16dp">
+
+            <!-- From -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FROM"
+                android:textSize="11sp"
+                android:textColor="#8BA898"
+                android:textAllCaps="true" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="12dp"
+                android:gravity="center_vertical">
+
+                <EditText
+                    android:id="@+id/et_from_amount"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:inputType="numberDecimal"
+                    android:hint="0.0"
+                    android:textColor="#F0FDF4"
+                    android:textColorHint="#547363"
+                    android:background="@drawable/bg_input"
+                    android:padding="16dp"
+                    android:fontFamily="monospace"
+                    android:textSize="16sp" />
+
+                <Spinner
+                    android:id="@+id/spinner_from"
+                    android:layout_width="110dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_input"
+                    android:padding="8dp" />
+            </LinearLayout>
+
+            <!-- Arrow -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="↓"
+                android:textSize="24sp"
+                android:gravity="center"
+                android:textColor="#8BA898"
+                android:layout_marginBottom="12dp" />
+
+            <!-- To -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TO (ESTIMATED)"
+                android:textSize="11sp"
+                android:textColor="#8BA898"
+                android:textAllCaps="true" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="12dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tv_to_amount"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:text="0.0"
+                    android:textColor="#F0FDF4"
+                    android:background="@drawable/bg_input"
+                    android:padding="16dp"
+                    android:fontFamily="monospace"
+                    android:textSize="16sp"
+                    android:gravity="center_vertical" />
+
+                <Spinner
+                    android:id="@+id/spinner_to"
+                    android:layout_width="110dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_input"
+                    android:padding="8dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_rate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Select tokens to see rate"
+                android:textSize="12sp"
+                android:textColor="#8BA898"
+                android:layout_marginTop="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_swap"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Swap"
+                android:textColor="#050A08"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:backgroundTint="#00FF88"
+                app:cornerRadius="12dp"
+                android:layout_marginTop="16dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
