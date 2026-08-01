@@ -280,9 +280,12 @@ window.location.href='/explorer?addr='+q;
 async function fetchStats(){
 try{
 var info=await fetch(API+'/api/blockchain/info').then(r=>r.json());
-document.getElementById('s-height').textContent=fmt(info.chainHeight||info.height);
+document.getElementById('s-height').textContent=fmt(info.chainHeight||info.height||info.blockHeight||0);
 document.getElementById('s-validators').textContent=fmt(info.validatorCount||info.validators||27);
-document.getElementById('s-txs').textContent=fmt(info.totalTransactions||0);
+var chain=info.chain||[];
+            var totalTxs=0;
+            if(Array.isArray(chain)){chain.forEach(function(b){totalTxs+=(b.transactions||[]).length})}
+            document.getElementById('s-txs').textContent=fmt(info.totalTransactions||totalTxs||0);
 var sup=info.totalSupply||50000000000;
 document.getElementById('s-supply').textContent=(sup/1e9).toFixed(1)+'B';
 var pools=await fetch(API+'/api/dex/pools').then(r=>r.json()).catch(()=>[]);
@@ -299,9 +302,16 @@ var res=await fetch(API+'/api/blockchain/blocks?limit=15').then(r=>r.json());
 var blocks=res.blocks||res||[];
 if(!blocks.length){document.getElementById('blocks-body').innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">No blocks found</td></tr>';return}
 document.getElementById('blocks-badge').textContent=blocks.length+' blocks';
-document.getElementById('blocks-body').innerHTML=blocks.map(function(b){
-return '<tr onclick="showBlock('+JSON.stringify(b).replace(/"/g,'&quot;')+')"><td class="hash">#'+b.height+'</td><td>'+timeAgo(b.timestamp||b.time)+'</td><td class="addr">'+shortAddr(b.validator||b.miner)+'</td><td>'+(b.transactionCount||b.txs||0)+'</td><td class="hash">'+shortHash(b.hash||b.id)+'</td></tr>';
+var rows=blocks.map(function(b){
+var h=b.header||b;
+var height=h.index||h.height||0;
+var ts=h.timestamp||h.time||0;
+var val=h.validator||h.miner||'';
+var txs=(b.transactions||[]).length;
+var hash=b.hash||h.hash||'';
+return '<tr onclick="showBlock({height:'+height+',timestamp:'+ts+',validator:\''+val+'\',txs:'+txs+',hash:\''+hash+'\'})"><td class="hash">#'+height+'</td><td>'+timeAgo(ts)+'</td><td class="addr">'+shortAddr(val)+'</td><td>'+txs+'</td><td class="hash">'+shortHash(hash)+'</td></tr>';
 }).join('');
+document.getElementById('blocks-body').innerHTML=rows;
 }catch(e){document.getElementById('blocks-body').innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">Failed to load blocks</td></tr>'}
 }
 async function fetchTransactions(){
