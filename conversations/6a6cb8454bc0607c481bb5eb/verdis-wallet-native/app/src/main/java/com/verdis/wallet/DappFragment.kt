@@ -155,7 +155,7 @@ class DappFragment : Fragment() {
             val c = contracts[position]
             holder.itemView.findViewById<TextView>(R.id.tv_credit_id).text = "#${position + 1}"
             holder.itemView.findViewById<TextView>(R.id.tv_credit_amount).text = c.name
-            holder.itemView.findViewById<TextView>(R.id.tv_credit_verified).text = c.address.take(12) + "..."
+            holder.itemView.findViewById<TextView>(R.id.tv_credit_verified).text = c.id.take(12) + "..."
             holder.itemView.findViewById<TextView>(R.id.tv_credit_project).text = c.owner.take(8)
         }
 

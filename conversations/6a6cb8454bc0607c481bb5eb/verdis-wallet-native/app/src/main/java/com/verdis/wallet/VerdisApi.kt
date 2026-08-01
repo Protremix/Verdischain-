@@ -551,7 +551,7 @@ class VerdisApi(
         // 9. getSwapQuote(tokenA, tokenB, amountA): GET /api/dex/quote
         suspend fun getSwapQuote(tokenA: String, tokenB: String, amountA: Double): SwapQuote = withContext(Dispatchers.IO) {
             try {
-                val json = executeGet("/api/dex/quote?tokenA=$tokenA&tokenB=$tokenB&amountA=$amountA")
+                val json = executeGet("/api/dex/quote?tokenIn=$tokenA&tokenOut=$tokenB&amountIn=$amountA")
                 if (json.isNotEmpty() && json.startsWith("{")) {
                     gson.fromJson(json, SwapQuote::class.java) ?: SwapQuote(tokenA, tokenB, amountA)
                 } else {
