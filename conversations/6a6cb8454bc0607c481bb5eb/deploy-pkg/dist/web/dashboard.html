@@ -109,11 +109,61 @@ table.data-table{width:100%;border-collapse:collapse}
 .vb-empty{text-align:center;color:var(--text-muted);font-size:13px;padding:40px 0}
 .vb-section-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin:8px 0 4px;font-weight:600}
 
+
+/* Solana-style dashboard enhancements */
+@keyframes shimmer{0%{background-position:-1000px 0}100%{background-position:1000px 0}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(63,185,80,.08)}50%{box-shadow:0 0 40px rgba(63,185,80,.15)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+@keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes orbit{0%{transform:rotate(0deg) translateX(0) rotate(0deg)}100%{transform:rotate(360deg) translateX(20px) rotate(-360deg)}}
+
+/* Animated gradient header bar */
+.header{background:linear-gradient(135deg,#0d1117,#161b22,#0d1117);background-size:200% 200%;animation:gradientShift 10s ease infinite;border-bottom:1px solid rgba(63,185,80,.1)}
+.header h1{background:linear-gradient(135deg,#3fb950,#2dd4bf,#3fb950);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradientShift 8s ease infinite}
+
+/* Section fade-in on tab switch */
+.section{animation:fadeIn .4s ease}
+.card{transition:all .25s ease}
+.card:hover{border-color:rgba(63,185,80,.15);box-shadow:0 4px 20px rgba(63,185,80,.04)}
+
+/* Stat cards glow */
+.explore-header h2{background:linear-gradient(135deg,#e6edf3,#3fb950);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* Nav tab active gradient */
+.nav-tab.active{color:transparent;background:linear-gradient(135deg,#3fb950,#2dd4bf);-webkit-background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* Button hover effects */
+.btn-primary{transition:all .25s ease;box-shadow:0 0 20px rgba(35,134,54,.2)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 30px rgba(35,134,54,.3)}
+
+/* Feature card hover */
+.feature-card{transition:all .3s ease}
+.feature-card:hover{transform:translateY(-4px);border-color:rgba(63,185,80,.2)!important;box-shadow:0 10px 40px rgba(63,185,80,.06)}
+
+/* Badge pulse */
+.badge-green{animation:glow 3s ease-in-out infinite}
+
+/* Toast animation */
+@keyframes slideInRight{from{transform:translateX(400px);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast{animation:slideInRight .3s ease}
+
+/* Loading skeleton */
+.skeleton{background:linear-gradient(90deg,var(--bg-card) 25%,var(--bg-hover) 50%,var(--bg-card) 75%);background-size:1000px 100%;animation:shimmer 2s infinite}
+
+/* Grid background overlay */
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;
+background-image:linear-gradient(rgba(63,185,80,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(63,185,80,.02) 1px,transparent 1px);
+background-size:40px 40px;mask-image:radial-gradient(ellipse at top,#000 20%,transparent 70%);-webkit-mask-image:radial-gradient(ellipse at top,#000 20%,transparent 70%)}
+
+/* Floating orb in header */
+.header-orb{position:absolute;top:-30px;right:10%;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(63,185,80,.08) 0%,transparent 70%);filter:blur(40px);pointer-events:none;animation:glow 5s ease-in-out infinite}
+
 </style>
 </head>
 <body>
 <!-- HEADER -->
-<div class="header">
+<div class="header" style="position:relative"><div class="header-orb"></div>
 <h1><span>🌿</span> Verdis Blockchain <span class="badge badge-green">Chain 909</span></h1><a href="/docs" style="font-size:12px;color:var(--text-muted);text-decoration:none;margin-left:12px" target="_blank">API Docs</a>
 <div class="social-links"><a href="https://x.com/Verdischain" target="_blank" rel="noopener" class="social-link" aria-label="X (Twitter)"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a><a href="https://t.me/verdischain" target="_blank" rel="noopener" class="social-link" aria-label="Telegram"><svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.96 6.502-1.36 8.627-.168.9-.504 1.201-.828 1.23-.704.064-1.239-.464-1.92-.913-1.067-.7-1.669-1.137-2.704-1.818-1.197-.788-.421-1.223.262-1.93.179-.186 3.273-2.998 3.332-3.249.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.914.49-1.302.48-.428-.008-1.252-.241-1.865-.443-.751-.244-1.349-.374-1.297-.79.027-.218.325-.441.894-.668 3.508-1.53 5.844-2.541 7.006-3.031 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a><a href="https://github.com/verdischain" target="_blank" rel="noopener" class="social-link" aria-label="GitHub"><svg viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a></div><div id="walletPill" class="wallet-pill"><span class="dot disconnected"></span><span id="walletPillText">No wallet connected</span></div>
 </div>
