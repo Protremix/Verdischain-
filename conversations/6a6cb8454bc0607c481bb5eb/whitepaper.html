@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis Blockchain — Whitepaper v1.0</title>
+<style>
+:root{--bg:#0d1117;--bg-card:#161b22;--border:#30363d;--text:#e6edf3;--text-muted:#8b949e;--green:#3fb950;--green-dim:#238636;--blue:#58a6ff;--purple:#bc8cff;--yellow:#d29922}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:1.7;max-width:900px;margin:0 auto;padding:40px 20px}
+h1{font-size:36px;margin-bottom:8px;color:var(--green)}
+h2{font-size:24px;margin-top:40px;margin-bottom:12px;color:var(--blue);border-bottom:1px solid var(--border);padding-bottom:8px}
+h3{font-size:18px;margin-top:24px;margin-bottom:8px;color:var(--purple)}
+h4{font-size:15px;margin-top:16px;margin-bottom:6px;color:var(--yellow)}
+p{margin-bottom:12px;color:var(--text)}
+.muted{color:var(--text-muted)}
+code{font-family:'SF Mono',Monaco,Consolas,monospace;background:var(--bg-card);padding:2px 6px;border-radius:4px;font-size:13px;color:var(--green)}
+pre{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;overflow-x:auto;margin:12px 0}
+pre code{background:none;padding:0}
+table{width:100%;border-collapse:collapse;margin:12px 0}
+th{text-align:left;padding:10px 12px;border-bottom:2px solid var(--border);color:var(--text-muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:14px}
+tr:hover td{background:var(--bg-card)}
+.cover{text-align:center;padding:60px 20px;border:1px solid var(--border);border-radius:12px;margin-bottom:40px;background:linear-gradient(135deg,rgba(63,185,80,.05),rgba(88,166,255,.03))}
+.cover h1{font-size:48px;margin-bottom:12px}
+.cover .subtitle{font-size:18px;color:var(--text-muted);margin-bottom:24px}
+.cover .version{display:inline-block;padding:4px 12px;border-radius:12px;background:rgba(63,185,80,.15);color:var(--green);font-size:13px;font-weight:600}
+.toc{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:32px}
+.toc h3{margin-top:0;color:var(--blue)}
+.toc ol{padding-left:20px}
+.toc li{margin-bottom:4px}
+.toc a{color:var(--text);text-decoration:none}
+.toc a:hover{color:var(--green)}
+.highlight{background:rgba(63,185,80,.08);border-left:3px solid var(--green);padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+.stat-box{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center}
+.stat-box .num{font-size:28px;font-weight:700;color:var(--green)}
+.stat-box .label{font-size:12px;color:var(--text-muted);margin-top:4px}
+a{color:var(--blue)}
+hr{border:none;border-top:1px solid var(--border);margin:32px 0}
+.footer{text-align:center;color:var(--text-muted);margin-top:48px;padding-top:24px;border-top:1px solid var(--border)}
+@media(max-width:768px){.stat-grid{grid-template-columns:1fr}.cover h1{font-size:32px}}
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+<h1>🌿 Verdis</h1>
+<div class="subtitle">The Carbon-Negative Blockchain</div>
+<p class="muted">A Layer-1 blockchain with native DPoS consensus, AMM-based DEX,<br>and integrated carbon credit tracking — built for sustainability.</p>
+<br>
+<span class="version">Whitepaper v1.0 — August 2026</span>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+<h3>📋 Table of Contents</h3>
+<ol>
+<li><a href="#abstract">Abstract</a></li>
+<li><a href="#problem">Problem Statement</a></li>
+<li><a href="#solution">The Verdis Solution</a></li>
+<li><a href="#architecture">System Architecture</a></li>
+<li><a href="#consensus">DPoS Consensus</a></li>
+<li><a href="#crypto">Cryptography & Security</a></li>
+<li><a href="#tokenomics">Tokenomics</a></li>
+<li><a href="#dex">Native DEX</a></li>
+<li><a href="#eco">Eco Features</a></li>
+<li><a href="#contracts">Smart Contracts</a></li>
+<li><a href="#rpc">JSON-RPC & Wallet Compatibility</a></li>
+<li><a href="#security">Security Model</a></li>
+<li><a href="#roadmap">Roadmap</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ol>
+</div>
+
+<h2 id="abstract">1. Abstract</h2>
+<p>Verdis is a Layer-1 blockchain designed from the ground up to be carbon-negative. It combines Delegated Proof-of-Stake (DPoS) consensus with an integrated Automated Market Maker (AMM) decentralized exchange, on-chain carbon credit minting, reforestation tracking, and green validator scoring. The chain operates on Chain ID 909 with Ethereum-compatible JSON-RPC, enabling direct integration with MetaMask and Trust Wallet.</p>
+<p>The native token, VRS (Verdis), has a maximum supply of 100 billion tokens with 50 billion currently in circulation. Verdis features a native wallet system that works without browser extensions, a full block explorer, governance, NFT support, and a stack-based smart contract virtual machine.</p>
+<div class="highlight">
+<strong>Key Metrics:</strong> Chain ID 909 | 5-second block time | 16 VRS block reward | 27 registered validators (5 active) | 6 AMM liquidity pools | 1,000+ tons CO₂ tracked | 15,000 trees logged
+</div>
+
+<h2 id="problem">2. Problem Statement</h2>
+<p>The blockchain industry faces two critical challenges: environmental impact and accessibility.</p>
+<h3>2.1 Environmental Impact</h3>
+<p>Traditional Proof-of-Work blockchains consume enormous amounts of energy. Bitcoin alone uses more electricity than many countries. While Proof-of-Stake has reduced energy consumption, no major chain has made environmental regeneration a core protocol feature. Carbon offsetting remains an afterthought — a marketing tool rather than a fundamental mechanism.</p>
+<h3>2.2 Accessibility</h3>
+<p>Most blockchains require users to install browser extensions (MetaMask), manage seed phrases across multiple apps, and navigate complex bridging interfaces. This creates friction that prevents mainstream adoption.</p>
+<h3>2.3 Fragmented DeFi</h3>
+<p>DEXes exist as separate protocols on most chains, requiring additional smart contracts, gas fees, and trust assumptions. Verdis integrates the DEX directly into the chain protocol layer.</p>
+
+<h2 id="solution">3. The Verdis Solution</h2>
+<p>Verdis addresses these challenges through four core innovations:</p>
+<h3>3.1 Carbon-Negative by Design</h3>
+<p>Verdis tracks carbon credits on-chain, logs reforestation projects, and scores validators based on their use of renewable energy. The chain doesn't just claim to be green — it provides verifiable, immutable proof of environmental impact.</p>
+<h3>3.2 Native Wallet Experience</h3>
+<p>The Verdis dashboard includes a built-in native wallet. Users can create, import, and manage wallets directly in the browser without installing any extension. MetaMask and Trust Wallet remain supported as optional integrations via EIP-1193 and JSON-RPC.</p>
+<h3>3.3 Protocol-Level DEX</h3>
+<p>The AMM-based DEX is built into the chain itself, not deployed as a separate smart contract. This means lower fees, no contract risk, and immediate liquidity for all native tokens.</p>
+<h3>3.4 Integrated Token Sale (IDO)</h3>
+<p>Verdis includes a native token sale mechanism, allowing users to purchase VRS directly with ETH, BNB, USDT, or USDC without third-party platforms.</p>
+
+<h2 id="architecture">4. System Architecture</h2>
+<div class="stat-grid">
+<div class="stat-box"><div class="num">L1</div><div class="label">Layer-1 Blockchain</div></div>
+<div class="stat-box"><div class="num">DPoS</div><div class="label">Consensus</div></div>
+<div class="stat-box"><div class="num">5s</div><div class="label">Block Time</div></div>
+</div>
+<h3>4.1 Core Components</h3>
+<table>
+<tr><th>Component</th><th>Description</th></tr>
+<tr><td>Blockchain Core</td><td>Block production, validation, chain state, mempool management</td></tr>
+<tr><td>DPoS Engine</td><td>Validator registration, voting, block producer rotation, slashing</td></tr>
+<tr><td>Wallet Manager</td><td>Key generation (secp256k1), address derivation (Keccak256), balance tracking</td></tr>
+<tr><td>DEX Engine</td><td>AMM liquidity pools, swap execution, LP token management</td></tr>
+<tr><td>Smart Contract VM</td><td>Stack-based bytecode execution engine</td></tr>
+<tr><td>Eco Module</td><td>Carbon credit minting/retirement, reforestation logging, green scoring</td></tr>
+<tr><td>Governance</td><td>Proposal creation, on-chain voting</td></tr>
+<tr><td>NFT Module</td><td>Minting, transfer, metadata management</td></tr>
+<tr><td>Token Sale</td><td>IDO mechanism, order tracking, token distribution</td></tr>
+<tr><td>JSON-RPC Server</td><td>Ethereum-compatible RPC endpoint (Chain ID 909)</td></tr>
+<tr><td>REST API</td><td>50+ endpoints for blockchain interaction</td></tr>
+<tr><td>Web Dashboard</td><td>Block explorer, wallet, DEX, governance UI</td></tr>
+</table>
+<h3>4.2 Block Structure</h3>
+<pre><code>{
+  "header": {
+    "index": 8559,
+    "previousHash": "0000...a1b2",
+    "merkleRoot": "c3d4...e5f6",
+    "timestamp": 1785552000000,
+    "validator": "0x0bfef9eb91a36d4010...",
+    "blockReward": 16,
+    "nonce": 0
+  },
+  "transactions": [...],
+  "hash": "0000...f7e8"
+}</code></pre>
+<h3>4.3 State Persistence</h3>
+<p>All chain state — blocks, balances, DEX pools, validators, contracts, eco data — is persisted to disk. The chain survives full node restarts and automatically resumes block production.</p>
+
+<h2 id="consensus">5. DPoS Consensus</h2>
+<p>Verdis uses Delegated Proof-of-Stake (DPoS), a consensus mechanism where token holders delegate their stake to validators who produce blocks on their behalf.</p>
+<h3>5.1 Validator System</h3>
+<ul style="padding-left:20px;margin-bottom:12px">
+<li><strong>27 validators</strong> registered on the network</li>
+<li><strong>5 active validators</strong> produce blocks in round-robin rotation</li>
+<li>Block producers change every block, rotating through the active set</li>
+<li><strong>16 VRS</strong> block reward distributed per block</li>
+<li>Block production interval: <strong>5 seconds</strong></li>
+</ul>
+<h3>5.2 Delegation & Rewards</h3>
+<p>Token holders can delegate VRS to any registered validator. Delegators earn a portion of the block rewards proportional to their stake. The system supports delegation, undelegation, automatic reward distribution, and validator commission rates.</p>
+<h3>5.3 Slashing</h3>
+<p>Validators can be slashed for malicious behavior, including double-signing, downtime, and invalid block production.</p>
+
+<h2 id="crypto">6. Cryptography & Security</h2>
+<p>Verdis uses industry-standard cryptographic primitives, all implemented with <code>@noble/secp256k1</code> and <code>@noble/hashes</code> — audited, dependency-free cryptographic libraries.</p>
+<h3>6.1 Cryptographic Primitives</h3>
+<table>
+<tr><th>Component</th><th>Algorithm</th><th>Library</th></tr>
+<tr><td>Key Generation</td><td>secp256k1 ECDSA</td><td>@noble/secp256k1</td></tr>
+<tr><td>Transaction Signing</td><td>ECDSA with recovery</td><td>@noble/secp256k1</td></tr>
+<tr><td>Address Derivation</td><td>Keccak256 (last 20 bytes)</td><td>@noble/hashes</td></tr>
+<tr><td>Block Hashing</td><td>SHA-256</td><td>@noble/hashes</td></tr>
+<tr><td>Merkle Trees</td><td>SHA-256</td><td>@noble/hashes</td></tr>
+<tr><td>Mnemonic Generation</td><td>BIP-39</td><td>@scure/bip39</td></tr>
+</table>
+<h3>6.2 Address Format</h3>
+<p>Verdis uses Ethereum-compatible addresses derived from Keccak256 hashes of public keys. Addresses follow the <code>0x</code> + 40 hex characters format, ensuring compatibility with MetaMask, Trust Wallet, and other EVM tools.</p>
+
+<h2 id="tokenomics">7. Tokenomics</h2>
+<p>The VRS (Verdis) token is the native asset of the Verdis blockchain, used for transaction fees, staking, governance, DEX trading, and carbon credit minting.</p>
+<div class="stat-grid">
+<div class="stat-box"><div class="num">100B</div><div class="label">Max Supply</div></div>
+<div class="stat-box"><div class="num">50B</div><div class="label">Circulating</div></div>
+<div class="stat-box"><div class="num">$0.001</div><div class="label">Sale Price</div></div>
+</div>
+<h3>7.1 Token Distribution</h3>
+<table>
+<tr><th>Allocation</th><th>%</th><th>Token Amount</th><th>Purpose</th><th>Status</th></tr>
+<tr><td>Token Sale (IDO)</td><td>40%</td><td>40,000,000,000</td><td>Public distribution</td><td>Live (Presale)</td></tr>
+<tr><td>Ecosystem & Validators</td><td>20%</td><td>20,000,000,000</td><td>Validator rewards, grants</td><td>Active</td></tr>
+<tr><td>Community Rewards</td><td>15%</td><td>15,000,000,000</td><td>Faucet, airdrops, incentives</td><td>Active</td></tr>
+<tr><td>DEX Liquidity</td><td>10%</td><td>10,000,000,000</td><td>AMM pool seeding</td><td>Active</td></tr>
+<tr><td>Team</td><td>10%</td><td>10,000,000,000</td><td>Development & operations</td><td>Locked (2 years)</td></tr>
+<tr><td>Carbon Offset Fund</td><td>5%</td><td>5,000,000,000</td><td>Reforestation & carbon projects</td><td>Active</td></tr>
+</table>
+<h3>7.2 Token Sale (IDO)</h3>
+<table>
+<tr><th>Parameter</th><th>Value</th></tr>
+<tr><td>Sale Phase</td><td>Presale</td></tr>
+<tr><td>Price</td><td>$0.001 per VRS</td></tr>
+<tr><td>Accepted Currencies</td><td>ETH, BNB, USDT, USDC</td></tr>
+<tr><td>Rate (ETH)</td><td>1 ETH = 500,000 VRS</td></tr>
+<tr><td>Rate (BNB)</td><td>1 BNB = 100,000 VRS</td></tr>
+<tr><td>Rate (USDT/USDC)</td><td>1 USDT/USDC = 1,000 VRS</td></tr>
+<tr><td>Payment Address</td><td>0xa1e846855e1768b9C0BEe6E747bedd7bec1Af616</td></tr>
+</table>
+<h3>7.3 Utility</h3>
+<ul style="padding-left:20px;margin-bottom:12px">
+<li><strong>Transaction fees</strong> — all on-chain operations require VRS</li>
+<li><strong>Staking</strong> — delegate to validators to earn rewards</li>
+<li><strong>Governance</strong> — vote on proposals and protocol upgrades</li>
+<li><strong>DEX trading</strong> — primary pair token in all 6 AMM pools</li>
+<li><strong>Carbon minting</strong> — pay for carbon credit certification</li>
+<li><strong>NFT minting</strong> — create and transfer on-chain NFTs</li>
+</ul>
+
+<h2 id="dex">8. Native AMM DEX</h2>
+<p>Verdis includes a built-in Automated Market Maker (AMM) decentralized exchange at the protocol level — no smart contract deployment required.</p>
+<h3>8.1 Active Liquidity Pools</h3>
+<table>
+<tr><th>Pool</th><th>Token A Reserve</th><th>Token B Reserve</th><th>Fee</th></tr>
+<tr><td>CARBON/VRS</td><td>1,239,037</td><td>1,616,131</td><td>0.3%</td></tr>
+<tr><td>ECO/VRS</td><td>1,542,213</td><td>1,299,885</td><td>0.3%</td></tr>
+<tr><td>CARBON/ECO</td><td>507,543</td><td>986,254</td><td>0.3%</td></tr>
+<tr><td>GREEN/VRS</td><td>—</td><td>—</td><td>0.3%</td></tr>
+<tr><td>SOLR/VRS</td><td>—</td><td>—</td><td>0.3%</td></tr>
+<tr><td>TST/VRS</td><td>—</td><td>—</td><td>0.3%</td></tr>
+</table>
+<h3>8.2 AMM Formula</h3>
+<p>The DEX uses the constant product formula: <code>x * y = k</code></p>
+<pre><code>Δy = y * Δx / (x + Δx) * (1 - fee)</code></pre>
+<p>With a 0.3% fee applied to input amount, distributed to liquidity providers.</p>
+<h3>8.3 Liquidity Provision</h3>
+<p>Users can provide liquidity to any pool by depositing both tokens in the correct ratio. In return, they receive LP tokens representing their share of the pool.</p>
+
+<h2 id="eco">9. Eco Features</h2>
+<div class="stat-grid">
+<div class="stat-box"><div class="num">1,000+</div><div class="label">Tons CO₂ Tracked</div></div>
+<div class="stat-box"><div class="num">15,000</div><div class="label">Trees Logged</div></div>
+<div class="stat-box"><div class="num">6</div><div class="label">Green Validators</div></div>
+</div>
+<h3>9.1 Carbon Credit System</h3>
+<p>Users can mint carbon credits on-chain by providing verified CO₂ offset data. Each credit includes amount of CO₂ offset, project description, minter address, timestamp, and retirement status.</p>
+<h3>9.2 Reforestation Tracking</h3>
+<p>Reforestation projects can be logged on-chain with immutable proof: number of trees planted, geographic location, project initiator, date, and verification metadata.</p>
+<h3>9.3 Green Validator Scoring</h3>
+<p>Validators receive a green score based on their use of renewable energy. Higher green scores increase validator visibility and community trust. The system tracks energy source, carbon footprint, and verified renewable energy certificates.</p>
+
+<h2 id="contracts">10. Smart Contracts</h2>
+<p>Verdis includes a stack-based virtual machine for smart contract execution. Contracts are deployed with bytecode and can be called via the REST API.</p>
+<h3>10.1 Deployed Contracts</h3>
+<table>
+<tr><th>Name</th><th>Address</th></tr>
+<tr><td>EcoDepositCalculator</td><td>0xc396...3e32</td></tr>
+<tr><td>EcoStakingReward</td><td>0xf1a4...e2aa</td></tr>
+<tr><td>IncrementCounter</td><td>0xac0e...812b</td></tr>
+<tr><td>VerdisMint (x3)</td><td>0x297b...370d, 0xd972...9138, 0xd2e6...415a</td></tr>
+</table>
+<h3>10.2 Token Standards</h3>
+<p>Verdis supports ERC-20, ERC-721, and ERC-1155 token standards for compatibility with the broader ecosystem.</p>
+
+<h2 id="rpc">11. JSON-RPC & Wallet Compatibility</h2>
+<h3>11.1 Network Configuration</h3>
+<table>
+<tr><th>Parameter</th><th>Value</th></tr>
+<tr><td>Chain ID</td><td>909 (0x38d)</td></tr>
+<tr><td>Network Name</td><td>Verdis</td></tr>
+<tr><td>Symbol</td><td>VRS</td></tr>
+<tr><td>RPC URL</td><td>https://rpc.verdischain.com</td></tr>
+<tr><td>Explorer</td><td>https://verdischain.com</td></tr>
+<tr><td>Block Time</td><td>5 seconds</td></tr>
+</table>
+<h3>11.2 Supported RPC Methods</h3>
+<p>25+ JSON-RPC methods including eth_chainId, eth_blockNumber, eth_getBalance, eth_sendRawTransaction, eth_call, eth_estimateGas, eth_getBlockByNumber, eth_getTransactionByHash, eth_getTransactionReceipt, eth_getLogs, net_version, web3_clientVersion, and more.</p>
+
+<h2 id="security">12. Security Model</h2>
+<table>
+<tr><th>Feature</th><th>Implementation</th></tr>
+<tr><td>Signature Verification</td><td>secp256k1 ECDSA with public key recovery</td></tr>
+<tr><td>Hashing</td><td>SHA-256 (blocks) + Keccak256 (addresses)</td></tr>
+<tr><td>Tamper Detection</td><td>Chain validation on every block</td></tr>
+<tr><td>Double-Spend Prevention</td><td>Nonce tracking per address</td></tr>
+<tr><td>Replay Protection</td><td>Chain ID embedded in transactions</td></tr>
+<tr><td>Rate Limiting</td><td>30/min general, 5/min strict (transactions)</td></tr>
+<tr><td>Admin Authentication</td><td>API key for admin endpoints</td></tr>
+<tr><td>Validator Slashing</td><td>Penalties for malicious behavior</td></tr>
+<tr><td>Input Validation</td><td>All API inputs validated and sanitized</td></tr>
+<tr><td>Mempool Limits</td><td>Maximum 1,000 pending transactions</td></tr>
+<tr><td>Max Transaction</td><td>1,000,000,000 VRS per transaction</td></tr>
+<tr><td>Max Block Size</td><td>500 transactions per block</td></tr>
+</table>
+<h3>12.2 Deployment Security</h3>
+<ul style="padding-left:20px;margin-bottom:12px">
+<li>HTTPS with valid SSL certificates via Let's Encrypt</li>
+<li>Nginx reverse proxy with security headers</li>
+<li>Systemd service with auto-restart on failure</li>
+<li>State persistence to disk (survives restarts)</li>
+<li>Automated health monitoring</li>
+</ul>
+
+<h2 id="roadmap">13. Roadmap</h2>
+<h3>Phase 1 — Completed (Q3 2026)</h3>
+<ul style="padding-left:20px;margin-bottom:12px">
+<li>✅ Core blockchain with DPoS consensus</li>
+<li>✅ Native wallet (no MetaMask required)</li>
+<li>✅ AMM DEX with 6 liquidity pools</li>
+<li>✅ Carbon credit minting and tracking</li>
+<li>✅ Reforestation logging</li>
+<li>✅ Green validator scoring</li>
+<li>✅ Smart contract VM</li>
+<li>✅ Ethereum JSON-RPC compatibility</li>
+<li>✅ Token Sale (IDO) — live</li>
+<li>✅ Production deployment at verdischain.com</li>
+</ul>
+<h3>Phase 2 — In Progress (Q4 2026)</h3>
+<ul style="padding-left:20px;margin-bottom:12px">
+<li>🔄 Cross-chain bridge (BSC / Ethereum)</li>
+<li>🔄 CoinGecko and CoinMarketCap listing</li>
+<li>🔄 Mobile wallet app</li>
+<li>🔄 DAO governance automation</li>
+<li>🔄 Carbon credit marketplace</li>
+</ul>
+<h3>Phase 3 — Planned (2027)</h3>
+<ul style="padding-left:20px;margin-bottom:12px">
+<li>📋 EVM-compatible smart contracts (Solidity support)</li>
+<li>📋 Cross-chain atomic swaps</li>
+<li>📋 Carbon offset partnerships with verification bodies</li>
+<li>📋 Mobile staking app</li>
+<li>📋 Enterprise carbon tracking API</li>
+<li>📋 ZK-rollup scaling solution</li>
+</ul>
+
+<h2 id="conclusion">14. Conclusion</h2>
+<p>Verdis proves that blockchain technology can be a net positive for the environment. By integrating carbon tracking, reforestation logging, and green validator scoring directly into the protocol, Verdis creates verifiable, immutable proof of environmental impact.</p>
+<p>The native wallet experience removes the friction of browser extensions, making blockchain accessible to everyone. The protocol-level DEX provides instant liquidity without third-party contracts. And the token sale mechanism allows direct participation in the ecosystem.</p>
+<p>With 50 billion VRS in circulation, 27 registered validators, 6 active DEX pools, and over 1,000 tons of CO₂ already tracked, Verdis is a live, functioning blockchain — not a concept. The chain runs at <code>verdischain.com</code> with production-grade infrastructure.</p>
+<p>Verdis is not just another blockchain. It is a commitment to proving that decentralized technology can heal the planet while creating real economic value.</p>
+
+<hr>
+<div class="footer">
+<p><strong>Verdis Blockchain</strong> — verdischain.com</p>
+<p>Chain ID 909 | RPC: rpc.verdischain.com | VRS Token</p>
+<p>Whitepaper v1.0 — August 2026</p>
+<br>
+<p class="muted">© 2026 Verdis. All rights reserved. This whitepaper is for informational purposes only and does not constitute financial advice.</p>
+</div>
+
+</body>
+</html>
