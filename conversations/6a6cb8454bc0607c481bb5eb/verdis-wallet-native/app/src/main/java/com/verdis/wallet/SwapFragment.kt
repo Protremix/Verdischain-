@@ -7,9 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.AdapterView
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ProgressBar
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -46,9 +46,8 @@ class SwapFragment : Fragment() {
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, tokens)
         spinnerFrom.adapter = adapter
         spinnerTo.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, tokens)
-        spinnerTo.setSelection(1) // Default: VCO → CARBON
+        spinnerTo.setSelection(1)
 
-        // Update quote on input change
         val watcher = object : TextWatcher {
             override fun afterTextChanged(s: Editable?) { updateQuote() }
             override fun beforeTextChanged(s: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -56,14 +55,12 @@ class SwapFragment : Fragment() {
         }
         etFromAmount.addTextChangedListener(watcher)
 
-        spinnerFrom.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p0: android.widget.AdapterView<*>?, p1: View?, p2: Int, p3: Int) { updateQuote() }
-            override fun onNothingSelected(p0: android.widget.AdapterView<*>?) {}
+        val spinListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) { updateQuote() }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
-        spinnerTo.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p0: android.widget.AdapterView<*>?, p1: View?, p2: Int, p3: Int) { updateQuote() }
-            override fun onNothingSelected(p0: android.widget.AdapterView<*>?) {}
-        }
+        spinnerFrom.onItemSelectedListener = spinListener
+        spinnerTo.onItemSelectedListener = spinListener
 
         btnSwap.setOnClickListener {
             val fromToken = spinnerFrom.selectedItem as String
