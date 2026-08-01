@@ -2,6 +2,174 @@
 <html>
 <head>
 <title>Verdis VPS Terminal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- SEO & Open Graph Meta Tags -->
+<meta name="description" content="Interactive command-line web terminal for managing Verdis blockchain nodes, validator instances, and remote server connections.">
+<meta name="keywords" content="Verdis terminal, node management, SSH web console, validator terminal, blockchain VPS">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#050a08">
+<link rel="canonical" href="https://verdischain.com/ssh-terminal.html">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://verdischain.com/ssh-terminal.html">
+<meta property="og:title" content="Verdis VPS Terminal">
+<meta property="og:description" content="Interactive command-line web terminal for managing Verdis blockchain nodes, validator instances, and remote server connections.">
+<meta property="og:image" content="https://verdischain.com/verdis-logo.png">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://verdischain.com/ssh-terminal.html">
+<meta name="twitter:title" content="Verdis VPS Terminal">
+<meta name="twitter:description" content="Interactive command-line web terminal for managing Verdis blockchain nodes, validator instances, and remote server connections.">
+<meta name="twitter:image" content="https://verdischain.com/verdis-logo.png">
+
+<!-- Verdis Mobile Responsive Styles -->
+<style id="verdis-responsive-css">
+/* Fluid Typography & Box Sizing */
+:root {
+  --verdis-fluid-h1: clamp(1.75rem, 4.5vw, 3rem);
+  --verdis-fluid-h2: clamp(1.35rem, 3.2vw, 2.25rem);
+  --verdis-fluid-h3: clamp(1.1rem, 2.2vw, 1.5rem);
+  --verdis-fluid-body: clamp(0.875rem, 1.2vw, 1rem);
+}
+
+html, body {
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+  width: 100%;
+}
+
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
+/* Fluid Heading Overrides */
+h1, .hero-title, .page-title, .title-large {
+  font-size: var(--verdis-fluid-h1);
+}
+h2, .section-title, .content-title {
+  font-size: var(--verdis-fluid-h2);
+}
+h3, .card-title {
+  font-size: var(--verdis-fluid-h3);
+}
+
+/* Touch-Friendly Buttons and Navigation Items (min 44px height/width) */
+button, .btn, a.btn, input[type="button"], input[type="submit"], .nav-links a, .nav-link, select, .action-btn, .tab-btn {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+}
+
+/* Ensure tables scroll horizontally on mobile without breaking layout */
+table {
+  width: 100%;
+}
+
+.table-wrapper, .table-container, .table-responsive, .table-scroll, div:has(> table) {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
+}
+
+/* Mobile Table Horizontal Scroll */
+@media (max-width: 768px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  /* Responsive Grids: Convert to 1 or 2 columns */
+  .grid, .grid-2, .grid-3, .grid-4, .cards-grid, .stats-grid, .ecosystem-grid, 
+  .templates-grid, .hero-grid, .content-grid, .dashboard-grid, .features-grid,
+  .quick-stats, .nodes-grid, .metrics-grid,
+  div[class*="grid"], div[style*="display: grid"], div[style*="display:grid"] {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
+    gap: 1rem !important;
+  }
+
+  /* Flex Layout & Navigation Adaptations */
+  header, nav, .navbar, .nav-inner, .header, .top-navbar {
+    flex-wrap: wrap !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .nav-links, .nav-menu, ul.nav-links {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    justify-content: center !important;
+    width: 100% !important;
+    padding: 8px 0 !important;
+  }
+
+  .nav-links a {
+    padding: 8px 12px !important;
+    font-size: 0.9rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+
+  /* Split/Sidebar Layouts to Stacked */
+  .sidebar-layout, .app-container, .dashboard-layout, .docs-layout, .split-layout, .layout-with-sidebar {
+    flex-direction: column !important;
+    display: flex !important;
+  }
+
+  .sidebar, .aside, .docs-sidebar, .nav-sidebar {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  .main-content, .content-area, .docs-content {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Container Padding Adjustments */
+  .container, section, main, .hero, .wrapper {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* Very Small Mobile Screens (max-width: 480px) */
+@media (max-width: 480px) {
+  /* Force single column for grids on tiny screens */
+  .grid, .grid-2, .grid-3, .grid-4, .cards-grid, .stats-grid, .ecosystem-grid, 
+  .templates-grid, .hero-grid, .content-grid, .dashboard-grid, .features-grid,
+  .quick-stats, .nodes-grid, .metrics-grid,
+  div[class*="grid"], div[style*="display: grid"], div[style*="display:grid"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .container, section, main, .hero, .wrapper, .card, .panel {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  /* Full-width buttons on small screens */
+  .btn-group, .hero-buttons, .action-buttons, .button-group {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  button, .btn, a.btn {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+}
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/xterm@4.19.0/lib/xterm.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@4.19.0/css/xterm.min.css">
 <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.min.js"></script>
@@ -17,6 +185,241 @@ term.open(document.getElementById('terminal'));
 term.writeln('To deploy the new design to verdischain.com, run this command on your VPS:');
 term.writeln('');
 term.writeln('curl -L -o /tmp/vu.tar.gz "https://base44.app/api/apps/6a6cb8410d1dcb778817254f/files/mp/public/6a6cb8410d1dcb778817254f/79341b8ea_verdis-updatetar.gz" && mkdir -p /tmp/vudir && tar -xzf /tmp/vu.tar.gz -C /tmp/vudir && cp -r /tmp/vudir/dist/web/* /opt/verdis/dist/web/ && cp /tmp/vudir/dist/api/server.js /opt/verdis/dist/api/server.js && systemctl restart verdis && echo "DONE!"');
+</script>
+
+<!-- Cookie Consent Banner -->
+<div id="verdis-cookie-banner" class="verdis-cookie-banner" style="display: none;">
+  <div class="verdis-cookie-content">
+    <div class="verdis-cookie-text">
+      <span class="verdis-cookie-icon">🌿</span>
+      <p>We use cookies to improve your experience. By continuing to browse, you consent to our use of cookies.</p>
+    </div>
+    <div class="verdis-cookie-actions">
+      <button id="verdis-cookie-decline" class="verdis-cookie-btn verdis-cookie-btn-decline">Decline</button>
+      <button id="verdis-cookie-accept" class="verdis-cookie-btn verdis-cookie-btn-accept">Accept</button>
+    </div>
+  </div>
+</div>
+
+<style id="verdis-cookie-styles">
+.verdis-cookie-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(120%);
+  z-index: 999999;
+  width: 90%;
+  max-width: 680px;
+  background: rgba(5, 10, 8, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 255, 136, 0.15);
+  padding: 16px 20px;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+  opacity: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #e6f7ec;
+  box-sizing: border-box;
+}
+
+.verdis-cookie-banner.verdis-cookie-show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.verdis-cookie-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.verdis-cookie-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #d1e7dd;
+}
+
+.verdis-cookie-text p {
+  margin: 0;
+  padding: 0;
+}
+
+.verdis-cookie-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.verdis-cookie-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.verdis-cookie-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.verdis-cookie-btn-accept {
+  background: #00ff88;
+  color: #050a08;
+  border-color: #00ff88;
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.4);
+}
+
+.verdis-cookie-btn-accept:hover {
+  background: #20ff98;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.7);
+  transform: translateY(-1px);
+}
+
+.verdis-cookie-btn-decline {
+  background: rgba(255, 255, 255, 0.05);
+  color: #a0aec0;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.verdis-cookie-btn-decline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 600px) {
+  .verdis-cookie-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 14px;
+  }
+  .verdis-cookie-text {
+    flex-direction: column;
+    text-align: center;
+    gap: 6px;
+  }
+  .verdis-cookie-actions {
+    width: 100%;
+    justify-content: center;
+  }
+  .verdis-cookie-btn {
+    flex: 1;
+    width: 100%;
+  }
+}
+</style>
+
+<script id="verdis-cookie-script">
+(function() {
+  function initCookieConsent() {
+    var consentKey = 'verdis_cookie_consent';
+    var banner = document.getElementById('verdis-cookie-banner');
+    var acceptBtn = document.getElementById('verdis-cookie-accept');
+    var declineBtn = document.getElementById('verdis-cookie-decline');
+
+    if (!banner || !acceptBtn || !declineBtn) return;
+
+    var choice = localStorage.getItem(consentKey);
+    if (!choice) {
+      banner.style.display = 'block';
+      setTimeout(function() {
+        banner.classList.add('verdis-cookie-show');
+      }, 300);
+    }
+
+    function handleConsent(value) {
+      try {
+        localStorage.setItem(consentKey, value);
+      } catch(e) {}
+      banner.classList.remove('verdis-cookie-show');
+      setTimeout(function() {
+        banner.style.display = 'none';
+      }, 500);
+    }
+
+    acceptBtn.addEventListener('click', function() { handleConsent('accepted'); });
+    declineBtn.addEventListener('click', function() { handleConsent('declined'); });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCookieConsent);
+  } else {
+    initCookieConsent();
+  }
+})();
+</script>
+
+<!-- Basic Analytics Script -->
+<script id="verdis-analytics-script">
+(function() {
+  try {
+    var pageUrl = window.location.href;
+    var pathname = window.location.pathname;
+    var timestamp = new Date().toISOString();
+
+    // 1. Track page view in localStorage
+    var analyticsKey = 'verdis_analytics_views';
+    var views = [];
+    try {
+      var stored = localStorage.getItem(analyticsKey);
+      if (stored) {
+        views = JSON.parse(stored);
+      }
+    } catch(e) {}
+
+    views.push({
+      url: pageUrl,
+      path: pathname,
+      timestamp: timestamp
+    });
+
+    if (views.length > 50) {
+      views = views.slice(views.length - 50);
+    }
+
+    try {
+      localStorage.setItem(analyticsKey, JSON.stringify(views));
+    } catch(e) {}
+
+    // 2. Send beacon to /api/analytics/track
+    var payload = JSON.stringify({
+      url: pageUrl,
+      path: pathname,
+      timestamp: timestamp,
+      referrer: document.referrer || '',
+      userAgent: navigator.userAgent || ''
+    });
+
+    if (navigator.sendBeacon) {
+      var blob = new Blob([payload], { type: 'application/json' });
+      navigator.sendBeacon('/api/analytics/track', blob);
+    } else {
+      fetch('/api/analytics/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        keepalive: true
+      }).catch(function() {});
+    }
+  } catch(e) {
+    // Non-blocking, fails silently
+  }
+})();
 </script>
 </body>
 </html>

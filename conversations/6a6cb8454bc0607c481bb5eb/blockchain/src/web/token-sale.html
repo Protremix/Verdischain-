@@ -1,0 +1,2605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verdis ($VRS) Token Sale & IDO — First Fully Green Blockchain</title>
+  <meta name="description" content="Official Token Sale / IDO page for Verdis, the first net carbon-negative Layer-1 blockchain. Buy $VRS tokens with ETH, BNB, USDT, or USDC and power sustainable Web3.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+
+  <!-- CDN Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    /* ==========================================================================
+       CSS RESET & CUSTOM PROPERTIES
+       ========================================================================== */
+    :root {
+      --bg-dark: #050a08;
+      --bg-card: rgba(8, 20, 15, 0.6);
+      --bg-card-hover: rgba(14, 35, 26, 0.75);
+      --border-glass: rgba(0, 255, 136, 0.15);
+      --border-bright: rgba(0, 255, 136, 0.45);
+      --primary: #00ff88;
+      --secondary: #2dd4bf;
+      --accent: #10b981;
+      --primary-glow: rgba(0, 255, 136, 0.35);
+      --secondary-glow: rgba(45, 212, 191, 0.3);
+      --text-main: #f0fdf4;
+      --text-muted: #8ba898;
+      --text-dim: #547363;
+      --font-heading: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-body);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      line-height: 1.6;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    /* ==========================================================================
+       ANIMATED BACKGROUND & CANVAS PARTICLES
+       ========================================================================== */
+    #particleCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    .bg-orbs-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.22;
+      animation: orbDrift 22s infinite ease-in-out alternate;
+    }
+
+    .orb-1 {
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+      top: -100px;
+      left: -100px;
+    }
+
+    .orb-2 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+      bottom: -100px;
+      right: -100px;
+      animation-delay: -7s;
+    }
+
+    .orb-3 {
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation-delay: -14s;
+    }
+
+    @keyframes orbDrift {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(60px, 40px) scale(1.1); }
+      100% { transform: translate(-40px, 80px) scale(0.95); }
+    }
+
+    /* ==========================================================================
+       TYPOGRAPHY & GENERAL UTILITIES
+       ========================================================================== */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-heading);
+      letter-spacing: -0.02em;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    .gradient-border {
+      position: relative;
+      background: var(--bg-card);
+      border-radius: 16px;
+    }
+
+    .gradient-border::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 17px;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.4), rgba(45, 212, 191, 0.2), transparent);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .section-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .section-subtitle {
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 680px;
+      margin: 0 auto 48px auto;
+      font-size: 1.1rem;
+    }
+
+    /* Glassmorphism Card */
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-glass);
+      border-radius: 20px;
+      padding: 32px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card:hover {
+      border-color: var(--border-bright);
+      box-shadow: 0 10px 30px -10px rgba(0, 255, 136, 0.15);
+      transform: translateY(-4px);
+    }
+
+    /* Scroll Reveal Animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ==========================================================================
+       BUTTONS & BADGES
+       ========================================================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      text-decoration: none;
+      border: none;
+      outline: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, #00cc6a 100%);
+      color: #03140c;
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #26ff99 0%, var(--primary) 100%);
+      box-shadow: 0 0 32px rgba(0, 255, 136, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: rgba(0, 255, 136, 0.08);
+      color: var(--primary);
+      border: 1px solid var(--border-glass);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(0, 255, 136, 0.18);
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 8px var(--primary);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.2); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* ==========================================================================
+       NAVBAR
+       ========================================================================== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+      padding: 18px 0;
+      background: rgba(5, 10, 8, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .navbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.5rem;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(0,255,136,0.2), rgba(45,212,191,0.2));
+      border: 1px solid var(--border-bright);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+    }
+
+    .logo-tag {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--primary);
+      color: #03140c;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover, .nav-links a.active {
+      color: var(--primary);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* ==========================================================================
+       HERO SECTION
+       ========================================================================== */
+    .hero {
+      padding: 160px 0 80px 0;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-badge {
+      margin-bottom: 24px;
+    }
+
+    .hero-title {
+      font-size: 4rem;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 780px;
+      margin: 0 auto 36px auto;
+    }
+
+    .hero-cta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+
+    .hero-highlights {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .highlight-pill {
+      background: rgba(8, 20, 15, 0.4);
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .highlight-val {
+      font-family: var(--font-mono);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .highlight-lbl {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ==========================================================================
+       STATS BAR
+       ========================================================================== */
+    .stats-bar-section {
+      padding: 30px 0;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    }
+
+    .stat-number {
+      font-family: var(--font-mono);
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .stat-sub {
+      font-size: 0.75rem;
+      color: var(--secondary);
+      margin-top: 4px;
+      font-family: var(--font-mono);
+    }
+
+    /* ==========================================================================
+       PROGRESS SECTION
+       ========================================================================== */
+    .progress-section {
+      padding: 60px 0;
+    }
+
+    .progress-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-bright);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    .progress-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .progress-title-area h3 {
+      font-size: 1.8rem;
+      margin-bottom: 4px;
+    }
+
+    /* Countdown Timer */
+    .countdown-timer {
+      display: flex;
+      gap: 12px;
+    }
+
+    .timer-box {
+      background: rgba(0, 255, 136, 0.06);
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      padding: 10px 14px;
+      text-align: center;
+      min-width: 68px;
+    }
+
+    .timer-val {
+      font-family: var(--font-mono);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .timer-lbl {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Progress Bar Element */
+    .progress-track {
+      position: relative;
+      height: 24px;
+      background: rgba(19, 78, 42, 0.4);
+      border-radius: 30px;
+      border: 1px solid var(--border-glass);
+      overflow: hidden;
+      margin: 28px 0 16px 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%; /* Animated via JS */
+      background: linear-gradient(90deg, var(--accent) 0%, var(--primary) 70%, var(--secondary) 100%);
+      border-radius: 30px;
+      position: relative;
+      transition: width 1.8s cubic-bezier(0.1, 0.8, 0.2, 1);
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: shimmer 2.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .progress-cap-markers {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .progress-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .metric-item {
+      text-align: center;
+    }
+
+    .metric-val {
+      font-family: var(--font-mono);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .metric-lbl {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       BUY WIDGET SECTION
+       ========================================================================== */
+    .buy-section {
+      padding: 60px 0;
+    }
+
+    .buy-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .buy-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-bright);
+      border-radius: 24px;
+      padding: 36px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .buy-card-title {
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .form-label span.sub {
+      color: var(--text-muted);
+      font-weight: 400;
+      font-size: 0.8rem;
+    }
+
+    .asset-selector-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .asset-btn {
+      background: rgba(0, 255, 136, 0.04);
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      padding: 12px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--text-main);
+    }
+
+    .asset-btn i {
+      font-size: 1.4rem;
+    }
+
+    .asset-btn.active, .asset-btn:hover {
+      background: rgba(0, 255, 136, 0.15);
+      border-color: var(--primary);
+      color: var(--primary);
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+    }
+
+    .asset-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    .asset-rate {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-field {
+      width: 100%;
+      background: rgba(3, 12, 8, 0.8);
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      padding: 16px 100px 16px 16px;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .input-field:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.25);
+    }
+
+    .input-addon {
+      position: absolute;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 255, 136, 0.1);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--primary);
+    }
+
+    .preset-amounts {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .preset-btn {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 6px 0;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .preset-btn:hover {
+      background: rgba(0, 255, 136, 0.1);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .calculation-summary {
+      background: rgba(0, 255, 136, 0.03);
+      border: 1px dashed var(--border-glass);
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin: 24px 0;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .summary-row:last-child {
+      margin-bottom: 0;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+
+    .bonus-tag {
+      color: var(--secondary);
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    .side-info-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 20px;
+      padding: 28px;
+    }
+
+    .info-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .info-item {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .info-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid var(--border-glass);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      flex-shrink: 0;
+      font-size: 1.1rem;
+    }
+
+    .info-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+    }
+
+    .info-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       TOKENOMICS SECTION
+       ========================================================================== */
+    .tokenomics-section {
+      padding: 80px 0;
+    }
+
+    .tokenomics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .pie-chart-container {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .chart-svg {
+      width: 100%;
+      max-width: 380px;
+      filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.15));
+    }
+
+    .chart-center-text {
+      position: absolute;
+      text-align: center;
+    }
+
+    .chart-center-text .total-val {
+      font-family: var(--font-mono);
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .chart-center-text .total-lbl {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .tokenomics-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .tokenomics-item {
+      background: rgba(8, 20, 15, 0.4);
+      border: 1px solid var(--border-glass);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+
+    .tokenomics-item:hover {
+      background: rgba(14, 35, 26, 0.6);
+      border-color: var(--border-bright);
+      transform: translateX(6px);
+    }
+
+    .tokenomics-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .color-pill {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+    }
+
+    .tokenomics-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .tokenomics-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .tokenomics-right {
+      text-align: right;
+    }
+
+    .tokenomics-pct {
+      font-family: var(--font-mono);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .tokenomics-amt {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       VESTING SCHEDULE SECTION
+       ========================================================================== */
+    .vesting-section {
+      padding: 80px 0;
+    }
+
+    .vesting-timeline {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-top: 40px;
+      position: relative;
+    }
+
+    .vesting-node {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .vesting-node::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 10px var(--primary);
+    }
+
+    .vesting-time {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--secondary);
+      margin-bottom: 8px;
+    }
+
+    .vesting-pct {
+      font-family: var(--font-mono);
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .vesting-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       WHY INVEST SECTION
+       ========================================================================== */
+    .why-section {
+      padding: 80px 0;
+    }
+
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .why-card {
+      padding: 32px;
+      height: 100%;
+    }
+
+    .why-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .why-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid var(--border-glass);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 1.5rem;
+    }
+
+    .why-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .why-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    /* ==========================================================================
+       HOW TO BUY SECTION
+       ========================================================================== */
+    .how-section {
+      padding: 80px 0;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .step-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 18px;
+      padding: 28px 20px;
+      position: relative;
+      text-align: center;
+    }
+
+    .step-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: #03140c;
+      font-family: var(--font-mono);
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px auto;
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .step-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .step-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       FAQ SECTION
+       ========================================================================== */
+    .faq-section {
+      padding: 80px 0;
+    }
+
+    .faq-accordion {
+      max-width: 840px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .faq-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: border-color 0.25s ease;
+    }
+
+    .faq-item.active {
+      border-color: var(--border-bright);
+    }
+
+    .faq-header {
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1.05rem;
+      user-select: none;
+    }
+
+    .faq-header i {
+      color: var(--primary);
+      transition: transform 0.3s ease;
+    }
+
+    .faq-item.active .faq-header i {
+      transform: rotate(180deg);
+    }
+
+    .faq-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+      padding: 0 24px;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .faq-item.active .faq-body {
+      max-height: 300px;
+      padding: 0 24px 20px 24px;
+    }
+
+    /* ==========================================================================
+       FOOTER
+       ========================================================================== */
+    .footer {
+      padding: 80px 0 40px 0;
+      background: rgba(3, 8, 6, 0.95);
+      border-top: 1px solid rgba(0, 255, 136, 0.1);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr repeat(3, 1fr);
+      gap: 40px;
+      margin-bottom: 48px;
+    }
+
+    .footer-brand p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin: 16px 0 24px 0;
+      max-width: 320px;
+    }
+
+    .footer-socials {
+      display: flex;
+      gap: 12px;
+    }
+
+    .social-link {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(0, 255, 136, 0.06);
+      border: 1px solid var(--border-glass);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-main);
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .social-link:hover {
+      background: var(--primary);
+      color: #03140c;
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .footer-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text-main);
+    }
+
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--primary);
+    }
+
+    .footer-bottom {
+      padding-top: 32px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       AI SUPPORT WIDGET
+       ========================================================================== */
+    .ai-widget-button {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1000;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: #03140c;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 24px;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(0, 255, 136, 0.4);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .ai-widget-button:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 15px 35px rgba(0, 255, 136, 0.6);
+    }
+
+    .ai-chat-panel {
+      position: fixed;
+      bottom: 90px;
+      right: 24px;
+      width: 380px;
+      max-width: calc(100vw - 48px);
+      height: 520px;
+      max-height: calc(100vh - 120px);
+      background: #08140f;
+      border: 1px solid var(--border-bright);
+      border-radius: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(20px) scale(0.95);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .ai-chat-panel.active {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0) scale(1);
+    }
+
+    .chat-header {
+      padding: 16px 20px;
+      background: rgba(0, 255, 136, 0.08);
+      border-bottom: 1px solid var(--border-glass);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chat-header-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chat-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #03140c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+    }
+
+    .chat-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .chat-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .message {
+      max-width: 85%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+
+    .message.bot {
+      background: rgba(0, 255, 136, 0.08);
+      border: 1px solid var(--border-glass);
+      color: var(--text-main);
+      align-self: flex-start;
+      border-bottom-left-radius: 2px;
+    }
+
+    .message.user {
+      background: var(--primary);
+      color: #03140c;
+      align-self: flex-end;
+      font-weight: 500;
+      border-bottom-right-radius: 2px;
+    }
+
+    .chat-chips {
+      padding: 8px 16px;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .chip {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .chip:hover {
+      background: rgba(0, 255, 136, 0.15);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .chat-input-area {
+      padding: 12px 16px;
+      background: #050a08;
+      border-top: 1px solid var(--border-glass);
+      display: flex;
+      gap: 8px;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-glass);
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: var(--text-main);
+      font-size: 0.875rem;
+      outline: none;
+    }
+
+    .chat-send-btn {
+      background: var(--primary);
+      color: #03140c;
+      border: none;
+      border-radius: 10px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(3, 8, 6, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-card {
+      background: #08140f;
+      border: 1px solid var(--border-bright);
+      border-radius: 24px;
+      padding: 32px;
+      width: 100%;
+      max-width: 460px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    /* RESPONSIVE MEDIA QUERIES */
+    @media (max-width: 992px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .buy-grid, .tokenomics-grid { grid-template-columns: 1fr; }
+      .vesting-timeline, .steps-grid { grid-template-columns: repeat(2, 1fr); }
+      .why-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .nav-links { display: none; }
+    }
+
+    @media (max-width: 576px) {
+      .hero-title { font-size: 2.5rem; }
+      .stats-grid, .vesting-timeline, .steps-grid { grid-template-columns: 1fr; }
+      .asset-selector-grid { grid-template-columns: repeat(2, 1fr); }
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- BACKGROUND CANVAS & ORBS -->
+  <canvas id="particleCanvas"></canvas>
+  <div class="bg-orbs-container">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="container navbar-inner">
+      <a href="landing.html" class="logo">
+        <div class="logo-icon">🌿</div>
+        <span>Verdis</span>
+        <span class="logo-tag">TOKEN SALE</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="landing.html">Home</a></li>
+        <li><a href="#stats">Stats</a></li>
+        <li><a href="#buy">Buy VRS</a></li>
+        <li><a href="#tokenomics">Tokenomics</a></li>
+        <li><a href="#vesting">Vesting</a></li>
+        <li><a href="#why">Why Invest</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="whitepaper.html">Whitepaper</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button class="btn btn-primary" id="connectWalletBtn" onclick="toggleWalletConnect()">
+          <i class="fa-solid fa-wallet"></i>
+          <span id="walletBtnText">Connect Wallet</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="container reveal">
+      <div class="hero-badge">
+        <span class="badge">
+          <span class="badge-dot"></span>
+          Public Sale Stage 2 Live — 10% Bonus
+        </span>
+      </div>
+
+      <h1 class="hero-title">
+        Power the Green Revolution with <br>
+        <span class="gradient-text">Verdis ($VRS) Token Sale</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Invest in the world's first net carbon-negative Layer-1 blockchain. High-throughput Green DPoS, native satellite-verified carbon credits, and 18% APY staking yield.
+      </p>
+
+      <div class="hero-cta">
+        <a href="#buy" class="btn btn-primary">
+          <i class="fa-solid fa-bolt"></i> Buy $VRS Tokens
+        </a>
+        <a href="whitepaper.html" class="btn btn-secondary">
+          <i class="fa-solid fa-file-contract"></i> Read Whitepaper
+        </a>
+        <a href="#" class="btn btn-secondary" onclick="alert('CertiK Audit Verification ID: VERDIS-2026-SEC101 (100% Passed)'); return false;">
+          <i class="fa-solid fa-shield-halved"></i> CertiK Audit
+        </a>
+      </div>
+
+      <div class="hero-highlights">
+        <div class="highlight-pill">
+          <div class="highlight-val">$0.001</div>
+          <div class="highlight-lbl">Current Stage Price</div>
+        </div>
+        <div class="highlight-pill">
+          <div class="highlight-val">$0.0015</div>
+          <div class="highlight-lbl">Next Stage Price (+50%)</div>
+        </div>
+        <div class="highlight-pill">
+          <div class="highlight-val">+10%</div>
+          <div class="highlight-lbl">Early Stage Bonus</div>
+        </div>
+        <div class="highlight-pill">
+          <div class="highlight-val">100% Net Negative</div>
+          <div class="highlight-lbl">Carbon Footprint</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS BAR SECTION -->
+  <section class="stats-bar-section" id="stats">
+    <div class="container reveal">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number">$0.001</div>
+          <div class="stat-label">Token Price (USD)</div>
+          <div class="stat-sub">1 VRS = $0.001 USD</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">100B</div>
+          <div class="stat-label">Total Supply</div>
+          <div class="stat-sub">100,000,000,000 VRS</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">30B</div>
+          <div class="stat-label">IDO Sale Allocation</div>
+          <div class="stat-sub">30% of Total Supply</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">$<span class="counter" data-target="4850200">0</span></div>
+          <div class="stat-label">Total Funds Raised</div>
+          <div class="stat-sub">Target: $30,000,000</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRESS SECTION -->
+  <section class="progress-section">
+    <div class="container reveal">
+      <div class="progress-card">
+        <div class="progress-header">
+          <div class="progress-title-area">
+            <h3>Public Sale Stage 2 Progress</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Stage 2 ends soon. Lock in your +10% bonus tokens before price increases.</p>
+          </div>
+
+          <div class="countdown-timer">
+            <div class="timer-box">
+              <div class="timer-val" id="days">14</div>
+              <div class="timer-lbl">Days</div>
+            </div>
+            <div class="timer-box">
+              <div class="timer-val" id="hours">08</div>
+              <div class="timer-lbl">Hours</div>
+            </div>
+            <div class="timer-box">
+              <div class="timer-val" id="mins">42</div>
+              <div class="timer-lbl">Mins</div>
+            </div>
+            <div class="timer-box">
+              <div class="timer-val" id="secs">19</div>
+              <div class="timer-lbl">Secs</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="progress-track">
+          <div class="progress-fill" id="progressBar" style="width: 16.17%;"></div>
+        </div>
+
+        <div class="progress-cap-markers">
+          <span>Soft Cap: $5,000,000 (Reached ✅)</span>
+          <span>Hard Cap: $30,000,000</span>
+        </div>
+
+        <div class="progress-metrics-grid">
+          <div class="metric-item">
+            <div class="metric-val"><span class="counter" data-target="4850200000">0</span> VRS</div>
+            <div class="metric-lbl">Tokens Sold (16.17%)</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-val">$<span class="counter" data-target="4850200">0</span> USD</div>
+            <div class="metric-lbl">Total Capital Raised</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-val"><span class="counter" data-target="14280">0</span></div>
+            <div class="metric-lbl">Total Participants</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BUY WIDGET SECTION -->
+  <section class="buy-section" id="buy">
+    <div class="container reveal">
+      <h2 class="section-title">Participate in <span class="gradient-text">Verdis IDO</span></h2>
+      <p class="section-subtitle">Select your preferred payment asset, enter contribution amount, and instantly claim your $VRS tokens with a +10% Stage 2 Bonus.</p>
+
+      <div class="buy-grid">
+        <!-- BUY CARD TERMINAL -->
+        <div class="buy-card">
+          <h3 class="buy-card-title">Token Purchase Widget</h3>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 24px;">Supported Networks: Ethereum, BNB Chain, Polygon, Arbitrum</p>
+
+          <!-- Step 1: Asset Selector -->
+          <div class="form-group">
+            <div class="form-label">
+              <span>1. Choose Payment Token</span>
+              <span class="sub">Stage 2 Rate: 1 VRS = $0.001</span>
+            </div>
+            <div class="asset-selector-grid">
+              <div class="asset-btn active" onclick="selectAsset('ETH', 3200, 'fa-brands fa-ethereum')">
+                <i class="fa-brands fa-ethereum"></i>
+                <span class="asset-name">ETH</span>
+                <span class="asset-rate">$3,200</span>
+              </div>
+              <div class="asset-btn" onclick="selectAsset('BNB', 580, 'fa-solid fa-coins')">
+                <i class="fa-solid fa-coins"></i>
+                <span class="asset-name">BNB</span>
+                <span class="asset-rate">$580</span>
+              </div>
+              <div class="asset-btn" onclick="selectAsset('USDT', 1.00, 'fa-solid fa-dollar-sign')">
+                <i class="fa-solid fa-dollar-sign"></i>
+                <span class="asset-name">USDT</span>
+                <span class="asset-rate">$1.00</span>
+              </div>
+              <div class="asset-btn" onclick="selectAsset('USDC', 1.00, 'fa-solid fa-circle-dollar-to-slot')">
+                <i class="fa-solid fa-circle-dollar-to-slot"></i>
+                <span class="asset-name">USDC</span>
+                <span class="asset-rate">$1.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Amount Input -->
+          <div class="form-group">
+            <div class="form-label">
+              <span>2. Enter You Pay Amount</span>
+              <span class="sub">Min: $50 USD | Max: $100,000 USD</span>
+            </div>
+            <div class="input-wrapper">
+              <input type="number" id="payAmountInput" class="input-field" value="0.5" step="0.1" oninput="calculateTokens()">
+              <div class="input-addon">
+                <i id="selectedAssetIcon" class="fa-brands fa-ethereum"></i>
+                <span id="selectedAssetSymbol">ETH</span>
+              </div>
+            </div>
+            <div class="preset-amounts">
+              <button class="preset-btn" onclick="setPresetUSD(100)">$100</button>
+              <button class="preset-btn" onclick="setPresetUSD(500)">$500</button>
+              <button class="preset-btn" onclick="setPresetUSD(1000)">$1,000</button>
+              <button class="preset-btn" onclick="setPresetUSD(5000)">$5,000</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Wallet Address -->
+          <div class="form-group">
+            <div class="form-label">
+              <span>3. Recipient Wallet Address</span>
+              <span class="sub" id="walletStatusText">Connect wallet or enter EVM address</span>
+            </div>
+            <div class="input-wrapper">
+              <input type="text" id="walletAddressInput" class="input-field" placeholder="0x..." style="font-size: 0.95rem;">
+            </div>
+          </div>
+
+          <!-- Calculation Summary -->
+          <div class="calculation-summary">
+            <div class="summary-row">
+              <span>USD Value:</span>
+              <span id="usdValueText" class="mono">$1,600.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Base $VRS Allocation:</span>
+              <span id="baseVrsText" class="mono">1,600,000 VRS</span>
+            </div>
+            <div class="summary-row">
+              <span>Stage 2 Bonus (+10%):</span>
+              <span id="bonusVrsText" class="bonus-tag">+160,000 VRS</span>
+            </div>
+            <div class="summary-row">
+              <span>Trees Planted via Offset:</span>
+              <span id="treesPlantedText" class="mono">🌱 16 Trees</span>
+            </div>
+            <div class="summary-row">
+              <span>Total Tokens Received:</span>
+              <span id="totalVrsText" class="mono" style="color: var(--primary);">1,760,000 VRS</span>
+            </div>
+          </div>
+
+          <!-- CTA Button -->
+          <button class="btn btn-primary" style="width: 100%; padding: 18px;" onclick="executePurchase()">
+            <i class="fa-solid fa-bolt"></i> BUY $VRS TOKENS NOW
+          </button>
+        </div>
+
+        <!-- SIDE SECURITY & INFO CARD -->
+        <div class="side-info-card">
+          <h3 style="margin-bottom: 20px; font-size: 1.3rem;">Token Sale Guarantees</h3>
+
+          <ul class="info-list">
+            <li class="info-item">
+              <div class="info-icon"><i class="fa-solid fa-shield-halved"></i></div>
+              <div>
+                <div class="info-title">Audited Smart Contracts</div>
+                <div class="info-desc">Verified by CertiK and Hacken with 100% clean security pass and zero critical findings.</div>
+              </div>
+            </li>
+            <li class="info-item">
+              <div class="info-icon"><i class="fa-solid fa-leaf"></i></div>
+              <div>
+                <div class="info-title">Net-Zero Climate Impact</div>
+                <div class="info-desc">1% of all sale proceeds automatically purchase satellite-verified Verdis Carbon Offsets (VCO).</div>
+              </div>
+            </li>
+            <li class="info-item">
+              <div class="info-icon"><i class="fa-solid fa-lock"></i></div>
+              <div>
+                <div class="info-title">Automated Vesting Vault</div>
+                <div class="info-desc">Tokens release according to a non-custodial smart contract lockup visible on the explorer.</div>
+              </div>
+            </li>
+            <li class="info-item">
+              <div class="info-icon"><i class="fa-solid fa-chart-line"></i></div>
+              <div>
+                <div class="info-title">Guaranteed DEX Liquidity</div>
+                <div class="info-desc">10% of total supply (10B VRS) locked in Uniswap & Verdis Swap LP for 36 months at TGE.</div>
+              </div>
+            </li>
+          </ul>
+
+          <div style="margin-top: 30px; padding: 20px; background: rgba(0, 255, 136, 0.05); border-radius: 14px; border: 1px solid var(--border-glass);">
+            <div style="font-weight: 700; color: var(--primary); font-size: 0.9rem; margin-bottom: 4px;">Exchange Rates Live Ticker</div>
+            <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
+              <div>1 ETH = 3,200,000 VRS</div>
+              <div>1 BNB = 580,000 VRS</div>
+              <div>1 USDT = 1,000 VRS</div>
+              <div>1 USDC = 1,000 VRS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOKENOMICS SECTION -->
+  <section class="tokenomics-section" id="tokenomics">
+    <div class="container reveal">
+      <h2 class="section-title">Tokenomics & <span class="gradient-text">Distribution</span></h2>
+      <p class="section-subtitle">A sustainable economic model designed for multi-year ecosystem expansion, high validator yields, and continuous carbon offsetting.</p>
+
+      <div class="tokenomics-grid">
+        <!-- SVG Interactive Donut Chart -->
+        <div class="pie-chart-container">
+          <svg class="chart-svg" viewBox="0 0 36 36">
+            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="3.8"/>
+            <path class="circle" stroke-dasharray="30, 100" stroke-dashoffset="0" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#00ff88" stroke-width="4.2"/>
+            <path class="circle" stroke-dasharray="25, 100" stroke-dashoffset="-30" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#2dd4bf" stroke-width="4.2"/>
+            <path class="circle" stroke-dasharray="20, 100" stroke-dashoffset="-55" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#10b981" stroke-width="4.2"/>
+            <path class="circle" stroke-dasharray="15, 100" stroke-dashoffset="-75" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#059669" stroke-width="4.2"/>
+            <path class="circle" stroke-dasharray="10, 100" stroke-dashoffset="-90" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#34d399" stroke-width="4.2"/>
+          </svg>
+
+          <div class="chart-center-text">
+            <div class="total-val">100B</div>
+            <div class="total-lbl">Total VRS</div>
+          </div>
+        </div>
+
+        <!-- Tokenomics List Breakdown -->
+        <div class="tokenomics-list">
+          <div class="tokenomics-item">
+            <div class="tokenomics-left">
+              <div class="color-pill" style="background: #00ff88;"></div>
+              <div>
+                <div class="tokenomics-name">Public Sale / IDO</div>
+                <div class="tokenomics-sub">20% TGE, 6-mo linear vesting</div>
+              </div>
+            </div>
+            <div class="tokenomics-right">
+              <div class="tokenomics-pct">30%</div>
+              <div class="tokenomics-amt">30,000,000,000 VRS</div>
+            </div>
+          </div>
+
+          <div class="tokenomics-item">
+            <div class="tokenomics-left">
+              <div class="color-pill" style="background: #2dd4bf;"></div>
+              <div>
+                <div class="tokenomics-name">Staking & Validator Rewards</div>
+                <div class="tokenomics-sub">48 months daily emission block rewards</div>
+              </div>
+            </div>
+            <div class="tokenomics-right">
+              <div class="tokenomics-pct">25%</div>
+              <div class="tokenomics-amt">25,000,000,000 VRS</div>
+            </div>
+          </div>
+
+          <div class="tokenomics-item">
+            <div class="tokenomics-left">
+              <div class="color-pill" style="background: #10b981;"></div>
+              <div>
+                <div class="tokenomics-name">Eco Treasury & Carbon Fund</div>
+                <div class="tokenomics-sub">10% TGE, 24-mo quarterly unlock</div>
+              </div>
+            </div>
+            <div class="tokenomics-right">
+              <div class="tokenomics-pct">20%</div>
+              <div class="tokenomics-amt">20,000,000,000 VRS</div>
+            </div>
+          </div>
+
+          <div class="tokenomics-item">
+            <div class="tokenomics-left">
+              <div class="color-pill" style="background: #059669;"></div>
+              <div>
+                <div class="tokenomics-name">Core Team & Contributors</div>
+                <div class="tokenomics-sub">6-mo cliff, 24-mo monthly linear</div>
+              </div>
+            </div>
+            <div class="tokenomics-right">
+              <div class="tokenomics-pct">15%</div>
+              <div class="tokenomics-amt">15,000,000,000 VRS</div>
+            </div>
+          </div>
+
+          <div class="tokenomics-item">
+            <div class="tokenomics-left">
+              <div class="color-pill" style="background: #34d399;"></div>
+              <div>
+                <div class="tokenomics-name">Liquidity & DEX Listing</div>
+                <div class="tokenomics-sub">100% unlocked at TGE, 36-mo LP lock</div>
+              </div>
+            </div>
+            <div class="tokenomics-right">
+              <div class="tokenomics-pct">10%</div>
+              <div class="tokenomics-amt">10,000,000,000 VRS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VESTING SCHEDULE SECTION -->
+  <section class="vesting-section" id="vesting">
+    <div class="container reveal">
+      <h2 class="section-title">Token Unlock & <span class="gradient-text">Vesting Schedule</span></h2>
+      <p class="section-subtitle">Transparent and predictable unlock timelines ensure market stability and align long-term incentives across all ecosystem participants.</p>
+
+      <div class="vesting-timeline">
+        <div class="vesting-node">
+          <div class="vesting-time">TGE (Day 0)</div>
+          <div class="vesting-pct">20%</div>
+          <div class="vesting-desc">Public Sale Initial Unlock at DEX Listing</div>
+        </div>
+        <div class="vesting-node">
+          <div class="vesting-time">Month 1</div>
+          <div class="vesting-pct">16%</div>
+          <div class="vesting-desc">Linear Monthly Batch Unlock 1</div>
+        </div>
+        <div class="vesting-node">
+          <div class="vesting-time">Month 3</div>
+          <div class="vesting-pct">16%</div>
+          <div class="vesting-desc">Linear Monthly Batch Unlock 2</div>
+        </div>
+        <div class="vesting-node">
+          <div class="vesting-time">Month 6</div>
+          <div class="vesting-pct">24%</div>
+          <div class="vesting-desc">Public Sale Fully Vested (100%)</div>
+        </div>
+        <div class="vesting-node">
+          <div class="vesting-time">Month 24</div>
+          <div class="vesting-pct">100%</div>
+          <div class="vesting-desc">Team & Eco Treasury Full Maturity</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY INVEST SECTION -->
+  <section class="why-section" id="why">
+    <div class="container reveal">
+      <h2 class="section-title">Why Invest in <span class="gradient-text">Verdis Blockchain?</span></h2>
+      <p class="section-subtitle">Built from the ground up to lead the $30 Trillion Sustainable Finance movement.</p>
+
+      <div class="why-grid">
+        <div class="glass-card why-card">
+          <div class="why-header">
+            <div class="why-icon"><i class="fa-solid fa-seedling"></i></div>
+            <div class="why-title">Carbon-Negative Protocol</div>
+          </div>
+          <p class="why-desc">
+            Unlike traditional PoW or standard PoS networks, Verdis integrates Green DPoS consensus directly with satellite-verified real-world tree planting. Every block validated actively offsets 110% of network energy usage.
+          </p>
+        </div>
+
+        <div class="glass-card why-card">
+          <div class="why-header">
+            <div class="why-icon"><i class="fa-solid fa-rocket"></i></div>
+            <div class="why-title">First-Mover ESG Advantage</div>
+          </div>
+          <p class="why-desc">
+            Institutional capital requires strict ESG compliance. Verdis is the premier enterprise Layer-1 blockchain providing native carbon-credit settlement (VCO), zero gas spikes, and sub-second transaction finality.
+          </p>
+        </div>
+
+        <div class="glass-card why-card">
+          <div class="why-header">
+            <div class="why-icon"><i class="fa-solid fa-coins"></i></div>
+            <div class="why-title">Real Utility & High Yield</div>
+          </div>
+          <p class="why-desc">
+            $VRS utility includes network gas fees, validator node staking (up to 18% APY yield), eco-governance DAO voting, and fee discounts on Verdis DEX and NFT Carbon Credit marketplace.
+          </p>
+        </div>
+
+        <div class="glass-card why-card">
+          <div class="why-header">
+            <div class="why-icon"><i class="fa-solid fa-fire-flame-curved"></i></div>
+            <div class="why-title">Deflationary Token Mechanics</div>
+          </div>
+          <p class="why-desc">
+            50% of all transaction fees are permanently burned, while quarterly carbon-credit revenue funds automated $VRS buybacks from the open market, creating constant deflationary pressure.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW TO BUY SECTION -->
+  <section class="how-section">
+    <div class="container reveal">
+      <h2 class="section-title">How to Buy <span class="gradient-text">$VRS Tokens</span></h2>
+      <p class="section-subtitle">Get started in under 2 minutes following these 4 easy steps.</p>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-title">Connect Wallet</div>
+          <p class="step-desc">Click 'Connect Wallet' at the top right using MetaMask, WalletConnect, Phantom, or Trust Wallet.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-title">Choose Payment Asset</div>
+          <p class="step-desc">Select ETH, BNB, USDT, or USDC from your connected Web3 wallet.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-title">Enter Contribution</div>
+          <p class="step-desc">Type your desired purchase amount. The widget automatically adds your +10% Stage 2 bonus tokens.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <div class="step-title">Receive $VRS Tokens</div>
+          <p class="step-desc">Approve the transaction in your wallet. Tokens will be instantly claimable in your vesting dashboard at TGE.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ SECTION -->
+  <section class="faq-section" id="faq">
+    <div class="container reveal">
+      <h2 class="section-title">Frequently Asked <span class="gradient-text">Questions</span></h2>
+      <p class="section-subtitle">Have questions about the Verdis Token Sale? We have answers.</p>
+
+      <div class="faq-accordion">
+        <div class="faq-item active">
+          <div class="faq-header">
+            <span>What is Verdis and why is it carbon-negative?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="faq-body">
+            Verdis is a high-performance Layer-1 blockchain engineered for net-zero sustainability. Using Green DPoS consensus and satellite-tracked reforestation, Verdis actively plants real-world trees for every block produced, offsetting 110% of its electricity consumption.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-header">
+            <span>When will the Token Sale end and when is TGE?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="faq-body">
+            Public Sale Stage 2 will conclude when the stage allocation is filled or when the countdown timer expires. The Token Generation Event (TGE) and initial DEX listing on Uniswap and VerdisSwap are scheduled immediately following the completion of Stage 3.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-header">
+            <span>What are the minimum and maximum purchase amounts?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="faq-body">
+            The minimum contribution per transaction is $50 USD equivalent, and the maximum purchase per individual wallet is $100,000 USD equivalent during Stage 2 to prevent token concentration.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-header">
+            <span>Which crypto currencies and wallets are supported?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="faq-body">
+            You can purchase $VRS using Ethereum (ETH), BNB Chain (BNB), Tether (USDT), or USD Coin (USDC). Supported Web3 wallets include MetaMask, WalletConnect, Trust Wallet, Phantom, Coinbase Wallet, and SafePal.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-header">
+            <span>How does the vesting schedule work for IDO buyers?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="faq-body">
+            Public Sale investors unlock 20% of their $VRS tokens immediately at TGE. The remaining 80% vests linearly over 6 months with monthly claimable distributions directly through our vesting portal.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-header">
+            <span>Is the Verdis token contract audited?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="faq-body">
+            Yes, our smart contracts have been thoroughly audited by CertiK and Hacken. Zero critical or high-risk vulnerabilities were identified. Full audit reports are publicly downloadable on our GitHub and whitepaper page.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="landing.html" class="logo">
+            <div class="logo-icon">🌿</div>
+            <span>Verdis</span>
+          </a>
+          <p>The first net carbon-negative Layer-1 blockchain infrastructure powering sustainable DeFi, carbon credit trading, and ESG enterprise applications.</p>
+          <div class="footer-socials">
+            <a href="#" class="social-link"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#" class="social-link"><i class="fa-brands fa-discord"></i></a>
+            <a href="#" class="social-link"><i class="fa-brands fa-telegram"></i></a>
+            <a href="#" class="social-link"><i class="fa-brands fa-github"></i></a>
+            <a href="#" class="social-link"><i class="fa-brands fa-medium"></i></a>
+          </div>
+        </div>
+
+        <div>
+          <div class="footer-title">Ecosystem</div>
+          <ul class="footer-links">
+            <li><a href="landing.html">Landing Page</a></li>
+            <li><a href="dashboard.html">Node Dashboard</a></li>
+            <li><a href="ecosystem.html">Eco Marketplace</a></li>
+            <li><a href="whitepaper.html">Whitepaper</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="footer-title">Developer & Ops</div>
+          <ul class="footer-links">
+            <li><a href="api-docs.html">API Documentation</a></li>
+            <li><a href="ssh-terminal.html">CLI Terminal</a></li>
+            <li><a href="status.html">Network Status</a></li>
+            <li><a href="templates.html">dApp Templates</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="footer-title">Token Sale</div>
+          <ul class="footer-links">
+            <li><a href="#buy">Buy $VRS</a></li>
+            <li><a href="#tokenomics">Tokenomics</a></li>
+            <li><a href="#vesting">Vesting Portal</a></li>
+            <li><a href="#faq">Sale FAQ</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 Verdis Foundation. All rights reserved.</div>
+        <div style="color: var(--primary);">🌱 100% Carbon-Neutral Digital Infrastructure</div>
+        <div>Subject to Terms of Service & Privacy Policy</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- AI SUPPORT WIDGET -->
+  <button class="ai-widget-button" onclick="toggleAiChat()">
+    <i class="fa-solid fa-leaf"></i>
+    <span>Verdis Eco AI</span>
+  </button>
+
+  <div class="ai-chat-panel" id="aiChatPanel">
+    <div class="chat-header">
+      <div class="chat-header-info">
+        <div class="chat-avatar">🌿</div>
+        <div>
+          <div class="chat-title">Verdis Eco Assistant</div>
+          <div style="font-size: 0.7rem; color: var(--primary);">Online • Green AI v2.4</div>
+        </div>
+      </div>
+      <button class="chat-close" onclick="toggleAiChat()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="message bot">
+        👋 Hello! I am the Verdis Eco AI assistant. How can I help you with the $VRS Token Sale or Green Blockchain mechanics today?
+      </div>
+    </div>
+
+    <div class="chat-chips">
+      <div class="chip" onclick="sendChip('What is the VRS token price?')">VRS Token Price</div>
+      <div class="chip" onclick="sendChip('How to Buy?')">How to Buy</div>
+      <div class="chip" onclick="sendChip('Tell me about Vesting')">Vesting Schedule</div>
+      <div class="chip" onclick="sendChip('Is it audited?')">CertiK Audit</div>
+    </div>
+
+    <div class="chat-input-area">
+      <input type="text" id="chatInput" class="chat-input" placeholder="Ask about $VRS Token Sale..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+      <button class="chat-send-btn" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <!-- WALLET CONNECT MODAL -->
+  <div class="modal-overlay" id="walletModal">
+    <div class="modal-card">
+      <h3 style="font-size: 1.5rem; margin-bottom: 8px;">Connect Web3 Wallet</h3>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 24px;">Select your preferred EVM or Solana provider to participate in the IDO.</p>
+
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+        <button class="btn btn-secondary" style="justify-content: flex-start; padding: 14px 20px;" onclick="connectWallet('MetaMask')">
+          <i class="fa-solid fa-fox" style="color: #f6851b; font-size: 1.2rem;"></i> MetaMask Wallet
+        </button>
+        <button class="btn btn-secondary" style="justify-content: flex-start; padding: 14px 20px;" onclick="connectWallet('WalletConnect')">
+          <i class="fa-solid fa-link" style="color: #3b99fc; font-size: 1.2rem;"></i> WalletConnect
+        </button>
+        <button class="btn btn-secondary" style="justify-content: flex-start; padding: 14px 20px;" onclick="connectWallet('Phantom')">
+          <i class="fa-solid fa-ghost" style="color: #ab9ff2; font-size: 1.2rem;"></i> Phantom Wallet
+        </button>
+        <button class="btn btn-secondary" style="justify-content: flex-start; padding: 14px 20px;" onclick="connectWallet('Trust Wallet')">
+          <i class="fa-solid fa-shield" style="color: #0500ff; font-size: 1.2rem;"></i> Trust Wallet
+        </button>
+      </div>
+
+      <button class="btn btn-secondary" style="width: 100%; border: none;" onclick="toggleWalletModal()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- PURCHASE RECEIPT MODAL -->
+  <div class="modal-overlay" id="receiptModal">
+    <div class="modal-card">
+      <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(0,255,136,0.15); border: 2px solid var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; color: var(--primary); font-size: 1.8rem;">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <h3 style="font-size: 1.6rem; margin-bottom: 8px;">Transaction Successful!</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Congratulations! You have successfully acquired $VRS tokens and contributed to reforestation.</p>
+
+      <div style="background: rgba(0, 255, 136, 0.05); border: 1px solid var(--border-glass); border-radius: 14px; padding: 16px; margin-bottom: 24px; text-align: left; font-size: 0.85rem;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <span style="color: var(--text-muted);">TX Hash:</span>
+          <span class="mono" style="color: var(--primary);" id="receiptTxHash">0x7f8a...3e92</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <span style="color: var(--text-muted);">Allocated $VRS:</span>
+          <span class="mono" id="receiptVrsAmount">1,760,000 VRS</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Reforestation Impact:</span>
+          <span class="mono" style="color: var(--secondary);" id="receiptTrees">🌱 16 Trees Planted</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" style="width: 100%;" onclick="closeReceiptModal()">
+        Done & View Dashboard
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       JAVASCRIPT LOGIC
+       ========================================================================== -->
+  <script>
+    /* --------------------------------------------------------------------------
+       1. CANVAS PARTICLE SYSTEM (NETWORK EFFECT)
+       -------------------------------------------------------------------------- */
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let width, height;
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.vx = (Math.random() - 0.5) * 0.8;
+        this.vy = (Math.random() - 0.5) * 0.8;
+        this.radius = Math.random() * 2 + 1;
+        this.color = Math.random() > 0.4 ? '#00ff88' : (Math.random() > 0.5 ? '#2dd4bf' : '#10b981');
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (this.x < 0 || this.x > width) this.vx *= -1;
+        if (this.y < 0 || this.y > height) this.vy *= -1;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = this.color;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    // Initialize particles
+    const particleCount = Math.min(Math.floor(window.innerWidth / 18), 70);
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Particle());
+    }
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Connect particles with lines
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 130) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(0, 255, 136, ${0.25 * (1 - dist / 130)})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+      }
+
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    /* --------------------------------------------------------------------------
+       2. COUNTDOWN TIMER logic
+       -------------------------------------------------------------------------- */
+    const targetDate = new Date().getTime() + (14 * 24 * 60 * 60 * 1000) + (8 * 60 * 60 * 1000) + (42 * 60 * 1000);
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const difference = targetDate - now;
+
+      if (difference <= 0) {
+        document.getElementById('days').innerText = '00';
+        document.getElementById('hours').innerText = '00';
+        document.getElementById('mins').innerText = '00';
+        document.getElementById('secs').innerText = '00';
+        return;
+      }
+
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const mins = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((difference % (1000 * 60)) / 1000);
+
+      document.getElementById('days').innerText = String(days).padStart(2, '0');
+      document.getElementById('hours').innerText = String(hours).padStart(2, '0');
+      document.getElementById('mins').innerText = String(mins).padStart(2, '0');
+      document.getElementById('secs').innerText = String(secs).padStart(2, '0');
+    }
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    /* --------------------------------------------------------------------------
+       3. ANIMATED NUMBER COUNTERS & INTERSECTION OBSERVER
+       -------------------------------------------------------------------------- */
+    let countersStarted = false;
+
+    function startCounters() {
+      if (countersStarted) return;
+      countersStarted = true;
+
+      const counters = document.querySelectorAll('.counter');
+      counters.forEach(counter => {
+        const target = +counter.getAttribute('data-target');
+        const duration = 2000;
+        const stepTime = 30;
+        const steps = duration / stepTime;
+        const increment = target / steps;
+        let current = 0;
+
+        const timer = setInterval(() => {
+          current += increment;
+          if (current >= target) {
+            current = target;
+            clearInterval(timer);
+          }
+          counter.innerText = Math.floor(current).toLocaleString();
+        }, stepTime);
+      });
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+          if (entry.target.querySelector('.counter') || entry.target.classList.contains('stats-bar-section')) {
+            startCounters();
+          }
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    /* --------------------------------------------------------------------------
+       4. BUY WIDGET & EXCHANGE CALCULATIONS
+       -------------------------------------------------------------------------- */
+    let selectedAsset = 'ETH';
+    let assetPriceUSD = 3200;
+    const vrsPriceUSD = 0.001;
+
+    function selectAsset(symbol, priceUsd, iconClass) {
+      selectedAsset = symbol;
+      assetPriceUSD = priceUsd;
+
+      document.querySelectorAll('.asset-btn').forEach(btn => btn.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+
+      document.getElementById('selectedAssetSymbol').innerText = symbol;
+      document.getElementById('selectedAssetIcon').className = iconClass;
+
+      calculateTokens();
+    }
+
+    function setPresetUSD(usdAmount) {
+      const cryptoAmount = (usdAmount / assetPriceUSD).toFixed(4);
+      document.getElementById('payAmountInput').value = cryptoAmount;
+      calculateTokens();
+    }
+
+    function calculateTokens() {
+      const payInput = parseFloat(document.getElementById('payAmountInput').value) || 0;
+      const totalUSD = payInput * assetPriceUSD;
+
+      const baseVRS = Math.floor(totalUSD / vrsPriceUSD);
+      const bonusVRS = Math.floor(baseVRS * 0.10);
+      const totalVRS = baseVRS + bonusVRS;
+      const treesPlanted = Math.floor(totalUSD / 100);
+
+      document.getElementById('usdValueText').innerText = '$' + totalUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById('baseVrsText').innerText = baseVRS.toLocaleString() + ' VRS';
+      document.getElementById('bonusVrsText').innerText = '+' + bonusVRS.toLocaleString() + ' VRS';
+      document.getElementById('treesPlantedText').innerText = '🌱 ' + treesPlanted.toLocaleString() + ' Trees';
+      document.getElementById('totalVrsText').innerText = totalVRS.toLocaleString() + ' VRS';
+    }
+
+    calculateTokens();
+
+    /* --------------------------------------------------------------------------
+       5. WALLET CONNECT & PURCHASE SIMULATION
+       -------------------------------------------------------------------------- */
+    let walletConnected = false;
+    let userWalletAddress = '';
+
+    function toggleWalletModal() {
+      document.getElementById('walletModal').classList.toggle('active');
+    }
+
+    function toggleWalletConnect() {
+      if (walletConnected) {
+        walletConnected = false;
+        userWalletAddress = '';
+        document.getElementById('walletBtnText').innerText = 'Connect Wallet';
+        document.getElementById('walletAddressInput').value = '';
+        document.getElementById('walletStatusText').innerText = 'Connect wallet or enter EVM address';
+      } else {
+        toggleWalletModal();
+      }
+    }
+
+    function connectWallet(providerName) {
+      walletConnected = true;
+      userWalletAddress = '0x71C' + Math.random().toString(16).substring(2, 8) + '...8A9e';
+      document.getElementById('walletBtnText').innerText = '0x71C...8A9e';
+      document.getElementById('walletAddressInput').value = userWalletAddress;
+      document.getElementById('walletStatusText').innerText = 'Connected via ' + providerName + ' ✅';
+      toggleWalletModal();
+    }
+
+    function executePurchase() {
+      const payInput = parseFloat(document.getElementById('payAmountInput').value) || 0;
+      if (payInput <= 0) {
+        alert('Please enter a valid contribution amount.');
+        return;
+      }
+
+      const walletAddr = document.getElementById('walletAddressInput').value.trim();
+      if (!walletAddr) {
+        toggleWalletModal();
+        return;
+      }
+
+      const totalUSD = payInput * assetPriceUSD;
+      const baseVRS = Math.floor(totalUSD / vrsPriceUSD);
+      const bonusVRS = Math.floor(baseVRS * 0.10);
+      const totalVRS = baseVRS + bonusVRS;
+      const trees = Math.floor(totalUSD / 100);
+
+      document.getElementById('receiptTxHash').innerText = '0x' + Array.from({length: 8}, () => Math.floor(Math.random()*16).toString(16)).join('') + '...' + Array.from({length: 4}, () => Math.floor(Math.random()*16).toString(16)).join('');
+      document.getElementById('receiptVrsAmount').innerText = totalVRS.toLocaleString() + ' VRS';
+      document.getElementById('receiptTrees').innerText = '🌱 ' + trees.toLocaleString() + ' Trees Planted';
+
+      document.getElementById('receiptModal').classList.add('active');
+    }
+
+    function closeReceiptModal() {
+      document.getElementById('receiptModal').classList.remove('active');
+    }
+
+    /* --------------------------------------------------------------------------
+       6. ACCORDION FAQ TOGGLE
+       -------------------------------------------------------------------------- */
+    document.querySelectorAll('.faq-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const item = header.parentElement;
+        const isActive = item.classList.contains('active');
+
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+
+        if (!isActive) {
+          item.classList.add('active');
+        }
+      });
+    });
+
+    /* --------------------------------------------------------------------------
+       7. AI SUPPORT CHAT WIDGET
+       -------------------------------------------------------------------------- */
+    function toggleAiChat() {
+      document.getElementById('aiChatPanel').classList.toggle('active');
+    }
+
+    function sendChip(text) {
+      document.getElementById('chatInput').value = text;
+      sendChatMessage();
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('chatInput');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      const chatMessages = document.getElementById('chatMessages');
+
+      const userDiv = document.createElement('div');
+      userDiv.className = 'message user';
+      userDiv.innerText = msg;
+      chatMessages.appendChild(userDiv);
+
+      input.value = '';
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      setTimeout(() => {
+        const botDiv = document.createElement('div');
+        botDiv.className = 'message bot';
+
+        const lower = msg.toLowerCase();
+        if (lower.includes('price')) {
+          botDiv.innerText = "The current Stage 2 $VRS token price is $0.001 USD. In Stage 3, the price will increase to $0.0015 USD (+50%).";
+        } else if (lower.includes('buy') || lower.includes('how')) {
+          botDiv.innerText = "To buy $VRS, connect your wallet (MetaMask, WalletConnect, or Phantom), select ETH, BNB, USDT, or USDC in the widget, enter your amount, and click 'BUY $VRS TOKENS NOW'.";
+        } else if (lower.includes('vesting') || lower.includes('lock')) {
+          botDiv.innerText = "Public sale tokens have a 20% unlock at TGE (Day 0), and the remaining 80% vests linearly over 6 months.";
+        } else if (lower.includes('audit') || lower.includes('security')) {
+          botDiv.innerText = "Verdis smart contracts are fully audited by CertiK and Hacken with a 100% security score and zero critical vulnerabilities.";
+        } else if (lower.includes('tree') || lower.includes('green') || lower.includes('carbon')) {
+          botDiv.innerText = "Verdis is the first Layer-1 blockchain to integrate satellite-verified reforestation. Every transaction offsets 110% of its energy usage via real-world tree planting!";
+        } else {
+          botDiv.innerText = "Thanks for asking! Verdis ($VRS) is currently in Public Sale Stage 2 with a +10% bonus. Feel free to explore our tokenomics or connect your wallet to participate.";
+        }
+
+        chatMessages.appendChild(botDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }, 600);
+    }
+  </script>
+</body>
+</html>
