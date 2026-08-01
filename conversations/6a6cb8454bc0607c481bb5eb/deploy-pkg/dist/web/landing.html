@@ -333,5 +333,342 @@ orb.style.transform=`translate(${x*speed}px,${y*speed}px)`;
 });
 });
 </script>
+
+<!-- Verdis AI Support Widget — inject before </body> on any page -->
+<style>
+/* AI Support Widget */
+#aiWidget{position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Inter',-apple-system,sans-serif}
+.ai-fab{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#238636,#00ff88);border:none;cursor:pointer;box-shadow:0 4px 24px rgba(0,255,136,.3);display:flex;align-items:center;justify-content:center;transition:all .3s;position:relative}
+.ai-fab:hover{transform:scale(1.08);box-shadow:0 6px 32px rgba(0,255,136,.4)}
+.ai-fab svg{width:28px;height:28px}
+.ai-fab .ai-pulse{position:absolute;top:0;right:0;width:14px;height:14px;border-radius:50%;background:#3fb950;border:2px solid #0d1117;animation:aiPulse 2s infinite}
+@keyframes aiPulse{0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,.5)}50%{box-shadow:0 0 0 6px rgba(63,185,80,0)}}
+.ai-fab .ai-badge{position:absolute;top:-4px;left:-4px;background:#f85149;color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;display:none}
+.ai-fab .ai-badge.show{display:block;animation:scaleIn .3s}
+
+.ai-panel{position:fixed;bottom:100px;right:24px;width:380px;max-width:calc(100vw - 48px);height:560px;max-height:calc(100vh - 140px);background:#0d1117;border:1px solid rgba(63,185,80,.15);border-radius:20px;display:none;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);backdrop-filter:blur(20px);transform-origin:bottom right}
+.ai-panel.open{display:flex;animation:aiPanelIn .35s cubic-bezier(.16,1,.3,1)}
+@keyframes aiPanelIn{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+
+.ai-header{padding:16px 20px;background:linear-gradient(135deg,#0d1117,#161b22);border-bottom:1px solid rgba(63,185,80,.1);display:flex;align-items:center;justify-content:space-between}
+.ai-header-info{display:flex;align-items:center;gap:12px}
+.ai-avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#238636,#00ff88);display:flex;align-items:center;justify-content:center;font-size:20px}
+.ai-header-text h3{font-size:15px;font-weight:700;color:#e6edf3;margin:0}
+.ai-header-text .status{font-size:11px;color:#3fb950;display:flex;align-items:center;gap:5px}
+.ai-header-text .status::before{content:'';width:6px;height:6px;border-radius:50%;background:#3fb950;animation:aiPulse 2s infinite}
+.ai-close{background:none;border:none;color:#8b949e;font-size:20px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all .2s}
+.ai-close:hover{color:#e6edf3;background:rgba(255,255,255,.05)}
+
+.ai-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scrollbar-width:thin;scrollbar-color:#30363d transparent}
+.ai-messages::-webkit-scrollbar{width:4px}
+.ai-messages::-webkit-scrollbar-thumb{background:#30363d;border-radius:4px}
+.ai-msg{max-width:85%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.5;animation:scaleIn .3s}
+.ai-msg.bot{align-self:flex-start;background:#161b22;border:1px solid #30363d;color:#e6edf3;border-bottom-left-radius:4px}
+.ai-msg.user{align-self:flex-end;background:linear-gradient(135deg,#238636,#00ff88);color:#0d1117;border-bottom-right-radius:4px;font-weight:500}
+.ai-msg .quick-links{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+.ai-msg .quick-link{padding:4px 10px;background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.2);border-radius:100px;font-size:11px;color:#3fb950;cursor:pointer;transition:all .2s}
+.ai-msg .quick-link:hover{background:rgba(63,185,80,.2);transform:translateY(-1px)}
+.ai-typing{display:flex;gap:4px;padding:12px 16px;align-self:flex-start;background:#161b22;border:1px solid #30363d;border-radius:14px;border-bottom-left-radius:4px}
+.ai-typing span{width:7px;height:7px;border-radius:50%;background:#3fb950;animation:aiTyping 1.4s infinite}
+.ai-typing span:nth-child(2){animation-delay:.2s}
+.ai-typing span:nth-child(3){animation-delay:.4s}
+@keyframes aiTyping{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-6px)}}
+
+.ai-suggestions{padding:8px 16px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid #21262d}
+.ai-suggestion{padding:5px 12px;background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.15);border-radius:100px;font-size:11px;color:#3fb950;cursor:pointer;white-space:nowrap;transition:all .2s}
+.ai-suggestion:hover{background:rgba(63,185,80,.15);transform:translateY(-1px)}
+
+.ai-input{padding:12px 16px;border-top:1px solid #21262d;display:flex;gap:8px;align-items:center;background:#0d1117}
+.ai-input input{flex:1;background:#161b22;border:1px solid #30363d;border-radius:100px;padding:10px 16px;color:#e6edf3;font-size:13px;outline:none;transition:border-color .2s}
+.ai-input input:focus{border-color:#3fb950}
+.ai-input input::placeholder{color:#6b7280}
+.ai-send{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#238636,#00ff88);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.ai-send:hover{transform:scale(1.08)}
+.ai-send svg{width:18px;height:18px}
+.ai-send:disabled{opacity:.4;cursor:default;transform:none}
+
+@media(max-width:768px){.ai-panel{width:calc(100vw - 32px);right:16px;bottom:90px;height:calc(100vh - 120px)}#aiWidget{bottom:16px;right:16px}}
+</style>
+<div id="aiWidget">
+<div class="ai-panel" id="aiPanel">
+<div class="ai-header">
+<div class="ai-header-info">
+<div class="ai-avatar">🌿</div>
+<div class="ai-header-text">
+<h3>Verdis AI Assistant</h3>
+<div class="status">Online · Chain 909</div>
+</div>
+</div>
+<button class="ai-close" onclick="aiToggle()">✕</button>
+</div>
+<div class="ai-messages" id="aiMessages"></div>
+<div class="ai-suggestions" id="aiSuggestions"></div>
+<div class="ai-input">
+<input type="text" id="aiInput" placeholder="Ask about Verdis..." onkeydown="if(event.key==='Enter')aiSend()">
+<button class="ai-send" onclick="aiSend()">
+<svg viewBox="0 0 24 24" fill="none" stroke="#0d1117" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+</button>
+</div>
+</div>
+<button class="ai-fab" id="aiFab" onclick="aiToggle()">
+<span class="ai-badge" id="aiBadge">1</span>
+<span class="ai-pulse"></span>
+<svg viewBox="0 0 24 24" fill="none" stroke="#0d1117" stroke-width="2"><path d="M12 2C8 2 5 5 5 9c0 2 1 3 1 5l-1 2 4-1c1 1 2 1 3 1s2 0 3-1l4 1-1-2c0-2 1-3 1-5 0-4-3-7-7-7z"/><circle cx="9" cy="10" r="1" fill="#0d1117"/><circle cx="15" cy="10" r="1" fill="#0d1117"/></svg>
+</button>
+</div>
+<script>
+// === Verdis AI Assistant ===
+const AI_KNOWLEDGE_BASE = {
+  blockchain: {
+    keywords: ['blockchain','chain','verdis','vrs','token','network','consensus','dpos'],
+    answer: '🌿 **Verdis Blockchain**\n\nVerdis (VRS) is a Layer-1 blockchain with native DPoS consensus running on Chain ID 909. Key specs:\n\n• **Consensus:** Delegated Proof of Stake (5 active validators, 27 registered)\n• **Block Time:** 5 seconds\n• **Total Supply:** 50,000,000,000 VRS\n• **Cryptography:** secp256k1 signatures + Keccak256 hashing\n• **Smart Contracts:** Stack-based VM with 22 opcodes\n• **DEX:** Native AMM with 6 liquidity pools\n\nAll blocks are produced on-chain with real cryptographic validation — no mocks.',
+    links: ['View Dashboard', 'See Validators', 'Check Block Height']
+  },
+  dex: {
+    keywords: ['dex','swap','trade','amm','liquidity','pool','exchange','carbon','eco token'],
+    answer: '💱 **Verdis Native DEX**\n\nThe AMM DEX is built directly into the blockchain — no external contracts needed.\n\n**Active Pools:**\n• VRS/CARBON — Carbon credit trading\n• VRS/ECO — Eco-token exchange\n• CARBON/ECO — Cross eco-token swap\n• TREE/VRS — Reforestation token\n• GREEN/VRS — Green validator token\n• REDD/VRS — Reddington reward token\n\nThe auto-trade bot provides continuous liquidity. You can swap tokens in the Dashboard → DEX tab.',
+    links: ['Open DEX', 'View Pool Stats', 'Add Liquidity']
+  },
+  contracts: {
+    keywords: ['contract','smart','deploy','vm','opcode','assembly','compile','visual'],
+    answer: '📜 **Smart Contracts on Verdis**\n\nVerdis has a built-in stack-based Virtual Machine with 22 opcodes (PUSH, ADD, STORE, LOAD, JUMP, etc.).\n\n**Two ways to deploy:**\n1. **Visual Builder** — Drag & drop instruction blocks, no coding needed\n2. **Assembly Editor** — Write Verdis assembly directly\n\n**6 Preset Templates:**\n• Simple Token\n• Counter\n• Key-Value Store\n• Escrow Lock\n• Voting\n• Custom\n\nPlus 6 visual preset recipes (Token with Transfer, Multi-Sig Wallet, Simple Auction, Time-Lock Vault, On-Chain Ledger, Access Controller).',
+    links: ['Open Contracts', 'View Templates', 'Read VM Docs']
+  },
+  eco: {
+    keywords: ['eco','green','carbon','co2','climate','environment','tree','reforestation','offset','sustainab'],
+    answer: '🌱 **Verdis Eco Features**\n\nVerdis is the **first fully green blockchain** — environmental regeneration is built into the protocol, not an afterthought.\n\n**On-Chain Eco Features:**\n• **Carbon Credits** — Minted and tracked on-chain\n• **Reforestation Logging** — Trees planted are recorded immutably\n• **Green Validator Scoring** — Validators scored by renewable energy use\n• **5B VRS Carbon Offset Fund** — Dedicated to environmental projects\n\n**Current Impact:**\n• 1,000+ tons CO₂ offset\n• 15,000+ trees planted\n• 6 green validators active\n\nEvery block produced contributes to planetary healing.',
+    links: ['View Eco Dashboard', 'See Carbon Stats', 'Tree Planting Log']
+  },
+  wallet: {
+    keywords: ['wallet','connect','metamask','trust','import','private key','seed','address','balance'],
+    answer: '👛 **Verdis Native Wallet**\n\nVerdis has a **built-in native wallet** — no MetaMask, Trust Wallet, or browser injection needed.\n\n**Create Wallet:**\n• Click "Create Native Wallet" in the Dashboard\n• Generates secp256k1 keypair locally\n• Your keys never leave your browser\n\n**Import Wallet:**\n• Paste your private key or 12-word mnemonic\n\n**External Wallet (Optional):**\n• MetaMask: Add custom network (RPC: https://rpc.verdischain.com, Chain ID: 909)\n• Trust Wallet: Use DApp browser or manual import\n\nYour wallet state persists in localStorage — it survives page refreshes.',
+    links: ['Open Wallet', 'Create New', 'Import Existing']
+  },
+  sale: {
+    keywords: ['sale','buy','token sale','price','ido','invest','purchase','presale','ico'],
+    answer: '🚀 **Verdis Token Sale (IDO)**\n\n**Price:** $0.001 per VRS\n\n**Accepted Assets:**\n• ETH (Ethereum)\n• BNB (BSC)\n• USDT / USDC\n\nThe token sale is live on the Dashboard → Token Sale tab. All transactions are on-chain and verifiable.\n\nVRS tokens are utility tokens used for:\n• Transaction fees\n• DEX trading\n• Validator staking\n• Governance voting\n• Carbon credit minting',
+    links: ['Open Token Sale', 'View Pricing', 'Read Whitepaper']
+  },
+  staking: {
+    keywords: ['stake','staking','delegate','validator','reward','slashing','pos'],
+    answer: '🔒 **DPoS Staking**\n\nVerdis uses Delegated Proof of Stake:\n\n• **27 validators** registered\n• **5 active** block producers (top voted)\n• **Block rewards** distributed to active validators\n• **Delegation** — Vote for validators to earn rewards\n• **Slashing** — Misbehaving validators lose stake\n• **Green scoring** — Validators using renewable energy get higher rewards\n\nStake your VRS in Dashboard → Staking tab.',
+    links: ['Open Staking', 'View Validators', 'Delegate Now']
+  },
+  security: {
+    keywords: ['security','safe','hack','protect','rate limit','auth','admin','replay','nonce'],
+    answer: '🔐 **Verdis Security**\n\nVerdis has 13 active security checks:\n\n• secp256k1 signature verification\n• SHA-256 + Keccak256 hashing\n• Tamper detection\n• Double-spend prevention\n• Chain validation\n• Rate limiting (30/min + 5/min strict)\n• Nonce replay protection\n• Admin API key authentication\n• Validator slashing\n• Input validation\n• Mempool limits (1000 txs)\n• Max transaction 1B VRS\n• Max block size 500 transactions\n\nSecurity audit available at `/api/security/audit` endpoint.',
+    links: ['View Security Audit', 'Security Events', 'Network Info']
+  },
+  whitepaper: {
+    keywords: ['whitepaper','documentation','docs','guide','how','learn','paper','research'],
+    answer: '📄 **Verdis Whitepaper**\n\nThe Verdis whitepaper is a 14-section comprehensive document covering:\n\n1. Executive Summary\n2. Technology Architecture\n3. DPoS Consensus\n4. Carbon-Negative Protocol\n5. Green Validator Scoring\n6. Reforestation Logging\n7. AMM DEX Design\n8. Smart Contract VM\n9. Native Wallet System\n10. Token Economics\n11. Security Model\n12. Roadmap\n13. Team\n14. Conclusion\n\nAvailable as HTML and PDF download.',
+    links: ['Read Whitepaper', 'Download PDF', 'Executive Summary']
+  },
+  roadmap: {
+    keywords: ['roadmap','future','plan','next','phase','launch','listing','coingecko','coinmarketcap'],
+    answer: '🗺️ **Verdis Roadmap**\n\n**Completed:**\n✅ Mainnet launch (Chain 909)\n✅ DPoS consensus with green scoring\n✅ Native AMM DEX (6 pools)\n✅ Smart contract VM with visual builder\n✅ Native wallet (no MetaMask)\n✅ Token sale (IDO) live\n✅ Whitepaper published\n✅ Telegram & Twitter presence\n✅ Brand identity (hexagonal leaf logo)\n\n**In Progress:**\n🔄 CoinGecko & CoinMarketCap listing\n🔄 Cross-chain bridge for liquidity\n🔄 Twitter automation enhancement\n\n**Planned:**\n📋 Mobile wallet app\n📋 Carbon offset marketplace\n📋 Enterprise validator onboarding\n📋 Layer-2 scaling solution',
+    links: ['View Whitepaper', 'Join Telegram', 'Follow Twitter']
+  },
+  api: {
+    keywords: ['api','rpc','endpoint','json','rest','developer','integrate','code'],
+    answer: '💻 **Verdis API**\n\n**JSON-RPC (Ethereum-compatible):**\n• Endpoint: `https://rpc.verdischain.com`\n• Chain ID: 909\n• 25 RPC methods (eth_blockNumber, eth_getBalance, etc.)\n\n**REST API (50+ endpoints):**\n• `/api/blockchain/info` — Chain stats\n• `/api/blockchain/blocks` — Block explorer\n• `/api/dex/pools` — DEX data\n• `/api/eco/impact` — Eco metrics\n• `/api/security/audit` — Security status\n• `/api/network/info` — Network info\n\nFull interactive docs at `/docs` page.',
+    links: ['Open API Docs', 'View Endpoints', 'Network Info']
+  },
+  governance: {
+    keywords: ['governance','vote','proposal','dao','community','decision','treasury'],
+    answer: '🗳️ **Verdis Governance**\n\nVerdis features on-chain governance:\n\n• **Proposals** — Any VRS holder can submit\n• **Voting** — 1 VRS = 1 vote\n• **Quorum** — Minimum participation required\n• **Execution** — Passed proposals execute on-chain\n\nGovernance covers:\n• Protocol parameter changes\n• Validator slashing decisions\n• Carbon offset fund allocation\n• Reforestation project approval\n\nAccess via Dashboard → Governance tab.',
+    links: ['Open Governance', 'View Proposals', 'Create Proposal']
+  }
+};
+
+const AI_SUGGESTIONS = ['What is Verdis?', 'How to buy VRS?', 'Explain the DEX', 'Eco features', 'How to deploy a contract?', 'Security model'];
+const AI_GREETING = "🌿 Hi! I'm the Verdis AI Assistant. I can help you with:\n\n• Blockchain & network info\n• DEX & trading\n• Smart contracts & VM\n• Eco features & carbon credits\n• Wallet setup\n• Token sale & staking\n• Security & API\n\nWhat would you like to know?";
+
+let aiOpen = false;
+let aiHistory = [];
+
+function aiToggle() {
+  aiOpen = !aiOpen;
+  const panel = document.getElementById('aiPanel');
+  const fab = document.getElementById('aiFab');
+  if (aiOpen) {
+    panel.classList.add('open');
+    fab.style.transform = 'scale(0.85)';
+    document.getElementById('aiBadge').classList.remove('show');
+    setTimeout(() => document.getElementById('aiInput').focus(), 300);
+    if (aiHistory.length === 0) {
+      aiAddMessage('bot', AI_GREETING);
+      aiRenderSuggestions();
+    }
+  } else {
+    panel.classList.remove('open');
+    fab.style.transform = '';
+  }
+}
+
+function aiAddMessage(sender, text) {
+  const messages = document.getElementById('aiMessages');
+  const msg = document.createElement('div');
+  msg.className = 'ai-msg ' + sender;
+  
+  // Format markdown-like syntax
+  let formatted = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#3fb950">$1</strong>')
+    .replace(/\n/g, '<br>');
+  msg.innerHTML = formatted;
+  
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+  aiHistory.push({ sender, text });
+}
+
+function aiAddMessageWithLinks(sender, text, links) {
+  const messages = document.getElementById('aiMessages');
+  const msg = document.createElement('div');
+  msg.className = 'ai-msg ' + sender;
+  
+  let formatted = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#3fb950">$1</strong>')
+    .replace(/\n/g, '<br>');
+  
+  if (links && links.length > 0) {
+    formatted += '<div class="quick-links">';
+    links.forEach(link => {
+      formatted += '<span class="quick-link" onclick="aiHandleLink(\'' + link.replace(/'/g, "\\'") + '\')">' + link + '</span>';
+    });
+    formatted += '</div>';
+  }
+  
+  msg.innerHTML = formatted;
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+  aiHistory.push({ sender, text });
+}
+
+function aiRenderSuggestions() {
+  const container = document.getElementById('aiSuggestions');
+  container.innerHTML = AI_SUGGESTIONS.map(s => 
+    '<span class="ai-suggestion" onclick="aiQuickAsk(\'' + s.replace(/'/g, "\\'") + '\')">' + s + '</span>'
+  ).join('');
+}
+
+function aiQuickAsk(question) {
+  document.getElementById('aiInput').value = question;
+  aiSend();
+}
+
+function aiSend() {
+  const input = document.getElementById('aiInput');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  aiAddMessage('user', text);
+  input.value = '';
+  
+  // Clear suggestions
+  document.getElementById('aiSuggestions').innerHTML = '';
+  
+  // Show typing indicator
+  const messages = document.getElementById('aiMessages');
+  const typing = document.createElement('div');
+  typing.className = 'ai-typing';
+  typing.id = 'aiTyping';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  messages.appendChild(typing);
+  messages.scrollTop = messages.scrollHeight;
+  
+  // Simulate AI thinking time
+  setTimeout(() => {
+    typing.remove();
+    const response = aiGetAnswer(text);
+    aiAddMessageWithLinks('bot', response.answer, response.links);
+  }, 600 + Math.random() * 400);
+}
+
+function aiGetAnswer(query) {
+  const lower = query.toLowerCase();
+  let bestMatch = null;
+  let bestScore = 0;
+  
+  for (const [key, entry] of Object.entries(AI_KNOWLEDGE_BASE)) {
+    let score = 0;
+    for (const keyword of entry.keywords) {
+      if (lower.includes(keyword)) {
+        score += keyword.length; // Longer keywords = higher weight
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = entry;
+    }
+  }
+  
+  if (bestMatch && bestScore > 0) {
+    return { answer: bestMatch.answer, links: bestMatch.links || [] };
+  }
+  
+  // Fallback
+  return {
+    answer: "I'm not sure about that yet! Here are some things I can help with:\n\n• **Blockchain** — What is Verdis? Network stats?\n• **DEX** — How to trade, liquidity pools\n• **Eco** — Carbon credits, trees, green validators\n• **Contracts** — How to deploy, templates\n• **Wallet** — How to create/import a wallet\n• **Token Sale** — How to buy VRS\n• **Staking** — How to earn rewards\n• **Security** — How safe is Verdis?\n• **API** — RPC endpoints, developer docs\n\nTry asking about any of these topics!",
+    links: ['What is Verdis?', 'How to buy VRS?', 'Eco features']
+  };
+}
+
+function aiHandleLink(link) {
+  const linkMap = {
+    'View Dashboard': '/dashboard',
+    'Open DEX': '/dashboard#dex',
+    'Open Contracts': '/dashboard#contracts',
+    'Open Wallet': '/dashboard#wallet',
+    'Open Token Sale': '/dashboard#sale',
+    'Open Staking': '/dashboard#staking',
+    'Open Governance': '/dashboard#governance',
+    'Read Whitepaper': '/whitepaper',
+    'Download PDF': '/whitepaper.pdf',
+    'Open API Docs': '/docs',
+    'View Eco Dashboard': '/dashboard#eco',
+    'Network Info': '/api/network/info',
+    'See Validators': '/dashboard#validators',
+    'Check Block Height': '/dashboard',
+    'View Pool Stats': '/dashboard#dex',
+    'Add Liquidity': '/dashboard#dex',
+    'See Carbon Stats': '/dashboard#eco',
+    'Tree Planting Log': '/dashboard#eco',
+    'Read VM Docs': '/docs',
+    'View Templates': '/dashboard#contracts',
+    'Create New': '/dashboard#wallet',
+    'Import Existing': '/dashboard#wallet',
+    'View Pricing': '/dashboard#sale',
+    'Delegate Now': '/dashboard#staking',
+    'View Validators': '/dashboard#validators',
+    'View Security Audit': '/dashboard#security',
+    'Security Events': '/dashboard#security',
+    'Executive Summary': '/whitepaper',
+    'View Endpoints': '/docs',
+    'View Proposals': '/dashboard#governance',
+    'Create Proposal': '/dashboard#governance',
+    'Join Telegram': 'https://t.me/verdischain',
+    'Follow Twitter': 'https://x.com/Verdischain'
+  };
+  
+  const url = linkMap[link];
+  if (url) {
+    if (url.startsWith('http')) {
+      window.open(url, '_blank');
+    } else {
+      window.location.href = url;
+    }
+  }
+}
+
+// Show badge after 3 seconds if user hasn't opened
+setTimeout(() => {
+  if (!aiOpen) {
+    document.getElementById('aiBadge').classList.add('show');
+  }
+}, 3000);
+</script>
+
 </body>
 </html>
