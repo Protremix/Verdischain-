@@ -12,6 +12,7 @@ const vm_1 = require("../core/vm");
 const crypto_1 = require("../crypto");
 const jsonrpc_1 = require("./jsonrpc");
 const security_1 = require("../core/security");
+const api_keys_1 = require("../core/api-keys");
 class BlockchainAPI {
     constructor(blockchain, walletManager, contractManager) {
         this.dex = null;
@@ -25,6 +26,7 @@ class BlockchainAPI {
         this.app.use((0, cors_1.default)());
         this.app.use(express_1.default.json({ limit: '10mb' }));
         this.security = new security_1.SecurityManager();
+        this.apiKeyManager = new api_keys_1.ApiKeyManager();
         // Rate limiting middleware
         this.app.use((req, res, next) => {
             const ip = req.headers['x-forwarded-for'] || req.connection?.remoteAddress || req.socket?.remoteAddress || 'unknown';
@@ -373,6 +375,128 @@ a:hover { text-decoration:underline; }
             }
             res.json({ apiKey: this.security.getAdminApiKey() });
         });
+
+        // === API KEY MANAGEMENT FOR EXTERNAL PLATFORMS ===
+        // Allows exchanges, trackers, wallets, and dApps to generate API keys
+        
+        // Register a new API key (public endpoint, but rate-limited)
+        this.app.post('/api/keys/create', this.strictRateLimit.bind(this), (req, res) => {
+            try {
+                const { name, owner, scopes, rateLimit, expiresInDays, metadata } = req.body;
+                if (!name || !owner) {
+                    return res.status(400).json({ error: 'name and owner are required' });
+                }
+                if (!scopes || !Array.isArray(scopes) || scopes.length === 0) {
+                    return res.status(400).json({ error: 'scopes array required (read, trade, write, admin)' });
+                }
+                // Validate scopes
+                const validScopes = ['read', 'trade', 'write', 'admin'];
+                for (const s of scopes) {
+                    if (!validScopes.includes(s)) {
+                        return res.status(400).json({ error: `Invalid scope: ${s}. Valid: ${validScopes.join(', ')}` });
+                    }
+                }
+                // Don't allow self-assigning admin scope without admin key
+                if (scopes.includes('admin')) {
+                    const adminKey = req.headers['x-api-key'] || req.query.apiKey;
+                    if (!this.security.verifyApiKey(adminKey)) {
+                        return res.status(403).json({ error: 'Admin scope requires admin API key authentication' });
+                    }
+                }
+                const keyData = this.apiKeyManager.createKey({
+                    name, owner, scopes,
+                    rateLimit: rateLimit || 60,
+                    expiresInDays: expiresInDays || null,
+                    metadata
+                });
+                this.security.logEvent('api_key_created', 'info', `API key created for ${name} (${keyData.keyId})`);
+                res.json({
+                    success: true,
+                    message: 'API key created. Store your secret key securely - it will not be shown again.',
+                    ...keyData
+                });
+            } catch (e) {
+                res.status(500).json({ error: e.message });
+            }
+        });
+        
+        // List all API keys (admin only)
+        this.app.get('/api/keys', this.requireAdminAuth.bind(this), (req, res) => {
+            res.json({
+                keys: this.apiKeyManager.listKeys(),
+                stats: this.apiKeyManager.getStats()
+            });
+        });
+        
+        // Get specific key stats (admin or key owner)
+        this.app.get('/api/keys/:keyId', (req, res) => {
+            const adminKey = req.headers['x-api-key'] || req.query.apiKey;
+            const isAdmin = this.security.verifyApiKey(adminKey);
+            if (!isAdmin) {
+                return res.status(403).json({ error: 'Admin key required' });
+            }
+            const stats = this.apiKeyManager.getKeyStats(req.params.keyId);
+            if (!stats) return res.status(404).json({ error: 'Key not found' });
+            res.json(stats);
+        });
+        
+        // Revoke an API key (admin only)
+        this.app.post('/api/keys/:keyId/revoke', this.requireAdminAuth.bind(this), (req, res) => {
+            const revoked = this.apiKeyManager.revokeKey(req.params.keyId);
+            if (!revoked) return res.status(404).json({ error: 'Key not found' });
+            this.security.logEvent('api_key_revoked', 'warning', `API key ${req.params.keyId} revoked`);
+            res.json({ success: true, message: `Key ${req.params.keyId} revoked` });
+        });
+        
+        // Rotate (regenerate) an API key (admin only)
+        this.app.post('/api/keys/:keyId/rotate', this.requireAdminAuth.bind(this), (req, res) => {
+            const newKeys = this.apiKeyManager.rotateKey(req.params.keyId);
+            if (!newKeys) return res.status(404).json({ error: 'Key not found or inactive' });
+            this.security.logEvent('api_key_rotated', 'info', `API key ${req.params.keyId} rotated`);
+            res.json({
+                success: true,
+                message: 'Key rotated. Store your new secret key securely.',
+                ...newKeys
+            });
+        });
+        
+        // API key stats overview (admin only)
+        this.app.get('/api/keys/stats', this.requireAdminAuth.bind(this), (req, res) => {
+            res.json(this.apiKeyManager.getStats());
+        });
+        
+        // Verify an API key (for testing, returns key info if valid)
+        this.app.post('/api/keys/verify', (req, res) => {
+            const { apiKey, signature, timestamp, body } = req.body;
+            if (!apiKey) return res.status(400).json({ error: 'apiKey required' });
+            if (signature && timestamp) {
+                // HMAC verification
+                const result = this.apiKeyManager.verifyRequest(apiKey, signature, timestamp, body || '');
+                if (!result.valid) return res.status(401).json({ valid: false, error: result.error });
+                res.json({ valid: true, keyId: result.key.keyId, name: result.key.name, scopes: result.key.scopes });
+            } else {
+                // Simple key verification
+                const result = this.apiKeyManager.verifyApiKey(apiKey);
+                if (!result.valid) return res.status(401).json({ valid: false, error: result.error });
+                res.json({ valid: true, keyId: result.key.keyId, name: result.key.name, scopes: result.key.scopes });
+            }
+        });
+        
+        // Generate HMAC signature for testing (admin only)
+        this.app.post('/api/keys/sign', this.requireAdminAuth.bind(this), (req, res) => {
+            const { apiKey, timestamp, body, secretKey } = req.body;
+            if (!apiKey || !timestamp || !secretKey) {
+                return res.status(400).json({ error: 'apiKey, timestamp, secretKey required' });
+            }
+            // Find the key to get its secret hash
+            const keys = this.apiKeyManager.listKeys();
+            const keyInfo = keys.find(k => k.apiKey === apiKey);
+            if (!keyInfo) return res.status(404).json({ error: 'API key not found' });
+            const signature = this.apiKeyManager.signRequest(apiKey, timestamp, body || '', this.apiKeyManager.hashSecret(secretKey));
+            res.json({ signature, timestamp, apiKey });
+        });
+        
+        
         // Monitoring / Health check (public)
         this.app.get('/api/monitoring/health', (req, res) => {
             const now = Date.now();

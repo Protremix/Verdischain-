@@ -140,6 +140,12 @@ a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
 </div>
 <div class="nav-section">
 <div class="nav-section-title">Security &amp; Monitoring</div>
+<div class="nav-section-title">API Keys (Integration)</div>
+<div class="nav-item" onclick="scrollToSection('apikeys')">POST /api/keys/create</div>
+<div class="nav-item" onclick="scrollToSection('apikeys')">GET /api/keys</div>
+<div class="nav-item" onclick="scrollToSection('apikeys')">POST /api/keys/:keyId/revoke</div>
+<div class="nav-item" onclick="scrollToSection('apikeys')">GET /api/keys (List Keys)</div>
+<div class="nav-item" onclick="scrollToSection('apikeys')">POST /api/keys/:keyId/revoke</div>
 <div class="nav-item" onclick="scrollToSection('secaudit')">GET /api/security/audit</div>
 <div class="nav-item" onclick="scrollToSection('health')">GET /api/monitoring/health</div>
 </div>
@@ -715,6 +721,171 @@ const data = await response.json();
 <div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/dex/token/balance/<span class="param">:token</span>/<span class="param">:address</span></span><span class="endpoint-toggle">&#9654;</span></div>
 <div class="endpoint-body"><div class="endpoint-desc">Returns a specific token balance for an address.</div></div></div>
 </div>
+
+
+<!-- API KEYS -->
+<div class="section" id="apikeys">
+<div class="section-title">&#128273; API Keys (External Platform Integration)</div>
+<div class="section-desc">Generate API keys with secret keys for exchanges, trackers, wallets, and dApps to integrate with Verdis. HMAC-signed requests supported.</div>
+
+<div class="info-box">
+<div class="info-box-title">How It Works</div>
+<ul>
+<li><strong>1. Create key:</strong> POST to <code>/api/keys/create</code> with your platform name, owner, and scopes</li>
+<li><strong>2. Receive credentials:</strong> Get <code>apiKey</code> + <code>secretKey</code> (secret shown only once!)</li>
+<li><strong>3. Authenticate:</strong> Pass <code>x-api-key: vrs_...</code> header on protected endpoints</li>
+<li><strong>4. HMAC signing (optional):</strong> Sign requests with secret key for higher security</li>
+</ul>
+</div>
+
+<div class="info-box">
+<div class="info-box-title">Permission Scopes</div>
+<ul>
+<li><code>read</code> &mdash; Read blockchain data, blocks, transactions, balances, pools (included in all keys)</li>
+<li><code>trade</code> &mdash; Execute DEX swaps, add/remove liquidity</li>
+<li><code>write</code> &mdash; Send transactions, deploy contracts, mint tokens/NFTs</li>
+<li><code>admin</code> &mdash; Full access including block production, bridge redemption (requires admin key to assign)</li>
+</ul>
+</div>
+
+<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/keys/create</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Generate a new API key + secret key. Returns credentials <strong>only once</strong>. Strict rate limited.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>name</td><td>string</td><td>Yes</td><td>Platform/app name (e.g. "CoinGecko Tracker")</td></tr>
+<tr><td>owner</td><td>string</td><td>Yes</td><td>Owner address or email</td></tr>
+<tr><td>scopes</td><td>string[]</td><td>Yes</td><td>Permission scopes: ["read","trade","write"]</td></tr>
+<tr><td>rateLimit</td><td>number</td><td>No</td><td>Requests/min (default: 60)</td></tr>
+<tr><td>expiresInDays</td><td>number</td><td>No</td><td>Key expiry (null = never)</td></tr>
+<tr><td>metadata.website</td><td>string</td><td>No</td><td>Platform website</td></tr>
+<tr><td>metadata.description</td><td>string</td><td>No</td><td>Platform description</td></tr>
+<tr><td>metadata.webhookUrl</td><td>string</td><td>No</td><td>Webhook for event notifications</td></tr></tbody></table>
+<div class="code-label">cURL &mdash; Create a read-only key for CoinGecko</div>
+<div class="code-block">curl -X POST https://verdischain.com/api/keys/create \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "CoinGecko Tracker",
+    "owner": "api@coingecko.com",
+    "scopes": ["read"],
+    "rateLimit": 120,
+    "metadata": {
+      "website": "https://coingecko.com",
+      "description": "Price tracking integration"
+    }
+  }'</div>
+<div class="code-label">Response (200)</div>
+<div class="response-sample">{
+  "success": true,
+  "message": "API key created. Store your secret key securely - it will not be shown again.",
+  "keyId": "vk_a1b2c3d4e5f6",
+  "apiKey": "vrs_3f8a9b2c1d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8",
+  "secretKey": "vss_7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8",
+  "name": "CoinGecko Tracker",
+  "scopes": ["read"],
+  "rateLimit": 120,
+  "createdAt": 1692400000000,
+  "expiresAt": null
+}</div></div></div>
+
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/keys</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">List all API keys with usage stats. <span class="endpoint-auth">Admin Auth Required</span></div>
+<div class="code-label">cURL</div>
+<div class="code-block">curl https://verdischain.com/api/keys -H "x-api-key: ADMIN_KEY"</div>
+<div class="code-label">Response (200)</div>
+<div class="response-sample">{
+  "keys": [{
+    "keyId": "vk_a1b2...",
+    "apiKey": "vrs_3f8a...",
+    "name": "CoinGecko Tracker",
+    "owner": "api@coingecko.com",
+    "scopes": ["read"],
+    "rateLimit": 120,
+    "createdAt": 1692400000000,
+    "lastUsed": 1692405000000,
+    "requestCount": 1547,
+    "active": true
+  }],
+  "stats": {
+    "totalKeys": 1,
+    "activeKeys": 1,
+    "totalRequests": 1547,
+    "byScope": { "read": 1, "trade": 0, "write": 0, "admin": 0 }
+  }
+}</div></div></div>
+
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/keys/<span class="param">:keyId</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Get usage stats for a specific key. <span class="endpoint-auth">Admin Auth Required</span></div></div></div>
+
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/keys/<span class="param">:keyId</span>/revoke</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Revoke an API key permanently. <span class="endpoint-auth">Admin Auth Required</span></div>
+<div class="code-label">cURL</div>
+<div class="code-block">curl -X POST https://verdischain.com/api/keys/vk_a1b2.../revoke \
+  -H "x-api-key: ADMIN_KEY"</div>
+<div class="response-sample">{"success": true, "message": "Key vk_a1b2... revoked"}</div></div></div>
+
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/keys/<span class="param">:keyId</span>/rotate</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Rotate an API key (generate new key + secret). <span class="endpoint-auth">Admin Auth Required</span></div>
+<div class="code-label">Response (200)</div>
+<div class="response-sample">{"success": true, "apiKey": "vrs_new...", "secretKey": "vss_new..."}</div></div></div>
+
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/keys/verify</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Verify an API key (for testing). Supports both simple and HMAC verification.</div>
+<div class="code-label">cURL &mdash; Simple verification</div>
+<div class="code-block">curl -X POST https://verdischain.com/api/keys/verify \
+  -d '{"apiKey": "vrs_3f8a..."}'</div>
+<div class="response-sample">{"valid": true, "keyId": "vk_a1b2...", "name": "CoinGecko Tracker", "scopes": ["read"]}</div>
+<div class="code-label">cURL &mdash; HMAC verification (more secure)</div>
+<div class="code-block">curl -X POST https://verdischain.com/api/keys/verify \
+  -d '{
+    "apiKey": "vrs_3f8a...",
+    "signature": "hmac_sha256_hex...",
+    "timestamp": "1692400000000",
+    "body": "{}"
+  }'</div></div></div>
+
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/keys/stats</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Get API key system overview stats. <span class="endpoint-auth">Admin Auth Required</span></div>
+<div class="response-sample">{"totalKeys": 5, "activeKeys": 4, "revokedKeys": 1, "totalRequests": 25000, "byScope": {"read": 4, "trade": 2, "write": 1, "admin": 0}}</div></div></div>
+
+<div class="info-box">
+<div class="info-box-title">Integration Example (JavaScript)</div>
+<div class="code-label">Create key and make authenticated request</div>
+<div class="code-block">// 1. Create an API key
+const createRes = await fetch('https://verdischain.com/api/keys/create', {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({
+    name: 'My Exchange',
+    owner: 'admin@myexchange.com',
+    scopes: ['read', 'trade']
+  })
+});
+const { apiKey, secretKey } = await createRes.json();
+
+// 2. Make authenticated API calls
+const res = await fetch('https://verdischain.com/api/dex/pools', {
+  headers: { 'x-api-key': apiKey }
+});
+const pools = await res.json();
+
+// 3. HMAC-signed request (higher security)
+const timestamp = Date.now().toString();
+const body = JSON.stringify({trader: '0x...', tokenIn: 'VRS', tokenOut: 'CARBON', amountIn: 100});
+const payload = `${apiKey}.${timestamp}.${body}`;
+const signature = await hmacSha256(secretKey, payload);  // use crypto.subtle or similar
+
+const swapRes = await fetch('https://verdischain.com/api/dex/swap', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-key': apiKey,
+    'x-signature': signature,
+    'x-timestamp': timestamp
+  },
+  body
+});</div>
+</div>
+</div>
+
 
 <div style="text-align:center;margin-top:48px;padding-top:32px;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px">
 <p>&#127807; Verdis Blockchain &mdash; The First Fully Green Blockchain Ecosystem</p>
