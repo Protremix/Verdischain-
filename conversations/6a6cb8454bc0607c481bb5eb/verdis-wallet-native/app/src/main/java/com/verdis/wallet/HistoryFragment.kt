@@ -71,7 +71,7 @@ class HistoryFragment : Fragment() {
         }
     }
 
-    class TxAdapter(private val txs: List<VerdisApi.Transaction>, private val myAddress: String) :
+    class TxAdapter(private val txs: List<Transaction>, private val myAddress: String) :
         RecyclerView.Adapter<TxAdapter.VH>() {
         class VH(view: View) : RecyclerView.ViewHolder(view) {
             val type: TextView = view.findViewById(R.id.tv_tx_type)

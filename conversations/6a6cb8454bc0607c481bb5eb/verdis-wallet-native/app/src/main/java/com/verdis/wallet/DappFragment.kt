@@ -117,7 +117,7 @@ class DappFragment : Fragment() {
                 val result = withContext(Dispatchers.IO) {
                     VerdisApi.deployContract(wallet.address, name, bytecode, signature, wallet.publicKey)
                 }
-                if (result != null) {
+                if (result.success) {
                     Toast.makeText(context, "Contract '$name' deployed ✓", Toast.LENGTH_LONG).show()
                     loadContracts()
                 } else {
@@ -144,7 +144,7 @@ class DappFragment : Fragment() {
         }
     }
 
-    class ContractAdapter(private val contracts: List<VerdisApi.Contract>) :
+    class ContractAdapter(private val contracts: List<ContractInfo>) :
         RecyclerView.Adapter<ContractAdapter.VH>() {
         class VH(view: View) : RecyclerView.ViewHolder(view)
 
@@ -156,7 +156,7 @@ class DappFragment : Fragment() {
             holder.itemView.findViewById<TextView>(R.id.tv_credit_id).text = "#${position + 1}"
             holder.itemView.findViewById<TextView>(R.id.tv_credit_amount).text = c.name
             holder.itemView.findViewById<TextView>(R.id.tv_credit_verified).text = c.address.take(12) + "..."
-            holder.itemView.findViewById<TextView>(R.id.tv_credit_project).text = c.type
+            holder.itemView.findViewById<TextView>(R.id.tv_credit_project).text = c.owner.take(8)
         }
 
         override fun getItemCount() = contracts.size

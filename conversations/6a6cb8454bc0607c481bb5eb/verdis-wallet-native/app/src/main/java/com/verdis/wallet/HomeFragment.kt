@@ -88,7 +88,8 @@ class HomeFragment : Fragment() {
 
             try {
                 // Load balance
-                val balance = withContext(Dispatchers.IO) { VerdisApi.getBalance(wallet.address) }
+                val balanceResp = withContext(Dispatchers.IO) { VerdisApi.getBalance(wallet.address) }
+                val balance = balanceResp.balance
                 val market = withContext(Dispatchers.IO) { VerdisApi.getMarketData() }
                 val chainInfo = withContext(Dispatchers.IO) { VerdisApi.getBlockchainInfo() }
                 val tokenBalances = withContext(Dispatchers.IO) { VerdisApi.getTokenBalances(wallet.address) }
@@ -97,10 +98,10 @@ class HomeFragment : Fragment() {
                 val balanceVco = balance / 1_000_000_000_000_000_000.0
                 tvBalance.text = String.format("%.4f", balanceVco)
 
-                val price = market?.price ?: 0.0
+                val price = market?.priceUSD ?: 0.0
                 tvBalanceUsd.text = "$${String.format("%.2f", balanceVco * price)}"
 
-                val change = market?.change24h ?: 0.0
+                val change = market?.priceChange24h ?: 0.0
                 val changeStr = if (change >= 0) "+${String.format("%.1f", change)}%" else "${String.format("%.1f", change)}%"
                 tvChange24h.text = " $changeStr"
                 tvChange24h.setTextColor(
@@ -114,9 +115,9 @@ class HomeFragment : Fragment() {
                 val tokens = mutableListOf<TokenItem>()
                 tokens.add(TokenItem("VCO", "Verdis", balanceVco, price))
                 if (tokenBalances != null) {
-                    for ((symbol, rawBalance) in tokenBalances) {
+                    for ((symbol, rawBalance) in tokenBalances.balances) {
                         if (symbol != "VCO") {
-                            val bal = rawBalance.toDoubleOrNull() ?: 0.0
+                            val bal = rawBalance
                             tokens.add(TokenItem(symbol, symbol, bal, 0.0))
                         }
                     }
@@ -162,7 +163,7 @@ class HomeFragment : Fragment() {
     }
 
     class TxAdapter(
-        private val txs: List<VerdisApi.Transaction>,
+        private val txs: List<Transaction>,
         private val myAddress: String
     ) : RecyclerView.Adapter<TxAdapter.VH>() {
         class VH(view: View) : RecyclerView.ViewHolder(view) {

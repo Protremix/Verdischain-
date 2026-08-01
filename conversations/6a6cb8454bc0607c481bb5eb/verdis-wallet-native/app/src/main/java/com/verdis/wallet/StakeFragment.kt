@@ -61,7 +61,7 @@ class StakeFragment : Fragment() {
 
                 if (wallet != null) {
                     val details = withContext(Dispatchers.IO) { VerdisApi.getWalletDetails(wallet.address) }
-                    val staked = (details?.stakedBalance ?: 0.0) / 1_000_000_000_000_000_000.0
+                    val staked = (details?.staked ?: 0.0) / 1_000_000_000_000_000_000.0
                     tvYourStake.text = "${String.format("%.4f", staked)} VCO"
                     tvRewards.text = "${String.format("%.4f", staked * 0.05)} VCO" // 5% APY estimate
                 }
@@ -74,7 +74,7 @@ class StakeFragment : Fragment() {
     }
 
     class ValidatorAdapter(
-        private val validators: List<VerdisApi.Validator>,
+        private val validators: List<Validator>,
         private val walletAddress: String
     ) : RecyclerView.Adapter<ValidatorAdapter.VH>() {
         class VH(view: View) : RecyclerView.ViewHolder(view) {
@@ -94,7 +94,7 @@ class StakeFragment : Fragment() {
             val v = validators[position]
             holder.initial.text = v.address.firstOrNull()?.toString() ?: "V"
             holder.address.text = "${v.address.take(10)}...${v.address.takeLast(6)}"
-            holder.stake.text = "${String.format("%.0f", v.stake)} VCO"
+            holder.stake.text = "${String.format("%.0f", v.totalRewards)} VCO"
             holder.votes.text = "${v.votes} votes"
             holder.greenScore.text = v.greenScore.toString()
             holder.status.text = if (v.active) "Active" else "Inactive"

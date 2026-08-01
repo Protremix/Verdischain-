@@ -59,8 +59,8 @@ class SendFragment : Fragment() {
             val wallet = WalletManager.loadWallet(requireContext()) ?: return@setOnClickListener
             lifecycleScope.launch {
                 try {
-                    val balance = withContext(Dispatchers.IO) { VerdisApi.getBalance(wallet.address) }
-                    val balVco = balance / 1_000_000_000_000_000_000.0
+                    val balanceResp = withContext(Dispatchers.IO) { VerdisApi.getBalance(wallet.address) }
+                    val balVco = balanceResp.balance / 1_000_000_000_000_000_000.0
                     val max = balVco - 0.001 // minus fee
                     if (max > 0) etAmount.setText(String.format("%.4f", max))
                 } catch (e: Exception) {
@@ -131,8 +131,8 @@ class SendFragment : Fragment() {
         val wallet = WalletManager.loadWallet(requireContext()) ?: return
         lifecycleScope.launch {
             try {
-                val balance = withContext(Dispatchers.IO) { VerdisApi.getBalance(wallet.address) }
-                val balVco = balance / 1_000_000_000_000_000_000.0
+                val balanceResp = withContext(Dispatchers.IO) { VerdisApi.getBalance(wallet.address) }
+                val balVco = (balanceResp.balance as Number).toDouble() / 1_000_000_000_000_000_000.0
                 tvAvailable.text = "Avail: ${String.format("%.4f", balVco)}"
             } catch (e: Exception) {}
         }

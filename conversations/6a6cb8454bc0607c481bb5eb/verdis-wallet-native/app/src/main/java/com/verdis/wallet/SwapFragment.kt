@@ -143,8 +143,8 @@ class SwapFragment : Fragment() {
             try {
                 val quote = withContext(Dispatchers.IO) { VerdisApi.getSwapQuote(fromToken, toToken, amount) }
                 if (quote != null) {
-                    tvToAmount.text = String.format("%.6f", quote.expectedAmount)
-                    val rate = if (amount > 0) quote.expectedAmount / amount else 0.0
+                    tvToAmount.text = String.format("%.6f", quote.amountOut)
+                    val rate = if (amount > 0) quote.amountOut / amount else 0.0
                     tvRate.text = "1 $fromToken = ${String.format("%.4f", rate)} $toToken"
                     tvPriceImpact.text = "${String.format("%.2f", quote.priceImpact)}%"
                 } else {
@@ -161,13 +161,12 @@ class SwapFragment : Fragment() {
         val wallet = WalletManager.loadWallet(requireContext()) ?: return
         lifecycleScope.launch {
             try {
-                val balances = withContext(Dispatchers.IO) { VerdisApi.getTokenBalances(wallet.address) }
-                if (balances != null) {
-                    val fromToken = spinnerFrom.selectedItem as? String ?: "VCO"
-                    val toToken = spinnerTo.selectedItem as? String ?: "CARBON"
-                    tvFromBalance.text = "Balance: ${balances[fromToken] ?: "0.0"}"
-                    tvToBalance.text = "Balance: ${balances[toToken] ?: "0.0"}"
-                }
+                val balancesResp = withContext(Dispatchers.IO) { VerdisApi.getTokenBalances(wallet.address) }
+                val fromToken = spinnerFrom.selectedItem as? String ?: "VCO"
+                val toToken = spinnerTo.selectedItem as? String ?: "CARBON"
+                val balances = balancesResp.balances
+                tvFromBalance.text = "Balance: ${balances[fromToken] ?: 0.0}"
+                tvToBalance.text = "Balance: ${balances[toToken] ?: 0.0}"
             } catch (e: Exception) {}
         }
     }
