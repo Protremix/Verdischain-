@@ -3,234 +3,1715 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verdis — The Eco-Friendly Blockchain</title>
-<meta name="description" content="Verdis (VRS) is a fully functional L1 blockchain with native DPoS consensus, AMM DEX, carbon credit tracking, and Ethereum-compatible JSON-RPC. Built for sustainability.">
-<meta property="og:title" content="Verdis — The Eco-Friendly Blockchain">
-<meta property="og:url" content="https://verdischain.com">
-<meta property="og:image" content="https://verdischain.com/api/eco/impact">
-<meta property="og:description" content="A fully functional L1 blockchain with native DPoS, AMM DEX, and integrated carbon credit tracking.">
-<meta property="og:type" content="website">
+<title>Verdis — The First Fully Green Blockchain</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
+*{margin:0;padding:0;box-sizing:border-box}
+
 :root {
-  --bg: #0a0e1a; --bg2: #13182a; --card: #1a2038; --border: #2a3050;
-  --text: #e8e8e8; --muted: #8892a6; --accent: #00e676; --accent2: #00c853;
-  --blue: #448aff; --purple: #b388ff;
+  --bg: #000000;
+  --bg-card: rgba(8, 20, 15, 0.75);
+  --green: #00ff88;
+  --green-glow: rgba(0, 255, 136, 0.4);
+  --green-dim: #134e2a;
+  --teal: #2dd4bf;
+  --teal-glow: rgba(45, 212, 191, 0.4);
+  --mint: #6ee7b7;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
+  --text-dim: #484f58;
+  --border: rgba(0, 255, 136, 0.2);
+  --border-h: rgba(0, 255, 136, 0.6);
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior:smooth; }
-body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; line-height:1.6; overflow-x:hidden; }
-nav { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(10,14,26,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); padding:1rem 2rem; display:flex; align-items:center; justify-content:space-between; }
-.nav-logo { font-size:1.4rem; font-weight:700; color:var(--accent); text-decoration:none; }
-.nav-links { display:flex; gap:2rem; align-items:center; }
-.nav-links a { color:var(--muted); text-decoration:none; font-size:0.95rem; transition:color 0.2s; }
-.nav-links a:hover { color:var(--accent); }
-.nav-cta { background:var(--accent); color:var(--bg); padding:0.6rem 1.5rem; border-radius:8px; font-weight:600; text-decoration:none; font-size:0.95rem; }
-.nav-cta:hover { transform:translateY(-1px); }
-@media(max-width:768px) { .nav-links a:not(.nav-cta) { display:none; } }
-.hero { min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; padding:6rem 2rem 4rem; background:radial-gradient(ellipse at 50% 30%, rgba(0,230,118,0.08) 0%, transparent 60%); }
-.hero::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 20% 50%, rgba(68,138,255,0.05) 0%, transparent 40%), radial-gradient(circle at 80% 20%, rgba(179,136,255,0.05) 0%, transparent 40%); pointer-events:none; }
-.hero-content { max-width:900px; text-align:center; position:relative; z-index:1; }
-.hero-badge { display:inline-flex; align-items:center; gap:0.5rem; background:var(--bg2); border:1px solid var(--border); padding:0.4rem 1rem; border-radius:999px; font-size:0.85rem; color:var(--accent); margin-bottom:1.5rem; }
-.hero-badge .dot { width:8px; height:8px; background:var(--accent); border-radius:50%; animation:pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-.hero h1 { font-size:4rem; font-weight:800; line-height:1.1; margin-bottom:1rem; background:linear-gradient(135deg, var(--accent) 0%, var(--blue) 50%, var(--purple) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-.hero p { font-size:1.3rem; color:var(--muted); max-width:600px; margin:0 auto 2rem; }
-.hero-buttons { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; }
-.btn-primary { background:var(--accent); color:var(--bg); padding:1rem 2.5rem; border-radius:10px; font-weight:700; text-decoration:none; font-size:1.05rem; transition:all 0.2s; border:none; cursor:pointer; }
-.btn-primary:hover { background:var(--accent2); transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,230,118,0.2); }
-.btn-secondary { background:transparent; color:var(--text); padding:1rem 2.5rem; border-radius:10px; font-weight:600; text-decoration:none; font-size:1.05rem; border:1px solid var(--border); transition:all 0.2s; }
-.btn-secondary:hover { border-color:var(--accent); color:var(--accent); }
-.stats-bar { background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:2rem; display:flex; justify-content:center; gap:3rem; flex-wrap:wrap; }
-.stat-item { text-align:center; }
-.stat-value { font-size:2rem; font-weight:700; color:var(--accent); }
-.stat-label { font-size:0.85rem; color:var(--muted); margin-top:0.25rem; text-transform:uppercase; letter-spacing:1px; }
-section { padding:5rem 2rem; max-width:1200px; margin:0 auto; }
-.section-title { font-size:2.5rem; font-weight:700; text-align:center; margin-bottom:0.75rem; }
-.section-subtitle { font-size:1.1rem; color:var(--muted); text-align:center; max-width:600px; margin:0 auto 3rem; }
-.features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1.5rem; }
-.feature-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:2rem; transition:all 0.3s; position:relative; overflow:hidden; }
-.feature-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--accent), transparent); opacity:0; transition:opacity 0.3s; }
-.feature-card:hover { border-color:var(--accent); transform:translateY(-4px); }
-.feature-card:hover::before { opacity:1; }
-.feature-icon { font-size:2.5rem; margin-bottom:1rem; }
-.feature-card h3 { font-size:1.25rem; font-weight:600; margin-bottom:0.5rem; }
-.feature-card p { color:var(--muted); font-size:0.95rem; }
-.eco-section { background:linear-gradient(180deg, var(--bg) 0%, var(--bg2) 50%, var(--bg) 100%); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
-.eco-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:1.5rem; }
-.eco-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:2rem; text-align:center; }
-.eco-number { font-size:3rem; font-weight:800; color:var(--accent); }
-.eco-label { color:var(--muted); margin-top:0.5rem; }
-.security-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1rem; }
-.security-item { display:flex; align-items:flex-start; gap:0.75rem; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.25rem; }
-.security-check { color:var(--accent); font-size:1.2rem; flex-shrink:0; }
-.security-item h4 { font-size:0.95rem; margin-bottom:0.25rem; }
-.security-item p { font-size:0.85rem; color:var(--muted); }
-.dex-section { background:var(--bg2); border-radius:20px; padding:3rem; border:1px solid var(--border); }
-.dex-pools { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin-top:2rem; }
-.pool-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.5rem; text-align:center; }
-.pool-pair { font-size:1.1rem; font-weight:600; margin-bottom:0.5rem; }
-.pool-info { font-size:0.85rem; color:var(--muted); }
-.connect-section { background:linear-gradient(135deg, var(--bg2) 0%, var(--card) 100%); border:1px solid var(--border); border-radius:20px; padding:3rem; text-align:center; }
-.connect-config { background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:2rem; max-width:500px; margin:2rem auto; text-align:left; }
-.config-row { display:flex; justify-content:space-between; padding:0.75rem 0; border-bottom:1px solid var(--border); }
-.config-row:last-child { border-bottom:none; }
-.config-label { color:var(--muted); }
-.config-value { color:var(--accent); font-family:monospace; font-size:0.9rem; }
-footer { border-top:1px solid var(--border); padding:3rem 2rem; text-align:center; color:var(--muted); font-size:0.9rem; }
-footer a { color:var(--accent); text-decoration:none; }
-footer .footer-links { display:flex; justify-content:center; gap:2rem; margin-bottom:1rem; flex-wrap:wrap; }
-.fade-in { opacity:0; transform:translateY(20px); transition:all 0.6s ease; }
-.fade-in.visible { opacity:1; transform:translateY(0); }
-@media(max-width:768px) { .hero h1 { font-size:2.5rem; } .hero p { font-size:1rem; } .stats-bar { gap:1.5rem; } .section-title { font-size:1.8rem; } }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* === Scanlines & CRT Effects === */
+.scanlines {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 90;
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0) 50%,
+    rgba(0, 0, 0, 0.35) 50%,
+    rgba(0, 0, 0, 0.35)
+  );
+  background-size: 100% 4px;
+  opacity: 0.7;
+}
+
+.scanline-beam {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 3px;
+  background: rgba(0, 255, 136, 0.3);
+  box-shadow: 0 0 15px var(--green);
+  z-index: 91;
+  pointer-events: none;
+  animation: scanlineAnim 10s linear infinite;
+}
+@keyframes scanlineAnim {
+  0% { top: -10px; }
+  100% { top: 100vh; }
+}
+
+/* === Terminal Blinking Cursor === */
+.cursor {
+  display: inline-block;
+  width: 9px;
+  height: 1.1em;
+  background-color: var(--green);
+  vertical-align: middle;
+  margin-left: 4px;
+  box-shadow: 0 0 8px var(--green);
+  animation: blink 1s step-start infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* === Background Canvas Particle Network === */
+#hero-particles {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* === Perspective Grid (Tron Floor) === */
+.perspective-grid {
+  position: absolute;
+  bottom: 0;
+  left: -50%;
+  width: 200%;
+  height: 50vh;
+  background-image: 
+    linear-gradient(to right, rgba(0, 255, 136, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 255, 136, 0.12) 1px, transparent 1px);
+  background-size: 50px 50px;
+  transform: perspective(400px) rotateX(68deg);
+  transform-origin: 50% 100%;
+  animation: gridMove 12s linear infinite;
+  mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 85%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 85%);
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes gridMove {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 50px; }
+}
+
+/* === Navigation === */
+nav {
+  position: fixed;
+  top: 0; left: 0; width: 100%;
+  z-index: 100;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(0, 0, 0, 0.8);
+  border-bottom: 1px solid var(--border);
+  transition: all .3s ease;
+}
+nav.scrolled {
+  background: rgba(0, 0, 0, 0.95);
+  border-bottom-color: var(--green);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
+}
+.nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+}
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 800;
+  text-decoration: none;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+.nav-logo .logo-icon {
+  width: 36px; height: 36px;
+  background: #000;
+  border: 1px solid var(--green);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+  transition: all .3s ease;
+}
+.nav-logo:hover .logo-icon {
+  transform: scale(1.08) rotate(5deg);
+  box-shadow: 0 0 25px var(--green);
+}
+.nav-logo span {
+  background: linear-gradient(135deg, var(--green), var(--teal));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 20px rgba(0,255,136,0.3);
+}
+
+.nav-links {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  font-family: var(--font-mono);
+}
+.nav-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all .2s;
+  letter-spacing: 0.5px;
+}
+.nav-links a:hover {
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green);
+}
+.nav-cta {
+  padding: 9px 20px !important;
+  background: transparent !important;
+  color: var(--green) !important;
+  border: 1px solid var(--green) !important;
+  border-radius: 6px;
+  font-weight: 700 !important;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+  transition: all .3s ease !important;
+}
+.nav-cta:hover {
+  background: var(--green) !important;
+  color: #000 !important;
+  box-shadow: 0 0 25px var(--green) !important;
+  text-shadow: none !important;
+}
+.nav-mobile {
+  display: none;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--green);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 20px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+/* === Hero Section === */
+.hero {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 140px 24px 100px;
+}
+
+/* Terminal Badge */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  border-radius: 6px;
+  background: rgba(0, 255, 136, 0.05);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green);
+  margin-bottom: 28px;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
+  letter-spacing: 0.5px;
+  animation: fadeInDown .8s ease;
+}
+.hero-badge .pulse {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 10px var(--green);
+  animation: pulseGlow 2s infinite;
+}
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 10px var(--green); }
+  50% { opacity: 0.4; transform: scale(0.8); box-shadow: 0 0 2px var(--green); }
+}
+
+/* Hero Title with Glitch Effect */
+.hero-h1-container {
+  margin-bottom: 24px;
+  animation: fadeInUp 1s ease .2s both;
+}
+.glitch-title {
+  font-family: var(--font-body);
+  font-size: clamp(44px, 7.5vw, 90px);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  position: relative;
+  display: inline-block;
+}
+.glitch-title .accent {
+  color: var(--green);
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.6), 0 0 40px rgba(0, 255, 136, 0.3);
+}
+
+/* Glitch Pseudo Layers */
+.glitch-title::before,
+.glitch-title::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: #000;
+  clip-path: rect(0, 0, 0, 0);
+}
+.glitch-title::before {
+  left: -2px;
+  text-shadow: 2px 0 var(--teal);
+  animation: glitchAnim1 3.5s infinite linear alternate-reverse;
+}
+.glitch-title::after {
+  left: 2px;
+  text-shadow: -2px 0 var(--green);
+  animation: glitchAnim2 2.8s infinite linear alternate-reverse;
+}
+
+@keyframes glitchAnim1 {
+  0% { clip-path: inset(15% 0 75% 0); }
+  10% { clip-path: inset(65% 0 15% 0); }
+  20% { clip-path: inset(35% 0 55% 0); }
+  30% { clip-path: inset(85% 0 5% 0); }
+  40% { clip-path: inset(5% 0 85% 0); }
+  50% { clip-path: inset(45% 0 45% 0); }
+  60% { clip-path: inset(75% 0 15% 0); }
+  70% { clip-path: inset(25% 0 65% 0); }
+  80% { clip-path: inset(55% 0 35% 0); }
+  90% { clip-path: inset(10% 0 80% 0); }
+  100% { clip-path: inset(30% 0 60% 0); }
+}
+@keyframes glitchAnim2 {
+  0% { clip-path: inset(25% 0 65% 0); }
+  10% { clip-path: inset(75% 0 5% 0); }
+  20% { clip-path: inset(5% 0 85% 0); }
+  30% { clip-path: inset(55% 0 35% 0); }
+  40% { clip-path: inset(15% 0 75% 0); }
+  50% { clip-path: inset(85% 0 10% 0); }
+  60% { clip-path: inset(35% 0 55% 0); }
+  70% { clip-path: inset(65% 0 25% 0); }
+  80% { clip-path: inset(45% 0 45% 0); }
+  90% { clip-path: inset(80% 0 10% 0); }
+  100% { clip-path: inset(20% 0 70% 0); }
+}
+
+.hero p {
+  font-size: clamp(16px, 2.2vw, 20px);
+  color: var(--text-muted);
+  max-width: 680px;
+  line-height: 1.6;
+  margin: 0 auto 36px;
+  animation: fadeInUp 1s ease .4s both;
+}
+
+/* Terminal Search Bar */
+.hero-search {
+  max-width: 580px;
+  width: 100%;
+  margin: 0 auto 36px;
+  position: relative;
+  animation: fadeInUp 1s ease .6s both;
+}
+.hero-search-inner {
+  display: flex;
+  align-items: center;
+  background: rgba(5, 15, 10, 0.85);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 16px;
+  box-shadow: 0 0 25px rgba(0, 255, 136, 0.1);
+  transition: all .3s ease;
+}
+.hero-search-inner:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+}
+.search-prompt {
+  font-family: var(--font-mono);
+  color: var(--green);
+  font-size: 14px;
+  font-weight: 700;
+  margin-right: 12px;
+  user-select: none;
+}
+.hero-search input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 12px 0;
+  outline: none;
+}
+.hero-search input::placeholder {
+  color: var(--text-dim);
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: fadeInUp 1s ease .8s both;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 32px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all .3s ease;
+  cursor: pointer;
+  border: none;
+  letter-spacing: 0.5px;
+}
+.btn-primary {
+  background: var(--green);
+  color: #000;
+  box-shadow: 0 0 25px rgba(0, 255, 136, 0.4);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  background: #20ff98;
+  box-shadow: 0 0 45px rgba(0, 255, 136, 0.7);
+}
+.btn-ghost {
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover {
+  background: rgba(0, 255, 136, 0.08);
+  border-color: var(--green);
+  color: var(--green);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+  transform: translateY(-2px);
+}
+
+/* === Stats Bar === */
+.stats-container {
+  position: relative;
+  z-index: 10;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  background: rgba(5, 15, 10, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.08);
+}
+.stat-card {
+  text-align: center;
+  padding: 12px;
+  border-right: 1px solid rgba(0, 255, 136, 0.1);
+  transition: all .3s ease;
+}
+.stat-card:last-child {
+  border-right: none;
+}
+.stat-card:hover {
+  transform: translateY(-3px);
+}
+.stat-prefix {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--green);
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  opacity: 0.8;
+}
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: clamp(26px, 3.5vw, 38px);
+  font-weight: 800;
+  color: var(--green);
+  text-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+  line-height: 1.1;
+}
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* === Sections === */
+.section {
+  position: relative;
+  z-index: 10;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 120px 32px;
+}
+
+.section-header {
+  margin-bottom: 60px;
+  text-align: left;
+}
+.section-tag {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  display: inline-block;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+}
+.section-title {
+  font-size: clamp(32px, 4.5vw, 52px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+  line-height: 1.15;
+}
+.section-title .accent {
+  background: linear-gradient(135deg, var(--green), var(--teal));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.section-subtitle {
+  font-size: 16px;
+  color: var(--text-muted);
+  max-width: 600px;
+  margin-top: 14px;
+  line-height: 1.6;
+}
+
+/* === Feature Grid === */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.feature-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 36px 30px;
+  transition: all .4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--green), transparent);
+  transform: translateX(-100%);
+  transition: transform .6s ease;
+}
+.feature-card:hover::before {
+  transform: translateX(100%);
+}
+.feature-card:hover {
+  border-color: var(--green);
+  transform: translateY(-6px);
+  box-shadow: 0 10px 40px rgba(0, 255, 136, 0.15);
+  background: rgba(10, 28, 20, 0.85);
+}
+.feature-code-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--green);
+  opacity: 0.7;
+  margin-bottom: 16px;
+}
+.feature-icon {
+  width: 52px; height: 52px;
+  border-radius: 8px;
+  background: rgba(0, 255, 136, 0.08);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.1);
+}
+.feature-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 12px;
+  font-family: var(--font-body);
+}
+.feature-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+/* === Eco Highlight Section === */
+.eco-box {
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.06), rgba(45, 212, 191, 0.03));
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 56px 48px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(0, 255, 136, 0.08);
+}
+.eco-box::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(0, 255, 136, 0.08) 0%, transparent 60%);
+  animation: rotateGlow 25s linear infinite;
+  pointer-events: none;
+}
+@keyframes rotateGlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.eco-inner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+.eco-content h3 {
+  font-size: 30px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 18px;
+  line-height: 1.2;
+}
+.eco-content p {
+  font-size: 15px;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+.eco-stats-mini {
+  display: flex;
+  gap: 20px;
+}
+.eco-stat-item {
+  background: rgba(0,0,0,0.6);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  flex: 1;
+}
+.eco-stat-num {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--green);
+}
+.eco-stat-lbl {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.terminal-window {
+  background: #050a07;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(0,0,0,0.8);
+  font-family: var(--font-mono);
+}
+.terminal-header {
+  background: rgba(0,255,136,0.08);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.dot-red { background: #ff5f56; }
+.dot-yellow { background: #ffbd2e; }
+.dot-green { background: #27c93f; }
+.terminal-title {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 8px;
+}
+.terminal-body {
+  padding: 20px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--green);
+}
+.terminal-line { margin-bottom: 6px; }
+.terminal-comment { color: var(--text-dim); }
+.terminal-key { color: var(--teal); }
+.terminal-val { color: #fff; }
+
+/* === CTA Section === */
+.cta-section {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 100px 32px 140px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.cta-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 60px 40px;
+  box-shadow: 0 0 50px rgba(0, 255, 136, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+.cta-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--teal), var(--green), var(--teal));
+}
+.cta-section h2 {
+  font-size: clamp(34px, 5vw, 56px);
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 18px;
+  line-height: 1.1;
+}
+.cta-section p {
+  font-size: 17px;
+  color: var(--text-muted);
+  margin-bottom: 36px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* === Footer === */
+footer {
+  position: relative;
+  z-index: 10;
+  border-top: 1px solid var(--border);
+  background: rgba(0,0,0,0.95);
+  padding: 60px 32px 40px;
+}
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.footer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 40px;
+  margin-bottom: 48px;
+}
+.footer-brand {
+  max-width: 360px;
+}
+.footer-brand .logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 16px;
+}
+.footer-brand p {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.social-links {
+  display: flex;
+  gap: 14px;
+}
+.social-link {
+  width: 38px; height: 38px;
+  border-radius: 6px;
+  background: rgba(0, 255, 136, 0.05);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: all .3s ease;
+}
+.social-link:hover {
+  border-color: var(--green);
+  color: var(--green);
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+  transform: translateY(-2px);
+}
+.social-link svg {
+  width: 18px; height: 18px;
+  fill: currentColor;
+}
+
+.footer-links {
+  display: flex;
+  gap: 60px;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+}
+.footer-col h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 18px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.footer-col a {
+  display: block;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 13px;
+  margin-bottom: 12px;
+  transition: all .2s;
+}
+.footer-col a:hover {
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green);
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(0, 255, 136, 0.1);
+  padding-top: 28px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all .8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media(max-width: 992px) {
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .stat-card { border-right: none; border-bottom: 1px solid rgba(0,255,136,0.1); padding-bottom: 16px; }
+  .eco-inner { grid-template-columns: 1fr; }
+}
+
+@media(max-width: 768px) {
+  .nav-links { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: #000; flex-direction: column; padding: 24px; border-bottom: 1px solid var(--border); }
+  .nav-mobile { display: block; }
+  .features-grid { grid-template-columns: 1fr; }
+  .stats-bar { grid-template-columns: 1fr; }
+  .footer-links { gap: 30px; }
+  .eco-box { padding: 32px 20px; }
+}
 </style>
 </head>
 <body>
-<nav>
-  <a href="/" class="nav-logo">Verdis</a>
-  <div class="nav-links">
-    <a href="#features">Features</a>
-    <a href="#eco">Eco</a>
-    <a href="#security">Security</a>
-    <a href="#dex">DEX</a>
-    <a href="#connect">Connect</a>
-    <a href="/dashboard" class="nav-cta">Launch Dashboard</a>
+
+<!-- Scanline CRT overlays -->
+<div class="scanlines"></div>
+<div class="scanline-beam"></div>
+
+<!-- Background Canvas for Interactive Particle Network -->
+<canvas id="hero-particles"></canvas>
+
+<!-- Perspective Grid Floor -->
+<div class="perspective-grid"></div>
+
+<!-- Navigation -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <div class="logo-icon">🌿</div>
+      <span>VERDIS</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">// FEATURES</a>
+      <a href="#eco">> ECO_IMPACT</a>
+      <a href="/dashboard">DASHBOARD</a>
+      <a href="/whitepaper">WHITEPAPER</a>
+      <a href="/dashboard#sale">TOKEN_SALE</a>
+      <a href="/dashboard#dex">DEX</a>
+      <a href="/docs">API_DOCS</a>
+      <a href="/dashboard" class="nav-cta">LAUNCH APP</a>
+    </div>
+    <button class="nav-mobile" onclick="const nl=document.querySelector('.nav-links');nl.style.display=nl.style.display==='flex'?'none':'flex'">☰</button>
   </div>
 </nav>
 
-<div class="hero">
-  <div class="hero-content">
-    <div class="hero-badge"><span class="dot"></span><span id="liveStatus">Network Live</span></div>
-    <h1>Verdis</h1>
-    <p>The Eco-Friendly Blockchain. A fully functional L1 with native DPoS consensus, AMM-based DEX, and integrated carbon credit tracking. Built for a sustainable future.</p>
-    <div class="hero-buttons">
-      <a href="/dashboard" class="btn-primary">Launch Dashboard</a>
-      <a href="#connect" class="btn-secondary">Connect Wallet</a>
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="pulse"></span>
+    <span>[SYSTEM: MAINNET_ONLINE] · CHAIN_ID: 909 · CARBON_NEGATIVE</span>
+  </div>
+
+  <div class="hero-h1-container">
+    <h1 class="glitch-title" data-text="THE FIRST FULLY GREEN BLOCKCHAIN">
+      THE FIRST FULLY GREEN <span class="accent">BLOCKCHAIN</span>
+    </h1>
+  </div>
+
+  <p>
+    Carbon credits on-chain. Reforestation logged immutably. DPoS validators scored by renewable energy. Verdis doesn't just consume less — it actively heals the planet.<span class="cursor">_</span>
+  </p>
+
+  <div class="hero-search">
+    <div class="hero-search-inner">
+      <span class="search-prompt">verdis-cli:~#</span>
+      <input type="text" placeholder="Search by Address, Tx Hash, or Block Height..." onkeydown="if(event.key==='Enter'){window.location='/dashboard'}">
     </div>
   </div>
-</div>
 
-<div class="stats-bar">
-  <div class="stat-item"><div class="stat-value" id="statHeight">—</div><div class="stat-label">Block Height</div></div>
-  <div class="stat-item"><div class="stat-value" id="statValidators">—</div><div class="stat-label">Validators</div></div>
-  <div class="stat-item"><div class="stat-value" id="statPools">—</div><div class="stat-label">DEX Pools</div></div>
-  <div class="stat-item"><div class="stat-value" id="statSupply">—</div><div class="stat-label">VRS Supply</div></div>
-  <div class="stat-item"><div class="stat-value">909</div><div class="stat-label">Chain ID</div></div>
-</div>
+  <div class="hero-buttons">
+    <a href="/dashboard" class="btn btn-primary">EXPLORE BLOCKCHAIN &rarr;</a>
+    <a href="/dashboard#sale" class="btn btn-ghost">BUY VRS TOKENS</a>
+    <a href="/whitepaper" class="btn btn-ghost">WHITEPAPER</a>
+  </div>
+</section>
 
-<section id="features">
-  <h2 class="section-title">Built Different</h2>
-  <p class="section-subtitle">Everything you need from a modern blockchain — with sustainability at its core.</p>
+
+<!-- Live Network Stats Bar -->
+<div class="stats-bar" style="position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:40px 32px;display:grid;grid-template-columns:repeat(5,1fr);gap:20px">
+<div class="stat-card reveal" style="background:rgba(8,20,15,.75);backdrop-filter:blur(10px);border:1px solid rgba(0,255,136,.15);border-radius:16px;padding:24px;text-align:center;transition:all .3s">
+<div class="stat-value" id="s-tps" style="font-size:32px;font-weight:800;font-family:'JetBrains Mono',monospace;background:linear-gradient(135deg,#00ff88,#2dd4bf);-webkit-background-clip:text;-webkit-text-fill-color:transparent">—</div>
+<div class="stat-label" style="font-size:11px;color:var(--text-muted);margin-top:6px;text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace">Live TPS</div>
+</div>
+<div class="stat-card reveal" style="background:rgba(8,20,15,.75);backdrop-filter:blur(10px);border:1px solid rgba(0,255,136,.15);border-radius:16px;padding:24px;text-align:center;transition:all .3s">
+<div class="stat-value" id="s-height" style="font-size:32px;font-weight:800;font-family:'JetBrains Mono',monospace;background:linear-gradient(135deg,#00ff88,#2dd4bf);-webkit-background-clip:text;-webkit-text-fill-color:transparent">—</div>
+<div class="stat-label" style="font-size:11px;color:var(--text-muted);margin-top:6px;text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace">Block Height</div>
+</div>
+<div class="stat-card reveal" style="background:rgba(8,20,15,.75);backdrop-filter:blur(10px);border:1px solid rgba(0,255,136,.15);border-radius:16px;padding:24px;text-align:center;transition:all .3s">
+<div class="stat-value" id="s-vals" style="font-size:32px;font-weight:800;font-family:'JetBrains Mono',monospace;background:linear-gradient(135deg,#00ff88,#2dd4bf);-webkit-background-clip:text;-webkit-text-fill-color:transparent">—</div>
+<div class="stat-label" style="font-size:11px;color:var(--text-muted);margin-top:6px;text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace">Validators</div>
+</div>
+<div class="stat-card reveal" style="background:rgba(8,20,15,.75);backdrop-filter:blur(10px);border:1px solid rgba(0,255,136,.15);border-radius:16px;padding:24px;text-align:center;transition:all .3s">
+<div class="stat-value" id="s-supply" style="font-size:32px;font-weight:800;font-family:'JetBrains Mono',monospace;background:linear-gradient(135deg,#00ff88,#2dd4bf);-webkit-background-clip:text;-webkit-text-fill-color:transparent">50B</div>
+<div class="stat-label" style="font-size:11px;color:var(--text-muted);margin-top:6px;text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace">VRS Supply</div>
+</div>
+<div class="stat-card reveal" style="background:rgba(8,20,15,.75);backdrop-filter:blur(10px);border:1px solid rgba(0,255,136,.15);border-radius:16px;padding:24px;text-align:center;transition:all .3s">
+<div class="stat-value" id="s-co2" style="font-size:32px;font-weight:800;font-family:'JetBrains Mono',monospace;background:linear-gradient(135deg,#00ff88,#2dd4bf);-webkit-background-clip:text;-webkit-text-fill-color:transparent">—</div>
+<div class="stat-label" style="font-size:11px;color:var(--text-muted);margin-top:6px;text-transform:uppercase;letter-spacing:1px;font-family:'JetBrains Mono',monospace">Tons CO₂ Offset</div>
+</div>
+</div>div>
+
+<!-- Features Section -->
+<section class="section" id="features">
+  <div class="section-header reveal">
+    <div class="section-tag">// PROTOCOL_CAPABILITIES</div>
+    <h2 class="section-title">Built for a <span class="accent">Sustainable Future</span></h2>
+    <p class="section-subtitle">Every component of Verdis is engineered with environmental impact as a first-class, protocol-level primitive.</p>
+  </div>
+
   <div class="features-grid">
-    <div class="feature-card fade-in"><div class="feature-icon">🌿</div><h3>Eco-Friendly by Design</h3><p>DPoS consensus uses 99% less energy than Proof of Work. Every transaction contributes to carbon offset projects and reforestation.</p></div>
-    <div class="feature-card fade-in"><div class="feature-icon">💱</div><h3>Native AMM DEX</h3><p>Decentralized exchange built directly into the chain. Swap VRS, CARBON, ECO, TREE, GREEN and REDD tokens with 0.3% fees.</p></div>
-    <div class="feature-card fade-in"><div class="feature-icon">🔑</div><h3>DPoS Consensus</h3><p>27 registered validators with delegated voting. 5-second block times with single-block finality. Green validator scoring rewards renewable energy.</p></div>
-    <div class="feature-card fade-in"><div class="feature-icon">📱</div><h3>Wallet Compatible</h3><p>Ethereum JSON-RPC with Keccak256 address derivation. Works with Trust Wallet, MetaMask, and any EVM-compatible wallet. Chain ID 909.</p></div>
-    <div class="feature-card fade-in"><div class="feature-icon">📜</div><h3>Smart Contracts</h3><p>Stack-based virtual machine for deploying and executing smart contracts. Deploy custom logic for DeFi, governance, and more.</p></div>
-    <div class="feature-card fade-in"><div class="feature-icon">💾</div><h3>Persistent State</h3><p>All blocks, balances, DEX pools, and contracts are saved to disk every 30 seconds. The chain survives any restart without data loss.</p></div>
-  </div>
-</section>
-
-<section id="eco" class="eco-section">
-  <h2 class="section-title">Real Environmental Impact</h2>
-  <p class="section-subtitle">Verdis tracks and verifies real-world environmental data on-chain. Every transaction helps fund a greener planet.</p>
-  <div class="eco-grid">
-    <div class="eco-card fade-in"><div class="eco-number" id="ecoCarbon">—</div><div class="eco-label">Tons CO2 Offset</div></div>
-    <div class="eco-card fade-in"><div class="eco-number" id="ecoTrees">—</div><div class="eco-label">Trees Planted</div></div>
-    <div class="eco-card fade-in"><div class="eco-number" id="ecoCredits">—</div><div class="eco-label">Carbon Credits Retired</div></div>
-    <div class="eco-card fade-in"><div class="eco-number" id="ecoValidators">—</div><div class="eco-label">Green Validators</div></div>
-  </div>
-</section>
-
-<section id="security">
-  <h2 class="section-title">Bank-Grade Security</h2>
-  <p class="section-subtitle">13 active security measures protecting every transaction, block, and wallet on the network.</p>
-  <div class="security-grid" id="securityGrid"></div>
-</section>
-
-<section id="dex">
-  <h2 class="section-title">Native DEX</h2>
-  <p class="section-subtitle">Trade tokens directly on-chain. No third-party custody. No bridging. Just pure decentralized trading.</p>
-  <div class="dex-section">
-    <div style="text-align:center"><h3 style="font-size:1.5rem; margin-bottom:0.5rem">Live Trading Pools</h3><p style="color:var(--muted)">Automated Market Maker with 0.3% swap fees</p></div>
-    <div class="dex-pools" id="dexPools"></div>
-  </div>
-</section>
-
-<section id="connect">
-  <h2 class="section-title">Connect Your Wallet</h2>
-  <p class="section-subtitle">Add Verdis to Trust Wallet or MetaMask in under a minute.</p>
-  <div class="connect-section">
-    <h3 style="font-size:1.3rem; margin-bottom:0.5rem">Network Configuration</h3>
-    <p style="color:var(--muted)">Add a custom network in your wallet app:</p>
-    <div class="connect-config">
-      <div class="config-row"><span class="config-label">Network Name</span><span class="config-value">Verdis</span></div>
-      <div class="config-row"><span class="config-label">RPC URL</span><span class="config-value" id="rpcUrl">—</span></div>
-      <div class="config-row"><span class="config-label">Chain ID</span><span class="config-value">909</span></div>
-      <div class="config-row"><span class="config-label">Symbol</span><span class="config-value">VRS</span></div>
-      <div class="config-row"><span class="config-label">Block Explorer</span><span class="config-value" id="explorerUrl">—</span></div>
+    <div class="feature-card reveal">
+      <div class="feature-code-tag">&gt; FEATURE_01</div>
+      <div class="feature-icon">⛓️</div>
+      <div class="feature-title">Carbon-Native Protocol</div>
+      <div class="feature-desc">On-chain carbon credits, immutable reforestation logging, and verified CO₂ offset tracking built directly into the consensus layer.</div>
     </div>
-    <a href="/dashboard" class="btn-primary" style="display:inline-block">Open Dashboard</a>
+
+    <div class="feature-card reveal">
+      <div class="feature-code-tag">&gt; FEATURE_02</div>
+      <div class="feature-icon">🟢</div>
+      <div class="feature-title">Green Validator Scoring</div>
+      <div class="feature-desc">DPoS validators are scored by renewable energy usage. Eco-first consensus rewards sustainable infrastructure with higher block production.</div>
+    </div>
+
+    <div class="feature-card reveal">
+      <div class="feature-code-tag">&gt; FEATURE_03</div>
+      <div class="feature-icon">💱</div>
+      <div class="feature-title">Native AMM DEX</div>
+      <div class="feature-desc">Built-in decentralized exchange with 6 liquidity pools. Trade VRS, CARBON, ECO, TREE, GREEN, and REDD tokens permissionlessly.</div>
+    </div>
+
+    <div class="feature-card reveal">
+      <div class="feature-code-tag">&gt; FEATURE_04</div>
+      <div class="feature-icon">📜</div>
+      <div class="feature-title">Smart Contract VM</div>
+      <div class="feature-desc">Stack-based virtual machine with 22 opcodes. Deploy contracts via visual drag-and-drop builder or assembly editor.</div>
+    </div>
+
+    <div class="feature-card reveal">
+      <div class="feature-code-tag">&gt; FEATURE_05</div>
+      <div class="feature-icon">👛</div>
+      <div class="feature-title">Native Wallet</div>
+      <div class="feature-desc">Built-in wallet with secp256k1 cryptography and Keccak256 addressing. No MetaMask, no browser injection — fully standalone.</div>
+    </div>
+
+    <div class="feature-card reveal">
+      <div class="feature-code-tag">&gt; FEATURE_06</div>
+      <div class="feature-icon">🔐</div>
+      <div class="feature-title">Enterprise Security</div>
+      <div class="feature-desc">Rate limiting, admin authentication, replay protection, nonce tracking, validator slashing, and tamper detection at protocol level.</div>
+    </div>
   </div>
 </section>
 
-<footer>
-  <div class="footer-links">
-    <a href="/dashboard">Dashboard</a>
-    <a href="/api/explorer/stats">Explorer</a>
-    <a href="/api/security/audit">Security</a>
-    <a href="/api/network/info">API</a>
-    <a href="/api/monitoring/health">Health</a>
+<!-- Eco Highlight Section -->
+<section class="section" id="eco" style="padding-top:0">
+  <div class="eco-box reveal">
+    <div class="eco-inner">
+      <div class="eco-content">
+        <div class="section-tag">&gt; ECO_REVOLUTION</div>
+        <h3>🌱 Why Verdis is Truly the First Fully Green Ecosystem</h3>
+        <p>
+          Other blockchains claim to be green because they use less energy. Verdis makes environmental regeneration a core protocol feature. Carbon credits minted on-chain, reforestation logged immutably, validators scored by renewable energy use, and a 5B VRS Carbon Offset Fund. The chain doesn't just consume less — it actively heals the planet through every block produced.
+        </p>
+        <div class="eco-stats-mini">
+          <div class="eco-stat-item">
+            <div class="eco-stat-num">100%</div>
+            <div class="eco-stat-lbl">On-Chain Verified</div>
+          </div>
+          <div class="eco-stat-item">
+            <div class="eco-stat-num">5B VRS</div>
+            <div class="eco-stat-lbl">Offset Fund</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="terminal-window">
+        <div class="terminal-header">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="terminal-title">eco_node.sys</span>
+        </div>
+        <div class="terminal-body">
+          <div class="terminal-line"><span class="terminal-comment">// Verdis Protocol Genesis Spec</span></div>
+          <div class="terminal-line"><span class="terminal-key">chain_id</span>: <span class="terminal-val">909</span></div>
+          <div class="terminal-line"><span class="terminal-key">consensus</span>: <span class="terminal-val">"Green DPoS"</span></div>
+          <div class="terminal-line"><span class="terminal-key">carbon_negative</span>: <span class="terminal-val">true</span></div>
+          <div class="terminal-line"><span class="terminal-key">active_validators</span>: <span class="terminal-val">5 / 27</span></div>
+          <div class="terminal-line"><span class="terminal-key">renewable_ratio</span>: <span class="terminal-val">98.4%</span></div>
+          <div class="terminal-line"><span class="terminal-key">block_time</span>: <span class="terminal-val">"5s"</span></div>
+          <div class="terminal-line"><span class="terminal-comment">// Status: Regeneration Active</span></div>
+        </div>
+      </div>
+    </div>
   </div>
-  <p><a href="https://verdischain.com">verdischain.com</a> — Chain ID 909 | DPoS | secp256k1 | Keccak256</p>
-  <p style="margin-top:0.5rem">Built with @noble/secp256k1 and @noble/hashes. No mocks. No third-party dependencies.</p>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="cta-box reveal">
+    <div class="section-tag">// JOIN_THE_NETWORK</div>
+    <h2>Join the <span class="accent">Green Revolution</span></h2>
+    <p>Be part of the world's first carbon-negative blockchain ecosystem.</p>
+    <div class="hero-buttons" style="justify-content:center">
+      <a href="/dashboard" class="btn btn-primary">LAUNCH DASHBOARD &rarr;</a>
+      <a href="/dashboard#sale" class="btn btn-ghost">BUY VRS AT $0.001</a>
+      <a href="/whitepaper" class="btn btn-ghost">READ WHITEPAPER</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="logo">
+          <div class="logo-icon" style="width:32px;height:32px;background:#000;border:1px solid var(--green);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;">🌿</div>
+          <span style="background:linear-gradient(135deg,var(--green),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">VERDIS</span>
+        </div>
+        <p>The world's first fully green, carbon-negative blockchain ecosystem with native wallet and protocol-level eco-tracking.</p>
+        <div class="social-links">
+          <a href="https://x.com/Verdischain" target="_blank" rel="noopener" class="social-link" aria-label="X">
+            <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="https://t.me/verdischain" target="_blank" rel="noopener" class="social-link" aria-label="Telegram">
+            <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.96 6.502-1.36 8.627-.168.9-.504 1.201-.828 1.23-.704.064-1.239-.464-1.92-.913-1.067-.7-1.669-1.137-2.704-1.818-1.197-.788-.421-1.223.262-1.93.179-.186 3.273-2.998 3.332-3.249.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.914.49-1.302.48-.428-.008-1.252-.241-1.865-.443-.751-.244-1.349-.374-1.297-.79.027-.218.325-.441.894-.668 3.508-1.53 5.844-2.541 7.006-3.031 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+          </a>
+          <a href="https://t.me/Verdis_official_bot" target="_blank" rel="noopener" class="social-link" aria-label="Telegram Bot">
+            <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm.045 5.143c.5-.026.902.357.902.857v2.286h2.286c.5 0 .857.357.857.857s-.357.857-.857.857h-2.286v2.286c0 .5-.402.883-.902.857-.452-.024-.812-.384-.812-.857V10h-2.286c-.5 0-.857-.357-.857-.857s.357-.857.857-.857h2.286V6c0-.473.36-.833.812-.857z"/></svg>
+          </a>
+          <a href="https://github.com/verdischain" target="_blank" rel="noopener" class="social-link" aria-label="GitHub">
+            <svg viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>// ECOSYSTEM</h4>
+          <a href="/dashboard">Dashboard</a>
+          <a href="/dashboard#dex">DEX</a>
+          <a href="/dashboard#contracts">Smart Contracts</a>
+          <a href="/dashboard#staking">Staking</a>
+        </div>
+        <div class="footer-col">
+          <h4>// RESOURCES</h4>
+          <a href="/whitepaper">Whitepaper</a>
+          <a href="/whitepaper.pdf">PDF Download</a>
+          <a href="/docs">API Docs</a>
+          <a href="/ecosystem">Ecosystem</a>
+          <a href="/templates">Templates</a>
+          <a href="/status">Network Status</a>
+          <a href="/api/network/info">Network Info</a>
+        </div>
+        <div class="footer-col">
+          <h4>// COMMUNITY</h4>
+          <a href="https://x.com/Verdischain" target="_blank" rel="noopener">Twitter / X</a>
+          <a href="https://t.me/verdischain" target="_blank" rel="noopener">Telegram Channel</a>
+          <a href="https://t.me/Verdis_official_bot" target="_blank" rel="noopener">Telegram Bot</a>
+          <a href="https://github.com/verdischain" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      &copy; 2026 Verdis Blockchain &middot; The First Fully Green Blockchain Ecosystem &middot; Chain ID: 909
+    </div>
+  </div>
 </footer>
 
 <script>
-const API = window.location.origin;
-const RPC = API + '/rpc';
+// === Canvas Interactive Particle Network ===
+(function() {
+  const canvas = document.getElementById('hero-particles');
+  const ctx = canvas.getContext('2d');
 
-async function loadLiveData() {
-  try {
-    const [info, eco, audit, pools] = await Promise.all([
-      fetch(API + '/api/blockchain/info').then(r => r.json()).catch(() => null),
-      fetch(API + '/api/eco/impact').then(r => r.json()).catch(() => null),
-      fetch(API + '/api/security/audit').then(r => r.json()).catch(() => null),
-      fetch(API + '/api/dex/pools').then(r => r.json()).catch(() => null),
-    ]);
-    if (info) {
-      document.getElementById('statHeight').textContent = info.height;
-      document.getElementById('statValidators').textContent = info.validatorCount || '—';
-      document.getElementById('statSupply').textContent = (info.totalSupply / 1e9).toFixed(1) + 'B';
+  let width, height;
+  let particles = [];
+  let mouse = { x: null, y: null, radius: 150 };
+
+  function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+
+  window.addEventListener('mousemove', function(e) {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+
+  window.addEventListener('mouseleave', function() {
+    mouse.x = null;
+    mouse.y = null;
+  });
+
+  const particleCount = Math.min(Math.floor(window.innerWidth / 15), 90);
+
+  class Particle {
+    constructor() {
+      this.x = Math.random() * width;
+      this.y = Math.random() * height;
+      this.vx = (Math.random() - 0.5) * 0.8;
+      this.vy = (Math.random() - 0.5) * 0.8;
+      this.radius = Math.random() * 2 + 1;
+      this.color = Math.random() > 0.4 ? '#00ff88' : '#2dd4bf';
     }
-    if (eco) {
-      document.getElementById('ecoCarbon').textContent = (eco.carbonOffset || 0).toLocaleString();
-      document.getElementById('ecoTrees').textContent = (eco.treesPlanted || 0).toLocaleString();
-      document.getElementById('ecoCredits').textContent = (eco.creditsRetired || 0).toLocaleString();
-      document.getElementById('ecoValidators').textContent = (eco.greenValidators || 0);
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+
+      if (this.x < 0 || this.x > width) this.vx *= -1;
+      if (this.y < 0 || this.y > height) this.vy *= -1;
+
+      // Mouse attraction / interaction
+      if (mouse.x !== null && mouse.y !== null) {
+        let dx = mouse.x - this.x;
+        let dy = mouse.y - this.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < mouse.radius) {
+          let force = (mouse.radius - dist) / mouse.radius;
+          this.x -= (dx / dist) * force * 2;
+          this.y -= (dy / dist) * force * 2;
+        }
+      }
     }
-    if (pools && pools.length) {
-      document.getElementById('statPools').textContent = pools.length;
-      document.getElementById('dexPools').innerHTML = pools.map(p => {
-        return '<div class="pool-card"><div class="pool-pair">' + p.tokenA + '/' + p.tokenB + '</div><div class="pool-info">' + (p.reserveA/1e6).toFixed(2) + ' ' + p.tokenA + '<br>' + (p.reserveB/1e6).toFixed(2) + ' ' + p.tokenB + '</div></div>';
-      }).join('');
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = this.color;
+      ctx.fill();
+      ctx.shadowBlur = 0;
     }
-    if (audit && audit.checks) {
-      document.getElementById('securityGrid').innerHTML = Object.entries(audit.checks).map(([k, v]) => {
-        const label = k.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase());
-        return '<div class="security-item"><span class="security-check">✅</span><div><h4>' + label + '</h4><p>' + v.description + '</p></div></div>';
-      }).join('');
+  }
+
+  for (let i = 0; i < particleCount; i++) {
+    particles.push(new Particle());
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+
+    // Draw connecting lines
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        let dx = particles[i].x - particles[j].x;
+        let dy = particles[i].y - particles[j].y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 130) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(0, 255, 136, ${0.25 * (1 - dist / 130)})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+
+      // Line to mouse
+      if (mouse.x !== null && mouse.y !== null) {
+        let mdx = particles[i].x - mouse.x;
+        let mdy = particles[i].y - mouse.y;
+        let mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+        if (mdist < 150) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(mouse.x, mouse.y);
+          ctx.strokeStyle = `rgba(45, 212, 191, ${0.4 * (1 - mdist / 150)})`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
     }
-    document.getElementById('rpcUrl').textContent = API.includes('localhost') || API.includes('serveo') ? 'https://verdischain.com/rpc' : API + '/rpc';
-    document.getElementById('explorerUrl').textContent = API.includes('localhost') || API.includes('serveo') ? 'https://verdischain.com' : API;
-  } catch (e) { console.error('Load error:', e); }
+
+    for (let i = 0; i < particles.length; i++) {
+      particles[i].update();
+      particles[i].draw();
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+})();
+
+// === Navbar Scroll Class ===
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  if (window.scrollY > 20) nav.classList.add('scrolled');
+  else nav.classList.remove('scrolled');
+});
+
+// === Scroll Reveal Animation ===
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('visible');
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// === Stat Counters Animation ===
+function animateValue(el, target, duration = 2200) {
+  const start = 0;
+  const startTime = performance.now();
+  function update(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = Math.floor(start + (target - start) * eased);
+    el.textContent = current.toLocaleString();
+    if (progress < 1) requestAnimationFrame(update);
+    else el.textContent = target.toLocaleString();
+  }
+  requestAnimationFrame(update);
 }
 
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.1 });
-document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
-loadLiveData();
-setInterval(loadLiveData, 15000);
+// === Live Stats Fetching ===
+fetch('/api/blockchain/info').then(r => r.json()).then(d => {
+  const h = d.height || d.currentHeight || 0;
+  if (h > 0) animateValue(document.getElementById('s-height'), h);
+  const v = d.validatorCount || 0;
+  if (v > 0) animateValue(document.getElementById('s-vals'), v);
+}).catch(() => {});
+
+fetch('/api/eco/impact').then(r => r.json()).then(d => {
+  const co2 = d.totalCarbonOffset || d.carbonOffset || 0;
+  if (co2 > 0) animateValue(document.getElementById('s-co2'), co2);
+}).catch(() => {});
 </script>
+
+<!-- Verdis AI Support Widget — inject before </body> on any page -->
+<style>
+/* AI Support Widget */
+#aiWidget{position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Inter',-apple-system,sans-serif}
+.ai-fab{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#238636,#00ff88);border:none;cursor:pointer;box-shadow:0 4px 24px rgba(0,255,136,.3);display:flex;align-items:center;justify-content:center;transition:all .3s;position:relative}
+.ai-fab:hover{transform:scale(1.08);box-shadow:0 6px 32px rgba(0,255,136,.4)}
+.ai-fab svg{width:28px;height:28px}
+.ai-fab .ai-pulse{position:absolute;top:0;right:0;width:14px;height:14px;border-radius:50%;background:#3fb950;border:2px solid #0d1117;animation:aiPulse 2s infinite}
+@keyframes aiPulse{0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,.5)}50%{box-shadow:0 0 0 6px rgba(63,185,80,0)}}
+.ai-fab .ai-badge{position:absolute;top:-4px;left:-4px;background:#f85149;color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;display:none}
+.ai-fab .ai-badge.show{display:block;animation:scaleIn .3s}
+
+.ai-panel{position:fixed;bottom:100px;right:24px;width:380px;max-width:calc(100vw - 48px);height:560px;max-height:calc(100vh - 140px);background:#0d1117;border:1px solid rgba(63,185,80,.15);border-radius:20px;display:none;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);backdrop-filter:blur(20px);transform-origin:bottom right}
+.ai-panel.open{display:flex;animation:aiPanelIn .35s cubic-bezier(.16,1,.3,1)}
+@keyframes aiPanelIn{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+
+.ai-header{padding:16px 20px;background:linear-gradient(135deg,#0d1117,#161b22);border-bottom:1px solid rgba(63,185,80,.1);display:flex;align-items:center;justify-content:space-between}
+.ai-header-info{display:flex;align-items:center;gap:12px}
+.ai-avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#238636,#00ff88);display:flex;align-items:center;justify-content:center;font-size:20px}
+.ai-header-text h3{font-size:15px;font-weight:700;color:#e6edf3;margin:0}
+.ai-header-text .status{font-size:11px;color:#3fb950;display:flex;align-items:center;gap:5px}
+.ai-header-text .status::before{content:'';width:6px;height:6px;border-radius:50%;background:#3fb950;animation:aiPulse 2s infinite}
+.ai-close{background:none;border:none;color:#8b949e;font-size:20px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all .2s}
+.ai-close:hover{color:#e6edf3;background:rgba(255,255,255,.05)}
+
+.ai-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scrollbar-width:thin;scrollbar-color:#30363d transparent}
+.ai-messages::-webkit-scrollbar{width:4px}
+.ai-messages::-webkit-scrollbar-thumb{background:#30363d;border-radius:4px}
+.ai-msg{max-width:85%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.5;animation:scaleIn .3s}
+.ai-msg.bot{align-self:flex-start;background:#161b22;border:1px solid #30363d;color:#e6edf3;border-bottom-left-radius:4px}
+.ai-msg.user{align-self:flex-end;background:linear-gradient(135deg,#238636,#00ff88);color:#0d1117;border-bottom-right-radius:4px;font-weight:500}
+.ai-msg .quick-links{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+.ai-msg .quick-link{padding:4px 10px;background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.2);border-radius:100px;font-size:11px;color:#3fb950;cursor:pointer;transition:all .2s}
+.ai-msg .quick-link:hover{background:rgba(63,185,80,.2);transform:translateY(-1px)}
+.ai-typing{display:flex;gap:4px;padding:12px 16px;align-self:flex-start;background:#161b22;border:1px solid #30363d;border-radius:14px;border-bottom-left-radius:4px}
+.ai-typing span{width:7px;height:7px;border-radius:50%;background:#3fb950;animation:aiTyping 1.4s infinite}
+.ai-typing span:nth-child(2){animation-delay:.2s}
+.ai-typing span:nth-child(3){animation-delay:.4s}
+@keyframes aiTyping{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-6px)}}
+
+.ai-suggestions{padding:8px 16px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid #21262d}
+.ai-suggestion{padding:5px 12px;background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.15);border-radius:100px;font-size:11px;color:#3fb950;cursor:pointer;white-space:nowrap;transition:all .2s}
+.ai-suggestion:hover{background:rgba(63,185,80,.15);transform:translateY(-1px)}
+
+.ai-input{padding:12px 16px;border-top:1px solid #21262d;display:flex;gap:8px;align-items:center;background:#0d1117}
+.ai-input input{flex:1;background:#161b22;border:1px solid #30363d;border-radius:100px;padding:10px 16px;color:#e6edf3;font-size:13px;outline:none;transition:border-color .2s}
+.ai-input input:focus{border-color:#3fb950}
+.ai-input input::placeholder{color:#6b7280}
+.ai-send{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#238636,#00ff88);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.ai-send:hover{transform:scale(1.08)}
+.ai-send svg{width:18px;height:18px}
+.ai-send:disabled{opacity:.4;cursor:default;transform:none}
+
+@media(max-width:768px){.ai-panel{width:calc(100vw - 32px);right:16px;bottom:90px;height:calc(100vh - 120px)}#aiWidget{bottom:16px;right:16px}}
+</style>
+<div id="aiWidget">
+<div class="ai-panel" id="aiPanel">
+<div class="ai-header">
+<div class="ai-header-info">
+<div class="ai-avatar">🌿</div>
+<div class="ai-header-text">
+<h3>Verdis AI Assistant</h3>
+<div class="status">Online · Chain 909</div>
+</div>
+</div>
+<button class="ai-close" onclick="aiToggle()">✕</button>
+</div>
+<div class="ai-messages" id="aiMessages"></div>
+<div class="ai-suggestions" id="aiSuggestions"></div>
+<div class="ai-input">
+<input type="text" id="aiInput" placeholder="Ask about Verdis..." onkeydown="if(event.key==='Enter')aiSend()">
+<button class="ai-send" onclick="aiSend()">
+<svg viewBox="0 0 24 24" fill="none" stroke="#0d1117" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+</button>
+</div>
+</div>
+<button class="ai-fab" id="aiFab" onclick="aiToggle()">
+<span class="ai-badge" id="aiBadge">1</span>
+<span class="ai-pulse"></span>
+<svg viewBox="0 0 24 24" fill="none" stroke="#0d1117" stroke-width="2"><path d="M12 2C8 2 5 5 5 9c0 2 1 3 1 5l-1 2 4-1c1 1 2 1 3 1s2 0 3-1l4 1-1-2c0-2 1-3 1-5 0-4-3-7-7-7z"/><circle cx="9" cy="10" r="1" fill="#0d1117"/><circle cx="15" cy="10" r="1" fill="#0d1117"/></svg>
+</button>
+</div>
+<script>
+// === Verdis AI Assistant ===
+const AI_KNOWLEDGE_BASE = {
+  blockchain: {
+    keywords: ['blockchain','chain','verdis','vrs','token','network','consensus','dpos'],
+    answer: '🌿 **Verdis Blockchain**\n\nVerdis (VRS) is a Layer-1 blockchain with native DPoS consensus running on Chain ID 909. Key specs:\n\n• **Consensus:** Delegated Proof of Stake (5 active validators, 27 registered)\n• **Block Time:** 5 seconds\n• **Total Supply:** 50,000,000,000 VRS\n• **Cryptography:** secp256k1 signatures + Keccak256 hashing\n• **Smart Contracts:** Stack-based VM with 22 opcodes\n• **DEX:** Native AMM with 6 liquidity pools\n\nAll blocks are produced on-chain with real cryptographic validation — no mocks.',
+    links: ['View Dashboard', 'See Validators', 'Check Block Height']
+  },
+  dex: {
+    keywords: ['dex','swap','trade','amm','liquidity','pool','exchange','carbon','eco token'],
+    answer: '💱 **Verdis Native DEX**\n\nThe AMM DEX is built directly into the blockchain — no external contracts needed.\n\n**Active Pools:**\n• VRS/CARBON — Carbon credit trading\n• VRS/ECO — Eco-token exchange\n• CARBON/ECO — Cross eco-token swap\n• TREE/VRS — Reforestation token\n• GREEN/VRS — Green validator token\n• REDD/VRS — Reddington reward token\n\nThe auto-trade bot provides continuous liquidity. You can swap tokens in the Dashboard → DEX tab.',
+    links: ['Open DEX', 'View Pool Stats', 'Add Liquidity']
+  },
+  contracts: {
+    keywords: ['contract','smart','deploy','vm','opcode','assembly','compile','visual'],
+    answer: '📜 **Smart Contracts on Verdis**\n\nVerdis has a built-in stack-based Virtual Machine with 22 opcodes (PUSH, ADD, STORE, LOAD, JUMP, etc.).\n\n**Two ways to deploy:**\n1. **Visual Builder** — Drag & drop instruction blocks, no coding needed\n2. **Assembly Editor** — Write Verdis assembly directly\n\n**6 Preset Templates:**\n• Simple Token\n• Counter\n• Key-Value Store\n• Escrow Lock\n• Voting\n• Custom\n\nPlus 6 visual preset recipes (Token with Transfer, Multi-Sig Wallet, Simple Auction, Time-Lock Vault, On-Chain Ledger, Access Controller).',
+    links: ['Open Contracts', 'View Templates', 'Read VM Docs']
+  },
+  eco: {
+    keywords: ['eco','green','carbon','co2','climate','environment','tree','reforestation','offset','sustainab'],
+    answer: '🌱 **Verdis Eco Features**\n\nVerdis is the **first fully green blockchain** — environmental regeneration is built into the protocol, not an afterthought.\n\n**On-Chain Eco Features:**\n• **Carbon Credits** — Minted and tracked on-chain\n• **Reforestation Logging** — Trees planted are recorded immutably\n• **Green Validator Scoring** — Validators scored by renewable energy use\n• **5B VRS Carbon Offset Fund** — Dedicated to environmental projects\n\n**Current Impact:**\n• 1,000+ tons CO₂ offset\n• 15,000+ trees planted\n• 6 green validators active\n\nEvery block produced contributes to planetary healing.',
+    links: ['View Eco Dashboard', 'See Carbon Stats', 'Tree Planting Log']
+  },
+  wallet: {
+    keywords: ['wallet','connect','metamask','trust','import','private key','seed','address','balance'],
+    answer: '👛 **Verdis Native Wallet**\n\nVerdis has a **built-in native wallet** — no MetaMask, Trust Wallet, or browser injection needed.\n\n**Create Wallet:**\n• Click "Create Native Wallet" in the Dashboard\n• Generates secp256k1 keypair locally\n• Your keys never leave your browser\n\n**Import Wallet:**\n• Paste your private key or 12-word mnemonic\n\n**External Wallet (Optional):**\n• MetaMask: Add custom network (RPC: https://rpc.verdischain.com, Chain ID: 909)\n• Trust Wallet: Use DApp browser or manual import\n\nYour wallet state persists in localStorage — it survives page refreshes.',
+    links: ['Open Wallet', 'Create New', 'Import Existing']
+  },
+  sale: {
+    keywords: ['sale','buy','token sale','price','ido','invest','purchase','presale','ico'],
+    answer: '🚀 **Verdis Token Sale (IDO)**\n\n**Price:** $0.001 per VRS\n\n**Accepted Assets:**\n• ETH (Ethereum)\n• BNB (BSC)\n• USDT / USDC\n\nThe token sale is live on the Dashboard → Token Sale tab. All transactions are on-chain and verifiable.\n\nVRS tokens are utility tokens used for:\n• Transaction fees\n• DEX trading\n• Validator staking\n• Governance voting\n• Carbon credit minting',
+    links: ['Open Token Sale', 'View Pricing', 'Read Whitepaper']
+  },
+  staking: {
+    keywords: ['stake','staking','delegate','validator','reward','slashing','pos'],
+    answer: '🔒 **DPoS Staking**\n\nVerdis uses Delegated Proof of Stake:\n\n• **27 validators** registered\n• **5 active** block producers (top voted)\n• **Block rewards** distributed to active validators\n• **Delegation** — Vote for validators to earn rewards\n• **Slashing** — Misbehaving validators lose stake\n• **Green scoring** — Validators using renewable energy get higher rewards\n\nStake your VRS in Dashboard → Staking tab.',
+    links: ['Open Staking', 'View Validators', 'Delegate Now']
+  },
+  security: {
+    keywords: ['security','safe','hack','protect','rate limit','auth','admin','replay','nonce'],
+    answer: '🔐 **Verdis Security**\n\nVerdis has 13 active security checks:\n\n• secp256k1 signature verification\n• SHA-256 + Keccak256 hashing\n• Tamper detection\n• Double-spend prevention\n• Chain validation\n• Rate limiting (30/min + 5/min strict)\n• Nonce replay protection\n• Admin API key authentication\n• Validator slashing\n• Input validation\n• Mempool limits (1000 txs)\n• Max transaction 1B VRS\n• Max block size 500 transactions\n\nSecurity audit available at `/api/security/audit` endpoint.',
+    links: ['View Security Audit', 'Security Events', 'Network Info']
+  },
+  whitepaper: {
+    keywords: ['whitepaper','documentation','docs','guide','how','learn','paper','research'],
+    answer: '📄 **Verdis Whitepaper**\n\nThe Verdis whitepaper is a 14-section comprehensive document covering:\n\n1. Executive Summary\n2. Technology Architecture\n3. DPoS Consensus\n4. Carbon-Negative Protocol\n5. Green Validator Scoring\n6. Reforestation Logging\n7. AMM DEX Design\n8. Smart Contract VM\n9. Native Wallet System\n10. Token Economics\n11. Security Model\n12. Roadmap\n13. Team\n14. Conclusion\n\nAvailable as HTML and PDF download.',
+    links: ['Read Whitepaper', 'Download PDF', 'Executive Summary']
+  },
+  roadmap: {
+    keywords: ['roadmap','future','plan','next','phase','launch','listing','coingecko','coinmarketcap'],
+    answer: '🗺️ **Verdis Roadmap**\n\n**Completed:**\n✅ Mainnet launch (Chain 909)\n✅ DPoS consensus with green scoring\n✅ Native AMM DEX (6 pools)\n✅ Smart contract VM with visual builder\n✅ Native wallet (no MetaMask)\n✅ Token sale (IDO) live\n✅ Whitepaper published\n✅ Telegram & Twitter presence\n✅ Brand identity (hexagonal leaf logo)\n\n**In Progress:**\n🔄 CoinGecko & CoinMarketCap listing\n🔄 Cross-chain bridge for liquidity\n🔄 Twitter automation enhancement\n\n**Planned:**\n📋 Mobile wallet app\n📋 Carbon offset marketplace\n📋 Enterprise validator onboarding\n📋 Layer-2 scaling solution',
+    links: ['View Whitepaper', 'Join Telegram', 'Follow Twitter']
+  },
+  api: {
+    keywords: ['api','rpc','endpoint','json','rest','developer','integrate','code'],
+    answer: '💻 **Verdis API**\n\n**JSON-RPC (Ethereum-compatible):**\n• Endpoint: `https://rpc.verdischain.com`\n• Chain ID: 909\n• 25 RPC methods (eth_blockNumber, eth_getBalance, etc.)\n\n**REST API (50+ endpoints):**\n• `/api/blockchain/info` — Chain stats\n• `/api/blockchain/blocks` — Block explorer\n• `/api/dex/pools` — DEX data\n• `/api/eco/impact` — Eco metrics\n• `/api/security/audit` — Security status\n• `/api/network/info` — Network info\n\nFull interactive docs at `/docs` page.',
+    links: ['Open API Docs', 'View Endpoints', 'Network Info']
+  },
+  governance: {
+    keywords: ['governance','vote','proposal','dao','community','decision','treasury'],
+    answer: '🗳️ **Verdis Governance**\n\nVerdis features on-chain governance:\n\n• **Proposals** — Any VRS holder can submit\n• **Voting** — 1 VRS = 1 vote\n• **Quorum** — Minimum participation required\n• **Execution** — Passed proposals execute on-chain\n\nGovernance covers:\n• Protocol parameter changes\n• Validator slashing decisions\n• Carbon offset fund allocation\n• Reforestation project approval\n\nAccess via Dashboard → Governance tab.',
+    links: ['Open Governance', 'View Proposals', 'Create Proposal']
+  }
+};
+
+const AI_SUGGESTIONS = ['What is Verdis?', 'How to buy VRS?', 'Explain the DEX', 'Eco features', 'How to deploy a contract?', 'Security model'];
+const AI_GREETING = "🌿 Hi! I'm the Verdis AI Assistant. I can help you with:\n\n• Blockchain & network info\n• DEX & trading\n• Smart contracts & VM\n• Eco features & carbon credits\n• Wallet setup\n• Token sale & staking\n• Security & API\n\nWhat would you like to know?";
+
+let aiOpen = false;
+let aiHistory = [];
+
+function aiToggle() {
+  aiOpen = !aiOpen;
+  const panel = document.getElementById('aiPanel');
+  const fab = document.getElementById('aiFab');
+  if (aiOpen) {
+    panel.classList.add('open');
+    fab.style.transform = 'scale(0.85)';
+    document.getElementById('aiBadge').classList.remove('show');
+    setTimeout(() => document.getElementById('aiInput').focus(), 300);
+    if (aiHistory.length === 0) {
+      aiAddMessage('bot', AI_GREETING);
+      aiRenderSuggestions();
+    }
+  } else {
+    panel.classList.remove('open');
+    fab.style.transform = '';
+  }
+}
+
+function aiAddMessage(sender, text) {
+  const messages = document.getElementById('aiMessages');
+  const msg = document.createElement('div');
+  msg.className = 'ai-msg ' + sender;
+  
+  // Format markdown-like syntax
+  let formatted = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#3fb950">$1</strong>')
+    .replace(/\n/g, '<br>');
+  msg.innerHTML = formatted;
+  
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+  aiHistory.push({ sender, text });
+}
+
+function aiAddMessageWithLinks(sender, text, links) {
+  const messages = document.getElementById('aiMessages');
+  const msg = document.createElement('div');
+  msg.className = 'ai-msg ' + sender;
+  
+  let formatted = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#3fb950">$1</strong>')
+    .replace(/\n/g, '<br>');
+  
+  if (links && links.length > 0) {
+    formatted += '<div class="quick-links">';
+    links.forEach(link => {
+      formatted += '<span class="quick-link" onclick="aiHandleLink(\'' + link.replace(/'/g, "\\\\'") + '\')">' + link + '</span>';
+    });
+    formatted += '</div>';
+  }
+  
+  msg.innerHTML = formatted;
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+  aiHistory.push({ sender, text });
+}
+
+function aiRenderSuggestions() {
+  const container = document.getElementById('aiSuggestions');
+  container.innerHTML = AI_SUGGESTIONS.map(s => 
+    '<span class="ai-suggestion" onclick="aiQuickAsk(\'' + s.replace(/'/g, "\\\\'") + '\')">' + s + '</span>'
+  ).join('');
+}
+
+function aiQuickAsk(question) {
+  document.getElementById('aiInput').value = question;
+  aiSend();
+}
+
+function aiSend() {
+  const input = document.getElementById('aiInput');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  aiAddMessage('user', text);
+  input.value = '';
+  
+  // Clear suggestions
+  document.getElementById('aiSuggestions').innerHTML = '';
+  
+  // Show typing indicator
+  const messages = document.getElementById('aiMessages');
+  const typing = document.createElement('div');
+  typing.className = 'ai-typing';
+  typing.id = 'aiTyping';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  messages.appendChild(typing);
+  messages.scrollTop = messages.scrollHeight;
+  
+  // Simulate AI thinking time
+  setTimeout(() => {
+    typing.remove();
+    const response = aiGetAnswer(text);
+    aiAddMessageWithLinks('bot', response.answer, response.links);
+  }, 600 + Math.random() * 400);
+}
+
+function aiGetAnswer(query) {
+  const lower = query.toLowerCase();
+  let bestMatch = null;
+  let bestScore = 0;
+  
+  for (const [key, entry] of Object.entries(AI_KNOWLEDGE_BASE)) {
+    let score = 0;
+    for (const keyword of entry.keywords) {
+      if (lower.includes(keyword)) {
+        score += keyword.length;
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = entry;
+    }
+  }
+  
+  if (bestMatch && bestScore > 0) {
+    return { answer: bestMatch.answer, links: bestMatch.links || [] };
+  }
+  
+  // Fallback
+  return {
+    answer: "I'm not sure about that yet! Here are some things I can help with:\n\n• **Blockchain** — What is Verdis? Network stats?\n• **DEX** — How to trade, liquidity pools\n• **Eco** — Carbon credits, trees, green validators\n• **Contracts** — How to deploy, templates\n• **Wallet** — How to create/import a wallet\n• **Token Sale** — How to buy VRS\n• **Staking** — How to earn rewards\n• **Security** — How safe is Verdis?\n• **API** — RPC endpoints, developer docs\n\nTry asking about any of these topics!",
+    links: ['What is Verdis?', 'How to buy VRS?', 'Eco features']
+  };
+}
+
+function aiHandleLink(link) {
+  const linkMap = {
+    'View Dashboard': '/dashboard',
+    'Open DEX': '/dashboard#dex',
+    'Open Contracts': '/dashboard#contracts',
+    'Open Wallet': '/dashboard#wallet',
+    'Open Token Sale': '/dashboard#sale',
+    'Open Staking': '/dashboard#staking',
+    'Open Governance': '/dashboard#governance',
+    'Read Whitepaper': '/whitepaper',
+    'Download PDF': '/whitepaper.pdf',
+    'Open API Docs': '/docs',
+    'View Eco Dashboard': '/dashboard#eco',
+    'Network Info': '/api/network/info',
+    'See Validators': '/dashboard#validators',
+    'Check Block Height': '/dashboard',
+    'View Pool Stats': '/dashboard#dex',
+    'Add Liquidity': '/dashboard#dex',
+    'See Carbon Stats': '/dashboard#eco',
+    'Tree Planting Log': '/dashboard#eco',
+    'Read VM Docs': '/docs',
+    'View Templates': '/dashboard#contracts',
+    'Create New': '/dashboard#wallet',
+    'Import Existing': '/dashboard#wallet',
+    'View Pricing': '/dashboard#sale',
+    'Delegate Now': '/dashboard#staking',
+    'View Validators': '/dashboard#validators',
+    'View Security Audit': '/dashboard#security',
+    'Security Events': '/dashboard#security',
+    'Executive Summary': '/whitepaper',
+    'View Endpoints': '/docs',
+    'View Proposals': '/dashboard#governance',
+    'Create Proposal': '/dashboard#governance',
+    'Join Telegram': 'https://t.me/verdischain',
+    'Follow Twitter': 'https://x.com/Verdischain'
+  };
+  
+  const url = linkMap[link];
+  if (url) {
+    if (url.startsWith('http')) {
+      window.open(url, '_blank');
+    } else {
+      window.location.href = url;
+    }
+  }
+}
+
+// Show badge after 3 seconds if user hasn't opened
+setTimeout(() => {
+  if (!aiOpen) {
+    document.getElementById('aiBadge').classList.add('show');
+  }
+}, 3000);
+
+// === Live TPS via WebSocket ===
+let wsReconnectTimer = null;
+function connectWebSocket() {
+  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + '/ws';
+  let ws;
+  try {
+    ws = new WebSocket(wsUrl);
+  } catch(e) {
+    console.log('WebSocket not available, using polling');
+    pollTPS();
+    return;
+  }
+  
+  ws.onopen = () => {
+    console.log('🔌 WebSocket connected');
+    if (wsReconnectTimer) { clearInterval(wsReconnectTimer); wsReconnectTimer = null; }
+  };
+  
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.type === 'stats' || data.type === 'connected') {
+        const stats = data.stats || data;
+        if (stats.tps !== undefined) {
+          const tpsEl = document.getElementById('s-tps');
+          if (tpsEl) tpsEl.textContent = stats.tps.toFixed(1);
+        }
+        if (stats.totalTxs !== undefined) {
+          // Update if we have a total txs element
+        }
+      }
+      if (data.type === 'block') {
+        if (data.tps !== undefined) {
+          const tpsEl = document.getElementById('s-tps');
+          if (tpsEl) tpsEl.textContent = data.tps.toFixed(1);
+        }
+      }
+    } catch(e) {}
+  };
+  
+  ws.onclose = () => {
+    console.log('WebSocket disconnected, will retry in 5s');
+    if (!wsReconnectTimer) {
+      wsReconnectTimer = setInterval(() => {
+        connectWebSocket();
+      }, 5000);
+    }
+  };
+  
+  ws.onerror = () => {
+    ws.close();
+  };
+}
+
+// Fallback: Poll TPS endpoint
+function pollTPS() {
+  fetch('/api/network/tps').then(r => r.json()).then(d => {
+    const tpsEl = document.getElementById('s-tps');
+    if (tpsEl && d.tps !== undefined) tpsEl.textContent = d.tps.toFixed(1);
+  }).catch(() => {});
+}
+
+// Connect WebSocket on load
+connectWebSocket();
+// Also poll as backup every 10s
+setInterval(pollTPS, 10000);
+
+</script>
+
 </body>
 </html>

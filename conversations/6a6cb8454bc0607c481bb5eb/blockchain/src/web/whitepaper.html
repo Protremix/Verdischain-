@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis — The First Fully Green Blockchain Ecosystem | Whitepaper v1.0</title>
+<meta name="description" content="Verdis is the world's first fully green blockchain ecosystem — a carbon-negative Layer-1 with DPoS consensus, native AMM DEX, on-chain carbon credits, reforestation tracking, and green validator scoring.">
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #0a0e0a;
+  --bg-card: #0f1510;
+  --bg-card-hover: #131d16;
+  --border: rgba(0, 255, 136, 0.22);
+  --border-bright: rgba(0, 255, 136, 0.5);
+  --text: #e6f5ec;
+  --text-muted: #7a9987;
+  --green: #00ff88;
+  --green-glow: rgba(0, 255, 136, 0.35);
+  --teal: #2dd4bf;
+  --purple: #bc8cff;
+  --yellow: #ffd000;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', Consolas, monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg);
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(0, 255, 136, 0.08) 0%, transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='hex' fill='%2300ff88' fill-opacity='0.035' fill-rule='nonzero'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l13-7.5zM0 17.12l12.99 7.5v15L0 32.12v-15zM15 24.62l12.99-7.5v15L15 39.62v-15zM13.99 0l13 7.5v15l-13 7.5L1 22.5v-15l13-7.5z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.75;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 50px 24px;
+  position: relative;
+}
+
+/* Scanline Overlay */
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.3) 50%
+  );
+  background-size: 100% 4px;
+  z-index: 999;
+  opacity: 0.3;
+}
+
+/* Scroll Progress Bar */
+.scroll-progress-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(0, 255, 136, 0.1);
+  z-index: 1000;
+}
+.scroll-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--green), var(--teal));
+  box-shadow: 0 0 10px var(--green), 0 0 15px var(--teal);
+  transition: width 0.1s ease-out;
+}
+
+/* Headings */
+h1, h2, h3 {
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: 44px;
+  margin-bottom: 8px;
+  color: var(--green);
+}
+
+h2 {
+  font-size: 24px;
+  margin-top: 48px;
+  margin-bottom: 16px;
+  color: var(--green);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+  text-shadow: 0 0 12px rgba(0, 255, 136, 0.35);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+h2::before {
+  content: '>';
+  color: var(--teal);
+  font-size: 20px;
+}
+
+h3 {
+  font-size: 18px;
+  margin-top: 28px;
+  margin-bottom: 12px;
+  color: var(--teal);
+}
+
+p {
+  margin-bottom: 14px;
+  color: var(--text);
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+/* Code & Terminal Styling */
+code {
+  font-family: var(--font-mono);
+  background: rgba(0, 255, 136, 0.08);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--green);
+}
+
+pre {
+  background: #060a07;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  position: relative;
+  padding: 40px 18px 18px 18px;
+  overflow-x: auto;
+  margin: 18px 0;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.06);
+}
+
+pre::before {
+  content: "● ● ●  TERMINAL // VERDIS-CORE";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 28px;
+  background: rgba(0, 255, 136, 0.06);
+  border-bottom: 1px solid var(--border);
+  color: var(--teal);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  padding-left: 12px;
+}
+
+pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13.5px;
+  color: var(--green);
+  line-height: 1.6;
+}
+
+pre code::after {
+  content: "▋";
+  color: var(--green);
+  animation: blink 1s step-start infinite;
+  margin-left: 4px;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* Cover Page */
+.cover {
+  text-align: center;
+  padding: 70px 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 48px;
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.08) 0%, rgba(45, 212, 191, 0.03) 100%);
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.1), inset 0 0 20px rgba(0, 255, 136, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+.cover::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--green), var(--teal), transparent);
+}
+
+.cover .first-badge {
+  display: inline-block;
+  padding: 6px 18px;
+  border-radius: 20px;
+  background: rgba(0, 255, 136, 0.12);
+  color: var(--green);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.2);
+}
+
+/* Glitch Title Effect */
+.glitch-title {
+  position: relative;
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--green);
+  text-shadow: 0 0 15px rgba(0, 255, 136, 0.6);
+  margin-bottom: 12px;
+}
+
+.glitch-title::before,
+.glitch-title::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+}
+
+.glitch-title::before {
+  left: -2px;
+  text-shadow: 2px 0 var(--teal);
+  clip: rect(24px, 550px, 90px, 0);
+  animation: glitch-anim-1 3s infinite linear alternate-reverse;
+}
+
+.glitch-title::after {
+  left: 2px;
+  text-shadow: -2px 0 var(--green);
+  clip: rect(85px, 550px, 140px, 0);
+  animation: glitch-anim-2 2.5s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim-1 {
+  0% { clip: rect(10px, 9999px, 30px, 0); }
+  20% { clip: rect(40px, 9999px, 15px, 0); }
+  40% { clip: rect(25px, 9999px, 50px, 0); }
+  60% { clip: rect(60px, 9999px, 20px, 0); }
+  80% { clip: rect(15px, 9999px, 45px, 0); }
+  100% { clip: rect(35px, 9999px, 10px, 0); }
+}
+
+@keyframes glitch-anim-2 {
+  0% { clip: rect(50px, 9999px, 20px, 0); }
+  20% { clip: rect(15px, 9999px, 60px, 0); }
+  40% { clip: rect(30px, 9999px, 10px, 0); }
+  60% { clip: rect(10px, 9999px, 40px, 0); }
+  80% { clip: rect(45px, 9999px, 25px, 0); }
+  100% { clip: rect(20px, 9999px, 55px, 0); }
+}
+
+.cover .subtitle {
+  font-size: 20px;
+  color: var(--teal);
+  margin-bottom: 14px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.cover .version {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 12px;
+  background: var(--bg-card);
+  color: var(--green);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.1);
+}
+
+/* TOC */
+.toc {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 40px;
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.05);
+  position: relative;
+}
+
+.toc h3 {
+  margin-top: 0;
+  color: var(--teal);
+  font-family: var(--font-mono);
+  border-bottom: 1px solid rgba(0, 255, 136, 0.15);
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toc h3::before {
+  content: '⚡';
+  font-size: 14px;
+}
+
+.toc ol {
+  padding-left: 20px;
+  list-style: none;
+  counter-reset: toc-counter;
+}
+
+.toc li {
+  counter-increment: toc-counter;
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  position: relative;
+}
+
+.toc li::before {
+  content: counter(toc-counter, decimal-leading-zero) ". ";
+  color: var(--teal);
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.toc a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.toc a:hover, .toc a.active {
+  color: var(--green);
+  background: rgba(0, 255, 136, 0.12);
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+  transform: translateX(4px);
+}
+
+.toc a.active::before {
+  content: '▶ ';
+  color: var(--green);
+  font-size: 10px;
+}
+
+/* Callouts / Highlights */
+.highlight {
+  background: rgba(0, 255, 136, 0.05);
+  border-left: 3px solid var(--green);
+  padding: 14px 18px;
+  border-radius: 0 8px 8px 0;
+  margin: 18px 0;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.05);
+}
+
+.first-highlight {
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(45, 212, 191, 0.05) 100%);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px 0;
+  box-shadow: 0 0 25px rgba(0, 255, 136, 0.08);
+}
+
+.first-highlight h3 {
+  color: var(--green);
+  margin-top: 0;
+  font-family: var(--font-mono);
+  font-size: 18px;
+}
+
+/* Stats Grid */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.stat-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 16px;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.03);
+}
+
+.stat-box:hover {
+  transform: translateY(-4px);
+  border-color: var(--green);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+  background: var(--bg-card-hover);
+}
+
+.stat-box .num {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--green);
+  font-family: var(--font-mono);
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.stat-box .label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: var(--font-mono);
+}
+
+/* Tables with Neon Hover */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 20px 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-card);
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.04);
+}
+
+th {
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.25);
+  color: var(--teal);
+  font-size: 12px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+  background: rgba(0, 255, 136, 0.04);
+}
+
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.08);
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover td {
+  background: rgba(0, 255, 136, 0.08);
+  color: #ffffff;
+  box-shadow: inset 2px 0 0 var(--green);
+}
+
+a {
+  color: var(--teal);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--green);
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 40px 0;
+}
+
+/* Section Reveal Animation */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Footer & Socials */
+.wp-social {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.wp-social a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.wp-social a:hover {
+  transform: translateY(-3px);
+  border-color: var(--green);
+  background: rgba(0, 255, 136, 0.1);
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+}
+
+.wp-social a svg {
+  width: 18px;
+  height: 18px;
+  fill: var(--text-muted);
+  transition: fill 0.2s;
+}
+
+.wp-social a:hover svg {
+  fill: var(--green);
+}
+
+.footer {
+  text-align: center;
+  color: var(--text-muted);
+  margin-top: 56px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+@media(max-width: 768px) {
+  body {
+    padding: 30px 16px;
+  }
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+  .glitch-title {
+    font-size: 36px;
+  }
+  .cover {
+    padding: 40px 16px;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Scanline Overlay -->
+<div class="scanlines"></div>
+
+<!-- Top Progress Bar -->
+<div class="scroll-progress-container">
+  <div class="scroll-progress-bar" id="progressBar"></div>
+</div>
+
+<!-- COVER -->
+<div class="cover reveal">
+<div class="first-badge">WORLD'S FIRST FULLY GREEN BLOCKCHAIN ECOSYSTEM</div>
+<h1 class="glitch-title" data-text="Verdis">Verdis</h1>
+<div class="subtitle">The First Fully Green Blockchain Ecosystem</div>
+<p class="muted">Carbon-Negative Layer-1 | On-Chain Carbon Credits | Green Validator Scoring<br>Reforestation Tracking | Native AMM DEX | DPoS Consensus</p>
+<br><span class="version">Whitepaper v1.0 — August 2026</span>
+</div>
+
+<!-- TOC -->
+<div class="toc reveal">
+<h3>Table of Contents</h3>
+<ol>
+<li><a href="#abstract">Abstract</a></li>
+<li><a href="#first-green">Why Verdis is the First Fully Green Ecosystem</a></li>
+<li><a href="#problem">Problem Statement</a></li>
+<li><a href="#solution">The Verdis Solution</a></li>
+<li><a href="#architecture">System Architecture</a></li>
+<li><a href="#consensus">DPoS Consensus — Green by Design</a></li>
+<li><a href="#crypto">Cryptography & Security</a></li>
+<li><a href="#tokenomics">Tokenomics</a></li>
+<li><a href="#dex">Native DEX — Green Token Trading</a></li>
+<li><a href="#eco">Eco Features — The Green Core</a></li>
+<li><a href="#contracts">Smart Contracts</a></li>
+<li><a href="#rpc">JSON-RPC & Wallet Compatibility</a></li>
+<li><a href="#security">Security Model</a></li>
+<li><a href="#roadmap">Roadmap</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ol>
+</div>
+
+<div class="reveal">
+<h2 id="abstract">1. Abstract</h2>
+<p>Verdis is the world's <strong>first fully green blockchain ecosystem</strong> — a Layer-1 chain designed from the ground up to be carbon-negative. Unlike other blockchains that merely reduce energy consumption, Verdis makes environmental regeneration a core protocol feature. The chain combines Delegated Proof-of-Stake (DPoS) consensus with an integrated Automated Market Maker (AMM) decentralized exchange, on-chain carbon credit minting, reforestation tracking, and green validator scoring.</p>
+<p>The native token, VRS (Verdis), has a maximum supply of 100 billion tokens with 50 billion currently in circulation. Verdis operates on Chain ID 909 with Ethereum-compatible JSON-RPC, enabling direct integration with MetaMask and Trust Wallet. The ecosystem features a native wallet that works without browser extensions, a full block explorer, governance, NFT support, and a stack-based smart contract virtual machine.</p>
+
+<div class="first-highlight">
+<h3>What Makes Verdis "Fully Green"</h3>
+<p>Every layer of the Verdis stack is designed around environmental impact:</p>
+<ul style="padding-left:20px;margin-top:8px">
+<li><strong>Consensus Layer</strong> — DPoS uses 99.9% less energy than Proof-of-Work, with validators scored on renewable energy use</li>
+<li><strong>Protocol Layer</strong> — Carbon credits minted on-chain, reforestation logged immutably, 5B VRS Carbon Offset Fund</li>
+<li><strong>DEX Layer</strong> — Native AMM with eco-tokens (CARBON, ECO, GREEN, TREE, REDD) that represent real environmental assets</li>
+<li><strong>Validator Layer</strong> — Green scoring system rates validators by renewable energy sourcing</li>
+<li><strong>Economic Layer</strong> — 5% of all tokens allocated to carbon offset projects, not a marketing budget</li>
+</ul>
+</div>
+
+<div class="highlight">
+<strong>Key Metrics:</strong> Chain ID 909 | 5-second block time | 16 VRS block reward | 27 registered validators (5 active) | 6 AMM liquidity pools | 1,000+ tons CO2 tracked | 15,000 trees logged | 6 green validators
+</div>
+</div>
+
+<div class="reveal">
+<h2 id="first-green">2. Why Verdis is the First Fully Green Ecosystem</h2>
+<p>Other blockchains claim to be "green" because they consume less electricity than Bitcoin. Ethereum switched to Proof-of-Stake and claims a 99.9% energy reduction. Solana, Cardano, and Algorand all market themselves as eco-friendly. But none of these chains make environmental regeneration a core protocol feature. They are <em>less harmful</em> — not <em>actively beneficial</em>.</p>
+<p>Verdis is fundamentally different. It is the first blockchain ecosystem where every component is designed around environmental impact:</p>
+<table>
+<tr><th>Feature</th><th>Other "Green" Chains</th><th>Verdis (First Fully Green)</th></tr>
+<tr><td>Energy Efficiency</td><td>Yes (PoS/DPoS)</td><td>Yes (DPoS, 5s blocks)</td></tr>
+<tr><td>On-Chain Carbon Credits</td><td>No</td><td>Yes — mint, trade, retire on-chain</td></tr>
+<tr><td>Reforestation Logging</td><td>No</td><td>Yes — immutable tree planting records</td></tr>
+<tr><td>Green Validator Scoring</td><td>No</td><td>Yes — scored by renewable energy use</td></tr>
+<tr><td>Eco-Token Economy</td><td>No</td><td>Yes — CARBON, ECO, GREEN, TREE, REDD tokens</td></tr>
+<tr><td>Carbon Offset Fund</td><td>No</td><td>Yes — 5B VRS dedicated to carbon projects</td></tr>
+<tr><td>Net Environmental Impact</td><td>Neutral at best</td><td><strong>Negative — actively removes CO2</strong></td></tr>
+</table>
+<p>This is why Verdis can claim to be the <strong>first fully green blockchain ecosystem</strong>. It is not just energy-efficient — it is a platform for environmental regeneration that happens to be a blockchain.</p>
+</div>
+
+<div class="reveal">
+<h2 id="problem">3. Problem Statement</h2>
+<p>The blockchain industry faces three critical challenges: environmental impact, accessibility, and fragmented DeFi.</p>
+<h3>3.1 Environmental Impact</h3>
+<p>Traditional Proof-of-Work blockchains consume enormous amounts of energy. Bitcoin alone uses more electricity than many countries. While Proof-of-Stake has reduced energy consumption, no major chain has made environmental regeneration a core protocol feature. Carbon offsetting remains an afterthought — a marketing claim rather than a verifiable, on-chain mechanism.</p>
+<h3>3.2 Accessibility</h3>
+<p>Most blockchains require users to install browser extensions (MetaMask), manage seed phrases across multiple apps, and navigate complex bridging interfaces. This creates friction that prevents mainstream adoption of both blockchain technology and green initiatives.</p>
+<h3>3.3 Fragmented DeFi</h3>
+<p>DEXes exist as separate protocols on most chains, requiring additional smart contracts, gas fees, and trust assumptions. There is no native connection between DeFi and environmental impact.</p>
+</div>
+
+<div class="reveal">
+<h2 id="solution">4. The Verdis Solution</h2>
+<p>Verdis addresses these challenges through five core innovations that together make it the first fully green blockchain ecosystem:</p>
+<h3>4.1 Carbon-Negative by Design</h3>
+<p>Verdis tracks carbon credits on-chain, logs reforestation projects, and scores validators based on their use of renewable energy. The chain provides verifiable, immutable proof of environmental impact — not marketing claims.</p>
+<h3>4.2 Green Validator Scoring</h3>
+<p>Validators on the Verdis network are scored based on their use of renewable energy. This is the first blockchain where a validator's environmental footprint directly affects their protocol standing.</p>
+<h3>4.3 Eco-Token Economy</h3>
+<p>Verdis features native eco-tokens (CARBON, ECO, GREEN, TREE, REDD) that represent real environmental assets. These tokens trade on the built-in DEX, creating a market for environmental impact.</p>
+<h3>4.4 Native Wallet Experience</h3>
+<p>The Verdis dashboard includes a built-in native wallet. Users can create, import, and manage wallets directly in the browser without installing any extension. MetaMask and Trust Wallet remain supported as optional integrations.</p>
+<h3>4.5 Protocol-Level DEX</h3>
+<p>The AMM-based DEX is built into the chain itself, not deployed as a separate smart contract. This means lower fees, no contract risk, and immediate liquidity for all native tokens including eco-tokens.</p>
+</div>
+
+<div class="reveal">
+<h2 id="architecture">5. System Architecture</h2>
+<div class="stat-grid">
+<div class="stat-box"><div class="num">L1</div><div class="label">Layer-1 Blockchain</div></div>
+<div class="stat-box"><div class="num">DPoS</div><div class="label">Consensus (Green)</div></div>
+<div class="stat-box"><div class="num">5s</div><div class="label">Block Time</div></div>
+</div>
+<h3>5.1 Core Components</h3>
+<table>
+<tr><th>Component</th><th>Description</th><th>Green Aspect</th></tr>
+<tr><td>Blockchain Core</td><td>Block production, validation, chain state, mempool</td><td>Energy-efficient DPoS, no mining</td></tr>
+<tr><td>DPoS Engine</td><td>Validator registration, voting, rotation, slashing</td><td>Green validator scoring built-in</td></tr>
+<tr><td>Wallet Manager</td><td>secp256k1 keys, Keccak256 addresses</td><td>No external wallet needed</td></tr>
+<tr><td>DEX Engine</td><td>AMM pools, swap execution, LP tokens</td><td>Eco-token trading pairs</td></tr>
+<tr><td>Smart Contract VM</td><td>Stack-based bytecode execution</td><td>Eco contract templates</td></tr>
+<tr><td>Eco Module</td><td>Carbon credits, reforestation, green scoring</td><td>Core differentiator — first on-chain</td></tr>
+<tr><td>Governance</td><td>Proposal creation, on-chain voting</td><td>Eco proposals prioritized</td></tr>
+<tr><td>NFT Module</td><td>Minting, transfer, metadata</td><td>Carbon credit NFTs</td></tr>
+<tr><td>Token Sale (IDO)</td><td>Order tracking, token distribution</td><td>Funds green initiatives</td></tr>
+<tr><td>JSON-RPC Server</td><td>Ethereum-compatible (Chain ID 909)</td><td>MetaMask/Trust Wallet ready</td></tr>
+<tr><td>REST API</td><td>50+ endpoints</td><td>Full eco API access</td></tr>
+<tr><td>Web Dashboard</td><td>Explorer, wallet, DEX, governance</td><td>Native wallet, no extension</td></tr>
+</table>
+<h3>5.2 Block Structure</h3>
+<pre><code>{
+  "header": {
+    "index": 8559,
+    "previousHash": "0000...a1b2",
+    "merkleRoot": "c3d4...e5f6",
+    "timestamp": 1785552000000,
+    "validator": "0x0bfef9eb91a36d4010...",
+    "blockReward": 16,
+    "nonce": 0
+  },
+  "transactions": [...],
+  "hash": "0000...f7e8"
+}</code></pre>
+<h3>5.3 State Persistence</h3>
+<p>All chain state — blocks, balances, DEX pools, validators, contracts, eco data (carbon credits, reforestation projects, green scores) — is persisted to disk. The chain survives full node restarts and automatically resumes block production.</p>
+</div>
+
+<div class="reveal">
+<h2 id="consensus">6. DPoS Consensus — Green by Design</h2>
+<p>Verdis uses Delegated Proof-of-Stake (DPoS), the most energy-efficient consensus mechanism suitable for a fully green blockchain. Unlike Proof-of-Work which requires massive energy expenditure, DPoS uses negligible electricity while maintaining full decentralization and security.</p>
+<h3>6.1 Validator System</h3>
+<ul style="padding-left:20px;margin-bottom:12px">
+<li><strong>27 validators</strong> registered on the network</li>
+<li><strong>5 active validators</strong> produce blocks in round-robin rotation</li>
+<li>Block producers change every block, rotating through the active set</li>
+<li><strong>16 VRS</strong> block reward distributed per block</li>
+<li>Block production interval: <strong>5 seconds</strong></li>
+</ul>
+<h3>6.2 Green Validator Scoring</h3>
+<p>This is a Verdis-first feature. Validators receive a green score based on:</p>
+<ul style="padding-left:20px;margin-bottom:12px">
+<li>Energy source — solar, wind, hydro, geothermal verified</li>
+<li>Carbon footprint of validator operations</li>
+<li>Verified renewable energy certificates</li>
+</ul>
+<p>Higher green scores increase validator visibility and community trust. This is the first blockchain where environmental footprint directly affects protocol participation.</p>
+<h3>6.3 Delegation & Rewards</h3>
+<p>Token holders can delegate VRS to any registered validator. Delegators earn a portion of the block rewards proportional to their stake.</p>
+<h3>6.4 Slashing</h3>
+<p>Validators can be slashed for double-signing, downtime, and invalid block production.</p>
+</div>
+
+<div class="reveal">
+<h2 id="crypto">7. Cryptography & Security</h2>
+<p>Verdis uses industry-standard cryptographic primitives, all implemented with <code>@noble/secp256k1</code> and <code>@noble/hashes</code> — audited, dependency-free cryptographic libraries.</p>
+<table>
+<tr><th>Component</th><th>Algorithm</th><th>Library</th></tr>
+<tr><td>Key Generation</td><td>secp256k1 ECDSA</td><td>@noble/secp256k1</td></tr>
+<tr><td>Transaction Signing</td><td>ECDSA with recovery</td><td>@noble/secp256k1</td></tr>
+<tr><td>Address Derivation</td><td>Keccak256 (last 20 bytes)</td><td>@noble/hashes</td></tr>
+<tr><td>Block Hashing</td><td>SHA-256</td><td>@noble/hashes</td></tr>
+<tr><td>Merkle Trees</td><td>SHA-256</td><td>@noble/hashes</td></tr>
+<tr><td>Mnemonic Generation</td><td>BIP-39</td><td>@scure/bip39</td></tr>
+</table>
+<p>Addresses follow the <code>0x</code> + 40 hex characters format, ensuring compatibility with MetaMask, Trust Wallet, and other EVM tools.</p>
+</div>
+
+<div class="reveal">
+<h2 id="tokenomics">8. Tokenomics</h2>
+<p>The VRS (Verdis) token is the native asset of the first fully green blockchain ecosystem, used for transaction fees, staking, governance, DEX trading, and carbon credit minting.</p>
+<div class="stat-grid">
+<div class="stat-box"><div class="num">100B</div><div class="label">Max Supply</div></div>
+<div class="stat-box"><div class="num">50B</div><div class="label">Circulating</div></div>
+<div class="stat-box"><div class="num">$0.001</div><div class="label">Sale Price</div></div>
+</div>
+<h3>8.1 Token Distribution</h3>
+<table>
+<tr><th>Allocation</th><th>%</th><th>Token Amount</th><th>Purpose</th><th>Status</th></tr>
+<tr><td>Token Sale (IDO)</td><td>40%</td><td>40,000,000,000</td><td>Public distribution</td><td>Live (Presale)</td></tr>
+<tr><td>Ecosystem & Validators</td><td>20%</td><td>20,000,000,000</td><td>Validator rewards, grants</td><td>Active</td></tr>
+<tr><td>Community Rewards</td><td>15%</td><td>15,000,000,000</td><td>Faucet, airdrops, incentives</td><td>Active</td></tr>
+<tr><td>DEX Liquidity</td><td>10%</td><td>10,000,000,000</td><td>AMM pool seeding</td><td>Active</td></tr>
+<tr><td>Team</td><td>10%</td><td>10,000,000,000</td><td>Development & operations</td><td>Locked (2 years)</td></tr>
+<tr><td><strong>Carbon Offset Fund</strong></td><td><strong>5%</strong></td><td><strong>5,000,000,000</strong></td><td><strong>Reforestation & carbon projects</strong></td><td><strong>Active</strong></td></tr>
+</table>
+<p>The 5B VRS Carbon Offset Fund is a first-of-its-kind allocation in blockchain history — dedicated entirely to funding reforestation, carbon capture, and renewable energy projects verified on-chain.</p>
+<h3>8.2 Token Sale (IDO)</h3>
+<table>
+<tr><th>Parameter</th><th>Value</th></tr>
+<tr><td>Sale Phase</td><td>Presale</td></tr>
+<tr><td>Price</td><td>$0.001 per VRS</td></tr>
+<tr><td>Accepted Currencies</td><td>ETH, BNB, USDT, USDC</td></tr>
+<tr><td>Rate (ETH)</td><td>1 ETH = 500,000 VRS</td></tr>
+<tr><td>Rate (BNB)</td><td>1 BNB = 100,000 VRS</td></tr>
+<tr><td>Rate (USDT/USDC)</td><td>1 USDT/USDC = 1,000 VRS</td></tr>
+<tr><td>Payment Address</td><td>0xa1e846855e1768b9C0BEe6E747bedd7bec1Af616</td></tr>
+</table>
+<h3>8.3 Eco-Tokens</h3>
+<p>Verdis features native eco-tokens that represent real environmental assets, tradeable on the built-in DEX:</p>
+<table>
+<tr><th>Token</th><th>Represents</th><th>Trading Pairs</th></tr>
+<tr><td>CARBON</td><td>Carbon credits (1 CARBON = 1 ton CO2 offset)</td><td>CARBON/VRS, CARBON/ECO</td></tr>
+<tr><td>ECO</td><td>Eco project participation tokens</td><td>ECO/VRS, CARBON/ECO</td></tr>
+<tr><td>GREEN</td><td>Green validator reward tokens</td><td>GREEN/VRS</td></tr>
+<tr><td>TREE</td><td>Reforestation project tokens</td><td>TREE/VRS</td></tr>
+<tr><td>REDD</td><td>REDD+ carbon credits (forest conservation)</td><td>REDD/VRS</td></tr>
+</table>
+</div>
+
+<div class="reveal">
+<h2 id="dex">9. Native AMM DEX — Green Token Trading</h2>
+<p>Verdis includes a built-in Automated Market Maker (AMM) decentralized exchange at the protocol level. This is the first DEX with native eco-token trading pairs, creating a market for environmental impact.</p>
+<h3>9.1 Active Liquidity Pools</h3>
+<table>
+<tr><th>Pool</th><th>Token A Reserve</th><th>Token B Reserve</th><th>Fee</th></tr>
+<tr><td>CARBON/VRS</td><td>1,239,037</td><td>1,616,131</td><td>0.3%</td></tr>
+<tr><td>ECO/VRS</td><td>1,542,213</td><td>1,299,885</td><td>0.3%</td></tr>
+<tr><td>CARBON/ECO</td><td>507,543</td><td>986,254</td><td>0.3%</td></tr>
+<tr><td>GREEN/VRS</td><td>—</td><td>—</td><td>0.3%</td></tr>
+<tr><td>SOLR/VRS</td><td>—</td><td>—</td><td>0.3%</td></tr>
+<tr><td>TST/VRS</td><td>—</td><td>—</td><td>0.3%</td></tr>
+</table>
+<h3>9.2 AMM Formula</h3>
+<p>Constant product formula: <code>x * y = k</code> with 0.3% fee distributed to liquidity providers.</p>
+</div>
+
+<div class="reveal">
+<h2 id="eco">10. Eco Features — The Green Core</h2>
+<p>This section describes what makes Verdis the first fully green blockchain ecosystem. These are not marketing claims — they are on-chain, verifiable, immutable features built into the protocol.</p>
+<div class="stat-grid">
+<div class="stat-box"><div class="num">1,000+</div><div class="label">Tons CO2 Tracked</div></div>
+<div class="stat-box"><div class="num">15,000</div><div class="label">Trees Logged</div></div>
+<div class="stat-box"><div class="num">6</div><div class="label">Green Validators</div></div>
+</div>
+<h3>10.1 Carbon Credit System</h3>
+<p>Users can mint carbon credits on-chain by providing verified CO2 offset data. Each credit is an immutable on-chain record containing amount of CO2 offset, project description, minter address, timestamp, and retirement status. Carbon credits can be traded on the DEX as CARBON tokens, creating the first on-chain market for verified carbon offsets.</p>
+<h3>10.2 Reforestation Tracking</h3>
+<p>Reforestation projects are logged on-chain with immutable proof: number of trees planted, geographic location, project initiator, date, and verification metadata. 15,000 trees are already logged. Each tree is permanently recorded on the Verdis blockchain — it cannot be deleted, altered, or falsified.</p>
+<h3>10.3 Green Validator Scoring</h3>
+<p>Validators receive a green score based on their use of renewable energy. This is the first blockchain protocol where environmental footprint affects consensus participation. Higher green score = greater community trust and visibility.</p>
+<h3>10.4 Carbon Offset Fund</h3>
+<p>5 billion VRS (5% of max supply) is allocated to the Carbon Offset Fund — the first dedicated on-chain fund for environmental regeneration in blockchain history. This fund finances reforestation projects worldwide, carbon capture initiatives, renewable energy infrastructure for validators, and verified carbon credit purchases.</p>
+</div>
+
+<div class="reveal">
+<h2 id="contracts">11. Smart Contracts</h2>
+<p>Verdis includes a stack-based virtual machine for smart contract execution. 6 contracts are already deployed including EcoDepositCalculator and EcoStakingReward. Supports ERC-20, ERC-721, and ERC-1155 token standards.</p>
+</div>
+
+<div class="reveal">
+<h2 id="rpc">12. JSON-RPC & Wallet Compatibility</h2>
+<table>
+<tr><th>Parameter</th><th>Value</th></tr>
+<tr><td>Chain ID</td><td>909 (0x38d)</td></tr>
+<tr><td>Network Name</td><td>Verdis</td></tr>
+<tr><td>Symbol</td><td>VRS</td></tr>
+<tr><td>RPC URL</td><td>https://rpc.verdischain.com</td></tr>
+<tr><td>Explorer</td><td>https://verdischain.com</td></tr>
+<tr><td>Block Time</td><td>5 seconds</td></tr>
+</table>
+<p>25+ JSON-RPC methods including eth_chainId, eth_blockNumber, eth_getBalance, eth_sendRawTransaction, eth_call, eth_estimateGas, eth_getBlockByNumber, eth_getTransactionReceipt, net_version, and more.</p>
+</div>
+
+<div class="reveal">
+<h2 id="security">13. Security Model</h2>
+<table>
+<tr><th>Feature</th><th>Implementation</th></tr>
+<tr><td>Signature Verification</td><td>secp256k1 ECDSA with public key recovery</td></tr>
+<tr><td>Hashing</td><td>SHA-256 (blocks) + Keccak256 (addresses)</td></tr>
+<tr><td>Tamper Detection</td><td>Chain validation on every block</td></tr>
+<tr><td>Double-Spend Prevention</td><td>Nonce tracking per address</td></tr>
+<tr><td>Replay Protection</td><td>Chain ID embedded in transactions</td></tr>
+<tr><td>Rate Limiting</td><td>30/min general, 5/min strict (transactions)</td></tr>
+<tr><td>Admin Authentication</td><td>API key for admin endpoints</td></tr>
+<tr><td>Validator Slashing</td><td>Penalties for malicious behavior</td></tr>
+<tr><td>Input Validation</td><td>All API inputs validated and sanitized</td></tr>
+<tr><td>Mempool Limits</td><td>Maximum 1,000 pending transactions</td></tr>
+<tr><td>Max Transaction</td><td>1,000,000,000 VRS per transaction</td></tr>
+<tr><td>Max Block Size</td><td>500 transactions per block</td></tr>
+</table>
+<h3>13.1 Deployment Security</h3>
+<ul style="padding-left:20px;margin-bottom:12px">
+<li>HTTPS with valid SSL certificates via Let's Encrypt</li>
+<li>Nginx reverse proxy with security headers</li>
+<li>Systemd service with auto-restart on failure</li>
+<li>State persistence to disk (survives restarts)</li>
+<li>Automated health monitoring</li>
+</ul>
+</div>
+
+<div class="reveal">
+<h2 id="roadmap">14. Roadmap</h2>
+<h3>Phase 1 — Completed (Q3 2026)</h3>
+<ul style="padding-left:20px;margin-bottom:12px">
+<li>Core blockchain with DPoS consensus (green by design)</li>
+<li>Native wallet (no MetaMask required)</li>
+<li>AMM DEX with 6 liquidity pools including eco-tokens</li>
+<li>Carbon credit minting and tracking on-chain</li>
+<li>Reforestation logging (15,000 trees)</li>
+<li>Green validator scoring (first in blockchain)</li>
+<li>Smart contract VM with eco contracts</li>
+<li>Ethereum JSON-RPC compatibility (Chain ID 909)</li>
+<li>Token Sale (IDO) — live</li>
+<li>Production deployment at verdischain.com</li>
+<li>Whitepaper, executive summary, and PDF published</li>
+</ul>
+<h3>Phase 2 — In Progress (Q4 2026)</h3>
+<ul style="padding-left:20px;margin-bottom:12px">
+<li>Cross-chain bridge (BSC / Ethereum) for eco-token liquidity</li>
+<li>CoinGecko and CoinMarketCap listing</li>
+<li>Mobile wallet app with carbon tracking</li>
+<li>DAO governance automation for eco proposals</li>
+<li>Carbon credit marketplace with verified projects</li>
+<li>Partnerships with reforestation organizations</li>
+</ul>
+<h3>Phase 3 — Planned (2027)</h3>
+<ul style="padding-left:20px;margin-bottom:12px">
+<li>EVM-compatible smart contracts (Solidity support)</li>
+<li>Cross-chain atomic swaps for carbon credits</li>
+<li>Carbon offset partnerships with international verification bodies</li>
+<li>Mobile staking app with green score tracking</li>
+<li>Enterprise carbon tracking API for corporations</li>
+<li>ZK-rollup scaling solution (maintaining green credentials)</li>
+</ul>
+</div>
+
+<div class="reveal">
+<h2 id="conclusion">15. Conclusion</h2>
+<p>Verdis is the world's first fully green blockchain ecosystem. It is not just another energy-efficient chain — it is a platform for environmental regeneration that happens to be a blockchain.</p>
+<p>Every layer of the Verdis stack is green: DPoS consensus uses negligible energy, carbon credits are minted and traded on-chain, reforestation projects are logged immutably, validators are scored by renewable energy use, and 5 billion VRS is dedicated to a Carbon Offset Fund. The eco-token economy (CARBON, ECO, GREEN, TREE, REDD) creates a market for environmental impact that has never existed before.</p>
+<p>With 50 billion VRS in circulation, 27 registered validators, 6 active DEX pools, 1,000+ tons of CO2 tracked, and 15,000 trees logged, Verdis is a live, functioning ecosystem — not a concept or a promise. The chain runs at <code>verdischain.com</code> with production-grade infrastructure.</p>
+<div class="first-highlight">
+<h3>The Verdis Commitment</h3>
+<p>Verdis is committed to proving that decentralized technology can heal the planet while creating real economic value. The first fully green blockchain ecosystem is live. The token sale is open. The carbon credits are on-chain. The trees are planted. The future is green.</p>
+</div>
+</div>
+
+<hr>
+<div class="footer reveal">
+<div class="wp-social">
+<a href="https://x.com/Verdischain" target="_blank" rel="noopener" aria-label="X (Twitter)"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+<a href="https://t.me/verdischain" target="_blank" rel="noopener" aria-label="Telegram"><svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.96 6.502-1.36 8.627-.168.9-.504 1.201-.828 1.23-.704.064-1.239-.464-1.92-.913-1.067-.7-1.669-1.137-2.704-1.818-1.197-.788-.421-1.223.262-1.93.179-.186 3.273-2.998 3.332-3.249.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.914.49-1.302.48-.428-.008-1.252-.241-1.865-.443-.751-.244-1.349-.374-1.297-.79.027-.218.325-.441.894-.668 3.508-1.53 5.844-2.541 7.006-3.031 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
+<a href="https://github.com/verdischain" target="_blank" rel="noopener" aria-label="GitHub"><svg viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></a>
+</div>
+<p><strong>Verdis — The First Fully Green Blockchain Ecosystem</strong></p>
+<p>verdischain.com | Chain ID 909 | RPC: rpc.verdischain.com | VRS Token</p>
+<p>Whitepaper v1.0 — August 2026</p>
+<br>
+<p class="muted">(c) 2026 Verdis. All rights reserved. This whitepaper is for informational purposes only and does not constitute financial advice.</p>
+</div>
+
+<!-- JavaScript for Interactive Web3 Features -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. Scroll Progress Bar
+  const progressBar = document.getElementById('progressBar');
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = scrollPercent + '%';
+  });
+
+  // 2. Animated Section Reveal on Scroll
+  const revealElements = document.querySelectorAll('.reveal');
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
+
+  revealElements.forEach(el => revealObserver.observe(el));
+
+  // Trigger reveal for elements already in viewport on load
+  setTimeout(() => {
+    revealElements.forEach(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight) {
+        el.classList.add('visible');
+      }
+    });
+  }, 100);
+
+  // 3. Glowing Table of Contents Active Section Highlighting
+  const headings = Array.from(document.querySelectorAll('h2[id]'));
+  const tocLinks = document.querySelectorAll('.toc a');
+
+  function updateActiveToc() {
+    const scrollPos = window.scrollY + 140;
+    let currentId = '';
+
+    for (let i = 0; i < headings.length; i++) {
+      const heading = headings[i];
+      if (heading.offsetTop <= scrollPos) {
+        currentId = heading.getAttribute('id');
+      } else {
+        break;
+      }
+    }
+
+    tocLinks.forEach(link => {
+      if (currentId && link.getAttribute('href') === '#' + currentId) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  }
+
+  window.addEventListener('scroll', updateActiveToc);
+  updateActiveToc();
+});
+</script>
+<!-- Verdis AI Support Widget — inject before </body> on any page -->
+<style>
+/* AI Support Widget */
+#aiWidget{position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Inter',-apple-system,sans-serif}
+.ai-fab{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#238636,#00ff88);border:none;cursor:pointer;box-shadow:0 4px 24px rgba(0,255,136,.3);display:flex;align-items:center;justify-content:center;transition:all .3s;position:relative}
+.ai-fab:hover{transform:scale(1.08);box-shadow:0 6px 32px rgba(0,255,136,.4)}
+.ai-fab svg{width:28px;height:28px}
+.ai-fab .ai-pulse{position:absolute;top:0;right:0;width:14px;height:14px;border-radius:50%;background:#3fb950;border:2px solid #0d1117;animation:aiPulse 2s infinite}
+@keyframes aiPulse{0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,.5)}50%{box-shadow:0 0 0 6px rgba(63,185,80,0)}}
+.ai-fab .ai-badge{position:absolute;top:-4px;left:-4px;background:#f85149;color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;display:none}
+.ai-fab .ai-badge.show{display:block;animation:scaleIn .3s}
+
+.ai-panel{position:fixed;bottom:100px;right:24px;width:380px;max-width:calc(100vw - 48px);height:560px;max-height:calc(100vh - 140px);background:#0d1117;border:1px solid rgba(63,185,80,.15);border-radius:20px;display:none;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);backdrop-filter:blur(20px);transform-origin:bottom right}
+.ai-panel.open{display:flex;animation:aiPanelIn .35s cubic-bezier(.16,1,.3,1)}
+@keyframes aiPanelIn{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+
+.ai-header{padding:16px 20px;background:linear-gradient(135deg,#0d1117,#161b22);border-bottom:1px solid rgba(63,185,80,.1);display:flex;align-items:center;justify-content:space-between}
+.ai-header-info{display:flex;align-items:center;gap:12px}
+.ai-avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#238636,#00ff88);display:flex;align-items:center;justify-content:center;font-size:20px}
+.ai-header-text h3{font-size:15px;font-weight:700;color:#e6edf3;margin:0}
+.ai-header-text .status{font-size:11px;color:#3fb950;display:flex;align-items:center;gap:5px}
+.ai-header-text .status::before{content:'';width:6px;height:6px;border-radius:50%;background:#3fb950;animation:aiPulse 2s infinite}
+.ai-close{background:none;border:none;color:#8b949e;font-size:20px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all .2s}
+.ai-close:hover{color:#e6edf3;background:rgba(255,255,255,.05)}
+
+.ai-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scrollbar-width:thin;scrollbar-color:#30363d transparent}
+.ai-messages::-webkit-scrollbar{width:4px}
+.ai-messages::-webkit-scrollbar-thumb{background:#30363d;border-radius:4px}
+.ai-msg{max-width:85%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.5;animation:scaleIn .3s}
+.ai-msg.bot{align-self:flex-start;background:#161b22;border:1px solid #30363d;color:#e6edf3;border-bottom-left-radius:4px}
+.ai-msg.user{align-self:flex-end;background:linear-gradient(135deg,#238636,#00ff88);color:#0d1117;border-bottom-right-radius:4px;font-weight:500}
+.ai-msg .quick-links{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+.ai-msg .quick-link{padding:4px 10px;background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.2);border-radius:100px;font-size:11px;color:#3fb950;cursor:pointer;transition:all .2s}
+.ai-msg .quick-link:hover{background:rgba(63,185,80,.2);transform:translateY(-1px)}
+.ai-typing{display:flex;gap:4px;padding:12px 16px;align-self:flex-start;background:#161b22;border:1px solid #30363d;border-radius:14px;border-bottom-left-radius:4px}
+.ai-typing span{width:7px;height:7px;border-radius:50%;background:#3fb950;animation:aiTyping 1.4s infinite}
+.ai-typing span:nth-child(2){animation-delay:.2s}
+.ai-typing span:nth-child(3){animation-delay:.4s}
+@keyframes aiTyping{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-6px)}}
+
+.ai-suggestions{padding:8px 16px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid #21262d}
+.ai-suggestion{padding:5px 12px;background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.15);border-radius:100px;font-size:11px;color:#3fb950;cursor:pointer;white-space:nowrap;transition:all .2s}
+.ai-suggestion:hover{background:rgba(63,185,80,.15);transform:translateY(-1px)}
+
+.ai-input{padding:12px 16px;border-top:1px solid #21262d;display:flex;gap:8px;align-items:center;background:#0d1117}
+.ai-input input{flex:1;background:#161b22;border:1px solid #30363d;border-radius:100px;padding:10px 16px;color:#e6edf3;font-size:13px;outline:none;transition:border-color .2s}
+.ai-input input:focus{border-color:#3fb950}
+.ai-input input::placeholder{color:#6b7280}
+.ai-send{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#238636,#00ff88);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.ai-send:hover{transform:scale(1.08)}
+.ai-send svg{width:18px;height:18px}
+.ai-send:disabled{opacity:.4;cursor:default;transform:none}
+
+@media(max-width:768px){.ai-panel{width:calc(100vw - 32px);right:16px;bottom:90px;height:calc(100vh - 120px)}#aiWidget{bottom:16px;right:16px}}
+</style>
+<div id="aiWidget">
+<div class="ai-panel" id="aiPanel">
+<div class="ai-header">
+<div class="ai-header-info">
+<div class="ai-avatar">🌿</div>
+<div class="ai-header-text">
+<h3>Verdis AI Assistant</h3>
+<div class="status">Online · Chain 909</div>
+</div>
+</div>
+<button class="ai-close" onclick="aiToggle()">✕</button>
+</div>
+<div class="ai-messages" id="aiMessages"></div>
+<div class="ai-suggestions" id="aiSuggestions"></div>
+<div class="ai-input">
+<input type="text" id="aiInput" placeholder="Ask about Verdis..." onkeydown="if(event.key==='Enter')aiSend()">
+<button class="ai-send" onclick="aiSend()">
+<svg viewBox="0 0 24 24" fill="none" stroke="#0d1117" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+</button>
+</div>
+</div>
+<button class="ai-fab" id="aiFab" onclick="aiToggle()">
+<span class="ai-badge" id="aiBadge">1</span>
+<span class="ai-pulse"></span>
+<svg viewBox="0 0 24 24" fill="none" stroke="#0d1117" stroke-width="2"><path d="M12 2C8 2 5 5 5 9c0 2 1 3 1 5l-1 2 4-1c1 1 2 1 3 1s2 0 3-1l4 1-1-2c0-2 1-3 1-5 0-4-3-7-7-7z"/><circle cx="9" cy="10" r="1" fill="#0d1117"/><circle cx="15" cy="10" r="1" fill="#0d1117"/></svg>
+</button>
+</div>
+<script>
+// === Verdis AI Assistant ===
+const AI_KNOWLEDGE_BASE = {
+  blockchain: {
+    keywords: ['blockchain','chain','verdis','vrs','token','network','consensus','dpos'],
+    answer: '🌿 **Verdis Blockchain**\n\nVerdis (VRS) is a Layer-1 blockchain with native DPoS consensus running on Chain ID 909. Key specs:\n\n• **Consensus:** Delegated Proof of Stake (5 active validators, 27 registered)\n• **Block Time:** 5 seconds\n• **Total Supply:** 50,000,000,000 VRS\n• **Cryptography:** secp256k1 signatures + Keccak256 hashing\n• **Smart Contracts:** Stack-based VM with 22 opcodes\n• **DEX:** Native AMM with 6 liquidity pools\n\nAll blocks are produced on-chain with real cryptographic validation — no mocks.',
+    links: ['View Dashboard', 'See Validators', 'Check Block Height']
+  },
+  dex: {
+    keywords: ['dex','swap','trade','amm','liquidity','pool','exchange','carbon','eco token'],
+    answer: '💱 **Verdis Native DEX**\n\nThe AMM DEX is built directly into the blockchain — no external contracts needed.\n\n**Active Pools:**\n• VRS/CARBON — Carbon credit trading\n• VRS/ECO — Eco-token exchange\n• CARBON/ECO — Cross eco-token swap\n• TREE/VRS — Reforestation token\n• GREEN/VRS — Green validator token\n• REDD/VRS — Reddington reward token\n\nThe auto-trade bot provides continuous liquidity. You can swap tokens in the Dashboard → DEX tab.',
+    links: ['Open DEX', 'View Pool Stats', 'Add Liquidity']
+  },
+  contracts: {
+    keywords: ['contract','smart','deploy','vm','opcode','assembly','compile','visual'],
+    answer: '📜 **Smart Contracts on Verdis**\n\nVerdis has a built-in stack-based Virtual Machine with 22 opcodes (PUSH, ADD, STORE, LOAD, JUMP, etc.).\n\n**Two ways to deploy:**\n1. **Visual Builder** — Drag & drop instruction blocks, no coding needed\n2. **Assembly Editor** — Write Verdis assembly directly\n\n**6 Preset Templates:**\n• Simple Token\n• Counter\n• Key-Value Store\n• Escrow Lock\n• Voting\n• Custom\n\nPlus 6 visual preset recipes (Token with Transfer, Multi-Sig Wallet, Simple Auction, Time-Lock Vault, On-Chain Ledger, Access Controller).',
+    links: ['Open Contracts', 'View Templates', 'Read VM Docs']
+  },
+  eco: {
+    keywords: ['eco','green','carbon','co2','climate','environment','tree','reforestation','offset','sustainab'],
+    answer: '🌱 **Verdis Eco Features**\n\nVerdis is the **first fully green blockchain** — environmental regeneration is built into the protocol, not an afterthought.\n\n**On-Chain Eco Features:**\n• **Carbon Credits** — Minted and tracked on-chain\n• **Reforestation Logging** — Trees planted are recorded immutably\n• **Green Validator Scoring** — Validators scored by renewable energy use\n• **5B VRS Carbon Offset Fund** — Dedicated to environmental projects\n\n**Current Impact:**\n• 1,000+ tons CO₂ offset\n• 15,000+ trees planted\n• 6 green validators active\n\nEvery block produced contributes to planetary healing.',
+    links: ['View Eco Dashboard', 'See Carbon Stats', 'Tree Planting Log']
+  },
+  wallet: {
+    keywords: ['wallet','connect','metamask','trust','import','private key','seed','address','balance'],
+    answer: '👛 **Verdis Native Wallet**\n\nVerdis has a **built-in native wallet** — no MetaMask, Trust Wallet, or browser injection needed.\n\n**Create Wallet:**\n• Click "Create Native Wallet" in the Dashboard\n• Generates secp256k1 keypair locally\n• Your keys never leave your browser\n\n**Import Wallet:**\n• Paste your private key or 12-word mnemonic\n\n**External Wallet (Optional):**\n• MetaMask: Add custom network (RPC: https://rpc.verdischain.com, Chain ID: 909)\n• Trust Wallet: Use DApp browser or manual import\n\nYour wallet state persists in localStorage — it survives page refreshes.',
+    links: ['Open Wallet', 'Create New', 'Import Existing']
+  },
+  sale: {
+    keywords: ['sale','buy','token sale','price','ido','invest','purchase','presale','ico'],
+    answer: '🚀 **Verdis Token Sale (IDO)**\n\n**Price:** $0.001 per VRS\n\n**Accepted Assets:**\n• ETH (Ethereum)\n• BNB (BSC)\n• USDT / USDC\n\nThe token sale is live on the Dashboard → Token Sale tab. All transactions are on-chain and verifiable.\n\nVRS tokens are utility tokens used for:\n• Transaction fees\n• DEX trading\n• Validator staking\n• Governance voting\n• Carbon credit minting',
+    links: ['Open Token Sale', 'View Pricing', 'Read Whitepaper']
+  },
+  staking: {
+    keywords: ['stake','staking','delegate','validator','reward','slashing','pos'],
+    answer: '🔒 **DPoS Staking**\n\nVerdis uses Delegated Proof of Stake:\n\n• **27 validators** registered\n• **5 active** block producers (top voted)\n• **Block rewards** distributed to active validators\n• **Delegation** — Vote for validators to earn rewards\n• **Slashing** — Misbehaving validators lose stake\n• **Green scoring** — Validators using renewable energy get higher rewards\n\nStake your VRS in Dashboard → Staking tab.',
+    links: ['Open Staking', 'View Validators', 'Delegate Now']
+  },
+  security: {
+    keywords: ['security','safe','hack','protect','rate limit','auth','admin','replay','nonce'],
+    answer: '🔐 **Verdis Security**\n\nVerdis has 13 active security checks:\n\n• secp256k1 signature verification\n• SHA-256 + Keccak256 hashing\n• Tamper detection\n• Double-spend prevention\n• Chain validation\n• Rate limiting (30/min + 5/min strict)\n• Nonce replay protection\n• Admin API key authentication\n• Validator slashing\n• Input validation\n• Mempool limits (1000 txs)\n• Max transaction 1B VRS\n• Max block size 500 transactions\n\nSecurity audit available at `/api/security/audit` endpoint.',
+    links: ['View Security Audit', 'Security Events', 'Network Info']
+  },
+  whitepaper: {
+    keywords: ['whitepaper','documentation','docs','guide','how','learn','paper','research'],
+    answer: '📄 **Verdis Whitepaper**\n\nThe Verdis whitepaper is a 14-section comprehensive document covering:\n\n1. Executive Summary\n2. Technology Architecture\n3. DPoS Consensus\n4. Carbon-Negative Protocol\n5. Green Validator Scoring\n6. Reforestation Logging\n7. AMM DEX Design\n8. Smart Contract VM\n9. Native Wallet System\n10. Token Economics\n11. Security Model\n12. Roadmap\n13. Team\n14. Conclusion\n\nAvailable as HTML and PDF download.',
+    links: ['Read Whitepaper', 'Download PDF', 'Executive Summary']
+  },
+  roadmap: {
+    keywords: ['roadmap','future','plan','next','phase','launch','listing','coingecko','coinmarketcap'],
+    answer: '🗺️ **Verdis Roadmap**\n\n**Completed:**\n✅ Mainnet launch (Chain 909)\n✅ DPoS consensus with green scoring\n✅ Native AMM DEX (6 pools)\n✅ Smart contract VM with visual builder\n✅ Native wallet (no MetaMask)\n✅ Token sale (IDO) live\n✅ Whitepaper published\n✅ Telegram & Twitter presence\n✅ Brand identity (hexagonal leaf logo)\n\n**In Progress:**\n🔄 CoinGecko & CoinMarketCap listing\n🔄 Cross-chain bridge for liquidity\n🔄 Twitter automation enhancement\n\n**Planned:**\n📋 Mobile wallet app\n📋 Carbon offset marketplace\n📋 Enterprise validator onboarding\n📋 Layer-2 scaling solution',
+    links: ['View Whitepaper', 'Join Telegram', 'Follow Twitter']
+  },
+  api: {
+    keywords: ['api','rpc','endpoint','json','rest','developer','integrate','code'],
+    answer: '💻 **Verdis API**\n\n**JSON-RPC (Ethereum-compatible):**\n• Endpoint: `https://rpc.verdischain.com`\n• Chain ID: 909\n• 25 RPC methods (eth_blockNumber, eth_getBalance, etc.)\n\n**REST API (50+ endpoints):**\n• `/api/blockchain/info` — Chain stats\n• `/api/blockchain/blocks` — Block explorer\n• `/api/dex/pools` — DEX data\n• `/api/eco/impact` — Eco metrics\n• `/api/security/audit` — Security status\n• `/api/network/info` — Network info\n\nFull interactive docs at `/docs` page.',
+    links: ['Open API Docs', 'View Endpoints', 'Network Info']
+  },
+  governance: {
+    keywords: ['governance','vote','proposal','dao','community','decision','treasury'],
+    answer: '🗳️ **Verdis Governance**\n\nVerdis features on-chain governance:\n\n• **Proposals** — Any VRS holder can submit\n• **Voting** — 1 VRS = 1 vote\n• **Quorum** — Minimum participation required\n• **Execution** — Passed proposals execute on-chain\n\nGovernance covers:\n• Protocol parameter changes\n• Validator slashing decisions\n• Carbon offset fund allocation\n• Reforestation project approval\n\nAccess via Dashboard → Governance tab.',
+    links: ['Open Governance', 'View Proposals', 'Create Proposal']
+  }
+};
+
+const AI_SUGGESTIONS = ['What is Verdis?', 'How to buy VRS?', 'Explain the DEX', 'Eco features', 'How to deploy a contract?', 'Security model'];
+const AI_GREETING = "🌿 Hi! I'm the Verdis AI Assistant. I can help you with:\n\n• Blockchain & network info\n• DEX & trading\n• Smart contracts & VM\n• Eco features & carbon credits\n• Wallet setup\n• Token sale & staking\n• Security & API\n\nWhat would you like to know?";
+
+let aiOpen = false;
+let aiHistory = [];
+
+function aiToggle() {
+  aiOpen = !aiOpen;
+  const panel = document.getElementById('aiPanel');
+  const fab = document.getElementById('aiFab');
+  if (aiOpen) {
+    panel.classList.add('open');
+    fab.style.transform = 'scale(0.85)';
+    document.getElementById('aiBadge').classList.remove('show');
+    setTimeout(() => document.getElementById('aiInput').focus(), 300);
+    if (aiHistory.length === 0) {
+      aiAddMessage('bot', AI_GREETING);
+      aiRenderSuggestions();
+    }
+  } else {
+    panel.classList.remove('open');
+    fab.style.transform = '';
+  }
+}
+
+function aiAddMessage(sender, text) {
+  const messages = document.getElementById('aiMessages');
+  const msg = document.createElement('div');
+  msg.className = 'ai-msg ' + sender;
+  
+  // Format markdown-like syntax
+  let formatted = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#3fb950">$1</strong>')
+    .replace(/\n/g, '<br>');
+  msg.innerHTML = formatted;
+  
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+  aiHistory.push({ sender, text });
+}
+
+function aiAddMessageWithLinks(sender, text, links) {
+  const messages = document.getElementById('aiMessages');
+  const msg = document.createElement('div');
+  msg.className = 'ai-msg ' + sender;
+  
+  let formatted = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#3fb950">$1</strong>')
+    .replace(/\n/g, '<br>');
+  
+  if (links && links.length > 0) {
+    formatted += '<div class="quick-links">';
+    links.forEach(link => {
+      formatted += '<span class="quick-link" onclick="aiHandleLink(\'' + link.replace(/'/g, "\\\\'") + '\')">' + link + '</span>';
+    });
+    formatted += '</div>';
+  }
+  
+  msg.innerHTML = formatted;
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+  aiHistory.push({ sender, text });
+}
+
+function aiRenderSuggestions() {
+  const container = document.getElementById('aiSuggestions');
+  container.innerHTML = AI_SUGGESTIONS.map(s => 
+    '<span class="ai-suggestion" onclick="aiQuickAsk(\'' + s.replace(/'/g, "\\\\'") + '\')">' + s + '</span>'
+  ).join('');
+}
+
+function aiQuickAsk(question) {
+  document.getElementById('aiInput').value = question;
+  aiSend();
+}
+
+function aiSend() {
+  const input = document.getElementById('aiInput');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  aiAddMessage('user', text);
+  input.value = '';
+  
+  // Clear suggestions
+  document.getElementById('aiSuggestions').innerHTML = '';
+  
+  // Show typing indicator
+  const messages = document.getElementById('aiMessages');
+  const typing = document.createElement('div');
+  typing.className = 'ai-typing';
+  typing.id = 'aiTyping';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  messages.appendChild(typing);
+  messages.scrollTop = messages.scrollHeight;
+  
+  // Simulate AI thinking time
+  setTimeout(() => {
+    typing.remove();
+    const response = aiGetAnswer(text);
+    aiAddMessageWithLinks('bot', response.answer, response.links);
+  }, 600 + Math.random() * 400);
+}
+
+function aiGetAnswer(query) {
+  const lower = query.toLowerCase();
+  let bestMatch = null;
+  let bestScore = 0;
+  
+  for (const [key, entry] of Object.entries(AI_KNOWLEDGE_BASE)) {
+    let score = 0;
+    for (const keyword of entry.keywords) {
+      if (lower.includes(keyword)) {
+        score += keyword.length;
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = entry;
+    }
+  }
+  
+  if (bestMatch && bestScore > 0) {
+    return { answer: bestMatch.answer, links: bestMatch.links || [] };
+  }
+  
+  // Fallback
+  return {
+    answer: "I'm not sure about that yet! Here are some things I can help with:\n\n• **Blockchain** — What is Verdis? Network stats?\n• **DEX** — How to trade, liquidity pools\n• **Eco** — Carbon credits, trees, green validators\n• **Contracts** — How to deploy, templates\n• **Wallet** — How to create/import a wallet\n• **Token Sale** — How to buy VRS\n• **Staking** — How to earn rewards\n• **Security** — How safe is Verdis?\n• **API** — RPC endpoints, developer docs\n\nTry asking about any of these topics!",
+    links: ['What is Verdis?', 'How to buy VRS?', 'Eco features']
+  };
+}
+
+function aiHandleLink(link) {
+  const linkMap = {
+    'View Dashboard': '/dashboard',
+    'Open DEX': '/dashboard#dex',
+    'Open Contracts': '/dashboard#contracts',
+    'Open Wallet': '/dashboard#wallet',
+    'Open Token Sale': '/dashboard#sale',
+    'Open Staking': '/dashboard#staking',
+    'Open Governance': '/dashboard#governance',
+    'Read Whitepaper': '/whitepaper',
+    'Download PDF': '/whitepaper.pdf',
+    'Open API Docs': '/docs',
+    'View Eco Dashboard': '/dashboard#eco',
+    'Network Info': '/api/network/info',
+    'See Validators': '/dashboard#validators',
+    'Check Block Height': '/dashboard',
+    'View Pool Stats': '/dashboard#dex',
+    'Add Liquidity': '/dashboard#dex',
+    'See Carbon Stats': '/dashboard#eco',
+    'Tree Planting Log': '/dashboard#eco',
+    'Read VM Docs': '/docs',
+    'View Templates': '/dashboard#contracts',
+    'Create New': '/dashboard#wallet',
+    'Import Existing': '/dashboard#wallet',
+    'View Pricing': '/dashboard#sale',
+    'Delegate Now': '/dashboard#staking',
+    'View Validators': '/dashboard#validators',
+    'View Security Audit': '/dashboard#security',
+    'Security Events': '/dashboard#security',
+    'Executive Summary': '/whitepaper',
+    'View Endpoints': '/docs',
+    'View Proposals': '/dashboard#governance',
+    'Create Proposal': '/dashboard#governance',
+    'Join Telegram': 'https://t.me/verdischain',
+    'Follow Twitter': 'https://x.com/Verdischain'
+  };
+  
+  const url = linkMap[link];
+  if (url) {
+    if (url.startsWith('http')) {
+      window.open(url, '_blank');
+    } else {
+      window.location.href = url;
+    }
+  }
+}
+
+// Show badge after 3 seconds if user hasn't opened
+setTimeout(() => {
+  if (!aiOpen) {
+    document.getElementById('aiBadge').classList.add('show');
+  }
+}, 3000);
+
+// === Live TPS via WebSocket ===
+let wsReconnectTimer = null;
+function connectWebSocket() {
+  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + '/ws';
+  let ws;
+  try {
+    ws = new WebSocket(wsUrl);
+  } catch(e) {
+    console.log('WebSocket not available, using polling');
+    pollTPS();
+    return;
+  }
+  
+  ws.onopen = () => {
+    console.log('🔌 WebSocket connected');
+    if (wsReconnectTimer) { clearInterval(wsReconnectTimer); wsReconnectTimer = null; }
+  };
+  
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.type === 'stats' || data.type === 'connected') {
+        const stats = data.stats || data;
+        if (stats.tps !== undefined) {
+          const tpsEl = document.getElementById('s-tps');
+          if (tpsEl) tpsEl.textContent = stats.tps.toFixed(1);
+        }
+        if (stats.totalTxs !== undefined) {
+          // Update if we have a total txs element
+        }
+      }
+      if (data.type === 'block') {
+        if (data.tps !== undefined) {
+          const tpsEl = document.getElementById('s-tps');
+          if (tpsEl) tpsEl.textContent = data.tps.toFixed(1);
+        }
+      }
+    } catch(e) {}
+  };
+  
+  ws.onclose = () => {
+    console.log('WebSocket disconnected, will retry in 5s');
+    if (!wsReconnectTimer) {
+      wsReconnectTimer = setInterval(() => {
+        connectWebSocket();
+      }, 5000);
+    }
+  };
+  
+  ws.onerror = () => {
+    ws.close();
+  };
+}
+
+// Fallback: Poll TPS endpoint
+function pollTPS() {
+  fetch('/api/network/tps').then(r => r.json()).then(d => {
+    const tpsEl = document.getElementById('s-tps');
+    if (tpsEl && d.tps !== undefined) tpsEl.textContent = d.tps.toFixed(1);
+  }).catch(() => {});
+}
+
+// Connect WebSocket on load
+connectWebSocket();
+// Also poll as backup every 10s
+setInterval(pollTPS, 10000);
+
+</script>
+</body>
+</html>

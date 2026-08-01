@@ -1,0 +1,3022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis Ecosystem — Carbon-Negative DApps, DeFi & Eco Protocols</title>
+<meta name="description" content="Explore the Verdis Blockchain ecosystem: Green DEX with 6 liquidity pools, Carbon Credit Market, Reforestation Ledger, Green Validator Program, Smart Contract Studio, Governance DAO, NFT Minter, and Launchpad.">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+
+<style>
+/* ==========================================================================
+   VERDIS ECOSYSTEM — STYLESHEET
+   Web3 Native Cyberpunk / Eco Theme
+   ========================================================================== */
+
+:root {
+  --bg: #0a0e0a;
+  --bg-card: rgba(15, 23, 18, 0.75);
+  --bg-card-hover: rgba(22, 36, 27, 0.9);
+  --bg-darker: #060906;
+  --green: #00ff88;
+  --green-glow: rgba(0, 255, 136, 0.35);
+  --green-dim: rgba(0, 255, 136, 0.12);
+  --green-muted: #134e2a;
+  --teal: #2dd4bf;
+  --teal-glow: rgba(45, 212, 191, 0.35);
+  --teal-dim: rgba(45, 212, 191, 0.12);
+  --mint: #6ee7b7;
+  --text: #e6f5ec;
+  --text-muted: #8ca395;
+  --text-dim: #4a6353;
+  --border: rgba(0, 255, 136, 0.2);
+  --border-bright: rgba(0, 255, 136, 0.6);
+  --border-teal: rgba(45, 212, 191, 0.3);
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', Consolas, monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+}
+
+body {
+  overflow-x: hidden;
+  min-height: 100vh;
+  position: relative;
+  line-height: 1.6;
+}
+
+/* === Particle Canvas === */
+#particleCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* === Scanline Overlay === */
+.scanlines {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 90;
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0) 50%,
+    rgba(0, 0, 0, 0.18) 50%,
+    rgba(0, 0, 0, 0.18)
+  );
+  background-size: 100% 4px;
+  opacity: 0.6;
+}
+
+.scanlines::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: rgba(18, 16, 16, 0);
+  opacity: 0;
+  pointer-events: none;
+  animation: scanline 8s linear infinite;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+/* === Container & Layout === */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 2;
+}
+
+/* === Terminal Header Badges === */
+.terminal-tag {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--green);
+  background: var(--green-dim);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.terminal-tag .blink {
+  width: 6px;
+  height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* === Navigation === */
+nav {
+  position: fixed;
+  top: 0; left: 0; width: 100%;
+  z-index: 100;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(10, 14, 10, 0.85);
+  border-bottom: 1px solid var(--border);
+  transition: all .3s ease;
+}
+
+nav.scrolled {
+  background: rgba(6, 9, 6, 0.95);
+  border-bottom-color: var(--green);
+  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.15);
+}
+
+.nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+  text-decoration: none;
+  letter-spacing: -0.5px;
+}
+
+.nav-logo span.green {
+  color: var(--green);
+  text-shadow: 0 0 10px var(--green-glow);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green-glow);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-nav {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  font-weight: 600;
+}
+
+.btn-nav-outline {
+  background: rgba(0, 255, 136, 0.05);
+  color: var(--green);
+  border: 1px solid var(--border);
+}
+
+.btn-nav-outline:hover {
+  background: var(--green-dim);
+  border-color: var(--green);
+  box-shadow: 0 0 12px var(--green-glow);
+  color: #fff;
+}
+
+.btn-nav-primary {
+  background: linear-gradient(135deg, var(--green) 0%, var(--teal) 100%);
+  color: #04120a;
+  box-shadow: 0 0 15px var(--green-glow);
+}
+
+.btn-nav-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 25px var(--green-glow);
+}
+
+/* === Section Headings & Common Styling === */
+.section-header {
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin-top: 6px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-subtitle {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  max-width: 720px;
+}
+
+/* === Glitch Text Effect === */
+.glitch-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.glitch {
+  font-size: 3.5rem;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #fff;
+  position: relative;
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #ffffff 0%, var(--green) 50%, var(--teal) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: var(--bg);
+}
+
+.glitch::before {
+  left: 2px;
+  text-shadow: -2px 0 var(--teal);
+  clip: rect(24px, 550px, 90px, 0);
+  animation: glitch-anim-1 3s infinite linear alternate-reverse;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glitch::after {
+  left: -2px;
+  text-shadow: -2px 0 var(--green);
+  clip: rect(85px, 550px, 140px, 0);
+  animation: glitch-anim-2 2.5s infinite linear alternate-reverse;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes glitch-anim-1 {
+  0% { clip: rect(10px, 9999px, 40px, 0); }
+  20% { clip: rect(80px, 9999px, 100px, 0); }
+  40% { clip: rect(30px, 9999px, 60px, 0); }
+  60% { clip: rect(90px, 9999px, 120px, 0); }
+  80% { clip: rect(15px, 9999px, 55px, 0); }
+  100% { clip: rect(70px, 9999px, 95px, 0); }
+}
+
+@keyframes glitch-anim-2 {
+  0% { clip: rect(65px, 9999px, 100px, 0); }
+  25% { clip: rect(15px, 9999px, 45px, 0); }
+  50% { clip: rect(85px, 9999px, 110px, 0); }
+  75% { clip: rect(25px, 9999px, 70px, 0); }
+  100% { clip: rect(40px, 9999px, 80px, 0); }
+}
+
+/* === Hero Section === */
+.hero {
+  padding-top: 150px;
+  padding-bottom: 80px;
+  position: relative;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+.hero-content {
+  max-width: 860px;
+}
+
+.hero-description {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  margin-top: 20px;
+  margin-bottom: 36px;
+  line-height: 1.7;
+}
+
+.hero-stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 36px;
+  margin-bottom: 40px;
+}
+
+.hero-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.hero-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 3px; height: 100%;
+  background: linear-gradient(to bottom, var(--green), var(--teal));
+}
+
+.hero-stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.hero-stat-value {
+  font-family: var(--font-mono);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-stat-value .unit {
+  font-size: 0.9rem;
+  color: var(--green);
+}
+
+/* === Search & Filter Bar === */
+.search-filter-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-bright);
+  border-radius: 12px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 0 25px rgba(0, 255, 136, 0.1);
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.search-icon {
+  font-family: var(--font-mono);
+  color: var(--green);
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.search-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  width: 100%;
+  padding: 10px 0;
+}
+
+.search-input::placeholder {
+  color: var(--text-dim);
+}
+
+.search-count {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--teal);
+  background: var(--teal-dim);
+  padding: 6px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  border: 1px solid var(--border-teal);
+}
+
+/* === Category Grid === */
+.category-section {
+  padding: 40px 0 60px 0;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.category-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.category-card:hover, .category-card.active {
+  background: var(--bg-card-hover);
+  border-color: var(--green);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 255, 136, 0.15);
+}
+
+.category-card.active {
+  border-width: 2px;
+  background: rgba(0, 255, 136, 0.08);
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.category-icon {
+  font-size: 1.75rem;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green-dim);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.category-count {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--green);
+  background: var(--green-dim);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.category-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.category-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Category Filter Pills (Mobile / Quick Filter Bar) */
+.category-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.cat-pill {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 8px 16px;
+  border-radius: 30px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cat-pill:hover, .cat-pill.active {
+  color: #fff;
+  background: var(--green-dim);
+  border-color: var(--green);
+  box-shadow: 0 0 12px var(--green-glow);
+}
+
+/* === Featured Projects Cards Section === */
+.projects-section {
+  padding: 40px 0 80px 0;
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 24px;
+}
+
+.project-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+}
+
+.project-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--green), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--green);
+  box-shadow: 0 12px 32px rgba(0, 255, 136, 0.2);
+}
+
+.project-card:hover::before {
+  opacity: 1;
+}
+
+.project-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.project-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.project-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(45, 212, 191, 0.2));
+  border: 1px solid var(--border-bright);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: inset 0 0 10px var(--green-glow);
+}
+
+.project-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.project-category-tag {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--teal);
+}
+
+.project-status {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.status-live {
+  background: rgba(0, 255, 136, 0.15);
+  color: var(--green);
+  border: 1px solid var(--border);
+}
+
+.status-beta {
+  background: rgba(45, 212, 191, 0.15);
+  color: var(--teal);
+  border: 1px solid var(--border-teal);
+}
+
+.status-upcoming {
+  background: rgba(255, 208, 0, 0.15);
+  color: #ffd000;
+  border: 1px solid rgba(255, 208, 0, 0.3);
+}
+
+.project-desc {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  margin-bottom: 20px;
+  line-height: 1.55;
+  flex-grow: 1;
+}
+
+/* Key Project Metrics Box inside Card */
+.project-metrics-box {
+  background: rgba(6, 12, 8, 0.7);
+  border: 1px solid rgba(0, 255, 136, 0.15);
+  border-radius: 8px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.p-metric-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.p-metric-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.p-metric-val {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--green);
+}
+
+/* Project Tech Tags */
+.project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.p-tag {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.project-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-card {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 8px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 600;
+  flex: 1;
+  border: none;
+}
+
+.btn-card-primary {
+  background: var(--green-dim);
+  color: var(--green);
+  border: 1px solid var(--border);
+}
+
+.btn-card-primary:hover {
+  background: var(--green);
+  color: #04120a;
+  box-shadow: 0 0 15px var(--green-glow);
+}
+
+.btn-card-secondary {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-card-secondary:hover {
+  color: #fff;
+  border-color: var(--border-bright);
+}
+
+/* Special 6-Pool Box for Verdis DEX Card */
+.dex-pools-mini {
+  background: rgba(0, 255, 136, 0.03);
+  border: 1px solid rgba(0, 255, 136, 0.15);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 16px;
+}
+
+.dex-pools-title {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--green);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dex-pools-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.dex-pool-chip {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 255, 136, 0.1);
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-align: center;
+  color: var(--text);
+}
+
+/* === Live Network Stats Section === */
+.live-stats-section {
+  padding: 80px 0;
+  position: relative;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 255, 136, 0.02) 50%, transparent 100%);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.stat-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.stat-box:hover {
+  border-color: var(--green);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 255, 136, 0.15);
+}
+
+.stat-box-corner {
+  position: absolute;
+  top: 0; right: 0;
+  width: 24px; height: 24px;
+  border-top: 2px solid var(--green);
+  border-right: 2px solid var(--green);
+}
+
+.stat-box-title {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stat-box-value {
+  font-family: var(--font-mono);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--green);
+  text-shadow: 0 0 12px var(--green-glow);
+  word-break: break-word;
+}
+
+.stat-box-sub {
+  font-size: 0.75rem;
+  color: var(--teal);
+  margin-top: 6px;
+}
+
+.refresh-oracle-btn {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 8px 16px;
+  background: var(--teal-dim);
+  color: var(--teal);
+  border: 1px solid var(--border-teal);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.refresh-oracle-btn:hover {
+  background: var(--teal);
+  color: #04120a;
+  box-shadow: 0 0 15px var(--teal-glow);
+}
+
+/* === Developer Resources Section === */
+.dev-section {
+  padding: 80px 0;
+}
+
+.dev-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.dev-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+}
+
+.dev-card:hover {
+  border-color: var(--teal);
+  box-shadow: 0 8px 24px rgba(45, 212, 191, 0.15);
+  transform: translateY(-4px);
+}
+
+.dev-card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dev-card-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.code-snippet-box {
+  background: #040704;
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--green);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow-x: auto;
+}
+
+.code-snippet-box code {
+  white-space: nowrap;
+}
+
+.copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: color 0.2s ease;
+}
+
+.copy-btn:hover {
+  color: var(--green);
+}
+
+/* === Join CTA Section === */
+.cta-section {
+  padding: 80px 0 100px 0;
+}
+
+.cta-box {
+  background: linear-gradient(135deg, rgba(15, 23, 18, 0.95) 0%, rgba(6, 12, 8, 0.95) 100%);
+  border: 2px solid var(--border-bright);
+  border-radius: 20px;
+  padding: 60px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(0, 255, 136, 0.15);
+}
+
+.cta-box::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(0,255,136,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.cta-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+
+.cta-desc {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  max-width: 680px;
+  margin: 0 auto 36px auto;
+}
+
+.cta-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.btn-cta-lg {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.btn-cta-green {
+  background: linear-gradient(135deg, var(--green) 0%, #00cc66 100%);
+  color: #04120a;
+  box-shadow: 0 0 20px var(--green-glow);
+}
+
+.btn-cta-green:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 32px var(--green-glow);
+}
+
+.btn-cta-outline {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border: 1px solid var(--border-bright);
+}
+
+.btn-cta-outline:hover {
+  background: var(--green-dim);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+/* === Footer === */
+footer {
+  background: var(--bg-darker);
+  border-top: 1px solid var(--border);
+  padding: 60px 0 30px 0;
+  position: relative;
+  z-index: 2;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr repeat(3, 1fr);
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.footer-logo {
+  font-family: var(--font-mono);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-desc {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  max-width: 320px;
+}
+
+.social-links {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.social-link {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--green);
+  background: var(--green-dim);
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.social-link:hover {
+  background: var(--green);
+  color: #04120a;
+  box-shadow: 0 0 15px var(--green-glow);
+}
+
+.footer-col-title {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+}
+
+.footer-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: var(--green);
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* === Scroll Reveals === */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* === Modal Styling === */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(4, 8, 5, 0.85);
+  backdrop-filter: blur(12px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border-bright);
+  border-radius: 16px;
+  max-width: 680px;
+  width: 100%;
+  padding: 32px;
+  position: relative;
+  box-shadow: 0 0 40px rgba(0, 255, 136, 0.25);
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-overlay.active .modal-content {
+  transform: scale(1);
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px; right: 20px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+  color: var(--green);
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+/* Responsive Styles */
+@media (max-width: 992px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
+  .glitch {
+    font-size: 2.5rem;
+  }
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+  .cta-title {
+    font-size: 1.8rem;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- Particle Background Canvas -->
+<canvas id="particleCanvas"></canvas>
+
+<!-- Scanline Overlay -->
+<div class="scanlines"></div>
+
+<!-- Navigation Bar -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <a href="landing.html" class="nav-logo">
+      <span>🌿 VERDIS</span>
+      <span class="green">[ECOSYSTEM]</span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="landing.html">Landing</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="ecosystem.html" class="active">Ecosystem</a></li>
+      <li><a href="whitepaper.html">Whitepaper</a></li>
+      <li><a href="api-docs.html">API Docs</a></li>
+      <li><a href="ai-support.html">AI Support</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <a href="add-network.html" class="btn-nav btn-nav-outline">+ Add Network (909)</a>
+      <button onclick="openSubmitModal()" class="btn-nav btn-nav-primary">Submit DApp</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Container -->
+<main class="container">
+
+  <!-- HERO SECTION -->
+  <section class="hero scroll-reveal">
+    <div class="terminal-tag">
+      <span class="blink"></span> [SYS.ECO_STATUS: ONLINE] &bull; [VERDIS_CHAIN: 909]
+    </div>
+
+    <div class="hero-grid">
+      <div class="hero-content">
+        <div class="glitch-wrapper">
+          <h1 class="glitch" data-text="The Verdis Ecosystem">The Verdis Ecosystem</h1>
+        </div>
+        <p class="hero-description">
+          The premier hub for carbon-negative Web3 protocols, green DeFi applications, satellite-verified reforestation ledgers, and zero-carbon NFT suites powered by Verdis Chain 909.
+        </p>
+
+        <!-- Live Hero Stats Ticker -->
+        <div class="hero-stats-bar">
+          <div class="hero-stat-card">
+            <div class="hero-stat-label">Total Eco TVL</div>
+            <div class="hero-stat-value">$148.5<span class="unit">M</span></div>
+          </div>
+          <div class="hero-stat-card">
+            <div class="hero-stat-label">CO₂ Offset</div>
+            <div class="hero-stat-value">12.4<span class="unit">k Tons</span></div>
+          </div>
+          <div class="hero-stat-card">
+            <div class="hero-stat-label">Active DApps</div>
+            <div class="hero-stat-value">34<span class="unit">Live</span></div>
+          </div>
+          <div class="hero-stat-card">
+            <div class="hero-stat-label">Green Pool APY</div>
+            <div class="hero-stat-value">28.4<span class="unit">%</span></div>
+          </div>
+        </div>
+
+        <!-- Search & Filter Bar -->
+        <div class="search-filter-box">
+          <span class="search-icon">$</span>
+          <input type="text" id="projectSearchInput" class="search-input" placeholder="Search ecosystem projects by name, token, tech stack or category..." oninput="filterProjects()">
+          <span class="search-count" id="searchCountBadge">Showing 8 of 8 Projects</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATEGORY GRID SECTION -->
+  <section class="category-section scroll-reveal">
+    <div class="section-header">
+      <div class="terminal-tag">// CATEGORY_EXPLORER</div>
+      <h2 class="section-title">Explore by Category</h2>
+      <p class="section-subtitle">Select a category to filter protocols and smart contracts built on Verdis.</p>
+    </div>
+
+    <!-- Category Pills Quick Bar -->
+    <div class="category-pills" id="categoryPills">
+      <button class="cat-pill active" onclick="selectCategory('All')">🌿 All Categories</button>
+      <button class="cat-pill" onclick="selectCategory('DeFi')">📈 DeFi</button>
+      <button class="cat-pill" onclick="selectCategory('Eco/Climate')">🌱 Eco/Climate</button>
+      <button class="cat-pill" onclick="selectCategory('Smart Contracts')">⚡ Smart Contracts</button>
+      <button class="cat-pill" onclick="selectCategory('Wallet')">💳 Wallet</button>
+      <button class="cat-pill" onclick="selectCategory('Governance')">🏛️ Governance</button>
+      <button class="cat-pill" onclick="selectCategory('NFT')">🎨 NFT</button>
+      <button class="cat-pill" onclick="selectCategory('Infrastructure')">🌐 Infrastructure</button>
+      <button class="cat-pill" onclick="selectCategory('Developer Tools')">🛠️ Developer Tools</button>
+    </div>
+
+    <!-- Full Category Cards Grid -->
+    <div class="category-grid">
+      <div class="category-card" onclick="selectCategory('DeFi')">
+        <div class="category-header">
+          <div class="category-icon">📈</div>
+          <span class="category-count">2 Projects</span>
+        </div>
+        <div class="category-name">DeFi</div>
+        <div class="category-desc">Green liquidity AMM, yield aggregators, carbon credit trading pools, and DEX protocols.</div>
+      </div>
+
+      <div class="category-card" onclick="selectCategory('Eco/Climate')">
+        <div class="category-header">
+          <div class="category-icon">🌱</div>
+          <span class="category-count">2 Projects</span>
+        </div>
+        <div class="category-name">Eco/Climate</div>
+        <div class="category-desc">On-chain carbon offset verification, satellite tree tracking, and ecological registries.</div>
+      </div>
+
+      <div class="category-card" onclick="selectCategory('Smart Contracts')">
+        <div class="category-header">
+          <div class="category-icon">⚡</div>
+          <span class="category-count">1 Project</span>
+        </div>
+        <div class="category-name">Smart Contracts</div>
+        <div class="category-desc">Eco-aware smart contract execution engines, carbon-calculated gas models, and formal verification.</div>
+      </div>
+
+      <div class="category-card" onclick="selectCategory('Wallet')">
+        <div class="category-header">
+          <div class="category-icon">💳</div>
+          <span class="category-count">1 Project</span>
+        </div>
+        <div class="category-name">Wallet</div>
+        <div class="category-desc">Non-custodial green crypto wallets with native carbon footprint telemetry and auto-offsetting.</div>
+      </div>
+
+      <div class="category-card" onclick="selectCategory('Governance')">
+        <div class="category-header">
+          <div class="category-icon">🏛️</div>
+          <span class="category-count">1 Project</span>
+        </div>
+        <div class="category-name">Governance</div>
+        <div class="category-desc">Decentralized treasury allocation, green validator scoring DAO, and voting protocols.</div>
+      </div>
+
+      <div class="category-card" onclick="selectCategory('NFT')">
+        <div class="category-header">
+          <div class="category-icon">🎨</div>
+          <span class="category-count">1 Project</span>
+        </div>
+        <div class="category-name">NFT</div>
+        <div class="category-desc">Zero-emission NFT launchpads, dynamic environmental metadata, and digital collectibles.</div>
+      </div>
+
+      <div class="category-card" onclick="selectCategory('Infrastructure')">
+        <div class="category-header">
+          <div class="category-icon">🌐</div>
+          <span class="category-count">1 Project</span>
+        </div>
+        <div class="category-name">Infrastructure</div>
+        <div class="category-desc">Solar-powered validator nodes, JSON-RPC relays, cross-chain bridges, and indexers.</div>
+      </div>
+
+      <div class="category-card" onclick="selectCategory('Developer Tools')">
+        <div class="category-header">
+          <div class="category-icon">🛠️</div>
+          <span class="category-count">1 Project</span>
+        </div>
+        <div class="category-name">Developer Tools</div>
+        <div class="category-desc">Browser IDEs, CLI tools, smart contract templates, and TypeScript SDKs.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURED PROJECTS CARDS SECTION -->
+  <section class="projects-section scroll-reveal" id="projects">
+    <div class="section-header">
+      <div class="terminal-tag">// FEATURED_DEPLOYMENTS</div>
+      <h2 class="section-title">Featured Projects</h2>
+      <p class="section-subtitle">Core dApps and protocols active on the Verdis mainnet.</p>
+    </div>
+
+    <div class="projects-grid" id="projectsGrid">
+
+      <!-- PROJECT 1: VERDIS DEX -->
+      <div class="project-card" data-category="DeFi" data-name="Verdis DEX">
+        <div>
+          <div class="project-top">
+            <div class="project-brand">
+              <div class="project-avatar">🔄</div>
+              <div>
+                <h3 class="project-title">Verdis DEX</h3>
+                <span class="project-category-tag">[DeFi // AMM]</span>
+              </div>
+            </div>
+            <span class="project-status status-live">MAINNET LIVE</span>
+          </div>
+
+          <p class="project-desc">
+            Decentralized exchange with carbon-negative automated market maker pools and 0.15% eco-fee burn.
+          </p>
+
+          <!-- 6 Liquidity Pools Highlight -->
+          <div class="dex-pools-mini">
+            <div class="dex-pools-title">
+              <span>6 ACTIVE LIQUIDITY POOLS</span>
+              <span>28.4% MAX APR</span>
+            </div>
+            <div class="dex-pools-grid">
+              <div class="dex-pool-chip">VRS/USDT</div>
+              <div class="dex-pool-chip">VRS/CARBON</div>
+              <div class="dex-pool-chip">VRS/TREE</div>
+              <div class="dex-pool-chip">VRS/ETH</div>
+              <div class="dex-pool-chip">VRS/SOL</div>
+              <div class="dex-pool-chip">VRS/GREEN</div>
+            </div>
+          </div>
+
+          <div class="project-metrics-box">
+            <div class="p-metric-item">
+              <span class="p-metric-label">TVL</span>
+              <span class="p-metric-val">$42.8M</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">24H VOL</span>
+              <span class="p-metric-val">$8.4M</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">ECO FEE</span>
+              <span class="p-metric-val">0.15%</span>
+            </div>
+          </div>
+
+          <div class="project-tags">
+            <span class="p-tag">AMM</span>
+            <span class="p-tag">Liquidity Pools</span>
+            <span class="p-tag">Chain 909</span>
+            <span class="p-tag">Solidity</span>
+          </div>
+        </div>
+
+        <div class="project-actions">
+          <button class="btn-card btn-card-primary" onclick="openProjectModal('dex')">Explore DEX & Pools</button>
+          <a href="dashboard.html" class="btn-card btn-card-secondary">Launch App ↗</a>
+        </div>
+      </div>
+
+      <!-- PROJECT 2: CARBON CREDIT MARKET -->
+      <div class="project-card" data-category="Eco/Climate" data-name="Carbon Credit Market">
+        <div>
+          <div class="project-top">
+            <div class="project-brand">
+              <div class="project-avatar">💨</div>
+              <div>
+                <h3 class="project-title">Carbon Credit Market</h3>
+                <span class="project-category-tag">[Eco/Climate // Trading]</span>
+              </div>
+            </div>
+            <span class="project-status status-live">VERIFIED</span>
+          </div>
+
+          <p class="project-desc">
+            Tokenized carbon credit registry and offset marketplace supporting auto-retirement and verified CO₂ provenance.
+          </p>
+
+          <div class="project-metrics-box">
+            <div class="p-metric-item">
+              <span class="p-metric-label">RETIRED</span>
+              <span class="p-metric-val">12.4k t</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">PRICE/TON</span>
+              <span class="p-metric-val">$18.50</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">VERIFIED</span>
+              <span class="p-metric-val">100%</span>
+            </div>
+          </div>
+
+          <div class="project-tags">
+            <span class="p-tag">ERC-1155</span>
+            <span class="p-tag">Carbon Oracle</span>
+            <span class="p-tag">Auto-Retire</span>
+          </div>
+        </div>
+
+        <div class="project-actions">
+          <button class="btn-card btn-card-primary" onclick="openProjectModal('carbon')">View Credits</button>
+          <a href="dashboard.html" class="btn-card btn-card-secondary">Trade Offset ↗</a>
+        </div>
+      </div>
+
+      <!-- PROJECT 3: REFORESTATION LEDGER -->
+      <div class="project-card" data-category="Eco/Climate" data-name="Reforestation Ledger">
+        <div>
+          <div class="project-top">
+            <div class="project-brand">
+              <div class="project-avatar">🌲</div>
+              <div>
+                <h3 class="project-title">Reforestation Ledger</h3>
+                <span class="project-category-tag">[Eco/Climate // GIS]</span>
+              </div>
+            </div>
+            <span class="project-status status-live">LIVE</span>
+          </div>
+
+          <p class="project-desc">
+            Satellite GIS-integrated ledger tracking tree planting, forest growth metrics, and land restoration data worldwide.
+          </p>
+
+          <div class="project-metrics-box">
+            <div class="p-metric-item">
+              <span class="p-metric-label">TREES</span>
+              <span class="p-metric-val">185,000</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">SITES</span>
+              <span class="p-metric-val">14 Global</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">SATELLITE</span>
+              <span class="p-metric-val">Sentinel-2</span>
+            </div>
+          </div>
+
+          <div class="project-tags">
+            <span class="p-tag">GIS Oracles</span>
+            <span class="p-tag">GeoJSON</span>
+            <span class="p-tag">Proof-of-Planting</span>
+          </div>
+        </div>
+
+        <div class="project-actions">
+          <button class="btn-card btn-card-primary" onclick="openProjectModal('reforest')">View Global Map</button>
+          <a href="dashboard.html" class="btn-card btn-card-secondary">Verify Site ↗</a>
+        </div>
+      </div>
+
+      <!-- PROJECT 4: GREEN VALIDATOR PROGRAM -->
+      <div class="project-card" data-category="Infrastructure" data-name="Green Validator Program">
+        <div>
+          <div class="project-top">
+            <div class="project-brand">
+              <div class="project-avatar">☀️</div>
+              <div>
+                <h3 class="project-title">Green Validator Program</h3>
+                <span class="project-category-tag">[Infrastructure // PoS]</span>
+              </div>
+            </div>
+            <span class="project-status status-live">ACTIVE</span>
+          </div>
+
+          <p class="project-desc">
+            Proof-of-Green-Stake consensus network certifying 100% renewable solar and wind power usage for node operators.
+          </p>
+
+          <div class="project-metrics-box">
+            <div class="p-metric-item">
+              <span class="p-metric-label">NODES</span>
+              <span class="p-metric-val">27 Active</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">RENEWABLE</span>
+              <span class="p-metric-val">100%</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">APY</span>
+              <span class="p-metric-val">14.2%</span>
+            </div>
+          </div>
+
+          <div class="project-tags">
+            <span class="p-tag">DPoS</span>
+            <span class="p-tag">Solar Audit</span>
+            <span class="p-tag">Node Registry</span>
+          </div>
+        </div>
+
+        <div class="project-actions">
+          <button class="btn-card btn-card-primary" onclick="openProjectModal('validator')">Validator Specs</button>
+          <a href="add-network.html" class="btn-card btn-card-secondary">Stake VRS ↗</a>
+        </div>
+      </div>
+
+      <!-- PROJECT 5: SMART CONTRACT STUDIO -->
+      <div class="project-card" data-category="Developer Tools" data-name="Smart Contract Studio">
+        <div>
+          <div class="project-top">
+            <div class="project-brand">
+              <div class="project-avatar">💻</div>
+              <div>
+                <h3 class="project-title">Smart Contract Studio</h3>
+                <span class="project-category-tag">[Dev Tools // IDE]</span>
+              </div>
+            </div>
+            <span class="project-status status-beta">BETA</span>
+          </div>
+
+          <p class="project-desc">
+            Web IDE for compiling, testing, and deploying eco-aware smart contracts with real-time carbon cost analysis.
+          </p>
+
+          <div class="project-metrics-box">
+            <div class="p-metric-item">
+              <span class="p-metric-label">DEPLOYS</span>
+              <span class="p-metric-val">1,200+</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">COMPILE</span>
+              <span class="p-metric-val">&lt;0.4s</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">OFFSET</span>
+              <span class="p-metric-val">Auto</span>
+            </div>
+          </div>
+
+          <div class="project-tags">
+            <span class="p-tag">Solidity</span>
+            <span class="p-tag">Wasm</span>
+            <span class="p-tag">Gas Calculator</span>
+          </div>
+        </div>
+
+        <div class="project-actions">
+          <button class="btn-card btn-card-primary" onclick="openProjectModal('studio')">Open Studio Demo</button>
+          <a href="api-docs.html" class="btn-card btn-card-secondary">Read Docs ↗</a>
+        </div>
+      </div>
+
+      <!-- PROJECT 6: GOVERNANCE DAO -->
+      <div class="project-card" data-category="Governance" data-name="Governance DAO">
+        <div>
+          <div class="project-top">
+            <div class="project-brand">
+              <div class="project-avatar">🏛️</div>
+              <div>
+                <h3 class="project-title">Governance DAO</h3>
+                <span class="project-category-tag">[Governance // Treasury]</span>
+              </div>
+            </div>
+            <span class="project-status status-live">GOVERNING</span>
+          </div>
+
+          <p class="project-desc">
+            On-chain voting protocol for allocating treasury funds toward eco-grants, validator scoring, and network upgrades.
+          </p>
+
+          <div class="project-metrics-box">
+            <div class="p-metric-item">
+              <span class="p-metric-label">TREASURY</span>
+              <span class="p-metric-val">$12.5M</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">PROPOSALS</span>
+              <span class="p-metric-val">48 Passed</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">VOTERS</span>
+              <span class="p-metric-val">89.4%</span>
+            </div>
+          </div>
+
+          <div class="project-tags">
+            <span class="p-tag">Quad-Voting</span>
+            <span class="p-tag">Timelock</span>
+            <span class="p-tag">Eco-Grants</span>
+          </div>
+        </div>
+
+        <div class="project-actions">
+          <button class="btn-card btn-card-primary" onclick="openProjectModal('dao')">Active Proposals</button>
+          <a href="whitepaper.html" class="btn-card btn-card-secondary">DAO Rules ↗</a>
+        </div>
+      </div>
+
+      <!-- PROJECT 7: NFT MINTER -->
+      <div class="project-card" data-category="NFT" data-name="NFT Minter">
+        <div>
+          <div class="project-top">
+            <div class="project-brand">
+              <div class="project-avatar">🎨</div>
+              <div>
+                <h3 class="project-title">NFT Minter</h3>
+                <span class="project-category-tag">[NFT // Impact]</span>
+              </div>
+            </div>
+            <span class="project-status status-live">LIVE</span>
+          </div>
+
+          <p class="project-desc">
+            Zero-emission NFT launchpad and minting engine tying digital art to verified physical reforestation trees.
+          </p>
+
+          <div class="project-metrics-box">
+            <div class="p-metric-item">
+              <span class="p-metric-label">MINTED</span>
+              <span class="p-metric-val">45,000</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">ENERGY</span>
+              <span class="p-metric-val">0.0001 kWh</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">METADATA</span>
+              <span class="p-metric-val">Dynamic</span>
+            </div>
+          </div>
+
+          <div class="project-tags">
+            <span class="p-tag">ERC-721</span>
+            <span class="p-tag">IPFS</span>
+            <span class="p-tag">Impact Certificate</span>
+          </div>
+        </div>
+
+        <div class="project-actions">
+          <button class="btn-card btn-card-primary" onclick="openProjectModal('nft')">NFT Collections</button>
+          <a href="dashboard.html" class="btn-card btn-card-secondary">Mint NFT ↗</a>
+        </div>
+      </div>
+
+      <!-- PROJECT 8: TOKEN SALE PORTAL -->
+      <div class="project-card" data-category="DeFi" data-name="Token Sale Portal">
+        <div>
+          <div class="project-top">
+            <div class="project-brand">
+              <div class="project-avatar">🚀</div>
+              <div>
+                <h3 class="project-title">Token Sale Portal</h3>
+                <span class="project-category-tag">[DeFi // Launchpad]</span>
+              </div>
+            </div>
+            <span class="project-status status-upcoming">UPCOMING IDO</span>
+          </div>
+
+          <p class="project-desc">
+            Carbon-neutral crypto launchpad providing vetted eco-project token sales with tiered VRS staking.
+          </p>
+
+          <div class="project-metrics-box">
+            <div class="p-metric-item">
+              <span class="p-metric-label">RAISED</span>
+              <span class="p-metric-val">$4.2M</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">PROJECTS</span>
+              <span class="p-metric-val">8 Launched</span>
+            </div>
+            <div class="p-metric-item">
+              <span class="p-metric-label">STAKING</span>
+              <span class="p-metric-val">Tiered</span>
+            </div>
+          </div>
+
+          <div class="project-tags">
+            <span class="p-tag">Launchpad</span>
+            <span class="p-tag">Vesting Vault</span>
+            <span class="p-tag">KYC Audited</span>
+          </div>
+        </div>
+
+        <div class="project-actions">
+          <button class="btn-card btn-card-primary" onclick="openProjectModal('portal')">Upcoming IDOs</button>
+          <a href="whitepaper.html" class="btn-card btn-card-secondary">Apply ↗</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- LIVE NETWORK STATS SECTION -->
+  <section class="live-stats-section scroll-reveal" id="liveStats">
+    <div class="section-header">
+      <div class="terminal-tag">
+        <span class="blink"></span> [REALTIME_ORACLE_FEED] &bull; [REST API: /api/blockchain/info & /api/eco/impact]
+      </div>
+      <h2 class="section-title">Live Network Metrics</h2>
+      <p class="section-subtitle">Real-time telemetry direct from Verdis blockchain nodes.</p>
+      
+      <button class="refresh-oracle-btn" onclick="fetchLiveNetworkStats()">
+        <span>🔄 Sync Live Oracles</span>
+        <span id="syncTimestamp" style="font-size:0.7rem; color:var(--text-muted);">(Just now)</span>
+      </button>
+    </div>
+
+    <div class="stats-grid">
+      <!-- Chain Height -->
+      <div class="stat-box">
+        <div class="stat-box-corner"></div>
+        <div class="stat-box-title">Chain Height <span>[HEIGHT]</span></div>
+        <div class="stat-box-value" id="s-height">12,450</div>
+        <div class="stat-box-sub">Blocks produced</div>
+      </div>
+
+      <!-- Total Transactions -->
+      <div class="stat-box">
+        <div class="stat-box-corner"></div>
+        <div class="stat-box-title">Total Transactions <span>[TX_COUNT]</span></div>
+        <div class="stat-box-value" id="s-txs">3,842,100</div>
+        <div class="stat-box-sub">Avg 0.2s finality</div>
+      </div>
+
+      <!-- Active Validators -->
+      <div class="stat-box">
+        <div class="stat-box-corner"></div>
+        <div class="stat-box-title">Active Validators <span>[NODES]</span></div>
+        <div class="stat-box-value" id="s-vals">27</div>
+        <div class="stat-box-sub">100% Solar / Renewable</div>
+      </div>
+
+      <!-- Total Supply -->
+      <div class="stat-box">
+        <div class="stat-box-corner"></div>
+        <div class="stat-box-title">Total Supply <span>[VRS]</span></div>
+        <div class="stat-box-value" id="s-supply">50,000,000,000</div>
+        <div class="stat-box-sub">Fixed cap</div>
+      </div>
+
+      <!-- CO2 Offset -->
+      <div class="stat-box">
+        <div class="stat-box-corner"></div>
+        <div class="stat-box-title">CO₂ Offset <span>[CO2_TONS]</span></div>
+        <div class="stat-box-value" id="s-co2">12,450</div>
+        <div class="stat-box-sub">Verified metric tons</div>
+      </div>
+
+      <!-- Trees Planted -->
+      <div class="stat-box">
+        <div class="stat-box-corner"></div>
+        <div class="stat-box-title">Trees Planted <span>[REFOREST]</span></div>
+        <div class="stat-box-value" id="s-trees">185,000</div>
+        <div class="stat-box-sub">GIS Satellite Tracked</div>
+      </div>
+
+      <!-- Green Validators -->
+      <div class="stat-box">
+        <div class="stat-box-corner"></div>
+        <div class="stat-box-title">Green Validators <span>[GREEN_VAL]</span></div>
+        <div class="stat-box-value" id="s-greenvals">27</div>
+        <div class="stat-box-sub">100% Green Score</div>
+      </div>
+
+      <!-- Reforestation Projects -->
+      <div class="stat-box">
+        <div class="stat-box-corner"></div>
+        <div class="stat-box-title">Reforestation Projects <span>[SITES]</span></div>
+        <div class="stat-box-value" id="s-reforest">14</div>
+        <div class="stat-box-sub">Active Global Zones</div>
+      </div>
+
+      <!-- Carbon Credits Minted / Retired -->
+      <div class="stat-box">
+        <div class="stat-box-corner"></div>
+        <div class="stat-box-title">Carbon Credits <span>[CREDITS]</span></div>
+        <div class="stat-box-value" id="s-credits">500 / 200</div>
+        <div class="stat-box-sub">Minted / Retired</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEVELOPER RESOURCES SECTION -->
+  <section class="dev-section scroll-reveal">
+    <div class="section-header">
+      <div class="terminal-tag">// BUILDER_KIT</div>
+      <h2 class="section-title">Developer Resources</h2>
+      <p class="section-subtitle">Build carbon-negative applications using standard Web3 tooling.</p>
+    </div>
+
+    <div class="dev-grid">
+      <!-- SDK -->
+      <div class="dev-card">
+        <div>
+          <h3 class="dev-card-title">📦 Verdis JS/TS SDK</h3>
+          <p class="dev-card-desc">Complete JavaScript library for interacting with wallets, smart contracts, and carbon telemetry API.</p>
+          <div class="code-snippet-box">
+            <code>npm install @verdis/sdk</code>
+            <button class="copy-btn" onclick="copyCode('npm install @verdis/sdk')">Copy</button>
+          </div>
+        </div>
+        <a href="api-docs.html" class="btn-card btn-card-primary">View SDK Reference ↗</a>
+      </div>
+
+      <!-- REST & RPC -->
+      <div class="dev-card">
+        <div>
+          <h3 class="dev-card-title">🌐 RPC & REST Endpoints</h3>
+          <p class="dev-card-desc">Ethereum-compatible JSON-RPC endpoint and 50+ REST endpoints for chain & eco metrics.</p>
+          <div class="code-snippet-box">
+            <code>https://rpc.verdischain.com</code>
+            <button class="copy-btn" onclick="copyCode('https://rpc.verdischain.com')">Copy</button>
+          </div>
+        </div>
+        <a href="api-docs.html" class="btn-card btn-card-primary">Full API Reference ↗</a>
+      </div>
+
+      <!-- Contract Templates -->
+      <div class="dev-card">
+        <div>
+          <h3 class="dev-card-title">📜 Green Smart Contracts</h3>
+          <p class="dev-card-desc">Pre-audited Solidity templates for eco-tokens, carbon credit vaults, and staking pools.</p>
+          <div class="code-snippet-box">
+            <code>git clone verdischain/templates</code>
+            <button class="copy-btn" onclick="copyCode('git clone https://github.com/verdischain/templates')">Copy</button>
+          </div>
+        </div>
+        <a href="https://github.com/verdischain" target="_blank" class="btn-card btn-card-primary">GitHub Repos ↗</a>
+      </div>
+
+      <!-- Node Setup -->
+      <div class="dev-card">
+        <div>
+          <h3 class="dev-card-title">⚙️ Validator Docker Image</h3>
+          <p class="dev-card-desc">Run a Verdis green validator node locally or on solar-powered cloud servers.</p>
+          <div class="code-snippet-box">
+            <code>docker run verdis/node:latest</code>
+            <button class="copy-btn" onclick="copyCode('docker run verdis/node:latest')">Copy</button>
+          </div>
+        </div>
+        <a href="whitepaper.html" class="btn-card btn-card-primary">Validator Guide ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- JOIN CTA SECTION -->
+  <section class="cta-section scroll-reveal">
+    <div class="cta-box">
+      <div class="terminal-tag" style="margin-bottom:20px;">[SYS//GRANT_PROGRAM_ACTIVE]</div>
+      <h2 class="cta-title">Build the Carbon-Negative Future</h2>
+      <p class="cta-desc">
+        Deploy your green dApp on Verdis Chain 909. Apply for up to $50,000 in Verdis Foundation grants, get dedicated RPC support, and feature in our global ecosystem directory.
+      </p>
+      <div class="cta-buttons">
+        <button onclick="openSubmitModal()" class="btn-cta-lg btn-cta-green">+ Apply for $50k Eco Grant</button>
+        <a href="api-docs.html" class="btn-cta-lg btn-cta-outline">Explore Developer Docs</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+
+      <div class="footer-brand">
+        <div class="footer-logo">🌿 VERDIS CHAIN</div>
+        <p class="footer-desc">
+          The world's first fully green, carbon-negative Layer-1 blockchain ecosystem powered by Proof-of-Green-Stake.
+        </p>
+
+        <!-- Social Links strictly matching prompt -->
+        <div class="social-links">
+          <a href="https://twitter.com/Verdischain" target="_blank" class="social-link">
+            <span>🐦 Twitter</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">@Verdischain</span>
+          </a>
+          <a href="https://t.me/verdischain" target="_blank" class="social-link">
+            <span>✈️ Telegram</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">@verdischain</span>
+          </a>
+          <a href="https://github.com/verdischain" target="_blank" class="social-link">
+            <span>💻 GitHub</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">verdischain</span>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Ecosystem</div>
+        <ul class="footer-links">
+          <li><a href="#projects" onclick="selectCategory('DeFi')">Verdis AMM DEX</a></li>
+          <li><a href="#projects" onclick="selectCategory('Eco/Climate')">Carbon Market</a></li>
+          <li><a href="#projects" onclick="selectCategory('Eco/Climate')">Reforestation Ledger</a></li>
+          <li><a href="#projects" onclick="selectCategory('Infrastructure')">Green Validators</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Developers</div>
+        <ul class="footer-links">
+          <li><a href="api-docs.html">API Documentation</a></li>
+          <li><a href="api-docs.html#rpc">JSON-RPC Endpoint</a></li>
+          <li><a href="https://github.com/verdischain" target="_blank">GitHub Repository</a></li>
+          <li><a href="add-network.html">Chain 909 Config</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="footer-col-title">Resources</div>
+        <ul class="footer-links">
+          <li><a href="whitepaper.html">Whitepaper v1.0</a></li>
+          <li><a href="dashboard.html">Network Dashboard</a></li>
+          <li><a href="ai-support.html">AI Support Assistant</a></li>
+          <li><a href="landing.html">Main Portal</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <div>[NETWORK: VERDIS_MAINNET_GREEN] &bull; [UPTIME: 99.99%] &bull; [CHAIN_ID: 909]</div>
+      <div>&copy; 2026 Verdis Blockchain Foundation. All Rights Reserved.</div>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL: PROJECT DETAIL MODAL -->
+<div class="modal-overlay" id="projectModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeProjectModal()">&times;</button>
+    <div id="modalBody">
+      <!-- Dynamic modal content loaded via JS -->
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SUBMIT DAPP / GRANT APPLICATION -->
+<div class="modal-overlay" id="submitModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeSubmitModal()">&times;</button>
+    <div class="terminal-tag">[SYS//ECO_GRANT_SUBMISSION]</div>
+    <h3 class="modal-title">Submit Project for Verdis Ecosystem & Grant</h3>
+    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px;">
+      Fill out your project details to get listed on the ecosystem page and apply for up to $50,000 in eco-grants.
+    </p>
+
+    <form onsubmit="handleGrantSubmit(event)" style="display:flex; flex-direction:column; gap:16px;">
+      <div>
+        <label style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Project Name *</label>
+        <input type="text" required placeholder="e.g. GreenSwap Protocol" style="width:100%; padding:10px; background:#060906; border:1px solid var(--border); border-radius:6px; color:#fff; font-family:var(--font-mono);">
+      </div>
+
+      <div>
+        <label style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Category *</label>
+        <select required style="width:100%; padding:10px; background:#060906; border:1px solid var(--border); border-radius:6px; color:#fff; font-family:var(--font-mono);">
+          <option value="DeFi">DeFi</option>
+          <option value="Eco/Climate">Eco/Climate</option>
+          <option value="Smart Contracts">Smart Contracts</option>
+          <option value="Wallet">Wallet</option>
+          <option value="Governance">Governance</option>
+          <option value="NFT">NFT</option>
+          <option value="Infrastructure">Infrastructure</option>
+          <option value="Developer Tools">Developer Tools</option>
+        </select>
+      </div>
+
+      <div>
+        <label style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Website or GitHub URL *</label>
+        <input type="url" required placeholder="https://github.com/my-eco-dapp" style="width:100%; padding:10px; background:#060906; border:1px solid var(--border); border-radius:6px; color:#fff; font-family:var(--font-mono);">
+      </div>
+
+      <div>
+        <label style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Project Description & Ecological Impact *</label>
+        <textarea required rows="3" placeholder="Describe your dApp, contract deployment, and how it reduces CO2 footprint..." style="width:100%; padding:10px; background:#060906; border:1px solid var(--border); border-radius:6px; color:#fff; font-family:var(--font-body);"></textarea>
+      </div>
+
+      <button type="submit" class="btn-cta-lg btn-cta-green" style="margin-top:10px;">Submit Application ↗</button>
+    </form>
+  </div>
+</div>
+
+<!-- JAVASCRIPT LOGIC -->
+<script>
+/* ==========================================================================
+   PARTICLE CANVAS ANIMATION
+   ========================================================================== */
+const canvas = document.getElementById('particleCanvas');
+const ctx = canvas.getContext('2d');
+
+let particles = [];
+let mouse = { x: null, y: null, radius: 120 };
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+window.addEventListener('mousemove', (e) => {
+  mouse.x = e.x;
+  mouse.y = e.y;
+});
+
+class Particle {
+  constructor() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.vx = (Math.random() - 0.5) * 0.6;
+    this.vy = (Math.random() - 0.5) * 0.6;
+    this.radius = Math.random() * 2 + 1;
+    this.color = Math.random() > 0.4 ? '#00ff88' : '#2dd4bf';
+    this.alpha = Math.random() * 0.5 + 0.2;
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = this.color;
+    ctx.globalAlpha = this.alpha;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = this.color;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+
+    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+    // Mouse interaction
+    if (mouse.x && mouse.y) {
+      let dx = mouse.x - this.x;
+      let dy = mouse.y - this.y;
+      let dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < mouse.radius) {
+        let angle = Math.atan2(dy, dx);
+        this.x -= Math.cos(angle) * 1.5;
+        this.y -= Math.sin(angle) * 1.5;
+      }
+    }
+  }
+}
+
+function initParticles() {
+  particles = [];
+  const particleCount = Math.min(Math.floor(window.innerWidth / 16), 90);
+  for (let i = 0; i < particleCount; i++) {
+    particles.push(new Particle());
+  }
+}
+initParticles();
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < particles.length; i++) {
+    particles[i].update();
+    particles[i].draw();
+
+    for (let j = i + 1; j < particles.length; j++) {
+      let dx = particles[i].x - particles[j].x;
+      let dy = particles[i].y - particles[j].y;
+      let dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < 110) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = '#00ff88';
+        ctx.globalAlpha = (1 - dist / 110) * 0.15;
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+      }
+    }
+  }
+
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+/* ==========================================================================
+   SCROLL REVEAL OBSERVER
+   ========================================================================== */
+const revealElements = document.querySelectorAll('.scroll-reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('revealed');
+    }
+  });
+}, { threshold: 0.1 });
+
+revealElements.forEach(el => observer.observe(el));
+
+/* ==========================================================================
+   NAVBAR SCROLL EFFECT
+   ========================================================================== */
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  if (window.scrollY > 40) {
+    nav.classList.add('scrolled');
+  } else {
+    nav.classList.remove('scrolled');
+  }
+});
+
+/* ==========================================================================
+   CATEGORY & SEARCH FILTERING
+   ========================================================================== */
+let activeCategory = 'All';
+
+function selectCategory(catName) {
+  activeCategory = catName;
+
+  // Update pills styling
+  const pills = document.querySelectorAll('.cat-pill');
+  pills.forEach(pill => {
+    if (pill.textContent.includes(catName) || (catName === 'All' && pill.textContent.includes('All'))) {
+      pill.classList.add('active');
+    } else {
+      pill.classList.remove('active');
+    }
+  });
+
+  // Update Category Grid styling
+  const catCards = document.querySelectorAll('.category-card');
+  catCards.forEach(card => {
+    const nameEl = card.querySelector('.category-name');
+    if (nameEl && nameEl.textContent.trim() === catName) {
+      card.classList.add('active');
+    } else {
+      card.classList.remove('active');
+    }
+  });
+
+  filterProjects();
+}
+
+function filterProjects() {
+  const searchVal = document.getElementById('projectSearchInput').value.toLowerCase().trim();
+  const projectCards = document.querySelectorAll('.project-card');
+  let visibleCount = 0;
+
+  projectCards.forEach(card => {
+    const cardCat = card.getAttribute('data-category');
+    const cardName = card.getAttribute('data-name') || '';
+    const cardText = card.textContent.toLowerCase();
+
+    const matchesCategory = (activeCategory === 'All' || cardCat === activeCategory);
+    const matchesSearch = searchVal === '' || cardText.includes(searchVal) || cardName.toLowerCase().includes(searchVal);
+
+    if (matchesCategory && matchesSearch) {
+      card.style.display = 'flex';
+      visibleCount++;
+    } else {
+      card.style.display = 'none';
+    }
+  });
+
+  document.getElementById('searchCountBadge').textContent = `Showing ${visibleCount} of ${projectCards.length} Projects`;
+}
+
+/* ==========================================================================
+   LIVE API FETCHING (/api/blockchain/info & /api/eco/impact)
+   ========================================================================== */
+function animateValue(obj, endValue, suffix = '') {
+  if (!obj) return;
+  let startValue = 0;
+  let duration = 1000;
+  let startTimestamp = null;
+
+  const step = (timestamp) => {
+    if (!startTimestamp) startTimestamp = timestamp;
+    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+    const current = Math.floor(progress * endValue);
+    obj.textContent = current.toLocaleString() + suffix;
+    if (progress < 1) {
+      window.requestAnimationFrame(step);
+    } else {
+      obj.textContent = endValue.toLocaleString() + suffix;
+    }
+  };
+  window.requestAnimationFrame(step);
+}
+
+async function fetchLiveNetworkStats() {
+  const syncTimestampEl = document.getElementById('syncTimestamp');
+  if (syncTimestampEl) syncTimestampEl.textContent = '(Syncing...)';
+
+  try {
+    const resInfo = await fetch('/api/blockchain/info');
+    if (resInfo.ok) {
+      const dataInfo = await resInfo.json();
+      if (dataInfo.height) animateValue(document.getElementById('s-height'), dataInfo.height);
+      if (dataInfo.totalTransactions) animateValue(document.getElementById('s-txs'), dataInfo.totalTransactions);
+      if (dataInfo.validatorCount) animateValue(document.getElementById('s-vals'), dataInfo.validatorCount);
+      if (dataInfo.totalSupply) animateValue(document.getElementById('s-supply'), dataInfo.totalSupply);
+    }
+  } catch (e) {
+    console.log('Using default chain info metrics', e);
+  }
+
+  try {
+    const resEco = await fetch('/api/eco/impact');
+    if (resEco.ok) {
+      const dataEco = await resEco.json();
+      const co2 = dataEco.totalCarbonOffset || dataEco.carbonOffset || 12450;
+      animateValue(document.getElementById('s-co2'), co2);
+      if (dataEco.trees) animateValue(document.getElementById('s-trees'), dataEco.trees);
+      if (dataEco.greenValidators) animateValue(document.getElementById('s-greenvals'), dataEco.greenValidators);
+      if (dataEco.reforestationProjects) animateValue(document.getElementById('s-reforest'), dataEco.reforestationProjects);
+      
+      if (dataEco.carbonCreditsMinted && dataEco.carbonCreditsRetired) {
+        document.getElementById('s-credits').textContent = `${dataEco.carbonCreditsMinted} / ${dataEco.carbonCreditsRetired}`;
+      }
+    }
+  } catch (e) {
+    console.log('Using default eco impact metrics', e);
+  }
+
+  if (syncTimestampEl) {
+    const now = new Date();
+    syncTimestampEl.textContent = `(${now.toLocaleTimeString()})`;
+  }
+}
+
+// Initial fetch on page load
+fetchLiveNetworkStats();
+
+/* ==========================================================================
+   PROJECT DETAILS MODAL LOGIC
+   ========================================================================== */
+const projectDetails = {
+  dex: {
+    title: '🔄 Verdis DEX & Green AMM',
+    badge: 'MAINNET LIVE',
+    tag: 'DeFi // Liquidity Hub',
+    description: 'Verdis DEX is the native automated market maker protocol engineered for low-slippage trading and eco-fee distribution. Every swap burns 0.15% of trading fees to retire real carbon credits on-chain.',
+    html: `
+      <div style="margin-top:16px;">
+        <h4 style="color:var(--green); font-family:var(--font-mono); margin-bottom:12px;">Active Liquidity Pools Breakdown</h4>
+        <table style="width:100%; text-align:left; border-collapse:collapse; font-family:var(--font-mono); font-size:0.82rem;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border); color:var(--text-muted);">
+              <th style="padding:8px;">Pool</th>
+              <th style="padding:8px;">TVL</th>
+              <th style="padding:8px;">24h Vol</th>
+              <th style="padding:8px;">Est. APR</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+              <td style="padding:8px; color:var(--green);">VRS / USDT</td>
+              <td style="padding:8px;">$18,450,000</td>
+              <td style="padding:8px;">$3,200,000</td>
+              <td style="padding:8px; color:var(--teal);">24.2%</td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+              <td style="padding:8px; color:var(--green);">VRS / CARBON</td>
+              <td style="padding:8px;">$12,100,000</td>
+              <td style="padding:8px;">$2,400,000</td>
+              <td style="padding:8px; color:var(--teal);">28.4%</td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+              <td style="padding:8px; color:var(--green);">VRS / TREE</td>
+              <td style="padding:8px;">$5,800,000</td>
+              <td style="padding:8px;">$1,100,000</td>
+              <td style="padding:8px; color:var(--teal);">21.8%</td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+              <td style="padding:8px; color:var(--green);">VRS / ETH</td>
+              <td style="padding:8px;">$4,200,000</td>
+              <td style="padding:8px;">$950,000</td>
+              <td style="padding:8px; color:var(--teal);">18.5%</td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+              <td style="padding:8px; color:var(--green);">VRS / SOL</td>
+              <td style="padding:8px;">$1,400,000</td>
+              <td style="padding:8px;">$520,000</td>
+              <td style="padding:8px; color:var(--teal);">19.2%</td>
+            </tr>
+            <tr>
+              <td style="padding:8px; color:var(--green);">VRS / GREEN</td>
+              <td style="padding:8px;">$850,000</td>
+              <td style="padding:8px;">$230,000</td>
+              <td style="padding:8px; color:var(--teal);">26.0%</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:20px; display:flex; gap:12px;">
+          <a href="dashboard.html" class="btn-card btn-card-primary" style="padding:10px 18px; text-decoration:none;">Open DEX Trading ↗</a>
+          <a href="api-docs.html#pools" class="btn-card btn-card-secondary" style="padding:10px 18px; text-decoration:none;">API Endpoint Docs</a>
+        </div>
+      </div>
+    `
+  },
+  carbon: {
+    title: '💨 Carbon Credit Marketplace',
+    badge: 'VERIFIED',
+    tag: 'Eco/Climate // On-Chain Offset',
+    description: 'A transparent, double-spend resistant carbon credit minting and retirement platform compliant with Verra and Gold Standard certifications.',
+    html: `
+      <div style="margin-top:16px;">
+        <div style="background:#060906; border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:16px;">
+          <h5 style="color:var(--teal); font-family:var(--font-mono); margin-bottom:6px;">Sample Carbon Credit Registry Entry</h5>
+          <div style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted); line-height:1.6;">
+            • Credit ID: <span style="color:#fff;">CR-2026-AMAZON-8912</span><br>
+            • Type: <span style="color:#fff;">Reforestation & Canopy Protection</span><br>
+            • Location: <span style="color:#fff;">Amazon Basin (03°08'S 60°01'W)</span><br>
+            • Verified Amount: <span style="color:var(--green);">500 Tons CO₂</span><br>
+            • Token Standard: <span style="color:#fff;">ERC-1155 (Multi-token)</span>
+          </div>
+        </div>
+        <div style="display:flex; gap:12px;">
+          <a href="dashboard.html" class="btn-card btn-card-primary" style="padding:10px 18px; text-decoration:none;">Buy / Retire Carbon ↗</a>
+        </div>
+      </div>
+    `
+  },
+  reforest: {
+    title: '🌲 Satellite Reforestation Ledger',
+    badge: 'LIVE',
+    tag: 'Eco/Climate // GIS Oracles',
+    description: 'Real-time forestation ledger powered by Sentinel-2 & Landsat satellite imagery feeds, verifying canopy density and biodiversity growth.',
+    html: `
+      <div style="margin-top:16px;">
+        <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:14px;">
+          Connected with 14 worldwide active planting sites in Brazil, Kenya, Indonesia, Madagascar, and Scotland.
+        </p>
+        <div style="background:#060906; border:1px solid var(--border); border-radius:8px; padding:12px; font-family:var(--font-mono); font-size:0.8rem; color:var(--green);">
+          [GIS_ORACLE: ONLINE] &bull; Canopy NDVI Index: +14.2% YoY Growth
+        </div>
+      </div>
+    `
+  },
+  validator: {
+    title: '☀️ Green Validator Program',
+    badge: 'ACTIVE',
+    tag: 'Infrastructure // Solar PoS',
+    description: 'Certifies hardware validators using IoT smart meter integration and solar/renewable power attestations.',
+    html: `
+      <div style="margin-top:16px;">
+        <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:14px;">
+          Requirements: Minimum 10,000 VRS stake + verified 100% renewable energy source or solar micro-grid attestation.
+        </p>
+        <a href="add-network.html" class="btn-card btn-card-primary" style="padding:10px 18px; text-decoration:none;">Setup Validator Node ↗</a>
+      </div>
+    `
+  },
+  studio: {
+    title: '💻 Smart Contract Studio',
+    badge: 'BETA',
+    tag: 'Developer Tools // IDE',
+    description: 'Browser-based environment for compiling, gas auditing, and deploying eco-aware smart contracts to Verdis Chain ID 909.',
+    html: `
+      <div style="margin-top:16px;">
+        <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:14px;">
+          Includes automated gas footprint calculator showing CO₂ saved per transaction vs legacy chains.
+        </p>
+        <a href="api-docs.html" class="btn-card btn-card-primary" style="padding:10px 18px; text-decoration:none;">Launch IDE Demo ↗</a>
+      </div>
+    `
+  },
+  dao: {
+    title: '🏛️ Verdis Governance DAO',
+    badge: 'GOVERNING',
+    tag: 'Governance // Treasury',
+    description: 'Directs Verdis Treasury allocations ($12.5M) for eco-grants, scientific carbon research, and protocol upgrades.',
+    html: `
+      <div style="margin-top:16px;">
+        <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:14px;">
+          Proposal #48 passed: Allocated $250k VRS to Amazon Rainforest Satellite Radar Monitoring Expansion.
+        </p>
+        <a href="whitepaper.html" class="btn-card btn-card-primary" style="padding:10px 18px; text-decoration:none;">View DAO Governance ↗</a>
+      </div>
+    `
+  },
+  nft: {
+    title: '🎨 Zero-Carbon NFT Engine',
+    badge: 'LIVE',
+    tag: 'NFT // Impact Certificates',
+    description: 'Mint eco-NFTs with dynamic metadata tied directly to GPS coordinates of planted trees.',
+    html: `
+      <div style="margin-top:16px;">
+        <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:14px;">
+          Over 45,000 carbon-negative impact certificates minted on Verdis Chain.
+        </p>
+        <a href="dashboard.html" class="btn-card btn-card-primary" style="padding:10px 18px; text-decoration:none;">Mint Impact NFT ↗</a>
+      </div>
+    `
+  },
+  portal: {
+    title: '🚀 Green Token Sale Portal',
+    badge: 'UPCOMING IDO',
+    tag: 'DeFi // Launchpad',
+    description: 'Launchpad for carbon-neutral Web3 projects. Tiered VRS staking guarantees fair token allocation.',
+    html: `
+      <div style="margin-top:16px;">
+        <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:14px;">
+          Next IDO: BioCarbon Network (BCN) — Launching Q3 2026.
+        </p>
+        <button onclick="openSubmitModal()" class="btn-card btn-card-primary" style="padding:10px 18px;">Apply for IDO Listing</button>
+      </div>
+    `
+  }
+};
+
+function openProjectModal(key) {
+  const item = projectDetails[key];
+  if (!item) return;
+
+  const modalBody = document.getElementById('modalBody');
+  modalBody.innerHTML = `
+    <div class="terminal-tag" style="margin-bottom:8px;">[${item.tag}]</div>
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+      <h3 class="modal-title">${item.title}</h3>
+      <span class="project-status status-live">${item.badge}</span>
+    </div>
+    <p style="color:var(--text-muted); line-height:1.6; font-size:0.95rem;">
+      ${item.description}
+    </p>
+    ${item.html}
+  `;
+
+  document.getElementById('projectModal').classList.add('active');
+}
+
+function closeProjectModal() {
+  document.getElementById('projectModal').classList.remove('active');
+}
+
+function openSubmitModal() {
+  document.getElementById('submitModal').classList.add('active');
+}
+
+function closeSubmitModal() {
+  document.getElementById('submitModal').classList.remove('active');
+}
+
+function handleGrantSubmit(e) {
+  e.preventDefault();
+  alert('Thank you! Your project submission and Eco-Grant application have been transmitted to the Verdis DAO Treasury.');
+  closeSubmitModal();
+}
+
+function copyCode(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    alert('Copied to clipboard: ' + text);
+  });
+}
+</script>
+
+<!-- Verdis AI Support Widget — inject before </body> on any page -->
+<style>
+/* AI Support Widget */
+#aiWidget{position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Inter',-apple-system,sans-serif}
+.ai-fab{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#238636,#00ff88);border:none;cursor:pointer;box-shadow:0 4px 24px rgba(0,255,136,.3);display:flex;align-items:center;justify-content:center;transition:all .3s;position:relative}
+.ai-fab:hover{transform:scale(1.08);box-shadow:0 6px 32px rgba(0,255,136,.4)}
+.ai-fab svg{width:28px;height:28px}
+.ai-fab .ai-pulse{position:absolute;top:0;right:0;width:14px;height:14px;border-radius:50%;background:#3fb950;border:2px solid #0d1117;animation:aiPulse 2s infinite}
+@keyframes aiPulse{0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,.5)}50%{box-shadow:0 0 0 6px rgba(63,185,80,0)}}
+.ai-fab .ai-badge{position:absolute;top:-4px;left:-4px;background:#f85149;color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;display:none}
+.ai-fab .ai-badge.show{display:block;animation:scaleIn .3s}
+
+.ai-panel{position:fixed;bottom:100px;right:24px;width:380px;max-width:calc(100vw - 48px);height:560px;max-height:calc(100vh - 140px);background:#0d1117;border:1px solid rgba(63,185,80,.15);border-radius:20px;display:none;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);backdrop-filter:blur(20px);transform-origin:bottom right}
+.ai-panel.open{display:flex;animation:aiPanelIn .35s cubic-bezier(.16,1,.3,1)}
+@keyframes aiPanelIn{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+
+.ai-header{padding:16px 20px;background:linear-gradient(135deg,#0d1117,#161b22);border-bottom:1px solid rgba(63,185,80,.1);display:flex;align-items:center;justify-content:space-between}
+.ai-header-info{display:flex;align-items:center;gap:12px}
+.ai-avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#238636,#00ff88);display:flex;align-items:center;justify-content:center;font-size:20px}
+.ai-header-text h3{font-size:15px;font-weight:700;color:#e6edf3;margin:0}
+.ai-header-text .status{font-size:11px;color:#3fb950;display:flex;align-items:center;gap:5px}
+.ai-header-text .status::before{content:'';width:6px;height:6px;border-radius:50%;background:#3fb950;animation:aiPulse 2s infinite}
+.ai-close{background:none;border:none;color:#8b949e;font-size:20px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all .2s}
+.ai-close:hover{color:#e6edf3;background:rgba(255,255,255,.05)}
+
+.ai-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scrollbar-width:thin;scrollbar-color:#30363d transparent}
+.ai-messages::-webkit-scrollbar{width:4px}
+.ai-messages::-webkit-scrollbar-thumb{background:#30363d;border-radius:4px}
+.ai-msg{max-width:85%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.5;animation:scaleIn .3s}
+.ai-msg.bot{align-self:flex-start;background:#161b22;border:1px solid #30363d;color:#e6edf3;border-bottom-left-radius:4px}
+.ai-msg.user{align-self:flex-end;background:linear-gradient(135deg,#238636,#00ff88);color:#0d1117;border-bottom-right-radius:4px;font-weight:500}
+.ai-msg .quick-links{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+.ai-msg .quick-link{padding:4px 10px;background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.2);border-radius:100px;font-size:11px;color:#3fb950;cursor:pointer;transition:all .2s}
+.ai-msg .quick-link:hover{background:rgba(63,185,80,.2);transform:translateY(-1px)}
+.ai-typing{display:flex;gap:4px;padding:12px 16px;align-self:flex-start;background:#161b22;border:1px solid #30363d;border-radius:14px;border-bottom-left-radius:4px}
+.ai-typing span{width:7px;height:7px;border-radius:50%;background:#3fb950;animation:aiTyping 1.4s infinite}
+.ai-typing span:nth-child(2){animation-delay:.2s}
+.ai-typing span:nth-child(3){animation-delay:.4s}
+@keyframes aiTyping{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-6px)}}
+
+.ai-suggestions{padding:8px 16px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid #21262d}
+.ai-suggestion{padding:5px 12px;background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.15);border-radius:100px;font-size:11px;color:#3fb950;cursor:pointer;white-space:nowrap;transition:all .2s}
+.ai-suggestion:hover{background:rgba(63,185,80,.15);transform:translateY(-1px)}
+
+.ai-input{padding:12px 16px;border-top:1px solid #21262d;display:flex;gap:8px;align-items:center;background:#0d1117}
+.ai-input input{flex:1;background:#161b22;border:1px solid #30363d;border-radius:100px;padding:10px 16px;color:#e6edf3;font-size:13px;outline:none;transition:border-color .2s}
+.ai-input input:focus{border-color:#3fb950}
+.ai-input input::placeholder{color:#6b7280}
+.ai-send{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#238636,#00ff88);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.ai-send:hover{transform:scale(1.08)}
+.ai-send svg{width:18px;height:18px}
+.ai-send:disabled{opacity:.4;cursor:default;transform:none}
+
+@media(max-width:768px){.ai-panel{width:calc(100vw - 32px);right:16px;bottom:90px;height:calc(100vh - 120px)}#aiWidget{bottom:16px;right:16px}}
+</style>
+<div id="aiWidget">
+<div class="ai-panel" id="aiPanel">
+<div class="ai-header">
+<div class="ai-header-info">
+<div class="ai-avatar">🌿</div>
+<div class="ai-header-text">
+<h3>Verdis AI Assistant</h3>
+<div class="status">Online · Chain 909</div>
+</div>
+</div>
+<button class="ai-close" onclick="aiToggle()">✕</button>
+</div>
+<div class="ai-messages" id="aiMessages"></div>
+<div class="ai-suggestions" id="aiSuggestions"></div>
+<div class="ai-input">
+<input type="text" id="aiInput" placeholder="Ask about Verdis..." onkeydown="if(event.key==='Enter')aiSend()">
+<button class="ai-send" onclick="aiSend()">
+<svg viewBox="0 0 24 24" fill="none" stroke="#0d1117" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+</button>
+</div>
+</div>
+<button class="ai-fab" id="aiFab" onclick="aiToggle()">
+<span class="ai-badge" id="aiBadge">1</span>
+<span class="ai-pulse"></span>
+<svg viewBox="0 0 24 24" fill="none" stroke="#0d1117" stroke-width="2"><path d="M12 2C8 2 5 5 5 9c0 2 1 3 1 5l-1 2 4-1c1 1 2 1 3 1s2 0 3-1l4 1-1-2c0-2 1-3 1-5 0-4-3-7-7-7z"/><circle cx="9" cy="10" r="1" fill="#0d1117"/><circle cx="15" cy="10" r="1" fill="#0d1117"/></svg>
+</button>
+</div>
+<script>
+// === Verdis AI Assistant ===
+const AI_KNOWLEDGE_BASE = {
+  blockchain: {
+    keywords: ['blockchain','chain','verdis','vrs','token','network','consensus','dpos'],
+    answer: '🌿 **Verdis Blockchain**\n\nVerdis (VRS) is a Layer-1 blockchain with native DPoS consensus running on Chain ID 909. Key specs:\n\n• **Consensus:** Delegated Proof of Stake (5 active validators, 27 registered)\n• **Block Time:** 5 seconds\n• **Total Supply:** 50,000,000,000 VRS\n• **Cryptography:** secp256k1 signatures + Keccak256 hashing\n• **Smart Contracts:** Stack-based VM with 22 opcodes\n• **DEX:** Native AMM with 6 liquidity pools\n\nAll blocks are produced on-chain with real cryptographic validation — no mocks.',
+    links: ['View Dashboard', 'See Validators', 'Check Block Height']
+  },
+  dex: {
+    keywords: ['dex','swap','trade','amm','liquidity','pool','exchange','carbon','eco token'],
+    answer: '💱 **Verdis Native DEX**\n\nThe AMM DEX is built directly into the blockchain — no external contracts needed.\n\n**Active Pools:**\n• VRS/CARBON — Carbon credit trading\n• VRS/ECO — Eco-token exchange\n• CARBON/ECO — Cross eco-token swap\n• TREE/VRS — Reforestation token\n• GREEN/VRS — Green validator token\n• REDD/VRS — Reddington reward token\n\nThe auto-trade bot provides continuous liquidity. You can swap tokens in the Dashboard → DEX tab.',
+    links: ['Open DEX', 'View Pool Stats', 'Add Liquidity']
+  },
+  contracts: {
+    keywords: ['contract','smart','deploy','vm','opcode','assembly','compile','visual'],
+    answer: '📜 **Smart Contracts on Verdis**\n\nVerdis has a built-in stack-based Virtual Machine with 22 opcodes (PUSH, ADD, STORE, LOAD, JUMP, etc.).\n\n**Two ways to deploy:**\n1. **Visual Builder** — Drag & drop instruction blocks, no coding needed\n2. **Assembly Editor** — Write Verdis assembly directly\n\n**6 Preset Templates:**\n• Simple Token\n• Counter\n• Key-Value Store\n• Escrow Lock\n• Voting\n• Custom\n\nPlus 6 visual preset recipes (Token with Transfer, Multi-Sig Wallet, Simple Auction, Time-Lock Vault, On-Chain Ledger, Access Controller).',
+    links: ['Open Contracts', 'View Templates', 'Read VM Docs']
+  },
+  eco: {
+    keywords: ['eco','green','carbon','co2','climate','environment','tree','reforestation','offset','sustainab'],
+    answer: '🌱 **Verdis Eco Features**\n\nVerdis is the **first fully green blockchain** — environmental regeneration is built into the protocol, not an afterthought.\n\n**On-Chain Eco Features:**\n• **Carbon Credits** — Minted and tracked on-chain\n• **Reforestation Logging** — Trees planted are recorded immutably\n• **Green Validator Scoring** — Validators scored by renewable energy use\n• **5B VRS Carbon Offset Fund** — Dedicated to environmental projects\n\n**Current Impact:**\n• 1,000+ tons CO₂ offset\n• 15,000+ trees planted\n• 6 green validators active\n\nEvery block produced contributes to planetary healing.',
+    links: ['View Eco Dashboard', 'See Carbon Stats', 'Tree Planting Log']
+  },
+  wallet: {
+    keywords: ['wallet','connect','metamask','trust','import','private key','seed','address','balance'],
+    answer: '👛 **Verdis Native Wallet**\n\nVerdis has a **built-in native wallet** — no MetaMask, Trust Wallet, or browser injection needed.\n\n**Create Wallet:**\n• Click "Create Native Wallet" in the Dashboard\n• Generates secp256k1 keypair locally\n• Your keys never leave your browser\n\n**Import Wallet:**\n• Paste your private key or 12-word mnemonic\n\n**External Wallet (Optional):**\n• MetaMask: Add custom network (RPC: https://rpc.verdischain.com, Chain ID: 909)\n• Trust Wallet: Use DApp browser or manual import\n\nYour wallet state persists in localStorage — it survives page refreshes.',
+    links: ['Open Wallet', 'Create New', 'Import Existing']
+  },
+  sale: {
+    keywords: ['sale','buy','token sale','price','ido','invest','purchase','presale','ico'],
+    answer: '🚀 **Verdis Token Sale (IDO)**\n\n**Price:** $0.001 per VRS\n\n**Accepted Assets:**\n• ETH (Ethereum)\n• BNB (BSC)\n• USDT / USDC\n\nThe token sale is live on the Dashboard → Token Sale tab. All transactions are on-chain and verifiable.\n\nVRS tokens are utility tokens used for:\n• Transaction fees\n• DEX trading\n• Validator staking\n• Governance voting\n• Carbon credit minting',
+    links: ['Open Token Sale', 'View Pricing', 'Read Whitepaper']
+  },
+  staking: {
+    keywords: ['stake','staking','delegate','validator','reward','slashing','pos'],
+    answer: '🔒 **DPoS Staking**\n\nVerdis uses Delegated Proof of Stake:\n\n• **27 validators** registered\n• **5 active** block producers (top voted)\n• **Block rewards** distributed to active validators\n• **Delegation** — Vote for validators to earn rewards\n• **Slashing** — Misbehaving validators lose stake\n• **Green scoring** — Validators using renewable energy get higher rewards\n\nStake your VRS in Dashboard → Staking tab.',
+    links: ['Open Staking', 'View Validators', 'Delegate Now']
+  },
+  security: {
+    keywords: ['security','safe','hack','protect','rate limit','auth','admin','replay','nonce'],
+    answer: '🔐 **Verdis Security**\n\nVerdis has 13 active security checks:\n\n• secp256k1 signature verification\n• SHA-256 + Keccak256 hashing\n• Tamper detection\n• Double-spend prevention\n• Chain validation\n• Rate limiting (30/min + 5/min strict)\n• Nonce replay protection\n• Admin API key authentication\n• Validator slashing\n• Input validation\n• Mempool limits (1000 txs)\n• Max transaction 1B VRS\n• Max block size 500 transactions\n\nSecurity audit available at `/api/security/audit` endpoint.',
+    links: ['View Security Audit', 'Security Events', 'Network Info']
+  },
+  whitepaper: {
+    keywords: ['whitepaper','documentation','docs','guide','how','learn','paper','research'],
+    answer: '📄 **Verdis Whitepaper**\n\nThe Verdis whitepaper is a 14-section comprehensive document covering:\n\n1. Executive Summary\n2. Technology Architecture\n3. DPoS Consensus\n4. Carbon-Negative Protocol\n5. Green Validator Scoring\n6. Reforestation Logging\n7. AMM DEX Design\n8. Smart Contract VM\n9. Native Wallet System\n10. Token Economics\n11. Security Model\n12. Roadmap\n13. Team\n14. Conclusion\n\nAvailable as HTML and PDF download.',
+    links: ['Read Whitepaper', 'Download PDF', 'Executive Summary']
+  },
+  roadmap: {
+    keywords: ['roadmap','future','plan','next','phase','launch','listing','coingecko','coinmarketcap'],
+    answer: '🗺️ **Verdis Roadmap**\n\n**Completed:**\n✅ Mainnet launch (Chain 909)\n✅ DPoS consensus with green scoring\n✅ Native AMM DEX (6 pools)\n✅ Smart contract VM with visual builder\n✅ Native wallet (no MetaMask)\n✅ Token sale (IDO) live\n✅ Whitepaper published\n✅ Telegram & Twitter presence\n✅ Brand identity (hexagonal leaf logo)\n\n**In Progress:**\n🔄 CoinGecko & CoinMarketCap listing\n🔄 Cross-chain bridge for liquidity\n🔄 Twitter automation enhancement\n\n**Planned:**\n📋 Mobile wallet app\n📋 Carbon offset marketplace\n📋 Enterprise validator onboarding\n📋 Layer-2 scaling solution',
+    links: ['View Whitepaper', 'Join Telegram', 'Follow Twitter']
+  },
+  api: {
+    keywords: ['api','rpc','endpoint','json','rest','developer','integrate','code'],
+    answer: '💻 **Verdis API**\n\n**JSON-RPC (Ethereum-compatible):**\n• Endpoint: `https://rpc.verdischain.com`\n• Chain ID: 909\n• 25 RPC methods (eth_blockNumber, eth_getBalance, etc.)\n\n**REST API (50+ endpoints):**\n• `/api/blockchain/info` — Chain stats\n• `/api/blockchain/blocks` — Block explorer\n• `/api/dex/pools` — DEX data\n• `/api/eco/impact` — Eco metrics\n• `/api/security/audit` — Security status\n• `/api/network/info` — Network info\n\nFull interactive docs at `/docs` page.',
+    links: ['Open API Docs', 'View Endpoints', 'Network Info']
+  },
+  governance: {
+    keywords: ['governance','vote','proposal','dao','community','decision','treasury'],
+    answer: '🗳️ **Verdis Governance**\n\nVerdis features on-chain governance:\n\n• **Proposals** — Any VRS holder can submit\n• **Voting** — 1 VRS = 1 vote\n• **Quorum** — Minimum participation required\n• **Execution** — Passed proposals execute on-chain\n\nGovernance covers:\n• Protocol parameter changes\n• Validator slashing decisions\n• Carbon offset fund allocation\n• Reforestation project approval\n\nAccess via Dashboard → Governance tab.',
+    links: ['Open Governance', 'View Proposals', 'Create Proposal']
+  }
+};
+
+const AI_SUGGESTIONS = ['What is Verdis?', 'How to buy VRS?', 'Explain the DEX', 'Eco features', 'How to deploy a contract?', 'Security model'];
+const AI_GREETING = "🌿 Hi! I'm the Verdis AI Assistant. I can help you with:\n\n• Blockchain & network info\n• DEX & trading\n• Smart contracts & VM\n• Eco features & carbon credits\n• Wallet setup\n• Token sale & staking\n• Security & API\n\nWhat would you like to know?";
+
+let aiOpen = false;
+let aiHistory = [];
+
+function aiToggle() {
+  aiOpen = !aiOpen;
+  const panel = document.getElementById('aiPanel');
+  const fab = document.getElementById('aiFab');
+  if (aiOpen) {
+    panel.classList.add('open');
+    fab.style.transform = 'scale(0.85)';
+    document.getElementById('aiBadge').classList.remove('show');
+    setTimeout(() => document.getElementById('aiInput').focus(), 300);
+    if (aiHistory.length === 0) {
+      aiAddMessage('bot', AI_GREETING);
+      aiRenderSuggestions();
+    }
+  } else {
+    panel.classList.remove('open');
+    fab.style.transform = '';
+  }
+}
+
+function aiAddMessage(sender, text) {
+  const messages = document.getElementById('aiMessages');
+  const msg = document.createElement('div');
+  msg.className = 'ai-msg ' + sender;
+  
+  // Format markdown-like syntax
+  let formatted = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#3fb950">$1</strong>')
+    .replace(/\n/g, '<br>');
+  msg.innerHTML = formatted;
+  
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+  aiHistory.push({ sender, text });
+}
+
+function aiAddMessageWithLinks(sender, text, links) {
+  const messages = document.getElementById('aiMessages');
+  const msg = document.createElement('div');
+  msg.className = 'ai-msg ' + sender;
+  
+  let formatted = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#3fb950">$1</strong>')
+    .replace(/\n/g, '<br>');
+  
+  if (links && links.length > 0) {
+    formatted += '<div class="quick-links">';
+    links.forEach(link => {
+      formatted += '<span class="quick-link" onclick="aiHandleLink(\'' + link.replace(/'/g, "\\\\'") + '\')">' + link + '</span>';
+    });
+    formatted += '</div>';
+  }
+  
+  msg.innerHTML = formatted;
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+  aiHistory.push({ sender, text });
+}
+
+function aiRenderSuggestions() {
+  const container = document.getElementById('aiSuggestions');
+  container.innerHTML = AI_SUGGESTIONS.map(s => 
+    '<span class="ai-suggestion" onclick="aiQuickAsk(\'' + s.replace(/'/g, "\\\\'") + '\')">' + s + '</span>'
+  ).join('');
+}
+
+function aiQuickAsk(question) {
+  document.getElementById('aiInput').value = question;
+  aiSend();
+}
+
+function aiSend() {
+  const input = document.getElementById('aiInput');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  aiAddMessage('user', text);
+  input.value = '';
+  
+  // Clear suggestions
+  document.getElementById('aiSuggestions').innerHTML = '';
+  
+  // Show typing indicator
+  const messages = document.getElementById('aiMessages');
+  const typing = document.createElement('div');
+  typing.className = 'ai-typing';
+  typing.id = 'aiTyping';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  messages.appendChild(typing);
+  messages.scrollTop = messages.scrollHeight;
+  
+  // Simulate AI thinking time
+  setTimeout(() => {
+    typing.remove();
+    const response = aiGetAnswer(text);
+    aiAddMessageWithLinks('bot', response.answer, response.links);
+  }, 600 + Math.random() * 400);
+}
+
+function aiGetAnswer(query) {
+  const lower = query.toLowerCase();
+  let bestMatch = null;
+  let bestScore = 0;
+  
+  for (const [key, entry] of Object.entries(AI_KNOWLEDGE_BASE)) {
+    let score = 0;
+    for (const keyword of entry.keywords) {
+      if (lower.includes(keyword)) {
+        score += keyword.length;
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = entry;
+    }
+  }
+  
+  if (bestMatch && bestScore > 0) {
+    return { answer: bestMatch.answer, links: bestMatch.links || [] };
+  }
+  
+  // Fallback
+  return {
+    answer: "I'm not sure about that yet! Here are some things I can help with:\n\n• **Blockchain** — What is Verdis? Network stats?\n• **DEX** — How to trade, liquidity pools\n• **Eco** — Carbon credits, trees, green validators\n• **Contracts** — How to deploy, templates\n• **Wallet** — How to create/import a wallet\n• **Token Sale** — How to buy VRS\n• **Staking** — How to earn rewards\n• **Security** — How safe is Verdis?\n• **API** — RPC endpoints, developer docs\n\nTry asking about any of these topics!",
+    links: ['What is Verdis?', 'How to buy VRS?', 'Eco features']
+  };
+}
+
+function aiHandleLink(link) {
+  const linkMap = {
+    'View Dashboard': '/dashboard',
+    'Open DEX': '/dashboard#dex',
+    'Open Contracts': '/dashboard#contracts',
+    'Open Wallet': '/dashboard#wallet',
+    'Open Token Sale': '/dashboard#sale',
+    'Open Staking': '/dashboard#staking',
+    'Open Governance': '/dashboard#governance',
+    'Read Whitepaper': '/whitepaper',
+    'Download PDF': '/whitepaper.pdf',
+    'Open API Docs': '/docs',
+    'View Eco Dashboard': '/dashboard#eco',
+    'Network Info': '/api/network/info',
+    'See Validators': '/dashboard#validators',
+    'Check Block Height': '/dashboard',
+    'View Pool Stats': '/dashboard#dex',
+    'Add Liquidity': '/dashboard#dex',
+    'See Carbon Stats': '/dashboard#eco',
+    'Tree Planting Log': '/dashboard#eco',
+    'Read VM Docs': '/docs',
+    'View Templates': '/dashboard#contracts',
+    'Create New': '/dashboard#wallet',
+    'Import Existing': '/dashboard#wallet',
+    'View Pricing': '/dashboard#sale',
+    'Delegate Now': '/dashboard#staking',
+    'View Validators': '/dashboard#validators',
+    'View Security Audit': '/dashboard#security',
+    'Security Events': '/dashboard#security',
+    'Executive Summary': '/whitepaper',
+    'View Endpoints': '/docs',
+    'View Proposals': '/dashboard#governance',
+    'Create Proposal': '/dashboard#governance',
+    'Join Telegram': 'https://t.me/verdischain',
+    'Follow Twitter': 'https://x.com/Verdischain'
+  };
+  
+  const url = linkMap[link];
+  if (url) {
+    if (url.startsWith('http')) {
+      window.open(url, '_blank');
+    } else {
+      window.location.href = url;
+    }
+  }
+}
+
+// Show badge after 3 seconds if user hasn't opened
+setTimeout(() => {
+  if (!aiOpen) {
+    document.getElementById('aiBadge').classList.add('show');
+  }
+}, 3000);
+
+// === Live TPS via WebSocket ===
+let wsReconnectTimer = null;
+function connectWebSocket() {
+  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + '/ws';
+  let ws;
+  try {
+    ws = new WebSocket(wsUrl);
+  } catch(e) {
+    console.log('WebSocket not available, using polling');
+    pollTPS();
+    return;
+  }
+  
+  ws.onopen = () => {
+    console.log('🔌 WebSocket connected');
+    if (wsReconnectTimer) { clearInterval(wsReconnectTimer); wsReconnectTimer = null; }
+  };
+  
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.type === 'stats' || data.type === 'connected') {
+        const stats = data.stats || data;
+        if (stats.tps !== undefined) {
+          const tpsEl = document.getElementById('s-tps');
+          if (tpsEl) tpsEl.textContent = stats.tps.toFixed(1);
+        }
+        if (stats.totalTxs !== undefined) {
+          // Update if we have a total txs element
+        }
+      }
+      if (data.type === 'block') {
+        if (data.tps !== undefined) {
+          const tpsEl = document.getElementById('s-tps');
+          if (tpsEl) tpsEl.textContent = data.tps.toFixed(1);
+        }
+      }
+    } catch(e) {}
+  };
+  
+  ws.onclose = () => {
+    console.log('WebSocket disconnected, will retry in 5s');
+    if (!wsReconnectTimer) {
+      wsReconnectTimer = setInterval(() => {
+        connectWebSocket();
+      }, 5000);
+    }
+  };
+  
+  ws.onerror = () => {
+    ws.close();
+  };
+}
+
+// Fallback: Poll TPS endpoint
+function pollTPS() {
+  fetch('/api/network/tps').then(r => r.json()).then(d => {
+    const tpsEl = document.getElementById('s-tps');
+    if (tpsEl && d.tps !== undefined) tpsEl.textContent = d.tps.toFixed(1);
+  }).catch(() => {});
+}
+
+// Connect WebSocket on load
+connectWebSocket();
+// Also poll as backup every 10s
+setInterval(pollTPS, 10000);
+
+</script>
+</body>
+</html>
