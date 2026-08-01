@@ -1,20 +1,14 @@
 package com.verdis.wallet
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.os.Bundle
-import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 
 class OnboardingFragment : Fragment() {
 
@@ -25,63 +19,56 @@ class OnboardingFragment : Fragment() {
     ): View {
         val view = inflater.inflate(R.layout.fragment_onboarding, container, false)
 
-        view.findViewById<Button>(R.id.btn_create).setOnClickListener {
+        view.findViewById<MaterialButton>(R.id.btn_create).setOnClickListener {
+            // Show seed phrase warning, then create
             val wallet = WalletManager.createWallet(requireContext())
-            showSeedDialog(wallet.seedPhrase ?: "")
-            (activity as MainActivity).showMainUI(wallet)
+            showSeedPhraseDialog(wallet.seedPhrase)
         }
 
-        view.findViewById<Button>(R.id.btn_import).setOnClickListener {
+        view.findViewById<MaterialButton>(R.id.btn_import).setOnClickListener {
             showImportDialog()
         }
 
         return view
     }
 
-    private fun showSeedDialog(seed: String) {
-        val words = seed.split(" ")
-        val message = StringBuilder()
-        words.forEachIndexed { i, word ->
-            message.append("${i + 1}. $word   ")
-            if ((i + 1) % 3 == 0) message.append("\n")
+    private fun showSeedPhraseDialog(seed: String?) {
+        val message = if (seed != null) {
+            "Your 12-word seed phrase:\n\n$seed\n\nWrite this down and keep it safe. You will need it to recover your wallet."
+        } else {
+            "Wallet created. Remember to backup your private key from Settings."
         }
 
-        AlertDialog.Builder(requireContext(), R.style.DialogTheme)
-            .setTitle("🔐 Your Seed Phrase")
-            .setMessage("$message\n\n⚠️ Write these 12 words down and keep them safe. Never share them with anyone!")
-            .setPositiveButton("I've Saved It") { _, _ ->
-                Toast.makeText(requireContext(), "Wallet created! 🎉", Toast.LENGTH_SHORT).show()
+        AlertDialog.Builder(requireContext())
+            .setTitle("Wallet Created ✓")
+            .setMessage(message)
+            .setPositiveButton("I've saved it") { _, _ ->
+                (activity as? MainActivity)?.onWalletCreated()
             }
             .setCancelable(false)
             .show()
     }
 
     private fun showImportDialog() {
-        val input = EditText(requireContext()).apply {
-            hint = "Private key (0x...) or 12-word seed phrase"
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            setPadding(40, 30, 40, 30)
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-        }
+        val input = TextInputEditText(requireContext())
+        input.hint = "Enter private key (0x...) or seed phrase"
+        input.setPadding(48, 32, 48, 32)
 
-        AlertDialog.Builder(requireContext(), R.style.DialogTheme)
+        AlertDialog.Builder(requireContext())
             .setTitle("Import Wallet")
             .setView(input)
             .setPositiveButton("Import") { _, _ ->
-                val key = input.text.toString().trim()
+                val key = input.text?.toString()?.trim() ?: ""
                 if (key.isEmpty()) {
-                    Toast.makeText(requireContext(), "Enter a key or seed phrase", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Enter a key or seed phrase", Toast.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
                 try {
-                    val wallet = WalletManager.importWallet(requireContext(), key)
-                    Toast.makeText(requireContext(), "Wallet imported! ✓", Toast.LENGTH_SHORT).show()
-                    (activity as MainActivity).showMainUI(wallet)
+                    WalletManager.importWallet(requireContext(), key)
+                    Toast.makeText(context, "Wallet imported ✓", Toast.LENGTH_SHORT).show()
+                    (activity as? MainActivity)?.onWalletCreated()
                 } catch (e: Exception) {
-                    Toast.makeText(requireContext(), "Import failed: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "Import failed: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
             .setNegativeButton("Cancel", null)

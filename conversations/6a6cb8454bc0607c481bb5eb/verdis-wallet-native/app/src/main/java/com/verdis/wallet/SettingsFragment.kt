@@ -1,20 +1,24 @@
 package com.verdis.wallet
 
-import android.content.Intent
-import android.net.Uri
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
-import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SettingsFragment : Fragment() {
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -23,48 +27,81 @@ class SettingsFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_settings, container, false)
 
         val wallet = WalletManager.loadWallet(requireContext())
-        val etRpc = view.findViewById<EditText>(R.id.et_rpc)
-        val etChainId = view.findViewById<EditText>(R.id.et_chain_id)
-        val etExplorer = view.findViewById<EditText>(R.id.et_explorer)
-        val etPrivateKey = view.findViewById<EditText>(R.id.et_private_key)
-        val btnShowKey = view.findViewById<Button>(R.id.btn_show_key)
-        val btnDisconnect = view.findViewById<Button>(R.id.btn_disconnect)
-        val tvVersion = view.findViewById<TextView>(R.id.tv_version)
-
-        etRpc.setText("https://rpc.verdischain.com")
-        etChainId.setText("909")
-        etExplorer.setText("https://verdischain.com/explorer")
-
-        if (wallet != null) {
-            etPrivateKey.setText(wallet.privateKey)
+        if (wallet == null) {
+            (activity as? MainActivity)?.showOnboarding()
+            return view
         }
-        etPrivateKey.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
 
-        btnShowKey.setOnClickListener {
-            if (etPrivateKey.inputType == InputType.TYPE_TEXT_VARIATION_PASSWORD) {
-                etPrivateKey.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                btnShowKey.text = "Hide Key"
+        view.findViewById<TextView>(R.id.tv_address).text = wallet.address
+
+        view.findViewById<Button>(R.id.btn_copy_address).setOnClickListener {
+            val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            clipboard.setPrimaryClip(ClipData.newPlainText("address", wallet.address))
+            Toast.makeText(context, "Address copied!", Toast.LENGTH_SHORT).show()
+        }
+
+        view.findViewById<Button>(R.id.btn_backup).setOnClickListener {
+            if (wallet.seedPhrase != null) {
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Seed Phrase")
+                    .setMessage(wallet.seedPhrase)
+                    .setPositiveButton("Copy") { _, _ ->
+                        val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        clipboard.setPrimaryClip(ClipData.newPlainText("seed", wallet.seedPhrase))
+                        Toast.makeText(context, "Seed copied (keep safe!)", Toast.LENGTH_SHORT).show()
+                    }
+                    .setNegativeButton("Close", null)
+                    .show()
             } else {
-                etPrivateKey.inputType = InputType.TYPE_TEXT_VARIATION_PASSWORD
-                btnShowKey.text = "Show Key"
+                Toast.makeText(context, "No seed phrase stored", Toast.LENGTH_SHORT).show()
             }
         }
 
-        btnDisconnect.setOnClickListener {
-            AlertDialog.Builder(requireContext(), R.style.DialogTheme)
-                .setTitle("Disconnect Wallet")
-                .setMessage("This will remove your private key from this device. Make sure you have a backup!")
-                .setPositiveButton("Disconnect") { _, _ ->
+        view.findViewById<Button>(R.id.btn_export_key).setOnClickListener {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Private Key")
+                .setMessage("WARNING: Anyone with this key has full access to your wallet!\n\n${wallet.privateKey}")
+                .setPositiveButton("Copy") { _, _ ->
+                    val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    clipboard.setPrimaryClip(ClipData.newPlainText("key", wallet.privateKey))
+                    Toast.makeText(context, "Key copied (keep secret!)", Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton("Close", null)
+                .show()
+        }
+
+        view.findViewById<Button>(R.id.btn_delete_wallet).setOnClickListener {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Delete Wallet")
+                .setMessage("Are you sure? Make sure you have backed up your seed phrase or private key.")
+                .setPositiveButton("Delete") { _, _ ->
                     WalletManager.clearWallet(requireContext())
-                    (activity as MainActivity).showOnboarding()
-                    Toast.makeText(requireContext(), "Wallet disconnected", Toast.LENGTH_SHORT).show()
+                    (activity as? MainActivity)?.showOnboarding()
+                    Toast.makeText(context, "Wallet deleted", Toast.LENGTH_SHORT).show()
                 }
                 .setNegativeButton("Cancel", null)
                 .show()
         }
 
-        tvVersion.text = "Verdis Wallet v1.0.0 · Native\n© 2026 Verdis Blockchain\nThe First Fully Green Blockchain Ecosystem"
-
+        // Load network status
+        loadNetworkInfo(view)
         return view
+    }
+
+    private fun loadNetworkInfo(view: View) {
+        lifecycleScope.launch {
+            try {
+                val info = withContext(Dispatchers.IO) { VerdisApi.getBlockchainInfo() }
+                view.findViewById<TextView>(R.id.tv_block_height).text = info?.height?.toString() ?: "---"
+                view.findViewById<TextView>(R.id.tv_net_status).text =
+                    if (info != null) "● Connected" else "● Offline"
+                view.findViewById<TextView>(R.id.tv_net_status).setTextColor(
+                    if (info != null) 0xFF00FF88.toInt() else 0xFFFF5F5F.toInt()
+                )
+            } catch (e: Exception) {
+                view.findViewById<TextView>(R.id.tv_net_status).text = "● Offline"
+                view.findViewById<TextView>(R.id.tv_net_status).setTextColor(0xFFFF5F5F.toInt())
+            }
+        }
     }
 }

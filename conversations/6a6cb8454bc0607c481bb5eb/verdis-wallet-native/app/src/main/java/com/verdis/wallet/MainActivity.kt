@@ -1,8 +1,7 @@
 package com.verdis.wallet
 
 import android.os.Bundle
-import android.view.View
-import android.widget.Toast
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -10,62 +9,64 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 class MainActivity : AppCompatActivity() {
 
     private lateinit var bottomNav: BottomNavigationView
+    private var currentWalletExists = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        bottomNav = findViewById(R.id.bottom_nav)
 
         // Check if wallet exists
-        val wallet = WalletManager.loadWallet(this)
-        if (wallet == null) {
+        currentWalletExists = WalletManager.loadWallet(this) != null
+        if (!currentWalletExists) {
             showOnboarding()
-        } else {
-            showMainUI(wallet)
+            return
         }
+
+        setContentView(R.layout.activity_main)
+        setupBottomNav()
+        loadFragment(HomeFragment())
+    }
+
+    private fun setupBottomNav() {
+        bottomNav = findViewById(R.id.bottom_nav)
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> { loadFragment(HomeFragment()); true }
+                R.id.nav_swap -> { loadFragment(SwapFragment()); true }
+                R.id.nav_eco -> { loadFragment(EcoFragment()); true }
+                R.id.nav_stake -> { loadFragment(StakeFragment()); true }
+                R.id.nav_settings -> { loadFragment(SettingsFragment()); true }
+                else -> false
+            }
+        }
+    }
+
+    fun loadFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit()
+    }
+
+    fun navigateTo(navId: Int) {
+        bottomNav.selectedItemId = navId
+    }
+
+    fun showReceive() {
+        loadFragment(ReceiveFragment())
     }
 
     fun showOnboarding() {
-        bottomNav.visibility = View.GONE
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, OnboardingFragment())
-            .commit()
+        setContentView(R.layout.activity_main)
+        loadFragment(OnboardingFragment())
+        if (::bottomNav.isInitialized) {
+            bottomNav.visibility = View.GONE
+        }
     }
 
-    fun showMainUI(wallet: WalletManager.Wallet) {
+    fun onWalletCreated() {
+        currentWalletExists = true
+        setContentView(R.layout.activity_main)
+        setupBottomNav()
         bottomNav.visibility = View.VISIBLE
-
-        bottomNav.setOnItemSelectedListener { item ->
-            val frag: Fragment = when (item.itemId) {
-                R.id.nav_home -> HomeFragment()
-                R.id.nav_swap -> SwapFragment()
-                R.id.nav_eco -> EcoFragment()
-                R.id.nav_stake -> StakeFragment()
-                R.id.nav_settings -> SettingsFragment()
-                else -> HomeFragment()
-            }
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, frag)
-                .commitAllowingStateLoss()
-            true
-        }
-
-        if (supportFragmentManager.fragments.isEmpty()) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, HomeFragment())
-                .commitAllowingStateLoss()
-        }
-    }
-
-    fun navigateTo(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
-            .addToBackStack(null)
-            .commit()
-    }
-
-    fun showToast(msg: String) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        loadFragment(HomeFragment())
     }
 }
