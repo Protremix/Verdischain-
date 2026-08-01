@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#0B1410"
+    android:padding="20dp">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="24dp">
+
+        <ImageView
+            android:id="@+id/btn_back"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_back"
+            android:padding="6dp"
+            app:tint="#7B9A89"
+            android:background="?android:attr/selectableItemBackgroundBorderless" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Send"
+            android:textSize="18sp"
+            android:textColor="#ECFDF5"
+            android:fontFamily="sans-serif-medium"
+            android:layout_marginStart="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Balance: "
+            android:textSize="13sp"
+            android:textColor="#4A6B5A" />
+
+        <TextView
+            android:id="@+id/tv_available"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 VCO"
+            android:textSize="13sp"
+            android:textColor="#34D399"
+            android:fontFamily="sans-serif-medium" />
+    </LinearLayout>
+
+    <!-- Amount Card -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_balance_card"
+        android:padding="28dp"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Amount"
+            android:textSize="13sp"
+            android:textColor="#7B9A89" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="bottom"
+            android:layout_marginTop="8dp">
+
+            <EditText
+                android:id="@+id/et_amount"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="0.00"
+                android:inputType="numberDecimal"
+                android:textSize="36sp"
+                android:textColor="#ECFDF5"
+                android:textColorHint="#2A3D33"
+                android:fontFamily="sans-serif-light"
+                android:background="@android:color/transparent"
+                android:maxLines="1" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="VCO"
+                android:textSize="16sp"
+                android:textColor="#7B9A89"
+                android:layout_marginBottom="6dp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#1A2B23"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Network Fee"
+                android:textSize="13sp"
+                android:textColor="#4A6B5A" />
+
+            <TextView
+                android:id="@+id/tv_fee"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1 VCO"
+                android:textSize="13sp"
+                android:textColor="#7B9A89" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Recipient Address -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Recipient Address"
+        android:textSize="13sp"
+        android:textColor="#7B9A89"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="4dp" />
+
+    <EditText
+        android:id="@+id/et_recipient"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:hint="0x..."
+        android:inputType="text"
+        android:textSize="14sp"
+        android:textColor="#ECFDF5"
+        android:textColorHint="#3A5246"
+        android:fontFamily="monospace"
+        android:background="@drawable/bg_input"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Send Button -->
+    <LinearLayout
+        android:id="@+id/btn_send"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="@drawable/bg_button_primary"
+        android:clickable="true"
+        android:focusable="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Send"
+            android:textSize="15sp"
+            android:textColor="#0B1410"
+            android:fontFamily="sans-serif-medium" />
+    </LinearLayout>
+
+    <!-- Status -->
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="13sp"
+        android:textColor="#10B981"
+        android:textAlignment="center"
+        android:layout_marginTop="16dp"
+        android:visibility="gone" />
+
+</LinearLayout>

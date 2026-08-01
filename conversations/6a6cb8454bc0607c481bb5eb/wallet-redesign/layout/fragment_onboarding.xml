@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#0B1410"
+    android:gravity="center"
+    android:padding="32dp">
+
+    <!-- Logo -->
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/verdis_logo"
+        android:layout_marginBottom="32dp"
+        android:contentDescription="Verdis Logo" />
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Verdis"
+        android:textSize="32sp"
+        android:textColor="#ECFDF5"
+        android:fontFamily="sans-serif-medium"
+        android:letterSpacing="-0.02"
+        android:layout_marginBottom="6dp" />
+
+    <!-- Tagline -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="The world's first fully green blockchain wallet"
+        android:textSize="14sp"
+        android:textColor="#7B9A89"
+        android:textAlignment="center"
+        android:layout_marginBottom="48dp" />
+
+    <!-- Create Wallet Button -->
+    <LinearLayout
+        android:id="@+id/btn_create"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="@drawable/bg_button_primary"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_marginBottom="12dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_wallet"
+            app:tint="#0B1410"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create New Wallet"
+            android:textSize="15sp"
+            android:textColor="#0B1410"
+            android:fontFamily="sans-serif-medium" />
+    </LinearLayout>
+
+    <!-- Import Wallet Button -->
+    <LinearLayout
+        android:id="@+id/btn_import"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="@drawable/bg_button_secondary"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_receive"
+            app:tint="#ECFDF5"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Import Wallet"
+            android:textSize="15sp"
+            android:textColor="#ECFDF5"
+            android:fontFamily="sans-serif-medium" />
+    </LinearLayout>
+
+    <!-- Footer -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="By creating a wallet, you agree to the Terms of Service and Privacy Policy"
+        android:textSize="11sp"
+        android:textColor="#4A6B5A"
+        android:textAlignment="center"
+        android:layout_marginTop="32dp" />
+
+</LinearLayout>
