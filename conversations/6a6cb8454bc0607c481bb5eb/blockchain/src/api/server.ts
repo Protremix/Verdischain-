@@ -34,8 +34,19 @@ export class BlockchainAPI {
     this.app.use(express.json({ limit: '10mb' }));
     this.security = new SecurityManager();
     
-    // Rate limiting middleware
+    // Rate limiting middleware (exempt page routes)
+    const pageRoutes = ['/', '/dashboard', '/whitepaper', '/docs', '/status', '/ecosystem', '/templates', '/api/network/info', '/api/network/tps', '/api/blockchain/info', '/api/monitoring/health', '/api/explorer/stats'];
     this.app.use((req: any, res: any, next: any) => {
+      // Skip rate limiting for page routes and core info endpoints
+      if (pageRoutes.includes(req.path)) {
+        next();
+        return;
+      }
+      // Skip rate limiting for static file requests
+      if (req.path.endsWith('.html') || req.path.endsWith('.css') || req.path.endsWith('.js') || req.path.endsWith('.png') || req.path.endsWith('.svg') || req.path.endsWith('.ico')) {
+        next();
+        return;
+      }
       const ip = req.headers['x-forwarded-for'] || req.connection?.remoteAddress || req.socket?.remoteAddress || 'unknown';
       const rateLimit = this.security.checkRateLimit(ip);
       res.setHeader('X-RateLimit-Remaining', rateLimit.remaining);

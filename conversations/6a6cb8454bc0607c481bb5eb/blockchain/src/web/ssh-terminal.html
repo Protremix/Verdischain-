@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Verdis VPS Terminal</title>
+<script src="https://cdn.jsdelivr.net/npm/xterm@4.19.0/lib/xterm.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@4.19.0/css/xterm.min.css">
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.5.0/lib/xterm-addon-fit.min.js"></script>
+</head>
+<body style="background:#0a0e0a;margin:0;padding:20px">
+<div style="color:#00ff88;font-family:monospace;margin-bottom:10px">Verdis VPS Terminal</div>
+<div id="terminal"></div>
+<script>
+// This is a placeholder - a real web SSH client needs a backend WebSocket proxy
+// For now, just show instructions
+var term = new Terminal({fontSize:14,theme:{background:'#0a0e0a',foreground:'#00ff88'}});
+term.open(document.getElementById('terminal'));
+term.writeln('To deploy the new design to verdischain.com, run this command on your VPS:');
+term.writeln('');
+term.writeln('curl -L -o /tmp/vu.tar.gz "https://base44.app/api/apps/6a6cb8410d1dcb778817254f/files/mp/public/6a6cb8410d1dcb778817254f/79341b8ea_verdis-updatetar.gz" && mkdir -p /tmp/vudir && tar -xzf /tmp/vu.tar.gz -C /tmp/vudir && cp -r /tmp/vudir/dist/web/* /opt/verdis/dist/web/ && cp /tmp/vudir/dist/api/server.js /opt/verdis/dist/api/server.js && systemctl restart verdis && echo "DONE!"');
+</script>
+</body>
+</html>
