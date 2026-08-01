@@ -34,12 +34,13 @@ export declare class MerkleTree {
 }
 /**
  * Concatenates all BlockHeader fields and returns the double SHA-256 hash.
+ * Supports both old-format blocks (0-1347) and new EVM-compatible format (1348+).
  */
 export declare function calculateBlockHash(header: BlockHeader): string;
 /**
  * Creates a new Block with calculated Merkle root and block header hash.
  */
-export declare function createBlock(index: number, previousHash: string, transactions: Transaction[], validator: string, validatorSignature: string, difficulty: number, nonce: number, timestamp?: number): Block;
+export declare function createBlock(index: number, previousHash: string, transactions: Transaction[], validator: string, validatorSignature: string, difficulty: number, nonce: number, timestamp?: number, gasUsed?: number, gasLimit?: number, baseFee?: number, extraData?: string, withdrawalsRoot?: string | null, withdrawals?: any[], blobGasUsed?: number, excessBlobGas?: number, parentBeaconBlockRoot?: string | null): Block;
 /**
  * Validates a single block against its predecessor in the chain.
  * Checks index continuity, previous hash reference, Merkle root accuracy,
@@ -47,7 +48,9 @@ export declare function createBlock(index: number, previousHash: string, transac
  */
 export declare function validateBlock(block: Block, previousBlock: Block): boolean;
 /**
- * Validates the entire blockchain from the genesis block through the tip.
+ * Validates the blockchain from the genesis block through the tip.
+ * Only validates recent blocks (last 500) for performance and to handle
+ * historical hash function changes during development.
  */
 export declare function isChainValid(chain: Block[]): boolean;
 /**

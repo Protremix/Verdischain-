@@ -9,6 +9,15 @@ export interface BlockHeader {
   validatorSignature: string;
   difficulty: number;
   nonce: number;
+  gasUsed?: number;
+  gasLimit?: number;
+  baseFee?: number;
+  extraData?: string;
+  withdrawalsRoot?: string | null;
+  withdrawals?: any[];
+  blobGasUsed?: number;
+  excessBlobGas?: number;
+  parentBeaconBlockRoot?: string | null;
 }
 
 export interface Block {
@@ -29,6 +38,7 @@ export interface Transaction {
   data: string | null; // for smart contract calls
   signature: string;
   recovery: number; // recovery bit for signature
+  type?: number;
 }
 
 export interface Wallet {

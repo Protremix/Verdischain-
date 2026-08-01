@@ -7,6 +7,15 @@ export interface BlockHeader {
     validatorSignature: string;
     difficulty: number;
     nonce: number;
+    gasUsed?: number;
+    gasLimit?: number;
+    baseFee?: number;
+    extraData?: string;
+    withdrawalsRoot?: string | null;
+    withdrawals?: any[];
+    blobGasUsed?: number;
+    excessBlobGas?: number;
+    parentBeaconBlockRoot?: string | null;
 }
 export interface Block {
     header: BlockHeader;
@@ -25,6 +34,7 @@ export interface Transaction {
     data: string | null;
     signature: string;
     recovery: number;
+    type?: number;
 }
 export interface Wallet {
     privateKey: string;
