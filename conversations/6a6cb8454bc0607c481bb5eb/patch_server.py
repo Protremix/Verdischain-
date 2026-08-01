@@ -1,228 +1,96 @@
-import sys
+#!/usr/bin/env python3
+"""Patch server.js directly - add static serving, page routes, and missing endpoints."""
+import re
 
-with open('/opt/verdis/app/dist/api/server.js', 'r') as f:
-    content = f.read()
+path = "/opt/verdis/app/dist/api/server.js"
+with open(path) as f:
+    c = f.read()
 
-import_str = 'const token_standards_1 = require("../core/token-standards");\n'
-if import_str not in content:
-    content = content.replace('const security_1 = require("../core/security");', 'const security_1 = require("../core/security");\n' + import_str)
+changes = []
 
-init_str = '        this.tokenStandards = new token_standards_1.TokenStandardsManager();\n        this.setupTokenRoutes();\n'
-if 'this.tokenStandards' not in content:
-    content = content.replace('this.setupCoreRoutes();', init_str + '        this.setupCoreRoutes();')
+# 1. Add static file serving after cors line
+cors_marker = "this.app.use((0, cors_1.default)());"
+if cors_marker in c and "express_1.default.static" not in c:
+    static_code = '\n        // Static files\n        const webDir = path_1.default.resolve(__dirname, "../web");\n        this.app.use("/css", express_1.default.static(path_1.default.join(webDir, "css")));\n        this.app.use(express_1.default.static(webDir));'
+    c = c.replace(cors_marker, cors_marker + static_code)
+    changes.append("Added static file serving (/css, /web)")
+elif "express_1.default.static" in c:
+    changes.append("Static serving already present")
 
-routes_code = """
-    setupTokenRoutes() {
-        // 1. POST /api/tokens/erc20/deploy
-        this.app.post('/api/tokens/erc20/deploy', (req, res) => {
-            try {
-                const { name, symbol, decimals, totalSupply, deployer, deployerAddress } = req.body;
-                if (!name || !symbol) {
-                    res.status(400).json({ error: 'Name and symbol are required' });
-                    return;
-                }
-                const token = this.tokenStandards.deployERC20(
-                    name,
-                    symbol,
-                    decimals !== undefined ? decimals : 18,
-                    totalSupply !== undefined ? totalSupply : 1000000,
-                    deployer || deployerAddress || "0x0bfef9eb91a36d4010367869aa1e1927d353a35b"
-                );
-                res.json({
-                    success: true,
-                    contractAddress: token.address,
-                    token
-                });
-            } catch (err) {
-                res.status(400).json({ error: err.message });
-            }
-        });
+# 2. Add page routes before the /api/network/info route
+network_marker = "this.app.get('/api/network/info'"
+if network_marker in c and 'this.app.get("/ecosystem"' not in c:
+    page_routes = '''        // Page routes
+        this.app.get("/ecosystem", (req, res) => { try { res.sendFile(path_1.default.resolve(__dirname, "../web/ecosystem.html")); } catch(e) { res.status(404).send("Not found"); } });
+        this.app.get("/whitepaper", (req, res) => { try { res.sendFile(path_1.default.resolve(__dirname, "../web/whitepaper.html")); } catch(e) { res.status(404).send("Not found"); } });
+        this.app.get("/api-docs", (req, res) => { try { res.sendFile(path_1.default.resolve(__dirname, "../web/api-docs.html")); } catch(e) { res.status(404).send("Not found"); } });
+        this.app.get("/status", (req, res) => { try { res.sendFile(path_1.default.resolve(__dirname, "../web/status.html")); } catch(e) { res.status(404).send("Not found"); } });
+        this.app.get("/templates", (req, res) => { try { res.sendFile(path_1.default.resolve(__dirname, "../web/templates.html")); } catch(e) { res.status(404).send("Not found"); } });
+        this.app.get("/token-sale", (req, res) => { try { res.sendFile(path_1.default.resolve(__dirname, "../web/token-sale.html")); } catch(e) { res.status(404).send("Not found"); } });
+        this.app.get("/bridge", (req, res) => { try { res.sendFile(path_1.default.resolve(__dirname, "../web/bridge.html")); } catch(e) { res.status(404).send("Not found"); } });
+        this.app.get("/markets", (req, res) => { try { res.sendFile(path_1.default.resolve(__dirname, "../web/markets.html")); } catch(e) { res.status(404).send("Not found"); } });
+        this.app.get("/explorer", (req, res) => { try { res.sendFile(path_1.default.resolve(__dirname, "../web/explorer.html")); } catch(e) { res.status(404).send("Not found"); } });
+        this.app.get("/download", (req, res) => { try { res.sendFile(path_1.default.resolve(__dirname, "../web/download.html")); } catch(e) { res.status(404).send("Not found"); } });
+        this.app.get("/trust-connect", (req, res) => { try { res.sendFile(path_1.default.resolve(__dirname, "../web/trust-connect.html")); } catch(e) { res.status(404).send("Not found"); } });
+        this.app.get("/docs", (req, res) => { try { res.sendFile(path_1.default.resolve(__dirname, "../web/api-docs.html")); } catch(e) { res.status(404).send("Not found"); } });
+        this.app.get("/download/verdis-wallet.apk", (req, res) => { const apkPath = path_1.default.resolve(__dirname, "../web/verdis-wallet.apk"); if (fs_1.default.existsSync(apkPath)) { res.download(apkPath, "verdis-wallet.apk"); } else { res.status(404).send("APK not found"); } });
 
-        // 2. POST /api/tokens/erc20/transfer
-        this.app.post('/api/tokens/erc20/transfer', (req, res) => {
-            try {
-                const { contractAddress, contract, from, to, amount, value } = req.body;
-                const addr = contractAddress || contract;
-                const amt = amount !== undefined ? amount : value;
-                const result = this.tokenStandards.transfer(addr, from, to, amt);
-                res.json(result);
-            } catch (err) {
-                res.status(400).json({ error: err.message });
-            }
-        });
+'''
+    c = c.replace(network_marker, page_routes + "        " + network_marker)
+    changes.append("Added 12 page routes")
+elif 'this.app.get("/ecosystem"' in c:
+    changes.append("Page routes already present")
 
-        // 3. POST /api/tokens/erc20/approve
-        this.app.post('/api/tokens/erc20/approve', (req, res) => {
-            try {
-                const { contractAddress, contract, owner, from, spender, amount, value } = req.body;
-                const addr = contractAddress || contract;
-                const own = owner || from;
-                const amt = amount !== undefined ? amount : value;
-                const result = this.tokenStandards.approve(addr, own, spender, amt);
-                res.json(result);
-            } catch (err) {
-                res.status(400).json({ error: err.message });
-            }
-        });
+# 3. Add analytics/track endpoint
+if "analytics/track" not in c:
+    analytics = 'this.app.post("/api/analytics/track", (req, res) => { res.json({ success: true }); });\n        this.app.get("/api/analytics/track", (req, res) => { res.json({ success: true }); });\n        '
+    c = c.replace("this.app.get('/api/blockchain/info'", analytics + "this.app.get('/api/blockchain/info'")
+    changes.append("Added /api/analytics/track")
+else:
+    changes.append("analytics/track already present")
 
-        // 4. GET /api/tokens/erc20/:address/balance
-        this.app.get('/api/tokens/erc20/:address/balance', (req, res) => {
-            try {
-                const contractAddress = req.params.address;
-                const holder = req.query.holder || req.query.address || req.query.account;
-                if (!holder) {
-                    res.status(400).json({ error: "Missing holder query parameter" });
-                    return;
-                }
-                const balance = this.tokenStandards.balanceOf(contractAddress, holder);
-                res.json({
-                    success: true,
-                    contractAddress,
-                    holder,
-                    balance
-                });
-            } catch (err) {
-                res.status(400).json({ error: err.message });
-            }
-        });
+# 4. Add blockchain/transactions endpoint
+if "blockchain/transactions" not in c:
+    tx_ep = 'this.app.get("/api/blockchain/transactions", (req, res) => { try { const limit = parseInt(req.query.limit) || 20; const chain = this.blockchain.getChain(); const allTxs = []; for (const block of chain) { for (const tx of block.transactions) { allTxs.push({ ...tx, blockIndex: block.header.index, timestamp: block.header.timestamp }); } } res.json(allTxs.reverse().slice(0, limit)); } catch (error) { res.status(500).json({ error: error.message }); } });\n        '
+    c = c.replace("this.app.get('/api/blockchain/blocks'", tx_ep + "this.app.get('/api/blockchain/blocks'")
+    changes.append("Added /api/blockchain/transactions")
+else:
+    changes.append("blockchain/transactions already present")
 
-        // 5. GET /api/tokens/erc20/:address/info
-        this.app.get('/api/tokens/erc20/:address/info', (req, res) => {
-            try {
-                const contractAddress = req.params.address;
-                const token = this.tokenStandards.getContract(contractAddress);
-                if (!token) {
-                    res.status(404).json({ error: `Token contract ${contractAddress} not found` });
-                    return;
-                }
-                res.json({
-                    success: true,
-                    address: token.address,
-                    name: token.name,
-                    symbol: token.symbol,
-                    decimals: token.decimals,
-                    totalSupply: token.totalSupply,
-                    deployer: token.deployer,
-                    type: token.type,
-                    balancesCount: Object.keys(token.balances || {}).length,
-                    eventsCount: token.events?.length || 0
-                });
-            } catch (err) {
-                res.status(400).json({ error: err.message });
-            }
-        });
+# 5. Add wallet/create-mnemonic endpoint
+if "create-mnemonic" not in c:
+    mn_ep = 'this.app.post("/api/wallet/create-mnemonic", (req, res) => { try { const { mnemonic, privateKey } = req.body; let wallet; if (privateKey && privateKey.trim()) { const pk = privateKey.startsWith("0x") ? privateKey : "0x" + privateKey; wallet = this.walletManager.importWallet(pk); } else if (mnemonic && mnemonic.trim()) { const seed = (0, crypto_1.sha256)(mnemonic.trim()); wallet = this.walletManager.importWallet("0x" + seed); } else { wallet = this.walletManager.createWallet(); } res.json({ privateKey: wallet.privateKey, publicKey: wallet.publicKey, address: wallet.address, balance: this.blockchain.getTokenSystem().getBalance(wallet.address), staked: this.blockchain.getTokenSystem().getStaked(wallet.address) }); } catch (error) { res.status(400).json({ error: error.message }); } });\n        '
+    c = c.replace("this.app.post('/api/wallet/create'", mn_ep + "this.app.post('/api/wallet/create'")
+    changes.append("Added /api/wallet/create-mnemonic")
+else:
+    changes.append("create-mnemonic already present")
 
-        // 6. POST /api/tokens/erc721/mint
-        this.app.post('/api/tokens/erc721/mint', (req, res) => {
-            try {
-                const { contractAddress, contract, to, tokenId, tokenURI, uri, name, symbol, deployer, deployerAddress } = req.body;
-                let addr = contractAddress || contract;
+# 6. Add faucet endpoint
+if "faucet/claim" not in c:
+    faucet = 'this.faucetClaims = new Map();\n        this.app.post("/api/faucet/claim", this.strictRateLimit.bind(this), (req, res) => { try { const { address } = req.body; if (!address) return res.status(400).json({ error: "Address required" }); const now = Date.now(); const lastClaim = this.faucetClaims.get(address) || 0; const cooldown = 3600000; if (now - lastClaim < cooldown) { return res.status(429).json({ error: "Cooldown active", retryAfterMinutes: Math.ceil((cooldown - (now - lastClaim)) / 60000) }); } this.blockchain.getTokenSystem().addBalance(address, 1000); this.faucetClaims.set(address, now); res.json({ success: true, address, amount: 1000, message: "1000 VCO sent", nextClaim: new Date(now + cooldown).toISOString() }); } catch (error) { res.status(500).json({ error: error.message }); } });\n        this.app.get("/api/faucet/status", (req, res) => { const address = req.query.address; if (address) { const lastClaim = this.faucetClaims.get(address) || 0; res.json({ address, lastClaim: new Date(lastClaim).toISOString(), cooldownMinutes: 60 }); } else { res.json({ amount: 1000, cooldownMinutes: 60, totalClaims: this.faucetClaims.size }); } });\n        '
+    c = c.replace("this.app.get('/api/validators'", faucet + "this.app.get('/api/validators'")
+    changes.append("Added /api/faucet/claim + /api/faucet/status")
+else:
+    changes.append("faucet already present")
 
-                if (!addr || !this.tokenStandards.getContract(addr)) {
-                    if (name && symbol) {
-                        const token721 = this.tokenStandards.deployERC721(name, symbol, deployer || deployerAddress || to);
-                        addr = token721.address;
-                    } else if (!addr) {
-                        const token721 = this.tokenStandards.deployERC721("Verdis NFT", "VNFT", deployer || deployerAddress || to);
-                        addr = token721.address;
-                    }
-                }
+# 7. Fix any remaining VRS in faucet messages
+c = c.replace("1000 VRS sent", "1000 VCO sent")
 
-                const result = this.tokenStandards.mintERC721(addr, to, tokenId, tokenURI || uri || "");
-                res.json(result);
-            } catch (err) {
-                res.status(400).json({ error: err.message });
-            }
-        });
+# 8. Fix VRS in network/info
+c = c.replace("symbol: 'VRS'", "symbol: 'VCO'")
+c = c.replace("symbol: \"VRS\"", "symbol: \"VCO\"")
 
-        // 7. POST /api/tokens/erc721/transfer
-        this.app.post('/api/tokens/erc721/transfer', (req, res) => {
-            try {
-                const { contractAddress, contract, spender, from, to, tokenId } = req.body;
-                const addr = contractAddress || contract;
-                const sp = spender || from;
-                const result = this.tokenStandards.erc721TransferFrom(addr, sp, from, to, tokenId);
-                res.json(result);
-            } catch (err) {
-                res.status(400).json({ error: err.message });
-            }
-        });
+# 9. Fix VRS in features list
+c = c.replace("Native VRS wallet", "Native VCO wallet")
 
-        // 8. GET /api/tokens/erc721/:contract/:tokenId
-        this.app.get('/api/tokens/erc721/:contract/:tokenId', (req, res) => {
-            try {
-                const contractAddress = req.params.contract;
-                const tokenId = req.params.tokenId;
-                const owner = this.tokenStandards.ownerOf(contractAddress, tokenId);
-                const uri = this.tokenStandards.tokenURI(contractAddress, tokenId);
-                const approved = this.tokenStandards.getApproved(contractAddress, tokenId);
+# 10. Fix VRS in dashboard fallback HTML
+c = c.replace("VRS Supply", "VCO Supply")
+c = c.replace("'VRS'", "'VCO'")
 
-                res.json({
-                    success: true,
-                    contract: contractAddress,
-                    tokenId,
-                    owner,
-                    tokenURI: uri,
-                    approved
-                });
-            } catch (err) {
-                res.status(404).json({ error: err.message });
-            }
-        });
+with open(path, "w") as f:
+    f.write(c)
 
-        // 9. POST /api/tokens/erc1155/mint
-        this.app.post('/api/tokens/erc1155/mint', (req, res) => {
-            try {
-                const { contractAddress, contract, to, id, tokenId, amount, value, data, uri, deployer, deployerAddress } = req.body;
-                let addr = contractAddress || contract;
-                const tId = id !== undefined ? id : tokenId;
-                const amt = amount !== undefined ? amount : value;
-
-                if (!addr || !this.tokenStandards.getContract(addr)) {
-                    const token1155 = this.tokenStandards.deployERC1155(uri || "https://verdis.network/api/tokens/erc1155/{id}", deployer || deployerAddress || to);
-                    addr = token1155.address;
-                }
-
-                const result = this.tokenStandards.mintERC1155(addr, to, tId, amt, data);
-                res.json(result);
-            } catch (err) {
-                res.status(400).json({ error: err.message });
-            }
-        });
-
-        // 10. POST /api/tokens/erc1155/batch-transfer
-        this.app.post('/api/tokens/erc1155/batch-transfer', (req, res) => {
-            try {
-                const { contractAddress, contract, operator, from, to, ids, amounts, values, data } = req.body;
-                const addr = contractAddress || contract;
-                const op = operator || from;
-                const amts = amounts || values;
-                const result = this.tokenStandards.safeBatchTransferFrom(addr, op, from, to, ids, amts, data);
-                res.json(result);
-            } catch (err) {
-                res.status(400).json({ error: err.message });
-            }
-        });
-
-        // 11. GET /api/tokens/list
-        this.app.get('/api/tokens/list', (req, res) => {
-            try {
-                const tokens = this.tokenStandards.listTokens();
-                res.json({
-                    success: true,
-                    count: tokens.length,
-                    tokens
-                });
-            } catch (err) {
-                res.status(500).json({ error: err.message });
-            }
-        });
-    }
-"""
-
-if 'setupTokenRoutes()' not in content:
-    content = content.replace('    start(port) {', routes_code + '\n    start(port) {')
-
-with open('/opt/verdis/app/dist/api/server.js', 'w') as f:
-    f.write(content)
-print("Successfully patched server.js")
+print("=== PATCH SUMMARY ===")
+for ch in changes:
+    print(f"  {ch}")
+print(f"\nTotal file size: {len(c)} bytes")
