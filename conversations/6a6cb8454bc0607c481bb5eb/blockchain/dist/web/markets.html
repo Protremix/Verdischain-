@@ -1538,7 +1538,7 @@
                         <span class="pulse-dot"></span>
                         <span>Green DPoS #1.48M</span>
                     </div>
-                    <a href="dashboard.html#dex" class="btn btn-primary btn-sm">Trade VRS</a>
+                    <a href="dashboard.html#dex" class="btn btn-primary btn-sm">Trade VCO</a>
                 </div>
             </nav>
         </div>
@@ -1565,7 +1565,7 @@
                 <div class="stat-card">
                     <span class="stat-label">24h Trading Volume</span>
                     <div class="stat-value" id="stat-vol">$4,820,150</div>
-                    <div class="stat-sub"><span class="badge-up">▲ +12.8%</span> 4,820,150 VRS</div>
+                    <div class="stat-sub"><span class="badge-up">▲ +12.8%</span> 4,820,150 VCO</div>
                 </div>
 
                 <div class="stat-card">
@@ -1611,7 +1611,7 @@
                         <tr>
                             <th onclick="sortTable('rank')"># <span class="sort-icon">⇅</span></th>
                             <th onclick="sortTable('name')">Token <span class="sort-icon">⇅</span></th>
-                            <th onclick="sortTable('priceUSD')">Price (VRS / USD) <span class="sort-icon">⇅</span></th>
+                            <th onclick="sortTable('priceUSD')">Price (VCO / USD) <span class="sort-icon">⇅</span></th>
                             <th onclick="sortTable('change24h')">24h Change <span class="sort-icon">⇅</span></th>
                             <th onclick="sortTable('volume24h')">24h Volume <span class="sort-icon">⇅</span></th>
                             <th onclick="sortTable('mcapUSD')">Market Cap <span class="sort-icon">⇅</span></th>
@@ -1635,7 +1635,7 @@
                 <div class="chart-header">
                     <div class="token-selector-group">
                         <select id="chartTokenSelect" class="token-select-dropdown" onchange="switchChartToken()">
-                            <option value="VRS">🌿 VRS (Verdis Native Token)</option>
+                            <option value="VCO">🌿 VCO (Verdis Native Token)</option>
                             <option value="CARBON">♻️ CARBON (Carbon Credit Token)</option>
                             <option value="ECO">🏛️ ECO (Governance Token)</option>
                             <option value="TREE">🌳 TREE (Reforestation Asset)</option>
@@ -1751,7 +1751,7 @@
                 <div class="modal-token-icon" id="mIcon">🌿</div>
                 <div>
                     <h2 class="modal-token-title" id="mTitle">Verdis Token</h2>
-                    <div class="modal-token-symbol" id="mSymbol">VRS · Native Asset</div>
+                    <div class="modal-token-symbol" id="mSymbol">VCO · Native Asset</div>
                 </div>
             </div>
 
@@ -1826,7 +1826,7 @@
                 </div>
             </div>
             <div class="ai-input-area">
-                <input type="text" id="aiInput" placeholder="Ask about VRS, pools, or prices..." onkeydown="if(event.key==='Enter') sendAIMsg()">
+                <input type="text" id="aiInput" placeholder="Ask about VCO, pools, or prices..." onkeydown="if(event.key==='Enter') sendAIMsg()">
                 <button class="btn btn-primary btn-sm" onclick="sendAIMsg()">Send</button>
             </div>
         </div>
@@ -1897,13 +1897,13 @@
         const MASTER_TOKENS = [
             {
                 rank: 1,
-                id: 'VRS',
+                id: 'VCO',
                 name: 'Verdis Token',
-                symbol: 'VRS',
+                symbol: 'VCO',
                 icon: '🌿',
                 category: 'gov',
                 priceUSD: 0.00100,
-                priceVRS: 1.0000,
+                priceVCO: 1.0000,
                 change24h: 3.82,
                 volume24h: 2840500,
                 mcapUSD: 50000000,
@@ -1912,7 +1912,7 @@
                 circSupply: 50000000000,
                 totalSupply: 50000000000,
                 contract: '0x7001a48e28f10b8892c90412e84200ff8812',
-                pairs: ['VRS/CARBON', 'VRS/ECO', 'TREE/VRS'],
+                pairs: ['VCO/CARBON', 'VCO/ECO', 'TREE/VCO'],
                 sparkline: [0.00095, 0.00097, 0.00096, 0.00099, 0.00098, 0.00101, 0.00100],
                 holders: '24,850',
                 transfers: '312,400'
@@ -1925,7 +1925,7 @@
                 icon: '♻️',
                 category: 'eco',
                 priceUSD: 0.01245,
-                priceVRS: 12.450,
+                priceVCO: 12.450,
                 change24h: 8.15,
                 volume24h: 1420000,
                 mcapUSD: 124500000,
@@ -1934,7 +1934,7 @@
                 circSupply: 10000000,
                 totalSupply: 10000000,
                 contract: '0xc021f984a2d3910c2847a9e102284900ff42',
-                pairs: ['VRS/CARBON', 'CARBON/ECO'],
+                pairs: ['VCO/CARBON', 'CARBON/ECO'],
                 sparkline: [0.0112, 0.0115, 0.0118, 0.0116, 0.0121, 0.0123, 0.01245],
                 holders: '14,200',
                 transfers: '184,100'
@@ -1947,7 +1947,7 @@
                 icon: '🏛️',
                 category: 'gov',
                 priceUSD: 0.00480,
-                priceVRS: 4.8000,
+                priceVCO: 4.8000,
                 change24h: -1.24,
                 volume24h: 890200,
                 mcapUSD: 480000000,
@@ -1956,7 +1956,7 @@
                 circSupply: 100000000,
                 totalSupply: 100000000,
                 contract: '0xec001245ba890123ef459012348900ff1201',
-                pairs: ['VRS/ECO', 'CARBON/ECO'],
+                pairs: ['VCO/ECO', 'CARBON/ECO'],
                 sparkline: [0.00495, 0.00502, 0.00490, 0.00485, 0.00488, 0.00478, 0.00480],
                 holders: '19,500',
                 transfers: '210,000'
@@ -1969,7 +1969,7 @@
                 icon: '🌳',
                 category: 'eco',
                 priceUSD: 0.02500,
-                priceVRS: 25.000,
+                priceVCO: 25.000,
                 change24h: 12.40,
                 volume24h: 740800,
                 mcapUSD: 125000000,
@@ -1978,7 +1978,7 @@
                 circSupply: 5000000,
                 totalSupply: 5000000,
                 contract: '0x7r330019284fa284918239012389000ff888',
-                pairs: ['TREE/VRS'],
+                pairs: ['TREE/VCO'],
                 sparkline: [0.0218, 0.0222, 0.0231, 0.0238, 0.0242, 0.0248, 0.0250],
                 holders: '8,450',
                 transfers: '92,100'
@@ -1991,7 +1991,7 @@
                 icon: '⚡',
                 category: 'eco',
                 priceUSD: 0.00215,
-                priceVRS: 2.1500,
+                priceVCO: 2.1500,
                 change24h: 0.65,
                 volume24h: 320100,
                 mcapUSD: 537500000,
@@ -2000,7 +2000,7 @@
                 circSupply: 250000000,
                 totalSupply: 250000000,
                 contract: '0x999ee0018247fba0192381239000ff12',
-                pairs: ['GREEN/VRS'],
+                pairs: ['GREEN/VCO'],
                 sparkline: [0.00210, 0.00212, 0.00211, 0.00214, 0.00213, 0.00216, 0.00215],
                 holders: '11,100',
                 transfers: '142,000'
@@ -2013,7 +2013,7 @@
                 icon: '🔥',
                 category: 'eco',
                 priceUSD: 0.00850,
-                priceVRS: 8.5000,
+                priceVCO: 8.5000,
                 change24h: -3.10,
                 volume24h: 280400,
                 mcapUSD: 425000000,
@@ -2022,7 +2022,7 @@
                 circSupply: 50000000,
                 totalSupply: 50000000,
                 contract: '0xr3dd001284fa284918239012389000ff9999',
-                pairs: ['REDD/VRS'],
+                pairs: ['REDD/VCO'],
                 sparkline: [0.00885, 0.00890, 0.00870, 0.00860, 0.00855, 0.00840, 0.00850],
                 holders: '6,200',
                 transfers: '68,400'
@@ -2030,12 +2030,12 @@
         ];
 
         const DEX_POOLS = [
-            { pair: 'VRS / CARBON', icon1: '🌿', icon2: '♻️', liq: '$4,250,000', vol: '$1,420,000', apr: '28.5%', ratio: '1 CARBON = 12.450 VRS' },
-            { pair: 'VRS / ECO', icon1: '🌿', icon2: '🏛️', liq: '$2,800,000', vol: '$890,000', apr: '21.2%', ratio: '1 ECO = 4.800 VRS' },
+            { pair: 'VCO / CARBON', icon1: '🌿', icon2: '♻️', liq: '$4,250,000', vol: '$1,420,000', apr: '28.5%', ratio: '1 CARBON = 12.450 VCO' },
+            { pair: 'VCO / ECO', icon1: '🌿', icon2: '🏛️', liq: '$2,800,000', vol: '$890,000', apr: '21.2%', ratio: '1 ECO = 4.800 VCO' },
             { pair: 'CARBON / ECO', icon1: '♻️', icon2: '🏛️', liq: '$1,650,000', vol: '$510,000', apr: '34.0%', ratio: '1 CARBON = 2.593 ECO' },
-            { pair: 'TREE / VRS', icon1: '🌳', icon2: '🌿', liq: '$1,900,000', vol: '$740,000', apr: '42.1%', ratio: '1 TREE = 25.000 VRS' },
-            { pair: 'GREEN / VRS', icon1: '⚡', icon2: '🌿', liq: '$1,100,000', vol: '$320,000', apr: '18.8%', ratio: '1 GREEN = 2.150 VRS' },
-            { pair: 'REDD / VRS', icon1: '🔥', icon2: '🌿', liq: '$950,000', vol: '$280,000', apr: '24.6%', ratio: '1 REDD = 8.500 VRS' }
+            { pair: 'TREE / VCO', icon1: '🌳', icon2: '🌿', liq: '$1,900,000', vol: '$740,000', apr: '42.1%', ratio: '1 TREE = 25.000 VCO' },
+            { pair: 'GREEN / VCO', icon1: '⚡', icon2: '🌿', liq: '$1,100,000', vol: '$320,000', apr: '18.8%', ratio: '1 GREEN = 2.150 VCO' },
+            { pair: 'REDD / VCO', icon1: '🔥', icon2: '🌿', liq: '$950,000', vol: '$280,000', apr: '24.6%', ratio: '1 REDD = 8.500 VCO' }
         ];
 
         let tokensData = JSON.parse(JSON.stringify(MASTER_TOKENS));
@@ -2199,7 +2199,7 @@
                         </div>
                     </td>
                     <td>
-                        <div class="mono-val">${t.priceVRS.toFixed(4)} VRS</div>
+                        <div class="mono-val">${t.priceVCO.toFixed(4)} VCO</div>
                         <div class="sub-val">$${t.priceUSD.toFixed(5)}</div>
                     </td>
                     <td>
@@ -2211,7 +2211,7 @@
                     </td>
                     <td>
                         <div class="mono-val">$${t.mcapUSD.toLocaleString()}</div>
-                        <div class="sub-val">${(t.mcapUSD / 0.001).toLocaleString()} VRS</div>
+                        <div class="sub-val">${(t.mcapUSD / 0.001).toLocaleString()} VCO</div>
                     </td>
                     <td>
                         <div class="mono-val" style="font-size:0.8rem; color:var(--green)">H: $${t.high24h.toFixed(5)}</div>
@@ -2272,7 +2272,7 @@
             gradient.addColorStop(0, 'rgba(0, 255, 136, 0.25)');
             gradient.addColorStop(1, 'rgba(0, 255, 136, 0.0)');
 
-            const dataPoints = generateChartPoints('VRS', activeTimeframe);
+            const dataPoints = generateChartPoints('VCO', activeTimeframe);
 
             chartInstance = new Chart(ctx, {
                 type: 'line',
@@ -2533,18 +2533,18 @@
         function initSwapsFeed() {
             const tbody = document.getElementById('swapsTableBody');
             const initialSwaps = [
-                { pair: 'VRS / CARBON', type: 'BUY', amount: '12,500 VRS', price: '$0.00100', total: '$12.50', hash: '0x7f8a...3e2a' },
-                { pair: 'TREE / VRS', type: 'BUY', amount: '450 TREE', price: '$0.02500', total: '$11.25', hash: '0x3a91...9c10' },
-                { pair: 'VRS / ECO', type: 'SELL', amount: '2,800 ECO', price: '$0.00480', total: '$13.44', hash: '0x882b...110f' },
+                { pair: 'VCO / CARBON', type: 'BUY', amount: '12,500 VCO', price: '$0.00100', total: '$12.50', hash: '0x7f8a...3e2a' },
+                { pair: 'TREE / VCO', type: 'BUY', amount: '450 TREE', price: '$0.02500', total: '$11.25', hash: '0x3a91...9c10' },
+                { pair: 'VCO / ECO', type: 'SELL', amount: '2,800 ECO', price: '$0.00480', total: '$13.44', hash: '0x882b...110f' },
                 { pair: 'CARBON / ECO', type: 'BUY', amount: '800 CARBON', price: '$0.01245', total: '$9.96', hash: '0x12e9...7a88' },
-                { pair: 'GREEN / VRS', type: 'BUY', amount: '5,000 GREEN', price: '$0.00215', total: '$10.75', hash: '0x550c...22d1' }
+                { pair: 'GREEN / VCO', type: 'BUY', amount: '5,000 GREEN', price: '$0.00215', total: '$10.75', hash: '0x550c...22d1' }
             ];
 
             tbody.innerHTML = initialSwaps.map(s => buildSwapRow(s)).join('');
 
             // Push new swap every 6 seconds
             setInterval(() => {
-                const pairs = ['VRS / CARBON', 'TREE / VRS', 'VRS / ECO', 'GREEN / VRS', 'REDD / VRS'];
+                const pairs = ['VCO / CARBON', 'TREE / VCO', 'VCO / ECO', 'GREEN / VCO', 'REDD / VCO'];
                 const selectedPair = pairs[Math.floor(Math.random() * pairs.length)];
                 const isBuy = Math.random() > 0.4;
                 const amtVal = Math.floor(Math.random() * 8000) + 500;
@@ -2553,7 +2553,7 @@
                 const newSwap = {
                     pair: selectedPair,
                     type: isBuy ? 'BUY' : 'SELL',
-                    amount: `${amtVal.toLocaleString()} VRS`,
+                    amount: `${amtVal.toLocaleString()} VCO`,
                     price: '$0.00100',
                     total: `$${(amtVal * 0.001).toFixed(2)}`,
                     hash: hashHex
@@ -2591,7 +2591,7 @@
             tokensData.forEach(t => {
                 const deltaPct = (Math.random() - 0.49) * 0.4; // ±0.2% tick
                 t.priceUSD = Math.max(0.0001, t.priceUSD * (1 + deltaPct / 100));
-                t.priceVRS = Math.max(0.0001, t.priceVRS * (1 + deltaPct / 100));
+                t.priceVCO = Math.max(0.0001, t.priceVCO * (1 + deltaPct / 100));
                 t.change24h += deltaPct;
                 t.sparkline.push(t.priceUSD);
                 if (t.sparkline.length > 7) t.sparkline.shift();
@@ -2696,13 +2696,13 @@
         function getAIAnswer(q) {
             const query = q.toLowerCase();
             if (query.includes('vrs') || query.includes('verdis')) {
-                return '🌿 VRS is the native token of Verdis Chain. It is used for Green DPoS gas fees, validator staking, and carbon offset verification.';
+                return '🌿 VCO is the native token of Verdis Chain. It is used for Green DPoS gas fees, validator staking, and carbon offset verification.';
             }
             if (query.includes('carbon') || query.includes('offset')) {
                 return '♻️ CARBON tokens represent 1 tCO2e of satellite-verified carbon offset. They are minted through Green DPoS consensus whenever validators report verifiable reforestation.';
             }
             if (query.includes('apr') || query.includes('pool') || query.includes('yield')) {
-                return '💧 The highest APR pool currently is TREE/VRS at 42.1% APR, followed by CARBON/ECO at 34.0% APR. You can provide liquidity on the DEX tab!';
+                return '💧 The highest APR pool currently is TREE/VCO at 42.1% APR, followed by CARBON/ECO at 34.0% APR. You can provide liquidity on the DEX tab!';
             }
             return '🌿 Verdis Token Markets provides real-time pricing and liquidity tracking across all 6 carbon-negative assets. Try clicking any token row to inspect contract details and supply metrics!';
         }

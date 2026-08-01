@@ -5,14 +5,14 @@ import { createBlock, createGenesisBlock, validateBlock, isChainValid as validat
 import { Mempool, validateTransaction } from './transaction';
 
 /**
- * TokenSystem — manages native VRS token balances, staking, and transfers.
+ * TokenSystem — manages native VCO token balances, staking, and transfers.
  */
 export class TokenSystem {
   private balances: Map<string, number> = new Map();
   private stakes: Map<string, number> = new Map();
   private maxSupply: number = 100_000_000_000; // 100 billion
   private totalSupply: number = 0;
-  private blockReward: number = 16; // VRS per block (like Tron)
+  private blockReward: number = 16; // VCO per block (like Tron)
 
   getBalance(address: string): number {
     return this.balances.get(address) || 0;

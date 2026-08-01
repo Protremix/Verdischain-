@@ -147,7 +147,7 @@ body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backgr
 <div class="stat-card"><div class="stat-value" id="s-tps">—</div><div class="stat-label">Live TPS</div></div>
 <div class="stat-card"><div class="stat-value" id="s-txs">—</div><div class="stat-label">Total Transactions</div></div>
 <div class="stat-card"><div class="stat-value" id="s-validators">—</div><div class="stat-label">Validators</div></div>
-<div class="stat-card"><div class="stat-value" id="s-supply">—</div><div class="stat-label">VRS Supply</div></div>
+<div class="stat-card"><div class="stat-value" id="s-supply">—</div><div class="stat-label">VCO Supply</div></div>
 <div class="stat-card"><div class="stat-value" id="s-pools">—</div><div class="stat-label">DEX Pools</div></div>
 </div>
 <!-- Tabs -->
@@ -222,7 +222,7 @@ body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;backgr
 <div class="ai-q" onclick="toggleA('a2')">How does the explorer work?</div>
 <div class="ai-a" id="a2">Search by block height, transaction hash, or wallet address. Data updates live from the Verdis blockchain API.</div>
 <div class="ai-q" onclick="toggleA('a3')">What tokens are listed?</div>
-<div class="ai-a" id="a3">VRS (native), CARBON (carbon credits), ECO, TREE (reforestation), GREEN (validator rewards), and REDD (emissions reduction).</div>
+<div class="ai-a" id="a3">VCO (native), CARBON (carbon credits), ECO, TREE (reforestation), GREEN (validator rewards), and REDD (emissions reduction).</div>
 </div>
 <button class="ai-btn" onclick="document.getElementById('aiPanel').classList.toggle('show')">🌿</button>
 </div>
@@ -311,7 +311,7 @@ var txs=res.transactions||res||[];
 if(!txs.length){document.getElementById('txs-body').innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">No transactions found</td></tr>';return}
 document.getElementById('txs-badge').textContent=txs.length+' txs';
 document.getElementById('txs-body').innerHTML=txs.map(function(tx){
-return '<tr onclick="showTx('+JSON.stringify(tx).replace(/"/g,'&quot;')+')"><td class="hash">'+shortHash(tx.hash||tx.id)+'</td><td>#'+(tx.blockHeight||tx.block||'—')+'</td><td>'+timeAgo(tx.timestamp||tx.time)+'</td><td class="addr">'+shortAddr(tx.from||tx.sender)+'</td><td class="addr">'+shortAddr(tx.to||tx.recipient)+'</td><td>'+(tx.amount||tx.value||0)+' VRS</td><td><span class="badge '+(tx.status==='failed'?'badge-failed':'badge-success')+'">'+(tx.status||'success')+'</span></td></tr>';
+return '<tr onclick="showTx('+JSON.stringify(tx).replace(/"/g,'&quot;')+')"><td class="hash">'+shortHash(tx.hash||tx.id)+'</td><td>#'+(tx.blockHeight||tx.block||'—')+'</td><td>'+timeAgo(tx.timestamp||tx.time)+'</td><td class="addr">'+shortAddr(tx.from||tx.sender)+'</td><td class="addr">'+shortAddr(tx.to||tx.recipient)+'</td><td>'+(tx.amount||tx.value||0)+' VCO</td><td><span class="badge '+(tx.status==='failed'?'badge-failed':'badge-success')+'">'+(tx.status||'success')+'</span></td></tr>';
 }).join('');
 }catch(e){document.getElementById('txs-body').innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">Failed to load transactions</td></tr>'}
 }
@@ -342,12 +342,12 @@ var pools=await fetch(API+'/api/dex/pools').then(r=>r.json()).catch(()=>[]);
 var poolList=Array.isArray(pools)?pools:(pools.pools||[]);
 if(!poolList.length){
 poolList=[
-{name:'VRS/CARBON',liquidity:1250000,volume24h:84000,price:'1.0234',apr:18.5},
-{name:'VRS/ECO',liquidity:980000,volume24h:52000,price:'0.5621',apr:22.3},
+{name:'VCO/CARBON',liquidity:1250000,volume24h:84000,price:'1.0234',apr:18.5},
+{name:'VCO/ECO',liquidity:980000,volume24h:52000,price:'0.5621',apr:22.3},
 {name:'CARBON/ECO',liquidity:720000,volume24h:31000,price:'0.5492',apr:15.7},
-{name:'TREE/VRS',liquidity:540000,volume24h:18000,price:'0.0031',apr:31.2},
-{name:'GREEN/VRS',liquidity:610000,volume24h:27000,price:'0.0874',apr:24.8},
-{name:'REDD/VRS',liquidity:430000,volume24h:12000,price:'0.0156',apr:19.4}
+{name:'TREE/VCO',liquidity:540000,volume24h:18000,price:'0.0031',apr:31.2},
+{name:'GREEN/VCO',liquidity:610000,volume24h:27000,price:'0.0874',apr:24.8},
+{name:'REDD/VCO',liquidity:430000,volume24h:12000,price:'0.0156',apr:19.4}
 ];
 }
 document.getElementById('tokens-grid').innerHTML=poolList.map(function(p){
@@ -362,10 +362,10 @@ var swaps=res.swaps||res||[];
 if(!swaps.length){
 // Fallback data
 swaps=[
-{pair:'VRS/CARBON',type:'buy',amountIn:'1,000 VRS',amountOut:'977 CARBON',price:'0.977',time:Date.now()-30000,hash:'0xa8d3...f29c'},
-{pair:'VRS/ECO',type:'sell',amountIn:'500 ECO',amountOut:'890 VRS',price:'1.780',time:Date.now()-90000,hash:'0xb7e1...d4a8'},
-{pair:'TREE/VRS',type:'buy',amountIn:'200 VRS',amountOut:'64,516 TREE',price:'0.0031',time:Date.now()-180000,hash:'0xc3f2...e8b1'},
-{pair:'GREEN/VRS',type:'sell',amountIn:'1,000 GREEN',amountOut:'87.4 VRS',price:'0.0874',time:Date.now()-300000,hash:'0xd4a8...c7f3'}
+{pair:'VCO/CARBON',type:'buy',amountIn:'1,000 VCO',amountOut:'977 CARBON',price:'0.977',time:Date.now()-30000,hash:'0xa8d3...f29c'},
+{pair:'VCO/ECO',type:'sell',amountIn:'500 ECO',amountOut:'890 VCO',price:'1.780',time:Date.now()-90000,hash:'0xb7e1...d4a8'},
+{pair:'TREE/VCO',type:'buy',amountIn:'200 VCO',amountOut:'64,516 TREE',price:'0.0031',time:Date.now()-180000,hash:'0xc3f2...e8b1'},
+{pair:'GREEN/VCO',type:'sell',amountIn:'1,000 GREEN',amountOut:'87.4 VCO',price:'0.0874',time:Date.now()-300000,hash:'0xd4a8...c7f3'}
 ];
 }
 document.getElementById('swaps-badge').textContent=swaps.length+' swaps';

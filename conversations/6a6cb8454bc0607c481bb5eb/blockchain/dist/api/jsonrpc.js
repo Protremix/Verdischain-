@@ -9,7 +9,7 @@
  *   Network Name: Verdis
  *   RPC URL: http://localhost:3200/rpc
  *   Chain ID: 909
- *   Symbol: VRS
+ *   Symbol: VCO
  *   Explorer: http://localhost:3200
  */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
@@ -60,7 +60,7 @@ secp256k1.etc.hmacSha256Sync = (key, ...msgs) => {
     return (0, hmac_1.hmac)(sha256_1.sha256, key, concat(...msgs));
 };
 exports.VERDIS_CHAIN_ID = 909;
-// VRS has 18 decimals like ETH (1 VRS = 10^18 wei)
+// VCO has 18 decimals like ETH (1 VCO = 10^18 wei)
 const DECIMALS = 18;
 /**
  * Derives an Ethereum-compatible address from a public key using keccak256.
@@ -104,8 +104,8 @@ function toChecksumAddress(address) {
     return result;
 }
 /**
- * Converts VRS amount to wei (hex string).
- * 1 VRS = 10^18 wei
+ * Converts VCO amount to wei (hex string).
+ * 1 VCO = 10^18 wei
  */
 function vrsToHexWei(vrs) {
     // Use string math to avoid floating point precision loss
@@ -119,7 +119,7 @@ function vrsToHexWei(vrs) {
     return '0x' + (intWei + decWei).toString(16);
 }
 /**
- * Converts hex wei string to VRS number.
+ * Converts hex wei string to VCO number.
  */
 function hexWeiToVrs(hex) {
     if (!hex || hex === '0x')
@@ -561,7 +561,7 @@ function processMethod(method, params, id, blockchain, walletManager) {
                         error: { code: -32603, message: 'Failed to parse transaction' }
                     };
                 }
-                // Convert value from wei to VRS
+                // Convert value from wei to VCO
                 const amountVrs = Number(parsed.value) / 10 ** DECIMALS;
                 const feeVrs = Number(parsed.gasPrice * parsed.gasLimit) / 10 ** DECIMALS;
                 // Find the sender's wallet in our system

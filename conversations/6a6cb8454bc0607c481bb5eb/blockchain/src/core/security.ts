@@ -35,7 +35,7 @@ export class SecurityManager {
   private readonly RATE_LIMIT_MAX = 30; // 30 requests per minute per IP
   private readonly RATE_LIMIT_STRICT = 5; // 5 per minute for sensitive endpoints
   private readonly MAX_MEMPOOL_SIZE = 1000;
-  private readonly MAX_TX_AMOUNT = 1000000000; // 1B VRS max per tx
+  private readonly MAX_TX_AMOUNT = 1000000000; // 1B VCO max per tx
   private readonly MAX_BLOCK_SIZE = 500; // max transactions per block
   
   constructor(adminApiKey?: string) {
@@ -140,7 +140,7 @@ export class SecurityManager {
       return { valid: false, error: 'Amount must be greater than zero' };
     }
     if (amount > this.MAX_TX_AMOUNT) {
-      return { valid: false, error: `Amount exceeds maximum (${this.MAX_TX_AMOUNT} VRS)` };
+      return { valid: false, error: `Amount exceeds maximum (${this.MAX_TX_AMOUNT} VCO)` };
     }
     return { valid: true };
   }
@@ -198,7 +198,7 @@ export class SecurityManager {
         validatorSlashing: { status: 'active', description: 'Slashing conditions for Byzantine validators' },
         inputValidation: { status: 'active', description: 'Address, amount, and input sanitization' },
         mempoolLimits: { status: 'active', description: `Max ${this.MAX_MEMPOOL_SIZE} pending transactions` },
-        maxTransactionAmount: { status: 'active', description: `Max ${this.MAX_TX_AMOUNT} VRS per transaction` },
+        maxTransactionAmount: { status: 'active', description: `Max ${this.MAX_TX_AMOUNT} VCO per transaction` },
         maxBlockSize: { status: 'active', description: `Max ${this.MAX_BLOCK_SIZE} transactions per block` },
       },
       stats: {

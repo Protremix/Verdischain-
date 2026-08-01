@@ -8,7 +8,7 @@
  *   Network Name: Verdis
  *   RPC URL: http://localhost:3200/rpc
  *   Chain ID: 909
- *   Symbol: VRS
+ *   Symbol: VCO
  *   Explorer: http://localhost:3200
  */
 
@@ -29,7 +29,7 @@ import { getPublicKeyFromPrivateKey } from '../crypto';
 
 export const VERDIS_CHAIN_ID = 909;
 
-// VRS has 18 decimals like ETH (1 VRS = 10^18 wei)
+// VCO has 18 decimals like ETH (1 VCO = 10^18 wei)
 const DECIMALS = 18;
 
 /**
@@ -75,8 +75,8 @@ export function toChecksumAddress(address: string): string {
 }
 
 /**
- * Converts VRS amount to wei (hex string).
- * 1 VRS = 10^18 wei
+ * Converts VCO amount to wei (hex string).
+ * 1 VCO = 10^18 wei
  */
 function vrsToHexWei(vrs: number): string {
   // Use string math to avoid floating point precision loss
@@ -91,7 +91,7 @@ function vrsToHexWei(vrs: number): string {
 }
 
 /**
- * Converts hex wei string to VRS number.
+ * Converts hex wei string to VCO number.
  */
 function hexWeiToVrs(hex: string): number {
   if (!hex || hex === '0x') return 0;
@@ -586,7 +586,7 @@ function processMethod(
           };
         }
 
-        // Convert value from wei to VRS
+        // Convert value from wei to VCO
         const amountVrs = Number(parsed.value) / 10 ** DECIMALS;
         const feeVrs = Number(parsed.gasPrice * parsed.gasLimit) / 10 ** DECIMALS;
         

@@ -1,7 +1,7 @@
 import { Block, Transaction, Validator, Stake, BlockchainState } from '../types';
 import { Mempool } from './transaction';
 /**
- * TokenSystem — manages native VRS token balances, staking, and transfers.
+ * TokenSystem — manages native VCO token balances, staking, and transfers.
  */
 export declare class TokenSystem {
     private balances;

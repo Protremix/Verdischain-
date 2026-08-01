@@ -1344,7 +1344,7 @@
         <div class="step-num">01</div>
         <div class="step-icon">🔒</div>
         <h3 class="step-heading">Lock tokens on source chain</h3>
-        <p class="step-text">Deposit your tokens (ETH, BNB, USDT, USDC, VRS) into the Verdis Smart Lock contract on the source blockchain.</p>
+        <p class="step-text">Deposit your tokens (ETH, BNB, USDT, USDC, VCO) into the Verdis Smart Lock contract on the source blockchain.</p>
       </div>
 
       <div class="glass-card step-card">
@@ -1487,13 +1487,13 @@
         <button class="btn-quick-bridge" onclick="quickSelectAsset('USDC', 'Polygon')">Bridge USDC →</button>
       </div>
 
-      <!-- VRS -->
+      <!-- VCO -->
       <div class="glass-card asset-card" style="border-color: var(--primary);">
         <div class="asset-header">
           <div class="asset-identity">
             <span style="font-size: 1.8rem;">🌿</span>
             <div>
-              <div class="asset-symbol">VRS</div>
+              <div class="asset-symbol">VCO</div>
               <div class="asset-name">Verdis Eco Token</div>
             </div>
           </div>
@@ -1513,7 +1513,7 @@
             <span class="asset-stat-val" style="color:var(--primary);">-3.50 kg CO₂</span>
           </div>
         </div>
-        <button class="btn-quick-bridge" onclick="quickSelectAsset('VRS', 'Verdis Chain 909')">Bridge VRS →</button>
+        <button class="btn-quick-bridge" onclick="quickSelectAsset('VCO', 'Verdis Chain 909')">Bridge VCO →</button>
       </div>
 
     </div>
@@ -1604,7 +1604,7 @@
           <div class="chain-item-left"><span>🔺</span> Avalanche</div>
           <span class="mono" style="font-size:0.8rem; color:var(--text-muted);">Chain ID: 43114</span>
         </div>
-        <div class="chain-item" onclick="selectChain('Verdis Chain 909', '🌿', 'VRS')">
+        <div class="chain-item" onclick="selectChain('Verdis Chain 909', '🌿', 'VCO')">
           <div class="chain-item-left"><span>🌿</span> Verdis Chain 909</div>
           <span class="mono" style="font-size:0.8rem; color:var(--primary);">Chain ID: 909</span>
         </div>
@@ -1743,7 +1743,7 @@
       BNB: 580.20,
       USDT: 1.00,
       USDC: 1.00,
-      VRS: 4.25,
+      VCO: 4.25,
       MATIC: 0.85,
       AVAX: 32.10
     };
@@ -1877,8 +1877,8 @@
       
       document.getElementById('sourceUsdVal').innerText = `~$${usdVal}`;
 
-      // Fee calculations (0.05% fee, 0% for VRS)
-      const feeRate = (activeAsset === 'VRS') ? 0 : 0.0005;
+      // Fee calculations (0.05% fee, 0% for VCO)
+      const feeRate = (activeAsset === 'VCO') ? 0 : 0.0005;
       const feeAmount = val * feeRate;
       const feeUsd = (feeAmount * price).toFixed(2);
       
@@ -1951,7 +1951,7 @@
     function quickSelectAsset(symbol, chainName) {
       activeAsset = symbol;
       document.getElementById('sourceAssetSymbol').innerText = symbol;
-      document.getElementById('destAssetSymbol').innerText = symbol === 'VRS' ? 'VRS' : `w${symbol} (Verdis)`;
+      document.getElementById('destAssetSymbol').innerText = symbol === 'VCO' ? 'VCO' : `w${symbol} (Verdis)`;
       
       if (chainName) {
         currentSourceChain = chainName;
@@ -2036,7 +2036,7 @@
       { hash: '0x4a12...78bc', from: 'BSC 🟡', to: 'Verdis Chain 909 🌿', amount: '12.00 BNB', carbon: '-17.40 kg', time: '4 mins ago', status: 'completed' },
       { hash: '0x99e1...120f', from: 'Polygon 🟣', to: 'Verdis Chain 909 🌿', amount: '1,500 USDT', carbon: '-2.73 kg', time: '8 mins ago', status: 'pending' },
       { hash: '0x10a5...66d2', from: 'Avalanche 🔺', to: 'Verdis Chain 909 🌿', amount: '45.00 AVAX', carbon: '-9.20 kg', time: '12 mins ago', status: 'completed' },
-      { hash: '0xee21...33aa', from: 'Verdis Chain 909 🌿', to: 'Ethereum 🔷', amount: '5,000 VRS', carbon: '-18.50 kg', time: '18 mins ago', status: 'completed' },
+      { hash: '0xee21...33aa', from: 'Verdis Chain 909 🌿', to: 'Ethereum 🔷', amount: '5,000 VCO', carbon: '-18.50 kg', time: '18 mins ago', status: 'completed' },
       { hash: '0x11b3...88cd', from: 'BSC 🟡', to: 'Verdis Chain 909 🌿', amount: '0.05 BNB', carbon: '-0.10 kg', time: '25 mins ago', status: 'failed' }
     ];
 
@@ -2161,7 +2161,7 @@
         
         const lower = text.toLowerCase();
         if (lower.includes('fee')) {
-          reply = "🌿 Bridge fees are 0.05% for standard tokens (ETH, BNB, USDT, USDC), and 0.00% (FREE!) for native VRS tokens!";
+          reply = "🌿 Bridge fees are 0.05% for standard tokens (ETH, BNB, USDT, USDC), and 0.00% (FREE!) for native VCO tokens!";
         } else if (lower.includes('safe') || lower.includes('security')) {
           reply = "🛡 Security is our top priority: 15-validator threshold consensus, 72-hour time-locked security model, and ZK-proof state audits guarantee zero single point of failure.";
         } else if (lower.includes('carbon') || lower.includes('green') || lower.includes('eco')) {

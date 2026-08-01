@@ -62,7 +62,7 @@ if (savedState) {
     console.log('║         🌿 Verdis Network Restored               ║');
     console.log('╠══════════════════════════════════════════════════╣');
     console.log(`║  Chain Height:   ${blockchain.getChainHeight()}`);
-    console.log(`║  Total Supply:   ${blockchain.getTokenSystem().getTotalSupply().toLocaleString()} VRS`);
+    console.log(`║  Total Supply:   ${blockchain.getTokenSystem().getTotalSupply().toLocaleString()} VCO`);
     console.log(`║  Validators:     ${consensus.getAllValidatorsList().length}`);
     console.log(`║  Wallets:        ${walletManager.getAllWallets().length}`);
     console.log(`║  DEX Pools:      ${dex.getAllPools().length}`);
@@ -74,8 +74,8 @@ else {
     console.log('⚡ Bootstrapping fresh Verdis network...');
     const consensus = blockchain.getConsensus();
     const tokenSystem = blockchain.getTokenSystem();
-    const GENESIS_PER_VALIDATOR = 10000000000; // 10 billion VRS each (50B total from 100B max)
-    const STAKE_PER_VALIDATOR = 1000000000; // 1 billion VRS staked per validator
+    const GENESIS_PER_VALIDATOR = 10000000000; // 10 billion VCO each (50B total from 100B max)
+    const STAKE_PER_VALIDATOR = 1000000000; // 1 billion VCO staked per validator
     const energySources = ['solar', 'wind', 'hydro', 'geothermal', 'solar'];
     for (let i = 1; i <= 5; i++) {
         const wallet = walletManager.createWallet();
@@ -97,8 +97,8 @@ else {
     console.log('\n╔══════════════════════════════════════════════════╗');
     console.log('║         🌿 Verdis Network Bootstrapped            ║');
     console.log('╠══════════════════════════════════════════════════╣');
-    console.log(`║  Total Supply:    ${tokenSystem.getTotalSupply().toLocaleString()} VRS`);
-    console.log(`║  Max Supply:      ${tokenSystem.getMaxSupply().toLocaleString()} VRS`);
+    console.log(`║  Total Supply:    ${tokenSystem.getTotalSupply().toLocaleString()} VCO`);
+    console.log(`║  Max Supply:      ${tokenSystem.getMaxSupply().toLocaleString()} VCO`);
     console.log(`║  Validators:      ${consensus.getAllValidatorsList().length}`);
     console.log(`║  Green Validators: ${ecoSystem.getTopGreenValidators(5).length}`);
     console.log('╚══════════════════════════════════════════════════╝\n');
@@ -115,14 +115,14 @@ else {
     dex.depositToken('ECO', w2.address, 4000000);
     dex.depositToken('ECO', w3.address, 4000000);
     console.log(`  Minted 8,000,000 ECO tokens`);
-    // Create VRS/CARBON pool — initial price: 1 VRS = 0.5 CARBON
-    dex.createPool('VRS', 'CARBON');
-    dex.addLiquidity(w1.address, 'VRS', 'CARBON', 2000000, 1000000);
-    console.log(`  Pool VRS/CARBON: 2M VRS / 1M CARBON | Price: 1 VRS = 0.5 CARBON`);
-    // Create VRS/ECO pool — initial price: 1 VRS = 2 ECO
-    dex.createPool('VRS', 'ECO');
-    dex.addLiquidity(w2.address, 'VRS', 'ECO', 1000000, 2000000);
-    console.log(`  Pool VRS/ECO: 1M VRS / 2M ECO | Price: 1 VRS = 2 ECO`);
+    // Create VCO/CARBON pool — initial price: 1 VCO = 0.5 CARBON
+    dex.createPool('VCO', 'CARBON');
+    dex.addLiquidity(w1.address, 'VCO', 'CARBON', 2000000, 1000000);
+    console.log(`  Pool VCO/CARBON: 2M VCO / 1M CARBON | Price: 1 VCO = 0.5 CARBON`);
+    // Create VCO/ECO pool — initial price: 1 VCO = 2 ECO
+    dex.createPool('VCO', 'ECO');
+    dex.addLiquidity(w2.address, 'VCO', 'ECO', 1000000, 2000000);
+    console.log(`  Pool VCO/ECO: 1M VCO / 2M ECO | Price: 1 VCO = 2 ECO`);
     // Create CARBON/ECO pool
     dex.createPool('CARBON', 'ECO');
     dex.addLiquidity(w3.address, 'CARBON', 'ECO', 500000, 1000000);
@@ -131,14 +131,14 @@ else {
     // === Execute initial trades to establish market ===
     console.log('\n📈 Executing initial market trades...\n');
     const trades = [
-        { trader: w2.address, tokenIn: 'CARBON', tokenOut: 'VRS', amountIn: 50000, label: '50K CARBON → VRS' },
-        { trader: w1.address, tokenIn: 'CARBON', tokenOut: 'VRS', amountIn: 30000, label: '30K CARBON → VRS' },
+        { trader: w2.address, tokenIn: 'CARBON', tokenOut: 'VCO', amountIn: 50000, label: '50K CARBON → VCO' },
+        { trader: w1.address, tokenIn: 'CARBON', tokenOut: 'VCO', amountIn: 30000, label: '30K CARBON → VCO' },
         { trader: w3.address, tokenIn: 'ECO', tokenOut: 'CARBON', amountIn: 100000, label: '100K ECO → CARBON' },
-        { trader: w2.address, tokenIn: 'ECO', tokenOut: 'VRS', amountIn: 80000, label: '80K ECO → VRS' },
-        { trader: w1.address, tokenIn: 'CARBON', tokenOut: 'VRS', amountIn: 20000, label: '20K CARBON → VRS' },
+        { trader: w2.address, tokenIn: 'ECO', tokenOut: 'VCO', amountIn: 80000, label: '80K ECO → VCO' },
+        { trader: w1.address, tokenIn: 'CARBON', tokenOut: 'VCO', amountIn: 20000, label: '20K CARBON → VCO' },
         { trader: w3.address, tokenIn: 'ECO', tokenOut: 'CARBON', amountIn: 50000, label: '50K ECO → CARBON' },
-        { trader: w2.address, tokenIn: 'CARBON', tokenOut: 'VRS', amountIn: 10000, label: '10K CARBON → VRS' },
-        { trader: w1.address, tokenIn: 'CARBON', tokenOut: 'VRS', amountIn: 5000, label: '5K CARBON → VRS' },
+        { trader: w2.address, tokenIn: 'CARBON', tokenOut: 'VCO', amountIn: 10000, label: '10K CARBON → VCO' },
+        { trader: w1.address, tokenIn: 'CARBON', tokenOut: 'VCO', amountIn: 5000, label: '5K CARBON → VCO' },
     ];
     for (let i = 0; i < trades.length; i++) {
         const t = trades[i];
@@ -243,7 +243,7 @@ else {
 apiServer.start(PORT);
 console.log('🚀 Verdis is running at http://localhost:3200');
 console.log('📡 Trust Wallet RPC: http://localhost:3200/rpc (Chain ID 909)');
-console.log('💱 Live DEX: VRS/CARBON, VRS/ECO, CARBON/ECO pools active');
+console.log('💱 Live DEX: VCO/CARBON, VCO/ECO, CARBON/ECO pools active');
 console.log('📊 Token market data: http://localhost:3200/api/token/market');
 console.log('\n💡 Try these commands:');
 console.log('   curl http://localhost:3200/api/blockchain/info');

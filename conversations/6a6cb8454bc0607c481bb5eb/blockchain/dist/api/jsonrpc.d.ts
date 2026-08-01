@@ -8,7 +8,7 @@
  *   Network Name: Verdis
  *   RPC URL: http://localhost:3200/rpc
  *   Chain ID: 909
- *   Symbol: VRS
+ *   Symbol: VCO
  *   Explorer: http://localhost:3200
  */
 import { Express } from 'express';

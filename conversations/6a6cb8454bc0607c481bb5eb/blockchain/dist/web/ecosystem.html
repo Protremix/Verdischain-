@@ -1973,7 +1973,7 @@ const dappData = [
     category: "DeFi",
     icon: "⚡",
     tvl: "$32.1M Staked",
-    desc: "Yield aggregator liquid-staking protocol routing delegated VRS exclusively to 100% renewable energy validators.",
+    desc: "Yield aggregator liquid-staking protocol routing delegated VCO exclusively to 100% renewable energy validators.",
     verified: true,
     url: "#"
   },
@@ -2110,12 +2110,12 @@ renderDApps(dappData);
 
 /* === 5. DEX POOLS LIVE FETCH & RENDER === */
 const fallbackPools = [
-  { id: "vrs-carbon", pair: "VRS / CARBON", tvl: "$18,420,000", volume: "$4,250,000", apr: "42.8%", change: "+3.4%", tokenA: "🌿", tokenB: "🌱" },
-  { id: "vrs-eco", pair: "VRS / ECO", tvl: "$24,610,000", volume: "$6,810,000", apr: "38.2%", change: "+5.1%", tokenA: "🌿", tokenB: "🍃" },
+  { id: "vco-carbon", pair: "VCO / CARBON", tvl: "$18,420,000", volume: "$4,250,000", apr: "42.8%", change: "+3.4%", tokenA: "🌿", tokenB: "🌱" },
+  { id: "vco-eco", pair: "VCO / ECO", tvl: "$24,610,000", volume: "$6,810,000", apr: "38.2%", change: "+5.1%", tokenA: "🌿", tokenB: "🍃" },
   { id: "carbon-eco", pair: "CARBON / ECO", tvl: "$12,150,000", volume: "$2,940,000", apr: "29.5%", change: "+1.8%", tokenA: "🌱", tokenB: "🍃" },
-  { id: "tree-vrs", pair: "TREE / VRS", tvl: "$8,920,000", volume: "$1,820,000", apr: "54.1%", change: "+8.2%", tokenA: "🌳", tokenB: "🌿" },
-  { id: "green-vrs", pair: "GREEN / VRS", tvl: "$15,340,000", volume: "$3,510,000", apr: "33.6%", change: "+2.4%", tokenA: "💚", tokenB: "🌿" },
-  { id: "redd-vrs", pair: "REDD / VRS", tvl: "$6,710,000", volume: "$1,210,000", apr: "61.4%", change: "+11.5%", tokenA: "🌲", tokenB: "🌿" }
+  { id: "tree-vrs", pair: "TREE / VCO", tvl: "$8,920,000", volume: "$1,820,000", apr: "54.1%", change: "+8.2%", tokenA: "🌳", tokenB: "🌿" },
+  { id: "green-vrs", pair: "GREEN / VCO", tvl: "$15,340,000", volume: "$3,510,000", apr: "33.6%", change: "+2.4%", tokenA: "💚", tokenB: "🌿" },
+  { id: "redd-vrs", pair: "REDD / VCO", tvl: "$6,710,000", volume: "$1,210,000", apr: "61.4%", change: "+11.5%", tokenA: "🌲", tokenB: "🌿" }
 ];
 
 async function loadDexPools() {
@@ -2181,12 +2181,12 @@ loadDexPools();
 
 /* === 6. VALIDATOR NETWORK LIVE FETCH & RENDER === */
 const fallbackValidators = [
-  { name: "Solstice Node Alpha", source: "☀️ 100% Solar Power", score: 99.8, staked: "4,250,000 VRS", location: "🇨🇭 Zurich, Switzerland", avatar: "☀️" },
-  { name: "Nordic Wind Station 01", source: "💨 Offshore Wind Farm", score: 99.5, staked: "3,810,000 VRS", location: "🇳🇴 Oslo, Norway", avatar: "💨" },
-  { name: "Icelandic Geothermal Node", source: "🌋 Geothermal Power", score: 100.0, staked: "5,120,000 VRS", location: "🇮🇸 Reykjavik, Iceland", avatar: "🌋" },
-  { name: "Alpine HydroValidator", source: "🌊 Hydroelectric Power", score: 98.9, staked: "2,940,000 VRS", location: "🇦🇹 Innsbruck, Austria", avatar: "🌊" },
-  { name: "Iberian Micro-Solar Array", source: "☀️ Concentrated Solar", score: 99.2, staked: "3,150,000 VRS", location: "🇪🇸 Seville, Spain", avatar: "☀️" },
-  { name: "Pacific Biomass Node", source: "🌱 Organic Biomass Grid", score: 97.8, staked: "2,420,000 VRS", location: "🇨🇦 Vancouver, Canada", avatar: "🌱" }
+  { name: "Solstice Node Alpha", source: "☀️ 100% Solar Power", score: 99.8, staked: "4,250,000 VCO", location: "🇨🇭 Zurich, Switzerland", avatar: "☀️" },
+  { name: "Nordic Wind Station 01", source: "💨 Offshore Wind Farm", score: 99.5, staked: "3,810,000 VCO", location: "🇳🇴 Oslo, Norway", avatar: "💨" },
+  { name: "Icelandic Geothermal Node", source: "🌋 Geothermal Power", score: 100.0, staked: "5,120,000 VCO", location: "🇮🇸 Reykjavik, Iceland", avatar: "🌋" },
+  { name: "Alpine HydroValidator", source: "🌊 Hydroelectric Power", score: 98.9, staked: "2,940,000 VCO", location: "🇦🇹 Innsbruck, Austria", avatar: "🌊" },
+  { name: "Iberian Micro-Solar Array", source: "☀️ Concentrated Solar", score: 99.2, staked: "3,150,000 VCO", location: "🇪🇸 Seville, Spain", avatar: "☀️" },
+  { name: "Pacific Biomass Node", source: "🌱 Organic Biomass Grid", score: 97.8, staked: "2,420,000 VCO", location: "🇨🇦 Vancouver, Canada", avatar: "🌱" }
 ];
 
 async function loadValidators() {
@@ -2204,7 +2204,7 @@ async function loadValidators() {
           name: v.name || v.address?.substring(0, 12) || fallbackValidators[idx % 6].name,
           source: v.energySource || fallbackValidators[idx % 6].source,
           score: v.greenScore || v.score || fallbackValidators[idx % 6].score,
-          staked: v.stake ? `${Number(v.stake).toLocaleString()} VRS` : fallbackValidators[idx % 6].staked,
+          staked: v.stake ? `${Number(v.stake).toLocaleString()} VCO` : fallbackValidators[idx % 6].staked,
           location: v.location || fallbackValidators[idx % 6].location,
           avatar: fallbackValidators[idx % 6].avatar
         }));
@@ -2242,7 +2242,7 @@ async function loadValidators() {
         <div style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted);">
           Stake: <span style="color:#fff; font-weight:600;">${v.staked}</span>
         </div>
-        <button class="btn btn-outline" style="padding:6px 12px; font-size:0.78rem;" onclick="toast('Delegating stake to ${v.name}...');">Delegate VRS</button>
+        <button class="btn btn-outline" style="padding:6px 12px; font-size:0.78rem;" onclick="toast('Delegating stake to ${v.name}...');">Delegate VCO</button>
       </div>
     </div>
   `).join('');
@@ -2252,10 +2252,10 @@ loadValidators();
 
 /* === 7. CARBON CREDIT MARKETPLACE LIVE FETCH & RENDER === */
 const fallbackCarbonListings = [
-  { id: 1, title: "Amazon Canopy Protection Phase IV", origin: "🌎 Brazil (Verra VCS #2041)", priceVrs: "12.5 VRS", priceUsd: "$18.50 / Ton", supply: "15,000 Tons Available", badge: "Verra Verified" },
-  { id: 2, title: "Kenyan Rift Valley Reforestation", origin: "🌍 Kenya (Gold Standard #GS-8812)", priceVrs: "9.8 VRS", priceUsd: "$14.20 / Ton", supply: "22,500 Tons Available", badge: "Gold Standard" },
-  { id: 3, title: "Scottish Highland Peatland Restoration", origin: "🌍 United Kingdom (UK Peatland Code)", priceVrs: "16.0 VRS", priceUsd: "$23.80 / Ton", supply: "8,400 Tons Available", badge: "Verdis Eco-Chain" },
-  { id: 4, title: "Sundarbans Coastal Mangrove Belt", origin: "🌏 India/Bangladesh (Plan Vivo Cert)", priceVrs: "14.2 VRS", priceUsd: "$21.00 / Ton", supply: "18,900 Tons Available", badge: "Plan Vivo Certified" }
+  { id: 1, title: "Amazon Canopy Protection Phase IV", origin: "🌎 Brazil (Verra VCS #2041)", priceVrs: "12.5 VCO", priceUsd: "$18.50 / Ton", supply: "15,000 Tons Available", badge: "Verra Verified" },
+  { id: 2, title: "Kenyan Rift Valley Reforestation", origin: "🌍 Kenya (Gold Standard #GS-8812)", priceVrs: "9.8 VCO", priceUsd: "$14.20 / Ton", supply: "22,500 Tons Available", badge: "Gold Standard" },
+  { id: 3, title: "Scottish Highland Peatland Restoration", origin: "🌍 United Kingdom (UK Peatland Code)", priceVrs: "16.0 VCO", priceUsd: "$23.80 / Ton", supply: "8,400 Tons Available", badge: "Verdis Eco-Chain" },
+  { id: 4, title: "Sundarbans Coastal Mangrove Belt", origin: "🌏 India/Bangladesh (Plan Vivo Cert)", priceVrs: "14.2 VCO", priceUsd: "$21.00 / Ton", supply: "18,900 Tons Available", badge: "Plan Vivo Certified" }
 ];
 
 async function loadCarbonCredits() {
@@ -2273,7 +2273,7 @@ async function loadCarbonCredits() {
           id: c.id || idx,
           title: c.projectType || c.title || fallbackCarbonListings[idx % 4].title,
           origin: c.location || fallbackCarbonListings[idx % 4].origin,
-          priceVrs: c.price ? `${c.price} VRS` : fallbackCarbonListings[idx % 4].priceVrs,
+          priceVrs: c.price ? `${c.price} VCO` : fallbackCarbonListings[idx % 4].priceVrs,
           priceUsd: c.priceUsd ? `$${c.priceUsd} / Ton` : fallbackCarbonListings[idx % 4].priceUsd,
           supply: c.amount ? `${Number(c.amount).toLocaleString()} Tons` : fallbackCarbonListings[idx % 4].supply,
           badge: c.status || fallbackCarbonListings[idx % 4].badge
@@ -2467,11 +2467,11 @@ function sendAiMessage() {
     if (lower.includes('submit') || lower.includes('list')) {
       responseText = "To submit your DApp, click the 'Submit DApp' button in the navigation or hero section. Our $10M Eco Innovation Fund offers grants up to $500,000 for verified green protocols!";
     } else if (lower.includes('yield') || lower.includes('dex') || lower.includes('pool')) {
-      responseText = "VerdisSwap features 6 core liquidity pools (VRS/CARBON, VRS/ECO, CARBON/ECO, TREE/VRS, GREEN/VRS, REDD/VRS) yielding up to 61.4% APR with automatic micro-carbon offsetting per swap!";
+      responseText = "VerdisSwap features 6 core liquidity pools (VCO/CARBON, VCO/ECO, CARBON/ECO, TREE/VCO, GREEN/VCO, REDD/VCO) yielding up to 61.4% APR with automatic micro-carbon offsetting per swap!";
     } else if (lower.includes('carbon') || lower.includes('offset') || lower.includes('retire')) {
       responseText = "Carbon credits on Verdis are audited on-chain via CarbonX. You can purchase or retire credits directly through the Marketplace section, generating an immutable atmospheric removal certificate!";
     } else if (lower.includes('validator') || lower.includes('stake') || lower.includes('node')) {
-      responseText = "To run a Green Validator, you must verify a 100% renewable energy source (Solar, Wind, Hydro, or Geothermal). Stakers delegating to validators earn sustainable VRS rewards!";
+      responseText = "To run a Green Validator, you must verify a 100% renewable energy source (Solar, Wind, Hydro, or Geothermal). Stakers delegating to validators earn sustainable VCO rewards!";
     }
 
     const botDiv = document.createElement('div');

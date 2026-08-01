@@ -126,7 +126,7 @@ class BlockchainAPI {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🌿 Verdis — The Eco-Friendly Blockchain</title>
-<meta name="description" content="Verdis (VRS) is a fully functional L1 blockchain with native DPoS consensus, AMM DEX, carbon credit tracking, and Ethereum-compatible JSON-RPC.">
+<meta name="description" content="Verdis (VCO) is a fully functional L1 blockchain with native DPoS consensus, AMM DEX, carbon credit tracking, and Ethereum-compatible JSON-RPC.">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:#0a0e1a; color:#e0e0e0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }
@@ -154,7 +154,7 @@ a:hover { text-decoration:underline; }
   
   <div class="stats">
     <div class="stat"><div class="stat-value">${this.blockchain.getChainHeight()}</div><div class="stat-label">Block Height</div></div>
-    <div class="stat"><div class="stat-value">${this.blockchain.getTokenSystem().getTotalSupply().toLocaleString()}</div><div class="stat-label">VRS Supply</div></div>
+    <div class="stat"><div class="stat-value">${this.blockchain.getTokenSystem().getTotalSupply().toLocaleString()}</div><div class="stat-label">VCO Supply</div></div>
     <div class="stat"><div class="stat-value">${this.blockchain.getConsensus().getAllValidatorsList().length}</div><div class="stat-label">Validators</div></div>
     <div class="stat"><div class="stat-value">909</div><div class="stat-label">Chain ID</div></div>
   </div>
@@ -177,7 +177,7 @@ a:hover { text-decoration:underline; }
   
   <h2 style="color:#00e676;margin:1.5rem 0 0.75rem">🚀 Features</h2>
   <div class="features">
-    <div class="feature"><span class="feature-icon">💱</span> Native AMM DEX with 6 trading pairs (VRS/CARBON, VRS/ECO, ...)</div>
+    <div class="feature"><span class="feature-icon">💱</span> Native AMM DEX with 6 trading pairs (VCO/CARBON, VCO/ECO, ...)</div>
     <div class="feature"><span class="feature-icon">🌱</span> Carbon credit minting, retirement, and reforestation tracking</div>
     <div class="feature"><span class="feature-icon">🔑</span> Green validator scoring with renewable energy verification</div>
     <div class="feature"><span class="feature-icon">📜</span> Smart contract VM (stack-based bytecode execution)</div>
@@ -191,7 +191,7 @@ a:hover { text-decoration:underline; }
   <div style="background:#13182a;padding:1.5rem;border-radius:12px;border:1px solid #1e2438">
     <p style="margin-bottom:0.75rem"><strong>RPC URL:</strong> <code style="color:#00e676">${req.protocol}://${req.get('host')}/rpc</code></p>
     <p style="margin-bottom:0.75rem"><strong>Chain ID:</strong> 909</p>
-    <p style="margin-bottom:0.75rem"><strong>Symbol:</strong> VRS</p>
+    <p style="margin-bottom:0.75rem"><strong>Symbol:</strong> VCO</p>
     <p style="margin-bottom:0.75rem"><strong>Explorer:</strong> <a href="/api/explorer/stats">API</a> | <a href="/api/security/audit">Security Audit</a></p>
     <p style="margin-bottom:0.75rem"><strong>Network Info:</strong> <a href="/api/network/info">/api/network/info</a></p>
   </div>
@@ -301,7 +301,7 @@ a:hover { text-decoration:underline; }
             const baseUrl = isPublic ? `${protocol}://${host}` : 'http://localhost:3200';
             res.json({
                 name: 'Verdis',
-                symbol: 'VRS',
+                symbol: 'VCO',
                 tagline: 'The Eco-Friendly Blockchain',
                 description: 'A fully functional L1 blockchain with native DPoS consensus, AMM-based DEX, and integrated carbon credit tracking. Built for sustainability.',
                 chainId: 909,
@@ -728,7 +728,7 @@ a:hover { text-decoration:underline; }
                 chainId: jsonrpc_1.VERDIS_CHAIN_ID,
                 chainName: 'Verdis',
                 rpcUrl: 'http://localhost:3200/rpc',
-                symbol: 'VRS',
+                symbol: 'VCO',
                 decimals: 18,
                 explorer: 'http://localhost:3200',
                 evmAddresses: this.walletManager.getAllWallets().map(w => ({
@@ -755,8 +755,8 @@ a:hover { text-decoration:underline; }
                     res.status(400).json({ success: false, error: 'Missing token, address, or amount' });
                     return;
                 }
-                if (token === 'VRS') {
-                    res.status(400).json({ success: false, error: 'Cannot mint VRS. VRS is the native token.' });
+                if (token === 'VCO') {
+                    res.status(400).json({ success: false, error: 'Cannot mint VCO. VCO is the native token.' });
                     return;
                 }
                 const balance = this.dex.depositToken(token, address, amount);
@@ -826,7 +826,7 @@ a:hover { text-decoration:underline; }
                 return;
             }
             const ts = this.blockchain.getTokenSystem();
-            res.json(this.marketTracker.getMarketStats('VRS', ts.getTotalSupply(), ts.getMaxSupply()));
+            res.json(this.marketTracker.getMarketStats('VCO', ts.getTotalSupply(), ts.getMaxSupply()));
         });
         this.app.get('/api/token/swaps', (req, res) => {
             if (!this.marketTracker) {
@@ -854,9 +854,9 @@ a:hover { text-decoration:underline; }
                 pools = this.dex.getAllPools();
                 if (pools.length > 0) {
                     for (const p of pools) {
-                        if (p.tokenA === 'VRS' || p.tokenB === 'VRS') {
-                            price = p.tokenA === 'VRS' ? (p.reserveB / p.reserveA) : (p.reserveA / p.reserveB);
-                            liquidity += p.tokenA === 'VRS' ? p.reserveA * 2 : p.reserveB * 2;
+                        if (p.tokenA === 'VCO' || p.tokenB === 'VCO') {
+                            price = p.tokenA === 'VCO' ? (p.reserveB / p.reserveA) : (p.reserveA / p.reserveB);
+                            liquidity += p.tokenA === 'VCO' ? p.reserveA * 2 : p.reserveB * 2;
                             break;
                         }
                     }
@@ -864,7 +864,7 @@ a:hover { text-decoration:underline; }
             }
             res.json({
                 name: 'Verdis',
-                symbol: 'VRS',
+                symbol: 'VCO',
                 decimals: 18,
                 chainId: 909,
                 totalSupply: ts.getTotalSupply(),

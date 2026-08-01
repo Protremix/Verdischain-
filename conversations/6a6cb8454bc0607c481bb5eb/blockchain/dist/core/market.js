@@ -3,7 +3,7 @@
  * Token Market Data & Volume Tracking
  *
  * Extends DEX with volume tracking, price history, and market data.
- * Makes VRS a live, tradable token with real market activity.
+ * Makes VCO a live, tradable token with real market activity.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MarketTracker = void 0;

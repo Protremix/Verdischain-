@@ -5,7 +5,7 @@ const crypto_1 = require("../crypto");
 const block_1 = require("./block");
 const transaction_1 = require("./transaction");
 /**
- * TokenSystem — manages native VRS token balances, staking, and transfers.
+ * TokenSystem — manages native VCO token balances, staking, and transfers.
  */
 class TokenSystem {
     constructor() {
@@ -13,7 +13,7 @@ class TokenSystem {
         this.stakes = new Map();
         this.maxSupply = 100000000000; // 100 billion
         this.totalSupply = 0;
-        this.blockReward = 16; // VRS per block (like Tron)
+        this.blockReward = 16; // VCO per block (like Tron)
     }
     getBalance(address) {
         return this.balances.get(address) || 0;
