@@ -1,0 +1,2159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verdis — Cross-Chain Eco Bridge</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+  
+  <!-- Google Fonts CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       RESET & ROOT VARIABLES
+       ========================================================================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    :root {
+      --bg-dark: #050a08;
+      --bg-card: rgba(10, 25, 18, 0.65);
+      --bg-card-hover: rgba(14, 35, 25, 0.85);
+      --bg-input: rgba(5, 15, 10, 0.75);
+      
+      --primary: #00ff88;
+      --primary-glow: rgba(0, 255, 136, 0.35);
+      --primary-dim: rgba(0, 255, 136, 0.12);
+      
+      --secondary: #2dd4bf;
+      --secondary-glow: rgba(45, 212, 191, 0.35);
+      
+      --accent: #10b981;
+      --accent-dim: rgba(16, 185, 129, 0.2);
+
+      --text-main: #f0f6fc;
+      --text-muted: #8b949e;
+      --text-dim: #484f58;
+
+      --border: rgba(0, 255, 136, 0.2);
+      --border-hover: rgba(0, 255, 136, 0.5);
+
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-heading: 'Space Grotesk', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-body);
+    }
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ==========================================================================
+       BACKGROUND CANVAS & GLOW EFFECTS
+       ========================================================================== */
+    #bridgeCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .ambient-glow {
+      position: fixed;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 255, 136, 0.08) 0%, rgba(45, 212, 191, 0.03) 50%, transparent 70%);
+      top: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ==========================================================================
+       GLASSMORPHISM CARD STYLES
+       ========================================================================== */
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card:hover {
+      border-color: var(--border-hover);
+      box-shadow: 0 12px 35px rgba(0, 255, 136, 0.15);
+      transform: translateY(-2px);
+    }
+
+    /* ==========================================================================
+       TYPOGRAPHY & UTILITIES
+       ========================================================================== */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-heading);
+      letter-spacing: -0.02em;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #00ff88 0%, #2dd4bf 50%, #10b981 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .badge-eco {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .badge-eco-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 8px var(--primary);
+      animation: pulseDot 2s infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.3); }
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* ==========================================================================
+       NAVIGATION BAR
+       ========================================================================== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 72px;
+      background: rgba(5, 10, 8, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0, 255, 136, 0.15);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-main);
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.35rem;
+    }
+
+    .brand-logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, rgba(0,255,136,0.2), rgba(45,212,191,0.2));
+      border: 1px solid var(--primary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      box-shadow: 0 0 12px var(--primary-glow);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover, .nav-links a.active {
+      color: var(--primary);
+    }
+
+    .btn-connect {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #02120a;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      font-family: var(--font-heading);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 0 15px var(--primary-glow);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-connect:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 25px rgba(0, 255, 136, 0.6);
+    }
+
+    /* ==========================================================================
+       HERO SECTION
+       ========================================================================== */
+    .hero-section {
+      padding-top: 130px;
+      padding-bottom: 40px;
+      text-align: center;
+    }
+
+    .hero-title {
+      font-size: 3.4rem;
+      font-weight: 800;
+      margin-top: 16px;
+      margin-bottom: 16px;
+      line-height: 1.15;
+    }
+
+    .hero-subtitle {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto 30px auto;
+      line-height: 1.6;
+    }
+
+    .ticker-bar {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .ticker-item {
+      background: rgba(10, 25, 18, 0.55);
+      border: 1px solid rgba(0, 255, 136, 0.18);
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(10px);
+    }
+
+    .ticker-item strong {
+      color: var(--primary);
+      font-family: var(--font-mono);
+    }
+
+    /* ==========================================================================
+       BRIDGE INTERFACE WIDGET
+       ========================================================================== */
+    .bridge-widget-container {
+      max-width: 540px;
+      margin: 0 auto 80px auto;
+    }
+
+    .bridge-card {
+      padding: 30px;
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    }
+
+    .bridge-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .bridge-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .bridge-tools {
+      display: flex;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .icon-btn:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+      background: var(--primary-dim);
+    }
+
+    /* Transfer Boxes */
+    .transfer-box {
+      background: var(--bg-input);
+      border: 1px solid rgba(0, 255, 136, 0.18);
+      border-radius: 18px;
+      padding: 20px;
+      transition: border-color 0.25s ease;
+    }
+
+    .transfer-box:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(0, 255, 136, 0.1);
+    }
+
+    .transfer-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .transfer-input-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chain-select-btn {
+      background: rgba(0, 255, 136, 0.08);
+      border: 1px solid rgba(0, 255, 136, 0.25);
+      color: var(--text-main);
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-heading);
+      white-space: nowrap;
+    }
+
+    .chain-select-btn:hover {
+      border-color: var(--primary);
+      background: rgba(0, 255, 136, 0.16);
+    }
+
+    .token-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 1.7rem;
+      font-weight: 700;
+      width: 100%;
+      text-align: right;
+    }
+
+    .token-input::placeholder {
+      color: var(--text-dim);
+    }
+
+    .transfer-subtext {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .btn-max {
+      background: rgba(0, 255, 136, 0.15);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      color: var(--primary);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-left: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-max:hover {
+      background: var(--primary);
+      color: #000;
+    }
+
+    /* Swap Divider Button */
+    .swap-divider {
+      display: flex;
+      justify-content: center;
+      margin: -14px 0;
+      position: relative;
+      z-index: 5;
+    }
+
+    .btn-swap-direction {
+      background: #081a12;
+      border: 2px solid var(--primary);
+      color: var(--primary);
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.35);
+      font-size: 1.1rem;
+    }
+
+    .btn-swap-direction:hover {
+      transform: rotate(180deg) scale(1.12);
+      box-shadow: 0 0 30px var(--primary);
+      background: var(--primary);
+      color: #000;
+    }
+
+    /* Fee & Eco Details */
+    .bridge-details-card {
+      margin-top: 20px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(0, 255, 136, 0.12);
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 0.84rem;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      color: var(--text-muted);
+    }
+
+    .detail-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .detail-val {
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    .detail-val.eco {
+      color: var(--primary);
+    }
+
+    /* Primary Action Button */
+    .btn-bridge-action {
+      width: 100%;
+      margin-top: 24px;
+      background: linear-gradient(135deg, #00ff88 0%, #2dd4bf 100%);
+      color: #03140b;
+      border: none;
+      padding: 18px;
+      border-radius: 16px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      font-family: var(--font-heading);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 25px rgba(0, 255, 136, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-bridge-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 40px rgba(0, 255, 136, 0.75);
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #081812;
+      border: 1px solid var(--primary);
+      border-radius: 24px;
+      padding: 28px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 0 45px rgba(0, 255, 136, 0.25);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .modal-close:hover { color: #fff; }
+
+    .chain-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .chain-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .chain-item:hover {
+      background: rgba(0, 255, 136, 0.12);
+      border-color: var(--primary);
+    }
+
+    .chain-item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-heading);
+      font-weight: 600;
+    }
+
+    /* ==========================================================================
+       STATS COUNTER SECTION
+       ========================================================================== */
+    .stats-section {
+      margin-bottom: 100px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .stat-card {
+      padding: 28px 24px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: 2.3rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: var(--primary);
+      margin-bottom: 6px;
+      text-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .stat-title {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    /* ==========================================================================
+       HOW IT WORKS (3-STEP VISUAL)
+       ========================================================================== */
+    .section-title-wrap {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .section-title {
+      font-size: 2.3rem;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 1.02rem;
+      max-width: 620px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-bottom: 100px;
+    }
+
+    .step-card {
+      padding: 36px 28px;
+      position: relative;
+    }
+
+    .step-num {
+      font-family: var(--font-mono);
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: rgba(0, 255, 136, 0.18);
+      position: absolute;
+      top: 20px;
+      right: 24px;
+    }
+
+    .step-icon {
+      width: 56px;
+      height: 56px;
+      background: var(--primary-dim);
+      border: 1px solid var(--primary);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      margin-bottom: 22px;
+      color: var(--primary);
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .step-heading {
+      font-size: 1.3rem;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+
+    .step-text {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+
+    /* ==========================================================================
+       SUPPORTED ASSETS GRID
+       ========================================================================== */
+    .assets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 22px;
+      margin-bottom: 100px;
+    }
+
+    .asset-card {
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .asset-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .asset-identity {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .asset-symbol {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.15rem;
+    }
+
+    .asset-name {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .asset-stats-list {
+      margin: 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.84rem;
+    }
+
+    .asset-stat-row {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+    }
+
+    .asset-stat-val {
+      font-family: var(--font-mono);
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .btn-quick-bridge {
+      width: 100%;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      color: var(--primary);
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      font-family: var(--font-heading);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-quick-bridge:hover {
+      background: var(--primary);
+      color: #000;
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    /* ==========================================================================
+       BRIDGE HISTORY TABLE
+       ========================================================================== */
+    .history-section {
+      margin-bottom: 100px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .history-table th {
+      background: rgba(0, 0, 0, 0.55);
+      padding: 18px 22px;
+      color: var(--text-muted);
+      font-family: var(--font-heading);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .history-table td {
+      padding: 18px 22px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background: var(--bg-card);
+    }
+
+    .history-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.76rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    .status-completed {
+      background: rgba(0, 255, 136, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+
+    /* ==========================================================================
+       SECURITY SECTION
+       ========================================================================== */
+    .security-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-bottom: 100px;
+    }
+
+    .security-card {
+      padding: 32px;
+    }
+
+    .sec-icon {
+      font-size: 2.2rem;
+      margin-bottom: 18px;
+      color: var(--secondary);
+    }
+
+    /* ==========================================================================
+       TRANSACTION MODAL
+       ========================================================================== */
+    .tx-modal-content {
+      background: #081812;
+      border: 1px solid var(--primary);
+      border-radius: 24px;
+      padding: 32px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 0 50px rgba(0, 255, 136, 0.3);
+      text-align: center;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transition: width 0.4s ease;
+      box-shadow: 0 0 10px var(--primary);
+    }
+
+    .tx-step-list {
+      text-align: left;
+      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 0.88rem;
+    }
+
+    .tx-step-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-muted);
+    }
+
+    .tx-step-item.done {
+      color: var(--text-main);
+    }
+
+    .tx-step-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+    }
+
+    .tx-step-item.done .tx-step-icon {
+      background: var(--primary);
+      color: #000;
+      border-color: var(--primary);
+    }
+
+    /* ==========================================================================
+       AI SUPPORT WIDGET (FLOATING)
+       ========================================================================== */
+    .ai-widget-wrapper {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 150;
+    }
+
+    .ai-trigger-btn {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #00ff88, #2dd4bf);
+      border: none;
+      color: #02120a;
+      font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 0 25px rgba(0, 255, 136, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .ai-trigger-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 35px var(--primary);
+    }
+
+    .ai-chat-window {
+      display: none;
+      position: fixed;
+      bottom: 92px;
+      right: 24px;
+      width: 360px;
+      height: 490px;
+      background: #081610;
+      border: 1px solid var(--primary);
+      border-radius: 22px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 255, 136, 0.25);
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 150;
+    }
+
+    .ai-chat-window.open {
+      display: flex;
+    }
+
+    .ai-chat-header {
+      background: rgba(0, 255, 136, 0.08);
+      border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ai-chat-title {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--primary);
+    }
+
+    .ai-chat-messages {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      font-size: 0.85rem;
+    }
+
+    .chat-msg {
+      padding: 10px 14px;
+      border-radius: 12px;
+      max-width: 85%;
+      line-height: 1.45;
+    }
+
+    .chat-msg.bot {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 136, 0.15);
+      color: var(--text-main);
+      align-self: flex-start;
+    }
+
+    .chat-msg.user {
+      background: var(--primary);
+      color: #000;
+      font-weight: 600;
+      align-self: flex-end;
+    }
+
+    .ai-chat-input-area {
+      padding: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .ai-chat-input-area input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .ai-chat-input-area input:focus {
+      border-color: var(--primary);
+    }
+
+    .ai-send-btn {
+      background: var(--primary);
+      border: none;
+      color: #000;
+      font-weight: 700;
+      padding: 0 14px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    /* ==========================================================================
+       FOOTER
+       ========================================================================== */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 60px 0 30px 0;
+      background: rgba(2, 8, 5, 0.92);
+      position: relative;
+      z-index: 10;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr repeat(3, 1fr);
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    .footer-brand p {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-top: 12px;
+      max-width: 300px;
+      line-height: 1.5;
+    }
+
+    .footer-col h4 {
+      font-size: 0.95rem;
+      margin-bottom: 16px;
+      color: var(--text-main);
+    }
+
+    .footer-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-col a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s ease;
+    }
+
+    .footer-col a:hover {
+      color: var(--primary);
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-dim);
+      font-size: 0.82rem;
+    }
+
+    /* Scroll Reveal Base */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Animated Network Canvas -->
+  <canvas id="bridgeCanvas"></canvas>
+  <div class="ambient-glow"></div>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="landing.html" class="brand-logo">
+        <div class="brand-logo-icon">🌿</div>
+        <span>Verdis</span>
+        <span class="badge-eco"><span class="badge-eco-dot"></span> BRIDGE</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="landing.html">Home</a></li>
+        <li><a href="bridge.html" class="active">Bridge</a></li>
+        <li><a href="ecosystem.html">Ecosystem</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="status.html">Status</a></li>
+        <li><a href="api-docs.html">API Docs</a></li>
+        <li><a href="whitepaper.html">Whitepaper</a></li>
+      </ul>
+
+      <button class="btn-connect" id="connectWalletBtn" onclick="toggleWalletConnect()">
+        <span id="walletBtnIcon">⚡</span>
+        <span id="walletBtnText">Connect Wallet</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container reveal">
+      <div class="badge-eco" style="margin-bottom: 14px;">
+        <span class="badge-eco-dot"></span> Verdis Chain 909 — Carbon-Negative Cross-Chain Protocol
+      </div>
+      <h1 class="hero-title">Verdis <span class="gradient-text">Cross-Chain Bridge</span></h1>
+      <p class="hero-subtitle">
+        Seamlessly transfer assets across Ethereum, BSC, Polygon, Avalanche, and Verdis Chain 909. Lightning-fast consensus, minimal gas fees, and automated carbon offset validation.
+      </p>
+
+      <div class="ticker-bar">
+        <div class="ticker-item">● Bridge Status: <strong>ONLINE</strong></div>
+        <div class="ticker-item">⚡ Avg Settlement: <strong>1.8s</strong></div>
+        <div class="ticker-item">🌱 Carbon Offset: <strong>-1.82 kg CO₂/tx</strong></div>
+        <div class="ticker-item">🛡 Consensus: <strong>15/15 Validators</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Bridge Interface -->
+  <section class="container reveal">
+    <div class="bridge-widget-container">
+      <div class="glass-card bridge-card">
+        
+        <div class="bridge-header">
+          <div class="bridge-title">
+            <span>⇄</span> Transfer Assets
+          </div>
+          <div class="bridge-tools">
+            <button class="icon-btn" onclick="alert('Slippage tolerance set to 0.1% (Optimal)')" title="Settings">⚙️</button>
+            <button class="icon-btn" onclick="resetBridgeForm()" title="Reset Form">🔄</button>
+          </div>
+        </div>
+
+        <!-- SOURCE NETWORK BOX -->
+        <div class="transfer-box">
+          <div class="transfer-label">
+            <span>From Network</span>
+            <span>Balance: <strong style="color:var(--text-main);" id="sourceBalance">4.8500</strong> <button class="btn-max" onclick="setMaxAmount()">MAX</button></span>
+          </div>
+          <div class="transfer-input-row">
+            <button class="chain-select-btn" id="sourceChainBtn" onclick="openChainSelector('source')">
+              <span id="sourceChainIcon">🔷</span>
+              <span id="sourceChainName">Ethereum</span>
+              <span style="font-size:0.75rem;">▾</span>
+            </button>
+            <input type="number" class="token-input" id="sourceAmountInput" placeholder="0.0" oninput="calculateBridgeOutput()">
+          </div>
+          <div class="transfer-subtext">
+            <span>Asset: <strong id="sourceAssetSymbol" style="color:var(--primary);">ETH</strong></span>
+            <span id="sourceUsdVal">~$0.00</span>
+          </div>
+        </div>
+
+        <!-- DIRECTION SWAP BUTTON -->
+        <div class="swap-divider">
+          <button class="btn-swap-direction" onclick="swapChains()" title="Swap From & To Chains">
+            ⚡
+          </button>
+        </div>
+
+        <!-- DESTINATION NETWORK BOX -->
+        <div class="transfer-box" style="margin-top: -6px;">
+          <div class="transfer-label">
+            <span>To Network</span>
+            <span>Destination: <span class="mono" style="color:var(--primary);">Verdis Chain 909</span></span>
+          </div>
+          <div class="transfer-input-row">
+            <button class="chain-select-btn" id="destChainBtn" style="border-color: var(--primary); background: rgba(0, 255, 136, 0.12);" onclick="openChainSelector('dest')">
+              <span id="destChainIcon">🌿</span>
+              <span id="destChainName">Verdis Chain 909</span>
+              <span style="font-size:0.75rem;">▾</span>
+            </button>
+            <input type="text" class="token-input" id="destAmountOutput" placeholder="0.0" readonly style="color: var(--primary);">
+          </div>
+          <div class="transfer-subtext">
+            <span>You Receive: <strong id="destAssetSymbol" style="color:var(--primary);">wETH (Verdis)</strong></span>
+            <span id="destUsdVal">~$0.00</span>
+          </div>
+        </div>
+
+        <!-- FEE & CARBON OFFSET BREAKDOWN -->
+        <div class="bridge-details-card">
+          <div class="detail-row">
+            <span>Bridge Protocol Fee</span>
+            <span class="detail-val" id="feeVal">0.05% ($0.00)</span>
+          </div>
+          <div class="detail-row">
+            <span>Estimated Network Gas</span>
+            <span class="detail-val">~$0.04 (Paid on Verdis)</span>
+          </div>
+          <div class="detail-row">
+            <span>Estimated Time</span>
+            <span class="detail-val">&lt; 2.5 seconds</span>
+          </div>
+          <div class="detail-row">
+            <span>Eco Impact Certificate</span>
+            <span class="detail-val eco" id="carbonVal">🌱 -1.82 kg CO₂ Offset</span>
+          </div>
+        </div>
+
+        <!-- MAIN ACTION BUTTON -->
+        <button class="btn-bridge-action" id="executeBridgeBtn" onclick="startBridgeProcess()">
+          <span>⚡</span> Execute Bridge Transfer
+        </button>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Bridge Statistics Section -->
+  <section class="stats-section container reveal">
+    <div class="stats-grid">
+      <div class="glass-card stat-card">
+        <div class="stat-val" id="statTvl">$0</div>
+        <div class="stat-title">Total Value Bridged</div>
+      </div>
+      <div class="glass-card stat-card">
+        <div class="stat-val" id="statBridges">0</div>
+        <div class="stat-title">Connected Chains</div>
+      </div>
+      <div class="glass-card stat-card">
+        <div class="stat-val" id="statTime">1.8s</div>
+        <div class="stat-title">Avg Bridge Time</div>
+      </div>
+      <div class="glass-card stat-card">
+        <div class="stat-val" id="statTxCount">0</div>
+        <div class="stat-title">Total Transactions</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works (3-Step Visual) -->
+  <section class="container reveal">
+    <div class="section-title-wrap">
+      <h2 class="section-title">How <span class="gradient-text">Verdis Eco-Bridge</span> Works</h2>
+      <p class="section-desc">A non-custodial, zero-knowledge multi-sig verification pipeline designed for ultra-fast green Web3 interoperability.</p>
+    </div>
+
+    <div class="steps-grid">
+      <div class="glass-card step-card">
+        <div class="step-num">01</div>
+        <div class="step-icon">🔒</div>
+        <h3 class="step-heading">Lock Tokens on Source</h3>
+        <p class="step-text">Deposit your assets (ETH, BNB, USDT, USDC, VRS) into the Verdis Smart Lock contract on the source blockchain.</p>
+      </div>
+
+      <div class="glass-card step-card">
+        <div class="step-num">02</div>
+        <div class="step-icon">🛡</div>
+        <h3 class="step-heading">Validator Consensus</h3>
+        <p class="step-text">15 distributed PoS validator nodes verify the deposit proof via zero-knowledge cryptographic consensus within 1.8 seconds.</p>
+      </div>
+
+      <div class="glass-card step-card">
+        <div class="step-num">03</div>
+        <div class="step-icon">🌱</div>
+        <h3 class="step-heading">Mint & Offset on Verdis</h3>
+        <p class="step-text">1:1 wrapped eco-tokens are instantly minted to your wallet on Verdis Chain 909, and carbon credits are automatically retired on-chain.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Supported Assets Grid -->
+  <section class="container reveal">
+    <div class="section-title-wrap">
+      <h2 class="section-title">Supported <span class="gradient-text">Bridge Assets</span></h2>
+      <p class="section-desc">Direct liquidity pools available across all major EVM networks and Verdis Chain 909.</p>
+    </div>
+
+    <div class="assets-grid">
+      <!-- ETH -->
+      <div class="glass-card asset-card">
+        <div class="asset-header">
+          <div class="asset-identity">
+            <span style="font-size: 1.8rem;">🔷</span>
+            <div>
+              <div class="asset-symbol">ETH</div>
+              <div class="asset-name">Ethereum</div>
+            </div>
+          </div>
+          <span class="badge-eco">0.05% Fee</span>
+        </div>
+        <div class="asset-stats-list">
+          <div class="asset-stat-row">
+            <span>Total Liquidity:</span>
+            <span class="asset-stat-val">$52,410,000</span>
+          </div>
+          <div class="asset-stat-row">
+            <span>24h Volume:</span>
+            <span class="asset-stat-val">$4,250,000</span>
+          </div>
+          <div class="asset-stat-row">
+            <span>Carbon Impact:</span>
+            <span class="asset-stat-val" style="color:var(--primary);">-1.82 kg CO₂</span>
+          </div>
+        </div>
+        <button class="btn-quick-bridge" onclick="quickSelectAsset('ETH', 'Ethereum')">Bridge ETH →</button>
+      </div>
+
+      <!-- BNB -->
+      <div class="glass-card asset-card">
+        <div class="asset-header">
+          <div class="asset-identity">
+            <span style="font-size: 1.8rem;">🟡</span>
+            <div>
+              <div class="asset-symbol">BNB</div>
+              <div class="asset-name">BNB Chain</div>
+            </div>
+          </div>
+          <span class="badge-eco">0.04% Fee</span>
+        </div>
+        <div class="asset-stats-list">
+          <div class="asset-stat-row">
+            <span>Total Liquidity:</span>
+            <span class="asset-stat-val">$38,150,000</span>
+          </div>
+          <div class="asset-stat-row">
+            <span>24h Volume:</span>
+            <span class="asset-stat-val">$3,120,000</span>
+          </div>
+          <div class="asset-stat-row">
+            <span>Carbon Impact:</span>
+            <span class="asset-stat-val" style="color:var(--primary);">-1.45 kg CO₂</span>
+          </div>
+        </div>
+        <button class="btn-quick-bridge" onclick="quickSelectAsset('BNB', 'BSC')">Bridge BNB →</button>
+      </div>
+
+      <!-- USDT -->
+      <div class="glass-card asset-card">
+        <div class="asset-header">
+          <div class="asset-identity">
+            <span style="font-size: 1.8rem;">💵</span>
+            <div>
+              <div class="asset-symbol">USDT</div>
+              <div class="asset-name">Tether USD</div>
+            </div>
+          </div>
+          <span class="badge-eco">0.01% Fee</span>
+        </div>
+        <div class="asset-stats-list">
+          <div class="asset-stat-row">
+            <span>Total Liquidity:</span>
+            <span class="asset-stat-val">$29,800,000</span>
+          </div>
+          <div class="asset-stat-row">
+            <span>24h Volume:</span>
+            <span class="asset-stat-val">$8,540,000</span>
+          </div>
+          <div class="asset-stat-row">
+            <span>Carbon Impact:</span>
+            <span class="asset-stat-val" style="color:var(--primary);">-0.95 kg CO₂</span>
+          </div>
+        </div>
+        <button class="btn-quick-bridge" onclick="quickSelectAsset('USDT', 'Ethereum')">Bridge USDT →</button>
+      </div>
+
+      <!-- USDC -->
+      <div class="glass-card asset-card">
+        <div class="asset-header">
+          <div class="asset-identity">
+            <span style="font-size: 1.8rem;">🔵</span>
+            <div>
+              <div class="asset-symbol">USDC</div>
+              <div class="asset-name">USD Coin</div>
+            </div>
+          </div>
+          <span class="badge-eco">0.01% Fee</span>
+        </div>
+        <div class="asset-stats-list">
+          <div class="asset-stat-row">
+            <span>Total Liquidity:</span>
+            <span class="asset-stat-val">$18,600,000</span>
+          </div>
+          <div class="asset-stat-row">
+            <span>24h Volume:</span>
+            <span class="asset-stat-val">$6,210,000</span>
+          </div>
+          <div class="asset-stat-row">
+            <span>Carbon Impact:</span>
+            <span class="asset-stat-val" style="color:var(--primary);">-0.95 kg CO₂</span>
+          </div>
+        </div>
+        <button class="btn-quick-bridge" onclick="quickSelectAsset('USDC', 'Polygon')">Bridge USDC →</button>
+      </div>
+
+      <!-- VRS -->
+      <div class="glass-card asset-card" style="border-color: var(--primary);">
+        <div class="asset-header">
+          <div class="asset-identity">
+            <span style="font-size: 1.8rem;">🌿</span>
+            <div>
+              <div class="asset-symbol">VRS</div>
+              <div class="asset-name">Verdis Eco Token</div>
+            </div>
+          </div>
+          <span class="badge-eco" style="background: var(--primary); color: #000;">0% Fee (Free)</span>
+        </div>
+        <div class="asset-stats-list">
+          <div class="asset-stat-row">
+            <span>Total Liquidity:</span>
+            <span class="asset-stat-val">$10,000,000</span>
+          </div>
+          <div class="asset-stat-row">
+            <span>24h Volume:</span>
+            <span class="asset-stat-val">$2,840,000</span>
+          </div>
+          <div class="asset-stat-row">
+            <span>Carbon Impact:</span>
+            <span class="asset-stat-val" style="color:var(--primary);">-3.50 kg CO₂</span>
+          </div>
+        </div>
+        <button class="btn-quick-bridge" onclick="quickSelectAsset('VRS', 'Verdis Chain 909')">Bridge VRS →</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Bridge History Section -->
+  <section class="history-section container reveal">
+    <div class="section-title-wrap">
+      <h2 class="section-title">Recent <span class="gradient-text">Bridge Transactions</span></h2>
+      <p class="section-desc">Real-time verifiable multi-chain transfers processed through Verdis PoS consensus.</p>
+    </div>
+
+    <div class="table-container">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Tx Hash</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Asset & Amount</th>
+            <th>Carbon Offset</th>
+            <th>Time</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="historyTableBody">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Security & Architecture -->
+  <section class="container reveal">
+    <div class="section-title-wrap">
+      <h2 class="section-title">Security & <span class="gradient-text">Consensus Model</span></h2>
+      <p class="section-desc">Built from the ground up for maximum multi-chain trust, decentralization, and cryptographic safety.</p>
+    </div>
+
+    <div class="security-grid">
+      <div class="glass-card security-card">
+        <div class="sec-icon">🔐</div>
+        <h3>15-Validator Multi-Sig Threshold</h3>
+        <p style="color:var(--text-muted); font-size:0.92rem; margin-top:10px; line-height:1.6;">
+          Every cross-chain lock-and-mint action requires cryptographic quorum signatures from at least 11 of 15 geo-distributed validator nodes.
+        </p>
+      </div>
+
+      <div class="glass-card security-card">
+        <div class="sec-icon">⏱</div>
+        <h3>72-Hour Timelock Governance</h3>
+        <p style="color:var(--text-muted); font-size:0.92rem; margin-top:10px; line-height:1.6;">
+          Smart contract upgrades and liquidity parameter updates are subjected to mandatory 72-hour on-chain timelocks for community auditing.
+        </p>
+      </div>
+
+      <div class="glass-card security-card">
+        <div class="sec-icon">⚡</div>
+        <h3>Zero-Knowledge Proof Audit</h3>
+        <p style="color:var(--text-muted); font-size:0.92rem; margin-top:10px; line-height:1.6;">
+          ZK-SNARK proof generation guarantees state correctness between source lock contracts and Verdis Chain 909 mint contracts without centralized trust.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chain Selector Modal -->
+  <div class="modal-overlay" id="chainModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="chainModalTitle">Select Network</h3>
+        <button class="modal-close" onclick="closeChainSelector()">✕</button>
+      </div>
+      <div class="chain-list">
+        <div class="chain-item" onclick="selectChain('Ethereum', '🔷', 'ETH')">
+          <div class="chain-item-left"><span>🔷</span> Ethereum Mainnet</div>
+          <span class="mono" style="font-size:0.8rem; color:var(--text-muted);">Chain ID: 1</span>
+        </div>
+        <div class="chain-item" onclick="selectChain('BSC', '🟡', 'BNB')">
+          <div class="chain-item-left"><span>🟡</span> BNB Smart Chain</div>
+          <span class="mono" style="font-size:0.8rem; color:var(--text-muted);">Chain ID: 56</span>
+        </div>
+        <div class="chain-item" onclick="selectChain('Polygon', '🟣', 'MATIC')">
+          <div class="chain-item-left"><span>🟣</span> Polygon PoS</div>
+          <span class="mono" style="font-size:0.8rem; color:var(--text-muted);">Chain ID: 137</span>
+        </div>
+        <div class="chain-item" onclick="selectChain('Avalanche', '🔺', 'AVAX')">
+          <div class="chain-item-left"><span>🔺</span> Avalanche C-Chain</div>
+          <span class="mono" style="font-size:0.8rem; color:var(--text-muted);">Chain ID: 43114</span>
+        </div>
+        <div class="chain-item" onclick="selectChain('Verdis Chain 909', '🌿', 'VRS')">
+          <div class="chain-item-left"><span>🌿</span> Verdis Chain 909</div>
+          <span class="mono" style="font-size:0.8rem; color:var(--primary);">Chain ID: 909</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transaction Process Modal -->
+  <div class="modal-overlay" id="txModal">
+    <div class="tx-modal-content">
+      <h3 style="font-size: 1.3rem; margin-bottom: 8px;">Processing Bridge Transfer</h3>
+      <p style="color:var(--text-muted); font-size: 0.85rem;" id="txModalSub">Submitting cross-chain proof to Verdis validators...</p>
+
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="txProgressBar"></div>
+      </div>
+
+      <div class="tx-step-list">
+        <div class="tx-step-item" id="step1">
+          <div class="tx-step-icon">1</div>
+          <span>Approve Token Spending</span>
+        </div>
+        <div class="tx-step-item" id="step2">
+          <div class="tx-step-icon">2</div>
+          <span>Lock Assets on Source Chain</span>
+        </div>
+        <div class="tx-step-item" id="step3">
+          <div class="tx-step-icon">3</div>
+          <span>Validator 15/15 Consensus Verification</span>
+        </div>
+        <div class="tx-step-item" id="step4">
+          <div class="tx-step-icon">4</div>
+          <span>Mint Wrapped Assets on Verdis Chain 909</span>
+        </div>
+      </div>
+
+      <div id="txDoneSuccess" style="display:none; margin-top: 20px;">
+        <div style="font-size: 3rem; margin-bottom: 10px;">🎉</div>
+        <h4 style="color:var(--primary); font-size:1.1rem; margin-bottom: 6px;">Transfer Completed!</h4>
+        <p style="color:var(--text-muted); font-size: 0.82rem; margin-bottom: 16px;">
+          Transaction Hash: <span class="mono" style="color:var(--primary);" id="txDoneHash">0x8f3c...e912</span>
+        </p>
+        <button class="btn-connect" style="width:100%; justify-content:center;" onclick="closeTxModal()">Close & View Explorer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Support Floating Widget -->
+  <div class="ai-widget-wrapper">
+    <button class="ai-trigger-btn" onclick="toggleAIChat()" title="Verdis Eco AI Assistant">
+      🌿
+    </button>
+
+    <div class="ai-chat-window" id="aiChatWindow">
+      <div class="ai-chat-header">
+        <div class="ai-chat-title">
+          <span>🤖</span> Verdis Bridge Assistant
+        </div>
+        <button style="background:none; border:none; color:#fff; cursor:pointer;" onclick="toggleAIChat()">✕</button>
+      </div>
+
+      <div class="ai-chat-messages" id="aiMessages">
+        <div class="chat-msg bot">
+          🌿 Hello! I am the Verdis Eco Bridge Assistant. Ask me anything about cross-chain transfers, validator safety, or carbon offsets!
+        </div>
+      </div>
+
+      <div class="ai-chat-input-area">
+        <input type="text" id="aiChatInput" placeholder="Ask a question..." onkeydown="if(event.key==='Enter') sendAIMessage()">
+        <button class="ai-send-btn" onclick="sendAIMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="landing.html" class="brand-logo">
+            <div class="brand-logo-icon">🌿</div>
+            <span>Verdis</span>
+          </a>
+          <p>
+            The world's first carbon-negative Layer-2 blockchain ecosystem powering green DeFi, cross-chain bridges, and eco-friendly dApps.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Products</h4>
+          <ul>
+            <li><a href="bridge.html">Eco Bridge</a></li>
+            <li><a href="dashboard.html">Network Dashboard</a></li>
+            <li><a href="ecosystem.html">Ecosystem dApps</a></li>
+            <li><a href="status.html">Network Status</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Developers</h4>
+          <ul>
+            <li><a href="api-docs.html">API Documentation</a></li>
+            <li><a href="whitepaper.html">Whitepaper v2.0</a></li>
+            <li><a href="#">GitHub Repo</a></li>
+            <li><a href="#">Security Audit</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Community</h4>
+          <ul>
+            <li><a href="#">Twitter / X</a></li>
+            <li><a href="#">Discord Community</a></li>
+            <li><a href="#">Telegram Group</a></li>
+            <li><a href="#">Governance Forum</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 Verdis Blockchain Protocol. All Rights Reserved.</div>
+        <div style="display:flex; gap:16px; align-items:center;">
+          <span class="badge-eco">🌱 100% Carbon-Negative Certified</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+     JAVASCRIPT LOGIC
+     ========================================================================== -->
+  <script>
+    // Asset Prices in USD
+    const assetPrices = {
+      ETH: 3420.50,
+      BNB: 580.20,
+      USDT: 1.00,
+      USDC: 1.00,
+      VRS: 4.25,
+      MATIC: 0.85,
+      AVAX: 32.10
+    };
+
+    // User State
+    let currentSourceChain = 'Ethereum';
+    let currentSourceIcon = '🔷';
+    let currentDestChain = 'Verdis Chain 909';
+    let currentDestIcon = '🌿';
+    let activeAsset = 'ETH';
+    let isConnected = false;
+    let selectorTarget = 'source';
+
+    // --------------------------------------------------------------------------
+    // Canvas Animation - Animated Energy Streams & Nodes
+    // --------------------------------------------------------------------------
+    const canvas = document.getElementById('bridgeCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Energy Stream Particles
+    const particles = [];
+    const particleCount = 45;
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        progress: Math.random(),
+        speed: 0.002 + Math.random() * 0.004,
+        size: 2 + Math.random() * 3,
+        sourceIdx: Math.floor(Math.random() * 4)
+      });
+    }
+
+    function drawCanvasAnimation() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // Source Nodes (Left cluster)
+      const sourceNodes = [
+        { x: w * 0.15, y: h * 0.25, color: '#627EEA' },
+        { x: w * 0.15, y: h * 0.42, color: '#F3BA2F' },
+        { x: w * 0.15, y: h * 0.58, color: '#8247E5' },
+        { x: w * 0.15, y: h * 0.75, color: '#E84142' }
+      ];
+
+      // Destination Node (Verdis Chain 909 on Right)
+      const destNode = { x: w * 0.85, y: h * 0.5, color: '#00ff88' };
+
+      // Draw Connection Bezier Curves
+      sourceNodes.forEach((node) => {
+        ctx.beginPath();
+        ctx.moveTo(node.x, node.y);
+        ctx.bezierCurveTo(w * 0.4, node.y, w * 0.6, destNode.y, destNode.x, destNode.y);
+        ctx.strokeStyle = 'rgba(0, 255, 136, 0.08)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+
+      // Animate Particles along curves
+      particles.forEach((p) => {
+        p.progress += p.speed;
+        if (p.progress > 1) p.progress = 0;
+
+        const src = sourceNodes[p.sourceIdx];
+        const t = p.progress;
+
+        const p0 = src;
+        const p1 = { x: w * 0.4, y: src.y };
+        const p2 = { x: w * 0.6, y: destNode.y };
+        const p3 = destNode;
+
+        const cx = 3 * (p1.x - p0.x);
+        const bx = 3 * (p2.x - p1.x) - cx;
+        const ax = p3.x - p0.x - cx - bx;
+
+        const cy = 3 * (p1.y - p0.y);
+        const by = 3 * (p2.y - p1.y) - cy;
+        const ay = p3.y - p0.y - cy - by;
+
+        const px = ax * Math.pow(t, 3) + bx * Math.pow(t, 2) + cx * t + p0.x;
+        const py = ay * Math.pow(t, 3) + by * Math.pow(t, 2) + cy * t + p0.y;
+
+        // Draw particle with glow
+        ctx.beginPath();
+        ctx.arc(px, py, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = '#00ff88';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#00ff88';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      // Draw Nodes
+      sourceNodes.forEach((node) => {
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, 8, 0, Math.PI * 2);
+        ctx.fillStyle = node.color;
+        ctx.fill();
+      });
+
+      // Draw Verdis Super Node
+      ctx.beginPath();
+      ctx.arc(destNode.x, destNode.y, 16, 0, Math.PI * 2);
+      ctx.fillStyle = '#00ff88';
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = '#00ff88';
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      requestAnimationFrame(drawCanvasAnimation);
+    }
+    drawCanvasAnimation();
+
+    // --------------------------------------------------------------------------
+    // Bridge Calculation & Form Interactions
+    // --------------------------------------------------------------------------
+    function calculateBridgeOutput() {
+      const amountInput = document.getElementById('sourceAmountInput');
+      const val = parseFloat(amountInput.value) || 0;
+      
+      const price = assetPrices[activeAsset] || 100;
+      const usdVal = (val * price).toFixed(2);
+      
+      document.getElementById('sourceUsdVal').innerText = `~$${usdVal}`;
+
+      // Fee calculations (0.05% fee, 0% for VRS)
+      const feeRate = (activeAsset === 'VRS') ? 0 : 0.0005;
+      const feeAmount = val * feeRate;
+      const feeUsd = (feeAmount * price).toFixed(2);
+      
+      const receivedAmount = Math.max(0, val - feeAmount).toFixed(4);
+      document.getElementById('destAmountOutput').value = receivedAmount;
+      document.getElementById('destUsdVal').innerText = `~$${(receivedAmount * price).toFixed(2)}`;
+
+      document.getElementById('feeVal').innerText = `${(feeRate * 100).toFixed(2)}% ($${feeUsd})`;
+
+      // Carbon offset calculation (~1.82 kg per unit)
+      const carbonOffset = (val * 1.82).toFixed(2);
+      document.getElementById('carbonVal').innerText = `🌱 -${carbonOffset} kg CO₂ Offset`;
+    }
+
+    function setMaxAmount() {
+      const balance = parseFloat(document.getElementById('sourceBalance').innerText);
+      document.getElementById('sourceAmountInput').value = balance;
+      calculateBridgeOutput();
+    }
+
+    function swapChains() {
+      const tempName = currentSourceChain;
+      const tempIcon = currentSourceIcon;
+
+      currentSourceChain = currentDestChain;
+      currentSourceIcon = currentDestIcon;
+      currentDestChain = tempName;
+      currentDestIcon = tempIcon;
+
+      document.getElementById('sourceChainName').innerText = currentSourceChain;
+      document.getElementById('sourceChainIcon').innerText = currentSourceIcon;
+      document.getElementById('destChainName').innerText = currentDestChain;
+      document.getElementById('destChainIcon').innerText = currentDestIcon;
+
+      calculateBridgeOutput();
+    }
+
+    function resetBridgeForm() {
+      document.getElementById('sourceAmountInput').value = '';
+      calculateBridgeOutput();
+    }
+
+    // Modal Chain Selector
+    function openChainSelector(target) {
+      selectorTarget = target;
+      document.getElementById('chainModalTitle').innerText = target === 'source' ? 'Select Source Network' : 'Select Destination Network';
+      document.getElementById('chainModal').classList.add('active');
+    }
+
+    function closeChainSelector() {
+      document.getElementById('chainModal').classList.remove('active');
+    }
+
+    function selectChain(name, icon, defaultAsset) {
+      if (selectorTarget === 'source') {
+        currentSourceChain = name;
+        currentSourceIcon = icon;
+        document.getElementById('sourceChainName').innerText = name;
+        document.getElementById('sourceChainIcon').innerText = icon;
+      } else {
+        currentDestChain = name;
+        currentDestIcon = icon;
+        document.getElementById('destChainName').innerText = name;
+        document.getElementById('destChainIcon').innerText = icon;
+      }
+      closeChainSelector();
+      quickSelectAsset(defaultAsset, name);
+    }
+
+    function quickSelectAsset(symbol, chainName) {
+      activeAsset = symbol;
+      document.getElementById('sourceAssetSymbol').innerText = symbol;
+      document.getElementById('destAssetSymbol').innerText = symbol === 'VRS' ? 'VRS' : `w${symbol} (Verdis)`;
+      
+      if (chainName) {
+        currentSourceChain = chainName;
+        document.getElementById('sourceChainName').innerText = chainName;
+      }
+      
+      calculateBridgeOutput();
+      window.scrollTo({ top: 200, behavior: 'smooth' });
+    }
+
+    // --------------------------------------------------------------------------
+    // Wallet Connection Simulation
+    // --------------------------------------------------------------------------
+    function toggleWalletConnect() {
+      const btnText = document.getElementById('walletBtnText');
+      const btnIcon = document.getElementById('walletBtnIcon');
+
+      if (!isConnected) {
+        isConnected = true;
+        btnText.innerText = '0x71C4...3A9B';
+        btnIcon.innerText = '🟢';
+      } else {
+        isConnected = false;
+        btnText.innerText = 'Connect Wallet';
+        btnIcon.innerText = '⚡';
+      }
+    }
+
+    // --------------------------------------------------------------------------
+    // Transaction Simulation Process
+    // --------------------------------------------------------------------------
+    function startBridgeProcess() {
+      const amount = parseFloat(document.getElementById('sourceAmountInput').value);
+      if (!amount || amount <= 0) {
+        alert('Please enter a valid amount to bridge.');
+        return;
+      }
+
+      document.getElementById('txModal').classList.add('active');
+      document.getElementById('txDoneSuccess').style.display = 'none';
+
+      let progress = 0;
+      const fillBar = document.getElementById('txProgressBar');
+      
+      const steps = ['step1', 'step2', 'step3', 'step4'];
+      steps.forEach(id => {
+        const el = document.getElementById(id);
+        el.className = 'tx-step-item';
+      });
+
+      const interval = setInterval(() => {
+        progress += 10;
+        fillBar.style.width = progress + '%';
+
+        if (progress === 25) {
+          document.getElementById('step1').classList.add('done');
+        } else if (progress === 50) {
+          document.getElementById('step2').classList.add('done');
+        } else if (progress === 75) {
+          document.getElementById('step3').classList.add('done');
+        } else if (progress >= 100) {
+          clearInterval(interval);
+          document.getElementById('step4').classList.add('done');
+          
+          setTimeout(() => {
+            document.getElementById('txDoneSuccess').style.display = 'block';
+            addTransactionToHistory(amount, activeAsset, currentSourceChain, currentDestChain);
+          }, 300);
+        }
+      }, 350);
+    }
+
+    function closeTxModal() {
+      document.getElementById('txModal').classList.remove('active');
+    }
+
+    // --------------------------------------------------------------------------
+    // History Table Generator
+    // --------------------------------------------------------------------------
+    const mockHistory = [
+      { hash: '0x8f3c...e912', from: 'Ethereum 🔷', to: 'Verdis Chain 909 🌿', amount: '2.50 ETH', carbon: '-4.55 kg', time: '1 min ago', status: 'Completed' },
+      { hash: '0x4a12...78bc', from: 'BSC 🟡', to: 'Verdis Chain 909 🌿', amount: '12.00 BNB', carbon: '-17.40 kg', time: '4 mins ago', status: 'Completed' },
+      { hash: '0x99e1...120f', from: 'Polygon 🟣', to: 'Verdis Chain 909 🌿', amount: '1,500 USDT', carbon: '-2.73 kg', time: '8 mins ago', status: 'Completed' },
+      { hash: '0x10a5...66d2', from: 'Avalanche 🔺', to: 'Verdis Chain 909 🌿', amount: '45.00 AVAX', carbon: '-9.20 kg', time: '12 mins ago', status: 'Completed' },
+      { hash: '0xee21...33aa', from: 'Verdis Chain 909 🌿', to: 'Ethereum 🔷', amount: '5,000 VRS', carbon: '-18.50 kg', time: '18 mins ago', status: 'Completed' }
+    ];
+
+    function populateHistoryTable() {
+      const tbody = document.getElementById('historyTableBody');
+      tbody.innerHTML = '';
+
+      mockHistory.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="mono" style="color:var(--primary);">${item.hash}</td>
+          <td>${item.from}</td>
+          <td>${item.to}</td>
+          <td class="mono" style="font-weight:700;">${item.amount}</td>
+          <td style="color:var(--primary); font-family:var(--font-mono);">${item.carbon}</td>
+          <td style="color:var(--text-muted);">${item.time}</td>
+          <td><span class="status-badge status-completed">✓ ${item.status}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    populateHistoryTable();
+
+    function addTransactionToHistory(amount, symbol, fromChain, toChain) {
+      const newTx = {
+        hash: '0x' + Math.random().toString(16).substr(2, 8) + '...' + Math.random().toString(16).substr(2, 4),
+        from: fromChain,
+        to: toChain,
+        amount: `${amount.toFixed(2)} ${symbol}`,
+        carbon: `-${(amount * 1.82).toFixed(2)} kg`,
+        time: 'Just now',
+        status: 'Completed'
+      };
+      mockHistory.unshift(newTx);
+      populateHistoryTable();
+    }
+
+    // --------------------------------------------------------------------------
+    // Animated Counters (CountUp on Scroll)
+    // --------------------------------------------------------------------------
+    let animatedOnce = false;
+
+    function animateCounters() {
+      if (animatedOnce) return;
+      animatedOnce = true;
+
+      const targets = [
+        { id: 'statTvl', val: 148920450, prefix: '$', suffix: '' },
+        { id: 'statBridges', val: 5, prefix: '', suffix: ' Chains' },
+        { id: 'statTxCount', val: 384120, prefix: '', suffix: '' }
+      ];
+
+      targets.forEach(item => {
+        const el = document.getElementById(item.id);
+        let start = 0;
+        const duration = 1500;
+        const stepTime = 20;
+        const steps = duration / stepTime;
+        const increment = item.val / steps;
+
+        const timer = setInterval(() => {
+          start += increment;
+          if (start >= item.val) {
+            start = item.val;
+            clearInterval(timer);
+          }
+          el.innerText = item.prefix + Math.floor(start).toLocaleString() + item.suffix;
+        }, stepTime);
+      });
+    }
+
+    // Scroll Reveal Observer
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+          if (entry.target.classList.contains('stats-section')) {
+            animateCounters();
+          }
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // --------------------------------------------------------------------------
+    // AI Support Floating Widget Logic
+    // --------------------------------------------------------------------------
+    function toggleAIChat() {
+      const windowEl = document.getElementById('aiChatWindow');
+      windowEl.classList.toggle('open');
+    }
+
+    function sendAIMessage() {
+      const input = document.getElementById('aiChatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const msgs = document.getElementById('aiMessages');
+
+      const userDiv = document.createElement('div');
+      userDiv.className = 'chat-msg user';
+      userDiv.innerText = text;
+      msgs.appendChild(userDiv);
+
+      input.value = '';
+      msgs.scrollTop = msgs.scrollHeight;
+
+      setTimeout(() => {
+        const botDiv = document.createElement('div');
+        botDiv.className = 'chat-msg bot';
+        
+        let reply = "🌿 Verdis Bridge uses 15 multi-sig PoS validators to verify cross-chain lock proofs in under 1.8 seconds while automatically retiring carbon credits!";
+        
+        const lower = text.toLowerCase();
+        if (lower.includes('fee')) {
+          reply = "🌿 Bridge fees are 0.05% for standard tokens (ETH, BNB, USDT, USDC), and 0.00% (FREE!) for native VRS tokens!";
+        } else if (lower.includes('safe') || lower.includes('security')) {
+          reply = "🛡 Security is our top priority: 15-validator threshold consensus, 72-hour timelock upgrades, and ZK-proof state audits guarantee zero single point of failure.";
+        } else if (lower.includes('carbon') || lower.includes('green') || lower.includes('eco')) {
+          reply = "🌱 Every bridge transaction automatically calculates energy offset and retires certified carbon credits on-chain, averaging -1.82 kg CO₂ offset per transfer!";
+        } else if (lower.includes('chain') || lower.includes('network')) {
+          reply = "🌐 Verdis Bridge supports Ethereum, BNB Smart Chain, Polygon PoS, Avalanche C-Chain, and Verdis Chain 909!";
+        }
+
+        botDiv.innerText = reply;
+        msgs.appendChild(botDiv);
+        msgs.scrollTop = msgs.scrollHeight;
+      }, 600);
+    }
+  </script>
+</body>
+</html>
