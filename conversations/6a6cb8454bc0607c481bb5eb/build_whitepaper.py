@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+import os
+
+html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1680,3 +1682,10 @@
   </script>
 </body>
 </html>
+"""
+
+target_path = "/app/conversations/6a6cb8454bc0607c481bb5eb/blockchain/dist/web/whitepaper.html"
+with open(target_path, "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print(f"Verified & updated {target_path}")
