@@ -7,23 +7,28 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class HomeFragment : Fragment() {
 
-    private lateinit var tvBalance: TextView
     private lateinit var tvAddress: TextView
-    private lateinit var tokensContainer: LinearLayout
-    private lateinit var progressBar: ProgressBar
+    private lateinit var tvBalance: TextView
+    private lateinit var tvBalanceUsd: TextView
+    private lateinit var tvChange24h: TextView
+    private lateinit var tvBlockHeight: TextView
+    private lateinit var tvValidators: TextView
+    private lateinit var rvTokens: RecyclerView
+    private lateinit var rvTransactions: RecyclerView
+    private lateinit var swipeRefresh: SwipeRefreshLayout
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,94 +37,154 @@ class HomeFragment : Fragment() {
     ): View {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
-        tvBalance = view.findViewById(R.id.tv_balance)
         tvAddress = view.findViewById(R.id.tv_address)
-        tokensContainer = view.findViewById(R.id.tokens_container)
-        progressBar = view.findViewById(R.id.progress)
+        tvBalance = view.findViewById(R.id.tv_total_balance)
+        tvBalanceUsd = view.findViewById(R.id.tv_balance_usd)
+        tvChange24h = view.findViewById(R.id.tv_change_24h)
+        tvBlockHeight = view.findViewById(R.id.tv_block_height)
+        tvValidators = view.findViewById(R.id.tv_validators)
+        rvTokens = view.findViewById(R.id.rv_tokens)
+        rvTransactions = view.findViewById(R.id.rv_transactions)
+        swipeRefresh = view.findViewById(R.id.swipe_refresh)
 
-        val wallet = WalletManager.loadWallet(requireContext())
-        if (wallet != null) {
-            tvAddress.text = wallet.address.take(10) + "..." + wallet.address.takeLast(6)
-            tvAddress.setOnClickListener { copyToClipboard(wallet.address) }
-            loadData(wallet)
+        rvTokens.layoutManager = LinearLayoutManager(context)
+        rvTokens.isNestedScrollingEnabled = false
+        rvTransactions.layoutManager = LinearLayoutManager(context)
+        rvTransactions.isNestedScrollingEnabled = false
+
+        // Quick action buttons
+        view.findViewById<View>(R.id.btn_send).setOnClickListener {
+            (activity as? MainActivity)?.navigateTo(R.id.nav_swap)
+        }
+        view.findViewById<View>(R.id.btn_receive).setOnClickListener {
+            (activity as? MainActivity)?.showReceive()
+        }
+        view.findViewById<View>(R.id.btn_swap).setOnClickListener {
+            (activity as? MainActivity)?.navigateTo(R.id.nav_swap)
+        }
+        view.findViewById<View>(R.id.btn_stake).setOnClickListener {
+            (activity as? MainActivity)?.navigateTo(R.id.nav_stake)
         }
 
-        view.findViewById<ImageView>(R.id.action_send).setOnClickListener {
-            (activity as MainActivity).navigateTo(SendFragment())
-        }
-        view.findViewById<ImageView>(R.id.action_receive).setOnClickListener {
-            (activity as MainActivity).navigateTo(ReceiveFragment())
-        }
-        view.findViewById<ImageView>(R.id.action_swap).setOnClickListener {
-            (activity as MainActivity).navigateTo(SwapFragment())
-        }
-        view.findViewById<ImageView>(R.id.action_history).setOnClickListener {
-            (activity as MainActivity).navigateTo(HistoryFragment())
+        view.findViewById<View>(R.id.btn_qr).setOnClickListener {
+            (activity as? MainActivity)?.showReceive()
         }
 
+        swipeRefresh.setOnRefreshListener { loadData() }
+
+        loadData()
         return view
     }
 
-    private fun loadData(wallet: WalletManager.Wallet) {
-        progressBar.visibility = View.VISIBLE
+    private fun loadData() {
         lifecycleScope.launch {
+            val wallet = WalletManager.loadWallet(requireContext())
+            if (wallet == null) {
+                (activity as? MainActivity)?.showOnboarding()
+                return@launch
+            }
+
+            tvAddress.text = wallet.address
+
             try {
-                val balance = withContext(Dispatchers.IO) {
-                    VerdisApi.getWalletBalance(wallet.address)
-                }
-                val pools = withContext(Dispatchers.IO) {
-                    VerdisApi.getDexPools()
-                }
+                // Load balance
+                val balance = withContext(Dispatchers.IO) { VerdisApi.getBalance(wallet.address) }
+                val market = withContext(Dispatchers.IO) { VerdisApi.getMarketData() }
+                val chainInfo = withContext(Dispatchers.IO) { VerdisApi.getBlockchainInfo() }
+                val tokenBalances = withContext(Dispatchers.IO) { VerdisApi.getTokenBalances(wallet.address) }
+                val transactions = withContext(Dispatchers.IO) { VerdisApi.getTransactions(wallet.address) }
 
-                tvBalance.text = String.format("%,.2f", balance.balance)
+                val balanceVco = balance / 1_000_000_000_000_000_000.0
+                tvBalance.text = String.format("%.4f", balanceVco)
 
-                // Build token cards
-                val tokens = mutableListOf<Pair<String, String>>()
-                tokens.add(Pair("VCO", String.format("%,.2f", balance.balance)))
-                
-                val tokenNames = mutableSetOf<String>()
-                pools.forEach { pool ->
-                    if (pool.tokenA != "VCO" && pool.tokenA !in tokenNames) {
-                        tokenNames.add(pool.tokenA)
-                        tokens.add(Pair(pool.tokenA, "0.00"))
+                val price = market?.price ?: 0.0
+                tvBalanceUsd.text = "$${String.format("%.2f", balanceVco * price)}"
+
+                val change = market?.change24h ?: 0.0
+                val changeStr = if (change >= 0) "+${String.format("%.1f", change)}%" else "${String.format("%.1f", change)}%"
+                tvChange24h.text = " $changeStr"
+                tvChange24h.setTextColor(
+                    if (change >= 0) 0xFF00FF88.toInt() else 0xFFFF5F5F.toInt()
+                )
+
+                tvBlockHeight.text = chainInfo?.height?.toString() ?: "---"
+                tvValidators.text = "${chainInfo?.validatorCount ?: 0}"
+
+                // Token list
+                val tokens = mutableListOf<TokenItem>()
+                tokens.add(TokenItem("VCO", "Verdis", balanceVco, price))
+                if (tokenBalances != null) {
+                    for ((symbol, rawBalance) in tokenBalances) {
+                        if (symbol != "VCO") {
+                            val bal = rawBalance.toDoubleOrNull() ?: 0.0
+                            tokens.add(TokenItem(symbol, symbol, bal, 0.0))
+                        }
                     }
-                    if (pool.tokenB != "VCO" && pool.tokenB !in tokenNames) {
-                        tokenNames.add(pool.tokenB)
-                        tokens.add(Pair(pool.tokenB, "0.00"))
-                    }
                 }
+                rvTokens.adapter = TokenAdapter(tokens)
 
-                tokensContainer.removeAllViews()
-                tokens.forEach { (name, bal) ->
-                    val tokenView = layoutInflater.inflate(R.layout.item_token, tokensContainer, false)
-                    val icon = tokenView.findViewById<TextView>(R.id.token_icon)
-                    val nameView = tokenView.findViewById<TextView>(R.id.token_name)
-                    val balView = tokenView.findViewById<TextView>(R.id.token_balance)
-                    val priceView = tokenView.findViewById<TextView>(R.id.token_price)
+                // Transactions
+                val txList = transactions ?: emptyList()
+                rvTransactions.adapter = TxAdapter(txList, wallet.address)
 
-                    icon.text = name.take(3)
-                    when (name) {
-                        "VCO" -> { icon.setBackgroundResource(R.drawable.bg_token_icon_green); nameView.text = "Verdis"; }
-                        "CARBON" -> { icon.setBackgroundResource(R.drawable.bg_token_icon_teal); nameView.text = "Carbon Credits"; }
-                        "ECO" -> { icon.setBackgroundResource(R.drawable.bg_token_icon_dark_green); nameView.text = "Eco Token"; }
-                        else -> { nameView.text = name; }
-                    }
-                    balView.text = bal
-                    priceView.text = if (name == "VCO") "$0.001" else "—"
-
-                    tokensContainer.addView(tokenView)
-                }
             } catch (e: Exception) {
-                tvBalance.text = "0.00"
+                Toast.makeText(context, "Connection error: ${e.message}", Toast.LENGTH_SHORT).show()
             } finally {
-                progressBar.visibility = View.GONE
+                swipeRefresh.isRefreshing = false
             }
         }
     }
 
-    private fun copyToClipboard(text: String) {
-        val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        clipboard.setPrimaryClip(ClipData.newPlainText("Verdis", text))
-        Toast.makeText(requireContext(), "Address copied ✓", Toast.LENGTH_SHORT).show()
+    data class TokenItem(val symbol: String, val name: String, val balance: Double, val price: Double)
+
+    class TokenAdapter(private val tokens: List<TokenItem>) : RecyclerView.Adapter<TokenAdapter.VH>() {
+        class VH(view: View) : RecyclerView.ViewHolder(view) {
+            val initial: TextView = view.findViewById(R.id.tv_token_initial)
+            val name: TextView = view.findViewById(R.id.tv_token_name)
+            val price: TextView = view.findViewById(R.id.tv_token_price)
+            val balance: TextView = view.findViewById(R.id.tv_token_balance)
+            val value: TextView = view.findViewById(R.id.tv_token_value)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+            VH(LayoutInflater.from(parent.context).inflate(R.layout.item_token, parent, false))
+
+        override fun onBindViewHolder(holder: VH, position: Int) {
+            val t = tokens[position]
+            holder.initial.text = t.symbol.first().toString()
+            holder.name.text = t.symbol
+            holder.price.text = if (t.price > 0) "$${String.format("%.4f", t.price)}" else "—"
+            holder.balance.text = String.format("%.4f", t.balance)
+            holder.value.text = if (t.price > 0) "$${String.format("%.2f", t.balance * t.price)}" else "—"
+        }
+
+        override fun getItemCount() = tokens.size
+    }
+
+    class TxAdapter(
+        private val txs: List<VerdisApi.Transaction>,
+        private val myAddress: String
+    ) : RecyclerView.Adapter<TxAdapter.VH>() {
+        class VH(view: View) : RecyclerView.ViewHolder(view) {
+            val type: TextView = view.findViewById(R.id.tv_tx_type)
+            val time: TextView = view.findViewById(R.id.tv_tx_time)
+            val amount: TextView = view.findViewById(R.id.tv_tx_amount)
+            val status: TextView = view.findViewById(R.id.tv_tx_status)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+            VH(LayoutInflater.from(parent.context).inflate(R.layout.item_tx, parent, false))
+
+        override fun onBindViewHolder(holder: VH, position: Int) {
+            val tx = txs[position]
+            val isReceived = tx.from != myAddress
+            holder.type.text = if (isReceived) "Received" else "Sent"
+            holder.amount.text = if (isReceived) "+" else "-" + String.format("%.4f", tx.amount) + " VCO"
+            holder.amount.setTextColor(if (isReceived) 0xFF00FF88.toInt() else 0xFFFF5F5F.toInt())
+            holder.time.text = tx.timestamp ?: "---"
+            holder.status.text = tx.status ?: "Confirmed"
+        }
+
+        override fun getItemCount() = txs.size
     }
 }

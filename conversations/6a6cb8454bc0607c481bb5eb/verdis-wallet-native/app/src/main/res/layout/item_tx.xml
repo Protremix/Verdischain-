@@ -1,23 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="64dp"
     android:orientation="horizontal"
-    android:background="@drawable/bg_card"
+    android:gravity="center_vertical"
     android:padding="12dp"
-    android:layout_marginBottom="8dp"
-    android:gravity="center_vertical">
+    android:background="@drawable/bg_card"
+    android:layout_marginBottom="6dp">
 
-    <TextView
-        android:id="@+id/tx_dir"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+    <LinearLayout
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:id="@+id/tx_icon_bg"
         android:background="@drawable/bg_tx_in"
-        android:text="↓"
-        android:textSize="18sp"
-        android:textColor="#00FF88"
         android:gravity="center"
-        android:layout_marginEnd="12dp" />
+        android:layout_marginEnd="12dp">
+
+        <ImageView
+            android:id="@+id/iv_tx_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@android:drawable/arrow_down_float"
+            android:contentDescription="TX" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="0dp"
@@ -26,30 +31,44 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/tx_addr"
+            android:id="@+id/tv_tx_type"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0x..."
-            android:textSize="13sp"
-            android:fontFamily="monospace"
-            android:textColor="#F0FDF4" />
+            android:text="Received"
+            android:textSize="14sp"
+            android:textColor="#F0FDF4"
+            android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/tx_time"
+            android:id="@+id/tv_tx_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=""
+            android:text="---"
             android:textSize="11sp"
             android:textColor="#547363" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/tx_amount"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="0.00"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:fontFamily="monospace"
-        android:textColor="#00FF88" />
+        android:orientation="vertical"
+        android:gravity="end">
+
+        <TextView
+            android:id="@+id/tv_tx_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+0.0 VCO"
+            android:textSize="14sp"
+            android:textColor="#00FF88"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_tx_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Confirmed"
+            android:textSize="11sp"
+            android:textColor="#547363" />
+    </LinearLayout>
 </LinearLayout>

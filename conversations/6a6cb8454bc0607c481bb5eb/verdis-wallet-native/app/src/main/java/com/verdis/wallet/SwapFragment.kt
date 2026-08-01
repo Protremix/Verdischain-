@@ -21,12 +21,16 @@ import kotlinx.coroutines.withContext
 
 class SwapFragment : Fragment() {
 
-    private lateinit var etFromAmount: EditText
-    private lateinit var tvToAmount: TextView
     private lateinit var spinnerFrom: Spinner
     private lateinit var spinnerTo: Spinner
+    private lateinit var etFromAmount: EditText
+    private lateinit var tvToAmount: TextView
     private lateinit var tvRate: TextView
+    private lateinit var tvPriceImpact: TextView
+    private lateinit var tvFromBalance: TextView
+    private lateinit var tvToBalance: TextView
     private lateinit var btnSwap: Button
+    private lateinit var btnSwitch: Button
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,12 +39,16 @@ class SwapFragment : Fragment() {
     ): View {
         val view = inflater.inflate(R.layout.fragment_swap, container, false)
 
-        etFromAmount = view.findViewById(R.id.et_from_amount)
-        tvToAmount = view.findViewById(R.id.tv_to_amount)
         spinnerFrom = view.findViewById(R.id.spinner_from)
         spinnerTo = view.findViewById(R.id.spinner_to)
+        etFromAmount = view.findViewById(R.id.et_from_amount)
+        tvToAmount = view.findViewById(R.id.tv_to_amount)
         tvRate = view.findViewById(R.id.tv_rate)
+        tvPriceImpact = view.findViewById(R.id.tv_price_impact)
+        tvFromBalance = view.findViewById(R.id.tv_from_balance)
+        tvToBalance = view.findViewById(R.id.tv_to_balance)
         btnSwap = view.findViewById(R.id.btn_swap)
+        btnSwitch = view.findViewById(R.id.btn_switch)
 
         val tokens = listOf("VCO", "CARBON", "ECO")
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, tokens)
@@ -48,12 +56,11 @@ class SwapFragment : Fragment() {
         spinnerTo.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, tokens)
         spinnerTo.setSelection(1)
 
-        val watcher = object : TextWatcher {
+        etFromAmount.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) { updateQuote() }
             override fun beforeTextChanged(s: CharSequence?, p1: Int, p2: Int, p3: Int) {}
             override fun onTextChanged(s: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-        }
-        etFromAmount.addTextChangedListener(watcher)
+        })
 
         val spinListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) { updateQuote() }
@@ -62,23 +69,29 @@ class SwapFragment : Fragment() {
         spinnerFrom.onItemSelectedListener = spinListener
         spinnerTo.onItemSelectedListener = spinListener
 
+        btnSwitch.setOnClickListener {
+            val from = spinnerFrom.selectedItemPosition
+            spinnerFrom.setSelection(spinnerTo.selectedItemPosition)
+            spinnerTo.setSelection(from)
+        }
+
         btnSwap.setOnClickListener {
             val fromToken = spinnerFrom.selectedItem as String
             val toToken = spinnerTo.selectedItem as String
             val amount = etFromAmount.text.toString().toDoubleOrNull()
 
             if (fromToken == toToken) {
-                Toast.makeText(requireContext(), "Select different tokens", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Select different tokens", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             if (amount == null || amount <= 0) {
-                Toast.makeText(requireContext(), "Enter amount", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Enter amount", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             val wallet = WalletManager.loadWallet(requireContext())
             if (wallet == null) {
-                Toast.makeText(requireContext(), "No wallet", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "No wallet", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -87,18 +100,23 @@ class SwapFragment : Fragment() {
 
             lifecycleScope.launch {
                 try {
+                    val details = withContext(Dispatchers.IO) { VerdisApi.getWalletDetails(wallet.address) }
+                    val nonce = details?.nonce?.toLong() ?: 0L
+                    val signature = WalletManager.signTransaction(wallet, "", amount, 0.0, nonce)
+
                     val result = withContext(Dispatchers.IO) {
-                        VerdisApi.swap(wallet, fromToken, toToken, amount)
+                        VerdisApi.executeSwap(wallet.address, fromToken, toToken, amount, signature, wallet.publicKey)
                     }
-                    if (result.success) {
-                        Toast.makeText(requireContext(), "Swapped ${amount} ${fromToken} → ${result.amountOut} ${toToken} ✓", Toast.LENGTH_LONG).show()
+
+                    if (result?.success == true) {
+                        Toast.makeText(context, "Swapped ${amount} ${fromToken} → ${result.amountOut} ${toToken} ✓", Toast.LENGTH_LONG).show()
                         etFromAmount.setText("")
                         tvToAmount.text = "0.0"
                     } else {
-                        Toast.makeText(requireContext(), "Swap failed: ${result.error}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "Swap failed: ${result?.error ?: "Unknown"}", Toast.LENGTH_LONG).show()
                     }
                 } catch (e: Exception) {
-                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 } finally {
                     btnSwap.isEnabled = true
                     btnSwap.text = "Swap"
@@ -106,6 +124,7 @@ class SwapFragment : Fragment() {
             }
         }
 
+        loadBalances()
         return view
     }
 
@@ -122,15 +141,34 @@ class SwapFragment : Fragment() {
 
         lifecycleScope.launch {
             try {
-                val outAmount = withContext(Dispatchers.IO) {
-                    VerdisApi.getQuote(fromToken, toToken, amount)
+                val quote = withContext(Dispatchers.IO) { VerdisApi.getSwapQuote(fromToken, toToken, amount) }
+                if (quote != null) {
+                    tvToAmount.text = String.format("%.6f", quote.expectedAmount)
+                    val rate = if (amount > 0) quote.expectedAmount / amount else 0.0
+                    tvRate.text = "1 $fromToken = ${String.format("%.4f", rate)} $toToken"
+                    tvPriceImpact.text = "${String.format("%.2f", quote.priceImpact)}%"
+                } else {
+                    tvRate.text = "No liquidity pool"
+                    tvToAmount.text = "0.0"
                 }
-                tvToAmount.text = String.format("%.6f", outAmount)
-                val rate = if (amount > 0) outAmount / amount else 0.0
-                tvRate.text = "1 $fromToken = ${String.format("%.4f", rate)} $toToken · Fee: 0.3%"
             } catch (e: Exception) {
                 tvRate.text = "No liquidity pool"
             }
+        }
+    }
+
+    private fun loadBalances() {
+        val wallet = WalletManager.loadWallet(requireContext()) ?: return
+        lifecycleScope.launch {
+            try {
+                val balances = withContext(Dispatchers.IO) { VerdisApi.getTokenBalances(wallet.address) }
+                if (balances != null) {
+                    val fromToken = spinnerFrom.selectedItem as? String ?: "VCO"
+                    val toToken = spinnerTo.selectedItem as? String ?: "CARBON"
+                    tvFromBalance.text = "Balance: ${balances[fromToken] ?: "0.0"}"
+                    tvToBalance.text = "Balance: ${balances[toToken] ?: "0.0"}"
+                }
+            } catch (e: Exception) {}
         }
     }
 }

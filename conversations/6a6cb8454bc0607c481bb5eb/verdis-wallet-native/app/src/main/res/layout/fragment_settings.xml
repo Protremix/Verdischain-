@@ -1,160 +1,383 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/swipe_refresh"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#050A08"
-    android:fillViewport="true"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:background="#050A08">
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
+        android:layout_height="match_parent">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Settings"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="#F0FDF4"
-            android:layout_marginBottom="16dp" />
-
-        <!-- Network Settings Card -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@drawable/bg_card"
-            android:padding="20dp"
-            android:layout_marginBottom="16dp">
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:boxBackgroundColor="#0F1914"
-                app:boxStrokeColor="#00FF88"
-                android:hint="RPC Endpoint"
-                app:hintTextColor="#8BA898">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_rpc"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textUri"
-                    android:textColor="#F0FDF4"
-                    android:fontFamily="monospace"
-                    android:textSize="13sp" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:boxBackgroundColor="#0F1914"
-                app:boxStrokeColor="#00FF88"
-                android:hint="Chain ID"
-                app:hintTextColor="#8BA898">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_chain_id"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:textColor="#F0FDF4"
-                    android:fontFamily="monospace"
-                    android:enabled="false" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:boxBackgroundColor="#0F1914"
-                app:boxStrokeColor="#00FF88"
-                android:hint="Explorer URL"
-                app:hintTextColor="#8BA898">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_explorer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textUri"
-                    android:textColor="#F0FDF4"
-                    android:fontFamily="monospace"
-                    android:textSize="13sp" />
-            </com.google.android.material.textfield.TextInputLayout>
-        </LinearLayout>
-
-        <!-- Wallet Security Card -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/bg_card"
-            android:padding="20dp"
-            android:layout_marginBottom="16dp">
+            android:padding="20dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="PRIVATE KEY (ENCRYPTED ON DEVICE)"
-                android:textSize="11sp"
-                android:textColor="#8BA898"
-                android:textAllCaps="true"
-                android:layout_marginBottom="8dp" />
+                android:text="Settings"
+                android:textSize="24sp"
+                android:textColor="#F0FDF4"
+                android:textStyle="bold"
+                android:layout_marginBottom="24dp" />
 
-            <EditText
-                android:id="@+id/et_private_key"
+            <!-- Wallet Info Section -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textPassword"
-                android:textColor="#F0FDF4"
-                android:fontFamily="monospace"
-                android:textSize="11sp"
-                android:background="@drawable/bg_input"
-                android:padding="12dp"
-                android:layout_marginBottom="12dp" />
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="20dp"
+                android:layout_marginBottom="16dp">
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <LinearLayout
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_action_icon"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_verdis_logo"
+                            app:tint="#00FF88" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="16dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Verdis Wallet"
+                            android:textSize="16sp"
+                            android:textColor="#F0FDF4"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/tv_address"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0x0000...0000"
+                            android:textSize="12sp"
+                            android:textColor="#547363"
+                            android:fontFamily="monospace" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_copy_address"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="Copy"
+                        android:textSize="11sp"
+                        app:backgroundTint="#0A120E"
+                        app:strokeColor="#1A00FF88"
+                        app:strokeWidth="1dp"
+                        app:cornerRadius="8dp"
+                        android:textColor="#00FF88" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#1A2D2018" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_backup"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Backup Wallet (Seed Phrase)"
+                    android:textSize="13sp"
+                    app:backgroundTint="@android:color/transparent"
+                    android:textColor="#F0FDF4"
+                    android:gravity="start|center_vertical"
+                    app:icon="@android:drawable/ic_menu_save"
+                    app:iconTint="#00FF88" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_export_key"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Export Private Key"
+                    android:textSize="13sp"
+                    app:backgroundTint="@android:color/transparent"
+                    android:textColor="#F0FDF4"
+                    android:gravity="start|center_vertical"
+                    app:icon="@android:drawable/ic_menu_manage"
+                    app:iconTint="#00FF88" />
+            </LinearLayout>
+
+            <!-- Network Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NETWORK"
+                android:textSize="12sp"
+                android:textColor="#547363"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="4dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="20dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Network"
+                        android:textSize="14sp"
+                        android:textColor="#F0FDF4" />
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Verdis Mainnet"
+                        android:textSize="14sp"
+                        android:textColor="#8BA898"
+                        android:gravity="end" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Chain ID"
+                        android:textSize="14sp"
+                        android:textColor="#F0FDF4" />
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="909"
+                        android:textSize="14sp"
+                        android:textColor="#8BA898"
+                        android:gravity="end" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="RPC URL"
+                        android:textSize="14sp"
+                        android:textColor="#F0FDF4" />
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="rpc.verdischain.com"
+                        android:textSize="14sp"
+                        android:textColor="#8BA898"
+                        android:gravity="end"
+                        android:fontFamily="monospace" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Security Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SECURITY"
+                android:textSize="12sp"
+                android:textColor="#547363"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="4dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="20dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Biometric Lock"
+                        android:textSize="14sp"
+                        android:textColor="#F0FDF4" />
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switch_biometric"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Transaction Notifications"
+                        android:textSize="14sp"
+                        android:textColor="#F0FDF4" />
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switch_notifications"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_change_rpc"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Change RPC Endpoint"
+                    android:textSize="13sp"
+                    app:backgroundTint="@android:color/transparent"
+                    android:textColor="#F0FDF4"
+                    android:gravity="start|center_vertical"
+                    app:icon="@android:drawable/ic_menu_edit"
+                    app:iconTint="#00FF88" />
+            </LinearLayout>
+
+            <!-- About Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ABOUT"
+                android:textSize="12sp"
+                android:textColor="#547363"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="4dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="20dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Version"
+                        android:textSize="14sp"
+                        android:textColor="#F0FDF4" />
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="1.0.0"
+                        android:textSize="14sp"
+                        android:textColor="#8BA898"
+                        android:gravity="end" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Network Status"
+                        android:textSize="14sp"
+                        android:textColor="#F0FDF4" />
+                    <TextView
+                        android:id="@+id/tv_net_status"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="● Connected"
+                        android:textSize="14sp"
+                        android:textColor="#00FF88"
+                        android:gravity="end" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Block Height"
+                        android:textSize="14sp"
+                        android:textColor="#F0FDF4" />
+                    <TextView
+                        android:id="@+id/tv_block_height"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="---"
+                        android:textSize="14sp"
+                        android:textColor="#8BA898"
+                        android:gravity="end" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Delete Wallet -->
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_show_key"
+                android:id="@+id/btn_delete_wallet"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:text="Show Key"
-                android:textColor="#F0FDF4"
+                android:text="Delete Wallet"
                 android:textSize="14sp"
-                app:backgroundTint="@android:color/transparent"
-                app:strokeColor="#00FF88"
+                app:backgroundTint="#1A000000"
+                app:strokeColor="#33FF5F5F"
                 app:strokeWidth="1dp"
-                app:cornerRadius="10dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_disconnect"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="Disconnect Wallet"
-                android:textColor="#FF5F5F"
-                android:textSize="14sp"
-                app:backgroundTint="@android:color/transparent"
-                app:strokeColor="#FF5F5F"
-                app:strokeWidth="1dp"
-                app:cornerRadius="10dp"
-                android:layout_marginTop="8dp" />
+                app:cornerRadius="12dp"
+                android:textColor="#FF5F5F" />
 
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/tv_version"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Verdis Wallet v1.0.0"
-            android:textSize="12sp"
-            android:textColor="#547363"
-            android:textAlignment="center"
-            android:gravity="center"
-            android:layout_marginTop="20dp" />
-
-    </LinearLayout>
-</ScrollView>
+    </androidx.core.widget.NestedScrollView>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

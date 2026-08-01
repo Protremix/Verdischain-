@@ -1,63 +1,173 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#050A08"
     android:padding="20dp"
-    android:gravity="center">
+    android:gravity="center_horizontal">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Receive VCO"
-        android:textSize="20sp"
-        android:textStyle="bold"
+        android:text="Receive"
+        android:textSize="24sp"
         android:textColor="#F0FDF4"
-        android:layout_marginBottom="32dp" />
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp"
+        android:layout_gravity="start" />
 
     <!-- QR Code -->
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
+        android:layout_width="260dp"
+        android:layout_height="260dp"
         android:background="@drawable/bg_card"
-        android:padding="24dp"
-        android:layout_marginBottom="24dp">
+        android:padding="16dp"
+        android:layout_marginBottom="24dp"
+        android:gravity="center">
 
         <ImageView
-            android:id="@+id/qr_image"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:background="#FFFFFF"
-            android:padding="16dp"
-            android:contentDescription="QR Code" />
-
-        <TextView
-            android:id="@+id/tv_full_address"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0x..."
-            android:textSize="12sp"
-            android:fontFamily="monospace"
-            android:textColor="#8BA898"
-            android:layout_marginTop="16dp"
-            android:textAlignment="center" />
-
+            android:id="@+id/iv_qr_code"
+            android:layout_width="220dp"
+            android:layout_height="220dp"
+            android:contentDescription="QR Code"
+            android:background="#FFFFFF" />
     </LinearLayout>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_copy"
+    <!-- Address Label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your Verdis Address"
+        android:textSize="12sp"
+        android:textColor="#547363"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Address -->
+    <TextView
+        android:id="@+id/tv_address"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:text="Copy Address"
+        android:layout_height="wrap_content"
+        android:text="0x0000...0000"
+        android:textSize="14sp"
         android:textColor="#F0FDF4"
-        android:textSize="15sp"
-        app:backgroundTint="@android:color/transparent"
-        app:strokeColor="#00FF88"
-        app:strokeWidth="1dp"
-        app:cornerRadius="12dp"
-        xmlns:app="http://schemas.android.com/apk/res-auto" />
+        android:fontFamily="monospace"
+        android:gravity="center"
+        android:background="@drawable/bg_card"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Copy + Share buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_copy"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="Copy Address"
+            app:icon="@android:drawable/ic_menu_copy"
+            app:backgroundTint="#0A120E"
+            app:strokeColor="#1A00FF88"
+            app:strokeWidth="1dp"
+            app:cornerRadius="12dp"
+            android:textColor="#00FF88"
+            android:layout_marginEnd="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_share"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="Share"
+            app:icon="@android:drawable/ic_menu_share"
+            app:backgroundTint="#0A120E"
+            app:strokeColor="#1A00FF88"
+            app:strokeWidth="1dp"
+            app:cornerRadius="12dp"
+            android:textColor="#00FF88"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <!-- Network Info -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_card"
+        android:padding="16dp"
+        android:layout_marginTop="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Network"
+                android:textSize="12sp"
+                android:textColor="#547363" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Verdis Mainnet"
+                android:textSize="12sp"
+                android:textColor="#F0FDF4"
+                android:gravity="end" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chain ID"
+                android:textSize="12sp"
+                android:textColor="#547363" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="909"
+                android:textSize="12sp"
+                android:textColor="#F0FDF4"
+                android:gravity="end" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="RPC URL"
+                android:textSize="12sp"
+                android:textColor="#547363" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="rpc.verdischain.com"
+                android:textSize="12sp"
+                android:textColor="#F0FDF4"
+                android:gravity="end"
+                android:fontFamily="monospace" />
+        </LinearLayout>
+    </LinearLayout>
 
 </LinearLayout>

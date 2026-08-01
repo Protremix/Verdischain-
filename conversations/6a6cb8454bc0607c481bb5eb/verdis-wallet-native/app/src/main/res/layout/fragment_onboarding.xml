@@ -4,61 +4,67 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#050A08"
-    android:gravity="center"
-    android:padding="32dp">
+    android:padding="24dp"
+    android:gravity="center">
 
-    <!-- Logo -->
     <ImageView
         android:layout_width="100dp"
         android:layout_height="100dp"
+        android:src="@drawable/ic_verdis_logo"
         android:layout_marginBottom="32dp"
-        android:src="@drawable/ic_launcher_foreground" />
+        android:contentDescription="Verdis Logo" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Verdis Wallet"
-        android:textSize="32sp"
-        android:textStyle="bold"
+        android:textSize="28sp"
         android:textColor="#F0FDF4"
-        android:layout_marginBottom="16dp" />
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
 
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="The world's first fully green, carbon-negative blockchain. Native wallet with DEX trading, carbon credits, and DPoS staking."
+        android:text="First Fully Green Blockchain"
         android:textSize="14sp"
-        android:textColor="#8BA898"
-        android:textAlignment="center"
-        android:lineSpacingExtra="4dp"
-        android:layout_marginBottom="40dp" />
+        android:textColor="#547363"
+        android:layout_marginBottom="48dp" />
 
+    <!-- Create Wallet Button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_create"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:text="Create New Wallet"
-        android:textColor="#050A08"
-        android:textSize="15sp"
+        android:textSize="16sp"
         android:textStyle="bold"
         app:backgroundTint="#00FF88"
-        app:cornerRadius="12dp"
-        app:icon="@android:drawable/ic_menu_add"
-        app:iconTint="#050A08"
-        xmlns:app="http://schemas.android.com/apk/res-auto" />
+        app:cornerRadius="16dp"
+        android:textColor="#050A08"
+        android:layout_marginBottom="12dp" />
 
+    <!-- Import Wallet Button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_import"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:text="Import Wallet"
-        android:textColor="#F0FDF4"
-        android:textSize="15sp"
-        app:backgroundTint="@android:color/transparent"
-        app:strokeColor="#00FF88"
+        android:textSize="16sp"
+        app:backgroundTint="#0A120E"
+        app:strokeColor="#1A00FF88"
         app:strokeWidth="1dp"
-        app:cornerRadius="12dp"
-        android:layout_marginTop="12dp"
-        xmlns:app="http://schemas.android.com/apk/res-auto" />
+        app:cornerRadius="16dp"
+        android:textColor="#00FF88"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="By continuing you agree to the Terms of Service and Privacy Policy"
+        android:textSize="11sp"
+        android:textColor="#3A5040"
+        android:textAlignment="center"
+        android:gravity="center" />
 
 </LinearLayout>

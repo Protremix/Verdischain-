@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#050A08">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DApps & Deploy"
+                android:textSize="24sp"
+                android:textColor="#F0FDF4"
+                android:textStyle="bold"
+                android:layout_marginBottom="20dp" />
+
+            <!-- Tabs: DApps / Deploy / Contracts -->
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tab_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:tabTextColor="#547363"
+                app:tabSelectedTextColor="#00FF88"
+                app:tabIndicatorColor="#00FF88"
+                app:tabBackground="#0A120E"
+                app:tabRippleColor="#1A00FF88"
+                android:layout_marginBottom="16dp">
+
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="DApps" />
+
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Deploy" />
+
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Contracts" />
+            </com.google.android.material.tabs.TabLayout>
+
+            <!-- DApps Tab Content -->
+            <LinearLayout
+                android:id="@+id/content_dapps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <!-- DApp grid -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <LinearLayout
+                        android:id="@+id/dapp_dex"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/bg_card"
+                        android:padding="16dp"
+                        android:layout_marginEnd="6dp">
+
+                        <LinearLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_action_icon"
+                            android:gravity="center"
+                            android:layout_marginBottom="8dp">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@android:drawable/ic_menu_sort_by_size"
+                                app:tint="#00FF88" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Verdis DEX"
+                            android:textSize="12sp"
+                            android:textColor="#F0FDF4" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/dapp_ido"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/bg_card"
+                        android:padding="16dp"
+                        android:layout_marginStart="6dp">
+
+                        <LinearLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_action_icon"
+                            android:gravity="center"
+                            android:layout_marginBottom="8dp">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@android:drawable/ic_menu_add"
+                                app:tint="#00FF88" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Token Sale"
+                            android:textSize="12sp"
+                            android:textColor="#F0FDF4" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/dapp_bridge"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/bg_card"
+                        android:padding="16dp"
+                        android:layout_marginStart="6dp">
+
+                        <LinearLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_action_icon"
+                            android:gravity="center"
+                            android:layout_marginBottom="8dp">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@android:drawable/ic_menu_set_as"
+                                app:tint="#00FF88" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Bridge"
+                            android:textSize="12sp"
+                            android:textColor="#F0FDF4" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <LinearLayout
+                        android:id="@+id/dapp_explorer"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/bg_card"
+                        android:padding="16dp"
+                        android:layout_marginEnd="6dp">
+
+                        <LinearLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_action_icon"
+                            android:gravity="center"
+                            android:layout_marginBottom="8dp">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@android:drawable/ic_menu_search"
+                                app:tint="#00FF88" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Explorer"
+                            android:textSize="12sp"
+                            android:textColor="#F0FDF4" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/dapp_markets"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/bg_card"
+                        android:padding="16dp"
+                        android:layout_marginStart="6dp">
+
+                        <LinearLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_action_icon"
+                            android:gravity="center"
+                            android:layout_marginBottom="8dp">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@android:drawable/ic_menu_my_calendar"
+                                app:tint="#00FF88" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Markets"
+                            android:textSize="12sp"
+                            android:textColor="#F0FDF4" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/dapp_eco"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/bg_card"
+                        android:padding="16dp"
+                        android:layout_marginStart="6dp">
+
+                        <LinearLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_action_icon"
+                            android:gravity="center"
+                            android:layout_marginBottom="8dp">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@android:drawable/ic_menu_mylocation"
+                                app:tint="#00FF88" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Eco Track"
+                            android:textSize="12sp"
+                            android:textColor="#F0FDF4" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Web Browser URL Bar -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="Enter DApp URL or search"
+                    app:boxStrokeColor="#00FF88"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_dapp_url"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textUri"
+                        android:imeOptions="actionGo" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_open_dapp"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Open DApp"
+                    app:backgroundTint="#00FF88"
+                    app:cornerRadius="12dp"
+                    android:textColor="#050A08"
+                    android:layout_marginTop="8dp" />
+            </LinearLayout>
+
+            <!-- Deploy Tab Content -->
+            <LinearLayout
+                android:id="@+id/content_deploy"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:hint="Contract Name"
+                    app:boxStrokeColor="#00FF88"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_contract_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:hint="Bytecode (hex)"
+                    app:boxStrokeColor="#00FF88"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_bytecode"
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:inputType="textMultiLine"
+                        android:fontFamily="monospace"
+                        android:textSize="12sp"
+                        android:gravity="top" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Template Quick Select -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Quick Templates"
+                    android:textSize="14sp"
+                    android:textColor="#8BA898"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="16dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_template_token"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:text="Token"
+                        android:textSize="11sp"
+                        app:backgroundTint="#0A120E"
+                        app:strokeColor="#1A00FF88"
+                        app:strokeWidth="1dp"
+                        app:cornerRadius="8dp"
+                        android:textColor="#00FF88"
+                        android:layout_marginEnd="4dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_template_multisig"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:text="Multi-Sig"
+                        android:textSize="11sp"
+                        app:backgroundTint="#0A120E"
+                        app:strokeColor="#1A00FF88"
+                        app:strokeWidth="1dp"
+                        app:cornerRadius="8dp"
+                        android:textColor="#00FF88"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_template_timelock"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:text="Time-Lock"
+                        android:textSize="11sp"
+                        app:backgroundTint="#0A120E"
+                        app:strokeColor="#1A00FF88"
+                        app:strokeWidth="1dp"
+                        app:cornerRadius="8dp"
+                        android:textColor="#00FF88"
+                        android:layout_marginStart="4dp" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_deploy"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="Deploy Contract"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="#00FF88"
+                    app:cornerRadius="16dp"
+                    android:textColor="#050A08" />
+            </LinearLayout>
+
+            <!-- Contracts Tab Content -->
+            <LinearLayout
+                android:id="@+id/content_contracts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Deployed Contracts"
+                    android:textSize="16sp"
+                    android:textColor="#F0FDF4"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="12dp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_contracts"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</LinearLayout>

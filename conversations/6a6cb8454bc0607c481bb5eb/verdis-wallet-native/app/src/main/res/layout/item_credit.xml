@@ -2,41 +2,99 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:padding="8dp"
-    android:layout_marginBottom="4dp">
+    android:orientation="vertical"
+    android:background="@drawable/bg_card"
+    android:padding="16dp"
+    android:layout_marginBottom="8dp">
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:layout_marginBottom="4dp">
 
         <TextView
-            android:id="@+id/credit_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Carbon Credit"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:textColor="#F0FDF4" />
-
+            android:text="Credit #"
+            android:textSize="12sp"
+            android:textColor="#547363" />
         <TextView
-            android:id="@+id/credit_tons"
-            android:layout_width="wrap_content"
+            android:id="@+id/tv_credit_id"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="0 tons CO₂"
-            android:textSize="11sp"
-            android:textColor="#8BA898" />
+            android:layout_weight="1"
+            android:text="---"
+            android:textSize="12sp"
+            android:textColor="#F0FDF4"
+            android:gravity="end" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/credit_status"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Verified"
-        android:textSize="13sp"
-        android:textStyle="bold"
-        android:textColor="#00FF88" />
+        android:orientation="horizontal"
+        android:layout_marginBottom="4dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Amount"
+            android:textSize="12sp"
+            android:textColor="#547363" />
+        <TextView
+            android:id="@+id/tv_credit_amount"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="--- tons CO₂"
+            android:textSize="12sp"
+            android:textColor="#F0FDF4"
+            android:gravity="end" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="4dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Verified"
+            android:textSize="12sp"
+            android:textColor="#547363" />
+        <TextView
+            android:id="@+id/tv_credit_verified"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="✓ Yes"
+            android:textSize="12sp"
+            android:textColor="#00FF88"
+            android:gravity="end" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Project"
+            android:textSize="12sp"
+            android:textColor="#547363" />
+        <TextView
+            android:id="@+id/tv_credit_project"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="---"
+            android:textSize="12sp"
+            android:textColor="#F0FDF4"
+            android:gravity="end" />
+    </LinearLayout>
 </LinearLayout>

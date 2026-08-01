@@ -2,13 +2,11 @@ package com.verdis.wallet
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.MasterKey
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
-import com.google.gson.Gson
 
 object WalletManager {
+
     private const val PREFS_NAME = "verdis_wallet_encrypted"
     private const val KEY_PRIVATE = "private_key"
     private const val KEY_PUBLIC = "public_key"
@@ -24,52 +22,58 @@ object WalletManager {
 
     private fun getEncryptedPrefs(context: Context): SharedPreferences {
         return try {
-            val masterKey = MasterKey.Builder(context)
-                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                .build()
+            val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
             EncryptedSharedPreferences.create(
-                context,
                 PREFS_NAME,
-                masterKey,
+                masterKeyAlias,
+                context,
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
         } catch (e: Exception) {
-            // Fallback to regular prefs
             context.getSharedPreferences("verdis_wallet_fallback", Context.MODE_PRIVATE)
         }
     }
 
     fun createWallet(context: Context): Wallet {
-        val privKey = CryptoUtils.generatePrivateKey()
-        val privHex = "0x" + CryptoUtils.toHex(privKey)
-        val pubKey = CryptoUtils.derivePublicKey(privKey)
-        val pubHex = "0x" + CryptoUtils.toHex(pubKey)
-        val address = CryptoUtils.deriveAddress(pubKey)
-        val seed = generateSeedPhrase()
+        val seedPhrase = CryptoUtils.generateSeedPhrase()
+        val privKeyBytes = CryptoUtils.seedToPrivateKey(seedPhrase)
+        val privHex = "0x" + CryptoUtils.toHex(privKeyBytes)
+        val pubKeyBytes = CryptoUtils.derivePublicKey(privKeyBytes)
+        val pubHex = "0x" + CryptoUtils.toHex(pubKeyBytes)
+        val address = CryptoUtils.deriveAddress(pubKeyBytes)
 
-        val wallet = Wallet(privHex, pubHex, address, seed)
+        val wallet = Wallet(
+            privateKey = privHex,
+            publicKey = pubHex,
+            address = address,
+            seedPhrase = seedPhrase
+        )
         saveWallet(context, wallet)
         return wallet
     }
 
     fun importWallet(context: Context, keyOrSeed: String): Wallet {
-        val privHex = if (keyOrSeed.contains(" ")) {
-            // Seed phrase → derive private key via SHA-256
-            val hash = CryptoUtils.sha256(keyOrSeed.toByteArray())
-            "0x" + CryptoUtils.toHex(hash)
-        } else if (keyOrSeed.startsWith("0x")) {
-            keyOrSeed
+        val cleaned = keyOrSeed.trim()
+        val isSeed = cleaned.contains(" ")
+
+        val (privKeyBytes, seedPhrase) = if (isSeed) {
+            CryptoUtils.seedToPrivateKey(cleaned) to cleaned
         } else {
-            "0x$keyOrSeed"
+            CryptoUtils.privateKeyFromHex(cleaned) to null
         }
 
-        val privKey = CryptoUtils.privateKeyFromHex(privHex)
-        val pubKey = CryptoUtils.derivePublicKey(privKey)
-        val pubHex = "0x" + CryptoUtils.toHex(pubKey)
-        val address = CryptoUtils.deriveAddress(pubKey)
+        val privHex = "0x" + CryptoUtils.toHex(privKeyBytes)
+        val pubKeyBytes = CryptoUtils.derivePublicKey(privKeyBytes)
+        val pubHex = "0x" + CryptoUtils.toHex(pubKeyBytes)
+        val address = CryptoUtils.deriveAddress(pubKeyBytes)
 
-        val wallet = Wallet(privHex, pubHex, address, if (keyOrSeed.contains(" ")) keyOrSeed else null)
+        val wallet = Wallet(
+            privateKey = privHex,
+            publicKey = pubHex,
+            address = address,
+            seedPhrase = seedPhrase
+        )
         saveWallet(context, wallet)
         return wallet
     }
@@ -88,40 +92,25 @@ object WalletManager {
         val prefs = getEncryptedPrefs(context)
         val priv = prefs.getString(KEY_PRIVATE, null) ?: return null
         val pub = prefs.getString(KEY_PUBLIC, "") ?: ""
-        val addr = prefs.getString(KEY_ADDRESS, "") ?: ""
+        val address = prefs.getString(KEY_ADDRESS, "") ?: ""
         val seed = prefs.getString(KEY_SEED, null)
-        return Wallet(priv, pub, addr, seed)
+
+        return Wallet(
+            privateKey = priv,
+            publicKey = pub,
+            address = address,
+            seedPhrase = seed
+        )
     }
 
     fun clearWallet(context: Context) {
-        getEncryptedPrefs(context).edit().clear().apply()
+        val prefs = getEncryptedPrefs(context)
+        prefs.edit().clear().apply()
     }
 
     fun signTransaction(wallet: Wallet, to: String, amount: Double, fee: Double, nonce: Long): String {
-        // Build transaction data and sign
         val txData = "${wallet.address}$to$amount$fee$nonce"
-        val privKey = CryptoUtils.privateKeyFromHex(wallet.privateKey)
-        val signature = CryptoUtils.sign(privKey, txData.toByteArray(Charsets.UTF_8))
-        return "0x" + CryptoUtils.toHex(signature)
-    }
-
-    private val bip39Words = listOf(
-        "abandon","ability","able","about","above","absent","absorb","abstract","absurd","abuse","access","accident",
-        "account","accuse","achieve","acid","acoustic","acquire","across","action","actor","actual","adapt","addict",
-        "address","adjust","admit","adult","advance","advice","aerobic","affair","afford","afraid","again","agent",
-        "agree","ahead","aim","air","airport","aisle","alarm","album","alcohol","alert","alien","allergy",
-        "allow","almost","alone","alpha","already","also","alter","always","amateur","amazing","among","amount",
-        "amused","analyst","anchor","ancient","anger","angle","angry","animal","ankle","announce","annual","another",
-        "answer","antenna","antique","anxiety","apart","apology","appear","apple","approve","april","arch","arctic",
-        "area","arena","argue","arm","armed","armor","army","around","arrange","arrest","arrive","arrow",
-        "art","artefact","artist","artwork","ask","aspect","assault","asset","assist","assume","asthma","athlete",
-        "atom","attack","attend","attitude","attract","auction","audit","august","aunt","author","auto","autumn",
-        "avenue","average","avoid","awake","aware","away","awesome","awful","awkward","axis","baby","bachelor",
-        "bacon","badge","bag","balance","balcony","ball","bamboo","banana","banner","bar","barely","bargain",
-        "barrel","base","basic","basket","battle","beach","bean","beauty","because","become","beef","before"
-    )
-
-    private fun generateSeedPhrase(): String {
-        return (1..12).map { bip39Words.random() }.joinToString(" ")
+        val privKeyBytes = CryptoUtils.privateKeyFromHex(wallet.privateKey)
+        return CryptoUtils.signMessage(privKeyBytes, txData)
     }
 }
