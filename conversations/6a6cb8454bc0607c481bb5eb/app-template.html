@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verdis Mobile Wallet — Native Android App Mockup & Template</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Variables */
+    :root {
+      --bg-dark: #050a08;
+      --card-bg: #0f1f1a;
+      --border-color: #1a2b23;
+      --neon-green: #00ff88;
+      --secondary-green: #10b981;
+      --accent-glow: rgba(0, 255, 136, 0.2);
+      --danger-red: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.12);
+      --danger-border: rgba(239, 68, 68, 0.3);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-sub: #64748b;
+      --phone-width: 420px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #020504;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 255, 136, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 10% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 12px;
+      overflow-x: hidden;
+    }
+
+    /* Page Header */
+    .page-header {
+      text-align: center;
+      margin-bottom: 24px;
+      max-width: 600px;
+    }
+
+    .page-header h1 {
+      font-size: 24px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 30%, var(--neon-green) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .page-header p {
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .header-pills {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .badge-pill {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--neon-green);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Quick Nav Control Bar for Desktop */
+    .desktop-screen-nav {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+      max-width: 520px;
+    }
+
+    .desktop-nav-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .desktop-nav-btn:hover, .desktop-nav-btn.active {
+      background: var(--border-color);
+      color: var(--neon-green);
+      border-color: var(--neon-green);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    /* Mobile Phone Frame Container */
+    .phone-container {
+      width: 100%;
+      max-width: var(--phone-width);
+      background-color: var(--bg-dark);
+      border-radius: 40px;
+      border: 3px solid var(--border-color);
+      box-shadow: 
+        0 0 0 8px #08120e,
+        0 20px 50px rgba(0, 0, 0, 0.8),
+        0 0 30px rgba(0, 255, 136, 0.12);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      height: 860px;
+    }
+
+    /* Phone Top Bar */
+    .phone-status-bar {
+      height: 38px;
+      background: var(--bg-dark);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      border-bottom: 1px solid rgba(26, 43, 35, 0.5);
+      z-index: 50;
+      flex-shrink: 0;
+    }
+
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .phone-notch {
+      width: 120px;
+      height: 18px;
+      background: #000;
+      border-bottom-left-radius: 12px;
+      border-bottom-right-radius: 12px;
+      margin: 0 auto;
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-icons svg {
+      width: 14px;
+      height: 14px;
+      fill: var(--text-main);
+    }
+
+    /* Scrollable Screens Viewport */
+    .screens-viewport {
+      flex: 1;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      padding: 16px 16px 80px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    /* Custom Scrollbar for Viewport */
+    .screens-viewport::-webkit-scrollbar {
+      width: 4px;
+    }
+    .screens-viewport::-webkit-scrollbar-track {
+      background: var(--bg-dark);
+    }
+    .screens-viewport::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+    .screens-viewport::-webkit-scrollbar-thumb:hover {
+      background: var(--secondary-green);
+    }
+
+    /* Screen Container Card */
+    .screen-card {
+      background-color: var(--bg-dark);
+      border: 1px dashed var(--border-color);
+      border-radius: 24px;
+      padding: 20px 16px;
+      position: relative;
+      transition: border-color 0.3s ease;
+    }
+
+    .screen-card:hover {
+      border-color: rgba(0, 255, 136, 0.4);
+    }
+
+    /* Screen Section Header Label */
+    .screen-header-label {
+      position: absolute;
+      top: -12px;
+      left: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--neon-green);
+      color: var(--neon-green);
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      z-index: 10;
+    }
+
+    /* Typography & Utilities */
+    .title-large {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
+    }
+
+    .title-medium {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .title-small {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .text-green {
+      color: var(--neon-green);
+    }
+
+    .text-secondary {
+      color: var(--secondary-green);
+    }
+
+    .text-muted {
+      color: var(--text-muted);
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    /* Common Card Styling inside screens */
+    .ui-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    .ui-card-glow {
+      background: linear-gradient(145deg, #0f1f1a, #0b1713);
+      border: 1px solid rgba(0, 255, 136, 0.25);
+      box-shadow: 0 4px 20px rgba(0, 255, 136, 0.06);
+    }
+
+    /* Common Buttons */
+    .btn {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--neon-green) 0%, var(--secondary-green) 100%);
+      color: #030806;
+      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.25);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--neon-green);
+      color: var(--neon-green);
+    }
+
+    .btn-outline:hover {
+      background: rgba(0, 255, 136, 0.08);
+    }
+
+    .btn-secondary-outline {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+
+    .btn-secondary-outline:hover {
+      border-color: var(--neon-green);
+      color: var(--neon-green);
+    }
+
+    .btn-danger {
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      color: var(--danger-red);
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.22);
+      border-color: var(--danger-red);
+    }
+
+    /* Form Controls */
+    .form-group {
+      margin-bottom: 12px;
+      text-align: left;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-box {
+      width: 100%;
+      background: #08120d;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: var(--text-main);
+      font-size: 14px;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .input-box:focus-within {
+      border-color: var(--neon-green);
+      box-shadow: 0 0 8px rgba(0, 255, 136, 0.15);
+    }
+
+    .input-field {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-size: 16px;
+      font-weight: 700;
+      width: 100%;
+    }
+
+    .token-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--neon-green);
+      white-space: nowrap;
+    }
+
+    /* Logo Styling */
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-svg {
+      width: 72px;
+      height: 72px;
+      filter: drop-shadow(0 0 12px rgba(0, 255, 136, 0.35));
+      animation: logoPulse 3s infinite ease-in-out;
+    }
+
+    @keyframes logoPulse {
+      0%, 100% { filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.3)); transform: scale(1); }
+      50% { filter: drop-shadow(0 0 20px rgba(0, 255, 136, 0.6)); transform: scale(1.03); }
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--neon-green);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin: 16px auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Screen 1: Splash Screen */
+    .splash-content {
+      padding: 40px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: 280px;
+    }
+
+    .splash-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-top: 16px;
+      color: var(--text-main);
+    }
+
+    .splash-tagline {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--neon-green);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* Screen 2: Onboarding Screen */
+    .onboarding-content {
+      padding: 24px 12px;
+      text-align: center;
+    }
+
+    .onboarding-title {
+      font-size: 24px;
+      font-weight: 800;
+      margin-top: 12px;
+    }
+
+    .onboarding-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+
+    .btn-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Screen 3: Home / Wallet Screen */
+    .wallet-address-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #08120d;
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+
+    .address-text {
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--neon-green);
+      font-weight: 600;
+    }
+
+    .copy-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .copy-btn:hover {
+      color: var(--neon-green);
+      background: rgba(0, 255, 136, 0.1);
+    }
+
+    .balance-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .balance-amount {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin: 4px 0;
+      letter-spacing: -0.5px;
+    }
+
+    .balance-fiat {
+      font-size: 14px;
+      color: var(--secondary-green);
+      font-weight: 600;
+    }
+
+    /* Action Buttons Row */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 16px 0;
+    }
+
+    .action-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 12px 6px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .action-item:hover {
+      border-color: var(--neon-green);
+      background: #142822;
+      transform: translateY(-2px);
+    }
+
+    .action-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(0, 255, 136, 0.1);
+      color: var(--neon-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .action-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* Network Stats Bar */
+    .stats-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #08120d;
+      border: 1px solid var(--border-color);
+      padding: 10px 12px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      font-size: 11px;
+    }
+
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .stat-indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--neon-green);
+      box-shadow: 0 0 6px var(--neon-green);
+    }
+
+    /* Transaction Activity List */
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tx-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(26, 43, 35, 0.6);
+    }
+
+    .tx-item:last-child {
+      border-bottom: none;
+    }
+
+    .tx-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tx-icon-bg {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--secondary-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .tx-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .tx-date {
+      font-size: 10px;
+      color: var(--text-sub);
+    }
+
+    .tx-right {
+      text-align: right;
+    }
+
+    .tx-amount {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--neon-green);
+    }
+
+    .tx-status {
+      font-size: 10px;
+      color: var(--secondary-green);
+    }
+
+    /* Screen 4: Swap Screen */
+    .swap-divider {
+      display: flex;
+      justify-content: center;
+      margin: -6px 0;
+      position: relative;
+      z-index: 5;
+    }
+
+    .swap-arrow-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      border: 1px solid var(--neon-green);
+      color: var(--neon-green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      transition: transform 0.2s;
+    }
+
+    .swap-arrow-btn:hover {
+      transform: rotate(180deg);
+    }
+
+    .pools-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 12px 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .pool-tag {
+      background: rgba(0, 255, 136, 0.1);
+      color: var(--neon-green);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    /* Screen 5: Stake Screen */
+    .percentage-btns {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .pct-btn {
+      flex: 1;
+      background: #08120d;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 6px 0;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .pct-btn:hover {
+      border-color: var(--neon-green);
+      color: var(--neon-green);
+    }
+
+    .stake-action-group {
+      display: flex;
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .validator-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      background: #08120d;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+
+    .val-address {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .val-metrics {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .val-apr {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--neon-green);
+    }
+
+    /* Screen 6: Eco Impact */
+    .eco-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .eco-card {
+      background: #08120d;
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      border-radius: 14px;
+      text-align: center;
+    }
+
+    .eco-card-icon {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .eco-value {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--neon-green);
+    }
+
+    .eco-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 2px;
+      text-transform: uppercase;
+    }
+
+    .eco-description {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      border-radius: 12px;
+    }
+
+    /* Screen 7: Settings Screen */
+    .settings-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .settings-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: #08120d;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .settings-btn:hover {
+      border-color: var(--neon-green);
+      background: #0d1e16;
+    }
+
+    .settings-btn.danger {
+      color: var(--danger-red);
+      border-color: var(--danger-border);
+      background: var(--danger-bg);
+    }
+
+    .settings-btn.danger:hover {
+      border-color: var(--danger-red);
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    .version-tag {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-sub);
+      font-weight: 600;
+      margin-top: 16px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Bottom Navigation Bar inside Phone Frame */
+    .phone-bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: #030806;
+      border-top: 1px solid var(--border-color);
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      align-items: center;
+      padding: 0 4px;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 9px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.2s ease;
+      height: 100%;
+      border: none;
+      background: transparent;
+    }
+
+    .nav-tab svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      transition: transform 0.2s;
+    }
+
+    .nav-tab.active, .nav-tab:hover {
+      color: var(--neon-green);
+    }
+
+    .nav-tab.active svg {
+      transform: translateY(-2px);
+      filter: drop-shadow(0 0 6px var(--neon-green));
+    }
+
+    /* Modal / Toast Notification */
+    .toast-notification {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--card-bg);
+      border: 1px solid var(--neon-green);
+      color: var(--text-main);
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.8), 0 0 15px rgba(0,255,136,0.3);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast-notification.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Footer Note */
+    .footer-note {
+      margin-top: 24px;
+      font-size: 11px;
+      color: var(--text-sub);
+      text-align: center;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 480px) {
+      body {
+        padding: 12px 6px;
+      }
+      .phone-container {
+        border-radius: 0;
+        height: 100vh;
+        max-width: 100%;
+        border: none;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Page Desktop Header -->
+  <header class="page-header">
+    <h1>Verdis Blockchain Mobile Wallet</h1>
+    <p>Professional mobile-first HTML template & preview mockup for the native Android wallet app.</p>
+    <div class="header-pills">
+      <span class="badge-pill">⚡ Proof-of-Green-Stake</span>
+      <span class="badge-pill">🌱 Zero-Carbon Protocol</span>
+      <span class="badge-pill">📱 Android Native UI</span>
+    </div>
+  </header>
+
+  <!-- Quick Jump Controller for Mockup Screens -->
+  <nav class="desktop-screen-nav" aria-label="Mockup Screen Selector">
+    <button class="desktop-nav-btn active" onclick="scrollToScreen('screen-splash')">1. Splash</button>
+    <button class="desktop-nav-btn" onclick="scrollToScreen('screen-onboarding')">2. Onboarding</button>
+    <button class="desktop-nav-btn" onclick="scrollToScreen('screen-wallet')">3. Wallet</button>
+    <button class="desktop-nav-btn" onclick="scrollToScreen('screen-swap')">4. Swap</button>
+    <button class="desktop-nav-btn" onclick="scrollToScreen('screen-stake')">5. Stake</button>
+    <button class="desktop-nav-btn" onclick="scrollToScreen('screen-eco')">6. Eco</button>
+    <button class="desktop-nav-btn" onclick="scrollToScreen('screen-settings')">7. Settings</button>
+  </nav>
+
+  <!-- Mobile Phone Frame -->
+  <main class="phone-container">
+
+    <!-- Phone Top Status Bar -->
+    <div class="phone-status-bar">
+      <div class="status-left">
+        <span id="live-time">20:19</span>
+      </div>
+      <div class="phone-notch"></div>
+      <div class="status-icons">
+        <!-- Signal SVG -->
+        <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.2c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.58-1.58C8.88 19.64 10.37 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+        <!-- Wifi SVG -->
+        <svg viewBox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4zm0 3.8c3.62 0 6.94 1.37 9.47 3.65L12 18.27 2.53 11.45C5.06 9.17 8.38 7.8 12 7.8z"/></svg>
+        <!-- Battery SVG -->
+        <svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+      </div>
+    </div>
+
+    <!-- Scrollable Screen Content Area -->
+    <div class="screens-viewport" id="viewport">
+
+      <!-- ================= 1. SPLASH SCREEN ================= -->
+      <section class="screen-card" id="screen-splash">
+        <div class="screen-header-label">Screen: Splash</div>
+        <div class="splash-content">
+          <div class="logo-container">
+            <!-- Verdis Hexagonal Leaf Logo -->
+            <svg class="logo-svg" viewBox="0 0 512 512">
+              <defs>
+                <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#00ff88"/>
+                  <stop offset="100%" stop-color="#10b981"/>
+                </linearGradient>
+                <linearGradient id="hexGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#00ff88" stop-opacity="0.4"/>
+                  <stop offset="100%" stop-color="#10b981" stop-opacity="0.15"/>
+                </linearGradient>
+              </defs>
+              <polygon points="256,80 392,160 392,352 256,432 120,352 120,160"
+                       fill="none" stroke="url(#hexGrad)" stroke-width="6"/>
+              <polygon points="256,120 358,180 358,332 256,392 154,332 154,180"
+                       fill="none" stroke="#10b981" stroke-width="3" opacity="0.6"/>
+              <path d="M 256 130 C 200 130, 160 180, 160 250 C 160 320, 200 370, 256 370 C 312 370, 352 320, 352 250 C 352 180, 312 130, 256 130 Z"
+                    fill="url(#leafGrad)"/>
+              <path d="M 256 130 L 256 370" stroke="#050a08" stroke-width="4" opacity="0.6" fill="none"/>
+              <circle cx="256" cy="80" r="8" fill="#00ff88"/>
+              <circle cx="392" cy="160" r="6" fill="#00ff88"/>
+              <circle cx="392" cy="352" r="6" fill="#00ff88"/>
+              <circle cx="256" cy="432" r="8" fill="#00ff88"/>
+              <circle cx="120" cy="352" r="6" fill="#00ff88"/>
+              <circle cx="120" cy="160" r="6" fill="#00ff88"/>
+            </svg>
+          </div>
+          <h2 class="splash-title">Verdis</h2>
+          <p class="splash-tagline">Green Wallet</p>
+          <div class="spinner"></div>
+        </div>
+      </section>
+
+
+      <!-- ================= 2. ONBOARDING SCREEN ================= -->
+      <section class="screen-card" id="screen-onboarding">
+        <div class="screen-header-label">Screen: Onboarding</div>
+        <div class="onboarding-content">
+          <div class="logo-container" style="margin-bottom: 8px;">
+            <svg class="logo-svg" style="width: 56px; height: 56px;" viewBox="0 0 512 512">
+              <polygon points="256,80 392,160 392,352 256,432 120,352 120,160" fill="none" stroke="#00ff88" stroke-width="6"/>
+              <path d="M 256 130 C 200 130, 160 180, 160 250 C 160 320, 200 370, 256 370 C 312 370, 352 320, 352 250 C 352 180, 312 130, 256 130 Z" fill="#00ff88"/>
+            </svg>
+          </div>
+          <h2 class="onboarding-title">Verdis Wallet</h2>
+          <p class="onboarding-subtitle">The First Fully Green Blockchain</p>
+          
+          <div class="btn-stack">
+            <button class="btn btn-primary" onclick="showToast('Create Wallet wizard initialized')">
+              <span>✨ Create New Wallet</span>
+            </button>
+            <button class="btn btn-outline" onclick="showToast('Import Wallet modal opened')">
+              <span>🔑 Import Wallet</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================= 3. HOME / WALLET SCREEN ================= -->
+      <section class="screen-card" id="screen-wallet">
+        <div class="screen-header-label">Screen: Wallet Home</div>
+        
+        <!-- Address Bar -->
+        <div class="wallet-address-bar">
+          <span class="address-text">0x72cd...b312</span>
+          <button class="copy-btn" onclick="copyAddress('0x72cd8f3a9e1124bc91023a54efd0a311b312')">
+            📋 Copy
+          </button>
+        </div>
+
+        <!-- Balance Card -->
+        <div class="ui-card ui-card-glow text-center">
+          <span class="balance-title">Total Balance</span>
+          <div class="balance-amount">0 VRS</div>
+          <div class="balance-fiat">$0.00 USD</div>
+        </div>
+
+        <!-- Quick Action Buttons -->
+        <div class="quick-actions">
+          <div class="action-item" onclick="showToast('Send dialog triggered')">
+            <div class="action-icon">↑</div>
+            <span class="action-label">Send</span>
+          </div>
+          <div class="action-item" onclick="showToast('Receive QR code shown')">
+            <div class="action-icon">↓</div>
+            <span class="action-label">Receive</span>
+          </div>
+          <div class="action-item" onclick="scrollToScreen('screen-swap')">
+            <div class="action-icon">⇄</div>
+            <span class="action-label">Swap</span>
+          </div>
+          <div class="action-item" onclick="scrollToScreen('screen-stake')">
+            <div class="action-icon">🔒</div>
+            <span class="action-label">Stake</span>
+          </div>
+        </div>
+
+        <!-- Block Height & Validator Stats Row -->
+        <div class="stats-row">
+          <div class="stat-pill">
+            <span class="stat-indicator"></span>
+            <span>Block: <strong class="text-green">#1,842,910</strong></span>
+          </div>
+          <div class="stat-pill">
+            <span>Validators: <strong class="text-green">128 Green Nodes</strong></span>
+          </div>
+        </div>
+
+        <!-- Recent Activity List -->
+        <div>
+          <div class="section-title">
+            <span>Recent Activity</span>
+            <span class="text-green" style="cursor: pointer;" onclick="showToast('Loading full transaction history...')">View All</span>
+          </div>
+
+          <div class="tx-item">
+            <div class="tx-left">
+              <div class="tx-icon-bg">↓</div>
+              <div>
+                <div class="tx-name">Received VRS</div>
+                <div class="tx-date">Aug 01, 2026 • 18:42</div>
+              </div>
+            </div>
+            <div class="tx-right">
+              <div class="tx-amount">+250.00 VRS</div>
+              <div class="tx-status">Confirmed</div>
+            </div>
+          </div>
+
+          <div class="tx-item">
+            <div class="tx-left">
+              <div class="tx-icon-bg">🔒</div>
+              <div>
+                <div class="tx-name">Stake Deposit</div>
+                <div class="tx-date">Jul 29, 2026 • 12:15</div>
+              </div>
+            </div>
+            <div class="tx-right">
+              <div class="tx-amount" style="color: var(--text-main);">-100.00 VRS</div>
+              <div class="tx-status">Active</div>
+            </div>
+          </div>
+
+          <div class="tx-item">
+            <div class="tx-left">
+              <div class="tx-icon-bg">⇄</div>
+              <div>
+                <div class="tx-name">Swap VRS → CARBON</div>
+                <div class="tx-date">Jul 25, 2026 • 09:30</div>
+              </div>
+            </div>
+            <div class="tx-right">
+              <div class="tx-amount" style="color: var(--text-main);">-50.00 VRS</div>
+              <div class="tx-status">Completed</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ================= 4. SWAP SCREEN ================= -->
+      <section class="screen-card" id="screen-swap">
+        <div class="screen-header-label">Screen: Swap</div>
+        <h3 class="title-medium" style="margin-bottom: 12px;">Swap</h3>
+
+        <!-- From Input Card -->
+        <div class="ui-card">
+          <div class="form-group">
+            <span class="form-label">From Token</span>
+            <div class="input-box">
+              <input type="number" class="input-field" placeholder="0.0" value="100" id="swap-from-input" oninput="calculateSwap()">
+              <div class="token-badge">
+                <span style="color: var(--neon-green);">🌿</span> VRS
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Swap Arrow -->
+        <div class="swap-divider">
+          <button class="swap-arrow-btn" onclick="showToast('Token positions flipped')">↓</button>
+        </div>
+
+        <!-- To Input Card -->
+        <div class="ui-card">
+          <div class="form-group">
+            <span class="form-label">To Token</span>
+            <div class="input-box">
+              <input type="number" class="input-field" placeholder="0.0" value="450" id="swap-to-input" readonly>
+              <div class="token-badge" style="color: #38bdf8;">
+                <span>♻️</span> CARBON
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pool info -->
+        <div class="pools-info">
+          <span>Rate: 1 VRS ≈ 4.5 CARBON</span>
+          <span class="pool-tag">6 pools available</span>
+        </div>
+
+        <!-- Swap Button -->
+        <button class="btn btn-primary" onclick="showToast('Swap executed! Swapped 100 VRS to 450 CARBON')">
+          Swap Now
+        </button>
+      </section>
+
+
+      <!-- ================= 5. STAKE SCREEN ================= -->
+      <section class="screen-card" id="screen-stake">
+        <div class="screen-header-label">Screen: Stake</div>
+        <h3 class="title-medium" style="margin-bottom: 12px;">Stake VRS</h3>
+
+        <!-- Stake Amount Input -->
+        <div class="ui-card">
+          <div class="form-group">
+            <span class="form-label">Stake Amount</span>
+            <div class="input-box">
+              <input type="number" class="input-field" placeholder="Enter VRS amount" value="500" id="stake-input">
+              <div class="token-badge">VRS</div>
+            </div>
+          </div>
+
+          <div class="percentage-btns">
+            <button class="pct-btn" onclick="setStakePct(0.25)">25%</button>
+            <button class="pct-btn" onclick="setStakePct(0.50)">50%</button>
+            <button class="pct-btn" onclick="setStakePct(0.75)">75%</button>
+            <button class="pct-btn" onclick="setStakePct(1.00)">MAX</button>
+          </div>
+        </div>
+
+        <!-- Stake / Unstake Action Buttons -->
+        <div class="stake-action-group">
+          <button class="btn btn-primary" style="flex: 1;" onclick="showToast('Staked 500 VRS successfully!')">Stake</button>
+          <button class="btn btn-outline" style="flex: 1;" onclick="showToast('Unstake request submitted')">Unstake</button>
+        </div>
+
+        <!-- Active Validators List -->
+        <div>
+          <div class="section-title">
+            <span>Active Validators (3 Selected)</span>
+            <span class="text-green">Green Nodes</span>
+          </div>
+
+          <!-- Validator 1 -->
+          <div class="validator-card">
+            <div>
+              <div class="val-address">
+                <span class="stat-indicator"></span>
+                <span>SolarNode-Alpha</span>
+              </div>
+              <div class="val-metrics">0x91a2...43f1 • 142,890 blocks</div>
+            </div>
+            <div class="val-apr">12.4% APR</div>
+          </div>
+
+          <!-- Validator 2 -->
+          <div class="validator-card">
+            <div>
+              <div class="val-address">
+                <span class="stat-indicator"></span>
+                <span>WindStake-Nordic</span>
+              </div>
+              <div class="val-metrics">0x38b4...11c9 • 98,210 blocks</div>
+            </div>
+            <div class="val-apr">11.8% APR</div>
+          </div>
+
+          <!-- Validator 3 -->
+          <div class="validator-card">
+            <div>
+              <div class="val-address">
+                <span class="stat-indicator"></span>
+                <span>HydroGreen-Validator</span>
+              </div>
+              <div class="val-metrics">0xec72...88a4 • 210,430 blocks</div>
+            </div>
+            <div class="val-apr">13.1% APR</div>
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ================= 6. ECO IMPACT SCREEN ================= -->
+      <section class="screen-card" id="screen-eco">
+        <div class="screen-header-label">Screen: Eco Impact</div>
+        <h3 class="title-medium" style="margin-bottom: 12px;">Eco Impact Metrics</h3>
+
+        <!-- 4 Stat Cards -->
+        <div class="eco-grid">
+          <div class="eco-card">
+            <div class="eco-card-icon">🌍</div>
+            <div class="eco-value">14.8 T</div>
+            <div class="eco-label">CO2 Offset</div>
+          </div>
+
+          <div class="eco-card">
+            <div class="eco-card-icon">🌲</div>
+            <div class="eco-value">1,250</div>
+            <div class="eco-label">Trees Planted</div>
+          </div>
+
+          <div class="eco-card">
+            <div class="eco-card-icon">⚡</div>
+            <div class="eco-value">100%</div>
+            <div class="eco-label">Green Nodes</div>
+          </div>
+
+          <div class="eco-card">
+            <div class="eco-card-icon">📜</div>
+            <div class="eco-value">350</div>
+            <div class="eco-label">Credits Retired</div>
+          </div>
+        </div>
+
+        <!-- Impact Description -->
+        <div class="eco-description">
+          <strong class="text-green" style="display: block; margin-bottom: 4px;">Carbon-Negative Blockchain Architecture</strong>
+          Verdis utilizes Proof-of-Green-Stake consensus where every block validated directly finances verified global reforestation and clean energy projects.
+        </div>
+      </section>
+
+
+      <!-- ================= 7. SETTINGS SCREEN ================= -->
+      <section class="screen-card" id="screen-settings">
+        <div class="screen-header-label">Screen: Settings</div>
+        <h3 class="title-medium" style="margin-bottom: 12px;">Settings</h3>
+
+        <div class="settings-group">
+          <button class="settings-btn" onclick="showToast('Private key revealed in secure modal')">
+            <span>🔐 Show Private Key</span>
+            <span>›</span>
+          </button>
+
+          <button class="settings-btn" onclick="showToast('Seed phrase backup screen opened')">
+            <span>📝 Show Seed Phrase</span>
+            <span>›</span>
+          </button>
+
+          <button class="settings-btn" onclick="showToast('PIN change prompt requested')">
+            <span>🔢 Set PIN</span>
+            <span>›</span>
+          </button>
+
+          <button class="settings-btn" onclick="showToast('Biometric authentication enabled')">
+            <span>👆 Enable Biometric</span>
+            <span class="text-green">Active</span>
+          </button>
+
+          <button class="settings-btn danger" onclick="showToast('Warning: Clear wallet prompt displayed!')">
+            <span>🗑️ Clear Wallet</span>
+            <span>›</span>
+          </button>
+        </div>
+
+        <div class="version-tag">
+          Verdis Wallet v2.0.0
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ================= 8. BOTTOM NAVIGATION ================= -->
+    <nav class="phone-bottom-nav">
+      <button class="nav-tab active" onclick="scrollToScreen('screen-wallet')">
+        <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+        <span>Wallet</span>
+      </button>
+
+      <button class="nav-tab" onclick="scrollToScreen('screen-swap')">
+        <svg viewBox="0 0 24 24"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+        <span>Swap</span>
+      </button>
+
+      <button class="nav-tab" onclick="scrollToScreen('screen-eco')">
+        <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.2c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.58-1.58C8.88 19.64 10.37 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+        <span>Eco</span>
+      </button>
+
+      <button class="nav-tab" onclick="scrollToScreen('screen-stake')">
+        <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+        <span>Stake</span>
+      </button>
+
+      <button class="nav-tab" onclick="scrollToScreen('screen-settings')">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        <span>Settings</span>
+      </button>
+
+      <button class="nav-tab" onclick="showToast('Fiat On-Ramp / Buy VRS Modal')">
+        <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1H6.32c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+        <span>Buy</span>
+      </button>
+    </nav>
+
+  </main>
+
+  <footer class="footer-note">
+    Verdis Mobile Wallet App Mockup Template • Designed for Android Native Preview
+  </footer>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-notification" id="toast">
+    <span style="color: var(--neon-green);">✓</span>
+    <span id="toast-text">Notification text</span>
+  </div>
+
+  <script>
+    // Live Time Clock
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('live-time').textContent = `${hours}:${minutes}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Scroll to specific screen inside phone container
+    function scrollToScreen(screenId) {
+      const el = document.getElementById(screenId);
+      const viewport = document.getElementById('viewport');
+      if (el && viewport) {
+        viewport.scrollTo({
+          top: el.offsetTop - viewport.offsetTop - 10,
+          behavior: 'smooth'
+        });
+      }
+
+      // Update Desktop Nav Active state
+      document.querySelectorAll('.desktop-nav-btn').forEach(btn => btn.classList.remove('active'));
+      const activeDesktopBtn = Array.from(document.querySelectorAll('.desktop-nav-btn')).find(btn => 
+        btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(screenId)
+      );
+      if (activeDesktopBtn) activeDesktopBtn.classList.add('active');
+
+      // Update Bottom Nav Active state
+      document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+      const activeBottomTab = Array.from(document.querySelectorAll('.nav-tab')).find(tab => 
+        tab.getAttribute('onclick') && tab.getAttribute('onclick').includes(screenId)
+      );
+      if (activeBottomTab) activeBottomTab.classList.add('active');
+    }
+
+    // Toast Notification Handler
+    let toastTimeout;
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toast-text');
+      toastText.textContent = message;
+      toast.classList.add('show');
+
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+
+    // Copy Address Handler
+    function copyAddress(address) {
+      navigator.clipboard.writeText(address).then(() => {
+        showToast('Address ' + address.substring(0,6) + '...' + address.substring(address.length - 4) + ' copied!');
+      }).catch(() => {
+        showToast('Address copied to clipboard!');
+      });
+    }
+
+    // Swap calculation simulator
+    function calculateSwap() {
+      const input = parseFloat(document.getElementById('swap-from-input').value) || 0;
+      document.getElementById('swap-to-input').value = (input * 4.5).toFixed(2);
+    }
+
+    // Stake percentage selector simulator
+    function setStakePct(pct) {
+      const totalBalance = 1000;
+      document.getElementById('stake-input').value = Math.floor(totalBalance * pct);
+      showToast(`Set stake amount to ${pct * 100}% (${Math.floor(totalBalance * pct)} VRS)`);
+    }
+  </script>
+</body>
+</html>

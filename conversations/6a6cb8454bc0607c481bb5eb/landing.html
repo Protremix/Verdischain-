@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verdis Blockchain | The World's First Carbon-Negative Blockchain</title>
+    <meta name="description" content="Verdis is the world's first fully green, carbon-negative blockchain featuring Green DPoS, native AMM DEX, 5s blocks, and on-chain reforestation logging.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #050a08;
+            --bg-card: #0f1f1a;
+            --bg-card-hover: #152c24;
+            --border-color: #1a2b23;
+            --border-glow: rgba(0, 255, 136, 0.25);
+            --accent-green: #00ff88;
+            --accent-emerald: #10b981;
+            --accent-teal: #2dd4bf;
+            --text-primary: #e8f5ee;
+            --text-muted: #6b8f7a;
+            --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            position: relative;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Particle Canvas */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Container & Grid System */
+        .container {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5 {
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ffffff 0%, var(--accent-green) 50%, var(--accent-teal) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gradient-accent {
+            background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-emerald) 50%, var(--accent-teal) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+
+        /* Buttons & Badges */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-emerald) 100%);
+            color: #03140c;
+            font-weight: 700;
+            box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 255, 136, 0.5);
+            background: linear-gradient(135deg, #26ff98 0%, #13d193 100%);
+        }
+
+        .btn-secondary {
+            background: rgba(15, 31, 26, 0.8);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            background: rgba(21, 44, 36, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 255, 136, 0.15);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: rgba(0, 255, 136, 0.08);
+            border: 1px solid rgba(0, 255, 136, 0.25);
+            color: var(--accent-green);
+            backdrop-filter: blur(8px);
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        /* Glassmorphism Cards */
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 32px;
+            backdrop-filter: blur(16px);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(0, 255, 136, 0.35);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 136, 0.08);
+            transform: translateY(-4px);
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(5, 10, 8, 0.75);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(26, 43, 35, 0.6);
+            padding: 16px 0;
+            transition: var(--transition);
+        }
+
+        .nav-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 800;
+            font-size: 1.4rem;
+            letter-spacing: -0.03em;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-green);
+        }
+
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 180px 0 100px;
+            position: relative;
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-orbs {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.35;
+            animation: floatOrb 12s ease-in-out infinite alternate;
+        }
+
+        .orb-1 {
+            width: 450px;
+            height: 450px;
+            background: var(--accent-green);
+            top: -10%;
+            left: 15%;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: var(--accent-teal);
+            bottom: -10%;
+            right: 10%;
+            animation-delay: -6s;
+        }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, -40px) scale(1.1); }
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 860px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin: 24px 0;
+            letter-spacing: -0.03em;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            max-width: 720px;
+            margin: 0 auto 40px;
+            color: var(--text-muted);
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .hero-chips {
+            margin-top: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .chip-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(15, 31, 26, 0.6);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .chip-item span {
+            color: var(--accent-green);
+            font-family: var(--font-mono);
+            font-weight: 600;
+        }
+
+        /* Stats Bar */
+        .stats-section {
+            padding: 20px 0 80px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+
+        .stat-card {
+            background: rgba(15, 31, 26, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 28px 24px;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent-green);
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--accent-green);
+            font-family: var(--font-mono);
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        /* Features Section */
+        .section-header {
+            text-align: center;
+            max-width: 680px;
+            margin: 0 auto 60px;
+        }
+
+        .section-header h2 {
+            font-size: 2.6rem;
+            margin-top: 12px;
+            margin-bottom: 16px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+        }
+
+        .feature-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            color: var(--accent-green);
+        }
+
+        .feature-card h3 {
+            font-size: 1.35rem;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            font-size: 0.98rem;
+            line-height: 1.6;
+        }
+
+        .feature-tag {
+            display: inline-block;
+            margin-top: 18px;
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+            color: var(--accent-teal);
+            background: rgba(45, 212, 191, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        /* How It Works */
+        .how-section {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            position: relative;
+        }
+
+        .step-card {
+            position: relative;
+        }
+
+        .step-number {
+            font-size: 3.5rem;
+            font-weight: 900;
+            font-family: var(--font-mono);
+            color: rgba(0, 255, 136, 0.15);
+            margin-bottom: -20px;
+            transition: var(--transition);
+        }
+
+        .step-card:hover .step-number {
+            color: var(--accent-green);
+        }
+
+        .step-title {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+        }
+
+        /* Live DEX & VM Interactive Preview */
+        .showcase-section {
+            padding: 80px 0;
+        }
+
+        .showcase-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .showcase-tabs {
+            display: flex;
+            background: rgba(5, 10, 8, 0.8);
+            border-bottom: 1px solid var(--border-color);
+            padding: 8px;
+            gap: 8px;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.95rem;
+        }
+
+        .tab-btn.active {
+            background: rgba(0, 255, 136, 0.12);
+            color: var(--accent-green);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .tab-content {
+            padding: 40px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .pools-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .pool-item {
+            background: rgba(5, 10, 8, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pool-pair {
+            font-weight: 700;
+            font-family: var(--font-mono);
+            color: var(--text-primary);
+        }
+
+        .pool-badge {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-emerald);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+        }
+
+        /* Tokenomics */
+        .tokenomics-section {
+            padding: 100px 0;
+        }
+
+        .tokenomics-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .token-calc {
+            background: rgba(5, 10, 8, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 28px;
+        }
+
+        .calc-input-group {
+            margin-bottom: 20px;
+        }
+
+        .calc-input-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .calc-input {
+            width: 100%;
+            background: rgba(15, 31, 26, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .calc-input:focus {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+        }
+
+        .token-dist-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .dist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px;
+            background: rgba(15, 31, 26, 0.5);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .dist-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .dist-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .dist-val {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        /* Roadmap */
+        .roadmap-section {
+            padding: 100px 0;
+        }
+
+        .roadmap-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .phase-badge {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--accent-green);
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+
+        .roadmap-list {
+            list-style: none;
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .roadmap-list li {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .roadmap-list li::before {
+            content: "•";
+            color: var(--accent-green);
+            font-size: 1.2rem;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 80px 0 120px;
+        }
+
+        .cta-box {
+            background: linear-gradient(135deg, rgba(15, 31, 26, 0.9) 0%, rgba(5, 10, 8, 0.95) 100%);
+            border: 1px solid var(--accent-green);
+            box-shadow: 0 0 50px rgba(0, 255, 136, 0.15);
+            border-radius: 28px;
+            padding: 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-box h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .cta-box p {
+            max-width: 600px;
+            margin: 0 auto 36px;
+            font-size: 1.15rem;
+        }
+
+        /* Footer */
+        .footer {
+            border-top: 1px solid var(--border-color);
+            background: rgba(3, 7, 5, 0.95);
+            padding: 80px 0 40px;
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr repeat(3, 1fr);
+            gap: 48px;
+            margin-bottom: 60px;
+        }
+
+        .footer-brand p {
+            margin-top: 16px;
+            font-size: 0.95rem;
+            max-width: 320px;
+        }
+
+        .footer-col h4 {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .footer-col ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .footer-col a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-col a:hover {
+            color: var(--accent-green);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(26, 43, 35, 0.6);
+            padding-top: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            padding: 4px 12px;
+            border-radius: 100px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(5, 10, 8, 0.85);
+            backdrop-filter: blur(16px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--accent-green);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 500px;
+            padding: 32px;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 255, 136, 0.2);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        /* Scroll Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive Media Queries */
+        @media (max-width: 1024px) {
+            .features-grid, .roadmap-grid, .stats-grid, .pools-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .tokenomics-wrapper {
+                grid-template-columns: 1fr;
+            }
+            .hero h1 { font-size: 3.2rem; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(5, 10, 8, 0.95);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                padding: 24px;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .mobile-toggle {
+                display: block;
+            }
+
+            .hero h1 { font-size: 2.5rem; }
+            .features-grid, .roadmap-grid, .stats-grid, .steps-grid, .pools-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Particle Canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="landing.html" class="nav-logo">
+                <svg width="36" height="36" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="navLeafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#00ff88"/>
+                            <stop offset="100%" stop-color="#2dd4bf"/>
+                        </linearGradient>
+                        <linearGradient id="navHexGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#10b981" stop-opacity="0.5"/>
+                            <stop offset="100%" stop-color="#2dd4bf" stop-opacity="0.2"/>
+                        </linearGradient>
+                    </defs>
+                    <polygon points="256,40 440,146 440,358 256,464 72,358 72,146" fill="none" stroke="url(#navHexGrad)" stroke-width="12"/>
+                    <path d="M 256 120 C 190 120, 150 180, 150 256 C 150 332, 190 392, 256 392 C 322 392, 362 332, 362 256 C 362 180, 322 120, 256 120 Z" fill="url(#navLeafGrad)"/>
+                    <path d="M 256 120 L 256 392" stroke="#050a08" stroke-width="6" opacity="0.6"/>
+                    <circle cx="256" cy="40" r="14" fill="#00ff88"/>
+                    <circle cx="440" cy="146" r="10" fill="#00ff88"/>
+                    <circle cx="440" cy="358" r="10" fill="#00ff88"/>
+                    <circle cx="256" cy="464" r="14" fill="#00ff88"/>
+                    <circle cx="72" cy="358" r="10" fill="#00ff88"/>
+                    <circle cx="72" cy="146" r="10" fill="#00ff88"/>
+                </svg>
+                VERDIS
+            </a>
+
+            <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle navigation">☰</button>
+
+            <ul class="nav-links" id="nav-links">
+                <li><a href="#features">Dashboard</a></li>
+                <li><a href="whitepaper_v2.html" target="_blank">Whitepaper</a></li>
+                <li><a href="#tokenomics">Buy VRS</a></li>
+                <li><a href="explorer-dashboard.html" target="_blank">Explorer</a></li>
+                <li><a href="#network">Network</a></li>
+                <li><a href="download.html" class="btn btn-primary" style="padding: 8px 20px; font-size: 0.9rem;">Get Wallet</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-orbs">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+        </div>
+        <div class="container hero-content reveal">
+            <div class="badge">
+                <span class="badge-dot"></span>
+                Mainnet Live • Chain ID 909
+            </div>
+            <h1>World's First <span class="gradient-text">Fully Green</span> Carbon-Negative Blockchain</h1>
+            <p>Engineered with Green DPoS consensus, native AMM DEX, stack VM smart contracts, and automated real-world reforestation logging with every block.</p>
+            <div class="hero-actions">
+                <button class="btn btn-primary" onclick="openBuyModal()">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20m10-10H2"/></svg>
+                    Buy VRS Token ($0.001)
+                </button>
+                <a href="download.html" class="btn btn-secondary">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Download Mobile Wallet
+                </a>
+            </div>
+
+            <div class="hero-chips">
+                <div class="chip-item">Block Time: <span>5.0s</span></div>
+                <div class="chip-item">Consensus: <span>Green DPoS</span></div>
+                <div class="chip-item">Token Price: <span>$0.001</span></div>
+                <div class="chip-item">Native AMM: <span>6 Pools</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Bar -->
+    <section class="stats-section" id="network">
+        <div class="container">
+            <div class="stats-grid reveal">
+                <div class="stat-card">
+                    <div class="stat-value">1,000+ t</div>
+                    <div class="stat-label">CO2 Offset Logged</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">15,000+</div>
+                    <div class="stat-label">Trees Planted</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">6</div>
+                    <div class="stat-label">Green Validators</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">$0.001</div>
+                    <div class="stat-label">VRS Presale Price</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Grid (6 Cards) -->
+    <section class="features-section" id="features" style="padding: 80px 0;">
+        <div class="container">
+            <div class="section-header reveal">
+                <div class="badge">Ecosystem Architecture</div>
+                <h2>Built for Sustainability & Speed</h2>
+                <p>Designed from the ground up to achieve maximum throughput with true carbon negativity.</p>
+            </div>
+
+            <div class="features-grid">
+                <!-- Card 1 -->
+                <div class="glass-card feature-card reveal">
+                    <div class="feature-icon">
+                        <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <h3>Green DPoS Consensus</h3>
+                    <p>Powered by 5 active block producers and 27 registered validators, dynamically scored by eco-efficiency ratings and carbon offset contributions.</p>
+                    <span class="feature-tag">Chain ID: 909</span>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="glass-card feature-card reveal">
+                    <div class="feature-icon">
+                        <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    </div>
+                    <h3>Native AMM DEX</h3>
+                    <p>Built-in automated market maker with ultra-low 0.1% transaction fees and 6 native liquidity pools for immediate ecosystem trading.</p>
+                    <span class="feature-tag">6 Liquidity Pools</span>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="glass-card feature-card reveal">
+                    <div class="feature-icon">
+                        <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <h3>Reforestation & CO2 Tracking</h3>
+                    <p>On-chain satellite telemetry and GPS logging record every planted tree and mint verified carbon credits directly into user wallets.</p>
+                    <span class="feature-tag">Verified On-Chain</span>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="glass-card feature-card reveal">
+                    <div class="feature-icon">
+                        <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                    </div>
+                    <h3>Native Android Wallet</h3>
+                    <p>Biometric fingerprint and PIN security, 12-word seed backup, integrated AMM swaps, and real-time reforestation impact tracking.</p>
+                    <span class="feature-tag">Biometric & PIN</span>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="glass-card feature-card reveal">
+                    <div class="feature-icon">
+                        <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <h3>5-Second Block Times</h3>
+                    <p>Instant transaction finality with predictable gas fees paid in native VRS tokens, enabling seamless decentralized micro-transactions.</p>
+                    <span class="feature-tag">5s Finality</span>
+                </div>
+
+                <!-- Card 6 -->
+                <div class="glass-card feature-card reveal">
+                    <div class="feature-icon">
+                        <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    </div>
+                    <h3>Smart Contract VM Builder</h3>
+                    <p>Stack-based Virtual Machine with 22+ eco-optimized opcodes and an intuitive drag-and-drop visual contract builder for developers.</p>
+                    <span class="feature-tag">22+ Opcodes</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-section">
+        <div class="container">
+            <div class="section-header reveal">
+                <div class="badge">Lifecycle Process</div>
+                <h2>How Verdis Offsets Carbon</h2>
+                <p>Every transaction on the Verdis network actively restores natural ecosystems.</p>
+            </div>
+
+            <div class="steps-grid">
+                <div class="glass-card step-card reveal">
+                    <div class="step-number">01</div>
+                    <h3 class="step-title">Transact & Execute</h3>
+                    <p>Users execute transactions, swap tokens, or interact with smart contracts on Chain ID 909 with 5-second block speeds.</p>
+                </div>
+
+                <div class="glass-card step-card reveal">
+                    <div class="step-number">02</div>
+                    <h3 class="step-title">Carbon Credit Accrual</h3>
+                    <p>Transaction gas fees are automatically routed to the protocol's Green Reserve to fund verified reforestation projects.</p>
+                </div>
+
+                <div class="glass-card step-card reveal">
+                    <div class="step-number">03</div>
+                    <h3 class="step-title">Trees Planted & Logged</h3>
+                    <p>Certified environmental partners plant real physical trees, generating GPS-tagged verification logs anchored permanently on-chain.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Showcase (Native AMM DEX Pools & Contract Builder) -->
+    <section class="showcase-section">
+        <div class="container">
+            <div class="section-header reveal">
+                <div class="badge">Interactive Technology</div>
+                <h2>Native AMM & Contract Builder</h2>
+                <p>Explore our integrated liquidity pools and visual drag-and-drop contract engine.</p>
+            </div>
+
+            <div class="showcase-container reveal">
+                <div class="showcase-tabs">
+                    <button class="tab-btn active" onclick="switchTab('pools-tab', this)">Native AMM Liquidity Pools</button>
+                    <button class="tab-btn" onclick="switchTab('vm-tab', this)">Stack VM & Opcodes</button>
+                </div>
+
+                <!-- Tab 1: DEX Pools -->
+                <div id="pools-tab" class="tab-content active">
+                    <p style="margin-bottom: 24px;">Verdis features 6 native AMM DEX pools optimized for instant liquidity and eco-asset trading:</p>
+                    <div class="pools-grid">
+                        <div class="pool-item">
+                            <div>
+                                <div class="pool-pair">VRS / CARBON</div>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Main Carbon Pair</span>
+                            </div>
+                            <span class="pool-badge">Pool #1 • 0.1% Fee</span>
+                        </div>
+                        <div class="pool-item">
+                            <div>
+                                <div class="pool-pair">VRS / ECO</div>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Ecosystem Reserve</span>
+                            </div>
+                            <span class="pool-badge">Pool #2 • 0.1% Fee</span>
+                        </div>
+                        <div class="pool-item">
+                            <div>
+                                <div class="pool-pair">CARBON / ECO</div>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Offset Trading</span>
+                            </div>
+                            <span class="pool-badge">Pool #3 • 0.1% Fee</span>
+                        </div>
+                        <div class="pool-item">
+                            <div>
+                                <div class="pool-pair">TREE / VRS</div>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Reforestation Token</span>
+                            </div>
+                            <span class="pool-badge">Pool #4 • 0.1% Fee</span>
+                        </div>
+                        <div class="pool-item">
+                            <div>
+                                <div class="pool-pair">GREEN / VRS</div>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Validator Governance</span>
+                            </div>
+                            <span class="pool-badge">Pool #5 • 0.1% Fee</span>
+                        </div>
+                        <div class="pool-item">
+                            <div>
+                                <div class="pool-pair">REDD / VRS</div>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">REDD+ Forestry</span>
+                            </div>
+                            <span class="pool-badge">Pool #6 • 0.1% Fee</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: VM & Opcodes -->
+                <div id="vm-tab" class="tab-content">
+                    <p style="margin-bottom: 20px;">The Verdis Stack VM executes smart contracts with high efficiency using 22+ custom opcodes:</p>
+                    <div style="background: rgba(5, 10, 8, 0.9); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; font-family: var(--font-mono); font-size: 0.9rem; color: var(--accent-green); line-height: 1.8;">
+                        <div><span style="color: var(--text-muted);">// Example Stack Contract - Carbon Credit Verification</span></div>
+                        <div>001: PUSH32 &lt;0x7a8f9b...&gt;  <span style="color: var(--text-muted); font-family: var(--font-main);">; Load Reforestation GPS Hash</span></div>
+                        <div>002: VERIFY_TREE              <span style="color: var(--text-muted); font-family: var(--font-main);">; Opcode 0x1F: Execute satellite verification</span></div>
+                        <div>003: PUSH16 100               <span style="color: var(--text-muted); font-family: var(--font-main);">; Quantity 100 Trees</span></div>
+                        <div>004: MINT_CARBON              <span style="color: var(--text-muted); font-family: var(--font-main);">; Opcode 0x24: Mint certified CARBON token</span></div>
+                        <div>005: SWAP_ECO                 <span style="color: var(--text-muted); font-family: var(--font-main);">; Opcode 0x2A: Route liquidity to AMM Pool</span></div>
+                        <div style="margin-top: 10px; color: var(--accent-teal); font-family: var(--font-main); font-weight: 600;">✓ VM Execution Status: OK (Gas consumed: 12 Gwei)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tokenomics Section -->
+    <section class="tokenomics-section" id="tokenomics">
+        <div class="container">
+            <div class="section-header reveal">
+                <div class="badge">Economics & Utility</div>
+                <h2>Tokenomics & Presale</h2>
+                <p>Total Supply: 100,000,000,000 VRS. Designed for sustainable economic growth.</p>
+            </div>
+
+            <div class="tokenomics-wrapper">
+                <div class="glass-card reveal">
+                    <h3 style="margin-bottom: 20px; font-size: 1.5rem;">Token Supply Breakdown</h3>
+                    <ul class="token-dist-list">
+                        <li class="dist-item">
+                            <div class="dist-label">
+                                <div class="dist-color" style="background: #00ff88;"></div>
+                                Public Presale & Growth
+                            </div>
+                            <div class="dist-val">40% (40B VRS)</div>
+                        </li>
+                        <li class="dist-item">
+                            <div class="dist-label">
+                                <div class="dist-color" style="background: #10b981;"></div>
+                                Reforestation Reserve
+                            </div>
+                            <div class="dist-val">25% (25B VRS)</div>
+                        </li>
+                        <li class="dist-item">
+                            <div class="dist-label">
+                                <div class="dist-color" style="background: #2dd4bf;"></div>
+                                Validator & Staking
+                            </div>
+                            <div class="dist-val">15% (15B VRS)</div>
+                        </li>
+                        <li class="dist-item">
+                            <div class="dist-label">
+                                <div class="dist-color" style="background: #3b82f6;"></div>
+                                Core Development
+                            </div>
+                            <div class="dist-val">10% (10B VRS)</div>
+                        </li>
+                        <li class="dist-item">
+                            <div class="dist-label">
+                                <div class="dist-color" style="background: #a855f7;"></div>
+                                Native AMM DEX Pools
+                            </div>
+                            <div class="dist-val">10% (10B VRS)</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="token-calc reveal">
+                    <h3 style="margin-bottom: 12px; font-size: 1.4rem;">VRS Token Calculator</h3>
+                    <p style="font-size: 0.9rem; margin-bottom: 24px;">Presale Price: <strong>$0.001 per VRS</strong>. Accepted: ETH, BNB, USDT, USDC.</p>
+
+                    <div class="calc-input-group">
+                        <label>Select Payment Currency</label>
+                        <select id="calc-currency" class="calc-input" onchange="calculateVRS()" style="cursor: pointer;">
+                            <option value="USDT">USDT / USDC ($1.00)</option>
+                            <option value="ETH">Ethereum (ETH)</option>
+                            <option value="BNB">Binance Coin (BNB)</option>
+                        </select>
+                    </div>
+
+                    <div class="calc-input-group">
+                        <label>Amount You Pay</label>
+                        <input type="number" id="calc-amount" class="calc-input" value="100" min="1" oninput="calculateVRS()">
+                    </div>
+
+                    <div class="calc-input-group">
+                        <label>Estimated VRS You Receive</label>
+                        <input type="text" id="calc-result" class="calc-input" value="100,000 VRS" readonly style="color: var(--accent-green); font-weight: 700;">
+                    </div>
+
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 8px;" onclick="openBuyModal()">
+                        Buy VRS Tokens Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap Section (4 Phases) -->
+    <section class="roadmap-section" id="roadmap">
+        <div class="container">
+            <div class="section-header reveal">
+                <div class="badge">Development Milestone</div>
+                <h2>Execution Roadmap</h2>
+                <p>Our clear trajectory toward global carbon-negative blockchain adoption.</p>
+            </div>
+
+            <div class="roadmap-grid">
+                <!-- Phase 1 -->
+                <div class="glass-card reveal">
+                    <span class="phase-badge">PHASE 1 • Q1 2026</span>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 8px;">Mainnet Launch</h3>
+                    <p style="font-size: 0.88rem;">Chain ID 909 deployment and Green DPoS activation.</p>
+                    <ul class="roadmap-list">
+                        <li>Mainnet Live (Chain ID 909)</li>
+                        <li>5 Active Green Validators</li>
+                        <li>Token Presale ($0.001)</li>
+                        <li>Whitepaper v2 Release</li>
+                    </ul>
+                </div>
+
+                <!-- Phase 2 -->
+                <div class="glass-card reveal">
+                    <span class="phase-badge">PHASE 2 • Q2 2026</span>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 8px;">DEX & Mobile Wallet</h3>
+                    <p style="font-size: 0.88rem;">Native ecosystem trading and Android client app.</p>
+                    <ul class="roadmap-list">
+                        <li>Android Wallet APK v2.0</li>
+                        <li>Biometric Security</li>
+                        <li>6 AMM DEX Liquidity Pools</li>
+                        <li>Reforestation Telemetry</li>
+                    </ul>
+                </div>
+
+                <!-- Phase 3 -->
+                <div class="glass-card reveal">
+                    <span class="phase-badge">PHASE 3 • Q3 2026</span>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 8px;">Smart Contract VM</h3>
+                    <p style="font-size: 0.88rem;">Advanced smart contract stack VM & visual builder.</p>
+                    <ul class="roadmap-list">
+                        <li>Stack VM (22+ Opcodes)</li>
+                        <li>Visual Drag-and-Drop Builder</li>
+                        <li>Developer SDK Release</li>
+                        <li>27 Validator Expansion</li>
+                    </ul>
+                </div>
+
+                <!-- Phase 4 -->
+                <div class="glass-card reveal">
+                    <span class="phase-badge">PHASE 4 • Q4 2026</span>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 8px;">Carbon Marketplace</h3>
+                    <p style="font-size: 0.88rem;">Enterprise CO2 offset trading & global hardware nodes.</p>
+                    <ul class="roadmap-list">
+                        <li>Decentralized CO2 Market</li>
+                        <li>IoT Tree Satellite Tracking</li>
+                        <li>Cross-Chain Eco Bridge</li>
+                        <li>Global Corporate Offsetting</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call To Action Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-box reveal">
+                <div class="badge" style="margin-bottom: 16px;">Get Started Today</div>
+                <h2>Join the Green Web3 Movement</h2>
+                <p>Download the Verdis Android Wallet APK or participate in our token presale to plant trees with every blockchain transaction.</p>
+                <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                    <a href="download.html" class="btn btn-primary">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        Download Wallet APK
+                    </a>
+                    <button class="btn btn-secondary" onclick="openBuyModal()">
+                        Buy VRS Presale ($0.001)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="landing.html" class="nav-logo">
+                        <svg width="32" height="32" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <polygon points="256,40 440,146 440,358 256,464 72,358 72,146" fill="none" stroke="#00ff88" stroke-width="12"/>
+                            <path d="M 256 120 C 190 120, 150 180, 150 256 C 150 332, 190 392, 256 392 C 322 392, 362 332, 362 256 C 362 180, 322 120, 256 120 Z" fill="#00ff88"/>
+                        </svg>
+                        VERDIS
+                    </a>
+                    <p>The world's first fully green, carbon-negative blockchain network. Powered by Green DPoS and transparent satellite reforestation tracking.</p>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Ecosystem</h4>
+                    <ul>
+                        <li><a href="#features">Green DPoS</a></li>
+                        <li><a href="#features">Native AMM DEX</a></li>
+                        <li><a href="#features">Stack VM Builder</a></li>
+                        <li><a href="explorer-dashboard.html" target="_blank">Block Explorer</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="whitepaper_v2.html" target="_blank">Whitepaper v2</a></li>
+                        <li><a href="download.html">Mobile Wallet APK</a></li>
+                        <li><a href="#tokenomics">Tokenomics</a></li>
+                        <li><a href="api-docs.html" target="_blank">API Documentation</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="https://twitter.com" target="_blank">Twitter / X</a></li>
+                        <li><a href="https://telegram.org" target="_blank">Telegram Official</a></li>
+                        <li><a href="https://discord.com" target="_blank">Discord Community</a></li>
+                        <li><a href="https://github.com" target="_blank">GitHub Repository</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div>© 2026 Verdis Foundation. All rights reserved.</div>
+                <div class="status-indicator">
+                    <span class="badge-dot"></span>
+                    Chain ID: 909 | Block Time: 5.0s | Carbon Negative
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Buy VRS Modal -->
+    <div class="modal" id="buyModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeBuyModal()">&times;</button>
+            <h3 style="font-size: 1.5rem; margin-bottom: 8px;">Acquire VRS Presale Tokens</h3>
+            <p style="font-size: 0.9rem; margin-bottom: 20px;">Direct token allocation at $0.001 per VRS. Sent directly to your wallet upon mainnet order settlement.</p>
+            
+            <div class="calc-input-group">
+                <label>Target Payment Currency</label>
+                <select class="calc-input">
+                    <option>USDT (Tether - ERC20 / BEP20)</option>
+                    <option>USDC (USD Coin)</option>
+                    <option>ETH (Ethereum)</option>
+                    <option>BNB (BNB Chain)</option>
+                </select>
+            </div>
+
+            <div class="calc-input-group">
+                <label>Deposit Address (Chain ID 909 Bridge)</label>
+                <input type="text" class="calc-input" value="0x71C7656EC7ab88b098defB751B7401B5f6d8976F" readonly style="font-size: 0.85rem;">
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="alert('Thank you for participating! Connect your wallet or copy the presale contract address to complete your transaction.')">
+                Confirm & Pay
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript Interactions -->
+    <script>
+        // Particle Canvas Animation
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Particle System (Glowing Nodes & Floating Leaves)
+        const nodes = [];
+        const leaves = [];
+        const numNodes = 35;
+        const numLeaves = 20;
+
+        class Node {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.6;
+                this.vy = (Math.random() - 0.5) * 0.6;
+                this.radius = Math.random() * 2 + 1.5;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#00ff88';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#00ff88';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        class Leaf {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vy = - (Math.random() * 0.5 + 0.2);
+                this.vx = Math.sin(Math.random() * Math.PI) * 0.3;
+                this.size = Math.random() * 8 + 6;
+                this.angle = Math.random() * Math.PI * 2;
+                this.spin = (Math.random() - 0.5) * 0.02;
+            }
+            update() {
+                this.y += this.vy;
+                this.x += this.vx;
+                this.angle += this.spin;
+                if (this.y < -20) {
+                    this.y = height + 20;
+                    this.x = Math.random() * width;
+                }
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.size, this.size / 2.5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(16, 185, 129, 0.25)';
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < numNodes; i++) nodes.push(new Node());
+        for (let i = 0; i < numLeaves; i++) leaves.push(new Leaf());
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw connecting lines between nodes
+            for (let i = 0; i < nodes.length; i++) {
+                nodes[i].update();
+                nodes[i].draw();
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dx = nodes[i].x - nodes[j].x;
+                    const dy = nodes[i].y - nodes[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 130) {
+                        ctx.beginPath();
+                        ctx.moveTo(nodes[i].x, nodes[i].y);
+                        ctx.lineTo(nodes[j].x, nodes[j].y);
+                        ctx.strokeStyle = `rgba(0, 255, 136, ${0.25 * (1 - dist / 130)})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // Draw floating leaves
+            for (let leaf of leaves) {
+                leaf.update();
+                leaf.draw();
+            }
+
+            requestAnimationFrame(animateCanvas);
+        }
+        animateCanvas();
+
+        // Scroll Reveal Observer
+        const observerOptions = { threshold: 0.1 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Mobile Menu Toggle
+        const mobileToggle = document.getElementById('mobile-toggle');
+        const navLinks = document.getElementById('nav-links');
+        mobileToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Tab Switcher
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // Token Calculator
+        function calculateVRS() {
+            const curr = document.getElementById('calc-currency').value;
+            const amount = parseFloat(document.getElementById('calc-amount').value) || 0;
+            let usdVal = amount;
+            if (curr === 'ETH') usdVal = amount * 3000;
+            if (curr === 'BNB') usdVal = amount * 550;
+            const vrsCount = usdVal / 0.001;
+            document.getElementById('calc-result').value = vrsCount.toLocaleString() + ' VRS';
+        }
+
+        // Modal Handlers
+        function openBuyModal() {
+            document.getElementById('buyModal').classList.add('active');
+        }
+        function closeBuyModal() {
+            document.getElementById('buyModal').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
