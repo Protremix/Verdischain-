@@ -302,19 +302,130 @@ table.data-table{width:100%;border-collapse:collapse}
 <div class="card mt-4"><div class="card-header">Active Proposals</div><div id="proposalsList"></div></div></div>
 
 <!-- CONTRACTS -->
-<div class="section" id="section-contracts"><div class="explore-header"><h2>Smart Contracts</h2><p>Deploy and execute contracts on the Verdis VM.</p></div>
-<div class="grid-2">
-<div class="card"><div class="card-header">Deploy Contract</div>
-<div class="form-group"><label>Name</label><input type="text" id="contractName" placeholder="MyContract"></div>
-<div class="form-group"><label>Bytecode (hex)</label><textarea id="contractCode" rows="4" placeholder="0x..." class="mono"></textarea></div>
-<button class="btn btn-primary w-full" onclick="deployContract()">Deploy</button><div id="deployResult" class="text-sm mt-2"></div></div>
-<div class="card"><div class="card-header">Execute Contract</div>
-<div class="form-group"><label>Contract Address/ID</label><input type="text" id="execContract" placeholder="0x..." class="mono"></div>
-<div class="form-group"><label>Function</label><input type="text" id="execFunc" placeholder="transfer"></div>
-<div class="form-group"><label>Args (JSON array)</label><input type="text" id="execArgs" placeholder='["0x123...", 100]' class="mono"></div>
-<button class="btn btn-primary w-full" onclick="executeContract()">Execute</button><div id="execResult" class="text-sm mt-2"></div></div>
+<div class="section" id="section-contracts"><div class="explore-header"><h2>Smart Contracts</h2><p>Deploy and execute smart contracts on the Verdis Virtual Machine. Choose a template or write your own.</p></div>
+
+<!-- Template Selector -->
+<div class="card" style="border-color:rgba(63,185,80,.3)">
+<div class="card-header">&#128230; Choose a Template (Recommended for Beginners)</div>
+<div class="grid-3" id="contractTemplates" style="gap:10px">
+<div class="template-card" onclick="loadTemplate('token')" style="padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s">
+<div style="font-size:22px">&#129689;</div>
+<div style="font-weight:600;font-size:13px;margin-top:4px">Simple Token</div>
+<div style="font-size:11px;color:var(--text-muted);margin-top:2px">Mint, transfer, check balances</div>
 </div>
-<div class="card mt-4"><div class="card-header">Deployed Contracts</div><div id="contractList"></div></div></div>
+<div class="template-card" onclick="loadTemplate('counter')" style="padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s">
+<div style="font-size:22px">&#128290;</div>
+<div style="font-weight:600;font-size:13px;margin-top:4px">Counter</div>
+<div style="font-size:11px;color:var(--text-muted);margin-top:2px">Increment &amp; decrement a value</div>
+</div>
+<div class="template-card" onclick="loadTemplate('storage')" style="padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s">
+<div style="font-size:22px">&#128451;</div>
+<div style="font-weight:600;font-size:13px;margin-top:4px">Key-Value Store</div>
+<div style="font-size:11px;color:var(--text-muted);margin-top:2px">Store and retrieve data on-chain</div>
+</div>
+<div class="template-card" onclick="loadTemplate('escrow')" style="padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s">
+<div style="font-size:22px">&#129521;</div>
+<div style="font-weight:600;font-size:13px;margin-top:4px">Escrow Lock</div>
+<div style="font-size:11px;color:var(--text-muted);margin-top:2px">Lock funds until condition met</div>
+</div>
+<div class="template-card" onclick="loadTemplate('voting')" style="padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s">
+<div style="font-size:22px">&#128204;</div>
+<div style="font-weight:600;font-size:13px;margin-top:4px">Voting</div>
+<div style="font-size:11px;color:var(--text-muted);margin-top:2px">Yes/No proposal voting</div>
+</div>
+<div class="template-card" onclick="loadTemplate('custom')" style="padding:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .15s">
+<div style="font-size:22px">&#9999;&#65039;</div>
+<div style="font-weight:600;font-size:13px;margin-top:4px">Custom Contract</div>
+<div style="font-size:11px;color:var(--text-muted);margin-top:2px">Write your own assembly</div>
+</div>
+</div>
+</div>
+
+<div class="grid-2 mt-4">
+<!-- Deploy Card -->
+<div class="card">
+<div class="card-header">&#128640; Deploy Contract</div>
+<div class="form-group"><label>Contract Name</label><input type="text" id="contractName" placeholder="MyToken" value="MyToken"></div>
+<div class="form-group"><label>Contract Source Code (Verdis Assembly)</label>
+<div style="display:flex;gap:6px;margin-bottom:6px">
+<span class="badge badge-green" style="cursor:pointer" onclick="insertOpcode('PUSH')">PUSH</span>
+<span class="badge badge-green" style="cursor:pointer" onclick="insertOpcode('POP')">POP</span>
+<span class="badge badge-green" style="cursor:pointer" onclick="insertOpcode('ADD')">ADD</span>
+<span class="badge badge-green" style="cursor:pointer" onclick="insertOpcode('SUB')">SUB</span>
+<span class="badge badge-green" style="cursor:pointer" onclick="insertOpcode('MUL')">MUL</span>
+<span class="badge badge-green" style="cursor:pointer" onclick="insertOpcode('DIV')">DIV</span>
+<span class="badge badge-green" style="cursor:pointer" onclick="insertOpcode('STORE')">STORE</span>
+<span class="badge badge-green" style="cursor:pointer" onclick="insertOpcode('LOAD')">LOAD</span>
+</div>
+<div style="display:flex;gap:6px;margin-bottom:6px">
+<span class="badge badge-blue" style="cursor:pointer" onclick="insertOpcode('JUMP')">JUMP</span>
+<span class="badge badge-blue" style="cursor:pointer" onclick="insertOpcode('JUMPI')">JUMPI</span>
+<span class="badge badge-blue" style="cursor:pointer" onclick="insertOpcode('CALL')">CALL</span>
+<span class="badge badge-blue" style="cursor:pointer" onclick="insertOpcode('LOG')">LOG</span>
+<span class="badge badge-blue" style="cursor:pointer" onclick="insertOpcode('EMIT')">EMIT</span>
+<span class="badge badge-blue" style="cursor:pointer" onclick="insertOpcode('HALT')">HALT</span>
+<span class="badge badge-blue" style="cursor:pointer" onclick="insertOpcode('DUP')">DUP</span>
+<span class="badge badge-blue" style="cursor:pointer" onclick="insertOpcode('SWAP')">SWAP</span>
+<span class="badge badge-blue" style="cursor:pointer" onclick="insertOpcode('SSTORE')">SSTORE</span>
+<span class="badge badge-blue" style="cursor:pointer" onclick="insertOpcode('SLOAD')">SLOAD</span>
+</div>
+<textarea id="contractCode" rows="10" placeholder="PUSH 100&#10;PUSH 'total'&#10;STORE&#10;PUSH 'total'&#10;LOAD&#10;LOG&#10;HALT" class="mono" style="font-size:13px;line-height:1.6"></textarea>
+</div>
+<div style="display:flex;gap:8px">
+<button class="btn btn-primary" style="flex:1" onclick="deployContract()">&#128640; Deploy</button>
+<button class="btn" onclick="testCompileContract()">&#9889; Test Compile</button>
+</div>
+<div id="deployResult" class="text-sm mt-2"></div>
+<div id="compileResult" class="text-sm mt-2"></div>
+</div>
+
+<!-- Execute Card -->
+<div class="card">
+<div class="card-header">&#9889; Execute Contract</div>
+<div class="form-group"><label>Contract ID</label><input type="text" id="execContract" placeholder="0x... (from deployment result)" class="mono"></div>
+<div class="form-group"><label>Input Value (optional)</label><input type="text" id="execInput" placeholder="e.g. 42 or hello (pushed to stack)" class="mono"></div>
+<div class="form-group"><label>Multiple Inputs (JSON array, optional)</label><input type="text" id="execArgs" placeholder='[42, "hello"]' class="mono"></div>
+<button class="btn btn-primary w-full" onclick="executeContract()">Execute Contract</button>
+<div id="execResult" class="text-sm mt-2"></div>
+</div>
+</div>
+
+<!-- Instruction Reference -->
+<div class="card mt-4" style="border-color:rgba(88,166,255,.2)">
+<div class="card-header">&#128214; Verdis VM Instruction Reference</div>
+<div class="grid-2" style="gap:4px;font-size:12px">
+<div style="padding:6px 0"><span class="mono text-green" style="font-weight:600">PUSH val</span> &mdash; Push a value onto the stack</div>
+<div style="padding:6px 0"><span class="mono text-green" style="font-weight:600">POP</span> &mdash; Remove top of stack</div>
+<div style="padding:6px 0"><span class="mono text-green" style="font-weight:600">ADD</span> &mdash; Pop two, push their sum</div>
+<div style="padding:6px 0"><span class="mono text-green" style="font-weight:600">SUB</span> &mdash; Pop two, push difference</div>
+<div style="padding:6px 0"><span class="mono text-green" style="font-weight:600">MUL</span> &mdash; Pop two, push product</div>
+<div style="padding:6px 0"><span class="mono text-green" style="font-weight:600">DIV</span> &mdash; Pop two, push quotient</div>
+<div style="padding:6px 0"><span class="mono text-green" style="font-weight:600">MOD</span> &mdash; Pop two, push modulo</div>
+<div style="padding:6px 0"><span class="mono text-green" style="font-weight:600">EQ</span> &mdash; Pop two, push 1 if equal</div>
+<div style="padding:6px 0"><span class="mono text-green" style="font-weight:600">LT</span> &mdash; Pop two, push 1 if first &lt; second</div>
+<div style="padding:6px 0"><span class="mono text-green" style="font-weight:600">GT</span> &mdash; Pop two, push 1 if first &gt; second</div>
+<div style="padding:6px 0"><span class="mono text-blue" style="font-weight:600">STORE</span> &mdash; Save to contract storage (pop key, pop value)</div>
+<div style="padding:6px 0"><span class="mono text-blue" style="font-weight:600">LOAD</span> &mdash; Read from contract storage (pop key, push value)</div>
+<div style="padding:6px 0"><span class="mono text-blue" style="font-weight:600">JUMP label</span> &mdash; Jump to a label/offset</div>
+<div style="padding:6px 0"><span class="mono text-blue" style="font-weight:600">JUMPI label</span> &mdash; Conditional jump (if top of stack is truthy)</div>
+<div style="padding:6px 0"><span class="mono text-purple" style="font-weight:600">CALL</span> &mdash; Call an external function</div>
+<div style="padding:6px 0"><span class="mono text-purple" style="font-weight:600">LOG val</span> &mdash; Log a value (visible in execution output)</div>
+<div style="padding:6px 0"><span class="mono text-purple" style="font-weight:600">EMIT event</span> &mdash; Emit an event</div>
+<div style="padding:6px 0"><span class="mono text-purple" style="font-weight:600">DUP</span> &mdash; Duplicate top of stack</div>
+<div style="padding:6px 0"><span class="mono text-purple" style="font-weight:600">SWAP</span> &mdash; Swap top two stack items</div>
+<div style="padding:6px 0"><span class="mono text-purple" style="font-weight:600">SSTORE</span> &mdash; Store in transient storage</div>
+<div style="padding:6px 0"><span class="mono text-purple" style="font-weight:600">SLOAD</span> &mdash; Load from transient storage</div>
+<div style="padding:6px 0"><span class="mono text-red" style="font-weight:600">HALT</span> &mdash; Stop execution</div>
+<div style="padding:6px 0"><span class="mono text-muted" style="font-weight:600">LABEL name</span> &mdash; Define a jump target (or name:)</div>
+</div>
+<div style="margin-top:8px;padding:8px;background:var(--bg);border-radius:6px;font-size:12px;color:var(--text-muted)">
+&#128161; <strong style="color:var(--text)">Tips:</strong> Use <code style="color:var(--green)">PUSH 'key'</code> for string values. Use <code style="color:var(--green)">'label_name:'</code> or <code style="color:var(--green)">LABEL name</code> to define jump targets. Comments start with <code>//</code> or <code>#</code>.
+</div>
+</div>
+
+<!-- Deployed Contracts List -->
+<div class="card mt-4"><div class="card-header">&#128230; Deployed Contracts</div><div id="contractList"></div></div>
+</div>
 
 <!-- NFT -->
 <div class="section" id="section-nft"><div class="explore-header"><h2>NFT</h2><p>Mint and manage NFTs on Verdis.</p></div>
@@ -405,9 +516,283 @@ async function createProposal(){const t=document.getElementById('govTitle').valu
 async function voteProposal(id,v){if(!wallet)return toast('Connect wallet','error');const r=await api('governance/vote','POST',{proposalId:id,vote:v,voter:wallet.address});if(r&&r.success){toast('Vote submitted!');loadGovernance()}else toast(r?.error||'Failed','error')}
 
 // CONTRACTS
-async function loadContracts(){const c=await api('contracts');if(!c||!Array.isArray(c))return;document.getElementById('contractList').innerHTML=c.map(x=>'<div class="card" style="background:var(--bg)"><div class="flex justify-between"><span class="mono">'+(x.address||x.id||'—')+'</span><span class="badge badge-blue">'+(x.name||'Contract')+'</span></div><div class="text-sm text-muted mt-2">'+((x.code||x.bytecode||'')).slice(0,50)+'...</div></div>').join('')||'<div class="text-muted text-sm">No contracts</div>'}
-async function deployContract(){const n=document.getElementById('contractName').value.trim(),c=document.getElementById('contractCode').value.trim();if(!n||!c)return toast('Fill all fields','error');const r=await api('contract/deploy','POST',{name:n,code:c,deployer:wallet?.address||'0x0'});const e=document.getElementById('deployResult');if(r&&r.success){e.innerHTML='<span class="text-green">Deployed: '+(r.address||r.id)+'</span>';toast('Deployed!');loadContracts()}else e.innerHTML='<span class="text-red">'+(r?.error||'Failed')+'</span>'}
-async function executeContract(){const id=document.getElementById('execContract').value.trim(),f=document.getElementById('execFunc').value.trim();let a=document.getElementById('execArgs').value.trim();try{a=JSON.parse(a)}catch{a=[a]}const r=await api('contract/'+id+'/execute','POST',{function:f,args:a,caller:wallet?.address||'0x0'});const e=document.getElementById('execResult');if(r&&r.success)e.innerHTML='<span class="text-green">Result: '+JSON.stringify(r.result)+'</span>';else e.innerHTML='<span class="text-red">'+(r?.error||'Failed')+'</span>'}
+// === Contract Templates ===
+const CONTRACT_TEMPLATES = {
+  token: {
+    name: 'SimpleToken',
+    code: `// Simple Token Contract
+// Input: amount to mint, or 'balance' to check, or 'transfer' to transfer
+PUSH 1000000
+PUSH 'totalSupply'
+STORE
+
+LABEL check
+PUSH 'totalSupply'
+LOAD
+LOG
+HALT
+
+// To transfer: push amount, push 'transfer', STORE
+// To check balance: push 'totalSupply', LOAD, LOG`
+  },
+  counter: {
+    name: 'Counter',
+    code: `// Counter Contract
+// Push a number to set, push 'inc' to increment, 'dec' to decrement
+PUSH 0
+PUSH 'count'
+STORE
+
+LABEL loop
+PUSH 'count'
+LOAD
+LOG
+HALT
+
+// Execute with input 'inc': PUSH 1 ADD STORE
+// Execute with input 'dec': PUSH 1 SUB STORE`
+  },
+  storage: {
+    name: 'KeyValueStore',
+    code: `// Key-Value Storage Contract
+// Input: push key, push value, then STORE
+// To retrieve: push key, then LOAD
+
+PUSH 'greeting'
+PUSH 'Hello Verdis!'
+STORE
+
+PUSH 'greeting'
+LOAD
+LOG
+HALT
+
+// Store more: PUSH 'key' PUSH 'value' STORE HALT
+// Retrieve: PUSH 'key' LOAD LOG HALT`
+  },
+  escrow: {
+    name: 'EscrowLock',
+    code: `// Escrow Lock Contract
+// Locks a value until released
+
+PUSH 0
+PUSH 'locked_amount'
+STORE
+
+PUSH false
+PUSH 'released'
+STORE
+
+PUSH 'locked_amount'
+LOAD
+LOG
+PUSH 'released'
+LOAD
+LOG
+HALT
+
+// To lock: PUSH amount PUSH 'locked_amount' STORE HALT
+// To release: PUSH true PUSH 'released' STORE HALT`
+  },
+  voting: {
+    name: 'VotingContract',
+    code: `// Voting Contract
+// Tracks yes/no votes
+
+PUSH 0
+PUSH 'yes_votes'
+STORE
+
+PUSH 0
+PUSH 'no_votes'
+STORE
+
+PUSH 'yes_votes'
+LOAD
+LOG
+PUSH 'no_votes'
+LOAD
+LOG
+HALT
+
+// Vote yes: PUSH 1 PUSH 'yes_votes' LOAD ADD PUSH 'yes_votes' STORE HALT
+// Vote no:  PUSH 1 PUSH 'no_votes' LOAD ADD PUSH 'no_votes' STORE HALT`
+  },
+  custom: {
+    name: 'CustomContract',
+    code: `// Write your contract here!
+// Click opcode badges above to insert instructions.
+// Example: store a value and retrieve it
+
+PUSH 'myKey'
+PUSH 'myValue'
+STORE
+
+PUSH 'myKey'
+LOAD
+LOG
+HALT`
+  }
+};
+
+function loadTemplate(templateName) {
+  const tpl = CONTRACT_TEMPLATES[templateName];
+  if (!tpl) return;
+  document.getElementById('contractName').value = tpl.name;
+  document.getElementById('contractCode').value = tpl.code;
+  // Highlight selected template
+  document.querySelectorAll('.template-card').forEach(c => c.style.borderColor = 'var(--border)');
+  event.target.closest('.template-card').style.borderColor = 'var(--green)';
+  toast('Template loaded: ' + tpl.name);
+}
+
+function insertOpcode(opcode) {
+  const textarea = document.getElementById('contractCode');
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const text = textarea.value;
+  let insertText = opcode;
+  // Add newline context for some opcodes
+  if (['PUSH', 'STORE', 'LOAD', 'JUMP', 'JUMPI', 'LOG', 'EMIT', 'CALL', 'SSTORE', 'SLOAD'].includes(opcode)) {
+    insertText = opcode + ' ';
+  }
+  textarea.value = text.substring(0, start) + insertText + text.substring(end);
+  textarea.focus();
+  textarea.setSelectionRange(start + insertText.length, start + insertText.length);
+}
+
+async function testCompileContract() {
+  const code = document.getElementById('contractCode').value.trim();
+  if (!code) return toast('Enter contract source code', 'error');
+  const result = document.getElementById('compileResult');
+  result.innerHTML = '<span class="text-muted">Compiling...</span>';
+  try {
+    // Count instructions for feedback
+    const lines = code.split('\n').filter(l => {
+      const c = l.trim();
+      return c && !c.startsWith('//') && !c.startsWith('#') && !c.startsWith(';');
+    });
+    let opCount = 0;
+    const validOps = ['PUSH','POP','ADD','SUB','MUL','DIV','MOD','EQ','LT','GT','JUMP','JUMPI','STORE','LOAD','CALL','LOG','HALT','DUP','SWAP','SSTORE','SLOAD','EMIT','LABEL'];
+    const unknownOps = [];
+    for (const line of lines) {
+      const tokens = line.match(/("([^"]*)"|'(.*?)'|\S+)/g) || [];
+      if (tokens.length === 0) continue;
+      let op = tokens[0].toUpperCase();
+      if (op.endsWith(':')) op = 'LABEL'; // label definition
+      if (op === 'LABEL') continue;
+      if (validOps.includes(op)) {
+        opCount++;
+      } else if (op !== 'LABEL') {
+        unknownOps.push(tokens[0]);
+      }
+    }
+    if (unknownOps.length > 0) {
+      result.innerHTML = '<span class="text-red">&#10060; Unknown instructions: ' + unknownOps.join(', ') + '</span>';
+      return;
+    }
+    result.innerHTML = '<span class="text-green">&#9989; Compiles! ' + opCount + ' instructions ready. Click Deploy to publish.</span>';
+  } catch(e) {
+    result.innerHTML = '<span class="text-red">Compile error: ' + e.message + '</span>';
+  }
+}
+
+async function loadContracts() {
+  const c = await api('contracts');
+  if (!c || !Array.isArray(c)) return;
+  document.getElementById('contractList').innerHTML = c.map(x => {
+    const id = (x.id || '—').substring(0, 20);
+    const bytecodeLen = (x.bytecode || x.code || []).length || 0;
+    const deployDate = x.deployedAt ? new Date(x.deployedAt).toLocaleString() : '';
+    return '<div class="card" style="background:var(--bg)">' +
+      '<div class="flex justify-between" style="align-items:flex-start">' +
+        '<div>' +
+          '<span class="badge badge-blue" style="cursor:pointer" onclick="selectContract(\''+x.id+'\',\''+(x.name||'Contract')+'\')">'+(x.name||'Contract')+'</span>' +
+          '<div class="mono text-sm text-muted mt-1" style="word-break:break-all">' + id + '...</div>' +
+        '</div>' +
+        '<div style="text-align:right">' +
+          '<div class="text-sm text-muted">'+bytecodeLen+' bytes</div>' +
+          '<div class="text-xs text-muted" style="margin-top:2px">'+deployDate+'</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="margin-top:8px;display:flex;gap:6px">' +
+        '<button class="btn btn-sm" onclick="selectContract(\''+x.id+'\',\''+(x.name||'Contract')+'\')">&#9889; Execute</button>' +
+        '<button class="btn btn-sm" onclick="copyContractId(\''+x.id+'\')">&#128203; Copy ID</button>' +
+      '</div>' +
+    '</div>';
+  }).join('') || '<div class="text-muted text-sm">No contracts deployed yet. Choose a template above to get started!</div>';
+}
+
+function selectContract(id, name) {
+  document.getElementById('execContract').value = id;
+  toast('Selected: ' + name + ' — ready to execute');
+  // Scroll to execute card
+  document.getElementById('execContract').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function copyContractId(id) {
+  navigator.clipboard.writeText(id).then(() => toast('Contract ID copied!'));
+}
+
+async function deployContract() {
+  const n = document.getElementById('contractName').value.trim();
+  const c = document.getElementById('contractCode').value.trim();
+  if (!n) return toast('Enter a contract name', 'error');
+  if (!c) return toast('Enter contract source code', 'error');
+  const btn = event.target;
+  const originalText = btn.innerHTML;
+  btn.innerHTML = 'Deploying...';
+  btn.disabled = true;
+  const r = await api('contract/deploy', 'POST', {name:n, source:c, owner: wallet?.address || '0x0'});
+  btn.innerHTML = originalText;
+  btn.disabled = false;
+  const e = document.getElementById('deployResult');
+  if (r && r.success) {
+    const contractId = r.contractId || r.id || r.address;
+    e.innerHTML = '<div style="padding:10px;background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.3);border-radius:6px">' +
+      '<div class="text-green" style="font-weight:600">&#9989; Contract deployed successfully!</div>' +
+      '<div class="mono text-sm mt-1" style="word-break:break-all">ID: ' + contractId + '</div>' +
+      '<div style="margin-top:6px;display:flex;gap:6px">' +
+      '<button class="btn btn-sm btn-primary" onclick="selectContract(\''+contractId+'\',\''+n+'\')">&#9881; Execute Now</button>' +
+      '<button class="btn btn-sm" onclick="copyContractId(\''+contractId+'\')">&#128203; Copy ID</button>' +
+      '</div></div>';
+    toast('Contract deployed!');
+    loadContracts();
+  } else {
+    e.innerHTML = '<div style="padding:10px;background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:6px">' +
+      '<span class="text-red">&#10060; ' + (r?.error || 'Deployment failed') + '</span>' +
+      '<div class="text-sm text-muted mt-1">Check your source code syntax. Each line should be a valid instruction.</div></div>';
+  }
+}
+
+async function executeContract() {
+  const id = document.getElementById('execContract').value.trim();
+  if (!id) return toast('Enter a contract ID', 'error');
+  const inputVal = document.getElementById('execInput').value.trim();
+  const argsVal = document.getElementById('execArgs').value.trim();
+  let input;
+  if (argsVal) {
+    try { input = JSON.parse(argsVal); } catch { input = [argsVal]; }
+  } else if (inputVal) {
+    const num = parseFloat(inputVal);
+    input = isNaN(num) ? inputVal : num;
+  } else {
+    input = [];
+  }
+  const r = await api('contract/' + id + '/execute', 'POST', {input, caller: wallet?.address || '0x0'});
+  const e = document.getElementById('execResult');
+  if (r && !r.error) {
+    e.innerHTML = '<div style="padding:10px;background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.3);border-radius:6px">' +
+      '<div class="text-green" style="font-weight:600">&#9989; Execution successful</div>' +
+      '<div class="text-sm mt-1"><strong>Result:</strong> ' + JSON.stringify(r.result) + '</div>' +
+      '<div class="text-sm text-muted mt-1"><strong>Gas used:</strong> ' + (r.gasUsed || 0) + '</div>' +
+      (r.events && r.events.length > 0 ? '<div class="text-sm text-muted mt-1"><strong>Events:</strong> ' + JSON.stringify(r.events) + '</div>' : '') +
+      '</div>';
+  } else {
+    e.innerHTML = '<div style="padding:10px;background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:6px">' +
+      '<span class="text-red">&#10060; ' + (r?.error || 'Execution failed') + '</span></div>';
+  }
+}
 
 // NFT
 async function loadNFT(){const n=await api('nft/list');if(!n||!Array.isArray(n))return;document.getElementById('nftList').innerHTML=n.map(x=>'<div class="card" style="background:var(--bg)"><div class="flex justify-between"><span class="mono">#'+(x.tokenId||x.id||'—')+'</span><span class="badge badge-purple">NFT</span></div><div class="text-sm text-muted mt-2">'+(x.uri||x.tokenURI||'No metadata')+'</div></div>').join('')||'<div class="text-muted text-sm">No NFTs</div>'}
