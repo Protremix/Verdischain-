@@ -370,9 +370,18 @@ table.data-table{width:100%;border-collapse:collapse}
 
 <!-- Visual Block Builder -->
 <div class="card mt-4" style="border-color:rgba(188,140,255,.3)">
-<div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+<div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
 <span>&#129518; Visual Contract Builder (Drag &amp; Drop)</span>
-<div style="display:flex;gap:6px">
+<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+<select id="vbPresetSelect" onchange="vbLoadPreset()" style="width:auto;font-size:12px;padding:4px 8px">
+<option value="">&#128230; Load Preset...</option>
+<option value="token_transfer">Token with Transfer</option>
+<option value="multisig">Multi-Signature Wallet</option>
+<option value="auction">Simple Auction</option>
+<option value="timelock">Time-Lock Vault</option>
+<option value="ledger">On-Chain Ledger</option>
+<option value="access_ctrl">Access Controller</option>
+</select>
 <button class="btn btn-sm" onclick="vbClear()">&#128465; Clear</button>
 <button class="btn btn-sm" onclick="vbLoadFromText()">&#128190; Load from Editor</button>
 <button class="btn btn-sm btn-primary" onclick="vbGenerate()">&#9889; Generate Code</button>
@@ -980,6 +989,164 @@ function vbGenerate() {
   }
   toast('Code generated! Review and click Deploy.');
   document.getElementById('contractCode').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+
+// === Preset Visual Block Recipes ===
+const VB_PRESETS = {
+  token_transfer: {
+    name: 'TokenTransfer',
+    blocks: [
+      { op: 'PUSH', arg: '1000000', hasArg: true },
+      { op: 'PUSH', arg: 'totalSupply', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'owner', hasArg: true },
+      { op: 'PUSH', arg: '1000000', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'totalSupply', hasArg: true },
+      { op: 'LOAD', arg: null, hasArg: false },
+      { op: 'LOG', arg: 'Total Supply', hasArg: true },
+      { op: 'PUSH', arg: 'owner', hasArg: true },
+      { op: 'LOAD', arg: null, hasArg: false },
+      { op: 'LOG', arg: 'Owner Balance', hasArg: true },
+      { op: 'HALT', arg: null, hasArg: false }
+    ]
+  },
+  multisig: {
+    name: 'MultiSigWallet',
+    blocks: [
+      { op: 'PUSH', arg: '0', hasArg: true },
+      { op: 'PUSH', arg: 'approvals', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'PUSH', arg: '2', hasArg: true },
+      { op: 'PUSH', arg: 'required', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'false', hasArg: true },
+      { op: 'PUSH', arg: 'executed', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'approvals', hasArg: true },
+      { op: 'LOAD', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'required', hasArg: true },
+      { op: 'LOAD', arg: null, hasArg: false },
+      { op: 'LT', arg: null, hasArg: false },
+      { op: 'JUMPI', arg: 'notEnough', hasArg: true },
+      { op: 'PUSH', arg: 'true', hasArg: true },
+      { op: 'PUSH', arg: 'executed', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'LOG', arg: 'Transaction Approved', hasArg: true },
+      { op: 'HALT', arg: null, hasArg: false }
+    ]
+  },
+  auction: {
+    name: 'SimpleAuction',
+    blocks: [
+      { op: 'PUSH', arg: '0', hasArg: true },
+      { op: 'PUSH', arg: 'highestBid', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'none', hasArg: true },
+      { op: 'PUSH', arg: 'highestBidder', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'highestBid', hasArg: true },
+      { op: 'LOAD', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'newBid', hasArg: true },
+      { op: 'LOAD', arg: null, hasArg: false },
+      { op: 'LT', arg: null, hasArg: false },
+      { op: 'JUMPI', arg: 'bidTooLow', hasArg: true },
+      { op: 'PUSH', arg: 'newBid', hasArg: true },
+      { op: 'LOAD', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'highestBid', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'bidder', hasArg: true },
+      { op: 'LOAD', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'highestBidder', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'LOG', arg: 'New Highest Bid', hasArg: true },
+      { op: 'HALT', arg: null, hasArg: false }
+    ]
+  },
+  timelock: {
+    name: 'TimeLockVault',
+    blocks: [
+      { op: 'PUSH', arg: '0', hasArg: true },
+      { op: 'PUSH', arg: 'lockedAmount', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'false', hasArg: true },
+      { op: 'PUSH', arg: 'isLocked', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'lockUntil', hasArg: true },
+      { op: 'LOAD', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'currentBlock', hasArg: true },
+      { op: 'LOAD', arg: null, hasArg: false },
+      { op: 'LT', arg: null, hasArg: false },
+      { op: 'JUMPI', arg: 'stillLocked', hasArg: true },
+      { op: 'PUSH', arg: 'false', hasArg: true },
+      { op: 'PUSH', arg: 'isLocked', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'LOG', arg: 'Vault Unlocked', hasArg: true },
+      { op: 'HALT', arg: null, hasArg: false }
+    ]
+  },
+  ledger: {
+    name: 'OnChainLedger',
+    blocks: [
+      { op: 'PUSH', arg: 'Genesis', hasArg: true },
+      { op: 'PUSH', arg: 'entry1', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'PUSH', arg: '0', hasArg: true },
+      { op: 'PUSH', arg: 'entryCount', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'entryCount', hasArg: true },
+      { op: 'LOAD', arg: null, hasArg: false },
+      { op: 'PUSH', arg: '1', hasArg: true },
+      { op: 'ADD', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'entryCount', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'entryCount', hasArg: true },
+      { op: 'LOAD', arg: null, hasArg: false },
+      { op: 'LOG', arg: 'Ledger Entries', hasArg: true },
+      { op: 'PUSH', arg: 'entry1', hasArg: true },
+      { op: 'LOAD', arg: null, hasArg: false },
+      { op: 'LOG', arg: 'First Entry', hasArg: true },
+      { op: 'HALT', arg: null, hasArg: false }
+    ]
+  },
+  access_ctrl: {
+    name: 'AccessController',
+    blocks: [
+      { op: 'PUSH', arg: 'admin', hasArg: true },
+      { op: 'PUSH', arg: 'owner', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'false', hasArg: true },
+      { op: 'PUSH', arg: 'paused', hasArg: true },
+      { op: 'STORE', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'paused', hasArg: true },
+      { op: 'LOAD', arg: null, hasArg: false },
+      { op: 'JUMPI', arg: 'isPaused', hasArg: true },
+      { op: 'PUSH', arg: 'caller', hasArg: true },
+      { op: 'LOAD', arg: null, hasArg: false },
+      { op: 'PUSH', arg: 'owner', hasArg: true },
+      { op: 'LOAD', arg: null, hasArg: false },
+      { op: 'EQ', arg: null, hasArg: false },
+      { op: 'JUMPI', arg: 'notAuthorized', hasArg: true },
+      { op: 'LOG', arg: 'Access Granted', hasArg: true },
+      { op: 'HALT', arg: null, hasArg: false }
+    ]
+  }
+};
+
+function vbLoadPreset() {
+  const sel = document.getElementById('vbPresetSelect');
+  const presetName = sel.value;
+  if (!presetName) return;
+  const preset = VB_PRESETS[presetName];
+  if (!preset) return;
+  // Deep copy the blocks
+  vbBlocks = preset.blocks.map(b => ({ op: b.op, arg: b.arg, hasArg: b.hasArg }));
+  vbRender();
+  // Update contract name
+  document.getElementById('contractName').value = preset.name;
+  sel.value = '';
+  toast('Loaded preset: ' + preset.name + ' (' + preset.blocks.length + ' blocks)');
 }
 
 function vbLoadFromText() {
