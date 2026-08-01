@@ -82,6 +82,33 @@ table.data-table{width:100%;border-collapse:collapse}
 .dash-footer-copy{font-size:12px;color:var(--text-muted);opacity:.6}
 
 @media(max-width:768px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}.header{flex-direction:column;gap:8px}}
+
+/* Visual Contract Builder */
+.vb-palette{display:flex;flex-wrap:wrap;gap:6px;padding:12px;background:var(--bg);border-radius:8px;border:1px solid var(--border-light)}
+.vb-block{padding:8px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:grab;transition:all .15s;user-select:none;display:inline-flex;align-items:center;gap:4px}
+.vb-block:active{cursor:grabbing;opacity:.7}
+.vb-block-stack{background:rgba(63,185,80,.12);color:var(--green);border:1px solid rgba(63,185,80,.3)}
+.vb-block-stack:hover{background:rgba(63,185,80,.2)}
+.vb-block-flow{background:rgba(88,166,255,.12);color:var(--blue);border:1px solid rgba(88,166,255,.3)}
+.vb-block-flow:hover{background:rgba(88,166,255,.2)}
+.vb-block-adv{background:rgba(188,140,255,.12);color:var(--purple);border:1px solid rgba(188,140,255,.3)}
+.vb-block-adv:hover{background:rgba(188,140,255,.2)}
+.vb-block-halt{background:rgba(248,81,73,.12);color:var(--red);border:1px solid rgba(248,81,73,.3)}
+.vb-block-halt:hover{background:rgba(248,81,73,.2)}
+.vb-canvas{min-height:200px;padding:12px;background:var(--bg);border:2px dashed var(--border);border-radius:8px;margin-top:12px;transition:border-color .15s}
+.vb-canvas.drag-over{border-color:var(--green);background:rgba(63,185,80,.05)}
+.vb-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;margin-bottom:6px;transition:all .15s}
+.vb-item:hover{border-color:var(--blue)}
+.vb-item-num{width:24px;height:24px;border-radius:4px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-muted);font-weight:600}
+.vb-item-op{font-weight:600;font-size:13px;min-width:60px}
+.vb-item-arg{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-size:12px;color:var(--text);width:140px;outline:none}
+.vb-item-arg:focus{border-color:var(--blue)}
+.vb-item-del{cursor:pointer;color:var(--red);font-size:16px;padding:4px;opacity:.5;transition:opacity .15s}
+.vb-item-del:hover{opacity:1}
+.vb-item-move{cursor:grab;color:var(--text-muted);font-size:14px;padding:4px}
+.vb-empty{text-align:center;color:var(--text-muted);font-size:13px;padding:40px 0}
+.vb-section-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin:8px 0 4px;font-weight:600}
+
 </style>
 </head>
 <body>
@@ -340,6 +367,55 @@ table.data-table{width:100%;border-collapse:collapse}
 </div>
 </div>
 </div>
+
+<!-- Visual Block Builder -->
+<div class="card mt-4" style="border-color:rgba(188,140,255,.3)">
+<div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+<span>&#129518; Visual Contract Builder (Drag &amp; Drop)</span>
+<div style="display:flex;gap:6px">
+<button class="btn btn-sm" onclick="vbClear()">&#128465; Clear</button>
+<button class="btn btn-sm" onclick="vbLoadFromText()">&#128190; Load from Editor</button>
+<button class="btn btn-sm btn-primary" onclick="vbGenerate()">&#9889; Generate Code</button>
+</div>
+</div>
+<p class="text-sm text-muted" style="margin-bottom:8px">Drag instruction blocks into the canvas, set their values, then click Generate Code to create assembly text. No coding needed!</p>
+
+<div class="vb-palette">
+<div class="vb-section-label" style="width:100%">Stack Operations &mdash; drag to canvas</div>
+<div class="vb-block vb-block-stack" draggable="true" data-op="PUSH" data-arg="true" data-default="0">PUSH</div>
+<div class="vb-block vb-block-stack" draggable="true" data-op="POP">POP</div>
+<div class="vb-block vb-block-stack" draggable="true" data-op="ADD">ADD</div>
+<div class="vb-block vb-block-stack" draggable="true" data-op="SUB">SUB</div>
+<div class="vb-block vb-block-stack" draggable="true" data-op="MUL">MUL</div>
+<div class="vb-block vb-block-stack" draggable="true" data-op="DIV">DIV</div>
+<div class="vb-block vb-block-stack" draggable="true" data-op="MOD">MOD</div>
+<div class="vb-block vb-block-stack" draggable="true" data-op="EQ">EQ</div>
+<div class="vb-block vb-block-stack" draggable="true" data-op="LT">LT</div>
+<div class="vb-block vb-block-stack" draggable="true" data-op="GT">GT</div>
+<div class="vb-section-label" style="width:100%">Storage &amp; Control Flow</div>
+<div class="vb-block vb-block-flow" draggable="true" data-op="STORE">STORE</div>
+<div class="vb-block vb-block-flow" draggable="true" data-op="LOAD">LOAD</div>
+<div class="vb-block vb-block-flow" draggable="true" data-op="JUMP" data-arg="true" data-default="label1">JUMP</div>
+<div class="vb-block vb-block-flow" draggable="true" data-op="JUMPI" data-arg="true" data-default="label1">JUMPI</div>
+<div class="vb-block vb-block-flow" draggable="true" data-op="LABEL" data-arg="true" data-default="label1">LABEL</div>
+<div class="vb-section-label" style="width:100%">Advanced</div>
+<div class="vb-block vb-block-adv" draggable="true" data-op="CALL">CALL</div>
+<div class="vb-block vb-block-adv" draggable="true" data-op="LOG" data-arg="true" data-default="message">LOG</div>
+<div class="vb-block vb-block-adv" draggable="true" data-op="EMIT" data-arg="true" data-default="event">EMIT</div>
+<div class="vb-block vb-block-adv" draggable="true" data-op="DUP">DUP</div>
+<div class="vb-block vb-block-adv" draggable="true" data-op="SWAP">SWAP</div>
+<div class="vb-block vb-block-adv" draggable="true" data-op="SSTORE">SSTORE</div>
+<div class="vb-block vb-block-adv" draggable="true" data-op="SLOAD">SLOAD</div>
+<div class="vb-section-label" style="width:100%">Control</div>
+<div class="vb-block vb-block-halt" draggable="true" data-op="HALT">HALT</div>
+</div>
+
+<div class="vb-canvas" id="vbCanvas" ondrop="vbDrop(event)" ondragover="vbDragOver(event)" ondragleave="vbDragLeave(event)">
+<div class="vb-empty">Drop instruction blocks here to build your contract<br><span style="font-size:12px">Tip: Start with PUSH to add values to the stack</span></div>
+</div>
+</div>
+
+
 
 <div class="grid-2 mt-4">
 <!-- Deploy Card -->
@@ -793,6 +869,158 @@ async function executeContract() {
       '<span class="text-red">&#10060; ' + (r?.error || 'Execution failed') + '</span></div>';
   }
 }
+
+
+// === Visual Block Builder ===
+let vbBlocks = [];
+let vbDraggedOp = null;
+let vbDraggedItem = null;
+
+function vbDragOver(e) {
+  e.preventDefault();
+  document.getElementById('vbCanvas').classList.add('drag-over');
+}
+function vbDragLeave(e) {
+  document.getElementById('vbCanvas').classList.remove('drag-over');
+}
+function vbDrop(e) {
+  e.preventDefault();
+  document.getElementById('vbCanvas').classList.remove('drag-over');
+  if (vbDraggedItem !== null) {
+    // Reordering existing block
+    const canvas = document.getElementById('vbCanvas');
+    const rect = canvas.getBoundingClientRect();
+    const insertY = e.clientY - rect.top;
+    // Find insertion index based on position
+    const items = canvas.querySelectorAll('.vb-item');
+    let insertIdx = vbBlocks.length;
+    for (let i = 0; i < items.length; i++) {
+      const itemRect = items[i].getBoundingClientRect();
+      if (insertY < itemRect.top - rect.top + itemRect.height / 2) {
+        insertIdx = i;
+        break;
+      }
+    }
+    // Move the dragged block
+    const [moved] = vbBlocks.splice(vbDraggedItem, 1);
+    if (insertIdx > vbDraggedItem) insertIdx--;
+    vbBlocks.splice(insertIdx, 0, moved);
+    vbDraggedItem = null;
+    vbRender();
+    return;
+  }
+  // New block from palette
+  const op = e.dataTransfer.getData('text/op');
+  const hasArg = e.dataTransfer.getData('text/hasarg') === 'true';
+  const defaultVal = e.dataTransfer.getData('text/default') || '';
+  if (!op) return;
+  vbBlocks.push({ op, arg: hasArg ? defaultVal : null, hasArg });
+  vbRender();
+}
+
+function vbRender() {
+  const canvas = document.getElementById('vbCanvas');
+  if (vbBlocks.length === 0) {
+    canvas.innerHTML = '<div class="vb-empty">Drop instruction blocks here to build your contract<br><span style="font-size:12px">Tip: Start with PUSH to add values to the stack</span></div>';
+    return;
+  }
+  canvas.innerHTML = vbBlocks.map((b, i) => {
+    const colorClass = ['PUSH','POP','ADD','SUB','MUL','DIV','MOD','EQ','LT','GT'].includes(b.op) ? 'vb-block-stack' :
+                       ['STORE','LOAD','JUMP','JUMPI','LABEL'].includes(b.op) ? 'vb-block-flow' :
+                       b.op === 'HALT' ? 'vb-block-halt' : 'vb-block-adv';
+    const argInput = b.hasArg ? '<input class="vb-item-arg" type="text" value="' + (b.arg || '') + '" onchange="vbUpdateArg(' + i + ', this.value)" placeholder="value">' : '';
+    return '<div class="vb-item" draggable="true" ondragstart="vbItemDragStart(' + i + ')" ondragend="vbItemDragEnd()">' +
+      '<span class="vb-item-move">&#9776;</span>' +
+      '<span class="vb-item-num">' + (i + 1) + '</span>' +
+      '<span class="vb-item-op ' + colorClass + '" style="border-radius:4px;padding:2px 8px">' + b.op + '</span>' +
+      argInput +
+      '<span style="flex:1"></span>' +
+      '<span class="vb-item-del" onclick="vbDelete(' + i + ')" title="Remove">&#10005;</span>' +
+      '</div>';
+  }).join('');
+}
+
+function vbItemDragStart(idx) {
+  vbDraggedItem = idx;
+}
+function vbItemDragEnd() {
+  vbDraggedItem = null;
+}
+
+function vbDelete(idx) {
+  vbBlocks.splice(idx, 1);
+  vbRender();
+}
+
+function vbUpdateArg(idx, val) {
+  vbBlocks[idx].arg = val;
+}
+
+function vbClear() {
+  vbBlocks = [];
+  vbRender();
+}
+
+function vbGenerate() {
+  if (vbBlocks.length === 0) return toast('Add some blocks first!', 'error');
+  const code = vbBlocks.map(b => {
+    if (b.hasArg) {
+      const arg = b.arg || '0';
+      // Quote string args that aren't numbers
+      if (isNaN(Number(arg)) && !arg.startsWith("'") && !arg.startsWith('"')) {
+        return b.op + " '" + arg + "'";
+      }
+      return b.op + ' ' + arg;
+    }
+    return b.op;
+  }).join('\n');
+  document.getElementById('contractCode').value = code;
+  if (!document.getElementById('contractName').value || document.getElementById('contractName').value === 'MyToken') {
+    document.getElementById('contractName').value = 'VisualContract';
+  }
+  toast('Code generated! Review and click Deploy.');
+  document.getElementById('contractCode').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function vbLoadFromText() {
+  const code = document.getElementById('contractCode').value.trim();
+  if (!code) return toast('No code in editor to load', 'error');
+  vbBlocks = [];
+  const lines = code.split('\n');
+  const opsWithArgs = ['PUSH','JUMP','JUMPI','LABEL','LOG','EMIT','CALL','SSTORE','SLOAD','STORE','LOAD'];
+  for (const line of lines) {
+    let clean = line.trim();
+    // Remove comments
+    const commentIdx = clean.search(/\/\/|#|;/);
+    if (commentIdx !== -1) clean = clean.slice(0, commentIdx).trim();
+    if (!clean) continue;
+    // Handle label: syntax
+    if (clean.endsWith(':')) {
+      vbBlocks.push({ op: 'LABEL', arg: clean.slice(0, -1), hasArg: true });
+      continue;
+    }
+    const tokens = clean.match(/("([^"]*)"|'([^']*)'|\S+)/g) || [];
+    if (tokens.length === 0) continue;
+    const op = tokens[0].toUpperCase();
+    const hasArg = tokens.length > 1 && opsWithArgs.includes(op);
+    vbBlocks.push({ op, arg: hasArg ? tokens[1].replace(/^["']|["']$/g, '') : null, hasArg });
+  }
+  vbRender();
+  toast('Loaded ' + vbBlocks.length + ' blocks from editor');
+}
+
+// Setup drag events for palette blocks
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.vb-block').forEach(block => {
+    block.addEventListener('dragstart', function(e) {
+      e.dataTransfer.setData('text/op', this.dataset.op);
+      e.dataTransfer.setData('text/hasarg', this.dataset.arg || 'false');
+      e.dataTransfer.setData('text/default', this.dataset.default || '');
+      vbDraggedItem = null;
+    });
+  });
+});
+
 
 // NFT
 async function loadNFT(){const n=await api('nft/list');if(!n||!Array.isArray(n))return;document.getElementById('nftList').innerHTML=n.map(x=>'<div class="card" style="background:var(--bg)"><div class="flex justify-between"><span class="mono">#'+(x.tokenId||x.id||'—')+'</span><span class="badge badge-purple">NFT</span></div><div class="text-sm text-muted mt-2">'+(x.uri||x.tokenURI||'No metadata')+'</div></div>').join('')||'<div class="text-muted text-sm">No NFTs</div>'}
