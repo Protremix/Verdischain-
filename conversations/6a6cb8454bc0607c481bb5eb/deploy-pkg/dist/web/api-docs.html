@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis Blockchain — API Documentation</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#127807;</text></svg>">
+<style>
+:root{--bg:#0d1117;--bg-card:#161b22;--bg-hover:#1c2128;--border:#30363d;--border-light:#21262d;--text:#e6edf3;--text-muted:#8b949e;--green:#3fb950;--blue:#58a6ff;--purple:#bc8cff;--red:#f85149;--yellow:#d29922;--orange:#db6d28;--teal:#39c5cf}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;line-height:1.6}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+.mono{font-family:'SF Mono',Monaco,Consolas,monospace}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:280px;background:var(--bg-card);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;overflow-y:auto;padding:20px 0;z-index:10}
+.sidebar-header{padding:0 20px 20px;border-bottom:1px solid var(--border)}
+.sidebar-header h1{font-size:18px;display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.sidebar-header .sub{font-size:12px;color:var(--text-muted)}
+.sidebar-header .sub a{color:var(--green)}
+.nav-section{padding:12px 0 4px}
+.nav-section-title{padding:0 20px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px}
+.nav-item{padding:6px 20px;font-size:13px;color:var(--text-muted);cursor:pointer;transition:all .15s;border-left:3px solid transparent}
+.nav-item:hover{color:var(--text);background:var(--bg-hover)}
+.nav-item.active{color:var(--green);border-left-color:var(--green)}
+.content{margin-left:280px;padding:40px;max-width:900px}
+.section{margin-bottom:48px}
+.section-title{font-size:24px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.section-desc{color:var(--text-muted);margin-bottom:20px}
+.endpoint{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:16px;overflow:hidden}
+.endpoint-header{padding:14px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:background .15s}
+.endpoint-header:hover{background:var(--bg-hover)}
+.endpoint-method{font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;min-width:55px;text-align:center}
+.endpoint-path{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:14px;flex:1}
+.endpoint-path .param{color:var(--yellow)}
+.endpoint-toggle{color:var(--text-muted);font-size:18px;transition:transform .2s}
+.endpoint.open .endpoint-toggle{transform:rotate(90deg)}
+.endpoint-body{display:none;padding:0 20px 20px;border-top:1px solid var(--border-light)}
+.endpoint.open .endpoint-body{display:block}
+.endpoint-desc{color:var(--text-muted);font-size:13px;margin:12px 0}
+.endpoint-auth{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(248,81,73,.1);color:var(--red);margin-bottom:8px}
+.code-block{background:var(--bg);border:1px solid var(--border-light);border-radius:6px;padding:14px;margin:8px 0;overflow-x:auto;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:12px;line-height:1.5}
+.code-label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:4px;font-weight:600}
+.params-table{width:100%;border-collapse:collapse;margin:8px 0}
+.params-table th{text-align:left;font-size:11px;color:var(--text-muted);text-transform:uppercase;padding:6px 10px;border-bottom:1px solid var(--border)}
+.params-table td{padding:8px 10px;border-bottom:1px solid var(--border-light);font-size:13px}
+.params-table td:first-child{font-family:'SF Mono',Monaco,Consolas,monospace;color:var(--yellow)}
+.params-table td:nth-child(2){font-family:'SF Mono',Monaco,Consolas,monospace;color:var(--blue);width:80px}
+.params-table td:nth-child(3){color:var(--text-muted);width:60px}
+.response-sample{background:var(--bg);border:1px solid var(--border-light);border-radius:6px;padding:14px;margin-top:8px;overflow-x:auto;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:12px;line-height:1.5;color:var(--green)}
+.info-box{background:rgba(88,166,255,.05);border:1px solid rgba(88,166,255,.2);border-radius:8px;padding:16px;margin-bottom:24px}
+.info-box-title{font-size:14px;font-weight:600;color:var(--blue);margin-bottom:8px}
+.info-box ul{list-style:none;padding-left:0}
+.info-box li{padding:4px 0;font-size:13px;color:var(--text-muted)}
+.info-box li strong{color:var(--text)}
+.info-box code{background:var(--bg);padding:2px 6px;border-radius:3px;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:12px;color:var(--green)}
+.hero{margin-bottom:40px;padding:32px;background:linear-gradient(135deg,rgba(63,185,80,.05),rgba(45,212,191,.03));border:1px solid rgba(63,185,80,.15);border-radius:12px}
+.hero h1{font-size:32px;font-weight:800;margin-bottom:8px;background:linear-gradient(135deg,#3fb950,#2dd4bf);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--text-muted);font-size:16px}
+.hero-stats{display:flex;gap:32px;margin-top:20px}
+.hero-stat{text-align:center}
+.hero-stat .val{font-size:22px;font-weight:700;color:var(--green)}
+.hero-stat .lbl{font-size:12px;color:var(--text-muted)}
+.method-get{background:rgba(63,185,80,.15);color:var(--green)}
+.method-post{background:rgba(88,166,255,.15);color:var(--blue)}
+.method-delete{background:rgba(248,81,73,.15);color:var(--red)}
+@media(max-width:768px){.layout{flex-direction:column}.sidebar{position:relative;width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border);max-height:250px}.content{margin-left:0;padding:20px}}
+</style>
+</head>
+<body>
+<div class="layout">
+<div class="sidebar">
+<div class="sidebar-header">
+<h1>&#127807; Verdis API</h1>
+<div class="sub">Chain ID 909 &middot; <a href="https://verdischain.com">verdischain.com</a><br>v1.0.0 &middot; RPC: <a href="https://rpc.verdischain.com">rpc.verdischain.com</a></div>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Getting Started</div>
+<div class="nav-item active" onclick="scrollToSection('overview')">Overview</div>
+<div class="nav-item" onclick="scrollToSection('auth')">Authentication</div>
+<div class="nav-item" onclick="scrollToSection('ratelimit')">Rate Limiting</div>
+<div class="nav-item" onclick="scrollToSection('jsonrpc')">JSON-RPC (25 methods)</div>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Blockchain</div>
+<div class="nav-item" onclick="scrollToSection('network')">GET /api/network/info</div>
+<div class="nav-item" onclick="scrollToSection('chaininfo')">GET /api/blockchain/info</div>
+<div class="nav-item" onclick="scrollToSection('blocks')">GET /api/blockchain/blocks</div>
+<div class="nav-item" onclick="scrollToSection('block')">GET /api/blockchain/block/:index</div>
+<div class="nav-item" onclick="scrollToSection('chain')">GET /api/chain</div>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Wallet &amp; Transactions</div>
+<div class="nav-item" onclick="scrollToSection('createwallet')">POST /api/wallet/create</div>
+<div class="nav-item" onclick="scrollToSection('balance')">GET /api/wallet/:address/balance</div>
+<div class="nav-item" onclick="scrollToSection('sendtx')">POST /api/transaction/send</div>
+<div class="nav-item" onclick="scrollToSection('gettx')">GET /api/transaction/:txId</div>
+<div class="nav-item" onclick="scrollToSection('mempool')">GET /api/mempool</div>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">DEX &amp; Trading</div>
+<div class="nav-item" onclick="scrollToSection('pools')">GET /api/dex/pools</div>
+<div class="nav-item" onclick="scrollToSection('quote')">GET /api/dex/quote</div>
+<div class="nav-item" onclick="scrollToSection('swap')">POST /api/dex/swap</div>
+<div class="nav-item" onclick="scrollToSection('addliq')">POST /api/dex/liquidity/add</div>
+<div class="nav-item" onclick="scrollToSection('remliq')">POST /api/dex/liquidity/remove</div>
+<div class="nav-item" onclick="scrollToSection('poolstats')">GET /api/dex/pool/:id/stats</div>
+<div class="nav-item" onclick="scrollToSection('tokeninfo')">GET /api/token/info</div>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Staking &amp; Validators</div>
+<div class="nav-item" onclick="scrollToSection('validators')">GET /api/validators</div>
+<div class="nav-item" onclick="scrollToSection('delegate')">POST /api/staking/delegate</div>
+<div class="nav-item" onclick="scrollToSection('undelegate')">POST /api/staking/undelegate</div>
+<div class="nav-item" onclick="scrollToSection('delegations')">GET /api/staking/delegations/:address</div>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Eco &amp; Carbon</div>
+<div class="nav-item" onclick="scrollToSection('ecoimpact')">GET /api/eco/impact</div>
+<div class="nav-item" onclick="scrollToSection('carbonmint')">POST /api/eco/carbon/mint</div>
+<div class="nav-item" onclick="scrollToSection('carboncredits')">GET /api/eco/carbon/credits</div>
+<div class="nav-item" onclick="scrollToSection('reforest')">POST /api/eco/reforest/create</div>
+<div class="nav-item" onclick="scrollToSection('greenscore')">GET /api/eco/green/:address</div>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Governance</div>
+<div class="nav-item" onclick="scrollToSection('propcreate')">POST /api/governance/proposal</div>
+<div class="nav-item" onclick="scrollToSection('proplist')">GET /api/governance/proposals</div>
+<div class="nav-item" onclick="scrollToSection('vote')">POST /api/governance/vote</div>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">NFT</div>
+<div class="nav-item" onclick="scrollToSection('nftmint')">POST /api/nft/mint</div>
+<div class="nav-item" onclick="scrollToSection('nftlist')">GET /api/nft/list</div>
+<div class="nav-item" onclick="scrollToSection('nfttransfer')">POST /api/nft/transfer</div>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Bridge</div>
+<div class="nav-item" onclick="scrollToSection('bridgelock')">POST /api/bridge/lock</div>
+<div class="nav-item" onclick="scrollToSection('bridgestats')">GET /api/bridge/stats</div>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Security &amp; Monitoring</div>
+<div class="nav-item" onclick="scrollToSection('secaudit')">GET /api/security/audit</div>
+<div class="nav-item" onclick="scrollToSection('health')">GET /api/monitoring/health</div>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Contracts</div>
+<div class="nav-item" onclick="scrollToSection('deploy')">POST /api/contract/deploy</div>
+<div class="nav-item" onclick="scrollToSection('execute')">POST /api/contract/:id/execute</div>
+<div class="nav-item" onclick="scrollToSection('contracts')">GET /api/contracts</div>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">Faucet &amp; Explorer</div>
+<div class="nav-item" onclick="scrollToSection('faucet')">POST /api/faucet/claim</div>
+<div class="nav-item" onclick="scrollToSection('faucetstatus')">GET /api/faucet/status</div>
+<div class="nav-item" onclick="scrollToSection('explorer')">GET /api/explorer/search</div>
+</div>
+</div>
+<div class="content">
+<div class="hero">
+<h1>&#127807; Verdis Blockchain API</h1>
+<p>The First Fully Green Blockchain Ecosystem &mdash; REST API &amp; JSON-RPC Reference</p>
+<div class="hero-stats">
+<div class="hero-stat"><div class="val">70+</div><div class="lbl">REST Endpoints</div></div>
+<div class="hero-stat"><div class="val">25</div><div class="lbl">JSON-RPC Methods</div></div>
+<div class="hero-stat"><div class="val">909</div><div class="lbl">Chain ID</div></div>
+<div class="hero-stat"><div class="val">5s</div><div class="lbl">Block Time</div></div>
+</div>
+</div>
+
+<div class="section" id="overview">
+<div class="section-title">&#128203; Overview</div>
+<div class="section-desc">The Verdis Blockchain API provides REST and JSON-RPC interfaces for interacting with the Verdis network &mdash; a carbon-negative L1 blockchain with native DPoS consensus, AMM DEX, carbon credits, and smart contracts.</div>
+<div class="info-box">
+<div class="info-box-title">Base URLs</div>
+<ul>
+<li><strong>REST API:</strong> <code>https://verdischain.com/api</code></li>
+<li><strong>JSON-RPC:</strong> <code>https://rpc.verdischain.com</code> (or <code>https://verdischain.com/rpc</code>)</li>
+<li><strong>Chain ID:</strong> <code>909</code></li>
+<li><strong>Native Token:</strong> <code>VRS</code> (18 decimals)</li>
+<li><strong>Consensus:</strong> DPoS (Delegated Proof of Stake)</li>
+<li><strong>Cryptography:</strong> secp256k1 + SHA-256/Keccak256</li>
+</ul>
+</div>
+<div class="info-box">
+<div class="info-box-title">Quick Start</div>
+<div class="code-label">cURL &mdash; Get network info</div>
+<div class="code-block">curl https://verdischain.com/api/network/info</div>
+<div class="code-label">cURL &mdash; Create a wallet</div>
+<div class="code-block">curl -X POST https://verdischain.com/api/wallet/create</div>
+<div class="code-label">cURL &mdash; Send a transaction</div>
+<div class="code-block">curl -X POST https://verdischain.com/api/transaction/send \
+  -H "Content-Type: application/json" \
+  -d '{"from":"0x...","privateKey":"0x...","to":"0x...","amount":100}'</div>
+<div class="code-label">JavaScript &mdash; JSON-RPC</div>
+<div class="code-block">const response = await fetch('https://rpc.verdischain.com', {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({jsonrpc:'2.0', id:1, method:'eth_chainId', params:[]})
+});
+const data = await response.json();
+// &rarr; {"jsonrpc":"2.0","id":1,"result":"0x38d"}</div>
+</div>
+</div>
+
+<div class="section" id="auth">
+<div class="section-title">&#128272; Authentication</div>
+<div class="section-desc">Most endpoints are public. Admin-only endpoints require an API key.</div>
+<div class="info-box">
+<div class="info-box-title">Admin API Key</div>
+<ul>
+<li>Header: <code>x-api-key: YOUR_API_KEY</code></li>
+<li>Query: <code>?apiKey=YOUR_API_KEY</code></li>
+<li>Retrieve key: <code>GET /api/security/admin-key</code> (localhost only)</li>
+<li>Admin endpoints: <code>POST /api/blockchain/produce</code>, <code>POST /api/bridge/redeem</code>, <code>GET /api/security/events</code></li>
+</ul>
+</div>
+</div>
+
+<div class="section" id="ratelimit">
+<div class="section-title">&#9201; Rate Limiting</div>
+<div class="section-desc">All endpoints are rate-limited to protect the network.</div>
+<table class="params-table"><thead><tr><th>Tier</th><th>Limit</th><th>Window</th><th>Applied To</th></tr></thead><tbody>
+<tr><td>Standard</td><td>30 req</td><td>per minute</td><td>All endpoints</td></tr>
+<tr><td>Strict</td><td>5 req</td><td>per minute</td><td>Transactions, swaps, contract deploy, bridge, faucet, staking</td></tr>
+</tbody></table>
+<div class="info-box">
+<div class="info-box-title">Response Headers</div>
+<ul>
+<li><code>X-RateLimit-Remaining</code> &mdash; requests left in current window</li>
+<li><code>X-RateLimit-Reset</code> &mdash; seconds until window resets</li>
+<li><code>429 Too Many Requests</code> &mdash; returns <code>{"error":"Rate limit exceeded","retryAfter":N}</code></li>
+</ul>
+</div>
+</div>
+
+<div class="section" id="jsonrpc">
+<div class="section-title">&#128279; JSON-RPC Methods (25)</div>
+<div class="section-desc">Ethereum-compatible JSON-RPC at <code>https://rpc.verdischain.com</code>. POST with <code>{"jsonrpc":"2.0","method":"...","params":[],"id":1}</code>.</div>
+<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">eth_chainId</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns the chain ID as hex.</div>
+<div class="code-label">Request</div><div class="code-block">{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}</div>
+<div class="code-label">Response</div><div class="response-sample">{"jsonrpc":"2.0","id":1,"result":"0x38d"}</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">eth_blockNumber</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns current block number as hex.</div>
+<div class="code-block">{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}</div>
+<div class="response-sample">{"jsonrpc":"2.0","id":1,"result":"0x4a3c"}</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">eth_getBalance</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns VRS balance of an address.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>address</td><td>string</td><td>Yes</td><td>0x-prefixed address</td></tr>
+<tr><td>blockTag</td><td>string</td><td>No</td><td>"latest" or hex number</td></tr></tbody></table>
+<div class="code-block">{"jsonrpc":"2.0","method":"eth_getBalance","params":["0xa1e8...","latest"],"id":1}</div>
+<div class="response-sample">{"jsonrpc":"2.0","id":1,"result":"0x3b9aca00"}</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">eth_sendRawTransaction</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Submits a signed raw transaction.</div>
+<div class="code-block">{"jsonrpc":"2.0","method":"eth_sendRawTransaction","params":["0x..."],"id":1}</div>
+<div class="response-sample">{"jsonrpc":"2.0","id":1,"result":"0xabc123..."}</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">eth_getTransactionByHash</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns transaction details by hash.</div>
+<div class="code-block">{"jsonrpc":"2.0","method":"eth_getTransactionByHash","params":["0xabc..."],"id":1}</div>
+<div class="response-sample">{"jsonrpc":"2.0","id":1,"result":{"hash":"0x...","from":"0x...","to":"0x...","value":"0x64"}}</div></div></div>
+<div class="info-box">
+<div class="info-box-title">All 25 JSON-RPC Methods</div>
+<ul>
+<li><code>eth_chainId</code> &middot; <code>net_version</code> &middot; <code>web3_clientVersion</code> &middot; <code>web3_sha3</code></li>
+<li><code>net_listening</code> &middot; <code>net_peerCount</code> &middot; <code>eth_protocolVersion</code> &middot; <code>eth_syncing</code></li>
+<li><code>eth_mining</code> &middot; <code>eth_coinbase</code> &middot; <code>eth_gasPrice</code> &middot; <code>eth_blockNumber</code></li>
+<li><code>eth_getBalance</code> &middot; <code>eth_getTransactionCount</code> &middot; <code>eth_getCode</code></li>
+<li><code>eth_getBlockByNumber</code> &middot; <code>eth_getBlockByHash</code></li>
+<li><code>eth_getTransactionByHash</code> &middot; <code>eth_getTransactionReceipt</code></li>
+<li><code>eth_sendRawTransaction</code> &middot; <code>eth_call</code> &middot; <code>eth_estimateGas</code></li>
+<li><code>eth_getLogs</code> &middot; <code>eth_getStorageAt</code></li>
+<li><code>eth_getBlockTransactionCountByNumber</code> &middot; <code>eth_getBlockTransactionCountByHash</code></li>
+<li><code>eth_accounts</code> &middot; <code>eth_maxPriorityFeePerGas</code> &middot; <code>eth_getFeeHistory</code></li>
+</ul>
+</div>
+</div>
+
+<!-- NETWORK & BLOCKCHAIN -->
+<div class="section" id="network">
+<div class="section-title">&#127760; Network Info</div>
+<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/network/info</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns comprehensive network info: chain ID, consensus, cryptography, features, security.</div>
+<div class="code-label">cURL</div><div class="code-block">curl https://verdischain.com/api/network/info</div>
+<div class="code-label">Response (200)</div>
+<div class="response-sample">{
+  "name": "Verdis",
+  "symbol": "VRS",
+  "chainId": 909,
+  "rpcUrl": "https://rpc.verdischain.com",
+  "blockTime": 5000,
+  "maxSupply": 100000000000,
+  "consensus": "Delegated Proof of Stake (DPoS)",
+  "validatorCount": 27,
+  "cryptography": {
+    "curve": "secp256k1",
+    "hash": "SHA-256 + Keccak256",
+    "signatures": "ECDSA with recovery",
+    "addressFormat": "Ethereum-compatible (0x...)"
+  },
+  "security": {
+    "rateLimiting": true,
+    "signatureVerification": true,
+    "replayProtection": true,
+    "adminAuth": true,
+    "validatorSlashing": true
+  }
+}</div></div></div>
+</div>
+
+<div class="section" id="chaininfo">
+<div class="section-title">&#9936; Blockchain</div>
+<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/blockchain/info</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns current chain height, total transactions, validator count, supply.</div>
+<div class="code-block">curl https://verdischain.com/api/blockchain/info</div>
+<div class="response-sample">{"height":12000,"totalTransactions":3500,"validatorCount":27,"totalSupply":50000000000}</div></div></div>
+<div class="endpoint" id="blocks"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/blockchain/blocks?limit=<span class="param">N</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns recent blocks. Default limit: 20.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>limit</td><td>number</td><td>No</td><td>Max blocks (default 20)</td></tr></tbody></table>
+<div class="code-block">curl "https://verdischain.com/api/blockchain/blocks?limit=10"</div></div></div>
+<div class="endpoint" id="block"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/blockchain/block/<span class="param">:index</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns a specific block by index.</div>
+<div class="code-block">curl https://verdischain.com/api/blockchain/block/100</div></div></div>
+<div class="endpoint" id="chain"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/chain</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns the full chain state (all blocks).</div></div></div>
+</div>
+
+<!-- WALLET & TRANSACTIONS -->
+<div class="section" id="createwallet">
+<div class="section-title">&#128091; Wallet</div>
+<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/wallet/create</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Creates a new wallet with secp256k1 keypair.</div>
+<div class="code-label">cURL</div><div class="code-block">curl -X POST https://verdischain.com/api/wallet/create</div>
+<div class="code-label">Response (200)</div>
+<div class="response-sample">{
+  "privateKey": "0x4c0883a694026...",
+  "publicKey": "04a34b99f22c790...",
+  "address": "0xa1e846855e1768b9C0BEe6E747bedd7bec1Af616",
+  "balance": 0,
+  "staked": 0
+}</div>
+<div class="info-box" style="margin-top:8px"><div class="info-box-title">&#9888; Security</div><ul><li>Private key returned only once &mdash; store securely.</li><li>Never share your private key.</li><li>Transactions require the private key for signing.</li></ul></div></div></div>
+<div class="endpoint" id="balance"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/wallet/<span class="param">:address</span>/balance</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns VRS balance for an address.</div>
+<div class="code-block">curl https://verdischain.com/api/wallet/0xa1e8.../balance</div>
+<div class="response-sample">{"address":"0xa1e8...","balance":1000}</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/wallet/<span class="param">:address</span>/staked</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns staked VRS for an address.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/wallet/<span class="param">:address</span>/transactions</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns all transactions for a wallet.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/wallet/<span class="param">:address</span>/details</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Comprehensive wallet details: balance, staked, txs, token balances.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/wallets</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns all known wallets on the network.</div></div></div>
+</div>
+
+<div class="section" id="sendtx">
+<div class="section-title">&#128176; Transactions</div>
+<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/transaction/send</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Sends VRS. Signs with secp256k1. Strict rate limited (5/min).</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>from</td><td>string</td><td>Yes</td><td>Sender address (0x...)</td></tr>
+<tr><td>privateKey</td><td>string</td><td>Yes</td><td>Sender's private key</td></tr>
+<tr><td>to</td><td>string</td><td>Yes</td><td>Recipient address</td></tr>
+<tr><td>amount</td><td>number</td><td>Yes</td><td>VRS amount</td></tr>
+<tr><td>fee</td><td>number</td><td>No</td><td>Fee (default: 1 VRS)</td></tr>
+<tr><td>data</td><td>string</td><td>No</td><td>Optional payload</td></tr></tbody></table>
+<div class="code-label">cURL</div><div class="code-block">curl -X POST https://verdischain.com/api/transaction/send \
+  -H "Content-Type: application/json" \
+  -d '{"from":"0xa1e8...","privateKey":"0x...","to":"0x72cd...","amount":100}'</div>
+<div class="code-label">Response (200)</div>
+<div class="response-sample">{"txId":"0xabc123...","transaction":{"from":"0xa1e8...","to":"0x72cd...","amount":100,"fee":1,"timestamp":1692400000000,"nonce":42,"signature":"0x..."}}</div></div></div>
+<div class="endpoint" id="gettx"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/transaction/<span class="param">:txId</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns transaction receipt by ID.</div></div></div>
+<div class="endpoint" id="mempool"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/mempool</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns pending transactions (max 1000).</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/mempool/size</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns current mempool size.</div>
+<div class="response-sample">{"size": 3}</div></div></div>
+</div>
+
+<!-- DEX -->
+<div class="section" id="pools">
+<div class="section-title">&#128138; DEX (AMM)</div>
+<div class="section-desc">Native Automated Market Maker with 6 liquidity pools. Constant product formula (x*y=k).</div>
+<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/dex/pools</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns all DEX liquidity pools.</div>
+<div class="code-block">curl https://verdischain.com/api/dex/pools</div>
+<div class="response-sample">[{"id":"VRS-CARBON","tokenA":"VRS","tokenB":"CARBON","reserveA":50000,"reserveB":100000,"fee":0.003},...]</div></div></div>
+<div class="endpoint" id="quote"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/dex/quote?tokenIn=<span class="param">VRS</span>&amp;tokenOut=<span class="param">CARBON</span>&amp;amountIn=<span class="param">100</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Get a swap quote without executing.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>tokenIn</td><td>string</td><td>Yes</td><td>Input token symbol</td></tr>
+<tr><td>tokenOut</td><td>string</td><td>Yes</td><td>Output token symbol</td></tr>
+<tr><td>amountIn</td><td>number</td><td>Yes</td><td>Input amount</td></tr></tbody></table>
+<div class="code-block">curl "https://verdischain.com/api/dex/quote?tokenIn=VRS&tokenOut=CARBON&amountIn=100"</div>
+<div class="response-sample">{"amountOut":198.5,"fee":0.3,"priceImpact":0.001,"pool":"VRS-CARBON"}</div></div></div>
+<div class="endpoint" id="swap"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/dex/swap</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Execute a swap. Strict rate limited.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>trader</td><td>string</td><td>Yes</td><td>Trader address</td></tr>
+<tr><td>tokenIn</td><td>string</td><td>Yes</td><td>Input token</td></tr>
+<tr><td>tokenOut</td><td>string</td><td>Yes</td><td>Output token</td></tr>
+<tr><td>amountIn</td><td>number</td><td>Yes</td><td>Input amount</td></tr>
+<tr><td>minAmountOut</td><td>number</td><td>No</td><td>Min output (slippage)</td></tr></tbody></table>
+<div class="code-block">curl -X POST https://verdischain.com/api/dex/swap \
+  -H "Content-Type: application/json" \
+  -d '{"trader":"0xa1e8...","tokenIn":"VRS","tokenOut":"CARBON","amountIn":100,"minAmountOut":195}'</div>
+<div class="response-sample">{"success":true,"amountOut":198.5,"fee":0.3,"pool":{"id":"VRS-CARBON",...}}</div></div></div>
+<div class="endpoint" id="addliq"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/dex/liquidity/add</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Add liquidity. Returns LP tokens.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>provider</td><td>string</td><td>Yes</td><td>Provider address</td></tr>
+<tr><td>tokenA</td><td>string</td><td>Yes</td><td>Token A symbol</td></tr>
+<tr><td>tokenB</td><td>string</td><td>Yes</td><td>Token B symbol</td></tr>
+<tr><td>amountA</td><td>number</td><td>Yes</td><td>Amount A</td></tr>
+<tr><td>amountB</td><td>number</td><td>Yes</td><td>Amount B</td></tr></tbody></table>
+<div class="code-block">curl -X POST https://verdischain.com/api/dex/liquidity/add \
+  -d '{"provider":"0xa1e8...","tokenA":"VRS","tokenB":"CARBON","amountA":100,"amountB":200}'</div>
+<div class="response-sample">{"success":true,"lpTokens":14.14,"pool":{"id":"VRS-CARBON",...}}</div></div></div>
+<div class="endpoint" id="remliq"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/dex/liquidity/remove</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Remove liquidity. Burns LP tokens.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>provider</td><td>string</td><td>Yes</td><td>Provider address</td></tr>
+<tr><td>poolId</td><td>string</td><td>Yes</td><td>Pool ID</td></tr>
+<tr><td>lpAmount</td><td>number</td><td>Yes</td><td>LP tokens to burn</td></tr></tbody></table></div></div>
+<div class="endpoint" id="poolstats"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/dex/pool/<span class="param">:id</span>/stats</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns pool statistics.</div></div></div>
+<div class="endpoint" id="tokeninfo"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/token/info</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Token info: supply, price, market cap, liquidity, pools.</div>
+<div class="response-sample">{"name":"Verdis","symbol":"VRS","decimals":18,"totalSupply":50000000000,"price":0.001,"marketCap":50000000,"liquidity":100000,"pools":[...]}</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/token/market</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Market data: price, volume, swap history.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/token/price-history/<span class="param">:poolId</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Price history for a pool.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/dex/token/mint</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Mint new token + optionally create trading pair. Strict rate limited.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>symbol</td><td>string</td><td>Yes</td><td>Token symbol</td></tr>
+<tr><td>supply</td><td>number</td><td>Yes</td><td>Initial supply</td></tr>
+<tr><td>pairWith</td><td>string</td><td>No</td><td>Create DEX pair (e.g. "VRS")</td></tr>
+<tr><td>initialPrice</td><td>number</td><td>No</td><td>Initial price</td></tr></tbody></table></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/dex/token/balances/<span class="param">:address</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">All DEX token balances for an address.</div></div></div>
+</div>
+
+<!-- STAKING -->
+<div class="section" id="validators">
+<div class="section-title">&#127959; Staking &amp; Validators</div>
+<div class="section-desc">DPoS consensus with 27 registered validators. Stake VRS to vote and earn rewards.</div>
+<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/validators</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns all registered validators.</div>
+<div class="code-block">curl https://verdischain.com/api/validators</div>
+<div class="response-sample">[{"address":"0x...","name":"EcoValidator-1","votes":50000,"active":true,"greenScore":92,"blocksProduced":1200},...]</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/validators/top</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Top validators by votes (active set).</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/validators/register</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Register as validator. Strict rate limited.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>address</td><td>string</td><td>Yes</td><td>Validator address</td></tr>
+<tr><td>name</td><td>string</td><td>No</td><td>Validator name</td></tr></tbody></table></div></div>
+<div class="endpoint" id="delegate"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/staking/delegate</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Delegate VRS to a validator. Strict rate limited.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>voter</td><td>string</td><td>Yes</td><td>Delegator address</td></tr>
+<tr><td>validatorAddress</td><td>string</td><td>Yes</td><td>Validator address</td></tr>
+<tr><td>amount</td><td>number</td><td>Yes</td><td>VRS amount</td></tr></tbody></table>
+<div class="code-block">curl -X POST https://verdischain.com/api/staking/delegate \
+  -d '{"voter":"0xa1e8...","validatorAddress":"0xval...","amount":1000}'</div>
+<div class="response-sample">{"success":true,"voter":"0xa1e8...","validator":"0xval...","amount":1000,"message":"Delegated 1000 VRS"}</div></div></div>
+<div class="endpoint" id="undelegate"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/staking/undelegate</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Undelegate VRS. Strict rate limited.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>voter</td><td>string</td><td>Yes</td><td>Delegator address</td></tr>
+<tr><td>validatorAddress</td><td>string</td><td>Yes</td><td>Validator address</td></tr>
+<tr><td>amount</td><td>number</td><td>Yes</td><td>VRS amount</td></tr></tbody></table></div></div>
+<div class="endpoint" id="delegations"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/staking/delegations/<span class="param">:address</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns all delegation positions for an address.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/staking/rewards/<span class="param">:address</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns staking rewards + estimated daily rewards.</div>
+<div class="response-sample">{"address":"0xa1e8...","totalStaked":5000,"delegations":2,"estimatedDailyReward":0.5}</div></div></div>
+</div>
+
+<!-- ECO -->
+<div class="section" id="ecoimpact">
+<div class="section-title">&#127807; Eco &amp; Carbon Credits</div>
+<div class="section-desc">On-chain carbon credits, reforestation tracking, and green validator scoring.</div>
+<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/eco/impact</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns network-wide environmental impact metrics.</div>
+<div class="code-block">curl https://verdischain.com/api/eco/impact</div>
+<div class="response-sample">{"carbonOffset":1000,"totalCarbonOffset":1000,"trees":15000,"greenValidators":6,"reforestationProjects":3,"carbonCreditsMinted":500,"carbonCreditsRetired":200}</div></div></div>
+<div class="endpoint" id="carbonmint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/eco/carbon/mint</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Mint a carbon credit on-chain.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>seller</td><td>string</td><td>Yes</td><td>Seller address</td></tr>
+<tr><td>projectType</td><td>string</td><td>Yes</td><td>Project type (e.g. "reforestation")</td></tr>
+<tr><td>amount</td><td>number</td><td>Yes</td><td>Tons of CO2</td></tr>
+<tr><td>price</td><td>number</td><td>Yes</td><td>Price per ton in VRS</td></tr>
+<tr><td>location</td><td>string</td><td>No</td><td>Project location</td></tr></tbody></table>
+<div class="code-block">curl -X POST https://verdischain.com/api/eco/carbon/mint \
+  -d '{"seller":"0xa1e8...","projectType":"reforestation","amount":100,"price":50,"location":"Amazon"}'</div>
+<div class="response-sample">{"success":true,"credit":{"id":"cr-001","seller":"0xa1e8...","projectType":"reforestation","amount":100,"price":50,"verified":false}}</div></div></div>
+<div class="endpoint" id="carboncredits"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/eco/carbon/credits</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns all carbon credits. Optional filters: <code>verified</code>, <code>seller</code>.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/eco/carbon/verify</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Verify a carbon credit. Params: <code>creditId</code>, <code>verifier</code>.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/eco/carbon/buy</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Buy a carbon credit. Params: <code>buyer</code>, <code>creditId</code>.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/eco/carbon/retire</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Retire a carbon credit (permanent offset). Params: <code>creditId</code>, <code>owner</code>.</div></div></div>
+<div class="endpoint" id="reforest"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/eco/reforest/create</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Create a reforestation project on-chain.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>name</td><td>string</td><td>Yes</td><td>Project name</td></tr>
+<tr><td>location</td><td>string</td><td>Yes</td><td>Location</td></tr>
+<tr><td>trees</td><td>number</td><td>Yes</td><td>Number of trees</td></tr>
+<tr><td>co2Offset</td><td>number</td><td>Yes</td><td>Expected CO2 offset (tons)</td></tr>
+<tr><td>creator</td><td>string</td><td>Yes</td><td>Creator address</td></tr></tbody></table></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/eco/reforest/update</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Update project progress. Params: <code>projectId</code>, <code>treesPlanted</code>, <code>status</code>.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/eco/reforest/verify</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Verify a reforestation project.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/eco/reforest/projects</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns all reforestation projects.</div></div></div>
+<div class="endpoint" id="greenscore"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/eco/green/<span class="param">:address</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns green score for a validator.</div>
+<div class="response-sample">{"address":"0x...","score":92,"renewableEnergyPercent":85,"carbonNeutral":true}</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/eco/green/top</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Top green validators by score.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/eco/green-scores</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">All green validator scores.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/eco/offset-pool</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Carbon offset pool stats (5B VRS Carbon Offset Fund).</div></div></div>
+</div>
+
+<!-- GOVERNANCE -->
+<div class="section" id="propcreate">
+<div class="section-title">&#127891; Governance</div>
+<div class="section-desc">On-chain governance for protocol upgrades and community decisions.</div>
+<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/governance/proposal</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Create a proposal. Strict rate limited.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>title</td><td>string</td><td>Yes</td><td>Proposal title</td></tr>
+<tr><td>description</td><td>string</td><td>Yes</td><td>Description</td></tr>
+<tr><td>proposer</td><td>string</td><td>Yes</td><td>Proposer address</td></tr>
+<tr><td>type</td><td>string</td><td>No</td><td>Type (default: "improvement")</td></tr></tbody></table>
+<div class="code-block">curl -X POST https://verdischain.com/api/governance/proposal \
+  -d '{"title":"Increase block reward","description":"...","proposer":"0xa1e8..."}'</div>
+<div class="response-sample">{"success":true,"proposal":{"id":"abc...","title":"...","status":"active","votesFor":0,"votesAgainst":0,"endsAt":1692688000000}}</div></div></div>
+<div class="endpoint" id="proplist"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/governance/proposals?status=<span class="param">active</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns all proposals, optionally filtered by status.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/governance/proposal/<span class="param">:id</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns a proposal by ID.</div></div></div>
+<div class="endpoint" id="vote"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/governance/vote</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Vote on a proposal. Voting power = VRS balance. Strict rate limited.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>proposalId</td><td>string</td><td>Yes</td><td>Proposal ID</td></tr>
+<tr><td>voter</td><td>string</td><td>Yes</td><td>Voter address</td></tr>
+<tr><td>vote</td><td>string</td><td>Yes</td><td>"for" or "against"</td></tr></tbody></table></div></div>
+</div>
+
+<!-- NFT -->
+<div class="section" id="nftmint">
+<div class="section-title">&#127912; NFT</div>
+<div class="section-desc">Eco-NFTs with carbon value tracking.</div>
+<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/nft/mint</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Mint an NFT. Strict rate limited.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>name</td><td>string</td><td>Yes</td><td>NFT name</td></tr>
+<tr><td>creator</td><td>string</td><td>Yes</td><td>Creator address</td></tr>
+<tr><td>description</td><td>string</td><td>No</td><td>Description</td></tr>
+<tr><td>image</td><td>string</td><td>No</td><td>Image URL</td></tr>
+<tr><td>category</td><td>string</td><td>No</td><td>Category (default: "eco")</td></tr>
+<tr><td>carbonValue</td><td>number</td><td>No</td><td>Carbon value in tons</td></tr></tbody></table>
+<div class="code-block">curl -X POST https://verdischain.com/api/nft/mint \
+  -d '{"name":"Amazon Tree #001","creator":"0xa1e8...","carbonValue":5,"category":"reforestation"}'</div>
+<div class="response-sample">{"success":true,"nft":{"id":"0x...","name":"Amazon Tree #001","creator":"0xa1e8...","owner":"0xa1e8...","carbonValue":5}}</div></div></div>
+<div class="endpoint" id="nftlist"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/nft/list?category=<span class="param">eco</span>&amp;owner=<span class="param">0x...</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">List NFTs with optional filters.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/nft/<span class="param">:id</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Get NFT by ID.</div></div></div>
+<div class="endpoint" id="nfttransfer"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/nft/transfer</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Transfer an NFT. Strict rate limited.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>nftId</td><td>string</td><td>Yes</td><td>NFT ID</td></tr>
+<tr><td>from</td><td>string</td><td>Yes</td><td>Current owner</td></tr>
+<tr><td>to</td><td>string</td><td>Yes</td><td>New owner</td></tr></tbody></table></div></div>
+</div>
+
+<!-- BRIDGE -->
+<div class="section" id="bridgelock">
+<div class="section-title">&#127751; Cross-Chain Bridge</div>
+<div class="section-desc">Lock VRS on Verdis to mint wrapped VRS on BSC.</div>
+<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/bridge/lock</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Lock VRS for cross-chain bridging. Strict rate limited.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>fromAddress</td><td>string</td><td>Yes</td><td>Verdis source address</td></tr>
+<tr><td>amount</td><td>number</td><td>Yes</td><td>VRS to bridge</td></tr>
+<tr><td>bscAddress</td><td>string</td><td>Yes</td><td>Destination BSC address</td></tr>
+<tr><td>privateKey</td><td>string</td><td>Yes</td><td>Source private key</td></tr></tbody></table>
+<div class="code-block">curl -X POST https://verdischain.com/api/bridge/lock \
+  -d '{"fromAddress":"0xa1e8...","amount":500,"bscAddress":"0xbsc...","privateKey":"0x..."}'</div>
+<div class="response-sample">{"success":true,"mintId":"0x...","amount":500,"status":"locked","bscAddress":"0xbsc..."}</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/bridge/locks</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns all bridge lock records.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/bridge/lock/<span class="param">:mintId</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns a bridge lock by mint ID.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/bridge/redeem</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Redeem bridged VRS. <span class="endpoint-auth">Admin Auth Required</span></div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>mintId</td><td>string</td><td>Yes</td><td>Mint ID to redeem</td></tr>
+<tr><td>verdisAddress</td><td>string</td><td>Yes</td><td>Verdis destination address</td></tr></tbody></table></div></div>
+<div class="endpoint" id="bridgestats"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/bridge/stats</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Bridge statistics: total locked, redeemed, active locks.</div>
+<div class="response-sample">{"totalLocked":50000,"totalRedeemed":10000,"activeLocks":5,"pendingAmount":5000}</div></div></div>
+</div>
+
+<!-- SECURITY -->
+<div class="section" id="secaudit">
+<div class="section-title">&#128274; Security &amp; Monitoring</div>
+<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/security/audit</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns comprehensive security audit report.</div>
+<div class="code-block">curl https://verdischain.com/api/security/audit</div>
+<div class="response-sample">{
+  "signatureVerification": true,
+  "replayProtection": true,
+  "rateLimiting": "30/min standard, 5/min strict",
+  "adminAuth": true,
+  "validatorSlashing": true,
+  "chainValidation": true,
+  "inputValidation": true,
+  "doubleSpendPrevention": true,
+  "mempoolLimit": 1000,
+  "maxTransactionAmount": 1000000000,
+  "maxBlockSize": 500,
+  "securityChecks": 13
+}</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/security/events</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Security event log. <span class="endpoint-auth">Admin Auth Required</span></div></div></div>
+<div class="endpoint" id="health"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/monitoring/health</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns system health metrics.</div>
+<div class="response-sample">{"status":"healthy","uptime":3600000,"chain":{"height":12000,"blockTime":5000,"tps":0.2},"dex":{"pools":6,"volume24h":15000},"validators":{"active":5,"registered":27}}</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/monitoring/uptime</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns server uptime.</div>
+<div class="response-sample">{"uptime":3600000,"startTime":1692396400000}</div></div></div>
+</div>
+
+<!-- CONTRACTS -->
+<div class="section" id="deploy">
+<div class="section-title">&#128220; Smart Contracts</div>
+<div class="section-desc">Deploy and execute smart contracts on Verdis's stack-based VM.</div>
+<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/contract/deploy</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Deploy a smart contract. Strict rate limited.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>owner</td><td>string</td><td>Yes</td><td>Deployer address</td></tr>
+<tr><td>name</td><td>string</td><td>Yes</td><td>Contract name</td></tr>
+<tr><td>bytecode</td><td>string</td><td>Yes</td><td>Stack-based VM bytecode</td></tr></tbody></table>
+<div class="code-block">curl -X POST https://verdischain.com/api/contract/deploy \
+  -d '{"owner":"0xa1e8...","name":"MyContract","bytecode":"PUSH 1 PUSH 2 ADD STOP"}'</div>
+<div class="response-sample">{"id":"0x...","name":"MyContract","owner":"0xa1e8...","deployedAt":1692400000000}</div></div></div>
+<div class="endpoint" id="execute"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/contract/<span class="param">:id</span>/execute</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Execute a deployed contract.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>caller</td><td>string</td><td>Yes</td><td>Caller address</td></tr>
+<tr><td>input</td><td>array</td><td>No</td><td>Input values</td></tr></tbody></table></div></div>
+<div class="endpoint" id="contracts"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/contracts</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns all deployed contracts.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/contract/<span class="param">:id</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Contract details by ID.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/contract/<span class="param">:id</span>/state</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns contract stored state.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/evm/info</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns EVM compatibility info.</div></div></div>
+</div>
+
+<!-- FAUCET & EXPLORER -->
+<div class="section" id="faucet">
+<div class="section-title">&#128688; Faucet &amp; Explorer</div>
+<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/faucet/claim</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Claim 1000 free VRS. 1-hour cooldown per address. Strict rate limited.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>address</td><td>string</td><td>Yes</td><td>Wallet address</td></tr></tbody></table>
+<div class="code-block">curl -X POST https://verdischain.com/api/faucet/claim \
+  -d '{"address":"0xa1e8..."}'</div>
+<div class="response-sample">{"success":true,"address":"0xa1e8...","amount":1000,"message":"1000 VRS sent","nextClaim":"2026-08-01T13:00:00Z"}</div></div></div>
+<div class="endpoint" id="faucetstatus"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/faucet/status?address=<span class="param">0x...</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Check faucet eligibility.</div>
+<div class="response-sample">{"eligible":true,"remainingMinutes":0}</div></div></div>
+<div class="endpoint" id="explorer"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/explorer/search?q=<span class="param">0x...</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Search by address, transaction hash, or block number. Auto-detects type.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/explorer/block/<span class="param">:height</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Explorer view of a block by height.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/explorer/tx/<span class="param">:hash</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Explorer view of a transaction.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/explorer/address/<span class="param">:address</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Explorer view of an address &mdash; balance, transactions, stakes.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/explorer/stats</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Explorer overview stats &mdash; total blocks, transactions, wallets, validators.</div></div></div>
+</div>
+
+<!-- CUSTOM TOKENS -->
+<div class="section">
+<div class="section-title">&#127904; Custom Tokens</div>
+<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/token/create</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Create a custom token. Strict rate limited.</div>
+<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
+<tr><td>symbol</td><td>string</td><td>Yes</td><td>Token symbol</td></tr>
+<tr><td>name</td><td>string</td><td>No</td><td>Token name</td></tr>
+<tr><td>supply</td><td>number</td><td>Yes</td><td>Total supply</td></tr>
+<tr><td>owner</td><td>string</td><td>Yes</td><td>Owner address</td></tr></tbody></table></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/token/list</span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns all custom tokens.</div></div></div>
+<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/dex/token/balance/<span class="param">:token</span>/<span class="param">:address</span></span><span class="endpoint-toggle">&#9654;</span></div>
+<div class="endpoint-body"><div class="endpoint-desc">Returns a specific token balance for an address.</div></div></div>
+</div>
+
+<div style="text-align:center;margin-top:48px;padding-top:32px;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px">
+<p>&#127807; Verdis Blockchain &mdash; The First Fully Green Blockchain Ecosystem</p>
+<p><a href="https://verdischain.com">verdischain.com</a> &middot; <a href="https://x.com/Verdischain">@Verdischain</a> &middot; <a href="https://t.me/verdischain">Telegram</a> &middot; Chain ID 909 &middot; RPC: rpc.verdischain.com</p>
+<p>API v1.0.0 &mdash; August 2026</p>
+</div>
+</div>
+</div>
+<script>
+function toggleEndpoint(header){const ep=header.parentElement;ep.classList.toggle('open')}
+function scrollToSection(id){document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));event.target.classList.add('active')}
+</script>
+</body>
+</html>
