@@ -860,6 +860,18 @@
       border: 1px solid rgba(0, 255, 136, 0.3);
     }
 
+    .status-pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .status-failed {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
     /* ==========================================================================
        SECURITY SECTION
        ========================================================================== */
@@ -1193,9 +1205,9 @@
       <div class="badge-eco" style="margin-bottom: 14px;">
         <span class="badge-eco-dot"></span> Verdis Chain 909 — Carbon-Negative Cross-Chain Protocol
       </div>
-      <h1 class="hero-title">Verdis <span class="gradient-text">Cross-Chain Bridge</span></h1>
+      <h1 class="hero-title">Verdis Cross-Chain Bridge</h1>
       <p class="hero-subtitle">
-        Seamlessly transfer assets across Ethereum, BSC, Polygon, Avalanche, and Verdis Chain 909. Lightning-fast consensus, minimal gas fees, and automated carbon offset validation.
+        Seamlessly transfer assets across Ethereum, BSC, Polygon, Avalanche, and Verdis Chain 909. Lightning-fast consensus, minimal gas fees, and automated carbon-negative bridging rewards.
       </p>
 
       <div class="ticker-bar">
@@ -1225,7 +1237,7 @@
         <!-- SOURCE NETWORK BOX -->
         <div class="transfer-box">
           <div class="transfer-label">
-            <span>From Network</span>
+            <span>Source Chain</span>
             <span>Balance: <strong style="color:var(--text-main);" id="sourceBalance">4.8500</strong> <button class="btn-max" onclick="setMaxAmount()">MAX</button></span>
           </div>
           <div class="transfer-input-row">
@@ -1252,7 +1264,7 @@
         <!-- DESTINATION NETWORK BOX -->
         <div class="transfer-box" style="margin-top: -6px;">
           <div class="transfer-label">
-            <span>To Network</span>
+            <span>Destination Chain</span>
             <span>Destination: <span class="mono" style="color:var(--primary);">Verdis Chain 909</span></span>
           </div>
           <div class="transfer-input-row">
@@ -1307,7 +1319,7 @@
       </div>
       <div class="glass-card stat-card">
         <div class="stat-val" id="statBridges">0</div>
-        <div class="stat-title">Connected Chains</div>
+        <div class="stat-title">Active Bridges</div>
       </div>
       <div class="glass-card stat-card">
         <div class="stat-val" id="statTime">1.8s</div>
@@ -1331,21 +1343,21 @@
       <div class="glass-card step-card">
         <div class="step-num">01</div>
         <div class="step-icon">🔒</div>
-        <h3 class="step-heading">Lock Tokens on Source</h3>
-        <p class="step-text">Deposit your assets (ETH, BNB, USDT, USDC, VRS) into the Verdis Smart Lock contract on the source blockchain.</p>
+        <h3 class="step-heading">Lock tokens on source chain</h3>
+        <p class="step-text">Deposit your tokens (ETH, BNB, USDT, USDC, VRS) into the Verdis Smart Lock contract on the source blockchain.</p>
       </div>
 
       <div class="glass-card step-card">
         <div class="step-num">02</div>
         <div class="step-icon">🛡</div>
-        <h3 class="step-heading">Validator Consensus</h3>
+        <h3 class="step-heading">Verify via validator consensus</h3>
         <p class="step-text">15 distributed PoS validator nodes verify the deposit proof via zero-knowledge cryptographic consensus within 1.8 seconds.</p>
       </div>
 
       <div class="glass-card step-card">
         <div class="step-num">03</div>
         <div class="step-icon">🌱</div>
-        <h3 class="step-heading">Mint & Offset on Verdis</h3>
+        <h3 class="step-heading">Mint wrapped tokens on Verdis</h3>
         <p class="step-text">1:1 wrapped eco-tokens are instantly minted to your wallet on Verdis Chain 909, and carbon credits are automatically retired on-chain.</p>
       </div>
     </div>
@@ -1369,7 +1381,7 @@
               <div class="asset-name">Ethereum</div>
             </div>
           </div>
-          <span class="badge-eco">0.05% Fee</span>
+          <span class="badge-eco">Active • 0.05% Fee</span>
         </div>
         <div class="asset-stats-list">
           <div class="asset-stat-row">
@@ -1395,10 +1407,10 @@
             <span style="font-size: 1.8rem;">🟡</span>
             <div>
               <div class="asset-symbol">BNB</div>
-              <div class="asset-name">BNB Chain</div>
+              <div class="asset-name">BSC Network</div>
             </div>
           </div>
-          <span class="badge-eco">0.04% Fee</span>
+          <span class="badge-eco">Active • 0.04% Fee</span>
         </div>
         <div class="asset-stats-list">
           <div class="asset-stat-row">
@@ -1427,7 +1439,7 @@
               <div class="asset-name">Tether USD</div>
             </div>
           </div>
-          <span class="badge-eco">0.01% Fee</span>
+          <span class="badge-eco">Active • 0.01% Fee</span>
         </div>
         <div class="asset-stats-list">
           <div class="asset-stat-row">
@@ -1456,7 +1468,7 @@
               <div class="asset-name">USD Coin</div>
             </div>
           </div>
-          <span class="badge-eco">0.01% Fee</span>
+          <span class="badge-eco">Active • 0.01% Fee</span>
         </div>
         <div class="asset-stats-list">
           <div class="asset-stat-row">
@@ -1485,7 +1497,7 @@
               <div class="asset-name">Verdis Eco Token</div>
             </div>
           </div>
-          <span class="badge-eco" style="background: var(--primary); color: #000;">0% Fee (Free)</span>
+          <span class="badge-eco" style="background: var(--primary); color: #000;">Active • 0% Fee</span>
         </div>
         <div class="asset-stats-list">
           <div class="asset-stat-row">
@@ -1511,7 +1523,7 @@
   <section class="history-section container reveal">
     <div class="section-title-wrap">
       <h2 class="section-title">Recent <span class="gradient-text">Bridge Transactions</span></h2>
-      <p class="section-desc">Real-time verifiable multi-chain transfers processed through Verdis PoS consensus.</p>
+      <p class="section-desc">Real-time verifiable multi-chain transfers with live status tracking.</p>
     </div>
 
     <div class="table-container">
@@ -1534,7 +1546,7 @@
     </div>
   </section>
 
-  <!-- Security & Architecture -->
+  <!-- Security Info -->
   <section class="container reveal">
     <div class="section-title-wrap">
       <h2 class="section-title">Security & <span class="gradient-text">Consensus Model</span></h2>
@@ -1544,25 +1556,25 @@
     <div class="security-grid">
       <div class="glass-card security-card">
         <div class="sec-icon">🔐</div>
-        <h3>15-Validator Multi-Sig Threshold</h3>
+        <h3>Multi-Sig Verification</h3>
         <p style="color:var(--text-muted); font-size:0.92rem; margin-top:10px; line-height:1.6;">
-          Every cross-chain lock-and-mint action requires cryptographic quorum signatures from at least 11 of 15 geo-distributed validator nodes.
+          Every cross-chain lock-and-mint action requires multi-sig cryptographic quorum signatures from independent geo-distributed validator nodes.
         </p>
       </div>
 
       <div class="glass-card security-card">
         <div class="sec-icon">⏱</div>
-        <h3>72-Hour Timelock Governance</h3>
+        <h3>Time-Locked Security Model</h3>
         <p style="color:var(--text-muted); font-size:0.92rem; margin-top:10px; line-height:1.6;">
-          Smart contract upgrades and liquidity parameter updates are subjected to mandatory 72-hour on-chain timelocks for community auditing.
+          Smart contract upgrades and liquidity parameter updates are subjected to a mandatory 72-hour time-locked governance delay for community auditing.
         </p>
       </div>
 
       <div class="glass-card security-card">
         <div class="sec-icon">⚡</div>
-        <h3>Zero-Knowledge Proof Audit</h3>
+        <h3>Validator Consensus</h3>
         <p style="color:var(--text-muted); font-size:0.92rem; margin-top:10px; line-height:1.6;">
-          ZK-SNARK proof generation guarantees state correctness between source lock contracts and Verdis Chain 909 mint contracts without centralized trust.
+          Zero-knowledge validator consensus guarantees instant state correctness between source lock contracts and Verdis Chain 909 mint contracts.
         </p>
       </div>
     </div>
@@ -1577,19 +1589,19 @@
       </div>
       <div class="chain-list">
         <div class="chain-item" onclick="selectChain('Ethereum', '🔷', 'ETH')">
-          <div class="chain-item-left"><span>🔷</span> Ethereum Mainnet</div>
+          <div class="chain-item-left"><span>🔷</span> Ethereum</div>
           <span class="mono" style="font-size:0.8rem; color:var(--text-muted);">Chain ID: 1</span>
         </div>
         <div class="chain-item" onclick="selectChain('BSC', '🟡', 'BNB')">
-          <div class="chain-item-left"><span>🟡</span> BNB Smart Chain</div>
+          <div class="chain-item-left"><span>🟡</span> BSC</div>
           <span class="mono" style="font-size:0.8rem; color:var(--text-muted);">Chain ID: 56</span>
         </div>
         <div class="chain-item" onclick="selectChain('Polygon', '🟣', 'MATIC')">
-          <div class="chain-item-left"><span>🟣</span> Polygon PoS</div>
+          <div class="chain-item-left"><span>🟣</span> Polygon</div>
           <span class="mono" style="font-size:0.8rem; color:var(--text-muted);">Chain ID: 137</span>
         </div>
         <div class="chain-item" onclick="selectChain('Avalanche', '🔺', 'AVAX')">
-          <div class="chain-item-left"><span>🔺</span> Avalanche C-Chain</div>
+          <div class="chain-item-left"><span>🔺</span> Avalanche</div>
           <span class="mono" style="font-size:0.8rem; color:var(--text-muted);">Chain ID: 43114</span>
         </div>
         <div class="chain-item" onclick="selectChain('Verdis Chain 909', '🌿', 'VRS')">
@@ -2020,11 +2032,12 @@
     // History Table Generator
     // --------------------------------------------------------------------------
     const mockHistory = [
-      { hash: '0x8f3c...e912', from: 'Ethereum 🔷', to: 'Verdis Chain 909 🌿', amount: '2.50 ETH', carbon: '-4.55 kg', time: '1 min ago', status: 'Completed' },
-      { hash: '0x4a12...78bc', from: 'BSC 🟡', to: 'Verdis Chain 909 🌿', amount: '12.00 BNB', carbon: '-17.40 kg', time: '4 mins ago', status: 'Completed' },
-      { hash: '0x99e1...120f', from: 'Polygon 🟣', to: 'Verdis Chain 909 🌿', amount: '1,500 USDT', carbon: '-2.73 kg', time: '8 mins ago', status: 'Completed' },
-      { hash: '0x10a5...66d2', from: 'Avalanche 🔺', to: 'Verdis Chain 909 🌿', amount: '45.00 AVAX', carbon: '-9.20 kg', time: '12 mins ago', status: 'Completed' },
-      { hash: '0xee21...33aa', from: 'Verdis Chain 909 🌿', to: 'Ethereum 🔷', amount: '5,000 VRS', carbon: '-18.50 kg', time: '18 mins ago', status: 'Completed' }
+      { hash: '0x8f3c...e912', from: 'Ethereum 🔷', to: 'Verdis Chain 909 🌿', amount: '2.50 ETH', carbon: '-4.55 kg', time: '1 min ago', status: 'completed' },
+      { hash: '0x4a12...78bc', from: 'BSC 🟡', to: 'Verdis Chain 909 🌿', amount: '12.00 BNB', carbon: '-17.40 kg', time: '4 mins ago', status: 'completed' },
+      { hash: '0x99e1...120f', from: 'Polygon 🟣', to: 'Verdis Chain 909 🌿', amount: '1,500 USDT', carbon: '-2.73 kg', time: '8 mins ago', status: 'pending' },
+      { hash: '0x10a5...66d2', from: 'Avalanche 🔺', to: 'Verdis Chain 909 🌿', amount: '45.00 AVAX', carbon: '-9.20 kg', time: '12 mins ago', status: 'completed' },
+      { hash: '0xee21...33aa', from: 'Verdis Chain 909 🌿', to: 'Ethereum 🔷', amount: '5,000 VRS', carbon: '-18.50 kg', time: '18 mins ago', status: 'completed' },
+      { hash: '0x11b3...88cd', from: 'BSC 🟡', to: 'Verdis Chain 909 🌿', amount: '0.05 BNB', carbon: '-0.10 kg', time: '25 mins ago', status: 'failed' }
     ];
 
     function populateHistoryTable() {
@@ -2033,6 +2046,14 @@
 
       mockHistory.forEach(item => {
         const tr = document.createElement('tr');
+        
+        let statusBadge = '<span class="status-badge status-completed">✓ Completed</span>';
+        if (item.status === 'pending') {
+          statusBadge = '<span class="status-badge status-pending">⏳ Pending</span>';
+        } else if (item.status === 'failed') {
+          statusBadge = '<span class="status-badge status-failed">✕ Failed</span>';
+        }
+
         tr.innerHTML = `
           <td class="mono" style="color:var(--primary);">${item.hash}</td>
           <td>${item.from}</td>
@@ -2040,7 +2061,7 @@
           <td class="mono" style="font-weight:700;">${item.amount}</td>
           <td style="color:var(--primary); font-family:var(--font-mono);">${item.carbon}</td>
           <td style="color:var(--text-muted);">${item.time}</td>
-          <td><span class="status-badge status-completed">✓ ${item.status}</span></td>
+          <td>${statusBadge}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -2055,7 +2076,7 @@
         amount: `${amount.toFixed(2)} ${symbol}`,
         carbon: `-${(amount * 1.82).toFixed(2)} kg`,
         time: 'Just now',
-        status: 'Completed'
+        status: 'completed'
       };
       mockHistory.unshift(newTx);
       populateHistoryTable();
@@ -2142,11 +2163,11 @@
         if (lower.includes('fee')) {
           reply = "🌿 Bridge fees are 0.05% for standard tokens (ETH, BNB, USDT, USDC), and 0.00% (FREE!) for native VRS tokens!";
         } else if (lower.includes('safe') || lower.includes('security')) {
-          reply = "🛡 Security is our top priority: 15-validator threshold consensus, 72-hour timelock upgrades, and ZK-proof state audits guarantee zero single point of failure.";
+          reply = "🛡 Security is our top priority: 15-validator threshold consensus, 72-hour time-locked security model, and ZK-proof state audits guarantee zero single point of failure.";
         } else if (lower.includes('carbon') || lower.includes('green') || lower.includes('eco')) {
           reply = "🌱 Every bridge transaction automatically calculates energy offset and retires certified carbon credits on-chain, averaging -1.82 kg CO₂ offset per transfer!";
         } else if (lower.includes('chain') || lower.includes('network')) {
-          reply = "🌐 Verdis Bridge supports Ethereum, BNB Smart Chain, Polygon PoS, Avalanche C-Chain, and Verdis Chain 909!";
+          reply = "🌐 Verdis Bridge supports Ethereum, BSC (BNB Chain), Polygon, Avalanche, and Verdis Chain 909!";
         }
 
         botDiv.innerText = reply;
