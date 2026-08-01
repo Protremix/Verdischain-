@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis API Documentation — First Fully Green Blockchain</title>
+<meta name="description" content="Complete API reference for the Verdis blockchain — 90+ endpoints across 20 modules.">
+<style>
+:root{--bg:#050a08;--card:#0a1410;--border:rgba(0,255,136,0.12);--green:#00ff88;--green-dim:rgba(0,255,136,0.6);--text:#e0e0e0;--muted:#888;--red:#ff4444;--yellow:#ffc800;--blue:#00aaff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;line-height:1.6}
+.container{max-width:1200px;margin:0 auto;padding:20px}
+header{text-align:center;padding:40px 20px;border-bottom:1px solid var(--border);margin-bottom:40px}
+header h1{font-size:28px;color:var(--green);margin-bottom:8px}
+header p{color:var(--muted);font-size:15px}
+.stats{display:flex;justify-content:center;gap:24px;margin-top:16px;flex-wrap:wrap}
+.stats div{text-align:center}
+.stats .num{color:var(--green);font-size:22px;font-weight:700}
+.stats .label{color:var(--muted);font-size:12px}
+.sidebar{position:sticky;top:20px;float:left;width:200px;margin-right:30px}
+.sidebar a{display:block;color:var(--muted);text-decoration:none;padding:6px 12px;font-size:13px;border-radius:6px;transition:all 0.2s}
+.sidebar a:hover{color:var(--green);background:rgba(0,255,136,0.05)}
+.main{margin-left:230px}
+.module{margin-bottom:40px;padding:24px;background:var(--card);border:1px solid var(--border);border-radius:12px}
+.module h2{color:var(--green);font-size:18px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.endpoint{padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.endpoint:last-child{border-bottom:none}
+.method{display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700;margin-right:8px;min-width:52px;text-align:center}
+.GET{background:rgba(0,170,255,0.15);color:var(--blue)}
+.POST{background:rgba(0,255,136,0.15);color:var(--green)}
+.PUT{background:rgba(255,200,0,0.15);color:var(--yellow)}
+.DELETE{background:rgba(255,68,68,0.15);color:var(--red)}
+.path{font-family:'Courier New',monospace;font-size:13px;color:#ccc}
+.desc{color:var(--muted);font-size:13px;margin-top:4px;margin-left:60px}
+.params{margin:8px 0 0 60px;font-size:12px;color:#aaa}
+.params code{background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:3px;font-size:11px;color:var(--green-dim)}
+.tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;margin-left:8px;vertical-align:middle}
+.tag-new{background:rgba(0,255,136,0.2);color:var(--green)}
+.tag-sec{background:rgba(255,200,0,0.15);color:var(--yellow)}
+@media(max-width:768px){.sidebar{display:none}.main{margin-left:0}.container{padding:12px}}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>🌿 Verdis API Documentation</h1>
+<p>The First Fully Green Blockchain — Complete API Reference</p>
+<div class="stats">
+<div><div class="num">90+</div><div class="label">Endpoints</div></div>
+<div><div class="num">20</div><div class="label">Modules</div></div>
+<div><div class="num">25</div><div class="label">JSON-RPC Methods</div></div>
+<div><div class="num">13/13</div><div class="label">Security Checks</div></div>
+</div>
+</header>
+
+<div class="sidebar">
+<a href="#blockchain">⛓️ Blockchain</a>
+<a href="#wallet">👛 Wallet</a>
+<a href="#dex">💱 DEX</a>
+<a href="#governance">🗳️ Governance</a>
+<a href="#ai">🤖 AI Agents</a>
+<a href="#names">🌐 Name Service</a>
+<a href="#fraud">🛡️ Fraud Detection</a>
+<a href="#aa">🔐 Account Abstraction</a>
+<a href="#tokenomics">💰 Tokenomics</a>
+<a href="#staking">🔒 Staking</a>
+<a href="#contracts">📜 Contracts</a>
+<a href="#eco">🌿 Eco System</a>
+<a href="#bridge">🌉 Bridge</a>
+<a href="#nft">🎨 NFT</a>
+<a href="#security">🛡️ Security</a>
+<a href="#faucet">🚰 Faucet</a>
+<a href="#sdk">📦 SDK</a>
+<a href="#network">📡 Network</a>
+<a href="#ido">🚀 Token Sale</a>
+<a href="#explorer">🔍 Explorer</a>
+</div>
+
+<div class="main">
+
+<div class="module" id="blockchain">
+<h2>⛓️ Blockchain</h2>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/blockchain/info</span><div class="desc">Chain height, validator count, total supply, block time</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/blockchain/transactions</span><div class="desc">Recent transactions across the chain</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/transaction/</span><div class="desc">Submit a signed transaction to the mempool</div><div class="params">Body: <code>from</code> <code>to</code> <code>amount</code> <code>fee</code> <code>nonce</code> <code>signature</code></div></div>
+</div>
+
+<div class="module" id="wallet">
+<h2>👛 Wallet</h2>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/wallet/create-mnemonic</span><div class="desc">Generate a new wallet with BIP-39 mnemonic (secp256k1)</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/wallet/:address/balance</span><div class="desc">Get VRS balance for an address</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/wallet/:address/staked</span><div class="desc">Get staked amount for an address</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/wallet/:address/transactions</span><div class="desc">Get transaction history for an address</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/wallet/app-info</span><div class="desc">Get wallet app configuration (chain ID, RPC URL, explorer)</div></div>
+</div>
+
+<div class="module" id="dex">
+<h2>💱 DEX (AMM)</h2>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/dex/pools</span><div class="desc">List all liquidity pools with reserves and prices</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/dex/swap</span><div class="desc">Execute a token swap through the AMM</div><div class="params">Body: <code>tokenIn</code> <code>tokenOut</code> <code>amountIn</code></div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/dex/liquidity/add</span><div class="desc">Add liquidity to a pool</div><div class="params">Body: <code>tokenA</code> <code>tokenB</code> <code>amountA</code> <code>amountB</code></div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/dex/liquidity/remove</span><div class="desc">Remove liquidity from a pool</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/dex/liquidity/:address</span><div class="desc">Get LP positions for an address</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/dex/swap-history</span><div class="desc">Get recent swap history across all pools</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/dex/price-history/:poolId</span><div class="desc">Get price chart data for a pool</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/dex/token/mint</span><div class="desc">Mint a new custom token and create a trading pair</div></div>
+</div>
+
+<div class="module" id="governance">
+<h2>🗳️ Governance <span class="tag tag-new">NEW</span></h2>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/governance/proposal/create</span><div class="desc">Create a new governance proposal (requires 1K VRS staked or held)</div><div class="params">Body: <code>proposer</code> <code>title</code> <code>description</code> <code>proposalType</code> <code>actions</code></div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/governance/vote</span><div class="desc">Cast a vote (1 VRS = 1 vote, balance-based voting power)</div><div class="params">Body: <code>voter</code> <code>proposalId</code> <code>vote</code> (for/against/abstain)</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/governance/proposals</span><div class="desc">List all proposals</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/governance/proposals/active</span><div class="desc">List active proposals only</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/governance/proposal/:id</span><div class="desc">Get full proposal details</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/governance/tally</span><div class="desc">Tally votes and finalize a proposal after voting period</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/governance/execute</span><div class="desc">Execute a passed proposal after timelock (24h)</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/governance/cancel</span><div class="desc">Cancel a proposal (proposer only)</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/governance/stats</span><div class="desc">Governance statistics (quorum 10%, threshold 66%, 72h voting, 24h timelock)</div></div>
+</div>
+
+<div class="module" id="ai">
+<h2>🤖 AI Agent Registry <span class="tag tag-new">NEW</span></h2>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/ai/agent/register</span><div class="desc">Register an AI agent with wallet, owner, and scoped permissions</div><div class="params">Body: <code>agentId</code> <code>ownerAddress</code> <code>walletAddress</code> <code>metadata</code></div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/ai/agents</span><div class="desc">List all registered AI agents</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/ai/agents/active</span><div class="desc">List active AI agents only</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/ai/agent/:agentId</span><div class="desc">Get AI agent details</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/ai/agent/:agentId/validate</span><div class="desc">Validate an AI agent's signature/identity</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/ai/agent/:agentId/revoke</span><div class="desc">Revoke an AI agent's registration</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/ai/agent/:agentId/reactivate</span><div class="desc">Reactivate a revoked AI agent</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/ai/agent/:agentId/attest</span><div class="desc">Submit a computation attestation</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/ai/agent/:agentId/attestations</span><div class="desc">Get all attestations for an agent</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/ai/agent/:agentId/permissions</span><div class="desc">Get permission scopes for an agent</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/ai/fraud/alerts</span><div class="desc">Get AI-detected fraud alerts</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/ai/stats</span><div class="desc">AI registry statistics</div></div>
+</div>
+
+<div class="module" id="names">
+<h2>🌐 Name Service (VNS) <span class="tag tag-new">NEW</span></h2>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/vns/register</span><div class="desc">Register a human-readable name (name.verdis)</div><div class="params">Body: <code>name</code> <code>ownerAddress</code></div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/vns/resolve/:name</span><div class="desc">Resolve a .verdis name to an address</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/vns/reverse/:address</span><div class="desc">Reverse-resolve an address to a name</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/vns/names</span><div class="desc">List all registered names</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/vns/names/:address</span><div class="desc">Get names owned by an address</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/vns/transfer</span><div class="desc">Transfer a name to a new owner</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/vns/renew</span><div class="desc">Renew a name registration</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/vns/text-record</span><div class="desc">Set a text record (avatar, bio, URL, etc.)</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/vns/stats</span><div class="desc">Name service statistics</div></div>
+</div>
+
+<div class="module" id="fraud">
+<h2>🛡️ Fraud Detection <span class="tag tag-new">NEW</span></h2>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/fraud/analyze</span><div class="desc">Analyze a transaction for fraud (6 detection rules)</div><div class="params">Body: <code>address</code> <code>amount</code> <code>transactionHash</code></div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/fraud/alerts</span><div class="desc">Get recent fraud alerts</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/fraud/check/:address</span><div class="desc">Check if an address is flagged</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/fraud/blacklist</span><div class="desc">Add an address to the blacklist</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/fraud/whitelist</span><div class="desc">Add an address to the whitelist</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/fraud/stats</span><div class="desc">Fraud detection statistics</div></div>
+</div>
+
+<div class="module" id="aa">
+<h2>🔐 Account Abstraction <span class="tag tag-new">NEW</span></h2>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/aa/wallet/create</span><div class="desc">Create a smart contract wallet with daily limits and guardians</div><div class="params">Body: <code>ownerAddress</code> <code>config</code> {dailyLimit, guardians[]}</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/aa/wallet/:address</span><div class="desc">Get smart wallet details</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/aa/session/create</span><div class="desc">Create a session key with scoped permissions and expiry</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/aa/session/validate</span><div class="desc">Validate a session key for a transaction</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/aa/session/revoke</span><div class="desc">Revoke a session key</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/aa/sessions</span><div class="desc">List all active sessions</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/aa/spend-check</span><div class="desc">Check if a spend is within daily limits</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/aa/recovery/initiate</span><div class="desc">Initiate social recovery with guardian approval</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/aa/recovery/approve</span><div class="desc">Guardian approval for recovery</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/aa/guardian/add</span><div class="desc">Add a guardian to a smart wallet</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/aa/stats</span><div class="desc">Account abstraction statistics</div></div>
+</div>
+
+<div class="module" id="tokenomics">
+<h2>💰 Tokenomics <span class="tag tag-new">NEW</span></h2>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/tokenomics/info</span><div class="desc">Fee distribution, burn rate, treasury balance, reward split</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/gas/sponsor</span><div class="desc">Sponsor gas fees for another address (gas abstraction)</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/gas/sponsor/:address</span><div class="desc">Get sponsor balance for an address</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/gas/sponsor/withdraw</span><div class="desc">Withdraw sponsor balance</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/treasury/balance</span><div class="desc">Get treasury balance (governance-controlled)</div></div>
+</div>
+
+<div class="module" id="staking">
+<h2>🔒 Staking</h2>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/staking/delegate</span><div class="desc">Delegate VRS to a validator</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/staking/undelegate</span><div class="desc">Undelegate VRS from a validator</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/staking/info</span><div class="desc">Get staking information and parameters</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/staking/rewards/:address</span><div class="desc">Get staking rewards for an address</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/staking/delegations/:address</span><div class="desc">Get delegation list for an address</div></div>
+</div>
+
+<div class="module" id="contracts">
+<h2>📜 Smart Contracts</h2>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/contracts/deploy</span><div class="desc">Deploy a contract (bytecode runs on stack-based VM with 22 opcodes)</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/contracts/execute</span><div class="desc">Execute a contract method</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/contracts/list</span><div class="desc">List all deployed contracts</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/contracts/:id</span><div class="desc">Get contract details and state</div></div>
+</div>
+
+<div class="module" id="eco">
+<h2>🌿 Eco System</h2>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/eco/info</span><div class="desc">Get eco metrics: CO2 offset, trees planted, green validators</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/eco/carbon-credits</span><div class="desc">List carbon credit NFTs minted on-chain</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/eco/reforestation</span><div class="desc">List reforestation projects logged on-chain</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/eco/carbon-mint</span><div class="desc">Mint carbon credits (verified offset tons → on-chain NFT)</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/eco/reeforestation-log</span><div class="desc">Log a reforestation project on-chain</div></div>
+</div>
+
+<div class="module" id="bridge">
+<h2>🌉 Cross-Chain Bridge</h2>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/bridge/lock</span><div class="desc">Lock VRS to mint on another chain</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/bridge/locks</span><div class="desc">List all bridge lock events</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/bridge/lock/:mintId</span><div class="desc">Get a specific bridge lock</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/bridge/redeem</span><div class="desc">Redeem bridged tokens</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/bridge/stats</span><div class="desc">Bridge statistics</div></div>
+</div>
+
+<div class="module" id="nft">
+<h2>🎨 NFT</h2>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/nft/mint</span><div class="desc">Mint an NFT</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/nft/list</span><div class="desc">List all NFTs</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/nft/:id</span><div class="desc">Get NFT details</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/nft/transfer</span><div class="desc">Transfer an NFT</div></div>
+</div>
+
+<div class="module" id="security">
+<h2>🛡️ Security <span class="tag tag-sec">HARDENED</span></h2>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/security/audit</span><div class="desc">Full security audit: 13 active checks (signatures, hashing, tamper detection, rate limiting, slashing, etc.)</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/security/events</span><div class="desc">Recent security events</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/security/admin-key</span><div class="desc">Admin key info (crypto-secure)</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/network/info</span><div class="desc">Network configuration and security parameters</div></div>
+</div>
+
+<div class="module" id="faucet">
+<h2>🚰 Faucet</h2>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/faucet/claim</span><div class="desc">Claim free VRS tokens (rate-limited)</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/faucet/status</span><div class="desc">Faucet balance and claim limits</div></div>
+</div>
+
+<div class="module" id="sdk">
+<h2>📦 SDK <span class="tag tag-new">NEW</span></h2>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/sdk/info</span><div class="desc">SDK metadata: v1.0.0, Chain ID 909, 10 feature modules (wallet, DEX, contracts, governance, AI, eco, staking, names, fraud, AA)</div></div>
+</div>
+
+<div class="module" id="network">
+<h2>📡 Network</h2>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/network/tps</span><div class="desc">Real-time TPS counter</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/network/info</span><div class="desc">Network info, peer count, sync status</div></div>
+</div>
+
+<div class="module" id="ido">
+<h2>🚀 Token Sale (IDO)</h2>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/ido/info</span><div class="desc">IDO details: price $0.001/VRS, accepted assets (ETH, BNB, USDT, USDC)</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/ido/purchase</span><div class="desc">Purchase VRS tokens in the IDO</div></div>
+</div>
+
+<div class="module" id="explorer">
+<h2>🔍 Block Explorer</h2>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/explorer/stats</span><div class="desc">Explorer statistics (blocks, txs, addresses, contracts)</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/explorer/block/:height</span><div class="desc">Get block details</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/explorer/tx/:hash</span><div class="desc">Get transaction details</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/explorer/address/:address</span><div class="desc">Get address details (balance, txs, staked, NFTs)</div></div>
+</div>
+
+<div class="module" id="notifications">
+<h2>🔔 Notifications & Analytics</h2>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/notifications/subscribe</span><div class="desc">Subscribe to WebSocket notifications</div></div>
+<div class="endpoint"><span class="method GET">GET</span><span class="path">/api/notifications/subscriptions</span><div class="desc">List active subscriptions</div></div>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/api/analytics/track</span><div class="desc">Track an analytics event</div></div>
+</div>
+
+<div class="module" id="rpc">
+<h2>📡 JSON-RPC (Ethereum-compatible)</h2>
+<div class="endpoint"><span class="method POST">POST</span><span class="path">/rpc</span><div class="desc">Ethereum-compatible JSON-RPC endpoint (Chain ID 909)</div><div class="params">25 methods: <code>eth_chainId</code> <code>eth_blockNumber</code> <code>eth_getBalance</code> <code>eth_sendRawTransaction</code> <code>eth_getTransactionByHash</code> <code>eth_getBlockByNumber</code> <code>eth_getBlockByHash</code> <code>eth_getTransactionCount</code> <code>eth_estimateGas</code> <code>eth_gasPrice</code> <code>net_version</code> <code>net_listening</code> <code>net_peerCount</code> <code>web3_clientVersion</code> <code>eth_getStorageAt</code> <code>eth_getCode</code> <code>eth_call</code> <code>eth_getLogs</code> <code>eth_getTransactionReceipt</code> <code>eth_accounts</code> <code>eth_syncing</code> <code>eth_getBlockTransactionCountByHash</code> <code>eth_getBlockTransactionCountByNumber</code> <code>eth_protocolVersion</code> <code>eth_mining</code></div></div>
+</div>
+
+</div>
+</div>
+</body>
+</html>
