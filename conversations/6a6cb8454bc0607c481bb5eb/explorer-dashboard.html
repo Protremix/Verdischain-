@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verdis Explorer — First Fully Green Blockchain</title>
+<meta name="description" content="Verdis Chain Explorer — Block explorer, transactions, validators, DEX pools, and eco-metrics for the world's first fully green blockchain.">
+<style>
+:root {
+  --bg: #0a0a0a;
+  --bg-card: #111818;
+  --bg-hover: rgba(0,255,136,0.04);
+  --border: rgba(255,255,255,0.06);
+  --border-hover: rgba(0,255,136,0.2);
+  --text: #e6edf3;
+  --text-muted: #6b7280;
+  --text-dim: #4b5563;
+  --accent: #00ff88;
+  --accent-dim: rgba(0,255,136,0.15);
+  --emerald: #10B981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --mono: 'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;
+  --sans: 'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:var(--sans); font-size:14px; line-height:1.5; overflow-x:hidden; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+.mono { font-family:var(--mono); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(0,255,136,0.2); border-radius:3px; }
+
+/* Particles canvas */
+#particles { position:absolute; top:0; left:0; width:100%; height:320px; pointer-events:none; z-index:0; }
+
+/* Header */
+.header {
+  position:sticky; top:0; z-index:100;
+  background:rgba(10,10,10,0.85); backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:12px 24px;
+  display:flex; align-items:center; gap:16px;
+}
+.logo { display:flex; align-items:center; gap:10px; cursor:pointer; }
+.logo svg { width:32px; height:32px; }
+.logo-text { font-size:18px; font-weight:700; letter-spacing:-0.5px; color:var(--text); }
+.logo-text span { color:var(--accent); }
+.search-bar {
+  flex:1; max-width:500px; position:relative;
+}
+.search-bar input {
+  width:100%; padding:8px 12px 8px 36px;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-sm);
+  color:var(--text); font-size:13px; font-family:var(--mono);
+  outline:none; transition:border-color 0.2s;
+}
+.search-bar input:focus { border-color:var(--border-hover); }
+.search-bar input::placeholder { color:var(--text-dim); }
+.search-bar .icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--text-dim); font-size:16px; }
+.nav-links { display:flex; gap:4px; }
+.nav-links a {
+  padding:6px 12px; border-radius:var(--radius-sm); font-size:13px; color:var(--text-muted);
+  transition:all 0.15s;
+}
+.nav-links a:hover { background:var(--bg-hover); color:var(--accent); text-decoration:none; }
+.nav-links a.active { background:var(--accent-dim); color:var(--accent); }
+.status-pill {
+  display:flex; align-items:center; gap:6px; padding:4px 10px;
+  background:rgba(0,255,136,0.08); border:1px solid var(--accent-dim); border-radius:20px;
+  font-size:12px; color:var(--accent); white-space:nowrap;
+}
+.status-dot { width:6px; height:6px; border-radius:50%; background:var(--accent); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+/* Hero */
+.hero {
+  position:relative; padding:40px 24px 24px;
+  border-bottom:1px solid var(--border);
+}
+.hero h1 { font-size:28px; font-weight:700; letter-spacing:-0.5px; position:relative; z-index:1; }
+.hero h1 .accent { color:var(--accent); }
+.hero p { color:var(--text-muted); margin-top:4px; position:relative; z-index:1; }
+.stats-grid {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:12px;
+  margin-top:24px; position:relative; z-index:1;
+}
+.stat-card {
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
+  padding:20px; transition:all 0.2s; position:relative; overflow:hidden;
+}
+.stat-card:hover { border-color:var(--border-hover); background:var(--bg-hover); }
+.stat-card::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  opacity:0; transition:opacity 0.2s;
+}
+.stat-card:hover::after { opacity:0.5; }
+.stat-label { font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; }
+.stat-value { font-size:28px; font-weight:700; margin-top:4px; font-family:var(--mono); }
+.stat-value .unit { font-size:14px; color:var(--text-muted); margin-left:4px; }
+.stat-sub { font-size:11px; color:var(--text-dim); margin-top:2px; }
+
+/* Main grid */
+.main-grid {
+  display:grid; grid-template-columns:2fr 1fr; gap:16px;
+  padding:24px; max-width:1600px; margin:0 auto;
+}
+.section-title {
+  font-size:16px; font-weight:600; margin-bottom:12px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.section-title .badge {
+  font-size:11px; padding:2px 8px; border-radius:20px;
+  background:var(--accent-dim); color:var(--accent); font-weight:500;
+}
+
+/* Panel */
+.panel {
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
+  overflow:hidden;
+}
+.panel-header {
+  padding:12px 16px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.panel-header h2 { font-size:14px; font-weight:600; }
+.panel-body { padding:0; }
+
+/* Table */
+.table { width:100%; border-collapse:collapse; }
+.table th {
+  text-align:left; padding:8px 16px; font-size:11px; font-weight:500;
+  color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;
+  border-bottom:1px solid var(--border); white-space:nowrap;
+}
+.table td { padding:10px 16px; font-size:13px; border-bottom:1px solid var(--border); }
+.table tr:last-child td { border-bottom:none; }
+.table tr { transition:background 0.1s; cursor:pointer; }
+.table tr:hover { background:var(--bg-hover); }
+.table .mono { font-size:12px; color:var(--text-muted); }
+.table .mono:hover { color:var(--accent); }
+.tx-count { display:inline-block; padding:2px 8px; border-radius:4px; background:var(--accent-dim); color:var(--accent); font-size:11px; font-weight:500; }
+.validator-badge { display:inline-block; width:6px; height:6px; border-radius:50%; margin-right:4px; }
+.validator-badge.active { background:var(--accent); }
+.validator-badge.inactive { background:var(--text-dim); }
+
+/* Expandable row */
+.detail-row { display:none; }
+.detail-row.open { display:table-row; }
+.detail-row td { padding:16px; background:rgba(0,0,0,0.3); }
+.detail-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px 24px; }
+.detail-item { display:flex; flex-direction:column; gap:2px; }
+.detail-item .label { font-size:11px; color:var(--text-muted); text-transform:uppercase; }
+.detail-item .value { font-size:13px; font-family:var(--mono); color:var(--text); }
+
+/* Eco panel */
+.eco-grid {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:12px;
+  padding:24px; max-width:1600px; margin:0 auto;
+}
+.eco-tile {
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
+  padding:16px; display:flex; flex-direction:column; gap:4px;
+  transition:all 0.2s;
+}
+.eco-tile:hover { border-color:var(--border-hover); }
+.eco-tile .icon { font-size:20px; margin-bottom:4px; }
+.eco-tile .label { font-size:12px; color:var(--text-muted); }
+.eco-tile .value { font-size:22px; font-weight:700; font-family:var(--mono); color:var(--accent); }
+.eco-tile .sub { font-size:11px; color:var(--text-dim); }
+
+/* Reforestation card */
+.reforest-card {
+  margin:0 24px 24px; max-width:1600px; margin-left:auto; margin-right:auto;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
+  padding:20px; display:flex; align-items:center; gap:20px;
+}
+.reforest-card .tree-icon { font-size:32px; }
+.reforest-card .info { flex:1; }
+.reforest-card .info h3 { font-size:15px; font-weight:600; }
+.reforest-card .info p { font-size:13px; color:var(--text-muted); }
+.reforest-card .stats { display:flex; gap:24px; text-align:right; }
+.reforest-card .stats .num { font-size:24px; font-weight:700; font-family:var(--mono); color:var(--accent); }
+.reforest-card .stats .lbl { font-size:11px; color:var(--text-muted); }
+.status-badge {
+  display:inline-block; padding:3px 10px; border-radius:20px;
+  font-size:11px; font-weight:500;
+}
+.status-badge.completed { background:rgba(16,185,129,0.15); color:var(--emerald); }
+.status-badge.active { background:var(--accent-dim); color:var(--accent); }
+
+/* DEX pools */
+.pools-grid { padding:0 24px 24px; max-width:1600px; margin:0 auto; }
+
+/* Footer */
+.footer {
+  border-top:1px solid var(--border); padding:24px;
+  text-align:center; color:var(--text-dim); font-size:13px;
+}
+.footer a { color:var(--text-muted); margin:0 8px; }
+
+/* Responsive */
+@media (max-width:1024px) {
+  .stats-grid { grid-template-columns:repeat(2,1fr); }
+  .main-grid { grid-template-columns:1fr; }
+  .eco-grid { grid-template-columns:repeat(2,1fr); }
+}
+@media (max-width:640px) {
+  .stats-grid { grid-template-columns:1fr; }
+  .eco-grid { grid-template-columns:1fr; }
+  .header { flex-wrap:wrap; }
+  .search-bar { order:3; flex:1 1 100%; max-width:none; }
+  .nav-links { display:none; }
+  .reforest-card { flex-direction:column; text-align:center; }
+  .reforest-card .stats { text-align:center; }
+  .table th:nth-child(4), .table td:nth-child(4) { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="logo" onclick="location.href='/'">
+    <svg viewBox="0 0 100 100" fill="none">
+      <path d="M50 10 L82 29 L82 71 L50 90 L18 71 L18 29 Z" fill="#10B981"/>
+      <path d="M50 26 L70 40 L70 60 L50 74 L30 60 L30 40 Z" fill="#0a0a0a"/>
+      <path d="M50 36 C43 40 39 47 39 55 C39 63 43 70 50 74 C57 70 61 63 61 55 C61 47 57 40 50 36 Z" fill="#10B981"/>
+    </svg>
+    <span class="logo-text">Verdis<span>.explorer</span></span>
+  </div>
+  <div class="search-bar">
+    <span class="icon">⌕</span>
+    <input type="text" id="searchInput" placeholder="Search block, tx, or address...">
+  </div>
+  <div class="status-pill">
+    <span class="status-dot"></span>
+    <span>Chain Active</span>
+  </div>
+  <nav class="nav-links">
+    <a href="/explorer.html" class="active">Explorer</a>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/markets.html">Markets</a>
+    <a href="/ecosystem.html">Ecosystem</a>
+    <a href="/api-docs.html">API</a>
+  </nav>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <canvas id="particles"></canvas>
+  <h1>Verdis <span class="accent">Explorer</span></h1>
+  <p>Block explorer & analytics for the world's first fully green blockchain — DPoS · Chain ID 909 · Carbon-negative</p>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Block Height</div>
+      <div class="stat-value" id="statBlockHeight">—</div>
+      <div class="stat-sub" id="statBlockSub">Loading...</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Network TPS</div>
+      <div class="stat-value" id="statTps">—</div>
+      <div class="stat-sub">5s block interval</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Transactions</div>
+      <div class="stat-value" id="statTxs">—</div>
+      <div class="stat-sub" id="statWallets">— active wallets</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Validators</div>
+      <div class="stat-value" id="statValidators">—</div>
+      <div class="stat-sub" id="statSupply">— / — VRS</div>
+    </div>
+  </div>
+</section>
+
+<!-- Main Grid -->
+<section class="main-grid">
+  <!-- Blocks Table -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2>📋 Recent Blocks</h2>
+      <span class="badge" id="blocksBadge">Live</span>
+    </div>
+    <div class="panel-body">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Block</th>
+            <th>Age</th>
+            <th>Validator</th>
+            <th>Txs</th>
+            <th>Hash</th>
+          </tr>
+        </thead>
+        <tbody id="blocksBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Transactions Feed -->
+  <div class="panel">
+    <div class="panel-header">
+      <h2>💸 Recent Transactions</h2>
+      <span class="badge">Live</span>
+    </div>
+    <div class="panel-body">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Tx Hash</th>
+            <th>From → To</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody id="txsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Validators -->
+<section class="main-grid">
+  <div class="panel" style="grid-column:1/-1">
+    <div class="panel-header">
+      <h2>⚡ DPoS Validators</h2>
+      <span class="badge" id="validatorCount">— validators</span>
+    </div>
+    <div class="panel-body">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Address</th>
+            <th>Role</th>
+            <th>Votes</th>
+            <th>Blocks Produced</th>
+            <th>Rewards (VRS)</th>
+            <th>Green Score</th>
+            <th>Energy</th>
+          </tr>
+        </thead>
+        <tbody id="validatorsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Eco Impact -->
+<section class="eco-grid">
+  <div class="eco-tile">
+    <div class="icon">🌱</div>
+    <div class="label">CO₂ Offset</div>
+    <div class="value" id="ecoCO2">—</div>
+    <div class="sub">metric tons</div>
+  </div>
+  <div class="eco-tile">
+    <div class="icon">🌳</div>
+    <div class="label">Trees Planted</div>
+    <div class="value" id="ecoTrees">—</div>
+    <div class="sub">via reforestation</div>
+  </div>
+  <div class="eco-tile">
+    <div class="icon">⚡</div>
+    <div class="label">Green Validators</div>
+    <div class="value" id="ecoGreenVals">—</div>
+    <div class="sub">renewable powered</div>
+  </div>
+  <div class="eco-tile">
+    <div class="icon">🎯</div>
+    <div class="label">Credits Retired</div>
+    <div class="value" id="ecoCredits">—</div>
+    <div class="sub">carbon credits burned</div>
+  </div>
+</section>
+
+<!-- Reforestation Card -->
+<div class="reforest-card" id="reforestCard" style="display:none">
+  <div class="tree-icon">🌳</div>
+  <div class="info">
+    <h3 id="reforestName">—</h3>
+    <p id="reforestLocation">—</p>
+  </div>
+  <div class="stats">
+    <div>
+      <div class="num" id="reforestTrees">—</div>
+      <div class="lbl">Trees Planted</div>
+    </div>
+    <div>
+      <div class="num" id="reforestCO2">—</div>
+      <div class="lbl">CO₂ (tons)</div>
+    </div>
+    <div>
+      <span class="status-badge completed" id="reforestStatus">Completed</span>
+    </div>
+  </div>
+</div>
+
+<!-- DEX Pools -->
+<section class="pools-grid">
+  <div class="panel">
+    <div class="panel-header">
+      <h2>🔄 DEX Liquidity Pools</h2>
+      <span class="badge" id="poolCount">— pools</span>
+    </div>
+    <div class="panel-body">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Pool</th>
+            <th>Token Pair</th>
+            <th>Reserve A</th>
+            <th>Reserve B</th>
+            <th>Total LP</th>
+            <th>Fee</th>
+          </tr>
+        </thead>
+        <tbody id="poolsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div>
+    <a href="/dashboard.html">Dashboard</a>·
+    <a href="/whitepaper.html">Whitepaper</a>·
+    <a href="/api-docs.html">API Docs</a>·
+    <a href="/status.html">Network Status</a>·
+    <a href="/token-sale.html">Token Sale</a>
+  </div>
+  <p style="margin-top:8px">Powered by Verdis Chain · DPoS Consensus · Chain ID 909 · The First Fully Green Blockchain Ecosystem</p>
+</footer>
+
+<script>
+// Particle background
+(function(){
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  function resize(){ canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
+  resize(); window.addEventListener('resize', resize);
+  for(let i=0;i<35;i++){
+    particles.push({
+      x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+      vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3,
+      r: Math.random()*2+0.5, o: Math.random()*0.4+0.1
+    });
+  }
+  function animate(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=canvas.width; if(p.x>canvas.width)p.x=0;
+      if(p.y<0)p.y=canvas.height; if(p.y>canvas.height)p.y=0;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(0,255,136,${p.o})`; ctx.fill();
+    });
+    // Connect nearby particles
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
+        const dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<120){ ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y);
+          ctx.lineTo(particles[j].x,particles[j].y);
+          ctx.strokeStyle=`rgba(0,255,136,${0.06*(1-dist/120)})`; ctx.lineWidth=0.5; ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+
+// Helpers
+function truncate(str, first=10, last=6){
+  if(!str) return '—';
+  if(str.length <= first+last+3) return str;
+  return str.slice(0,first)+'...'+str.slice(-last);
+}
+function timeAgo(ts){
+  if(!ts) return '—';
+  const diff = Date.now() - ts;
+  if(diff < 1000) return 'just now';
+  if(diff < 60000) return Math.floor(diff/1000)+'s ago';
+  if(diff < 3600000) return Math.floor(diff/60000)+'m ago';
+  if(diff < 86400000) return Math.floor(diff/3600000)+'h ago';
+  return Math.floor(diff/86400000)+'d ago';
+}
+function fmtNum(n, dec=0){
+  if(n===null||n===undefined) return '—';
+  return Number(n).toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+function fmtCompact(n){
+  if(n>=1e9) return (n/1e9).toFixed(2)+'B';
+  if(n>=1e6) return (n/1e6).toFixed(2)+'M';
+  if(n>=1e3) return (n/1e3).toFixed(1)+'K';
+  return fmtNum(n);
+}
+
+// Fetch helpers
+async function api(path){
+  try{
+    const r = await fetch(path);
+    if(!r.ok) return null;
+    return await r.json();
+  }catch(e){ return null; }
+}
+
+// Stats
+let prevBlockHeight = 0;
+let prevTime = Date.now();
+async function loadStats(){
+  const [stats, info] = await Promise.all([
+    api('/api/explorer/stats'),
+    api('/api/blockchain/info')
+  ]);
+  if(!stats && !info) return;
+  const s = stats || {};
+  const i = info || {};
+  const height = s.blockHeight ?? i.height ?? 0;
+  const now = Date.now();
+  const elapsed = (now - prevTime) / 1000;
+  const blocksMined = height - prevBlockHeight;
+  const tps = elapsed > 0 && blocksMined > 0 ? (blocksMined / elapsed).toFixed(2) : '0.20';
+  if(blocksMined > 0){ prevBlockHeight = height; prevTime = now; }
+
+  document.getElementById('statBlockHeight').textContent = fmtNum(height);
+  document.getElementById('statBlockSub').textContent = s.totalBlocks ? fmtNum(s.totalBlocks)+' total blocks' : '—';
+  document.getElementById('statTps').textContent = tps;
+  document.getElementById('statTxs').textContent = fmtNum(s.totalTransactions || 0);
+  document.getElementById('statWallets').textContent = fmtNum(s.activeWallets || 0)+' active wallets';
+  document.getElementById('statValidators').textContent = s.validators ?? i.validatorCount ?? 0;
+  const supply = s.totalSupply || i.totalSupply || 0;
+  const max = s.maxSupply || i.maxSupply || 0;
+  document.getElementById('statSupply').textContent = fmtCompact(supply)+' / '+fmtCompact(max)+' VRS';
+  document.getElementById('validatorCount').textContent = (s.validators ?? i.validatorCount ?? 0)+' validators';
+}
+
+// Blocks
+let expandedBlock = null;
+async function loadBlocks(){
+  const blocks = await api('/api/blockchain/blocks?limit=20');
+  if(!blocks || !Array.isArray(blocks)) return;
+  const tbody = document.getElementById('blocksBody');
+  let html = '';
+  blocks.forEach((b, idx) => {
+    const h = b.header || {};
+    const txCount = (b.transactions || []).length;
+    const blockNum = h.index ?? idx;
+    const hash = b.hash || '—';
+    const validator = h.validator || '—';
+    html += `
+      <tr onclick="toggleBlock(${idx})" id="block-row-${idx}">
+        <td><span style="color:var(--accent);font-weight:600">${fmtNum(blockNum)}</span></td>
+        <td style="color:var(--text-muted)">${timeAgo(h.timestamp)}</td>
+        <td><span class="mono">${truncate(validator,8,6)}</span></td>
+        <td><span class="tx-count">${txCount}</span></td>
+        <td><span class="mono">${truncate(hash,10,6)}</span></td>
+      </tr>
+      <tr class="detail-row" id="block-detail-${idx}">
+        <td colspan="5">
+          <div class="detail-grid">
+            <div class="detail-item"><span class="label">Block Number</span><span class="value">${fmtNum(blockNum)}</span></div>
+            <div class="detail-item"><span class="label">Timestamp</span><span class="value">${new Date(h.timestamp).toISOString()}</span></div>
+            <div class="detail-item"><span class="label">Block Hash</span><span class="value">${hash}</span></div>
+            <div class="detail-item"><span class="label">Prev Hash</span><span class="value">${h.previousHash||'—'}</span></div>
+            <div class="detail-item"><span class="label">Validator</span><span class="value">${validator}</span></div>
+            <div class="detail-item"><span class="label">Validator Signature</span><span class="value">${truncate(h.validatorSignature,12,8)}</span></div>
+            <div class="detail-item"><span class="label">Merkle Root</span><span class="value">${truncate(h.merkleRoot,12,8)}</span></div>
+            <div class="detail-item"><span class="label">Gas Used / Limit</span><span class="value">${fmtNum(h.gasUsed||0)} / ${fmtNum(h.gasLimit||0)}</span></div>
+            <div class="detail-item"><span class="label">Base Fee</span><span class="value">${fmtNum(h.baseFee||0)} wei</span></div>
+            <div class="detail-item"><span class="label">Transactions</span><span class="value">${txCount} transactions in this block</span></div>
+          </div>
+        </td>
+      </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+function toggleBlock(idx){
+  if(expandedBlock !== null && expandedBlock !== idx){
+    document.getElementById('block-detail-'+expandedBlock)?.classList.remove('open');
+  }
+  const row = document.getElementById('block-detail-'+idx);
+  if(row){ row.classList.toggle('open'); expandedBlock = row.classList.contains('open') ? idx : null; }
+}
+
+// Transactions
+let expandedTx = null;
+async function loadTxs(){
+  const txs = await api('/api/blockchain/transactions?limit=15');
+  if(!txs || !Array.isArray(txs)) return;
+  const tbody = document.getElementById('txsBody');
+  let html = '';
+  txs.forEach((tx, idx) => {
+    html += `
+      <tr onclick="toggleTx(${idx})" id="tx-row-${idx}">
+        <td><span class="mono">${truncate(tx.id,8,6)}</span></td>
+        <td><span class="mono" style="font-size:11px">${truncate(tx.from,6,4)}→${truncate(tx.to,6,4)}</span></td>
+        <td><span style="color:var(--accent);font-weight:600">${fmtNum(tx.amount)} VRS</span></td>
+      </tr>
+      <tr class="detail-row" id="tx-detail-${idx}">
+        <td colspan="3">
+          <div class="detail-grid">
+            <div class="detail-item"><span class="label">Tx Hash</span><span class="value">${tx.id}</span></div>
+            <div class="detail-item"><span class="label">Block</span><span class="value">${fmtNum(tx.blockIndex)}</span></div>
+            <div class="detail-item"><span class="label">From</span><span class="value">${tx.from}</span></div>
+            <div class="detail-item"><span class="label">To</span><span class="value">${tx.to}</span></div>
+            <div class="detail-item"><span class="label">Amount</span><span class="value">${fmtNum(tx.amount)} VRS</span></div>
+            <div class="detail-item"><span class="label">Fee</span><span class="value">${fmtNum(tx.fee||0)} VRS</span></div>
+            <div class="detail-item"><span class="label">Nonce</span><span class="value">${fmtNum(tx.nonce)}</span></div>
+            <div class="detail-item"><span class="label">Timestamp</span><span class="value">${new Date(tx.timestamp).toISOString()}</span></div>
+            <div class="detail-item"><span class="label">Signature</span><span class="value">${truncate(tx.signature,12,8)}</span></div>
+            <div class="detail-item"><span class="label">Recovery ID</span><span class="value">${tx.recovery ?? '—'}</span></div>
+          </div>
+        </td>
+      </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+function toggleTx(idx){
+  if(expandedTx !== null && expandedTx !== idx){
+    document.getElementById('tx-detail-'+expandedTx)?.classList.remove('open');
+  }
+  const row = document.getElementById('tx-detail-'+idx);
+  if(row){ row.classList.toggle('open'); expandedTx = row.classList.contains('open') ? idx : null; }
+}
+
+// Validators
+async function loadValidators(){
+  const [validators, greenScores] = await Promise.all([
+    api('/api/validators'),
+    api('/api/eco/green-scores')
+  ]);
+  if(!validators || !Array.isArray(validators)) return;
+  const scores = {};
+  if(greenScores && Array.isArray(greenScores)){
+    greenScores.forEach(s => { scores[s.address.toLowerCase()] = s; });
+  }
+  const tbody = document.getElementById('validatorsBody');
+  let html = '';
+  validators.forEach((v, idx) => {
+    const score = scores[v.address.toLowerCase()] || {};
+    const greenScore = score.score ?? '—';
+    const energy = score.energySource || '—';
+    const isProducer = v.isProducer || v.blocksProduced > 0;
+    const energyIcon = energy === 'solar' ? '☀️' : energy === 'wind' ? '💨' : energy === 'hydro' ? '💧' : '—';
+    html += `
+      <tr>
+        <td><span style="color:var(--text-muted);font-weight:600">${idx+1}</span></td>
+        <td><span class="mono">${truncate(v.address,10,6)}</span></td>
+        <td><span class="validator-badge ${isProducer?'active':'inactive'}"></span>${isProducer?'Producer':'Validator'}</td>
+        <td style="font-family:var(--mono)">${fmtCompact(v.votes||0)}</td>
+        <td style="font-family:var(--mono)">${fmtNum(v.blocksProduced||0)}</td>
+        <td style="font-family:var(--mono);color:var(--accent)">${fmtNum(v.totalRewards||0)}</td>
+        <td><span style="color:${greenScore>=60?'var(--accent)':'var(--text-muted)'}">${greenScore} / 100</span></td>
+        <td>${energyIcon} ${energy !== '—' ? energy.charAt(0).toUpperCase()+energy.slice(1) : '—'}</td>
+      </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// Eco
+async function loadEco(){
+  const [impact, reforest] = await Promise.all([
+    api('/api/eco/impact'),
+    api('/api/eco/reforest/projects')
+  ]);
+  if(impact){
+    document.getElementById('ecoCO2').textContent = fmtNum(impact.totalCO2Offset, 2);
+    document.getElementById('ecoTrees').textContent = fmtNum(impact.totalTrees);
+    document.getElementById('ecoGreenVals').textContent = fmtNum(impact.greenValidators);
+    document.getElementById('ecoCredits').textContent = fmtNum(impact.creditsRetired);
+  }
+  if(reforest && reforest.length > 0){
+    const p = reforest[0];
+    document.getElementById('reforestCard').style.display = 'flex';
+    document.getElementById('reforestName').textContent = p.name || 'Reforestation Project';
+    document.getElementById('reforestLocation').textContent = p.location || '—';
+    document.getElementById('reforestTrees').textContent = fmtNum(p.treesPlanted);
+    document.getElementById('reforestCO2').textContent = fmtNum(p.co2Sequestered, 4);
+    const badge = document.getElementById('reforestStatus');
+    badge.textContent = (p.status||'active').charAt(0).toUpperCase()+(p.status||'active').slice(1);
+    badge.className = 'status-badge '+(p.status === 'completed' ? 'completed' : 'active');
+  }
+}
+
+// DEX Pools
+async function loadPools(){
+  const pools = await api('/api/dex/pools');
+  if(!pools || !Array.isArray(pools)) return;
+  document.getElementById('poolCount').textContent = pools.length+' pools';
+  const tbody = document.getElementById('poolsBody');
+  let html = '';
+  pools.forEach(p => {
+    html += `
+      <tr>
+        <td><span class="mono" style="color:var(--accent)">${p.id}</span></td>
+        <td><span style="font-weight:600">${p.tokenA}</span> / <span style="font-weight:600">${p.tokenB}</span></td>
+        <td style="font-family:var(--mono)">${fmtNum(p.reserveA,2)}</td>
+        <td style="font-family:var(--mono)">${fmtNum(p.reserveB,2)}</td>
+        <td style="font-family:var(--mono);color:var(--text-muted)">${fmtNum(p.totalLP,2)}</td>
+        <td style="font-family:var(--mono)">${((p.fee||0)*100).toFixed(1)}%</td>
+      </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+// Search
+document.getElementById('searchInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){
+    const q = this.value.trim();
+    if(q) window.location.href = '/explorer.html?q='+encodeURIComponent(q);
+  }
+});
+
+// Init
+async function init(){
+  prevBlockHeight = 0;
+  prevTime = Date.now();
+  await Promise.all([
+    loadStats(), loadBlocks(), loadTxs(), loadValidators(), loadEco(), loadPools()
+  ]);
+  prevBlockHeight = parseInt(document.getElementById('statBlockHeight').textContent.replace(/,/g,'')) || 0;
+  prevTime = Date.now();
+}
+
+// Auto-refresh
+init();
+setInterval(() => {
+  loadStats();
+  loadBlocks();
+  loadTxs();
+}, 5000);
+setInterval(() => {
+  loadValidators();
+  loadPools();
+}, 30000);
+</script>
+</body>
+</html>
