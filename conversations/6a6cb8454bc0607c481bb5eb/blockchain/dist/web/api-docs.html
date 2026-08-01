@@ -3,1362 +3,1444 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verdis Blockchain — API Documentation</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#127807;</text></svg>">
+<title>Verdis Blockchain — Developer API & RPC Reference</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0a0e0a;--bg-card:rgba(8,20,15,0.85);--bg-hover:rgba(0,255,136,0.05);--border:rgba(0,255,136,0.15);--border-light:rgba(0,255,136,0.08);--text:#e8f5e9;--text-muted:#5a7a65;--green:#00ff88;--blue:#2dd4bf;--purple:#a78bfa;--red:#f85149;--yellow:#d29922;--orange:#db6d28;--teal:#39c5cf}
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sans-serif;font-size:14px;line-height:1.6}
-a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
-.mono{font-family:'JetBrains Mono',monospace}
-.layout{display:flex;min-height:100vh}
-.sidebar{width:280px;background:var(--bg-card);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;overflow-y:auto;padding:20px 0;z-index:10}
-.sidebar-header{padding:0 20px 20px;border-bottom:1px solid var(--border)}
-.sidebar-header h1{font-size:18px;display:flex;align-items:center;gap:8px;margin-bottom:4px}
-.sidebar-header .sub{font-size:12px;color:var(--text-muted)}
-.sidebar-header .sub a{color:var(--green)}
-.nav-section{padding:12px 0 4px}
-.nav-section-title{padding:0 20px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px}
-.nav-item{padding:6px 20px;font-size:13px;color:var(--text-muted);cursor:pointer;transition:all .15s;border-left:3px solid transparent}
-.nav-item:hover{color:var(--text);background:var(--bg-hover)}
-.nav-item.active{color:var(--green);border-left-color:var(--green)}
-.content{margin-left:280px;padding:40px;max-width:900px}
-.section{margin-bottom:48px}
-.section-title{font-size:24px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
-.section-desc{color:var(--text-muted);margin-bottom:20px}
-.endpoint{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:16px;overflow:hidden}
-.endpoint-header{padding:14px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:background .15s}
-.endpoint-header:hover{background:var(--bg-hover)}
-.endpoint-method{font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;min-width:55px;text-align:center}
-.endpoint-path{font-family:'JetBrains Mono',monospace;font-size:14px;flex:1}
-.endpoint-path .param{color:var(--yellow)}
-.endpoint-toggle{color:var(--text-muted);font-size:18px;transition:transform .2s}
-.endpoint.open .endpoint-toggle{transform:rotate(90deg)}
-.endpoint-body{display:none;padding:0 20px 20px;border-top:1px solid var(--border-light)}
-.endpoint.open .endpoint-body{display:block}
-.endpoint-desc{color:var(--text-muted);font-size:13px;margin:12px 0}
-.endpoint-auth{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(248,81,73,.1);color:var(--red);margin-bottom:8px}
-.code-block{background:var(--bg);border:1px solid var(--border-light);border-radius:6px;padding:14px;margin:8px 0;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.5}
-.code-label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:4px;font-weight:600}
-.params-table{width:100%;border-collapse:collapse;margin:8px 0}
-.params-table th{text-align:left;font-size:11px;color:var(--text-muted);text-transform:uppercase;padding:6px 10px;border-bottom:1px solid var(--border)}
-.params-table td{padding:8px 10px;border-bottom:1px solid var(--border-light);font-size:13px}
-.params-table td:first-child{font-family:'JetBrains Mono',monospace;color:var(--yellow)}
-.params-table td:nth-child(2){font-family:'JetBrains Mono',monospace;color:var(--blue);width:80px}
-.params-table td:nth-child(3){color:var(--text-muted);width:60px}
-.response-sample{background:var(--bg);border:1px solid var(--border-light);border-radius:6px;padding:14px;margin-top:8px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.5;color:var(--green)}
-.info-box{background:rgba(88,166,255,.05);border:1px solid rgba(88,166,255,.2);border-radius:8px;padding:16px;margin-bottom:24px}
-.info-box-title{font-size:14px;font-weight:600;color:var(--blue);margin-bottom:8px}
-.info-box ul{list-style:none;padding-left:0}
-.info-box li{padding:4px 0;font-size:13px;color:var(--text-muted)}
-.info-box li strong{color:var(--text)}
-.info-box code{background:var(--bg);padding:2px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green)}
-.hero{margin-bottom:40px;padding:32px;background:linear-gradient(135deg,rgba(63,185,80,.05),rgba(45,212,191,.03));border:1px solid rgba(63,185,80,.15);border-radius:12px}
-.hero h1{font-size:32px;font-weight:800;margin-bottom:8px;background:linear-gradient(135deg,#3fb950,#2dd4bf);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero p{color:var(--text-muted);font-size:16px}
-.hero-stats{display:flex;gap:32px;margin-top:20px}
-.hero-stat{text-align:center}
-.hero-stat .val{font-size:22px;font-weight:700;color:var(--green)}
-.hero-stat .lbl{font-size:12px;color:var(--text-muted)}
-.method-get{background:rgba(63,185,80,.15);color:var(--green)}
-.method-post{background:rgba(88,166,255,.15);color:var(--blue)}
-.method-delete{background:rgba(248,81,73,.15);color:var(--red)}
-@media(max-width:768px){.layout{flex-direction:column}.sidebar{position:relative;width:100%;height:auto;border-right:none;border-bottom:1px solid var(--border);max-height:250px}.content{margin-left:0;padding:20px}}
+:root {
+  --bg: #050a08;
+  --bg-card: rgba(8, 20, 15, 0.6);
+  --bg-card-hover: rgba(12, 28, 21, 0.85);
+  --border: rgba(0, 255, 136, 0.2);
+  --border-glow: rgba(0, 255, 136, 0.5);
+  --primary: #00ff88;
+  --primary-glow: rgba(0, 255, 136, 0.3);
+  --secondary: #2dd4bf;
+  --accent: #10b981;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
+  --text-dim: #484f58;
+  --font-body: 'Inter', sans-serif;
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
-/* Web3 Native Effects */
-body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,0.015) 2px,rgba(0,255,136,0.015) 3px);pointer-events:none;z-index:9998}
-body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(0,255,136,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,136,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
-.endpoint{box-shadow:0 0 0 1px rgba(0,255,136,0.05),0 4px 20px rgba(0,0,0,0.3);transition:all .3s}
-.endpoint:hover{border-color:rgba(0,255,136,0.3);box-shadow:0 0 0 1px rgba(0,255,136,0.2),0 4px 30px rgba(0,255,136,0.1)}
-.sidebar{backdrop-filter:blur(10px);background:rgba(8,20,15,0.95)}
-.sidebar-header h1{font-family:'JetBrains Mono',monospace;text-shadow:0 0 10px rgba(0,255,136,0.3)}
-.hero{backdrop-filter:blur(10px);border:1px solid rgba(0,255,136,0.2);box-shadow:0 0 40px rgba(0,255,136,0.05)}
-.hero h1{font-family:'JetBrains Mono',monospace}
-.endpoint-method{font-family:'JetBrains Mono',monospace;text-transform:uppercase}
-.method-get{background:rgba(0,255,136,0.15);color:#00ff88;border:1px solid rgba(0,255,136,0.3)}
-.method-post{background:rgba(45,212,191,0.15);color:#2dd4bf;border:1px solid rgba(45,212,191,0.3)}
-.method-delete{background:rgba(248,81,73,0.15);color:#f85149;border:1px solid rgba(248,81,73,0.3)}
-.nav-section-title{font-family:'JetBrains Mono',monospace}
-.nav-item{font-family:'JetBrains Mono',monospace;font-size:12px}
-.section-title{font-family:'JetBrains Mono',monospace;text-shadow:0 0 10px rgba(0,255,136,0.2)}
-.code-block{background:#060a06;border:1px solid rgba(0,255,136,0.1)}
-.response-sample{background:#060a06;border:1px solid rgba(0,255,136,0.1);color:#00ff88}
-.info-box{background:rgba(45,212,191,0.05);border:1px solid rgba(45,212,191,0.2);backdrop-filter:blur(10px)}
+  --badge-get: #00ff88;
+  --badge-post: #2dd4bf;
+  --badge-put: #f59e0b;
+  --badge-delete: #ef4444;
+  --badge-ws: #a855f7;
+  --badge-rpc: #3b82f6;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* Background Orbs */
+.bg-orbs {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.35;
+  animation: floatOrb 22s ease-in-out infinite alternate;
+}
+.orb-1 {
+  width: 550px; height: 550px;
+  background: radial-gradient(circle, rgba(0, 255, 136, 0.25) 0%, transparent 70%);
+  top: -100px; left: -100px;
+}
+.orb-2 {
+  width: 650px; height: 650px;
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.2) 0%, transparent 70%);
+  bottom: -150px; right: -100px;
+  animation-delay: -7s;
+}
+.orb-3 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%);
+  top: 45%; left: 40%;
+  animation-delay: -14s;
+}
+@keyframes floatOrb {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(40px, 30px) scale(1.08); }
+  100% { transform: translate(-30px, 40px) scale(0.95); }
+}
+
+/* Header & Nav */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(5, 10, 8, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: 0.05em;
+}
+.nav-logo span { color: var(--primary); }
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.8rem;
+  list-style: none;
+}
+.nav-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.nav-links a:hover, .nav-links a.active {
+  color: var(--primary);
+  text-shadow: 0 0 10px var(--primary-glow);
+}
+.nav-btn {
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.nav-btn:hover {
+  background: var(--primary);
+  color: #050a08;
+  box-shadow: 0 0 20px var(--primary-glow);
+}
+
+/* Page Layout */
+.layout {
+  display: flex;
+  position: relative;
+  z-index: 1;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+  width: 300px;
+  position: sticky;
+  top: 70px;
+  height: calc(100vh - 70px);
+  overflow-y: auto;
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border);
+  padding: 1.5rem 1rem;
+  flex-shrink: 0;
+}
+.sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.sidebar-search {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+.sidebar-search input {
+  width: 100%;
+  padding: 0.6rem 0.8rem 0.6rem 2.2rem;
+  background: rgba(5, 10, 8, 0.8);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.sidebar-search input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 12px var(--primary-glow);
+}
+.sidebar-search svg {
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  width: 16px;
+  height: 16px;
+}
+.nav-category {
+  margin-bottom: 1.5rem;
+}
+.category-title {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+  padding-left: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 2px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.nav-item:hover, .nav-item.active {
+  color: var(--text);
+  background: rgba(0, 255, 136, 0.08);
+  border-left: 3px solid var(--primary);
+}
+.nav-item .mini-badge {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+/* Content Area */
+.content {
+  flex: 1;
+  padding: 2.5rem 3rem;
+  max-width: 1100px;
+}
+
+.hero-banner {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2.5rem;
+  margin-bottom: 3rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.hero-banner::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; width: 300px; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.05));
+  pointer-events: none;
+}
+.hero-banner h1 {
+  font-family: var(--font-heading);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.8rem;
+}
+.hero-banner h1 span { color: var(--primary); }
+.hero-banner p {
+  color: var(--text-muted);
+  font-size: 1rem;
+  max-width: 750px;
+  margin-bottom: 1.5rem;
+}
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+.meta-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(5, 10, 8, 0.6);
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  color: var(--secondary);
+}
+
+/* Section styling */
+.doc-section {
+  margin-bottom: 3.5rem;
+  scroll-margin-top: 90px;
+}
+.section-header {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.8rem;
+}
+.section-header h2 {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-header p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-top: 0.3rem;
+}
+
+/* Endpoint Cards */
+.endpoint-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 1.2rem;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.endpoint-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
+}
+.endpoint-header {
+  padding: 1.2rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  background: rgba(8, 20, 15, 0.4);
+}
+.endpoint-header:hover {
+  background: var(--bg-card-hover);
+}
+.endpoint-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+.method-badge {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  min-width: 65px;
+  text-align: center;
+}
+.method-get { background: rgba(0, 255, 136, 0.15); color: var(--badge-get); border: 1px solid rgba(0, 255, 136, 0.4); }
+.method-post { background: rgba(45, 212, 191, 0.15); color: var(--badge-post); border: 1px solid rgba(45, 212, 191, 0.4); }
+.method-put { background: rgba(245, 158, 11, 0.15); color: var(--badge-put); border: 1px solid rgba(245, 158, 11, 0.4); }
+.method-delete { background: rgba(239, 68, 68, 0.15); color: var(--badge-delete); border: 1px solid rgba(239, 68, 68, 0.4); }
+.method-ws { background: rgba(168, 85, 247, 0.15); color: var(--badge-ws); border: 1px solid rgba(168, 85, 247, 0.4); }
+.method-rpc { background: rgba(59, 130, 246, 0.15); color: var(--badge-rpc); border: 1px solid rgba(59, 130, 246, 0.4); }
+
+.endpoint-path {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.endpoint-desc-short {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-left: 10px;
+}
+.endpoint-chevron {
+  color: var(--text-muted);
+  transition: transform 0.3s;
+}
+.endpoint-card.open .endpoint-chevron {
+  transform: rotate(180deg);
+  color: var(--primary);
+}
+
+.endpoint-body {
+  display: none;
+  padding: 1.5rem;
+  border-top: 1px solid var(--border);
+  background: rgba(5, 10, 8, 0.7);
+}
+.endpoint-card.open .endpoint-body {
+  display: block;
+}
+
+.param-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.85rem;
+}
+.param-table th, .param-table td {
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+}
+.param-table th {
+  color: var(--primary);
+  font-family: var(--font-heading);
+  font-weight: 600;
+}
+.param-name {
+  font-family: var(--font-mono);
+  color: var(--secondary);
+}
+.param-type {
+  font-family: var(--font-mono);
+  color: #a78bfa;
+}
+
+/* Terminal Code Blocks */
+.code-box {
+  background: #030705;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+.code-header {
+  background: rgba(8, 20, 15, 0.8);
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+}
+.code-tabs {
+  display: flex;
+  gap: 8px;
+}
+.code-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.code-tab:hover, .code-tab.active {
+  color: var(--primary);
+  background: rgba(0, 255, 136, 0.15);
+}
+.copy-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  transition: all 0.2s;
+}
+.copy-btn:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.code-content {
+  padding: 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: #00ff88;
+  overflow-x: auto;
+  white-space: pre;
+  line-height: 1.5;
+}
+.code-content .json-key { color: var(--secondary); }
+.code-content .json-string { color: #6ee7b7; }
+.code-content .json-num { color: #f59e0b; }
+.code-content .json-bool { color: #a78bfa; }
+
+/* Scroll Reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* AI Floating Widget */
+.ai-widget-container {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  z-index: 1000;
+}
+.ai-floating-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00ff88, #10b981);
+  border: none;
+  color: #050a08;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 0 25px rgba(0, 255, 136, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+.ai-floating-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 35px rgba(0, 255, 136, 0.6);
+}
+.ai-badge-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 12px;
+  height: 12px;
+  background: #2dd4bf;
+  border: 2px solid #050a08;
+  border-radius: 50%;
+}
+.ai-chat-window {
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  width: 360px;
+  height: 480px;
+  background: rgba(8, 20, 15, 0.95);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ai-chat-window.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px) scale(0.95);
+}
+.ai-chat-header {
+  padding: 0.9rem 1.2rem;
+  background: rgba(5, 10, 8, 0.9);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ai-chat-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+.ai-status-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--primary);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--primary);
+}
+.ai-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+.ai-chat-body {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.ai-msg {
+  max-width: 85%;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.ai-msg.bot {
+  align-self: flex-start;
+  background: rgba(0, 255, 136, 0.08);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.ai-msg.user {
+  align-self: flex-end;
+  background: var(--primary);
+  color: #050a08;
+  font-weight: 500;
+}
+.ai-chat-input-area {
+  padding: 0.8rem;
+  background: rgba(5, 10, 8, 0.9);
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+}
+.ai-chat-input-area input {
+  flex: 1;
+  background: rgba(8, 20, 15, 0.8);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.8rem;
+  color: var(--text);
+  font-size: 0.85rem;
+  outline: none;
+}
+.ai-chat-input-area button {
+  background: var(--primary);
+  border: none;
+  border-radius: 8px;
+  padding: 0 1rem;
+  color: #050a08;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .layout { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: static; }
+  .content { padding: 1.5rem; }
+}
 </style>
 </head>
 <body>
+
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<header class="header">
+  <a href="landing.html" class="nav-logo">
+    <span>🌿 VERDIS</span> API_DOCS
+  </a>
+  <ul class="nav-links">
+    <li><a href="status.html">Network Status</a></li>
+    <li><a href="templates.html">Templates</a></li>
+    <li><a href="api-docs.html" class="active">API Docs</a></li>
+    <li><a href="dashboard.html">Dashboard</a></li>
+  </ul>
+  <a href="dashboard.html" class="nav-btn">Launch Console</a>
+</header>
+
 <div class="layout">
-<div class="sidebar">
-<div class="sidebar-header">
-<h1>&#127807; Verdis API</h1>
-<div class="sub">Chain ID 909 &middot; <a href="https://verdischain.com">verdischain.com</a><br>v1.0.0 &middot; RPC: <a href="https://rpc.verdischain.com">rpc.verdischain.com</a><br><br><a href="/ecosystem" style="color:#2dd4bf">Ecosystem</a> &middot; <a href="/templates" style="color:#2dd4bf">Templates</a> &middot; <a href="/status" style="color:#2dd4bf">Network Status</a></div>
-</div>
-<div class="nav-section">
-<div class="nav-section-title">Getting Started</div>
-<div class="nav-item active" onclick="scrollToSection('overview')">Overview</div>
-<div class="nav-item" onclick="scrollToSection('auth')">Authentication</div>
-<div class="nav-item" onclick="scrollToSection('ratelimit')">Rate Limiting</div>
-<div class="nav-item" onclick="scrollToSection('jsonrpc')">JSON-RPC (25 methods)</div>
-<div class="nav-item" onclick="scrollToSection('tps')">GET /api/network/tps</div>
-</div>
-<div class="nav-section">
-<div class="nav-section-title">Blockchain</div>
-<div class="nav-item" onclick="scrollToSection('network')">GET /api/network/info</div>
-<div class="nav-item" onclick="scrollToSection('chaininfo')">GET /api/blockchain/info</div>
-<div class="nav-item" onclick="scrollToSection('blocks')">GET /api/blockchain/blocks</div>
-<div class="nav-item" onclick="scrollToSection('block')">GET /api/blockchain/block/:index</div>
-<div class="nav-item" onclick="scrollToSection('chain')">GET /api/chain</div>
-</div>
-<div class="nav-section">
-<div class="nav-section-title">Wallet &amp; Transactions</div>
-<div class="nav-item" onclick="scrollToSection('createwallet')">POST /api/wallet/create</div>
-<div class="nav-item" onclick="scrollToSection('balance')">GET /api/wallet/:address/balance</div>
-<div class="nav-item" onclick="scrollToSection('sendtx')">POST /api/transaction/send</div>
-<div class="nav-item" onclick="scrollToSection('gettx')">GET /api/transaction/:txId</div>
-<div class="nav-item" onclick="scrollToSection('mempool')">GET /api/mempool</div>
-</div>
-<div class="nav-section">
-<div class="nav-section-title">DEX &amp; Trading</div>
-<div class="nav-item" onclick="scrollToSection('pools')">GET /api/dex/pools</div>
-<div class="nav-item" onclick="scrollToSection('quote')">GET /api/dex/quote</div>
-<div class="nav-item" onclick="scrollToSection('swap')">POST /api/dex/swap</div>
-<div class="nav-item" onclick="scrollToSection('addliq')">POST /api/dex/liquidity/add</div>
-<div class="nav-item" onclick="scrollToSection('remliq')">POST /api/dex/liquidity/remove</div>
-<div class="nav-item" onclick="scrollToSection('poolstats')">GET /api/dex/pool/:id/stats</div>
-<div class="nav-item" onclick="scrollToSection('tokeninfo')">GET /api/token/info</div>
-</div>
-<div class="nav-section">
-<div class="nav-section-title">Staking &amp; Validators</div>
-<div class="nav-item" onclick="scrollToSection('validators')">GET /api/validators</div>
-<div class="nav-item" onclick="scrollToSection('delegate')">POST /api/staking/delegate</div>
-<div class="nav-item" onclick="scrollToSection('undelegate')">POST /api/staking/undelegate</div>
-<div class="nav-item" onclick="scrollToSection('delegations')">GET /api/staking/delegations/:address</div>
-</div>
-<div class="nav-section">
-<div class="nav-section-title">Eco &amp; Carbon</div>
-<div class="nav-item" onclick="scrollToSection('ecoimpact')">GET /api/eco/impact</div>
-<div class="nav-item" onclick="scrollToSection('carbonmint')">POST /api/eco/carbon/mint</div>
-<div class="nav-item" onclick="scrollToSection('carboncredits')">GET /api/eco/carbon/credits</div>
-<div class="nav-item" onclick="scrollToSection('reforest')">POST /api/eco/reforest/create</div>
-<div class="nav-item" onclick="scrollToSection('greenscore')">GET /api/eco/green/:address</div>
-</div>
-<div class="nav-section">
-<div class="nav-section-title">Governance</div>
-<div class="nav-item" onclick="scrollToSection('propcreate')">POST /api/governance/proposal</div>
-<div class="nav-item" onclick="scrollToSection('proplist')">GET /api/governance/proposals</div>
-<div class="nav-item" onclick="scrollToSection('vote')">POST /api/governance/vote</div>
-</div>
-<div class="nav-section">
-<div class="nav-section-title">NFT</div>
-<div class="nav-item" onclick="scrollToSection('nftmint')">POST /api/nft/mint</div>
-<div class="nav-item" onclick="scrollToSection('nftlist')">GET /api/nft/list</div>
-<div class="nav-item" onclick="scrollToSection('nfttransfer')">POST /api/nft/transfer</div>
-</div>
-<div class="nav-section">
-<div class="nav-section-title">Bridge</div>
-<div class="nav-item" onclick="scrollToSection('bridgelock')">POST /api/bridge/lock</div>
-<div class="nav-item" onclick="scrollToSection('bridgestats')">GET /api/bridge/stats</div>
-</div>
-<div class="nav-section">
-<div class="nav-section-title">Security &amp; Monitoring</div>
-<div class="nav-section-title">API Keys (Integration)</div>
-<div class="nav-item" onclick="scrollToSection('apikeys')">POST /api/keys/create</div>
-<div class="nav-item" onclick="scrollToSection('apikeys')">GET /api/keys</div>
-<div class="nav-item" onclick="scrollToSection('apikeys')">POST /api/keys/:keyId/revoke</div>
-<div class="nav-item" onclick="scrollToSection('apikeys')">GET /api/keys (List Keys)</div>
-<div class="nav-item" onclick="scrollToSection('apikeys')">POST /api/keys/:keyId/revoke</div>
-<div class="nav-item" onclick="scrollToSection('secaudit')">GET /api/security/audit</div>
-<div class="nav-item" onclick="scrollToSection('health')">GET /api/monitoring/health</div>
-</div>
-<div class="nav-section">
-<div class="nav-section-title">Contracts</div>
-<div class="nav-item" onclick="scrollToSection('deploy')">POST /api/contract/deploy</div>
-<div class="nav-item" onclick="scrollToSection('execute')">POST /api/contract/:id/execute</div>
-<div class="nav-item" onclick="scrollToSection('contracts')">GET /api/contracts</div>
-</div>
-<div class="nav-section">
-<div class="nav-section-title">Faucet &amp; Explorer</div>
-<div class="nav-item" onclick="scrollToSection('faucet')">POST /api/faucet/claim</div>
-<div class="nav-item" onclick="scrollToSection('faucetstatus')">GET /api/faucet/status</div>
-<div class="nav-item" onclick="scrollToSection('explorer')">GET /api/explorer/search</div>
-</div>
-</div>
-<div class="content">
-<div class="hero">
-<h1>&#127807; Verdis Blockchain API</h1>
-<p>The First Fully Green Blockchain Ecosystem &mdash; REST API &amp; JSON-RPC Reference</p>
-<div class="hero-stats">
-<div class="hero-stat"><div class="val">70+</div><div class="lbl">REST Endpoints</div></div>
-<div class="hero-stat"><div class="val">25</div><div class="lbl">JSON-RPC Methods</div></div>
-<div class="hero-stat"><div class="val">909</div><div class="lbl">Chain ID</div></div>
-<div class="hero-stat"><div class="val">5s</div><div class="lbl">Block Time</div></div>
-</div>
-</div>
+  <!-- Sticky Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-search">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input type="text" id="apiSearch" placeholder="Filter endpoints..." oninput="filterEndpoints()">
+    </div>
 
-<div class="section" id="overview">
-<div class="section-title">&#128203; Overview</div>
-<div class="section-desc">The Verdis Blockchain API provides REST and JSON-RPC interfaces for interacting with the Verdis network &mdash; a carbon-negative L1 blockchain with native DPoS consensus, AMM DEX, carbon credits, and smart contracts.</div>
-<div class="info-box">
-<div class="info-box-title">Base URLs</div>
-<ul>
-<li><strong>REST API:</strong> <code>https://verdischain.com/api</code></li>
-<li><strong>JSON-RPC:</strong> <code>https://rpc.verdischain.com</code> (or <code>https://verdischain.com/rpc</code>)</li>
-<li><strong>Chain ID:</strong> <code>909</code></li>
-<li><strong>Native Token:</strong> <code>VRS</code> (18 decimals)</li>
-<li><strong>Consensus:</strong> DPoS (Delegated Proof of Stake)</li>
-<li><strong>Cryptography:</strong> secp256k1 + SHA-256/Keccak256</li>
-</ul>
-</div>
-<div class="info-box">
-<div class="info-box-title">Quick Start</div>
-<div class="code-label">cURL &mdash; Get network info</div>
-<div class="code-block">curl https://verdischain.com/api/network/info</div>
-<div class="code-label">cURL &mdash; Create a wallet</div>
-<div class="code-block">curl -X POST https://verdischain.com/api/wallet/create</div>
-<div class="code-label">cURL &mdash; Send a transaction</div>
-<div class="code-block">curl -X POST https://verdischain.com/api/transaction/send \
-  -H "Content-Type: application/json" \
-  -d '{"from":"0x...","privateKey":"0x...","to":"0x...","amount":100}'</div>
-<div class="code-label">JavaScript &mdash; JSON-RPC</div>
-<div class="code-block">const response = await fetch('https://rpc.verdischain.com', {
-  method: 'POST',
-  headers: {'Content-Type': 'application/json'},
-  body: JSON.stringify({jsonrpc:'2.0', id:1, method:'eth_chainId', params:[]})
-});
-const data = await response.json();
-// &rarr; {"jsonrpc":"2.0","id":1,"result":"0x38d"}</div>
-</div>
-</div>
+    <div class="nav-category">
+      <div class="category-title">⛓️ 1. Blockchain</div>
+      <a href="#cat-blockchain" class="nav-item"><span>Info & Sync</span> <span class="mini-badge method-get">GET</span></a>
+      <a href="#cat-blockchain" class="nav-item"><span>Blocks</span> <span class="mini-badge method-get">GET</span></a>
+      <a href="#cat-blockchain" class="nav-item"><span>Transactions</span> <span class="mini-badge method-post">POST</span></a>
+    </div>
 
-<div class="section" id="auth">
-<div class="section-title">&#128272; Authentication</div>
-<div class="section-desc">Most endpoints are public. Admin-only endpoints require an API key.</div>
-<div class="info-box">
-<div class="info-box-title">Admin API Key</div>
-<ul>
-<li>Header: <code>x-api-key: YOUR_API_KEY</code></li>
-<li>Query: <code>?apiKey=YOUR_API_KEY</code></li>
-<li>Retrieve key: <code>GET /api/security/admin-key</code> (localhost only)</li>
-<li>Admin endpoints: <code>POST /api/blockchain/produce</code>, <code>POST /api/bridge/redeem</code>, <code>GET /api/security/events</code></li>
-</ul>
-</div>
-</div>
+    <div class="nav-category">
+      <div class="category-title">👛 2. Wallet</div>
+      <a href="#cat-wallet" class="nav-item"><span>Create Wallet</span> <span class="mini-badge method-post">POST</span></a>
+      <a href="#cat-wallet" class="nav-item"><span>Get Balance</span> <span class="mini-badge method-get">GET</span></a>
+      <a href="#cat-wallet" class="nav-item"><span>Send Funds</span> <span class="mini-badge method-post">POST</span></a>
+    </div>
 
-<div class="section" id="ratelimit">
-<div class="section-title">&#9201; Rate Limiting</div>
-<div class="section-desc">All endpoints are rate-limited to protect the network.</div>
-<table class="params-table"><thead><tr><th>Tier</th><th>Limit</th><th>Window</th><th>Applied To</th></tr></thead><tbody>
-<tr><td>Standard</td><td>30 req</td><td>per minute</td><td>All endpoints</td></tr>
-<tr><td>Strict</td><td>5 req</td><td>per minute</td><td>Transactions, swaps, contract deploy, bridge, faucet, staking</td></tr>
-</tbody></table>
-<div class="info-box">
-<div class="info-box-title">Response Headers</div>
-<ul>
-<li><code>X-RateLimit-Remaining</code> &mdash; requests left in current window</li>
-<li><code>X-RateLimit-Reset</code> &mdash; seconds until window resets</li>
-<li><code>429 Too Many Requests</code> &mdash; returns <code>{"error":"Rate limit exceeded","retryAfter":N}</code></li>
-</ul>
-</div>
-</div>
+    <div class="nav-category">
+      <div class="category-title">🔀 3. DEX & AMM</div>
+      <a href="#cat-dex" class="nav-item"><span>List Pools</span> <span class="mini-badge method-get">GET</span></a>
+      <a href="#cat-dex" class="nav-item"><span>Swap Tokens</span> <span class="mini-badge method-post">POST</span></a>
+      <a href="#cat-dex" class="nav-item"><span>Add Liquidity</span> <span class="mini-badge method-post">POST</span></a>
+    </div>
 
-<div class="section" 
-<div class="section" id="tps">
-<div class="section-title">⚡ GET /api/network/tps</div>
-<div class="section-desc">Real-time network throughput statistics including TPS, peak TPS, and block timing.</div>
-<div class="endpoint">
-<div class="endpoint-header" onclick="toggleEndpoint(this)">
-<span class="endpoint-method method-get">GET</span>
-<span class="endpoint-path">/api/network/tps</span>
-<span class="endpoint-toggle">▶</span>
-</div>
-<div class="endpoint-body">
-<div class="endpoint-desc">Returns live transactions-per-second metrics, block timing, and network uptime. Also available via WebSocket at <code>/ws</code>.</div>
-<div class="code-label">Response</div>
-<div class="response-sample">{
-  "tps": 2.4,
-  "blockTime": 5000,
-  "avgBlockTime": 5002,
-  "totalTxs": 12480,
-  "txsLastMinute": 12,
-  "peakTPS": 8.7,
-  "uptime": 86400,
-  "lastBlockTime": 1693526400000
-}</div>
-<div class="code-label">WebSocket</div>
-<div class="code-block">const ws = new WebSocket('wss://rpc.verdischain.com/ws');
-ws.onmessage = (e) => {
-  const data = JSON.parse(e.data);
-  if (data.type === 'stats') console.log('TPS:', data.stats.tps);
-  if (data.type === 'block') console.log('New block! TPS:', data.tps);
-};</div>
-</div>
-</div>
-</div>
+    <div class="nav-category">
+      <div class="category-title">📜 4. Smart Contracts</div>
+      <a href="#cat-contracts" class="nav-item"><span>Deploy Contract</span> <span class="mini-badge method-post">POST</span></a>
+      <a href="#cat-contracts" class="nav-item"><span>Execute VM Call</span> <span class="mini-badge method-post">POST</span></a>
+      <a href="#cat-contracts" class="nav-item"><span>List Contracts</span> <span class="mini-badge method-get">GET</span></a>
+    </div>
 
-id="jsonrpc">
-<div class="section-title">&#128279; JSON-RPC Methods (25)</div>
-<div class="section-desc">Ethereum-compatible JSON-RPC at <code>https://rpc.verdischain.com</code>. POST with <code>{"jsonrpc":"2.0","method":"...","params":[],"id":1}</code>.</div>
-<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">eth_chainId</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns the chain ID as hex.</div>
-<div class="code-label">Request</div><div class="code-block">{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}</div>
-<div class="code-label">Response</div><div class="response-sample">{"jsonrpc":"2.0","id":1,"result":"0x38d"}</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">eth_blockNumber</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns current block number as hex.</div>
-<div class="code-block">{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}</div>
-<div class="response-sample">{"jsonrpc":"2.0","id":1,"result":"0x4a3c"}</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">eth_getBalance</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns VRS balance of an address.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>address</td><td>string</td><td>Yes</td><td>0x-prefixed address</td></tr>
-<tr><td>blockTag</td><td>string</td><td>No</td><td>"latest" or hex number</td></tr></tbody></table>
-<div class="code-block">{"jsonrpc":"2.0","method":"eth_getBalance","params":["0xa1e8...","latest"],"id":1}</div>
-<div class="response-sample">{"jsonrpc":"2.0","id":1,"result":"0x3b9aca00"}</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">eth_sendRawTransaction</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Submits a signed raw transaction.</div>
-<div class="code-block">{"jsonrpc":"2.0","method":"eth_sendRawTransaction","params":["0x..."],"id":1}</div>
-<div class="response-sample">{"jsonrpc":"2.0","id":1,"result":"0xabc123..."}</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">eth_getTransactionByHash</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns transaction details by hash.</div>
-<div class="code-block">{"jsonrpc":"2.0","method":"eth_getTransactionByHash","params":["0xabc..."],"id":1}</div>
-<div class="response-sample">{"jsonrpc":"2.0","id":1,"result":{"hash":"0x...","from":"0x...","to":"0x...","value":"0x64"}}</div></div></div>
-<div class="info-box">
-<div class="info-box-title">All 25 JSON-RPC Methods</div>
-<ul>
-<li><code>eth_chainId</code> &middot; <code>net_version</code> &middot; <code>web3_clientVersion</code> &middot; <code>web3_sha3</code></li>
-<li><code>net_listening</code> &middot; <code>net_peerCount</code> &middot; <code>eth_protocolVersion</code> &middot; <code>eth_syncing</code></li>
-<li><code>eth_mining</code> &middot; <code>eth_coinbase</code> &middot; <code>eth_gasPrice</code> &middot; <code>eth_blockNumber</code></li>
-<li><code>eth_getBalance</code> &middot; <code>eth_getTransactionCount</code> &middot; <code>eth_getCode</code></li>
-<li><code>eth_getBlockByNumber</code> &middot; <code>eth_getBlockByHash</code></li>
-<li><code>eth_getTransactionByHash</code> &middot; <code>eth_getTransactionReceipt</code></li>
-<li><code>eth_sendRawTransaction</code> &middot; <code>eth_call</code> &middot; <code>eth_estimateGas</code></li>
-<li><code>eth_getLogs</code> &middot; <code>eth_getStorageAt</code></li>
-<li><code>eth_getBlockTransactionCountByNumber</code> &middot; <code>eth_getBlockTransactionCountByHash</code></li>
-<li><code>eth_accounts</code> &middot; <code>eth_maxPriorityFeePerGas</code> &middot; <code>eth_getFeeHistory</code></li>
-</ul>
-</div>
-</div>
+    <div class="nav-category">
+      <div class="category-title">🌱 5. Eco Metrics</div>
+      <a href="#cat-eco" class="nav-item"><span>Carbon Credits</span> <span class="mini-badge method-get">GET</span></a>
+      <a href="#cat-eco" class="nav-item"><span>Reforestation</span> <span class="mini-badge method-get">GET</span></a>
+      <a href="#cat-eco" class="nav-item"><span>Green Scoring</span> <span class="mini-badge method-get">GET</span></a>
+    </div>
 
-<!-- NETWORK & BLOCKCHAIN -->
-<div class="section" id="network">
-<div class="section-title">&#127760; Network Info</div>
-<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/network/info</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns comprehensive network info: chain ID, consensus, cryptography, features, security.</div>
-<div class="code-label">cURL</div><div class="code-block">curl https://verdischain.com/api/network/info</div>
-<div class="code-label">Response (200)</div>
-<div class="response-sample">{
-  "name": "Verdis",
-  "symbol": "VRS",
-  "chainId": 909,
-  "rpcUrl": "https://rpc.verdischain.com",
-  "blockTime": 5000,
-  "maxSupply": 100000000000,
-  "consensus": "Delegated Proof of Stake (DPoS)",
-  "validatorCount": 27,
-  "cryptography": {
-    "curve": "secp256k1",
-    "hash": "SHA-256 + Keccak256",
-    "signatures": "ECDSA with recovery",
-    "addressFormat": "Ethereum-compatible (0x...)"
-  },
-  "security": {
-    "rateLimiting": true,
-    "signatureVerification": true,
-    "replayProtection": true,
-    "adminAuth": true,
-    "validatorSlashing": true
+    <div class="nav-category">
+      <div class="category-title">🛡️ 6. Validators</div>
+      <a href="#cat-validators" class="nav-item"><span>Register Validator</span> <span class="mini-badge method-post">POST</span></a>
+      <a href="#cat-validators" class="nav-item"><span>List Active</span> <span class="mini-badge method-get">GET</span></a>
+      <a href="#cat-validators" class="nav-item"><span>Vote & Stake</span> <span class="mini-badge method-post">POST</span></a>
+    </div>
+
+    <div class="nav-category">
+      <div class="category-title">🔒 7. Security</div>
+      <a href="#cat-security" class="nav-item"><span>Audit Logs</span> <span class="mini-badge method-get">GET</span></a>
+      <a href="#cat-security" class="nav-item"><span>Security Events</span> <span class="mini-badge method-get">GET</span></a>
+      <a href="#cat-security" class="nav-item"><span>Admin Keys</span> <span class="mini-badge method-post">POST</span></a>
+    </div>
+
+    <div class="nav-category">
+      <div class="category-title">🌐 8. Network</div>
+      <a href="#cat-network" class="nav-item"><span>Network Info</span> <span class="mini-badge method-get">GET</span></a>
+      <a href="#cat-network" class="nav-item"><span>Realtime TPS</span> <span class="mini-badge method-get">GET</span></a>
+      <a href="#cat-network" class="nav-item"><span>Node Health</span> <span class="mini-badge method-get">GET</span></a>
+    </div>
+
+    <div class="nav-category">
+      <div class="category-title">⚡ WebSockets & RPC</div>
+      <a href="#sec-websocket" class="nav-item"><span>WebSocket /ws</span> <span class="mini-badge method-ws">WS</span></a>
+      <a href="#sec-jsonrpc" class="nav-item"><span>JSON-RPC 2.0</span> <span class="mini-badge method-rpc">RPC</span></a>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="content">
+    <div class="hero-banner reveal">
+      <h1>Verdis <span>API Documentation</span></h1>
+      <p>Build carbon-negative Web3 applications using high-throughput REST APIs, streaming WebSockets, and EVM-compatible JSON-RPC endpoints on Chain ID 909.</p>
+      <div class="hero-meta">
+        <div class="meta-chip"><span>Base URL:</span> https://rpc.verdis.eco</div>
+        <div class="meta-chip"><span>Version:</span> v2.4.0</div>
+        <div class="meta-chip"><span>Format:</span> JSON / UTF-8</div>
+      </div>
+    </div>
+
+    <!-- 1. BLOCKCHAIN CATEGORY -->
+    <section class="doc-section reveal" id="cat-blockchain">
+      <div class="section-header">
+        <h2>⛓️ 1. Blockchain Endpoints</h2>
+        <p>Core ledger primitives, block queries, transaction submission, and chain sync stats.</p>
+      </div>
+
+      <div class="endpoint-card open">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-get">GET</span>
+            <span class="endpoint-path">/api/blockchain/info</span>
+            <span class="endpoint-desc-short">— Get current block height, hash, and sync state</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Returns general ledger status including latest block index, hash, transaction count, and network sync percentage.</p>
+          <div class="code-box">
+            <div class="code-header">
+              <div class="code-tabs">
+                <button class="code-tab active" onclick="switchTab(this, 'curl')">cURL</button>
+                <button class="code-tab" onclick="switchTab(this, 'js')">JavaScript</button>
+                <button class="code-tab" onclick="switchTab(this, 'py')">Python</button>
+              </div>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre class="code-content"><code>curl -X GET "https://rpc.verdis.eco/api/blockchain/info" \
+  -H "Accept: application/json"</code></pre>
+          </div>
+          <h4 style="margin-top:1.2rem; color:var(--primary); font-size:0.9rem;">Response Example (200 OK)</h4>
+          <div class="code-box">
+            <pre class="code-content"><code>{
+  <span class="json-key">"success"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"chainId"</span>: <span class="json-num">909</span>,
+    <span class="json-key">"blockHeight"</span>: <span class="json-num">4820194</span>,
+    <span class="json-key">"latestBlockHash"</span>: <span class="json-string">"0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e"</span>,
+    <span class="json-key">"totalTransactions"</span>: <span class="json-num">14208930</span>,
+    <span class="json-key">"synced"</span>: <span class="json-bool">true</span>
   }
-}</div></div></div>
-</div>
+}</code></pre>
+          </div>
+        </div>
+      </div>
 
-<div class="section" id="chaininfo">
-<div class="section-title">&#9936; Blockchain</div>
-<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/blockchain/info</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns current chain height, total transactions, validator count, supply.</div>
-<div class="code-block">curl https://verdischain.com/api/blockchain/info</div>
-<div class="response-sample">{"height":12000,"totalTransactions":3500,"validatorCount":27,"totalSupply":50000000000}</div></div></div>
-<div class="endpoint" id="blocks"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/blockchain/blocks?limit=<span class="param">N</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns recent blocks. Default limit: 20.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>limit</td><td>number</td><td>No</td><td>Max blocks (default 20)</td></tr></tbody></table>
-<div class="code-block">curl "https://verdischain.com/api/blockchain/blocks?limit=10"</div></div></div>
-<div class="endpoint" id="block"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/blockchain/block/<span class="param">:index</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns a specific block by index.</div>
-<div class="code-block">curl https://verdischain.com/api/blockchain/block/100</div></div></div>
-<div class="endpoint" id="chain"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/chain</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns the full chain state (all blocks).</div></div></div>
-</div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-get">GET</span>
+            <span class="endpoint-path">/api/blockchain/blocks</span>
+            <span class="endpoint-desc-short">— Query recent blocks with pagination</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Query a paginated array of finalized blocks. Parameters: <code>limit</code> (default 10), <code>offset</code>.</p>
+          <div class="code-box">
+            <pre class="code-content"><code>curl -X GET "https://rpc.verdis.eco/api/blockchain/blocks?limit=2"</code></pre>
+          </div>
+        </div>
+      </div>
 
-<!-- WALLET & TRANSACTIONS -->
-<div class="section" id="createwallet">
-<div class="section-title">&#128091; Wallet</div>
-<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/wallet/create</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Creates a new wallet with secp256k1 keypair.</div>
-<div class="code-label">cURL</div><div class="code-block">curl -X POST https://verdischain.com/api/wallet/create</div>
-<div class="code-label">Response (200)</div>
-<div class="response-sample">{
-  "privateKey": "0x4c0883a694026...",
-  "publicKey": "04a34b99f22c790...",
-  "address": "0xa1e846855e1768b9C0BEe6E747bedd7bec1Af616",
-  "balance": 0,
-  "staked": 0
-}</div>
-<div class="info-box" style="margin-top:8px"><div class="info-box-title">&#9888; Security</div><ul><li>Private key returned only once &mdash; store securely.</li><li>Never share your private key.</li><li>Transactions require the private key for signing.</li></ul></div></div></div>
-<div class="endpoint" id="balance"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/wallet/<span class="param">:address</span>/balance</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns VRS balance for an address.</div>
-<div class="code-block">curl https://verdischain.com/api/wallet/0xa1e8.../balance</div>
-<div class="response-sample">{"address":"0xa1e8...","balance":1000}</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/wallet/<span class="param">:address</span>/staked</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns staked VRS for an address.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/wallet/<span class="param">:address</span>/transactions</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns all transactions for a wallet.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/wallet/<span class="param">:address</span>/details</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Comprehensive wallet details: balance, staked, txs, token balances.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/wallets</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns all known wallets on the network.</div></div></div>
-</div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-post">POST</span>
+            <span class="endpoint-path">/api/blockchain/transactions</span>
+            <span class="endpoint-desc-short">— Broadcast signed transaction to mempool</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Submits a raw signed transaction hex string to the Verdis node mempool for propagation.</p>
+        </div>
+      </div>
+    </section>
 
-<div class="section" id="sendtx">
-<div class="section-title">&#128176; Transactions</div>
-<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/transaction/send</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Sends VRS. Signs with secp256k1. Strict rate limited (5/min).</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>from</td><td>string</td><td>Yes</td><td>Sender address (0x...)</td></tr>
-<tr><td>privateKey</td><td>string</td><td>Yes</td><td>Sender's private key</td></tr>
-<tr><td>to</td><td>string</td><td>Yes</td><td>Recipient address</td></tr>
-<tr><td>amount</td><td>number</td><td>Yes</td><td>VRS amount</td></tr>
-<tr><td>fee</td><td>number</td><td>No</td><td>Fee (default: 1 VRS)</td></tr>
-<tr><td>data</td><td>string</td><td>No</td><td>Optional payload</td></tr></tbody></table>
-<div class="code-label">cURL</div><div class="code-block">curl -X POST https://verdischain.com/api/transaction/send \
+    <!-- 2. WALLET CATEGORY -->
+    <section class="doc-section reveal" id="cat-wallet">
+      <div class="section-header">
+        <h2>👛 2. Wallet Endpoints</h2>
+        <p>Keypair generation, balance checking, staking, and asset transfers.</p>
+      </div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-post">POST</span>
+            <span class="endpoint-path">/api/wallet/create</span>
+            <span class="endpoint-desc-short">— Generate post-quantum compatible wallet keypair</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Creates a new Verdis Ed25519/Dilithium3 keypair and returns public address and secret seed.</p>
+          <div class="code-box">
+            <pre class="code-content"><code>curl -X POST "https://rpc.verdis.eco/api/wallet/create" \
   -H "Content-Type: application/json" \
-  -d '{"from":"0xa1e8...","privateKey":"0x...","to":"0x72cd...","amount":100}'</div>
-<div class="code-label">Response (200)</div>
-<div class="response-sample">{"txId":"0xabc123...","transaction":{"from":"0xa1e8...","to":"0x72cd...","amount":100,"fee":1,"timestamp":1692400000000,"nonce":42,"signature":"0x..."}}</div></div></div>
-<div class="endpoint" id="gettx"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/transaction/<span class="param">:txId</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns transaction receipt by ID.</div></div></div>
-<div class="endpoint" id="mempool"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/mempool</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns pending transactions (max 1000).</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/mempool/size</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns current mempool size.</div>
-<div class="response-sample">{"size": 3}</div></div></div>
-</div>
+  -d '{"type": "post-quantum"}'</code></pre>
+          </div>
+        </div>
+      </div>
 
-<!-- DEX -->
-<div class="section" id="pools">
-<div class="section-title">&#128138; DEX (AMM)</div>
-<div class="section-desc">Native Automated Market Maker with 6 liquidity pools. Constant product formula (x*y=k).</div>
-<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/dex/pools</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns all DEX liquidity pools.</div>
-<div class="code-block">curl https://verdischain.com/api/dex/pools</div>
-<div class="response-sample">[{"id":"VRS-CARBON","tokenA":"VRS","tokenB":"CARBON","reserveA":50000,"reserveB":100000,"fee":0.003},...]</div></div></div>
-<div class="endpoint" id="quote"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/dex/quote?tokenIn=<span class="param">VRS</span>&amp;tokenOut=<span class="param">CARBON</span>&amp;amountIn=<span class="param">100</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Get a swap quote without executing.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>tokenIn</td><td>string</td><td>Yes</td><td>Input token symbol</td></tr>
-<tr><td>tokenOut</td><td>string</td><td>Yes</td><td>Output token symbol</td></tr>
-<tr><td>amountIn</td><td>number</td><td>Yes</td><td>Input amount</td></tr></tbody></table>
-<div class="code-block">curl "https://verdischain.com/api/dex/quote?tokenIn=VRS&tokenOut=CARBON&amountIn=100"</div>
-<div class="response-sample">{"amountOut":198.5,"fee":0.3,"priceImpact":0.001,"pool":"VRS-CARBON"}</div></div></div>
-<div class="endpoint" id="swap"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/dex/swap</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Execute a swap. Strict rate limited.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>trader</td><td>string</td><td>Yes</td><td>Trader address</td></tr>
-<tr><td>tokenIn</td><td>string</td><td>Yes</td><td>Input token</td></tr>
-<tr><td>tokenOut</td><td>string</td><td>Yes</td><td>Output token</td></tr>
-<tr><td>amountIn</td><td>number</td><td>Yes</td><td>Input amount</td></tr>
-<tr><td>minAmountOut</td><td>number</td><td>No</td><td>Min output (slippage)</td></tr></tbody></table>
-<div class="code-block">curl -X POST https://verdischain.com/api/dex/swap \
-  -H "Content-Type: application/json" \
-  -d '{"trader":"0xa1e8...","tokenIn":"VRS","tokenOut":"CARBON","amountIn":100,"minAmountOut":195}'</div>
-<div class="response-sample">{"success":true,"amountOut":198.5,"fee":0.3,"pool":{"id":"VRS-CARBON",...}}</div></div></div>
-<div class="endpoint" id="addliq"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/dex/liquidity/add</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Add liquidity. Returns LP tokens.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>provider</td><td>string</td><td>Yes</td><td>Provider address</td></tr>
-<tr><td>tokenA</td><td>string</td><td>Yes</td><td>Token A symbol</td></tr>
-<tr><td>tokenB</td><td>string</td><td>Yes</td><td>Token B symbol</td></tr>
-<tr><td>amountA</td><td>number</td><td>Yes</td><td>Amount A</td></tr>
-<tr><td>amountB</td><td>number</td><td>Yes</td><td>Amount B</td></tr></tbody></table>
-<div class="code-block">curl -X POST https://verdischain.com/api/dex/liquidity/add \
-  -d '{"provider":"0xa1e8...","tokenA":"VRS","tokenB":"CARBON","amountA":100,"amountB":200}'</div>
-<div class="response-sample">{"success":true,"lpTokens":14.14,"pool":{"id":"VRS-CARBON",...}}</div></div></div>
-<div class="endpoint" id="remliq"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/dex/liquidity/remove</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Remove liquidity. Burns LP tokens.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>provider</td><td>string</td><td>Yes</td><td>Provider address</td></tr>
-<tr><td>poolId</td><td>string</td><td>Yes</td><td>Pool ID</td></tr>
-<tr><td>lpAmount</td><td>number</td><td>Yes</td><td>LP tokens to burn</td></tr></tbody></table></div></div>
-<div class="endpoint" id="poolstats"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/dex/pool/<span class="param">:id</span>/stats</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns pool statistics.</div></div></div>
-<div class="endpoint" id="tokeninfo"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/token/info</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Token info: supply, price, market cap, liquidity, pools.</div>
-<div class="response-sample">{"name":"Verdis","symbol":"VRS","decimals":18,"totalSupply":50000000000,"price":0.001,"marketCap":50000000,"liquidity":100000,"pools":[...]}</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/token/market</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Market data: price, volume, swap history.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/token/price-history/<span class="param">:poolId</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Price history for a pool.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/dex/token/mint</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Mint new token + optionally create trading pair. Strict rate limited.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>symbol</td><td>string</td><td>Yes</td><td>Token symbol</td></tr>
-<tr><td>supply</td><td>number</td><td>Yes</td><td>Initial supply</td></tr>
-<tr><td>pairWith</td><td>string</td><td>No</td><td>Create DEX pair (e.g. "VRS")</td></tr>
-<tr><td>initialPrice</td><td>number</td><td>No</td><td>Initial price</td></tr></tbody></table></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/dex/token/balances/<span class="param">:address</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">All DEX token balances for an address.</div></div></div>
-</div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-get">GET</span>
+            <span class="endpoint-path">/api/wallet/:address/balance</span>
+            <span class="endpoint-desc-short">— Fetch VRD and token balances</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Returns exact balance in VRD units (18 decimals) and registered ERC-20 equivalent token balances.</p>
+        </div>
+      </div>
 
-<!-- STAKING -->
-<div class="section" id="validators">
-<div class="section-title">&#127959; Staking &amp; Validators</div>
-<div class="section-desc">DPoS consensus with 27 registered validators. Stake VRS to vote and earn rewards.</div>
-<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/validators</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns all registered validators.</div>
-<div class="code-block">curl https://verdischain.com/api/validators</div>
-<div class="response-sample">[{"address":"0x...","name":"EcoValidator-1","votes":50000,"active":true,"greenScore":92,"blocksProduced":1200},...]</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/validators/top</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Top validators by votes (active set).</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/validators/register</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Register as validator. Strict rate limited.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>address</td><td>string</td><td>Yes</td><td>Validator address</td></tr>
-<tr><td>name</td><td>string</td><td>No</td><td>Validator name</td></tr></tbody></table></div></div>
-<div class="endpoint" id="delegate"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/staking/delegate</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Delegate VRS to a validator. Strict rate limited.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>voter</td><td>string</td><td>Yes</td><td>Delegator address</td></tr>
-<tr><td>validatorAddress</td><td>string</td><td>Yes</td><td>Validator address</td></tr>
-<tr><td>amount</td><td>number</td><td>Yes</td><td>VRS amount</td></tr></tbody></table>
-<div class="code-block">curl -X POST https://verdischain.com/api/staking/delegate \
-  -d '{"voter":"0xa1e8...","validatorAddress":"0xval...","amount":1000}'</div>
-<div class="response-sample">{"success":true,"voter":"0xa1e8...","validator":"0xval...","amount":1000,"message":"Delegated 1000 VRS"}</div></div></div>
-<div class="endpoint" id="undelegate"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/staking/undelegate</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Undelegate VRS. Strict rate limited.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>voter</td><td>string</td><td>Yes</td><td>Delegator address</td></tr>
-<tr><td>validatorAddress</td><td>string</td><td>Yes</td><td>Validator address</td></tr>
-<tr><td>amount</td><td>number</td><td>Yes</td><td>VRS amount</td></tr></tbody></table></div></div>
-<div class="endpoint" id="delegations"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/staking/delegations/<span class="param">:address</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns all delegation positions for an address.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/staking/rewards/<span class="param">:address</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns staking rewards + estimated daily rewards.</div>
-<div class="response-sample">{"address":"0xa1e8...","totalStaked":5000,"delegations":2,"estimatedDailyReward":0.5}</div></div></div>
-</div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-post">POST</span>
+            <span class="endpoint-path">/api/wallet/send</span>
+            <span class="endpoint-desc-short">— Initiate zero-carbon token transfer</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Transfers native VRD or eco-tokens between addresses with automatic carbon offset fee calculation.</p>
+        </div>
+      </div>
+    </section>
 
-<!-- ECO -->
-<div class="section" id="ecoimpact">
-<div class="section-title">&#127807; Eco &amp; Carbon Credits</div>
-<div class="section-desc">On-chain carbon credits, reforestation tracking, and green validator scoring.</div>
-<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/eco/impact</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns network-wide environmental impact metrics.</div>
-<div class="code-block">curl https://verdischain.com/api/eco/impact</div>
-<div class="response-sample">{"carbonOffset":1000,"totalCarbonOffset":1000,"trees":15000,"greenValidators":6,"reforestationProjects":3,"carbonCreditsMinted":500,"carbonCreditsRetired":200}</div></div></div>
-<div class="endpoint" id="carbonmint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/eco/carbon/mint</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Mint a carbon credit on-chain.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>seller</td><td>string</td><td>Yes</td><td>Seller address</td></tr>
-<tr><td>projectType</td><td>string</td><td>Yes</td><td>Project type (e.g. "reforestation")</td></tr>
-<tr><td>amount</td><td>number</td><td>Yes</td><td>Tons of CO2</td></tr>
-<tr><td>price</td><td>number</td><td>Yes</td><td>Price per ton in VRS</td></tr>
-<tr><td>location</td><td>string</td><td>No</td><td>Project location</td></tr></tbody></table>
-<div class="code-block">curl -X POST https://verdischain.com/api/eco/carbon/mint \
-  -d '{"seller":"0xa1e8...","projectType":"reforestation","amount":100,"price":50,"location":"Amazon"}'</div>
-<div class="response-sample">{"success":true,"credit":{"id":"cr-001","seller":"0xa1e8...","projectType":"reforestation","amount":100,"price":50,"verified":false}}</div></div></div>
-<div class="endpoint" id="carboncredits"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/eco/carbon/credits</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns all carbon credits. Optional filters: <code>verified</code>, <code>seller</code>.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/eco/carbon/verify</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Verify a carbon credit. Params: <code>creditId</code>, <code>verifier</code>.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/eco/carbon/buy</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Buy a carbon credit. Params: <code>buyer</code>, <code>creditId</code>.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/eco/carbon/retire</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Retire a carbon credit (permanent offset). Params: <code>creditId</code>, <code>owner</code>.</div></div></div>
-<div class="endpoint" id="reforest"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/eco/reforest/create</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Create a reforestation project on-chain.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>name</td><td>string</td><td>Yes</td><td>Project name</td></tr>
-<tr><td>location</td><td>string</td><td>Yes</td><td>Location</td></tr>
-<tr><td>trees</td><td>number</td><td>Yes</td><td>Number of trees</td></tr>
-<tr><td>co2Offset</td><td>number</td><td>Yes</td><td>Expected CO2 offset (tons)</td></tr>
-<tr><td>creator</td><td>string</td><td>Yes</td><td>Creator address</td></tr></tbody></table></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/eco/reforest/update</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Update project progress. Params: <code>projectId</code>, <code>treesPlanted</code>, <code>status</code>.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/eco/reforest/verify</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Verify a reforestation project.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/eco/reforest/projects</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns all reforestation projects.</div></div></div>
-<div class="endpoint" id="greenscore"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/eco/green/<span class="param">:address</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns green score for a validator.</div>
-<div class="response-sample">{"address":"0x...","score":92,"renewableEnergyPercent":85,"carbonNeutral":true}</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/eco/green/top</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Top green validators by score.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/eco/green-scores</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">All green validator scores.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/eco/offset-pool</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Carbon offset pool stats (5B VRS Carbon Offset Fund).</div></div></div>
-</div>
+    <!-- 3. DEX CATEGORY -->
+    <section class="doc-section reveal" id="cat-dex">
+      <div class="section-header">
+        <h2>🔀 3. DEX & AMM Endpoints</h2>
+        <p>Automated Market Maker pools, price quotes, token swaps, and green liquidity provision.</p>
+      </div>
 
-<!-- GOVERNANCE -->
-<div class="section" id="propcreate">
-<div class="section-title">&#127891; Governance</div>
-<div class="section-desc">On-chain governance for protocol upgrades and community decisions.</div>
-<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/governance/proposal</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Create a proposal. Strict rate limited.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>title</td><td>string</td><td>Yes</td><td>Proposal title</td></tr>
-<tr><td>description</td><td>string</td><td>Yes</td><td>Description</td></tr>
-<tr><td>proposer</td><td>string</td><td>Yes</td><td>Proposer address</td></tr>
-<tr><td>type</td><td>string</td><td>No</td><td>Type (default: "improvement")</td></tr></tbody></table>
-<div class="code-block">curl -X POST https://verdischain.com/api/governance/proposal \
-  -d '{"title":"Increase block reward","description":"...","proposer":"0xa1e8..."}'</div>
-<div class="response-sample">{"success":true,"proposal":{"id":"abc...","title":"...","status":"active","votesFor":0,"votesAgainst":0,"endsAt":1692688000000}}</div></div></div>
-<div class="endpoint" id="proplist"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/governance/proposals?status=<span class="param">active</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns all proposals, optionally filtered by status.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/governance/proposal/<span class="param">:id</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns a proposal by ID.</div></div></div>
-<div class="endpoint" id="vote"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/governance/vote</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Vote on a proposal. Voting power = VRS balance. Strict rate limited.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>proposalId</td><td>string</td><td>Yes</td><td>Proposal ID</td></tr>
-<tr><td>voter</td><td>string</td><td>Yes</td><td>Voter address</td></tr>
-<tr><td>vote</td><td>string</td><td>Yes</td><td>"for" or "against"</td></tr></tbody></table></div></div>
-</div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-get">GET</span>
+            <span class="endpoint-path">/api/dex/pools</span>
+            <span class="endpoint-desc-short">— Retrieve active liquidity pools and TVL</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Returns list of active liquidity pools (e.g. VRD/USDT, VRD/CARBON) along with reserves and 24h volume.</p>
+        </div>
+      </div>
 
-<!-- NFT -->
-<div class="section" id="nftmint">
-<div class="section-title">&#127912; NFT</div>
-<div class="section-desc">Eco-NFTs with carbon value tracking.</div>
-<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/nft/mint</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Mint an NFT. Strict rate limited.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>name</td><td>string</td><td>Yes</td><td>NFT name</td></tr>
-<tr><td>creator</td><td>string</td><td>Yes</td><td>Creator address</td></tr>
-<tr><td>description</td><td>string</td><td>No</td><td>Description</td></tr>
-<tr><td>image</td><td>string</td><td>No</td><td>Image URL</td></tr>
-<tr><td>category</td><td>string</td><td>No</td><td>Category (default: "eco")</td></tr>
-<tr><td>carbonValue</td><td>number</td><td>No</td><td>Carbon value in tons</td></tr></tbody></table>
-<div class="code-block">curl -X POST https://verdischain.com/api/nft/mint \
-  -d '{"name":"Amazon Tree #001","creator":"0xa1e8...","carbonValue":5,"category":"reforestation"}'</div>
-<div class="response-sample">{"success":true,"nft":{"id":"0x...","name":"Amazon Tree #001","creator":"0xa1e8...","owner":"0xa1e8...","carbonValue":5}}</div></div></div>
-<div class="endpoint" id="nftlist"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/nft/list?category=<span class="param">eco</span>&amp;owner=<span class="param">0x...</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">List NFTs with optional filters.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/nft/<span class="param">:id</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Get NFT by ID.</div></div></div>
-<div class="endpoint" id="nfttransfer"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/nft/transfer</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Transfer an NFT. Strict rate limited.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>nftId</td><td>string</td><td>Yes</td><td>NFT ID</td></tr>
-<tr><td>from</td><td>string</td><td>Yes</td><td>Current owner</td></tr>
-<tr><td>to</td><td>string</td><td>Yes</td><td>New owner</td></tr></tbody></table></div></div>
-</div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-post">POST</span>
+            <span class="endpoint-path">/api/dex/swap</span>
+            <span class="endpoint-desc-short">— Execute slippage-protected token swap</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Executes an atomic swap through the constant product AMM smart contract.</p>
+        </div>
+      </div>
 
-<!-- BRIDGE -->
-<div class="section" id="bridgelock">
-<div class="section-title">&#127751; Cross-Chain Bridge</div>
-<div class="section-desc">Lock VRS on Verdis to mint wrapped VRS on BSC.</div>
-<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/bridge/lock</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Lock VRS for cross-chain bridging. Strict rate limited.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>fromAddress</td><td>string</td><td>Yes</td><td>Verdis source address</td></tr>
-<tr><td>amount</td><td>number</td><td>Yes</td><td>VRS to bridge</td></tr>
-<tr><td>bscAddress</td><td>string</td><td>Yes</td><td>Destination BSC address</td></tr>
-<tr><td>privateKey</td><td>string</td><td>Yes</td><td>Source private key</td></tr></tbody></table>
-<div class="code-block">curl -X POST https://verdischain.com/api/bridge/lock \
-  -d '{"fromAddress":"0xa1e8...","amount":500,"bscAddress":"0xbsc...","privateKey":"0x..."}'</div>
-<div class="response-sample">{"success":true,"mintId":"0x...","amount":500,"status":"locked","bscAddress":"0xbsc..."}</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/bridge/locks</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns all bridge lock records.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/bridge/lock/<span class="param">:mintId</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns a bridge lock by mint ID.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/bridge/redeem</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Redeem bridged VRS. <span class="endpoint-auth">Admin Auth Required</span></div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>mintId</td><td>string</td><td>Yes</td><td>Mint ID to redeem</td></tr>
-<tr><td>verdisAddress</td><td>string</td><td>Yes</td><td>Verdis destination address</td></tr></tbody></table></div></div>
-<div class="endpoint" id="bridgestats"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/bridge/stats</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Bridge statistics: total locked, redeemed, active locks.</div>
-<div class="response-sample">{"totalLocked":50000,"totalRedeemed":10000,"activeLocks":5,"pendingAmount":5000}</div></div></div>
-</div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-post">POST</span>
+            <span class="endpoint-path">/api/dex/liquidity</span>
+            <span class="endpoint-desc-short">— Add liquidity to green pool</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Deposit token pair into AMM contract and receive LP tokens earning 0.25% fee yield.</p>
+        </div>
+      </div>
+    </section>
 
-<!-- SECURITY -->
-<div class="section" id="secaudit">
-<div class="section-title">&#128274; Security &amp; Monitoring</div>
-<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/security/audit</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns comprehensive security audit report.</div>
-<div class="code-block">curl https://verdischain.com/api/security/audit</div>
-<div class="response-sample">{
-  "signatureVerification": true,
-  "replayProtection": true,
-  "rateLimiting": "30/min standard, 5/min strict",
-  "adminAuth": true,
-  "validatorSlashing": true,
-  "chainValidation": true,
-  "inputValidation": true,
-  "doubleSpendPrevention": true,
-  "mempoolLimit": 1000,
-  "maxTransactionAmount": 1000000000,
-  "maxBlockSize": 500,
-  "securityChecks": 13
-}</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/security/events</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Security event log. <span class="endpoint-auth">Admin Auth Required</span></div></div></div>
-<div class="endpoint" id="health"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/monitoring/health</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns system health metrics.</div>
-<div class="response-sample">{"status":"healthy","uptime":3600000,"chain":{"height":12000,"blockTime":5000,"tps":0.2},"dex":{"pools":6,"volume24h":15000},"validators":{"active":5,"registered":27}}</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/monitoring/uptime</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns server uptime.</div>
-<div class="response-sample">{"uptime":3600000,"startTime":1692396400000}</div></div></div>
-</div>
+    <!-- 4. SMART CONTRACTS CATEGORY -->
+    <section class="doc-section reveal" id="cat-contracts">
+      <div class="section-header">
+        <h2>📜 4. Smart Contracts Endpoints</h2>
+        <p>Verdis VM bytecode deployment, state execution, and ABI inspection.</p>
+      </div>
 
-<!-- CONTRACTS -->
-<div class="section" id="deploy">
-<div class="section-title">&#128220; Smart Contracts</div>
-<div class="section-desc">Deploy and execute smart contracts on Verdis's stack-based VM.</div>
-<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/contract/deploy</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Deploy a smart contract. Strict rate limited.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>owner</td><td>string</td><td>Yes</td><td>Deployer address</td></tr>
-<tr><td>name</td><td>string</td><td>Yes</td><td>Contract name</td></tr>
-<tr><td>bytecode</td><td>string</td><td>Yes</td><td>Stack-based VM bytecode</td></tr></tbody></table>
-<div class="code-block">curl -X POST https://verdischain.com/api/contract/deploy \
-  -d '{"owner":"0xa1e8...","name":"MyContract","bytecode":"PUSH 1 PUSH 2 ADD STOP"}'</div>
-<div class="response-sample">{"id":"0x...","name":"MyContract","owner":"0xa1e8...","deployedAt":1692400000000}</div></div></div>
-<div class="endpoint" id="execute"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/contract/<span class="param">:id</span>/execute</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Execute a deployed contract.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>caller</td><td>string</td><td>Yes</td><td>Caller address</td></tr>
-<tr><td>input</td><td>array</td><td>No</td><td>Input values</td></tr></tbody></table></div></div>
-<div class="endpoint" id="contracts"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/contracts</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns all deployed contracts.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/contract/<span class="param">:id</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Contract details by ID.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/contract/<span class="param">:id</span>/state</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns contract stored state.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/evm/info</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns EVM compatibility info.</div></div></div>
-</div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-post">POST</span>
+            <span class="endpoint-path">/api/contracts/deploy</span>
+            <span class="endpoint-desc-short">— Deploy bytecode to Verdis VM</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Deploys compiled bytecode. Accepts constructor parameters and returns contract address.</p>
+        </div>
+      </div>
 
-<!-- FAUCET & EXPLORER -->
-<div class="section" id="faucet">
-<div class="section-title">&#128688; Faucet &amp; Explorer</div>
-<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/faucet/claim</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Claim 1000 free VRS. 1-hour cooldown per address. Strict rate limited.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>address</td><td>string</td><td>Yes</td><td>Wallet address</td></tr></tbody></table>
-<div class="code-block">curl -X POST https://verdischain.com/api/faucet/claim \
-  -d '{"address":"0xa1e8..."}'</div>
-<div class="response-sample">{"success":true,"address":"0xa1e8...","amount":1000,"message":"1000 VRS sent","nextClaim":"2026-08-01T13:00:00Z"}</div></div></div>
-<div class="endpoint" id="faucetstatus"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/faucet/status?address=<span class="param">0x...</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Check faucet eligibility.</div>
-<div class="response-sample">{"eligible":true,"remainingMinutes":0}</div></div></div>
-<div class="endpoint" id="explorer"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/explorer/search?q=<span class="param">0x...</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Search by address, transaction hash, or block number. Auto-detects type.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/explorer/block/<span class="param">:height</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Explorer view of a block by height.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/explorer/tx/<span class="param">:hash</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Explorer view of a transaction.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/explorer/address/<span class="param">:address</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Explorer view of an address &mdash; balance, transactions, stakes.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/explorer/stats</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Explorer overview stats &mdash; total blocks, transactions, wallets, validators.</div></div></div>
-</div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-post">POST</span>
+            <span class="endpoint-path">/api/contracts/execute</span>
+            <span class="endpoint-desc-short">— Call or write to deployed smart contract</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Executes contract method with argument payload. Support for read-only static calls or state-changing writes.</p>
+        </div>
+      </div>
 
-<!-- CUSTOM TOKENS -->
-<div class="section">
-<div class="section-title">&#127904; Custom Tokens</div>
-<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/token/create</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Create a custom token. Strict rate limited.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>symbol</td><td>string</td><td>Yes</td><td>Token symbol</td></tr>
-<tr><td>name</td><td>string</td><td>No</td><td>Token name</td></tr>
-<tr><td>supply</td><td>number</td><td>Yes</td><td>Total supply</td></tr>
-<tr><td>owner</td><td>string</td><td>Yes</td><td>Owner address</td></tr></tbody></table></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/token/list</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns all custom tokens.</div></div></div>
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/dex/token/balance/<span class="param">:token</span>/<span class="param">:address</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Returns a specific token balance for an address.</div></div></div>
-</div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-get">GET</span>
+            <span class="endpoint-path">/api/contracts/list</span>
+            <span class="endpoint-desc-short">— List verified eco smart contracts</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Lists verified smart contracts deployed on mainnet with green impact certifications.</p>
+        </div>
+      </div>
+    </section>
 
+    <!-- 5. ECO METRICS CATEGORY -->
+    <section class="doc-section reveal" id="cat-eco">
+      <div class="section-header">
+        <h2>🌱 5. Eco & Sustainability Endpoints</h2>
+        <p>Real-time carbon offset verification, reforestation tracking, and node green scores.</p>
+      </div>
 
-<!-- API KEYS -->
-<div class="section" id="apikeys">
-<div class="section-title">&#128273; API Keys (External Platform Integration)</div>
-<div class="section-desc">Generate API keys with secret keys for exchanges, trackers, wallets, and dApps to integrate with Verdis. HMAC-signed requests supported.</div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-get">GET</span>
+            <span class="endpoint-path">/api/eco/carbon-credits</span>
+            <span class="endpoint-desc-short">— Query retired & available carbon credits</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Returns on-chain carbon offset statistics verified by satellite data and Verra registry standards.</p>
+        </div>
+      </div>
 
-<div class="info-box">
-<div class="info-box-title">How It Works</div>
-<ul>
-<li><strong>1. Create key:</strong> POST to <code>/api/keys/create</code> with your platform name, owner, and scopes</li>
-<li><strong>2. Receive credentials:</strong> Get <code>apiKey</code> + <code>secretKey</code> (secret shown only once!)</li>
-<li><strong>3. Authenticate:</strong> Pass <code>x-api-key: vrs_...</code> header on protected endpoints</li>
-<li><strong>4. HMAC signing (optional):</strong> Sign requests with secret key for higher security</li>
-</ul>
-</div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-get">GET</span>
+            <span class="endpoint-path">/api/eco/reforestation</span>
+            <span class="endpoint-desc-short">— Fetch tree planting coordinate registry</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Provides GPS coordinates, tree species, and growth estimates for forests planted via tx fee protocol rewards.</p>
+        </div>
+      </div>
 
-<div class="info-box">
-<div class="info-box-title">Permission Scopes</div>
-<ul>
-<li><code>read</code> &mdash; Read blockchain data, blocks, transactions, balances, pools (included in all keys)</li>
-<li><code>trade</code> &mdash; Execute DEX swaps, add/remove liquidity</li>
-<li><code>write</code> &mdash; Send transactions, deploy contracts, mint tokens/NFTs</li>
-<li><code>admin</code> &mdash; Full access including block production, bridge redemption (requires admin key to assign)</li>
-</ul>
-</div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-get">GET</span>
+            <span class="endpoint-path">/api/eco/green-scoring</span>
+            <span class="endpoint-desc-short">— Node & validator sustainability index</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Calculates green efficiency score (0-100) based on energy origin (solar, wind, hydro) and hardware usage.</p>
+        </div>
+      </div>
+    </section>
 
-<div class="endpoint open"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/keys/create</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Generate a new API key + secret key. Returns credentials <strong>only once</strong>. Strict rate limited.</div>
-<table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Req</th><th>Description</th></tr></thead><tbody>
-<tr><td>name</td><td>string</td><td>Yes</td><td>Platform/app name (e.g. "CoinGecko Tracker")</td></tr>
-<tr><td>owner</td><td>string</td><td>Yes</td><td>Owner address or email</td></tr>
-<tr><td>scopes</td><td>string[]</td><td>Yes</td><td>Permission scopes: ["read","trade","write"]</td></tr>
-<tr><td>rateLimit</td><td>number</td><td>No</td><td>Requests/min (default: 60)</td></tr>
-<tr><td>expiresInDays</td><td>number</td><td>No</td><td>Key expiry (null = never)</td></tr>
-<tr><td>metadata.website</td><td>string</td><td>No</td><td>Platform website</td></tr>
-<tr><td>metadata.description</td><td>string</td><td>No</td><td>Platform description</td></tr>
-<tr><td>metadata.webhookUrl</td><td>string</td><td>No</td><td>Webhook for event notifications</td></tr></tbody></table>
-<div class="code-label">cURL &mdash; Create a read-only key for CoinGecko</div>
-<div class="code-block">curl -X POST https://verdischain.com/api/keys/create \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "CoinGecko Tracker",
-    "owner": "api@coingecko.com",
-    "scopes": ["read"],
-    "rateLimit": 120,
-    "metadata": {
-      "website": "https://coingecko.com",
-      "description": "Price tracking integration"
-    }
-  }'</div>
-<div class="code-label">Response (200)</div>
-<div class="response-sample">{
-  "success": true,
-  "message": "API key created. Store your secret key securely - it will not be shown again.",
-  "keyId": "vk_a1b2c3d4e5f6",
-  "apiKey": "vrs_3f8a9b2c1d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8",
-  "secretKey": "vss_7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8",
-  "name": "CoinGecko Tracker",
-  "scopes": ["read"],
-  "rateLimit": 120,
-  "createdAt": 1692400000000,
-  "expiresAt": null
-}</div></div></div>
+    <!-- 6. VALIDATORS CATEGORY -->
+    <section class="doc-section reveal" id="cat-validators">
+      <div class="section-header">
+        <h2>🛡️ 6. Validators & Consensus</h2>
+        <p>DPoS validator registration, block production statistics, and governance voting.</p>
+      </div>
 
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/keys</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">List all API keys with usage stats. <span class="endpoint-auth">Admin Auth Required</span></div>
-<div class="code-label">cURL</div>
-<div class="code-block">curl https://verdischain.com/api/keys -H "x-api-key: ADMIN_KEY"</div>
-<div class="code-label">Response (200)</div>
-<div class="response-sample">{
-  "keys": [{
-    "keyId": "vk_a1b2...",
-    "apiKey": "vrs_3f8a...",
-    "name": "CoinGecko Tracker",
-    "owner": "api@coingecko.com",
-    "scopes": ["read"],
-    "rateLimit": 120,
-    "createdAt": 1692400000000,
-    "lastUsed": 1692405000000,
-    "requestCount": 1547,
-    "active": true
-  }],
-  "stats": {
-    "totalKeys": 1,
-    "activeKeys": 1,
-    "totalRequests": 1547,
-    "byScope": { "read": 1, "trade": 0, "write": 0, "admin": 0 }
-  }
-}</div></div></div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-post">POST</span>
+            <span class="endpoint-path">/api/validators/register</span>
+            <span class="endpoint-desc-short">— Register new eco validator node</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Submit proof of 100% renewable energy certification and stake 100,000 VRD to join validator pool.</p>
+        </div>
+      </div>
 
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/keys/<span class="param">:keyId</span></span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Get usage stats for a specific key. <span class="endpoint-auth">Admin Auth Required</span></div></div></div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-get">GET</span>
+            <span class="endpoint-path">/api/validators/list</span>
+            <span class="endpoint-desc-short">— List active 21 consensus validators</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Returns the 21 active consensus block producers, uptime percentages, and blocks proposed.</p>
+        </div>
+      </div>
 
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/keys/<span class="param">:keyId</span>/revoke</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Revoke an API key permanently. <span class="endpoint-auth">Admin Auth Required</span></div>
-<div class="code-label">cURL</div>
-<div class="code-block">curl -X POST https://verdischain.com/api/keys/vk_a1b2.../revoke \
-  -H "x-api-key: ADMIN_KEY"</div>
-<div class="response-sample">{"success": true, "message": "Key vk_a1b2... revoked"}</div></div></div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-post">POST</span>
+            <span class="endpoint-path">/api/validators/vote</span>
+            <span class="endpoint-desc-short">— Delegate VRD voting weight to validator</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Delegate stake to earn up to 8.4% APY green yield from protocol transaction fees.</p>
+        </div>
+      </div>
+    </section>
 
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/keys/<span class="param">:keyId</span>/rotate</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Rotate an API key (generate new key + secret). <span class="endpoint-auth">Admin Auth Required</span></div>
-<div class="code-label">Response (200)</div>
-<div class="response-sample">{"success": true, "apiKey": "vrs_new...", "secretKey": "vss_new..."}</div></div></div>
+    <!-- 7. SECURITY CATEGORY -->
+    <section class="doc-section reveal" id="cat-security">
+      <div class="section-header">
+        <h2>🔒 7. Security & Audits</h2>
+        <p>Automated security audit logs, threat monitoring, and admin key rotation.</p>
+      </div>
 
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/keys/verify</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Verify an API key (for testing). Supports both simple and HMAC verification.</div>
-<div class="code-label">cURL &mdash; Simple verification</div>
-<div class="code-block">curl -X POST https://verdischain.com/api/keys/verify \
-  -d '{"apiKey": "vrs_3f8a..."}'</div>
-<div class="response-sample">{"valid": true, "keyId": "vk_a1b2...", "name": "CoinGecko Tracker", "scopes": ["read"]}</div>
-<div class="code-label">cURL &mdash; HMAC verification (more secure)</div>
-<div class="code-block">curl -X POST https://verdischain.com/api/keys/verify \
-  -d '{
-    "apiKey": "vrs_3f8a...",
-    "signature": "hmac_sha256_hex...",
-    "timestamp": "1692400000000",
-    "body": "{}"
-  }'</div></div></div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-get">GET</span>
+            <span class="endpoint-path">/api/security/audit</span>
+            <span class="endpoint-desc-short">— Fetch automated contract vulnerability report</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Returns automated static analysis check results for smart contracts deployed on Verdis VM.</p>
+        </div>
+      </div>
 
-<div class="endpoint"><div class="endpoint-header" onclick="toggleEndpoint(this)"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/keys/stats</span><span class="endpoint-toggle">&#9654;</span></div>
-<div class="endpoint-body"><div class="endpoint-desc">Get API key system overview stats. <span class="endpoint-auth">Admin Auth Required</span></div>
-<div class="response-sample">{"totalKeys": 5, "activeKeys": 4, "revokedKeys": 1, "totalRequests": 25000, "byScope": {"read": 4, "trade": 2, "write": 1, "admin": 0}}</div></div></div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-get">GET</span>
+            <span class="endpoint-path">/api/security/events</span>
+            <span class="endpoint-desc-short">— Real-time security telemetry feed</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Provides anomaly detection alerts, rate-limit triggers, and firewall block reports.</p>
+        </div>
+      </div>
 
-<div class="info-box">
-<div class="info-box-title">Integration Example (JavaScript)</div>
-<div class="code-label">Create key and make authenticated request</div>
-<div class="code-block">// 1. Create an API key
-const createRes = await fetch('https://verdischain.com/api/keys/create', {
-  method: 'POST',
-  headers: {'Content-Type': 'application/json'},
-  body: JSON.stringify({
-    name: 'My Exchange',
-    owner: 'admin@myexchange.com',
-    scopes: ['read', 'trade']
-  })
-});
-const { apiKey, secretKey } = await createRes.json();
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-post">POST</span>
+            <span class="endpoint-path">/api/security/admin</span>
+            <span class="endpoint-desc-short">— Rotate node access keys & API permissions</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Allows administrative keys rotation and scoped API credential updates.</p>
+        </div>
+      </div>
+    </section>
 
-// 2. Make authenticated API calls
-const res = await fetch('https://verdischain.com/api/dex/pools', {
-  headers: { 'x-api-key': apiKey }
-});
-const pools = await res.json();
+    <!-- 8. NETWORK CATEGORY -->
+    <section class="doc-section reveal" id="cat-network">
+      <div class="section-header">
+        <h2>🌐 8. Network Telemetry</h2>
+        <p>Node status, latency, TPS statistics, and chain health metrics.</p>
+      </div>
 
-// 3. HMAC-signed request (higher security)
-const timestamp = Date.now().toString();
-const body = JSON.stringify({trader: '0x...', tokenIn: 'VRS', tokenOut: 'CARBON', amountIn: 100});
-const payload = `${apiKey}.${timestamp}.${body}`;
-const signature = await hmacSha256(secretKey, payload);  // use crypto.subtle or similar
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-get">GET</span>
+            <span class="endpoint-path">/api/network/info</span>
+            <span class="endpoint-desc-short">— Chain parameters and RPC endpoints</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Returns general node metadata, chain ID, Genesis timestamp, and active peers count.</p>
+        </div>
+      </div>
 
-const swapRes = await fetch('https://verdischain.com/api/dex/swap', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'x-api-key': apiKey,
-    'x-signature': signature,
-    'x-timestamp': timestamp
-  },
-  body
-});</div>
-</div>
-</div>
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-get">GET</span>
+            <span class="endpoint-path">/api/network/tps</span>
+            <span class="endpoint-desc-short">— Live and historical TPS metrics</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Returns instantaneous TPS, 1-hour average TPS, and peak throughput record (5,400 TPS).</p>
+        </div>
+      </div>
 
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-get">GET</span>
+            <span class="endpoint-path">/api/network/health</span>
+            <span class="endpoint-desc-short">— Complete system component health check</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Checks core component connectivity, database disk space, memory load, and peer count.</p>
+        </div>
+      </div>
+    </section>
 
-<div style="text-align:center;margin-top:48px;padding-top:32px;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px">
-<p>&#127807; Verdis Blockchain &mdash; The First Fully Green Blockchain Ecosystem</p>
-<p><a href="https://verdischain.com">verdischain.com</a> &middot; <a href="https://x.com/Verdischain">@Verdischain</a> &middot; <a href="https://t.me/verdischain">Telegram</a> &middot; Chain ID 909 &middot; RPC: rpc.verdischain.com</p>
-<p>API v1.0.0 &mdash; August 2026</p>
-</div>
-</div>
-</div>
-<script>
-function toggleEndpoint(header){const ep=header.parentElement;ep.classList.toggle('open')}
-function scrollToSection(id){document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));event.target.classList.add('active')}
-</script>
-<!-- Verdis AI Support Widget — inject before </body> on any page -->
-<style>
-/* AI Support Widget */
-#aiWidget{position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Inter',-apple-system,sans-serif}
-.ai-fab{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#238636,#00ff88);border:none;cursor:pointer;box-shadow:0 4px 24px rgba(0,255,136,.3);display:flex;align-items:center;justify-content:center;transition:all .3s;position:relative}
-.ai-fab:hover{transform:scale(1.08);box-shadow:0 6px 32px rgba(0,255,136,.4)}
-.ai-fab svg{width:28px;height:28px}
-.ai-fab .ai-pulse{position:absolute;top:0;right:0;width:14px;height:14px;border-radius:50%;background:#3fb950;border:2px solid #0d1117;animation:aiPulse 2s infinite}
-@keyframes aiPulse{0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,.5)}50%{box-shadow:0 0 0 6px rgba(63,185,80,0)}}
-.ai-fab .ai-badge{position:absolute;top:-4px;left:-4px;background:#f85149;color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;display:none}
-.ai-fab .ai-badge.show{display:block;animation:scaleIn .3s}
+    <!-- WEBSOCKET SECTION -->
+    <section class="doc-section reveal" id="sec-websocket">
+      <div class="section-header">
+        <h2>⚡ WebSocket Real-Time API</h2>
+        <p>Bi-directional real-time event streaming for block minting, TPS spikes, and transactions.</p>
+      </div>
+      <div class="endpoint-card open">
+        <div class="endpoint-header">
+          <div class="endpoint-left">
+            <span class="method-badge method-ws">WS</span>
+            <span class="endpoint-path">wss://ws.verdis.eco/ws</span>
+            <span class="endpoint-desc-short">— WebSocket Streaming Connection</span>
+          </div>
+        </div>
+        <div class="endpoint-body">
+          <p>Connect via standard WebSocket protocol to receive instantaneous network events without polling.</p>
+          <p style="margin-top:0.5rem;"><strong>Supported Event Subscriptions:</strong> <code>block_minted</code>, <code>tx_confirmed</code>, <code>tps_update</code>, <code>validator_heartbeat</code>.</p>
 
-.ai-panel{position:fixed;bottom:100px;right:24px;width:380px;max-width:calc(100vw - 48px);height:560px;max-height:calc(100vh - 140px);background:#0d1117;border:1px solid rgba(63,185,80,.15);border-radius:20px;display:none;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);backdrop-filter:blur(20px);transform-origin:bottom right}
-.ai-panel.open{display:flex;animation:aiPanelIn .35s cubic-bezier(.16,1,.3,1)}
-@keyframes aiPanelIn{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
-@keyframes scaleIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+          <div class="code-box">
+            <div class="code-header">
+              <span>JavaScript Client Example</span>
+              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+            </div>
+            <pre class="code-content"><code>const ws = new WebSocket("wss://ws.verdis.eco/ws");
 
-.ai-header{padding:16px 20px;background:linear-gradient(135deg,#0d1117,#161b22);border-bottom:1px solid rgba(63,185,80,.1);display:flex;align-items:center;justify-content:space-between}
-.ai-header-info{display:flex;align-items:center;gap:12px}
-.ai-avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#238636,#00ff88);display:flex;align-items:center;justify-content:center;font-size:20px}
-.ai-header-text h3{font-size:15px;font-weight:700;color:#e6edf3;margin:0}
-.ai-header-text .status{font-size:11px;color:#3fb950;display:flex;align-items:center;gap:5px}
-.ai-header-text .status::before{content:'';width:6px;height:6px;border-radius:50%;background:#3fb950;animation:aiPulse 2s infinite}
-.ai-close{background:none;border:none;color:#8b949e;font-size:20px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all .2s}
-.ai-close:hover{color:#e6edf3;background:rgba(255,255,255,.05)}
-
-.ai-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scrollbar-width:thin;scrollbar-color:#30363d transparent}
-.ai-messages::-webkit-scrollbar{width:4px}
-.ai-messages::-webkit-scrollbar-thumb{background:#30363d;border-radius:4px}
-.ai-msg{max-width:85%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.5;animation:scaleIn .3s}
-.ai-msg.bot{align-self:flex-start;background:#161b22;border:1px solid #30363d;color:#e6edf3;border-bottom-left-radius:4px}
-.ai-msg.user{align-self:flex-end;background:linear-gradient(135deg,#238636,#00ff88);color:#0d1117;border-bottom-right-radius:4px;font-weight:500}
-.ai-msg .quick-links{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
-.ai-msg .quick-link{padding:4px 10px;background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.2);border-radius:100px;font-size:11px;color:#3fb950;cursor:pointer;transition:all .2s}
-.ai-msg .quick-link:hover{background:rgba(63,185,80,.2);transform:translateY(-1px)}
-.ai-typing{display:flex;gap:4px;padding:12px 16px;align-self:flex-start;background:#161b22;border:1px solid #30363d;border-radius:14px;border-bottom-left-radius:4px}
-.ai-typing span{width:7px;height:7px;border-radius:50%;background:#3fb950;animation:aiTyping 1.4s infinite}
-.ai-typing span:nth-child(2){animation-delay:.2s}
-.ai-typing span:nth-child(3){animation-delay:.4s}
-@keyframes aiTyping{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-6px)}}
-
-.ai-suggestions{padding:8px 16px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid #21262d}
-.ai-suggestion{padding:5px 12px;background:rgba(63,185,80,.08);border:1px solid rgba(63,185,80,.15);border-radius:100px;font-size:11px;color:#3fb950;cursor:pointer;white-space:nowrap;transition:all .2s}
-.ai-suggestion:hover{background:rgba(63,185,80,.15);transform:translateY(-1px)}
-
-.ai-input{padding:12px 16px;border-top:1px solid #21262d;display:flex;gap:8px;align-items:center;background:#0d1117}
-.ai-input input{flex:1;background:#161b22;border:1px solid #30363d;border-radius:100px;padding:10px 16px;color:#e6edf3;font-size:13px;outline:none;transition:border-color .2s}
-.ai-input input:focus{border-color:#3fb950}
-.ai-input input::placeholder{color:#6b7280}
-.ai-send{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#238636,#00ff88);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
-.ai-send:hover{transform:scale(1.08)}
-.ai-send svg{width:18px;height:18px}
-.ai-send:disabled{opacity:.4;cursor:default;transform:none}
-
-@media(max-width:768px){.ai-panel{width:calc(100vw - 32px);right:16px;bottom:90px;height:calc(100vh - 120px)}#aiWidget{bottom:16px;right:16px}}
-</style>
-<div id="aiWidget">
-<div class="ai-panel" id="aiPanel">
-<div class="ai-header">
-<div class="ai-header-info">
-<div class="ai-avatar">🌿</div>
-<div class="ai-header-text">
-<h3>Verdis AI Assistant</h3>
-<div class="status">Online · Chain 909</div>
-</div>
-</div>
-<button class="ai-close" onclick="aiToggle()">✕</button>
-</div>
-<div class="ai-messages" id="aiMessages"></div>
-<div class="ai-suggestions" id="aiSuggestions"></div>
-<div class="ai-input">
-<input type="text" id="aiInput" placeholder="Ask about Verdis..." onkeydown="if(event.key==='Enter')aiSend()">
-<button class="ai-send" onclick="aiSend()">
-<svg viewBox="0 0 24 24" fill="none" stroke="#0d1117" stroke-width="2.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-</button>
-</div>
-</div>
-<button class="ai-fab" id="aiFab" onclick="aiToggle()">
-<span class="ai-badge" id="aiBadge">1</span>
-<span class="ai-pulse"></span>
-<svg viewBox="0 0 24 24" fill="none" stroke="#0d1117" stroke-width="2"><path d="M12 2C8 2 5 5 5 9c0 2 1 3 1 5l-1 2 4-1c1 1 2 1 3 1s2 0 3-1l4 1-1-2c0-2 1-3 1-5 0-4-3-7-7-7z"/><circle cx="9" cy="10" r="1" fill="#0d1117"/><circle cx="15" cy="10" r="1" fill="#0d1117"/></svg>
-</button>
-</div>
-<script>
-// === Verdis AI Assistant ===
-const AI_KNOWLEDGE_BASE = {
-  blockchain: {
-    keywords: ['blockchain','chain','verdis','vrs','token','network','consensus','dpos'],
-    answer: '🌿 **Verdis Blockchain**\n\nVerdis (VRS) is a Layer-1 blockchain with native DPoS consensus running on Chain ID 909. Key specs:\n\n• **Consensus:** Delegated Proof of Stake (5 active validators, 27 registered)\n• **Block Time:** 5 seconds\n• **Total Supply:** 50,000,000,000 VRS\n• **Cryptography:** secp256k1 signatures + Keccak256 hashing\n• **Smart Contracts:** Stack-based VM with 22 opcodes\n• **DEX:** Native AMM with 6 liquidity pools\n\nAll blocks are produced on-chain with real cryptographic validation — no mocks.',
-    links: ['View Dashboard', 'See Validators', 'Check Block Height']
-  },
-  dex: {
-    keywords: ['dex','swap','trade','amm','liquidity','pool','exchange','carbon','eco token'],
-    answer: '💱 **Verdis Native DEX**\n\nThe AMM DEX is built directly into the blockchain — no external contracts needed.\n\n**Active Pools:**\n• VRS/CARBON — Carbon credit trading\n• VRS/ECO — Eco-token exchange\n• CARBON/ECO — Cross eco-token swap\n• TREE/VRS — Reforestation token\n• GREEN/VRS — Green validator token\n• REDD/VRS — Reddington reward token\n\nThe auto-trade bot provides continuous liquidity. You can swap tokens in the Dashboard → DEX tab.',
-    links: ['Open DEX', 'View Pool Stats', 'Add Liquidity']
-  },
-  contracts: {
-    keywords: ['contract','smart','deploy','vm','opcode','assembly','compile','visual'],
-    answer: '📜 **Smart Contracts on Verdis**\n\nVerdis has a built-in stack-based Virtual Machine with 22 opcodes (PUSH, ADD, STORE, LOAD, JUMP, etc.).\n\n**Two ways to deploy:**\n1. **Visual Builder** — Drag & drop instruction blocks, no coding needed\n2. **Assembly Editor** — Write Verdis assembly directly\n\n**6 Preset Templates:**\n• Simple Token\n• Counter\n• Key-Value Store\n• Escrow Lock\n• Voting\n• Custom\n\nPlus 6 visual preset recipes (Token with Transfer, Multi-Sig Wallet, Simple Auction, Time-Lock Vault, On-Chain Ledger, Access Controller).',
-    links: ['Open Contracts', 'View Templates', 'Read VM Docs']
-  },
-  eco: {
-    keywords: ['eco','green','carbon','co2','climate','environment','tree','reforestation','offset','sustainab'],
-    answer: '🌱 **Verdis Eco Features**\n\nVerdis is the **first fully green blockchain** — environmental regeneration is built into the protocol, not an afterthought.\n\n**On-Chain Eco Features:**\n• **Carbon Credits** — Minted and tracked on-chain\n• **Reforestation Logging** — Trees planted are recorded immutably\n• **Green Validator Scoring** — Validators scored by renewable energy use\n• **5B VRS Carbon Offset Fund** — Dedicated to environmental projects\n\n**Current Impact:**\n• 1,000+ tons CO₂ offset\n• 15,000+ trees planted\n• 6 green validators active\n\nEvery block produced contributes to planetary healing.',
-    links: ['View Eco Dashboard', 'See Carbon Stats', 'Tree Planting Log']
-  },
-  wallet: {
-    keywords: ['wallet','connect','metamask','trust','import','private key','seed','address','balance'],
-    answer: '👛 **Verdis Native Wallet**\n\nVerdis has a **built-in native wallet** — no MetaMask, Trust Wallet, or browser injection needed.\n\n**Create Wallet:**\n• Click "Create Native Wallet" in the Dashboard\n• Generates secp256k1 keypair locally\n• Your keys never leave your browser\n\n**Import Wallet:**\n• Paste your private key or 12-word mnemonic\n\n**External Wallet (Optional):**\n• MetaMask: Add custom network (RPC: https://rpc.verdischain.com, Chain ID: 909)\n• Trust Wallet: Use DApp browser or manual import\n\nYour wallet state persists in localStorage — it survives page refreshes.',
-    links: ['Open Wallet', 'Create New', 'Import Existing']
-  },
-  sale: {
-    keywords: ['sale','buy','token sale','price','ido','invest','purchase','presale','ico'],
-    answer: '🚀 **Verdis Token Sale (IDO)**\n\n**Price:** $0.001 per VRS\n\n**Accepted Assets:**\n• ETH (Ethereum)\n• BNB (BSC)\n• USDT / USDC\n\nThe token sale is live on the Dashboard → Token Sale tab. All transactions are on-chain and verifiable.\n\nVRS tokens are utility tokens used for:\n• Transaction fees\n• DEX trading\n• Validator staking\n• Governance voting\n• Carbon credit minting',
-    links: ['Open Token Sale', 'View Pricing', 'Read Whitepaper']
-  },
-  staking: {
-    keywords: ['stake','staking','delegate','validator','reward','slashing','pos'],
-    answer: '🔒 **DPoS Staking**\n\nVerdis uses Delegated Proof of Stake:\n\n• **27 validators** registered\n• **5 active** block producers (top voted)\n• **Block rewards** distributed to active validators\n• **Delegation** — Vote for validators to earn rewards\n• **Slashing** — Misbehaving validators lose stake\n• **Green scoring** — Validators using renewable energy get higher rewards\n\nStake your VRS in Dashboard → Staking tab.',
-    links: ['Open Staking', 'View Validators', 'Delegate Now']
-  },
-  security: {
-    keywords: ['security','safe','hack','protect','rate limit','auth','admin','replay','nonce'],
-    answer: '🔐 **Verdis Security**\n\nVerdis has 13 active security checks:\n\n• secp256k1 signature verification\n• SHA-256 + Keccak256 hashing\n• Tamper detection\n• Double-spend prevention\n• Chain validation\n• Rate limiting (30/min + 5/min strict)\n• Nonce replay protection\n• Admin API key authentication\n• Validator slashing\n• Input validation\n• Mempool limits (1000 txs)\n• Max transaction 1B VRS\n• Max block size 500 transactions\n\nSecurity audit available at `/api/security/audit` endpoint.',
-    links: ['View Security Audit', 'Security Events', 'Network Info']
-  },
-  whitepaper: {
-    keywords: ['whitepaper','documentation','docs','guide','how','learn','paper','research'],
-    answer: '📄 **Verdis Whitepaper**\n\nThe Verdis whitepaper is a 14-section comprehensive document covering:\n\n1. Executive Summary\n2. Technology Architecture\n3. DPoS Consensus\n4. Carbon-Negative Protocol\n5. Green Validator Scoring\n6. Reforestation Logging\n7. AMM DEX Design\n8. Smart Contract VM\n9. Native Wallet System\n10. Token Economics\n11. Security Model\n12. Roadmap\n13. Team\n14. Conclusion\n\nAvailable as HTML and PDF download.',
-    links: ['Read Whitepaper', 'Download PDF', 'Executive Summary']
-  },
-  roadmap: {
-    keywords: ['roadmap','future','plan','next','phase','launch','listing','coingecko','coinmarketcap'],
-    answer: '🗺️ **Verdis Roadmap**\n\n**Completed:**\n✅ Mainnet launch (Chain 909)\n✅ DPoS consensus with green scoring\n✅ Native AMM DEX (6 pools)\n✅ Smart contract VM with visual builder\n✅ Native wallet (no MetaMask)\n✅ Token sale (IDO) live\n✅ Whitepaper published\n✅ Telegram & Twitter presence\n✅ Brand identity (hexagonal leaf logo)\n\n**In Progress:**\n🔄 CoinGecko & CoinMarketCap listing\n🔄 Cross-chain bridge for liquidity\n🔄 Twitter automation enhancement\n\n**Planned:**\n📋 Mobile wallet app\n📋 Carbon offset marketplace\n📋 Enterprise validator onboarding\n📋 Layer-2 scaling solution',
-    links: ['View Whitepaper', 'Join Telegram', 'Follow Twitter']
-  },
-  api: {
-    keywords: ['api','rpc','endpoint','json','rest','developer','integrate','code'],
-    answer: '💻 **Verdis API**\n\n**JSON-RPC (Ethereum-compatible):**\n• Endpoint: `https://rpc.verdischain.com`\n• Chain ID: 909\n• 25 RPC methods (eth_blockNumber, eth_getBalance, etc.)\n\n**REST API (50+ endpoints):**\n• `/api/blockchain/info` — Chain stats\n• `/api/blockchain/blocks` — Block explorer\n• `/api/dex/pools` — DEX data\n• `/api/eco/impact` — Eco metrics\n• `/api/security/audit` — Security status\n• `/api/network/info` — Network info\n\nFull interactive docs at `/docs` page.',
-    links: ['Open API Docs', 'View Endpoints', 'Network Info']
-  },
-  governance: {
-    keywords: ['governance','vote','proposal','dao','community','decision','treasury'],
-    answer: '🗳️ **Verdis Governance**\n\nVerdis features on-chain governance:\n\n• **Proposals** — Any VRS holder can submit\n• **Voting** — 1 VRS = 1 vote\n• **Quorum** — Minimum participation required\n• **Execution** — Passed proposals execute on-chain\n\nGovernance covers:\n• Protocol parameter changes\n• Validator slashing decisions\n• Carbon offset fund allocation\n• Reforestation project approval\n\nAccess via Dashboard → Governance tab.',
-    links: ['Open Governance', 'View Proposals', 'Create Proposal']
-  }
+ws.onopen = () => {
+  console.log("Connected to Verdis Eco Stream");
+  // Subscribe to live TPS and block updates
+  ws.send(JSON.stringify({
+    action: "subscribe",
+    channels: ["block_minted", "tps_update"]
+  }));
 };
 
-const AI_SUGGESTIONS = ['What is Verdis?', 'How to buy VRS?', 'Explain the DEX', 'Eco features', 'How to deploy a contract?', 'Security model'];
-const AI_GREETING = "🌿 Hi! I'm the Verdis AI Assistant. I can help you with:\n\n• Blockchain & network info\n• DEX & trading\n• Smart contracts & VM\n• Eco features & carbon credits\n• Wallet setup\n• Token sale & staking\n• Security & API\n\nWhat would you like to know?";
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  console.log("Realtime event:", data);
+};</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
 
-let aiOpen = false;
-let aiHistory = [];
+    <!-- JSON-RPC 2.0 METHOD LIST -->
+    <section class="doc-section reveal" id="sec-jsonrpc">
+      <div class="section-header">
+        <h2>⚡ JSON-RPC 2.0 Method Reference</h2>
+        <p>EVM and Verdis native JSON-RPC methods for Web3.js, Ethers.js, and Hardhat integration.</p>
+      </div>
 
-function aiToggle() {
-  aiOpen = !aiOpen;
-  const panel = document.getElementById('aiPanel');
-  const fab = document.getElementById('aiFab');
-  if (aiOpen) {
-    panel.classList.add('open');
-    fab.style.transform = 'scale(0.85)';
-    document.getElementById('aiBadge').classList.remove('show');
-    setTimeout(() => document.getElementById('aiInput').focus(), 300);
-    if (aiHistory.length === 0) {
-      aiAddMessage('bot', AI_GREETING);
-      aiRenderSuggestions();
-    }
-  } else {
-    panel.classList.remove('open');
-    fab.style.transform = '';
-  }
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-rpc">RPC</span>
+            <span class="endpoint-path">eth_blockNumber</span>
+            <span class="endpoint-desc-short">— Returns latest block number hex</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="code-box">
+            <pre class="code-content"><code>// Request Payload
+{
+  "jsonrpc": "2.0",
+  "method": "eth_blockNumber",
+  "params": [],
+  "id": 1
 }
 
-function aiAddMessage(sender, text) {
-  const messages = document.getElementById('aiMessages');
-  const msg = document.createElement('div');
-  msg.className = 'ai-msg ' + sender;
-  
-  // Format markdown-like syntax
-  let formatted = text
-    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#3fb950">$1</strong>')
-    .replace(/\n/g, '<br>');
-  msg.innerHTML = formatted;
-  
-  messages.appendChild(msg);
-  messages.scrollTop = messages.scrollHeight;
-  aiHistory.push({ sender, text });
+// Response
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": "0x498b36" // Decimal: 4820022
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-rpc">RPC</span>
+            <span class="endpoint-path">eth_getBalance</span>
+            <span class="endpoint-desc-short">— Returns account balance at block height</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <div class="code-box">
+            <pre class="code-content"><code>{ "jsonrpc": "2.0", "method": "eth_getBalance", "params": ["0x71C7656EC7ab88b098defB751B7401B5f6d8976F", "latest"], "id": 1 }</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-rpc">RPC</span>
+            <span class="endpoint-path">eth_sendRawTransaction</span>
+            <span class="endpoint-desc-short">— Submit signed raw transaction payload</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Executes signed raw transaction. Returns transaction hash upon insertion into mempool.</p>
+        </div>
+      </div>
+
+      <div class="endpoint-card">
+        <div class="endpoint-header" onclick="toggleEndpoint(this)">
+          <div class="endpoint-left">
+            <span class="method-badge method-rpc">RPC</span>
+            <span class="endpoint-path">verdis_getEcoScore</span>
+            <span class="endpoint-desc-short">— Native Eco rating query</span>
+          </div>
+          <span class="endpoint-chevron">▼</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Returns validator or wallet green score metrics and verified carbon offsets.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- AI Support Widget -->
+<div class="ai-widget-container">
+  <div id="aiChatWindow" class="ai-chat-window hidden">
+    <div class="ai-chat-header">
+      <div class="ai-chat-title">
+        <span class="ai-status-dot"></span>
+        <span style="font-family:'Space Grotesk',sans-serif; font-weight:600;">Verdis Eco Assistant</span>
+      </div>
+      <button class="ai-close-btn" onclick="toggleAIChat()">✕</button>
+    </div>
+    <div class="ai-chat-body" id="aiChatBody">
+      <div class="ai-msg bot">
+        🌿 Welcome to Verdis Developer Support! I can assist you with API endpoints, RPC calls, smart contract execution, or WebSocket events. How can I help?
+      </div>
+    </div>
+    <div class="ai-chat-input-area">
+      <input type="text" id="aiInput" placeholder="Ask about API or WebSocket..." onkeydown="if(event.key==='Enter') sendAIMessage()">
+      <button onclick="sendAIMessage()">Send</button>
+    </div>
+  </div>
+  <button class="ai-floating-btn" onclick="toggleAIChat()" title="AI Developer Support">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+    <span class="ai-badge-dot"></span>
+  </button>
+</div>
+
+<script>
+// Endpoint Accordion Toggle
+function toggleEndpoint(element) {
+  const card = element.parentElement;
+  card.classList.toggle('open');
 }
 
-function aiAddMessageWithLinks(sender, text, links) {
-  const messages = document.getElementById('aiMessages');
-  const msg = document.createElement('div');
-  msg.className = 'ai-msg ' + sender;
-  
-  let formatted = text
-    .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#3fb950">$1</strong>')
-    .replace(/\n/g, '<br>');
-  
-  if (links && links.length > 0) {
-    formatted += '<div class="quick-links">';
-    links.forEach(link => {
-      formatted += '<span class="quick-link" onclick="aiHandleLink(\'' + link.replace(/'/g, "\\\\'") + '\')">' + link + '</span>';
-    });
-    formatted += '</div>';
-  }
-  
-  msg.innerHTML = formatted;
-  messages.appendChild(msg);
-  messages.scrollTop = messages.scrollHeight;
-  aiHistory.push({ sender, text });
+// Copy Code Snippet
+function copyCode(btn) {
+  const codeBox = btn.closest('.code-box');
+  const codeText = codeBox.querySelector('.code-content').innerText;
+  navigator.clipboard.writeText(codeText).then(() => {
+    const originalText = btn.innerText;
+    btn.innerText = 'Copied!';
+    btn.style.color = '#00ff88';
+    setTimeout(() => {
+      btn.innerText = originalText;
+      btn.style.color = '';
+    }, 2000);
+  });
 }
 
-function aiRenderSuggestions() {
-  const container = document.getElementById('aiSuggestions');
-  container.innerHTML = AI_SUGGESTIONS.map(s => 
-    '<span class="ai-suggestion" onclick="aiQuickAsk(\'' + s.replace(/'/g, "\\\\'") + '\')">' + s + '</span>'
-  ).join('');
-}
-
-function aiQuickAsk(question) {
-  document.getElementById('aiInput').value = question;
-  aiSend();
-}
-
-function aiSend() {
-  const input = document.getElementById('aiInput');
-  const text = input.value.trim();
-  if (!text) return;
-  
-  aiAddMessage('user', text);
-  input.value = '';
-  
-  // Clear suggestions
-  document.getElementById('aiSuggestions').innerHTML = '';
-  
-  // Show typing indicator
-  const messages = document.getElementById('aiMessages');
-  const typing = document.createElement('div');
-  typing.className = 'ai-typing';
-  typing.id = 'aiTyping';
-  typing.innerHTML = '<span></span><span></span><span></span>';
-  messages.appendChild(typing);
-  messages.scrollTop = messages.scrollHeight;
-  
-  // Simulate AI thinking time
-  setTimeout(() => {
-    typing.remove();
-    const response = aiGetAnswer(text);
-    aiAddMessageWithLinks('bot', response.answer, response.links);
-  }, 600 + Math.random() * 400);
-}
-
-function aiGetAnswer(query) {
-  const lower = query.toLowerCase();
-  let bestMatch = null;
-  let bestScore = 0;
-  
-  for (const [key, entry] of Object.entries(AI_KNOWLEDGE_BASE)) {
-    let score = 0;
-    for (const keyword of entry.keywords) {
-      if (lower.includes(keyword)) {
-        score += keyword.length;
-      }
-    }
-    if (score > bestScore) {
-      bestScore = score;
-      bestMatch = entry;
-    }
-  }
-  
-  if (bestMatch && bestScore > 0) {
-    return { answer: bestMatch.answer, links: bestMatch.links || [] };
-  }
-  
-  // Fallback
-  return {
-    answer: "I'm not sure about that yet! Here are some things I can help with:\n\n• **Blockchain** — What is Verdis? Network stats?\n• **DEX** — How to trade, liquidity pools\n• **Eco** — Carbon credits, trees, green validators\n• **Contracts** — How to deploy, templates\n• **Wallet** — How to create/import a wallet\n• **Token Sale** — How to buy VRS\n• **Staking** — How to earn rewards\n• **Security** — How safe is Verdis?\n• **API** — RPC endpoints, developer docs\n\nTry asking about any of these topics!",
-    links: ['What is Verdis?', 'How to buy VRS?', 'Eco features']
-  };
-}
-
-function aiHandleLink(link) {
-  const linkMap = {
-    'View Dashboard': '/dashboard',
-    'Open DEX': '/dashboard#dex',
-    'Open Contracts': '/dashboard#contracts',
-    'Open Wallet': '/dashboard#wallet',
-    'Open Token Sale': '/dashboard#sale',
-    'Open Staking': '/dashboard#staking',
-    'Open Governance': '/dashboard#governance',
-    'Read Whitepaper': '/whitepaper',
-    'Download PDF': '/whitepaper.pdf',
-    'Open API Docs': '/docs',
-    'View Eco Dashboard': '/dashboard#eco',
-    'Network Info': '/api/network/info',
-    'See Validators': '/dashboard#validators',
-    'Check Block Height': '/dashboard',
-    'View Pool Stats': '/dashboard#dex',
-    'Add Liquidity': '/dashboard#dex',
-    'See Carbon Stats': '/dashboard#eco',
-    'Tree Planting Log': '/dashboard#eco',
-    'Read VM Docs': '/docs',
-    'View Templates': '/dashboard#contracts',
-    'Create New': '/dashboard#wallet',
-    'Import Existing': '/dashboard#wallet',
-    'View Pricing': '/dashboard#sale',
-    'Delegate Now': '/dashboard#staking',
-    'View Validators': '/dashboard#validators',
-    'View Security Audit': '/dashboard#security',
-    'Security Events': '/dashboard#security',
-    'Executive Summary': '/whitepaper',
-    'View Endpoints': '/docs',
-    'View Proposals': '/dashboard#governance',
-    'Create Proposal': '/dashboard#governance',
-    'Join Telegram': 'https://t.me/verdischain',
-    'Follow Twitter': 'https://x.com/Verdischain'
-  };
-  
-  const url = linkMap[link];
-  if (url) {
-    if (url.startsWith('http')) {
-      window.open(url, '_blank');
+// Search Filter
+function filterEndpoints() {
+  const query = document.getElementById('apiSearch').value.toLowerCase();
+  const cards = document.querySelectorAll('.endpoint-card');
+  cards.forEach(card => {
+    const text = card.innerText.toLowerCase();
+    if (text.includes(query)) {
+      card.style.display = 'block';
     } else {
-      window.location.href = url;
+      card.style.display = 'none';
     }
-  }
+  });
 }
 
-// Show badge after 3 seconds if user hasn't opened
-setTimeout(() => {
-  if (!aiOpen) {
-    document.getElementById('aiBadge').classList.add('show');
-  }
-}, 3000);
+// AI Chat Widget
+function toggleAIChat() {
+  const window = document.getElementById('aiChatWindow');
+  window.classList.toggle('hidden');
+}
 
-// === Live TPS via WebSocket ===
-let wsReconnectTimer = null;
-function connectWebSocket() {
-  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const wsUrl = protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + '/ws';
-  let ws;
-  try {
-    ws = new WebSocket(wsUrl);
-  } catch(e) {
-    console.log('WebSocket not available, using polling');
-    pollTPS();
-    return;
-  }
-  
-  ws.onopen = () => {
-    console.log('🔌 WebSocket connected');
-    if (wsReconnectTimer) { clearInterval(wsReconnectTimer); wsReconnectTimer = null; }
-  };
-  
-  ws.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
-      if (data.type === 'stats' || data.type === 'connected') {
-        const stats = data.stats || data;
-        if (stats.tps !== undefined) {
-          const tpsEl = document.getElementById('s-tps');
-          if (tpsEl) tpsEl.textContent = stats.tps.toFixed(1);
-        }
-        if (stats.totalTxs !== undefined) {
-          // Update if we have a total txs element
-        }
-      }
-      if (data.type === 'block') {
-        if (data.tps !== undefined) {
-          const tpsEl = document.getElementById('s-tps');
-          if (tpsEl) tpsEl.textContent = data.tps.toFixed(1);
-        }
-      }
-    } catch(e) {}
-  };
-  
-  ws.onclose = () => {
-    console.log('WebSocket disconnected, will retry in 5s');
-    if (!wsReconnectTimer) {
-      wsReconnectTimer = setInterval(() => {
-        connectWebSocket();
-      }, 5000);
+function sendAIMessage() {
+  const input = document.getElementById('aiInput');
+  const query = input.value.trim();
+  if (!query) return;
+
+  const chatBody = document.getElementById('aiChatBody');
+
+  // Add User Message
+  const userMsg = document.createElement('div');
+  userMsg.className = 'ai-msg user';
+  userMsg.innerText = query;
+  chatBody.appendChild(userMsg);
+
+  input.value = '';
+  chatBody.scrollTop = chatBody.scrollHeight;
+
+  // Bot response simulation
+  setTimeout(() => {
+    const botMsg = document.createElement('div');
+    botMsg.className = 'ai-msg bot';
+    let reply = "I can help with that! Verdis API provides REST, WebSocket (`/ws`), and JSON-RPC (`Chain ID 909`) endpoints. Check out `/api/blockchain/info` or `/api/wallet/create` for quick testing.";
+    
+    if (query.toLowerCase().includes('websocket') || query.toLowerCase().includes('ws')) {
+      reply = "Our WebSocket endpoint is `wss://ws.verdis.eco/ws`. You can subscribe to `block_minted`, `tps_update`, and `tx_confirmed` streams in real time!";
+    } else if (query.toLowerCase().includes('rpc') || query.toLowerCase().includes('eth_')) {
+      reply = "Verdis supports standard EVM JSON-RPC 2.0 methods like `eth_blockNumber`, `eth_getBalance`, and `eth_sendRawTransaction`, plus custom `verdis_getEcoScore`.";
+    } else if (query.toLowerCase().includes('eco') || query.toLowerCase().includes('carbon')) {
+      reply = "Use `/api/eco/carbon-credits` to query verified offsets or `/api/eco/green-scoring` for node energy efficiency indexes.";
     }
-  };
-  
-  ws.onerror = () => {
-    ws.close();
-  };
+
+    botMsg.innerText = reply;
+    chatBody.appendChild(botMsg);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }, 600);
 }
 
-// Fallback: Poll TPS endpoint
-function pollTPS() {
-  fetch('/api/network/tps').then(r => r.json()).then(d => {
-    const tpsEl = document.getElementById('s-tps');
-    if (tpsEl && d.tps !== undefined) tpsEl.textContent = d.tps.toFixed(1);
-  }).catch(() => {});
-}
+// Scroll Reveal Intersection Observer
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('active');
+    }
+  });
+}, { threshold: 0.08 });
 
-// Connect WebSocket on load
-connectWebSocket();
-// Also poll as backup every 10s
-setInterval(pollTPS, 10000);
-
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 </script>
 </body>
 </html>
