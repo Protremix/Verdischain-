@@ -474,7 +474,7 @@ class VerdisApi(
             }
         }
 
-        // 7. sendTransaction(from, to, amount, fee, nonce, signature, publicKey): POST /api/transaction/send
+        // 7. sendTransaction(from, to, amount, fee, nonce, signature, publicKey): POST /api/transaction/submit
         suspend fun sendTransaction(
             from: String,
             to: String,
@@ -485,17 +485,23 @@ class VerdisApi(
             publicKey: String
         ): TransactionResult = withContext(Dispatchers.IO) {
             try {
+                // Build full transaction object with ID (sha256 of payload)
+                val payload = "$from:$to:$amount:$fee:$nonce:"
+                val txId = CryptoUtils.sha256Hex(payload)
                 val bodyMap = mapOf(
+                    "id" to txId,
                     "from" to from,
                     "to" to to,
                     "amount" to amount,
                     "fee" to fee,
                     "nonce" to nonce,
+                    "timestamp" to System.currentTimeMillis(),
+                    "data" to "",
                     "signature" to signature,
                     "publicKey" to publicKey
                 )
                 val jsonBody = gson.toJson(bodyMap)
-                val jsonResp = executePost("/api/transaction/send", jsonBody)
+                val jsonResp = executePost("/api/transaction/submit", jsonBody)
                 if (jsonResp.isNotEmpty()) {
                     val obj = JsonParser.parseString(jsonResp).asJsonObject
                     TransactionResult(
@@ -675,10 +681,8 @@ class VerdisApi(
             try {
                 val bodyMap = mapOf(
                     "address" to address,
-                    "validatorAddress" to validatorAddress,
                     "amount" to amount,
-                    "signature" to signature,
-                    "publicKey" to publicKey
+                    "action" to "stake"
                 )
                 val jsonBody = gson.toJson(bodyMap)
                 val jsonResp = executePost("/api/stake", jsonBody)
@@ -725,11 +729,9 @@ class VerdisApi(
         ): ContractDeployResult = withContext(Dispatchers.IO) {
             try {
                 val bodyMap = mapOf(
-                    "from" to from,
+                    "owner" to from,
                     "name" to name,
-                    "bytecode" to bytecode,
-                    "signature" to signature,
-                    "publicKey" to publicKey
+                    "source" to bytecode
                 )
                 val jsonBody = gson.toJson(bodyMap)
                 val jsonResp = executePost("/api/contract/deploy", jsonBody)
@@ -760,13 +762,9 @@ class VerdisApi(
             publicKey: String
         ): ContractExecuteResult = withContext(Dispatchers.IO) {
             try {
+                val input = if (args.isNotEmpty()) args.joinToString(" ") else method
                 val bodyMap = mapOf(
-                    "contractId" to contractId,
-                    "from" to from,
-                    "method" to method,
-                    "args" to args,
-                    "signature" to signature,
-                    "publicKey" to publicKey
+                    "input" to input
                 )
                 val jsonBody = gson.toJson(bodyMap)
                 val jsonResp = executePost("/api/contract/$contractId/execute", jsonBody)

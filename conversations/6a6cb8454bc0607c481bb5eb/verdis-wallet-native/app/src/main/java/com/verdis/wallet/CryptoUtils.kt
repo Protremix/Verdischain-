@@ -145,6 +145,10 @@ object CryptoUtils {
         return out
     }
 
+    fun sha256Hex(data: String): String {
+        return toHex(sha256(data.toByteArray(Charsets.UTF_8)))
+    }
+
     fun keccak256(data: ByteArray): ByteArray {
         val digest = KeccakDigest(256)
         digest.update(data, 0, data.size)
@@ -153,16 +157,22 @@ object CryptoUtils {
         return out
     }
 
+    /**
+     * Signs data using secp256k1 with SHA-256 hashing (matching the Verdis server's crypto.js).
+     * Server format: sha256(payload) -> secp256k1.sign(hash, privateKey) -> compact hex (r||s)
+     */
     fun sign(privateKey: ByteArray, data: ByteArray): ByteArray {
         val privKey = BigInteger(1, privateKey)
         val signer = ECDSASigner(HMacDSAKCalculator(SHA256Digest()))
         signer.init(true, ECPrivateKeyParameters(privKey, domainParams))
 
-        val hash = keccak256(data)
+        // Server uses SHA-256 to hash the payload before signing
+        val hash = sha256(data)
         val components = signer.generateSignature(hash)
         val r = components[0]
         var s = components[1]
 
+        // Low-S normalization (BIP-62)
         val halfN = domainParams.n.shiftRight(1)
         if (s > halfN) {
             s = domainParams.n.subtract(s)
@@ -173,9 +183,51 @@ object CryptoUtils {
         return rBytes + sBytes
     }
 
+    /**
+     * Signs a message string and returns "0x"-prefixed hex signature.
+     */
     fun signMessage(privateKey: ByteArray, message: String): String {
         val sig = sign(privateKey, message.toByteArray(Charsets.UTF_8))
         return "0x" + toHex(sig)
+    }
+
+    /**
+     * Constructs and signs a Verdis transaction matching the server's format.
+     * Payload format: "from:to:amount:fee:nonce:data"
+     * Returns the full transaction object as a Map for JSON serialization.
+     */
+    fun buildSignedTransaction(
+        privateKey: ByteArray,
+        publicKey: String,
+        from: String,
+        to: String,
+        amount: Double,
+        fee: Double,
+        nonce: Long,
+        data: String? = null
+    ): Map<String, Any> {
+        val dataStr = data ?: ""
+        // Server payload format: "${from}:${to}:${amount}:${fee}:${nonce}:${data || ''}"
+        val payload = "$from:$to:$amount:$fee:$nonce:$dataStr"
+
+        // Transaction ID = sha256(payload)
+        val txId = sha256Hex(payload)
+
+        // Sign the payload
+        val signature = signMessage(privateKey, payload)
+
+        return mapOf(
+            "id" to txId,
+            "from" to from,
+            "to" to to,
+            "amount" to amount,
+            "fee" to fee,
+            "nonce" to nonce,
+            "timestamp" to System.currentTimeMillis(),
+            "data" to (data ?: ""),
+            "signature" to signature,
+            "publicKey" to publicKey
+        )
     }
 
     fun verifySignature(publicKey: ByteArray, signature: ByteArray, data: ByteArray): Boolean {
@@ -195,7 +247,8 @@ object CryptoUtils {
             val signer = ECDSASigner()
             signer.init(false, pubKeyParams)
 
-            val hash = keccak256(data)
+            // Server uses SHA-256 for verification too
+            val hash = sha256(data)
             signer.verifySignature(hash, r, s)
         } catch (e: Exception) {
             false

@@ -108,9 +108,32 @@ object WalletManager {
         prefs.edit().clear().apply()
     }
 
-    fun signTransaction(wallet: Wallet, to: String, amount: Double, fee: Double, nonce: Long): String {
-        val txData = "${wallet.address}$to$amount$fee$nonce"
+    /**
+     * Signs a transaction using the server-compatible payload format.
+     * Server format: "${from}:${to}:${amount}:${fee}:${nonce}:${data || ''}"
+     * Returns the signature as "0x"-prefixed hex string.
+     */
+    fun signTransaction(wallet: Wallet, to: String, amount: Double, fee: Double, nonce: Long, data: String? = null): String {
+        val dataStr = data ?: ""
+        val payload = "${wallet.address}:$to:$amount:$fee:$nonce:$dataStr"
         val privKeyBytes = CryptoUtils.privateKeyFromHex(wallet.privateKey)
-        return CryptoUtils.signMessage(privKeyBytes, txData)
+        return CryptoUtils.signMessage(privKeyBytes, payload)
+    }
+
+    /**
+     * Builds a full signed transaction object for submission to the server.
+     */
+    fun buildTransaction(wallet: Wallet, to: String, amount: Double, fee: Double, nonce: Long, data: String? = null): Map<String, Any> {
+        val privKeyBytes = CryptoUtils.privateKeyFromHex(wallet.privateKey)
+        return CryptoUtils.buildSignedTransaction(
+            privateKey = privKeyBytes,
+            publicKey = wallet.publicKey,
+            from = wallet.address,
+            to = to,
+            amount = amount,
+            fee = fee,
+            nonce = nonce,
+            data = data
+        )
     }
 }
