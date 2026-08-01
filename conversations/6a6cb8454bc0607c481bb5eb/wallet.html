@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Verdis Wallet — Green Blockchain Wallet</title>
+<meta name="description" content="Native wallet for the Verdis blockchain. Send, receive, swap, stake, and track your carbon impact.">
+<link rel="icon" type="image/png" href="/verdis-logo-ai.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   VERDIS WALLET — Design System
+   Matches verdischain.com landing page exactly
+   ═══════════════════════════════════════════════ */
+:root {
+    --bg-dark: #050a08;
+    --bg-darker: #030605;
+    --bg-card: #0f1f1a;
+    --bg-card-hover: #152c24;
+    --bg-input: #0a1612;
+    --border-color: #1a2b23;
+    --border-glow: rgba(0, 255, 136, 0.25);
+    --accent-green: #00ff88;
+    --accent-emerald: #10b981;
+    --accent-teal: #2dd4bf;
+    --accent-red: #ef4444;
+    --accent-orange: #f59e0b;
+    --text-primary: #e8f5ee;
+    --text-secondary: #a8c4b8;
+    --text-muted: #6b8f7a;
+    --text-dim: #4a6b5c;
+    --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-lg: 24px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html { background: var(--bg-dark); }
+
+body {
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+@media (min-width: 769px) { body { font-size: 15px; } }
+
+/* ═══ Background System ═══ */
+#bg-canvas {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 0; pointer-events: none;
+}
+
+.bg-orbs { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.orb {
+    position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.06;
+}
+.orb-1 { width: 600px; height: 600px; background: var(--accent-green); top: -15%; left: -10%; animation: floatOrb 25s ease-in-out infinite; }
+.orb-2 { width: 500px; height: 500px; background: var(--accent-teal); bottom: -10%; right: -10%; animation: floatOrb 30s ease-in-out infinite reverse; }
+.orb-3 { width: 400px; height: 400px; background: var(--accent-emerald); top: 40%; left: 50%; animation: floatOrb 20s ease-in-out infinite; }
+@keyframes floatOrb { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(40px,-30px) scale(1.05); } 66% { transform: translate(-30px,20px) scale(0.95); } }
+
+.grid-pattern {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(0,255,136,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,136,0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+}
+
+/* ═══ Layout ═══ */
+.app { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; min-height: 100vh; padding: 0 16px 100px; }
+@media (min-width: 769px) { .app { max-width: 520px; padding: 0 24px 120px; } }
+
+/* ═══ Header ═══ */
+.header {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0; margin-bottom: 8px;
+    background: linear-gradient(180deg, var(--bg-dark) 80%, transparent);
+    backdrop-filter: blur(12px);
+}
+.header-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; cursor: pointer; }
+.header-logo svg { width: 36px; height: 36px; animation: logoGlow 3s ease-in-out infinite; }
+@keyframes logoGlow { 0%,100% { filter: drop-shadow(0 0 6px rgba(0,255,136,0.3)); } 50% { filter: drop-shadow(0 0 14px rgba(0,255,136,0.6)); } }
+.header-logo-text { font-size: 1.2rem; font-weight: 800; letter-spacing: 1px; background: linear-gradient(135deg, #00ff88, #2dd4bf); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header-actions { display: flex; gap: 8px; }
+.header-btn {
+    width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border-color);
+    background: rgba(15,31,26,0.8); color: var(--text-muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: var(--transition); backdrop-filter: blur(10px);
+}
+.header-btn:hover { border-color: var(--accent-green); color: var(--accent-green); background: rgba(21,44,36,0.9); }
+.header-btn svg { width: 18px; height: 18px; }
+
+/* ═══ Tabs (Bottom Nav) ═══ */
+.bottom-nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 520px; z-index: 100;
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 10px 12px; padding-bottom: max(10px, env(safe-area-inset-bottom));
+    background: rgba(5,10,8,0.95); backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border-color);
+}
+.bottom-nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 6px 14px; border-radius: 12px; cursor: pointer; transition: var(--transition);
+    color: var(--text-dim); text-decoration: none; border: none; background: none;
+}
+.bottom-nav-item.active { color: var(--accent-green); }
+.bottom-nav-item svg { width: 22px; height: 22px; transition: var(--transition); }
+.bottom-nav-item.active svg { filter: drop-shadow(0 0 6px rgba(0,255,136,0.5)); transform: scale(1.1); }
+.bottom-nav-item span { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.3px; }
+.bottom-nav-item:hover { color: var(--accent-green); }
+
+/* ═══ Glass Cards ═══ */
+.glass-card {
+    background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius);
+    padding: 20px; backdrop-filter: blur(16px); transition: var(--transition);
+    position: relative; overflow: hidden;
+}
+.glass-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,255,136,0.3), transparent);
+}
+.glass-card:hover { border-color: rgba(0,255,136,0.3); box-shadow: 0 8px 30px rgba(0,0,0,0.3), 0 0 15px rgba(0,255,136,0.05); }
+
+/* ═══ Buttons ═══ */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 20px; border-radius: var(--radius-sm); font-weight: 600; font-size: 0.9rem;
+    text-decoration: none; transition: var(--transition); cursor: pointer; border: 1px solid transparent;
+    position: relative; overflow: hidden; font-family: var(--font-main);
+}
+.btn-primary { background: linear-gradient(135deg, var(--accent-green), var(--accent-emerald)); color: #03140c; font-weight: 700; box-shadow: 0 4px 16px rgba(0,255,136,0.25); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,255,136,0.4); }
+.btn-primary:active { transform: translateY(0); }
+.btn-secondary { background: rgba(15,31,26,0.8); border-color: var(--border-color); color: var(--text-primary); backdrop-filter: blur(10px); }
+.btn-secondary:hover { border-color: var(--accent-green); color: var(--accent-green); }
+.btn-danger { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: var(--accent-red); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-full { width: 100%; }
+.btn-sm { padding: 8px 14px; font-size: 0.82rem; }
+
+/* ═══ Inputs ═══ */
+.input-group { margin-bottom: 16px; }
+.input-label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.input, .textarea {
+    width: 100%; padding: 12px 14px; border-radius: var(--radius-sm);
+    background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary);
+    font-family: var(--font-mono); font-size: 0.88rem; transition: var(--transition); outline: none;
+}
+.input:focus, .textarea:focus { border-color: var(--accent-green); box-shadow: 0 0 0 3px rgba(0,255,136,0.1); }
+.input::placeholder { color: var(--text-dim); }
+.textarea { resize: vertical; min-height: 80px; }
+
+/* ═══ Balance Card ═══ */
+.balance-card {
+    background: linear-gradient(135deg, #0a1f15 0%, #0f2a1d 50%, #0a1f15 100%);
+    border: 1px solid rgba(0,255,136,0.2); border-radius: var(--radius-lg);
+    padding: 28px 24px; text-align: center; position: relative; overflow: hidden;
+    margin-bottom: 16px;
+}
+.balance-card::after {
+    content: ''; position: absolute; top: -50%; right: -30%; width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(0,255,136,0.08), transparent); pointer-events: none;
+}
+.balance-label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.balance-value { font-size: 2.4rem; font-weight: 800; font-family: var(--font-mono); background: linear-gradient(135deg, #ffffff, var(--accent-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1px; }
+.balance-value .ticker { font-size: 1rem; font-weight: 600; color: var(--accent-green); -webkit-text-fill-color: var(--accent-green); margin-left: 4px; }
+.balance-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 6px; }
+@media (min-width: 769px) { .balance-value { font-size: 2.8rem; } }
+
+.balance-actions { display: flex; gap: 8px; margin-top: 20px; }
+.balance-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 12px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);
+    background: rgba(0,0,0,0.3); cursor: pointer; transition: var(--transition); color: var(--text-secondary);
+}
+.balance-btn:hover { border-color: var(--accent-green); color: var(--accent-green); background: rgba(0,255,136,0.05); transform: translateY(-2px); }
+.balance-btn svg { width: 20px; height: 20px; }
+.balance-btn span { font-size: 0.72rem; font-weight: 600; }
+
+/* ═══ Token Cards ═══ */
+.token-card {
+    display: flex; align-items: center; gap: 12px; padding: 14px;
+    border-radius: var(--radius-sm); background: rgba(0,0,0,0.2); border: 1px solid var(--border-color);
+    transition: var(--transition); margin-bottom: 8px;
+}
+.token-card:hover { border-color: rgba(0,255,136,0.2); background: rgba(0,255,136,0.03); }
+.token-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; flex-shrink: 0; }
+.token-icon.vrs { background: linear-gradient(135deg, #00ff88, #10b981); color: #03140c; }
+.token-icon.carbon { background: linear-gradient(135deg, #2dd4bf, #0891b2); color: #fff; }
+.token-icon.eco { background: linear-gradient(135deg, #84cc16, #65a30d); color: #fff; }
+.token-icon.tree { background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; }
+.token-icon.green { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; }
+.token-info { flex: 1; }
+.token-name { font-weight: 600; font-size: 0.9rem; }
+.token-balance { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-muted); }
+.token-value { text-align: right; }
+.token-value-amount { font-family: var(--font-mono); font-weight: 600; font-size: 0.88rem; }
+.token-value-change { font-size: 0.7rem; }
+
+/* ═══ Stats Row ═══ */
+.stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.stat-card { text-align: center; padding: 14px 8px; }
+.stat-value { font-size: 1.2rem; font-weight: 700; font-family: var(--font-mono); color: var(--accent-green); }
+.stat-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+/* ═══ Section Title ═══ */
+.section-title { font-size: 1rem; font-weight: 700; margin: 20px 0 12px; display: flex; align-items: center; gap: 8px; }
+.section-title svg { width: 18px; height: 18px; color: var(--accent-green); }
+
+/* ═══ Transaction Item ═══ */
+.tx-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius-sm);
+    background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); transition: var(--transition); margin-bottom: 6px; cursor: pointer;
+}
+.tx-item:hover { border-color: rgba(0,255,136,0.15); }
+.tx-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.tx-icon.in { background: rgba(0,255,136,0.1); color: var(--accent-green); }
+.tx-icon.out { background: rgba(239,68,68,0.1); color: var(--accent-red); }
+.tx-icon.swap { background: rgba(45,212,191,0.1); color: var(--accent-teal); }
+.tx-icon.stake { background: rgba(245,158,11,0.1); color: var(--accent-orange); }
+.tx-icon svg { width: 16px; height: 16px; }
+.tx-info { flex: 1; min-width: 0; }
+.tx-type { font-weight: 600; font-size: 0.85rem; }
+.tx-hash { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-amount { text-align: right; flex-shrink: 0; }
+.tx-value { font-family: var(--font-mono); font-weight: 600; font-size: 0.85rem; }
+.tx-time { font-size: 0.68rem; color: var(--text-dim); margin-top: 2px; }
+
+/* ═══ DEX Swap ═══ */
+.swap-card { padding: 20px; }
+.swap-row { position: relative; }
+.swap-token-select {
+    display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: var(--radius-sm);
+    background: var(--bg-input); border: 1px solid var(--border-color); cursor: pointer; transition: var(--transition);
+    min-width: 100px;
+}
+.swap-token-select:hover { border-color: var(--accent-green); }
+.swap-token-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; }
+.swap-token-symbol { font-weight: 600; font-size: 0.88rem; }
+.swap-amount { flex: 1; background: transparent; border: none; color: var(--text-primary); font-family: var(--font-mono); font-size: 1.1rem; outline: none; text-align: right; }
+.swap-amount::placeholder { color: var(--text-dim); }
+.swap-divider { display: flex; justify-content: center; margin: -6px 0; position: relative; z-index: 1; }
+.swap-divider-btn {
+    width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border-color);
+    background: var(--bg-card); color: var(--text-muted); cursor: pointer; transition: var(--transition);
+    display: flex; align-items: center; justify-content: center;
+}
+.swap-divider-btn:hover { color: var(--accent-green); border-color: var(--accent-green); transform: rotate(180deg); }
+.swap-info { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 12px; padding: 0 4px; }
+.swap-price { font-family: var(--font-mono); }
+
+/* ═══ Staking ═══ */
+.validator-item {
+    display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: var(--radius-sm);
+    background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); transition: var(--transition); margin-bottom: 8px;
+}
+.validator-item:hover { border-color: rgba(0,255,136,0.15); }
+.validator-rank { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; background: rgba(0,255,136,0.1); color: var(--accent-green); flex-shrink: 0; }
+.validator-info { flex: 1; }
+.validator-name { font-weight: 600; font-size: 0.85rem; font-family: var(--font-mono); }
+.validator-stats { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+.validator-vote-btn { padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; }
+
+/* ═══ ESG / Eco ═══ */
+.eco-stat { display: flex; align-items: center; gap: 12px; padding: 14px; margin-bottom: 8px; border-radius: var(--radius-sm); background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); }
+.eco-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.eco-value { font-size: 1.4rem; font-weight: 700; font-family: var(--font-mono); color: var(--accent-green); }
+.eco-label { font-size: 0.78rem; color: var(--text-muted); }
+
+/* ═══ Toast ═══ */
+.toast-container { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 200; width: 90%; max-width: 440px; pointer-events: none; }
+.toast {
+    padding: 14px 18px; border-radius: var(--radius-sm); background: rgba(15,31,26,0.95);
+    border: 1px solid var(--border-color); backdrop-filter: blur(20px); color: var(--text-primary);
+    font-size: 0.85rem; font-weight: 500; box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    margin-bottom: 8px; display: flex; align-items: center; gap: 10px; animation: toastSlide 0.3s cubic-bezier(0.16,1,0.3,1);
+    pointer-events: auto;
+}
+.toast.success { border-color: rgba(0,255,136,0.3); color: var(--accent-green); }
+.toast.error { border-color: rgba(239,68,68,0.3); color: var(--accent-red); }
+.toast svg { width: 18px; height: 18px; flex-shrink: 0; }
+@keyframes toastSlide { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* ═══ Modal ═══ */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 150; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 28px 24px; width: 100%; max-width: 420px; max-height: 85vh; overflow-y: auto; position: relative; }
+.modal::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px; background: linear-gradient(90deg, transparent, var(--accent-green), transparent); }
+.modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+.modal-close { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border-color); background: transparent; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.modal-close:hover { color: var(--accent-green); border-color: var(--accent-green); }
+
+/* ═══ Loading ═══ */
+.spinner { width: 20px; height: 20px; border: 2px solid var(--border-color); border-top-color: var(--accent-green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-overlay { display: flex; align-items: center; justify-content: center; min-height: 200px; }
+
+/* ═══ Animations ═══ */
+.fade-in { animation: fadeInUp 0.5s cubic-bezier(0.16,1,0.3,1); }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.stagger > * { animation: fadeInUp 0.5s cubic-bezier(0.16,1,0.3,1) backwards; }
+.stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger > *:nth-child(6) { animation-delay: 0.3s; }
+
+.pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); animation: pulseDot 2s infinite; }
+@keyframes pulseDot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
+
+.shimmer { background: linear-gradient(90deg, transparent, rgba(0,255,136,0.05), transparent); background-size: 200% 100%; animation: shimmer 2s infinite; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ═══ Empty State ═══ */
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+.empty-state svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.3; }
+.empty-state p { font-size: 0.88rem; }
+
+/* ═══ Wallet Address ═══ */
+.wallet-address {
+    display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 8px;
+    background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); font-family: var(--font-mono);
+    font-size: 0.75rem; color: var(--text-muted); cursor: pointer; transition: var(--transition);
+}
+.wallet-address:hover { border-color: var(--accent-green); color: var(--accent-green); }
+.wallet-address svg { width: 14px; height: 14px; }
+
+/* ═══ Page Transitions ═══ */
+.page { display: none; animation: pageIn 0.4s cubic-bezier(0.16,1,0.3,1); }
+.page.active { display: block; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ═══ Mobile ═══ */
+@media (max-width: 768px) {
+    .balance-value { font-size: 2rem; }
+    .balance-card { padding: 22px 18px; }
+    .stats-row { gap: 6px; }
+    .stat-card { padding: 10px 4px; }
+    .stat-value { font-size: 1rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Background System -->
+<canvas id="bg-canvas"></canvas>
+<div class="bg-orbs"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div></div>
+<div class="grid-pattern"></div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ═══ App ═══ -->
+<div class="app" id="app">
+
+    <!-- Header -->
+    <header class="header">
+        <a href="/" class="header-logo" aria-label="Verdis Home">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" style="flex-shrink:0;pointer-events:none;">
+                <defs>
+                    <linearGradient id="wlg1" x1="0%" y1="100%" x2="0%" y2="0%">
+                        <stop offset="0%" stop-color="#00aa55"/><stop offset="50%" stop-color="#00ff88"/><stop offset="100%" stop-color="#66ffbb"/>
+                    </linearGradient>
+                    <linearGradient id="wlg2" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#00ff88"/><stop offset="100%" stop-color="#2dd4bf"/>
+                    </linearGradient>
+                    <filter id="wgf"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                </defs>
+                <polygon points="100,18 168,58 168,142 100,182 32,142 32,58" fill="none" stroke="url(#wlg2)" stroke-width="2.5" opacity="0.5"/>
+                <polygon points="100,28 160,65 160,135 100,172 40,135 40,65" fill="none" stroke="url(#wlg2)" stroke-width="3" filter="url(#wgf)"/>
+                <path d="M100,60 C100,60 75,80 72,105 C69,130 85,148 100,152 C115,148 131,130 128,105 C125,80 100,60 100,60 Z" fill="url(#wlg1)" opacity="0.9"/>
+                <line x1="100" y1="60" x2="100" y2="152" stroke="#00ff88" stroke-width="1.5" opacity="0.6"/>
+                <line x1="100" y1="105" x2="130" y2="85" stroke="#00ff88" stroke-width="1" opacity="0.4"/>
+                <line x1="100" y1="105" x2="70" y2="85" stroke="#00ff88" stroke-width="1" opacity="0.4"/>
+            </svg>
+            <span class="header-logo-text">VERDIS</span>
+        </a>
+        <div class="header-actions">
+            <button class="header-btn" onclick="copyAddress()" title="Copy Address" id="copyBtn" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+            <button class="header-btn" onclick="openModal('settingsModal')" title="Settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- ═══ HOME PAGE ═══ -->
+    <div class="page active" id="page-home">
+        <div class="balance-card fade-in">
+            <div class="balance-label">Total Balance</div>
+            <div class="balance-value" id="totalBalance">0.00<span class="ticker">VRDX</span></div>
+            <div class="balance-sub" id="balanceUsd">≈ $0.00 USD</div>
+            <div class="balance-actions">
+                <button class="balance-btn" onclick="openModal('sendModal')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                    <span>Send</span>
+                </button>
+                <button class="balance-btn" onclick="openModal('receiveModal')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+                    <span>Receive</span>
+                </button>
+                <button class="balance-btn" onclick="switchPage('swap')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/></svg>
+                    <span>Swap</span>
+                </button>
+                <button class="balance-btn" onclick="switchPage('stake')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    <span>Stake</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="wallet-address" id="addressBar" style="display:none; margin-bottom:16px;" onclick="copyAddress()">
+            <span id="addressText">0x0000...0000</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        </div>
+
+        <!-- Token List -->
+        <div class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20m10-10H2"/></svg>
+            Tokens
+        </div>
+        <div class="stagger" id="tokenList">
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+                <p>Create or import a wallet to see your tokens</p>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Recent Activity
+        </div>
+        <div id="txList">
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <p>No transactions yet</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ SWAP PAGE ═══ -->
+    <div class="page" id="page-swap">
+        <div class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/></svg>
+            VerdisSwap DEX
+        </div>
+        <div class="glass-card swap-card fade-in">
+            <div class="swap-row">
+                <div class="input-label">From</div>
+                <div style="display:flex; gap:8px; align-items:center; padding:14px; border-radius:var(--radius-sm); background:var(--bg-input); border:1px solid var(--border-color);">
+                    <input type="number" class="swap-amount" id="swapFromAmount" placeholder="0.0" oninput="calculateSwap()" step="any">
+                    <div class="swap-token-select" onclick="openTokenPicker('from')">
+                        <div class="swap-token-icon token-icon vrs" id="swapFromIcon">V</div>
+                        <span class="swap-token-symbol" id="swapFromToken">VRDX</span>
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="swap-divider">
+                <button class="swap-divider-btn" onclick="flipSwap()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/></svg>
+                </button>
+            </div>
+            <div class="swap-row">
+                <div class="input-label">To (estimated)</div>
+                <div style="display:flex; gap:8px; align-items:center; padding:14px; border-radius:var(--radius-sm); background:var(--bg-input); border:1px solid var(--border-color);">
+                    <input type="number" class="swap-amount" id="swapToAmount" placeholder="0.0" readonly>
+                    <div class="swap-token-select" onclick="openTokenPicker('to')">
+                        <div class="swap-token-icon token-icon carbon" id="swapToIcon">C</div>
+                        <span class="swap-token-symbol" id="swapToToken">CARBON</span>
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="swap-info">
+                <span>Rate</span>
+                <span class="swap-price" id="swapRate">1 VRDX = -- CARBON</span>
+            </div>
+            <div class="swap-info">
+                <span>Fee</span>
+                <span class="swap-price">0.3%</span>
+            </div>
+            <div style="margin-top:16px;">
+                <button class="btn btn-primary btn-full" id="swapBtn" onclick="executeSwap()">Swap Tokens</button>
+            </div>
+        </div>
+
+        <!-- DEX Pools -->
+        <div class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
+            Liquidity Pools
+        </div>
+        <div id="poolList" class="stagger"></div>
+    </div>
+
+    <!-- ═══ STAKE PAGE ═══ -->
+    <div class="page" id="page-stake">
+        <div class="balance-card fade-in">
+            <div class="balance-label">Staked Balance</div>
+            <div class="balance-value" id="stakedBalance">0.00<span class="ticker">VRDX</span></div>
+            <div class="balance-sub" id="stakeRewards">Rewards: 0.00 VRDX</div>
+        </div>
+
+        <div class="stats-row">
+            <div class="glass-card stat-card">
+                <div class="stat-value" id="validatorCount">5</div>
+                <div class="stat-label">Validators</div>
+            </div>
+            <div class="glass-card stat-card">
+                <div class="stat-value" id="blockHeight">0</div>
+                <div class="stat-label">Block Height</div>
+            </div>
+            <div class="glass-card stat-card">
+                <div class="stat-value">16</div>
+                <div class="stat-label">Reward</div>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            Validators (Green DPoS)
+        </div>
+        <div id="validatorList" class="stagger"></div>
+    </div>
+
+    <!-- ═══ ECO PAGE ═══ -->
+    <div class="page" id="page-eco">
+        <div class="balance-card fade-in" style="border-color:rgba(132,204,22,0.2);">
+            <div class="balance-label">Your Carbon Impact</div>
+            <div class="balance-value" style="background:linear-gradient(135deg,#fff,#84cc16);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">0.00<span class="ticker" style="color:#84cc16;-webkit-text-fill-color:#84cc16;">kg CO₂</span></div>
+            <div class="balance-sub">Carbon offset through Verdis transactions</div>
+        </div>
+
+        <div class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6m0 0a4 4 0 100 8 4 4 0 000-8zm0 8v12"/></svg>
+            Ecosystem Impact
+        </div>
+        <div class="stagger">
+            <div class="eco-stat glass-card" style="padding:14px;">
+                <div class="eco-icon" style="background:rgba(132,204,22,0.1);">🌳</div>
+                <div style="flex:1;">
+                    <div class="eco-value" id="treesLogged">0</div>
+                    <div class="eco-label">Trees Planted (On-chain)</div>
+                </div>
+            </div>
+            <div class="eco-stat glass-card" style="padding:14px;">
+                <div class="eco-icon" style="background:rgba(0,255,136,0.1);">🏭</div>
+                <div style="flex:1;">
+                    <div class="eco-value" id="carbonOffset">0.0</div>
+                    <div class="eco-label">kg CO₂ Offset</div>
+                </div>
+            </div>
+            <div class="eco-stat glass-card" style="padding:14px;">
+                <div class="eco-icon" style="background:rgba(45,212,191,0.1);">♻️</div>
+                <div style="flex:1;">
+                    <div class="eco-value" id="creditsMinted">0</div>
+                    <div class="eco-label">Carbon Credits Minted</div>
+                </div>
+            </div>
+            <div class="eco-stat glass-card" style="padding:14px;">
+                <div class="eco-icon" style="background:rgba(245,158,11,0.1);">⚡</div>
+                <div style="flex:1;">
+                    <div class="eco-value" id="energyEfficiency">99.2%</div>
+                    <div class="eco-label">Energy Efficiency (vs PoW)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg>
+            Green Validator Score
+        </div>
+        <div class="glass-card" style="padding:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:0.85rem; color:var(--text-muted);">Network Average</span>
+                <span style="font-size:1.2rem; font-weight:700; color:var(--accent-green);">A+</span>
+            </div>
+            <div style="width:100%; height:8px; border-radius:4px; background:rgba(0,0,0,0.3); overflow:hidden;">
+                <div style="width:94%; height:100%; border-radius:4px; background:linear-gradient(90deg, #84cc16, #00ff88); transition:width 1s;" class="shimmer"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:0.7rem; color:var(--text-dim);">
+                <span>Score: 94/100</span>
+                <span>Top 5% Eco-Validators</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ ACTIVITY PAGE ═══ -->
+    <div class="page" id="page-activity">
+        <div class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Transaction History
+        </div>
+        <div id="fullTxList" class="stagger"></div>
+    </div>
+
+</div>
+
+<!-- ═══ Bottom Navigation ═══ -->
+<nav class="bottom-nav">
+    <button class="bottom-nav-item active" onclick="switchPage('home')" data-page="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10"/></svg>
+        <span>Home</span>
+    </button>
+    <button class="bottom-nav-item" onclick="switchPage('swap')" data-page="swap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/></svg>
+        <span>Swap</span>
+    </button>
+    <button class="bottom-nav-item" onclick="switchPage('stake')" data-page="stake">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <span>Stake</span>
+    </button>
+    <button class="bottom-nav-item" onclick="switchPage('eco')" data-page="eco">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12z"/><path d="M12 8v4M10 10l4 0"/></svg>
+        <span>Eco</span>
+    </button>
+    <button class="bottom-nav-item" onclick="switchPage('activity')" data-page="activity">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>Activity</span>
+    </button>
+</nav>
+
+<!-- ═══ MODALS ═══ -->
+
+<!-- Send Modal -->
+<div class="modal-overlay" id="sendModal">
+    <div class="modal">
+        <div class="modal-title">
+            Send VRDX
+            <button class="modal-close" onclick="closeModal('sendModal')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="input-group">
+            <label class="input-label">Recipient Address</label>
+            <input class="input" id="sendAddress" placeholder="0x..." style="font-size:0.82rem;">
+        </div>
+        <div class="input-group">
+            <label class="input-label">Amount (VRDX)</label>
+            <input class="input" id="sendAmount" type="number" placeholder="0.00" step="any">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="sendTransaction()">Send Transaction</button>
+    </div>
+</div>
+
+<!-- Receive Modal -->
+<div class="modal-overlay" id="receiveModal">
+    <div class="modal" style="text-align:center;">
+        <div class="modal-title" style="justify-content:center;">
+            Receive VRDX
+            <button class="modal-close" onclick="closeModal('receiveModal')" style="position:absolute;right:0;"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div id="qrPlaceholder" style="width:180px; height:180px; margin:0 auto 16px; border-radius:16px; background:var(--bg-input); border:1px solid var(--border-color); display:flex; align-items:center; justify-content:center;">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="var(--text-dim)" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v7M14 21h3"/></svg>
+        </div>
+        <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:8px;">Your Verdis Address</div>
+        <div id="receiveAddress" style="font-family:var(--font-mono); font-size:0.72rem; color:var(--accent-green); word-break:break-all; padding:12px; border-radius:10px; background:var(--bg-input); border:1px solid var(--border-color); margin-bottom:16px;">No wallet loaded</div>
+        <button class="btn btn-secondary btn-full" onclick="copyAddress()">Copy Address</button>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+        <div class="modal-title">
+            Wallet Settings
+            <button class="modal-close" onclick="closeModal('settingsModal')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div id="settingsContent"></div>
+    </div>
+</div>
+
+<!-- Create Wallet Modal -->
+<div class="modal-overlay" id="createModal">
+    <div class="modal">
+        <div class="modal-title">
+            Create New Wallet
+            <button class="modal-close" onclick="closeModal('createModal')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div style="text-align:center; margin-bottom:16px;">
+            <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:12px;">Your new Verdis wallet will be generated with a unique address and private key. Save your private key securely — it cannot be recovered.</div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="createWallet()">Generate Wallet</button>
+        <div style="text-align:center; margin-top:12px;">
+            <button class="btn btn-secondary btn-full" onclick="closeModal('createModal'); openModal('importModal');">Import Existing Wallet</button>
+        </div>
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-overlay" id="importModal">
+    <div class="modal">
+        <div class="modal-title">
+            Import Wallet
+            <button class="modal-close" onclick="closeModal('importModal')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div class="input-group">
+            <label class="input-label">Private Key</label>
+            <textarea class="textarea" id="importKey" placeholder="Paste your private key (hex or mnemonic)..." style="font-size:0.78rem;"></textarea>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="importWallet()">Import Wallet</button>
+    </div>
+</div>
+
+<!-- Token Picker Modal -->
+<div class="modal-overlay" id="tokenPickerModal">
+    <div class="modal">
+        <div class="modal-title">
+            Select Token
+            <button class="modal-close" onclick="closeModal('tokenPickerModal')"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div id="tokenPickerList"></div>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// VERDIS WALLET — Application Logic
+// ═══════════════════════════════════════════════
+
+const API = window.location.origin.startsWith('localhost') ? 'http://localhost:3200' : '';
+const TOKENS = [
+    { symbol: 'VRDX', name: 'Verdis', icon: 'vrs', letter: 'V', color: '#00ff88' },
+    { symbol: 'CARBON', name: 'Carbon Credit', icon: 'carbon', letter: 'C', color: '#2dd4bf' },
+    { symbol: 'ECO', name: 'Eco Token', icon: 'eco', letter: 'E', color: '#84cc16' },
+    { symbol: 'TREE', name: 'Reforestation', icon: 'tree', letter: 'T', color: '#16a34a' },
+    { symbol: 'GREEN', name: 'Green Score', icon: 'green', letter: 'G', color: '#22c55e' },
+];
+const DEX_POOLS_CACHE = [];
+let wallet = null; // { address, privateKey, publicKey }
+let swapFromToken = 'VRDX';
+let swapToToken = 'CARBON';
+let swapPickerTarget = 'from';
+let refreshInterval = null;
+
+// ═══ Particle System ═══
+function initParticles() {
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    
+    for (let i = 0; i < 40; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: (Math.random() - 0.5) * 0.3,
+            r: Math.random() * 1.5 + 0.5,
+            opacity: Math.random() * 0.15 + 0.05,
+        });
+    }
+    
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0) p.x = canvas.width;
+            if (p.x > canvas.width) p.x = 0;
+            if (p.y < 0) p.y = canvas.height;
+            if (p.y > canvas.height) p.y = 0;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0,255,136,' + p.opacity + ')';
+            ctx.fill();
+        });
+        // Connect nearby particles
+        for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+                const dx = particles[i].x - particles[j].x;
+                const dy = particles[i].y - particles[j].y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 120) {
+                    ctx.beginPath();
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.strokeStyle = 'rgba(0,255,136,' + (0.06 * (1 - dist / 120)) + ')';
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(animate);
+    }
+    animate();
+}
+initParticles();
+
+// ═══ Toast System ═══
+function toast(msg, type) {
+    type = type || 'info';
+    const container = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = 'toast ' + type;
+    const icon = type === 'success' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>'
+        : type === 'error' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>';
+    t.innerHTML = icon + '<span>' + msg + '</span>';
+    container.appendChild(t);
+    setTimeout(function() {
+        t.style.animation = 'toastSlide 0.3s reverse';
+        setTimeout(function() { t.remove(); }, 300);
+    }, 3500);
+}
+
+// ═══ Modal System ═══
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+document.querySelectorAll('.modal-overlay').forEach(function(o) {
+    o.addEventListener('click', function(e) { if (e.target === o) o.classList.remove('active'); });
+});
+
+// ═══ Page Navigation ═══
+function switchPage(page) {
+    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+    document.getElementById('page-' + page).classList.add('active');
+    document.querySelectorAll('.bottom-nav-item').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelector('[data-page="' + page + '"]').classList.add('active');
+    window.scrollTo(0, 0);
+    if (page === 'swap') loadPools();
+    if (page === 'stake') loadValidators();
+    if (page === 'eco') loadEcoStats();
+    if (page === 'activity') loadFullTxHistory();
+}
+
+// ═══ API Calls ═══
+async function api(path, method, body) {
+    method = method || 'GET';
+    const opts = { method: method, headers: { 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    try {
+        const res = await fetch(API + path, opts);
+        const data = await res.json();
+        return data;
+    } catch(e) {
+        console.error('API error:', path, e);
+        return null;
+    }
+}
+
+// ═══ Wallet Management ═══
+function loadWallet() {
+    const saved = localStorage.getItem('verdis_wallet');
+    if (saved) {
+        try { wallet = JSON.parse(saved); return true; } catch(e) {}
+    }
+    return false;
+}
+
+function saveWallet(w) {
+    wallet = w;
+    localStorage.setItem('verdis_wallet', JSON.stringify(w));
+}
+
+async function createWallet() {
+    const data = await api('/api/wallet/create', 'POST');
+    if (data && data.address) {
+        saveWallet(data);
+        closeModal('createModal');
+        toast('Wallet created successfully!', 'success');
+        updateUI();
+        openModal('backupModal');
+    } else {
+        toast('Failed to create wallet', 'error');
+    }
+}
+
+async function importWallet() {
+    const key = document.getElementById('importKey').value.trim();
+    if (!key) { toast('Please enter a private key', 'error'); return; }
+    // Use wallet/create-mnemonic or direct import
+    const data = await api('/api/wallet/create-mnemonic', 'POST', { mnemonic: key });
+    if (data && data.address) {
+        saveWallet(data);
+        closeModal('importModal');
+        toast('Wallet imported!', 'success');
+        updateUI();
+    } else {
+        // Try as private key directly
+        const data2 = await api('/api/wallet/create', 'POST', { privateKey: key });
+        if (data2 && data2.address) {
+            saveWallet(data2);
+            closeModal('importModal');
+            toast('Wallet imported!', 'success');
+            updateUI();
+        } else {
+            toast('Invalid key or mnemonic', 'error');
+        }
+    }
+}
+
+function copyAddress() {
+    if (!wallet) return;
+    navigator.clipboard.writeText(wallet.address).then(function() {
+        toast('Address copied to clipboard', 'success');
+    });
+}
+
+// ═══ UI Updates ═══
+async function updateUI() {
+    if (wallet) {
+        document.getElementById('copyBtn').style.display = 'flex';
+        document.getElementById('addressBar').style.display = 'flex';
+        const addr = wallet.address;
+        document.getElementById('addressText').textContent = addr.substring(0, 8) + '...' + addr.substring(addr.length - 6);
+        document.getElementById('receiveAddress').textContent = addr;
+        
+        // Load balance
+        const balance = await api('/api/wallet/' + wallet.address + '/balance');
+        if (balance) {
+            const bal = (balance.balance || 0) / 1e9;
+            const staked = (balance.staked || 0) / 1e9;
+            document.getElementById('totalBalance').innerHTML = bal.toFixed(2) + '<span class="ticker">VRDX</span>';
+            document.getElementById('balanceUsd').textContent = '≈ $' + (bal * 0.0005).toFixed(4) + ' USD';
+            document.getElementById('stakedBalance').innerHTML = staked.toFixed(2) + '<span class="ticker">VRDX</span>';
+            
+            // Update token list
+            updateTokenList(bal, balance);
+        }
+        
+        // Load transactions
+        const txs = await api('/api/wallet/' + wallet.address + '/transactions');
+        if (txs && txs.length) updateTxList(txs);
+        
+        // Load blockchain stats
+        const info = await api('/api/blockchain/info');
+        if (info) {
+            document.getElementById('blockHeight').textContent = info.height || 0;
+            document.getElementById('validatorCount').textContent = info.validatorCount || 5;
+        }
+        
+        // Settings
+        document.getElementById('settingsContent').innerHTML = 
+            '<div style="margin-bottom:16px;">' +
+            '<div class="input-label">Wallet Address</div>' +
+            '<div style="font-family:var(--font-mono); font-size:0.72rem; color:var(--accent-green); padding:10px; border-radius:8px; background:var(--bg-input); border:1px solid var(--border-color); word-break:break-all; margin-top:4px;">' + wallet.address + '</div>' +
+            '</div>' +
+            '<div style="margin-bottom:16px;">' +
+            '<div class="input-label">Private Key (save securely!)</div>' +
+            '<div style="font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted); padding:10px; border-radius:8px; background:var(--bg-input); border:1px solid var(--border-color); word-break:break-all; margin-top:4px;">' + (wallet.privateKey || '').substring(0, 20) + '...' + '</div>' +
+            '</div>' +
+            '<button class="btn btn-danger btn-full" onclick="clearWallet()">Remove Wallet</button>' +
+            '<a href="/" class="btn btn-secondary btn-full" style="margin-top:8px;">Back to Home</a>';
+        
+    } else {
+        // No wallet — show create prompt
+        document.getElementById('copyBtn').style.display = 'none';
+        document.getElementById('addressBar').style.display = 'none';
+        document.getElementById('settingsContent').innerHTML = 
+            '<div style="text-align:center; padding:20px 0;">' +
+            '<p style="color:var(--text-muted); margin-bottom:16px;">No wallet loaded</p>' +
+            '<button class="btn btn-primary btn-full" onclick="closeModal(\'settingsModal\'); openModal(\'createModal\');">Create Wallet</button>' +
+            '<button class="btn btn-secondary btn-full" style="margin-top:8px;" onclick="closeModal(\'settingsModal\'); openModal(\'importModal\');">Import Wallet</button>' +
+            '</div>';
+        
+        // Show create wallet prompt on home
+        document.getElementById('totalBalance').innerHTML = '0.00<span class="ticker">VRDX</span>';
+        document.getElementById('tokenList').innerHTML = 
+            '<div class="glass-card" style="text-align:center; padding:32px 20px;">' +
+            '<svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="var(--accent-green)" stroke-width="1.5" style="margin:0 auto 16px; display:block; opacity:0.5;"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>' +
+            '<h3 style="margin-bottom:8px; color:var(--text-primary);">Welcome to Verdis Wallet</h3>' +
+            '<p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:20px;">Create a new wallet or import an existing one to get started.</p>' +
+            '<button class="btn btn-primary btn-full" onclick="openModal(\'createModal\')">Create New Wallet</button>' +
+            '<button class="btn btn-secondary btn-full" style="margin-top:8px;" onclick="openModal(\'importModal\')">Import Wallet</button>' +
+            '</div>';
+    }
+}
+
+function clearWallet() {
+    localStorage.removeItem('verdis_wallet');
+    wallet = null;
+    closeModal('settingsModal');
+    toast('Wallet removed', 'success');
+    updateUI();
+}
+
+function updateTokenList(bal, balance) {
+    let html = '';
+    TOKENS.forEach(function(t) {
+        const amount = t.symbol === 'VRDX' ? bal : 0;
+        const val = (amount * 0.0005).toFixed(4);
+        html += 
+            '<div class="token-card">' +
+            '<div class="token-icon ' + t.icon + '">' + t.letter + '</div>' +
+            '<div class="token-info"><div class="token-name">' + t.name + '</div><div class="token-balance">' + amount.toFixed(2) + ' ' + t.symbol + '</div></div>' +
+            '<div class="token-value"><div class="token-value-amount">$' + val + '</div><div class="token-value-change" style="color:var(--accent-green);">+' + (Math.random() * 5).toFixed(1) + '%</div></div>' +
+            '</div>';
+    });
+    document.getElementById('tokenList').innerHTML = html;
+}
+
+function updateTxList(txs) {
+    if (!txs || !txs.length) {
+        document.getElementById('txList').innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><p>No transactions yet</p></div>';
+        return;
+    }
+    let html = '';
+    txs.slice(0, 5).forEach(function(tx) {
+        const isIn = tx.to === wallet.address;
+        const icon = isIn ? '<div class="tx-icon in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>'
+            : '<div class="tx-icon out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>';
+        const amount = ((tx.amount || tx.value || 0) / 1e9).toFixed(2);
+        html += 
+            '<div class="tx-item">' + icon +
+            '<div class="tx-info"><div class="tx-type">' + (isIn ? 'Received' : 'Sent') + '</div>' +
+            '<div class="tx-hash">' + (tx.hash || tx.id || '').substring(0, 20) + '...</div></div>' +
+            '<div class="tx-amount"><div class="tx-value" style="color:' + (isIn ? 'var(--accent-green)' : 'var(--accent-red)') + ';">' + (isIn ? '+' : '-') + amount + ' VRDX</div>' +
+            '<div class="tx-time">' + new Date(tx.timestamp || Date.now()).toLocaleString() + '</div></div>' +
+            '</div>';
+    });
+    document.getElementById('txList').innerHTML = html;
+}
+
+async function loadFullTxHistory() {
+    if (!wallet) return;
+    const txs = await api('/api/wallet/' + wallet.address + '/transactions');
+    if (!txs || !txs.length) {
+        document.getElementById('fullTxList').innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><p>No transactions yet</p></div>';
+        return;
+    }
+    let html = '';
+    txs.forEach(function(tx) {
+        const isIn = tx.to === wallet.address;
+        const icon = isIn ? '<div class="tx-icon in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>'
+            : '<div class="tx-icon out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>';
+        const amount = ((tx.amount || tx.value || 0) / 1e9).toFixed(2);
+        html += 
+            '<div class="tx-item">' + icon +
+            '<div class="tx-info"><div class="tx-type">' + (isIn ? 'Received' : 'Sent') + '</div>' +
+            '<div class="tx-hash">' + (tx.hash || tx.id || '').substring(0, 28) + '...</div></div>' +
+            '<div class="tx-amount"><div class="tx-value" style="color:' + (isIn ? 'var(--accent-green)' : 'var(--accent-red)') + ';">' + (isIn ? '+' : '-') + amount + ' VRDX</div>' +
+            '<div class="tx-time">' + new Date(tx.timestamp || Date.now()).toLocaleString() + '</div></div>' +
+            '</div>';
+    });
+    document.getElementById('fullTxList').innerHTML = html;
+}
+
+// ═══ Send Transaction ═══
+async function sendTransaction() {
+    if (!wallet) { toast('No wallet loaded', 'error'); return; }
+    const to = document.getElementById('sendAddress').value.trim();
+    const amount = parseFloat(document.getElementById('sendAmount').value);
+    if (!to || !amount) { toast('Enter address and amount', 'error'); return; }
+    
+    const btn = event.target;
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Sending...';
+    
+    const data = await api('/api/transaction/send', 'POST', {
+        from: wallet.address,
+        to: to,
+        amount: amount * 1e9,
+        privateKey: wallet.privateKey,
+    });
+    
+    btn.disabled = false;
+    btn.innerHTML = 'Send Transaction';
+    
+    if (data && (data.hash || data.id)) {
+        toast('Transaction sent! Hash: ' + (data.hash || data.id).substring(0, 12) + '...', 'success');
+        closeModal('sendModal');
+        document.getElementById('sendAddress').value = '';
+        document.getElementById('sendAmount').value = '';
+        updateUI();
+    } else {
+        toast('Transaction failed: ' + (data && data.error ? data.error : 'Unknown error'), 'error');
+    }
+}
+
+// ═══ DEX Swap ═══
+async function loadPools() {
+    const pools = await api('/api/dex/pools');
+    if (!pools) return;
+    DEX_POOLS_CACHE.length = 0;
+    DEX_POOLS_CACHE.push.apply(DEX_POOLS_CACHE, pools);
+    
+    let html = '';
+    pools.forEach(function(p) {
+        const ratio = (p.reserveB / p.reserveA).toFixed(4);
+        html += 
+            '<div class="token-card">' +
+            '<div class="token-icon vrs">' + p.tokenA.substring(0, 1) + '/' + p.tokenB.substring(0, 1) + '</div>' +
+            '<div class="token-info"><div class="token-name">' + p.pair + '</div><div class="token-balance">Liquidity: ' + (p.totalLP / 1e9).toFixed(0) + ' LP</div></div>' +
+            '<div class="token-value"><div class="token-value-amount">1 ' + p.tokenA + ' = ' + ratio + ' ' + p.tokenB + '</div><div class="token-value-change" style="color:var(--accent-green);">0.3% fee</div></div>' +
+            '</div>';
+    });
+    document.getElementById('poolList').innerHTML = html;
+    
+    // Update swap rate
+    calculateSwap();
+}
+
+function flipSwap() {
+    const tmp = swapFromToken;
+    swapFromToken = swapToToken;
+    swapToToken = tmp;
+    updateSwapUI();
+    calculateSwap();
+}
+
+function updateSwapUI() {
+    const fromToken = TOKENS.find(function(t) { return t.symbol === swapFromToken; });
+    const toToken = TOKENS.find(function(t) { return t.symbol === swapToToken; });
+    document.getElementById('swapFromToken').textContent = swapFromToken;
+    document.getElementById('swapToToken').textContent = swapToToken;
+    document.getElementById('swapFromIcon').className = 'swap-token-icon token-icon ' + fromToken.icon;
+    document.getElementById('swapFromIcon').textContent = fromToken.letter;
+    document.getElementById('swapToIcon').className = 'swap-token-icon token-icon ' + toToken.icon;
+    document.getElementById('swapToIcon').textContent = toToken.letter;
+}
+
+function calculateSwap() {
+    const amount = parseFloat(document.getElementById('swapFromAmount').value) || 0;
+    const pool = DEX_POOLS_CACHE.find(function(p) {
+        return (p.tokenA === swapFromToken && p.tokenB === swapToToken) ||
+               (p.tokenB === swapFromToken && p.tokenA === swapToToken);
+    });
+    
+    if (pool && amount > 0) {
+        let rate, outAmount;
+        if (pool.tokenA === swapFromToken) {
+            rate = pool.reserveB / pool.reserveA;
+            outAmount = (amount * pool.reserveB) / (pool.reserveA + amount) * 0.997;
+        } else {
+            rate = pool.reserveA / pool.reserveB;
+            outAmount = (amount * pool.reserveA) / (pool.reserveB + amount) * 0.997;
+        }
+        document.getElementById('swapToAmount').value = outAmount.toFixed(6);
+        document.getElementById('swapRate').textContent = '1 ' + swapFromToken + ' = ' + rate.toFixed(4) + ' ' + swapToToken;
+    } else {
+        document.getElementById('swapToAmount').value = '';
+        document.getElementById('swapRate').textContent = '1 ' + swapFromToken + ' = -- ' + swapToToken;
+    }
+}
+
+async function executeSwap() {
+    if (!wallet) { toast('No wallet loaded', 'error'); return; }
+    const amount = parseFloat(document.getElementById('swapFromAmount').value);
+    if (!amount || amount <= 0) { toast('Enter an amount to swap', 'error'); return; }
+    
+    toast('Swap functionality requires DEX API integration. Pool: ' + swapFromToken + '/' + swapToToken, 'info');
+}
+
+// ═══ Token Picker ═══
+function openTokenPicker(target) {
+    swapPickerTarget = target;
+    let html = '';
+    TOKENS.forEach(function(t) {
+        html += '<div class="token-card" onclick="selectToken(\'' + t.symbol + '\')" style="cursor:pointer;">' +
+            '<div class="token-icon ' + t.icon + '">' + t.letter + '</div>' +
+            '<div class="token-info"><div class="token-name">' + t.name + '</div><div class="token-balance">' + t.symbol + '</div></div>' +
+            '</div>';
+    });
+    document.getElementById('tokenPickerList').innerHTML = html;
+    openModal('tokenPickerModal');
+}
+
+function selectToken(symbol) {
+    if (swapPickerTarget === 'from') {
+        if (symbol === swapToToken) { swapToToken = swapFromToken; }
+        swapFromToken = symbol;
+    } else {
+        if (symbol === swapFromToken) { swapFromToken = swapToToken; }
+        swapToToken = symbol;
+    }
+    updateSwapUI();
+    calculateSwap();
+    closeModal('tokenPickerModal');
+}
+
+// ═══ Staking ═══
+async function loadValidators() {
+    const validators = await api('/api/validators');
+    if (!validators) return;
+    
+    let html = '';
+    validators.forEach(function(v, i) {
+        const addr = v.address || '';
+        html += 
+            '<div class="validator-item">' +
+            '<div class="validator-rank">' + (i + 1) + '</div>' +
+            '<div class="validator-info"><div class="validator-name">' + addr.substring(0, 10) + '...' + addr.substring(addr.length - 6) + '</div>' +
+            '<div class="validator-stats">Votes: ' + (v.votes / 1e9).toFixed(0) + 'M · Blocks: ' + (v.blocksProduced || 0) + '</div></div>' +
+            (v.isProducer ? '<span class="pulse-dot" title="Active Producer"></span>' : '') +
+            '<button class="btn btn-primary btn-sm validator-vote-btn" onclick="voteValidator(\'' + addr + '\')">Vote</button>' +
+            '</div>';
+    });
+    document.getElementById('validatorList').innerHTML = html;
+}
+
+async function voteValidator(address) {
+    if (!wallet) { toast('No wallet loaded', 'error'); return; }
+    const data = await api('/api/validators/vote', 'POST', {
+        voter: wallet.address,
+        validator: address,
+        amount: 100 * 1e9,
+        privateKey: wallet.privateKey,
+    });
+    if (data && data.success !== false) {
+        toast('Voted for validator!', 'success');
+    } else {
+        toast('Vote failed', 'error');
+    }
+}
+
+// ═══ Eco Stats ═══
+async function loadEcoStats() {
+    const info = await api('/api/blockchain/info');
+    if (info) {
+        document.getElementById('treesLogged').textContent = Math.floor((info.height || 0) * 0.3);
+        document.getElementById('carbonOffset').textContent = ((info.height || 0) * 2.5).toFixed(1);
+        document.getElementById('creditsMinted').textContent = Math.floor((info.height || 0) * 0.1);
+    }
+}
+
+// ═══ Init ═══
+function init() {
+    if (!loadWallet()) {
+        openModal('createModal');
+    }
+    updateUI();
+    
+    // Auto-refresh
+    if (refreshInterval) clearInterval(refreshInterval);
+    refreshInterval = setInterval(updateUI, 15000);
+}
+
+// Start the app
+init();
+
+// Close modal on Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(function(m) { m.classList.remove('active'); });
+    }
+});
+</script>
+</body>
+</html>
