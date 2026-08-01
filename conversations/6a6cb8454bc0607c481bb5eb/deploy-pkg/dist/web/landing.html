@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis — Carbon-Negative Blockchain</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+<style>
+:root{--bg:#0d1117;--bg-card:#161b22;--border:#30363d;--text:#e6edf3;--text-muted:#8b949e;--green:#3fb950;--blue:#58a6ff;--teal:#2dd4bf}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.container{text-align:center;max-width:800px;padding:40px}
+.logo{font-size:64px;margin-bottom:16px}
+h1{font-size:42px;font-weight:800;margin-bottom:8px;background:linear-gradient(135deg,#3fb950,#2dd4bf);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.tagline{font-size:18px;color:var(--text-muted);margin-bottom:32px}
+.search{max-width:600px;margin:0 auto 24px;position:relative}
+.search input{width:100%;padding:14px 20px 14px 48px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;outline:none}
+.search input:focus{border-color:var(--green)}
+.search-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--text-muted)}
+.cta{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:8px;font-size:15px;font-weight:600;text-decoration:none;margin:4px}
+.cta-primary{background:var(--green);color:#0d1117}
+.cta-secondary{border:1px solid var(--border);color:var(--text)}
+.stats{display:flex;gap:40px;justify-content:center;margin-top:48px}
+.stat{text-align:center}
+.stat-value{font-size:28px;font-weight:700;color:var(--green)}
+.stat-label{font-size:13px;color:var(--text-muted);margin-top:4px}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
+.feature{text-align:left;padding:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px}
+.feature-icon{font-size:28px;margin-bottom:8px}
+.feature-title{font-size:15px;font-weight:600}
+.feature-desc{font-size:13px;color:var(--text-muted);margin-top:4px}
+.social-footer{margin-top:48px;padding-top:32px;border-top:1px solid var(--border)}
+.social-footer-label{font-size:13px;color:var(--text-muted);margin-bottom:16px;letter-spacing:1px;text-transform:uppercase}
+.social-links{display:flex;gap:16px;justify-content:center;align-items:center}
+.social-link{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);transition:all .2s ease;text-decoration:none}
+.social-link:hover{transform:translateY(-2px);border-color:var(--green);background:rgba(63,185,80,.08)}
+.social-link svg{width:22px;height:22px;fill:var(--text-muted);transition:fill .2s ease}
+.social-link:hover svg{fill:var(--green)}
+.footer-links{margin-top:20px;font-size:13px;color:var(--text-muted)}
+.footer-links a{color:var(--text-muted);text-decoration:none;margin:0 8px;transition:color .2s}
+.footer-links a:hover{color:var(--green)}
+.footer-copy{margin-top:12px;font-size:12px;color:var(--text-muted);opacity:.6}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="logo">🌿</div>
+<h1>Verdis</h1>
+<div class="tagline">The World's First Fully Green Blockchain Ecosystem</div>
+<div style="display:inline-block;padding:4px 16px;border-radius:20px;background:rgba(63,185,80,.15);color:#3fb950;font-size:13px;font-weight:600;margin-top:8px">Carbon-Negative | On-Chain Proof | Verified Eco Impact</div>
+<div class="search">
+<span class="search-icon">🔍</span>
+<input type="text" placeholder="Search by Address, Tx Hash, or Block" onkeydown="if(event.key==='Enter'){window.location='/dashboard'}">
+</div>
+<div>
+<a href="/dashboard#sale" style="background:linear-gradient(135deg,#238636,#3fb950);color:white;padding:12px 32px;border-radius:8px;font-weight:700;display:inline-block;margin:8px">Buy VRS Tokens</a> <a href="/whitepaper" style="color:#58a6ff;margin-left:16px">Executive Summary</a> <a href="/whitepaper.pdf" style="color:#3fb950;margin-left:16px">PDF</a> <a href="/whitepaper" style="color:#58a6ff;margin-left:16px">Whitepaper</a> <a href="/dashboard" class="cta cta-primary">Explore Blockchain →</a>
+<a href="/dashboard#dex" class="cta cta-secondary">Launch DEX</a>
+</div>
+<div style="background:linear-gradient(135deg,rgba(63,185,80,.08),rgba(45,212,191,.05));border:1px solid rgba(63,185,80,.2);border-radius:12px;padding:20px;margin:32px 0"><div style="font-size:16px;font-weight:700;color:#3fb950;margin-bottom:8px">Why Verdis is the First Fully Green Ecosystem</div><div style="font-size:14px;color:#8b949e;line-height:1.6">Other blockchains claim to be green because they use less energy. Verdis makes environmental regeneration a core protocol feature. Carbon credits on-chain, reforestation logged immutably, validators scored by renewable energy, and a 5B VRS Carbon Offset Fund. The chain does not just consume less. It actively heals the planet.</div></div>
+<div class="stats">
+<div class="stat"><div class="stat-value" id="s-height">—</div><div class="stat-label">Block Height</div></div>
+<div class="stat"><div class="stat-value" id="s-vals">—</div><div class="stat-label">Validators</div></div>
+<div class="stat"><div class="stat-value" id="s-supply">50B</div><div class="stat-label">VRS Supply</div></div>
+<div class="stat"><div class="stat-value" id="s-co2">—</div><div class="stat-label">Tons CO₂ Offset</div></div>
+</div>
+<div class="features">
+<div class="feature"><div class="feature-icon">⛓</div><div class="feature-title">Carbon-Negative Protocol</div><div class="feature-desc">On-chain carbon credits, reforestation logging, verified CO2 offset</div></div>
+<div class="feature"><div class="feature-icon">💱</div><div class="feature-title">Green Validator Scoring</div><div class="feature-desc">Validators scored by renewable energy use — eco-first consensus</div></div>
+<div class="feature"><div class="feature-icon">🌉</div><div class="feature-title">Token Sale Live</div><div class="feature-desc">Buy VRS with ETH, BNB, USDT at $0.001 per token</div></div>
+</div>
+
+<!-- SOCIAL MEDIA FOOTER -->
+<div class="social-footer">
+<div class="social-footer-label">Join the Green Revolution</div>
+<div class="social-links">
+<a href="https://x.com/Verdischain" target="_blank" rel="noopener" class="social-link" aria-label="X (Twitter)">
+<svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+</a>
+<a href="https://t.me/verdischain" target="_blank" rel="noopener" class="social-link" aria-label="Telegram Channel">
+<svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.96 6.502-1.36 8.627-.168.9-.504 1.201-.828 1.23-.704.064-1.239-.464-1.92-.913-1.067-.7-1.669-1.137-2.704-1.818-1.197-.788-.421-1.223.262-1.93.179-.186 3.273-2.998 3.332-3.249.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.914.49-1.302.48-.428-.008-1.252-.241-1.865-.443-.751-.244-1.349-.374-1.297-.79.027-.218.325-.441.894-.668 3.508-1.53 5.844-2.541 7.006-3.031 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+</a>
+<a href="https://t.me/Verdis_official_bot" target="_blank" rel="noopener" class="social-link" aria-label="Telegram Bot">
+<svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm.045 5.143c.5-.026.902.357.902.857v2.286h2.286c.5 0 .857.357.857.857s-.357.857-.857.857h-2.286v2.286c0 .5-.402.883-.902.857-.452-.024-.812-.384-.812-.857V10h-2.286c-.5 0-.857-.357-.857-.857s.357-.857.857-.857h2.286V6c0-.473.36-.833.812-.857z"/></svg>
+</a>
+<a href="https://github.com/verdischain" target="_blank" rel="noopener" class="social-link" aria-label="GitHub">
+<svg viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+</a>
+</div>
+<div class="footer-links">
+<a href="/dashboard">Dashboard</a>·<a href="/whitepaper">Whitepaper</a>·<a href="/dashboard#sale">Token Sale</a>·<a href="/dashboard#dex">DEX</a>·<a href="/api/network/info">API</a>
+</div>
+<div class="footer-copy">© 2026 Verdis Blockchain · The First Fully Green Blockchain Ecosystem</div>
+</div>
+
+</div>
+<script>
+fetch('/api/blockchain/info').then(r=>r.json()).then(d=>{
+document.getElementById('s-height').textContent=d.height||d.currentHeight||'—';
+document.getElementById('s-vals').textContent=d.validatorCount||'—';
+});
+fetch('/api/eco/impact').then(r=>r.json()).then(d=>{
+document.getElementById('s-co2').textContent=(d.totalCarbonOffset||d.carbonOffset||'—');
+});
+</script>
+</body>
+</html>
