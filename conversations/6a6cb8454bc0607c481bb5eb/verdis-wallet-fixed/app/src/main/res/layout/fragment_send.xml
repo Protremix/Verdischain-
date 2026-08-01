@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#050A08"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send"
+        android:textSize="24sp"
+        android:textColor="#F0FDF4"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" />
+
+    <!-- Asset Selector -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_input"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Asset"
+            android:textSize="14sp"
+            android:textColor="#8BA898" />
+
+        <Spinner
+            android:id="@+id/spinner_asset"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="16dp" />
+
+        <TextView
+            android:id="@+id/tv_available"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Avail: 0.0"
+            android:textSize="12sp"
+            android:textColor="#547363" />
+    </LinearLayout>
+
+    <!-- Recipient Address -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:boxStrokeColor="#00FF88"
+        android:hint="Recipient Address (0x...)"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:fontFamily="monospace"
+            android:textSize="13sp"
+            android:maxLines="2" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Scan QR + Paste buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="24dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_scan_qr"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:text="Scan QR"
+            app:icon="@android:drawable/ic_menu_camera"
+            app:backgroundTint="#0A120E"
+            app:strokeColor="#1A00FF88"
+            app:strokeWidth="1dp"
+            app:cornerRadius="12dp"
+            android:textColor="#00FF88"
+            android:layout_marginEnd="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_paste"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:text="Paste"
+            app:backgroundTint="#0A120E"
+            app:strokeColor="#1A00FF88"
+            app:strokeWidth="1dp"
+            app:cornerRadius="12dp"
+            android:textColor="#00FF88"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <!-- Amount -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        app:boxStrokeColor="#00FF88"
+        android:hint="Amount"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_amount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:textSize="18sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Max button -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginBottom="16dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_max"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="MAX"
+            android:textSize="12sp"
+            app:backgroundTint="#0A120E"
+            app:strokeColor="#1A00FF88"
+            app:strokeWidth="1dp"
+            app:cornerRadius="8dp"
+            android:textColor="#00FF88" />
+    </LinearLayout>
+
+    <!-- Fee Info -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/bg_card"
+        android:padding="16dp"
+        android:layout_marginBottom="24dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Network Fee"
+                android:textSize="12sp"
+                android:textColor="#547363" />
+            <TextView
+                android:id="@+id/tv_fee"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0.001 VCO"
+                android:textSize="14sp"
+                android:textColor="#F0FDF4" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Est. Time"
+                android:textSize="12sp"
+                android:textColor="#547363" />
+            <TextView
+                android:id="@+id/tv_est_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="~5 sec"
+                android:textSize="14sp"
+                android:textColor="#F0FDF4" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Send Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_send"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Send"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:backgroundTint="#00FF88"
+        app:cornerRadius="16dp"
+        android:textColor="#050A08" />
+
+</LinearLayout>
