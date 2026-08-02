@@ -1,11 +1,16 @@
-//! Verdis Chain Runtime — The world's first fully green, carbon-negative blockchain
+//! Verdis Chain Runtime v2.0
 //!
-//! Built with Substrate FRAME, featuring:
-//! - Native DPoS consensus (pallet-dpos)
-//! - AMM-based DEX (pallet-amm-dex)
-//! - Eco-tracking: carbon credits, reforestation, green validator scoring (pallet-eco)
-//! - Protocol-level vesting enforcement (pallet-vesting)
-//! - Tokenomics with 100B supply and 8-category distribution (pallet-tokenomics)
+//! The world's first fully green, carbon-negative blockchain — built with Substrate
+//!
+//! Architecture:
+//! - Consensus: BABE (block production) + GRANDPA (finality)
+//! - Smart Contracts: WASM (pallet-contracts) + Solidity via EVM (pallet-evm)
+//! - Cryptography: BLS (GRANDPA) + Ed25519 (session) + Blake3 (content hashing)
+//! - Storage: IPFS/Arweave (pallet-storage)
+//! - P2P: libp2p (Substrate native)
+//! - Database: RocksDB (Substrate native)
+//! - API: gRPC + JSON-RPC
+//! - Chain ID: 909
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -13,12 +18,12 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
+use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, U256, H256};
 use sp_runtime::{
-    create_runtime_str, generic, ApplyExtrinsicResult, traits::{
+    create_runtime_str, generic, traits::{
         AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify,
     }, transaction_validity::{TransactionSource, TransactionValidity},
-    BuildStorage, MultiSignature,
+    ApplyExtrinsicResult, BuildStorage, MultiSignature, Permill, Percent,
 };
 use sp_std::prelude::*;
 use sp_version::RuntimeVersion;
@@ -29,22 +34,16 @@ use sp_version::NativeVersion;
 // === Pallet Imports ===
 use frame_support::{
     construct_runtime, parameter_types,
-    traits::{ConstU32, ConstU64, ConstU8, Everything, Randomness},
+    traits::{ConstU32, ConstU64, ConstU8, Everything, FindAuthor, Randomness},
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_REF_TIME_PER_SECOND},
-        IdentityFee, Weight, WeightToFee as _,
+        IdentityFee, Weight,
     },
     PalletId,
 };
 use frame_system::EnsureRoot;
 
-use pallet_balances::Call as BalancesCall;
-use pallet_transaction_payment::CurrencyAdapter;
-
-pub use frame_support::{
-    traits::{ConstU128, ConstU32 as C32},
-    weights::constants,
-};
+pub use frame_support::weights::constants as weight_constants;
 
 // === Verdis Custom Pallets ===
 pub use pallet_dpos;
@@ -52,18 +51,16 @@ pub use pallet_amm_dex;
 pub use pallet_eco;
 pub use pallet_tokenomics;
 pub use pallet_vesting;
+pub use pallet_storage;
 
 // === Type Aliases ===
-pub type AccountId = AccountId32;
+pub type AccountId = sp_core::sr25519::Public;
 pub type Balance = u128;
 pub type BlockNumber = u32;
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 pub type Index = u32;
 pub type Signature = MultiSignature;
-pub type AccountId32 = sp_core::sr25519::Public;
-
-use sp_core::sr25519::Signature as Sr25519Signature;
 
 /// Opaque types for the node
 pub mod opaque {
@@ -82,15 +79,14 @@ pub mod opaque {
 pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("verdis-chain"),
     impl_name: create_runtime_str!("verdis-chain"),
-    authoring_version: 1,
-    spec_version: 1,
-    impl_version: 1,
+    authoring_version: 2,
+    spec_version: 2,
+    impl_version: 2,
     apis: RUNTIME_API_VERSIONS,
-    transaction_version: 1,
+    transaction_version: 2,
     state_version: 1,
 };
 
-/// Native version of the runtime
 #[cfg(feature = "std")]
 pub fn native_version() -> NativeVersion {
     NativeVersion {
@@ -100,23 +96,19 @@ pub fn native_version() -> NativeVersion {
 }
 
 // === Constants ===
-/// 1 VRDX = 10^9 base units (nano)
-pub const UNITS: Balance = 1_000_000_000;
-/// Total supply: 100,000,000,000 VRDX
+pub const UNITS: Balance = 1_000_000_000; // 1 VRDX = 10^9 base units
 pub const TOTAL_SUPPLY: Balance = 100_000_000_000 * UNITS;
-/// Circulating supply: 15,000,000,000 VRDX (15% of total)
 pub const CIRCULATING_SUPPLY: Balance = 15_000_000_000 * UNITS;
-/// Block time: 5 seconds
-pub const BLOCK_TIME: u64 = 5000;
-/// Max block weight: 50% of block time for computation
+pub const BLOCK_TIME: u64 = 6000; // 6 second blocks (BABE)
 pub const MAX_BLOCK_WEIGHT: Weight = Weight::from_parts(
     WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2),
-    constants::MAX_POSSIBLE_PROOF_SIZE,
+    weight_constants::MAX_POSSIBLE_PROOF_SIZE,
 );
 
 parameter_types! {
     pub const BlockHashCount: BlockNumber = 2400;
     pub const Version: RuntimeVersion = VERSION;
+    pub const SS58Prefix: u8 = 909;
     pub BlockWeights: frame_system::limits::BlockWeights =
         frame_system::limits::BlockWeights::builder()
             .base_block(BlockExecutionWeight::get())
@@ -130,13 +122,12 @@ parameter_types! {
             .build_or_panic();
     pub BlockLength: frame_system::limits::BlockLength =
         frame_system::limits::BlockLength::max_with_normal_noise_ratio(
-            constants::NORMAL_DISPATCH_RATIO,
-            constants::MAX_POSSIBLE_LENGTH,
+            weight_constants::NORMAL_DISPATCH_RATIO,
+            weight_constants::MAX_POSSIBLE_LENGTH,
         );
-    pub const SS58Prefix: u8 = 909; // Chain ID 909
 }
 
-// === System Pallet Configuration ===
+// === System Pallet ===
 impl frame_system::Config for Runtime {
     type BaseCallFilter = Everything;
     type BlockWeights = BlockWeights;
@@ -165,26 +156,59 @@ impl frame_system::Config for Runtime {
     type Block = Block;
 }
 
-// === Timestamp Pallet ===
+// === Timestamp ===
 impl pallet_timestamp::Config for Runtime {
     type Moment = u64;
-    type OnTimestampSet = Aura;
+    type OnTimestampSet = Babe;
     type MinimumPeriod = ConstU64<{ BLOCK_TIME / 2 }>;
     type WeightInfo = ();
 }
 
-// === Aura Consensus (Block Production) ===
-impl pallet_aura::Config for Runtime {
-    type AuthorityId = pallet_aura::sr25519::AuthorityId;
+// === BABE Consensus (Block Production) ===
+impl pallet_babe::Config for Runtime {
+    type EpochDuration = ConstU64<600>;       // 600 blocks per epoch (~1 hour)
+    type ExpectedBlockTime = ConstU64<BLOCK_TIME>;
+    type ReportLongRanges = ();
+    type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = ();
-    type MaxAuthorities = ConstU32<101>; // Max 101 validators
-    type AllowMultipleBlocksPerSlot = frame_support::traits::ConstBool<false>;
-    type SlotDuration = ConstU64<BLOCK_TIME>;
+    type WeightInfo = ();
+    type MaxAuthorities = ConstU32<101>;
+    type MaxNominatorRewardedPerValidator = ConstU32<64>;
 }
 
-// === Balances Pallet ===
+// === GRANDPA Finality ===
+impl pallet_grandpa::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type WeightInfo = ();
+    type MaxAuthorities = ConstU32<101>;
+    type MaxSetIdSessionEntries = ConstU64<0>;
+    type MaxNominators = ConstU32<256>;
+    type KeyOwnerProof = sp_core::Void;
+    type EquivocationReportSystem = ();
+    type VoterEquivocationReportSystem = ();
+}
+
+// === Session (for validator management) ===
 parameter_types! {
-    pub const ExistentialDeposit: Balance = UNITS; // 1 nano minimum
+    pub const Period: BlockNumber = 600;  // Same as BABE epoch
+    pub const Offset: BlockNumber = 0;
+}
+
+impl pallet_session::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type ValidatorId = AccountId;
+    type ValidatorIdOf = pallet_dpos::ValidatorIdOf<Runtime>;
+    type ShouldEndSession = pallet_dpos::ShouldEndSession<Runtime>;
+    type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
+    type SessionManager = pallet_dpos::SessionManager<Runtime>;
+    type SessionHandler = <pallet_session::PeriodicSessions<Period, Offset> as pallet_session::SessionHandler<AccountId>>::SessionHandler;
+    type Keys = pallet_session::Keys;
+    type WeightInfo = ();
+}
+
+// === Balances ===
+parameter_types! {
+    pub const ExistentialDeposit: Balance = UNITS;
     pub const MaxLocks: u32 = 50;
     pub const MaxReserves: u32 = 50;
 }
@@ -207,13 +231,13 @@ impl pallet_balances::Config for Runtime {
 
 // === Transaction Payment ===
 parameter_types! {
-    pub const TransactionByteFee: Balance = 100_000; // 0.0001 VRDX per byte
+    pub const TransactionByteFee: Balance = 100_000;
     pub const OperationalFeeMultiplier: u8 = 5;
 }
 
 impl pallet_transaction_payment::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
+    type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, ()>;
     type OperationalFeeMultiplier = OperationalFeeMultiplier;
     type WeightToFee = IdentityFee<Balance>;
     type LengthToFee = IdentityFee<Balance>;
@@ -228,6 +252,108 @@ impl pallet_sudo::Config for Runtime {
     type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
 }
 
+// === Scheduler (for governance/scheduled operations) ===
+impl pallet_scheduler::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type RuntimeOrigin = RuntimeOrigin;
+    type PalletsOrigin = OriginCaller;
+    type RuntimeCall = RuntimeCall;
+    type MaxScheduledPerBlock = ConstU32<50>;
+    type WeightInfo = ();
+    type OriginPrivilegeCmp = frame_support::traits::EqualPrivilegeOnly;
+    type Preimages = Preimage;
+}
+
+// === Preimage ===
+impl pallet_preimage::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type WeightInfo = ();
+    type Currency = Balances;
+    type ManagerOrigin = EnsureRoot<AccountId>;
+    type BaseDeposit = ConstU128<1>;
+    type ByteDeposit = ConstU128<1>;
+}
+
+// === Randomness (for BABE VRF) ===
+impl pallet_randomness_collective_flip::Config for Runtime {}
+
+// === WASM Smart Contracts (pallet-contracts) ===
+parameter_types! {
+    pub const DepositPerItem: Balance = 1 * UNITS;
+    pub const DepositPerByte: Balance = 1 * UNITS;
+    pub const MaxStorageKeyLen: u32 = 128;
+    pub Schedule: pallet_contracts::Schedule<Runtime> = Default::default();
+}
+
+impl pallet_contracts::Config for Runtime {
+    type Time = Timestamp;
+    type Randomness = RandomnessCollectiveFlip;
+    type Currency = Balances;
+    type RuntimeEvent = RuntimeEvent;
+    type RuntimeCall = RuntimeCall;
+    type CallFilter = Everything;
+    type DepositPerItem = DepositPerItem;
+    type DepositPerByte = DepositPerByte;
+    type MaxStorageKeyLen = MaxStorageKeyLen;
+    type WeightPrice = pallet_transaction_payment::Pallet<Runtime>;
+    type WeightInfo = ();
+    type ChainExtension = ();
+    type Schedule = Schedule;
+    type AddressGenerator = pallet_contracts::DefaultAddressGenerator;
+    type MaxCodeLen = ConstU32<{ 256 * 1024 }>;
+    type MaxStorageDataLen = ConstU32<{ 16 * 1024 }>;
+    type UnsafeUnstableInterface = ();
+    type UploadOrigin = frame_system::EnsureSigned<AccountId>;
+    type InstantiateOrigin = frame_system::EnsureSigned<AccountId>;
+    type RuntimeHoldReason = ();
+    type MaxDecorations = ConstU32<64>;
+    type CodeHashLockupDepositPercent = Permill::from_percent(30);
+    type MaxDelegateDependencies = ConstU32<32>;
+    type Environment = ();
+    type Debug = ();
+    type ApiVersion = ();
+    type Migrations = ();
+    type Xcm = ();
+}
+
+// === EVM (Solidity via Frontier) ===
+parameter_types! {
+    // Chain ID 909 for EVM compatibility
+    pub const ChainId: u64 = 909;
+    pub const EvmPalletId: PalletId = PalletId(*b"verdiev");
+    // Gas and fee configuration
+    pub const BlockGasLimit: u64 = 30_000_000;
+    pub const WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1, 0);
+}
+
+impl pallet_evm::Config for Runtime {
+    type FeeCalculator = ();
+    type GasWeightMapping = ();
+    type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Runtime>;
+    type CallOrigin = pallet_evm::EnsureAddressTruncated;
+    type InvokeOrigin = pallet_evm::EnsureAddressTruncated;
+    type RuntimeEvent = RuntimeEvent;
+    type Precompiles = ();
+    type ChainId = ChainId;
+    type BlockGasLimit = BlockGasLimit;
+    type WeightPerGas = WeightPerGas;
+    type WeightInfo = ();
+    type AddressMapping = pallet_evm::HashedAddressMapping<BlakeTwo256>;
+    type Currency = Balances;
+    type OnChargeTransaction = ();
+    type Treasury = ();
+    type GasLimitPovSizeRatio = ConstU32<4>;
+    type SuicideQuickClearLimit = ConstU32<0>;
+    type Timestamp = Timestamp;
+    type WeightPerGas = WeightPerGas;
+}
+
+// === Ethereum Compatibility (Frontier) ===
+impl pallet_ethereum::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type StateRoot = pallet_ethereum::IntermediateStateRoot<Runtime>;
+}
+
 // === Verdis DPoS Pallet ===
 parameter_types! {
     pub const DposPalletId: PalletId = PalletId(*b"verdisdp");
@@ -235,8 +361,7 @@ parameter_types! {
     pub const MaxValidators: u32 = 101;
     pub const ValidatorCount: u32 = 5;
     pub const BlockReward: Balance = 16 * UNITS;
-    pub const EpochLength: BlockNumber = 100;
-    pub const MaxValidatorsPerEpoch: u32 = 5;
+    pub const EpochLength: BlockNumber = 600;
 }
 
 impl pallet_dpos::Config for Runtime {
@@ -252,10 +377,10 @@ impl pallet_dpos::Config for Runtime {
     type WeightInfo = pallet_dpos::weights::SubstrateWeight<Runtime>;
 }
 
-// === Verdis AMM DEX Pallet ===
+// === Verdis AMM DEX ===
 parameter_types! {
     pub const DexPalletId: PalletId = PalletId(*b"verdisdx");
-    pub const FeeNumerator: u32 = 3; // 0.3%
+    pub const FeeNumerator: u32 = 3;
     pub const FeeDenominator: u32 = 1000;
     pub const MinLiquidity: Balance = 1_000 * UNITS;
     pub const MaxPools: u32 = 50;
@@ -273,7 +398,7 @@ impl pallet_amm_dex::Config for Runtime {
     type WeightInfo = pallet_amm_dex::weights::SubstrateWeight<Runtime>;
 }
 
-// === Verdis Eco Tracking Pallet ===
+// === Verdis Eco Tracking ===
 parameter_types! {
     pub const EcoPalletId: PalletId = PalletId(*b"verdisec");
     pub const MaxCarbonCredits: u32 = 1_000;
@@ -288,17 +413,17 @@ impl pallet_eco::Config for Runtime {
     type RuntimeOrigin = RuntimeOrigin;
     type PalletId = EcoPalletId;
     type MaxCarbonCredits = MaxCarbonCredits;
-    pub const MaxReforestProjects = MaxReforestProjects;
-    pub const MaxGreenValidators = MaxGreenValidators;
+    type MaxReforestProjects = MaxReforestProjects;
+    type MaxGreenValidators = MaxGreenValidators;
     type MinGreenScore = MinGreenScore;
     type MaxGreenScore = MaxGreenScore;
     type WeightInfo = pallet_eco::weights::SubstrateWeight<Runtime>;
 }
 
-// === Verdis Tokenomics Pallet ===
+// === Verdis Tokenomics ===
 parameter_types! {
     pub const TokenomicsPalletId: PalletId = PalletId(*b"verdistk");
-    pub const TotalSupply: Balance = 100_000_000_000 * UNITS;
+    pub const TotalSupplyConst: Balance = 100_000_000_000 * UNITS;
     pub const InvestorAllocation: Balance = 12_000_000_000 * UNITS;
 }
 
@@ -306,13 +431,13 @@ impl pallet_tokenomics::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeOrigin = RuntimeOrigin;
     type Currency = Balances;
-    type TotalSupply = TotalSupply;
+    type TotalSupply = TotalSupplyConst;
     type InvestorAllocation = InvestorAllocation;
     type PalletId = TokenomicsPalletId;
     type WeightInfo = pallet_tokenomics::weights::SubstrateWeight<Runtime>;
 }
 
-// === Verdis Vesting Pallet ===
+// === Verdis Vesting ===
 parameter_types! {
     pub const VestingPalletId: PalletId = PalletId(*b"verdisvs");
 }
@@ -325,35 +450,47 @@ impl pallet_vesting::Config for Runtime {
     type WeightInfo = pallet_vesting::weights::SubstrateWeight<Runtime>;
 }
 
-// === Session Keys ===
-impl pallet_session::Config for Runtime {
+// === Verdis Storage (IPFS/Arweave) ===
+parameter_types! {
+    pub const StoragePalletId: PalletId = PalletId(*b"verdisst");
+    pub const MaxStorageRecords: u32 = 10_000;
+}
+
+impl pallet_storage::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type ValidatorId = AccountId;
-    type ValidatorIdOf = pallet_dpos::ValidatorIdOf;
-    type ShouldEndSession = pallet_dpos::ShouldEndSession;
-    type NextSessionRotation = pallet_dpos::NextSessionRotation;
-    type SessionManager = pallet_dpos::SessionManager;
-    type SessionHandler = pallet_session::PeriodicSessions<EpochLength, ()>;
-    type Keys = pallet_session::Keys;
-    type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
+    type PalletId = StoragePalletId;
+    type MaxRecords = MaxStorageRecords;
+    type WeightInfo = pallet_storage::weights::SubstrateWeight<Runtime>;
 }
 
 // === Construct Runtime ===
 construct_runtime! {
     pub enum Runtime {
-        System: frame_system,
-        Timestamp: pallet_timestamp,
-        Aura: pallet_aura,
-        Balances: pallet_balances,
-        TransactionPayment: pallet_transaction_payment,
-        Sudo: pallet_sudo,
-        Session: pallet_session,
-        // Verdis custom pallets
-        Dpos: pallet_dpos,
-        AmmDex: pallet_amm_dex,
-        Eco: pallet_eco,
-        Tokenomics: pallet_tokenomics,
-        Vesting: pallet_vesting,
+        // Core
+        System: frame_system = 0,
+        Timestamp: pallet_timestamp = 1,
+        Babe: pallet_babe = 2,
+        Grandpa: pallet_grandpa = 3,
+        Balances: pallet_balances = 4,
+        TransactionPayment: pallet_transaction_payment = 5,
+        Sudo: pallet_sudo = 6,
+        Session: pallet_session = 7,
+        Scheduler: pallet_scheduler = 8,
+        Preimage: pallet_preimage = 9,
+        RandomnessCollectiveFlip: pallet_randomness_collective_flip = 10,
+
+        // Smart Contracts
+        Contracts: pallet_contracts = 20,
+        Evm: pallet_evm = 21,
+        Ethereum: pallet_ethereum = 22,
+
+        // Verdis Custom Pallets
+        Dpos: pallet_dpos = 30,
+        AmmDex: pallet_amm_dex = 31,
+        Eco: pallet_eco = 32,
+        Tokenomics: pallet_tokenomics = 33,
+        Vesting: pallet_vesting = 34,
+        Storage: pallet_storage = 35,
     }
 }
 
@@ -428,12 +565,77 @@ impl_runtime_apis! {
         }
     }
 
-    impl sp_consensus_aura::AuraApi<Block, pallet_aura::sr25519::AuthorityId> for Runtime {
-        fn authorities() -> Vec<pallet_aura::sr25519::AuthorityId> {
-            Aura::authorities().into_iter().map(|x| x.into()).collect()
+    impl sp_consensus_babe::BabeApi<Block> for Runtime {
+        fn configuration() -> sp_consensus_babe::BabeConfiguration {
+            let epoch_config = Babe::epoch_config().unwrap_or(Default::default());
+            sp_consensus_babe::BabeConfiguration {
+                slot_duration: Babe::slot_duration(),
+                epoch_length: <Babe as pallet_babe::Config>::EpochDuration::get(),
+                c: PRIMARY_PROBABILITY,
+                genesis_authorities: Babe::authorities().into_iter().map(|x| x.into()).collect(),
+                randomness: Babe::randomness().into(),
+                allowed_slots: Babe::allowed_slots(),
+                epoch_config,
+            }
         }
-        fn slot_duration() -> sp_consensus_aura::SlotDuration {
-            sp_consensus_aura::SlotDuration::from_millis(BLOCK_TIME)
+
+        fn current_epoch_start() -> sp_consensus_babe::Slot {
+            Babe::current_epoch_start()
+        }
+
+        fn current_epoch() -> sp_consensus_babe::Epoch {
+            Babe::current_epoch()
+        }
+
+        fn next_epoch() -> sp_consensus_babe::Epoch {
+            Babe::next_epoch()
+        }
+
+        fn generate_key_ownership_proof(
+            _slot: sp_consensus_babe::Slot,
+            authority_id: sp_consensus_babe::AuthorityId,
+        ) -> Option<sp_consensus_babe::OpaqueKeyOwnershipProof> {
+            Babe::generate_key_ownership_proof(&_slot, &authority_id)
+        }
+
+        fn submit_report_equivocation_unsigned_extrinsic(
+            equivocation_proof: sp_consensus_babe::OpaqueEquivocationProof,
+            key_owner_proof: sp_consensus_babe::OpaqueKeyOwnershipProof,
+        ) -> Option<()> {
+            Babe::submit_unsigned_equivocation_report(
+                equivocation_proof,
+                key_owner_proof,
+            )
+        }
+    }
+
+    impl sp_consensus_grandpa::GrandpaApi<Block> for Runtime {
+        fn grandpa_authorities() -> sp_consensus_grandpa::AuthorityList {
+            Grandpa::grandpa_authorities()
+        }
+
+        fn current_set_id() -> sp_consensus_grandpa::SetId {
+            Grandpa::current_set_id()
+        }
+
+        fn submit_report_equivocation_unsigned_extrinsic(
+            equivocation: sp_consensus_grandpa::EquivocationProof<
+                <Block as BlockT>::Hash,
+                NumberFor<Block>,
+            >,
+            key_owner: sp_consensus_grandpa::OpaqueKeyOwnershipProof,
+        ) -> Option<()> {
+            Grandpa::submit_unsigned_equivocation_report(
+                equivocation,
+                key_owner,
+            )
+        }
+
+        fn generate_key_ownership_proof(
+            _set_id: sp_consensus_grandpa::SetId,
+            authority_id: sp_consensus_grandpa::AuthorityId,
+        ) -> Option<sp_consensus_grandpa::OpaqueKeyOwnershipProof> {
+            Grandpa::generate_key_ownership_proof(&_set_id, &authority_id)
         }
     }
 
@@ -457,4 +659,80 @@ impl_runtime_apis! {
             TransactionPayment::weight_to_fee(weight)
         }
     }
+
+    // EVM Runtime API
+    impl pallet_evm::runtime_api::EVMRuntimeApi<Block, H160, Balance> for Runtime {
+        fn call(
+            from: H160,
+            to: H160,
+            data: Vec<u8>,
+            value: Balance,
+            gas_limit: u64,
+            max_fee_per_gas: U256,
+            max_priority_fee_per_gas: Option<U256>,
+            nonce: Option<U256>,
+            estimate: bool,
+        ) -> Result<pallet_evm::CallInfo, pallet_evm::PrecompileSet> {
+            Evm::call(
+                from,
+                to,
+                data,
+                value,
+                gas_limit,
+                max_fee_per_gas,
+                max_priority_fee_per_gas,
+                nonce,
+                estimate,
+            )
+        }
+
+        fn create(
+            from: H160,
+            data: Vec<u8>,
+            value: Balance,
+            gas_limit: u64,
+            max_fee_per_gas: U256,
+            max_priority_fee_per_gas: Option<U256>,
+            nonce: Option<U256>,
+            estimate: bool,
+        ) -> Result<pallet_evm::CreateInfo, pallet_evm::PrecompileSet> {
+            Evm::create(
+                from,
+                data,
+                value,
+                gas_limit,
+                max_fee_per_gas,
+                max_priority_fee_per_gas,
+                nonce,
+                estimate,
+            )
+        }
+
+        fn create2(
+            from: H160,
+            data: Vec<u8>,
+            salt: H256,
+            value: Balance,
+            gas_limit: u64,
+            max_fee_per_gas: U256,
+            max_priority_fee_per_gas: Option<U256>,
+            nonce: Option<U256>,
+            estimate: bool,
+        ) -> Result<pallet_evm::CreateInfo, pallet_evm::PrecompileSet> {
+            Evm::create2(
+                from,
+                data,
+                salt,
+                value,
+                gas_limit,
+                max_fee_per_gas,
+                max_priority_fee_per_gas,
+                nonce,
+                estimate,
+            )
+        }
+    }
 }
+
+// BABE constants
+const PRIMARY_PROBABILITY: sp_consensus_babe::SlotProbability = sp_consensus_babe::SlotProbability::from_percent(100);

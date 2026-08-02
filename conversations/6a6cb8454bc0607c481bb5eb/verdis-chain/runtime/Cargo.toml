@@ -1,7 +1,7 @@
 [package]
 name = "verdis-runtime"
 version = "2.0.0"
-description = "Runtime for Verdis Chain — the world's first fully green, carbon-negative blockchain"
+description = "Runtime for Verdis Chain — BABE+GRANDPA consensus, EVM+WASM contracts, eco-tracking"
 license = "MIT"
 edition = "2021"
 publish = false
@@ -12,7 +12,7 @@ scale-info = { workspace = true, features = ["derive"] }
 serde = { workspace = true, optional = true, features = ["derive"] }
 serde_json = { workspace = true, optional = true }
 
-# Substrate
+# Substrate core
 frame-support = { workspace = true }
 frame-system = { workspace = true }
 frame-executive = { workspace = true }
@@ -25,21 +25,39 @@ sp-io = { workspace = true }
 sp-std = { workspace = true }
 sp-api = { workspace = true }
 sp-block-builder = { workspace = true }
-sp-consensus-aura = { workspace = true }
+sp-consensus-babe = { workspace = true }
+sp-consensus-grandpa = { workspace = true }
 sp-inherents = { workspace = true }
 sp-offchain = { workspace = true }
 sp-session = { workspace = true }
 sp-transaction-pool = { workspace = true }
 sp-version = { workspace = true }
 sp-timestamp = { workspace = true }
+sp-application-crypto = { workspace = true }
 
-# Pallets
-pallet-aura = { workspace = true }
+# Core pallets
+pallet-babe = { workspace = true }
+pallet-grandpa = { workspace = true }
 pallet-balances = { workspace = true }
 pallet-sudo = { workspace = true }
 pallet-timestamp = { workspace = true }
 pallet-transaction-payment = { workspace = true }
 pallet-session = { workspace = true }
+pallet-scheduler = { workspace = true }
+pallet-preimage = { workspace = true }
+
+# WASM Smart Contracts
+pallet-contracts = { workspace = true }
+pallet-contracts-primitives = { workspace = true }
+
+# EVM (Solidity via Frontier)
+pallet-evm = { workspace = true }
+pallet-ethereum = { workspace = true }
+pallet-randomness-collective-flip = { workspace = true }
+fp-evm = { workspace = true }
+
+# Cryptography
+blake3 = { workspace = true }
 
 # Verdis custom pallets
 pallet-dpos = { path = "../pallets/dpos", default-features = false }
@@ -47,6 +65,7 @@ pallet-amm-dex = { path = "../pallets/amm-dex", default-features = false }
 pallet-eco = { path = "../pallets/eco", default-features = false }
 pallet-tokenomics = { path = "../pallets/tokenomics", default-features = false }
 pallet-vesting = { path = "../pallets/vesting", default-features = false }
+pallet-storage = { path = "../pallets/storage", default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = { workspace = true, optional = true }
@@ -68,24 +87,37 @@ std = [
     "sp-std/std",
     "sp-api/std",
     "sp-block-builder/std",
-    "sp-consensus-aura/std",
+    "sp-consensus-babe/std",
+    "sp-consensus-grandpa/std",
     "sp-inherents/std",
     "sp-offchain/std",
     "sp-session/std",
     "sp-transaction-pool/std",
     "sp-version/std",
     "sp-timestamp/std",
-    "pallet-aura/std",
+    "sp-application-crypto/std",
+    "pallet-babe/std",
+    "pallet-grandpa/std",
     "pallet-balances/std",
     "pallet-sudo/std",
     "pallet-timestamp/std",
     "pallet-transaction-payment/std",
     "pallet-session/std",
+    "pallet-scheduler/std",
+    "pallet-preimage/std",
+    "pallet-contracts/std",
+    "pallet-contracts-primitives/std",
+    "pallet-evm/std",
+    "pallet-ethereum/std",
+    "pallet-randomness-collective-flip/std",
+    "fp-evm/std",
+    "blake3",
     "pallet-dpos/std",
     "pallet-amm-dex/std",
     "pallet-eco/std",
     "pallet-tokenomics/std",
     "pallet-vesting/std",
+    "pallet-storage/std",
     "substrate-wasm-builder",
 ]
 runtime-benchmarks = [
@@ -94,6 +126,8 @@ runtime-benchmarks = [
     "frame-system/runtime-benchmarks",
     "pallet-balances/runtime-benchmarks",
     "pallet-timestamp/runtime-benchmarks",
+    "pallet-contracts/runtime-benchmarks",
+    "pallet-evm/runtime-benchmarks",
     "pallet-dpos/runtime-benchmarks",
     "pallet-amm-dex/runtime-benchmarks",
     "pallet-eco/runtime-benchmarks",
@@ -104,14 +138,21 @@ try-runtime = [
     "frame-try-runtime/try-runtime",
     "frame-system/try-runtime",
     "pallet-balances/try-runtime",
-    "pallet-aura/try-runtime",
+    "pallet-babe/try-runtime",
+    "pallet-grandpa/try-runtime",
     "pallet-timestamp/try-runtime",
     "pallet-transaction-payment/try-runtime",
     "pallet-sudo/try-runtime",
     "pallet-session/try-runtime",
+    "pallet-scheduler/try-runtime",
+    "pallet-preimage/try-runtime",
+    "pallet-contracts/try-runtime",
+    "pallet-evm/try-runtime",
+    "pallet-ethereum/try-runtime",
     "pallet-dpos/try-runtime",
     "pallet-amm-dex/try-runtime",
     "pallet-eco/try-runtime",
     "pallet-tokenomics/try-runtime",
     "pallet-vesting/try-runtime",
+    "pallet-storage/try-runtime",
 ]
