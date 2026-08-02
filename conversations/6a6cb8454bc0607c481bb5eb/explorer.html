@@ -4,420 +4,288 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Verdiscan — Verdis Blockchain Explorer</title>
-<meta name="description" content="Verdiscan: Explore blocks, transactions, addresses, validators, DEX pools and smart contracts on the Verdis blockchain.">
-<link rel="icon" href="/verdis-logo-animated.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2314f195' d='M12 2L3 7v10l9 5 9-5V7z'/%3E%3C/svg%3E">
 <style>
-:root{
-  --bg:#18181a;
-  --bg-card:#202022;
-  --bg-card-hover:#28282a;
-  --bg-input:#252525;
-  --border:#2a2a2d;
-  --border-light:#3a3a3d;
-  --text:#ffffff;
-  --text-secondary:#a0a0a0;
-  --text-muted:#71717a;
-  --text-dim:#52525b;
-  --link:#3fbdfe;
-  --link-hover:#5cc9ff;
-  --green:#14f195;
-  --green-hover:#1cf5a0;
-  --red:#f87171;
-  --orange:#f59e0b;
-  --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
-  --mono:'JetBrains Mono',monospace;
-}
+:root{--bg:#0a0a0a;--bg-card:#131316;--bg-input:#1a1a1e;--border:#2a2a30;--border-light:#3a3a40;--text:#f5f5f7;--text-secondary:#a0a0a8;--text-muted:#6b6b73;--text-dim:#4a4a52;--green:#14f195;--green-hover:#0fd480;--green-dim:rgba(20,241,149,.1);--red:#ff4d4d;--link:#3fbcfe;--mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,monospace;--font:-apple-system,BlinkMacSystemFont,'Inter',sans-serif}
 *{margin:0;padding:0;box-sizing:border-box}
-html{background:var(--bg);color:var(--text);font-family:var(--font);scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);line-height:1.5;overflow-x:hidden;min-height:100vh}
-::selection{background:rgba(20,241,149,0.15)}
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:#3a3a3d;border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:#4a4a4d}
-a{color:var(--link);text-decoration:none;transition:color .15s}
-a:hover{color:var(--link-hover)}
-
-/* ===== HEADER ===== */
-.header{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;padding:0 24px;gap:24px}
-.header-logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:1.1rem;letter-spacing:-0.5px;color:var(--text)}
-.header-logo svg{width:28px;height:28px;flex-shrink:0}
-.header-logo .logo-green{color:var(--green)}
-.header-price{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--text-secondary);padding:4px 12px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border)}
-.header-price .price-val{color:var(--text);font-weight:600}
-.header-price .price-change{color:var(--green);font-size:.78rem;font-weight:500}
-.header-nav{display:flex;gap:4px;align-items:center;margin-left:8px}
-.header-nav a{color:var(--text-secondary);font-size:.88rem;font-weight:500;padding:6px 14px;border-radius:8px;transition:all .15s}
-.header-nav a:hover{color:var(--text);background:rgba(255,255,255,.04)}
-.header-nav a.active{color:var(--green)}
-.header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
-.header-right .icon-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text-secondary);cursor:pointer;transition:all .15s}
-.header-right .icon-btn:hover{color:var(--text);border-color:var(--border-light)}
-.header-right .sign-in{background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:7px 18px;border-radius:8px;font-size:.88rem;font-weight:500;cursor:pointer;transition:all .15s}
-.header-right .sign-in:hover{background:var(--bg-card-hover);border-color:var(--border-light)}
-
-/* ===== SEARCH BAR ===== */
-.search-section{padding:48px 24px 32px;display:flex;flex-direction:column;align-items:center;gap:16px}
-.search-section h1{font-size:2rem;font-weight:700;text-align:center}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5}
+a{color:var(--link);text-decoration:none;cursor:pointer}
+a:hover{text-decoration:underline}
+.mono{font-family:var(--mono);font-size:.82rem}
+.green{color:var(--green)}.red{color:var(--red)}.muted{color:var(--text-muted)}
+.hidden{display:none!important}
+/* Nav */
+.nav{position:sticky;top:0;z-index:100;background:rgba(10,10,10,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:20px;height:60px}
+.nav-logo{display:flex;align-items:center;gap:8px;font-size:1.1rem;font-weight:700;color:var(--text);text-decoration:none}
+.nav-logo svg{width:28px;height:28px}
+.nav-links{display:flex;gap:0;margin-left:8px}
+.nav-links a{color:var(--text-secondary);font-size:.85rem;font-weight:500;padding:8px 14px;border-radius:8px;transition:all .15s}
+.nav-links a:hover{background:var(--bg-input);color:var(--text);text-decoration:none}
+.nav-links a.active{color:var(--green)}
+.nav-search{flex:1;max-width:360px;position:relative;margin-left:auto}
+.nav-search input{width:100%;height:38px;background:var(--bg-input);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:.85rem;padding:0 36px 0 14px;outline:none;font-family:var(--font)}
+.nav-search input:focus{border-color:var(--border-light)}
+.nav-search input::placeholder{color:var(--text-dim)}
+.nav-search svg{position:absolute;right:10px;top:10px;width:18px;height:18px;color:var(--text-muted)}
+.nav-price{display:flex;align-items:center;gap:6px;font-size:.85rem;font-family:var(--mono);padding:6px 12px;background:var(--green-dim);border:1px solid rgba(20,241,149,.15);border-radius:8px}
+.nav-price .price{color:var(--green);font-weight:600}
+.nav-price .change{font-size:.75rem}
+/* Search section */
+.search-section{padding:40px 24px 24px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.search-section h1{font-size:1.8rem;font-weight:700;text-align:center}
 .search-section h1 .green{color:var(--green)}
-.search-section .subtitle{color:var(--text-muted);font-size:.92rem}
+.search-section .subtitle{color:var(--text-muted);font-size:.9rem}
 .search-bar{width:100%;max-width:680px;position:relative}
-.search-bar input{width:100%;height:52px;background:var(--bg-input);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:.95rem;padding:0 56px 0 20px;outline:none;transition:all .2s;font-family:var(--font)}
-.search-bar input:focus{border-color:var(--border-light);box-shadow:0 0 0 3px rgba(63,189,254,0.1)}
+.search-bar input{width:100%;height:50px;background:var(--bg-input);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:.95rem;padding:0 56px 0 20px;outline:none;transition:all .2s;font-family:var(--font)}
+.search-bar input:focus{border-color:var(--border-light);box-shadow:0 0 0 3px rgba(63,189,254,.08)}
 .search-bar input::placeholder{color:var(--text-dim)}
-.search-bar .search-btn{position:absolute;right:8px;top:8px;width:36px;height:36px;background:var(--green);border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.search-bar .search-btn{position:absolute;right:8px;top:8px;width:34px;height:34px;background:var(--green);border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .search-bar .search-btn:hover{background:var(--green-hover)}
-.search-bar .search-btn svg{width:18px;height:18px;color:#0a0a0a}
-
-/* ===== STATS GRID ===== */
-.stats-section{padding:0 24px;max-width:1400px;margin:0 auto;width:100%}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
-.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color .15s}
+.search-bar .search-btn svg{width:16px;height:16px;color:#0a0a0a}
+/* Stats grid */
+.stats-section{padding:0 24px;max-width:1400px;margin:0 auto;width:100px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px;transition:border-color .15s}
 .stat-card:hover{border-color:var(--border-light)}
-.stat-card .stat-label{font-size:.78rem;color:var(--text-secondary);font-weight:500;margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.stat-card .stat-rows{display:flex;flex-direction:column;gap:10px}
-.stat-card .stat-row{display:flex;justify-content:space-between;align-items:center}
-.stat-card .stat-row .label{font-size:.82rem;color:var(--text-muted)}
-.stat-card .stat-row .val{font-size:.88rem;color:var(--text);font-weight:600;font-family:var(--mono)}
-.stat-card .stat-row .val.green{color:var(--green)}
-.stat-card .stat-row .val.blue{color:var(--link)}
-
-/* ===== CONTENT AREA ===== */
+.stat-card .stat-label{font-size:.75rem;color:var(--text-secondary);font-weight:500;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.stat-card .stat-value{font-size:1.5rem;font-weight:700;font-family:var(--mono);color:var(--text)}
+.stat-card .stat-sub{font-size:.78rem;color:var(--text-muted);margin-top:4px}
+.stat-card .stat-value.green{color:var(--green)}
+.stat-card .stat-value.link{color:var(--link)}
+.stat-card .stat-value.red{color:var(--red)}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0}
+.stat-row .label{font-size:.8rem;color:var(--text-muted)}
+.stat-row .val{font-size:.85rem;font-weight:600;font-family:var(--mono)}
+.stat-rows{display:flex;flex-direction:column;gap:4px}
+/* Content */
 .content-section{padding:0 24px 48px;max-width:1400px;margin:0 auto;width:100%}
-
-/* ===== TABLE CARD ===== */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+/* Table */
 .table-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px}
-.table-card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.table-card-header h2{font-size:1.05rem;font-weight:600;color:var(--text)}
+.table-card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.table-card-header h2{font-size:1rem;font-weight:600;color:var(--text)}
 .table-card-header .header-right-items{display:flex;gap:10px;align-items:center}
-.table-card-header .toggle{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text-secondary);cursor:pointer}
-.table-card-header .toggle .switch{width:32px;height:18px;background:var(--bg-input);border-radius:10px;position:relative;transition:background .15s}
-.table-card-header .toggle .switch.on{background:var(--green)}
-.table-card-header .toggle .switch::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform .15s}
-.table-card-header .toggle .switch.on::after{transform:translateX(14px)}
-.table-card-header .badge{font-size:.72rem;padding:3px 10px;border-radius:6px;font-weight:600}
-.table-card-header .badge-green{background:rgba(20,241,149,0.1);color:var(--green);border:1px solid rgba(20,241,149,0.2)}
-.table-card-header .badge-blue{background:rgba(63,189,254,0.1);color:var(--link);border:1px solid rgba(63,189,254,0.2)}
-
-/* ===== TABLE ===== */
+.table-card-header .badge{font-size:.7rem;padding:3px 10px;border-radius:6px;font-weight:600}
+.badge-green{background:var(--green-dim);color:var(--green);border:1px solid rgba(20,241,149,.2)}
+.badge-blue{background:rgba(63,189,254,.1);color:var(--link);border:1px solid rgba(63,189,254,.2)}
+.badge-red{background:rgba(255,77,77,.1);color:var(--red);border:1px solid rgba(255,77,77,.2)}
+.badge-neutral{background:var(--bg-input);color:var(--text-muted);border:1px solid var(--border)}
+.badge-success{background:var(--green-dim);color:var(--green);border:1px solid rgba(20,241,149,.2)}
+.badge-info{background:rgba(63,189,254,.1);color:var(--link);border:1px solid rgba(63,189,254,.2)}
+.badge-purple{background:rgba(168,85,247,.1);color:#a855f7;border:1px solid rgba(168,85,247,.2)}
 .table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:.85rem}
-thead th{text-align:left;padding:10px 20px;color:var(--text-secondary);font-weight:600;font-size:.78rem;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--bg-card);position:sticky;top:0}
-thead th .th-icon{display:inline-block;margin-right:4px;opacity:.6}
-tbody tr{border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer}
-tbody tr:last-child{border-bottom:none}
-tbody tr:hover{background:rgba(255,255,255,0.02)}
-tbody td{padding:11px 20px;white-space:nowrap;color:var(--text)}
-tbody td.mono{font-family:var(--mono);font-size:.82rem}
-tbody td.muted{color:var(--text-secondary)}
-tbody td.green{color:var(--green)}
-tbody td.red{color:var(--red)}
-
-/* ===== LINKS IN TABLES ===== */
-.tx-link{color:var(--link);font-family:var(--mono);font-size:.82rem;cursor:pointer}
-.tx-link:hover{color:var(--link-hover);text-decoration:underline}
-.addr-link{color:var(--link);font-family:var(--mono);font-size:.82rem;cursor:pointer}
-.addr-link:hover{color:var(--link-hover);text-decoration:underline}
-.block-link{color:var(--link);font-weight:500;cursor:pointer}
-.block-link:hover{color:var(--link-hover);text-decoration:underline}
-
-/* ===== COPY ICON ===== */
-.copy-icon{display:inline-block;margin-left:6px;cursor:pointer;opacity:0;transition:opacity .15s}
-tr:hover .copy-icon{opacity:.5}
-.copy-icon:hover{opacity:1!important}
-.copy-icon.copied{opacity:1;color:var(--green)}
-
-/* ===== BADGES ===== */
-.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:6px;font-size:.72rem;font-weight:600}
-.badge-success{background:rgba(20,241,149,0.08);color:var(--green);border:1px solid rgba(20,241,149,0.15)}
-.badge-info{background:rgba(63,189,254,0.08);color:var(--link);border:1px solid rgba(63,189,254,0.15)}
-.badge-warning{background:rgba(245,158,11,0.08);color:var(--orange);border:1px solid rgba(245,158,11,0.15)}
-.badge-neutral{background:rgba(255,255,255,0.04);color:var(--text-secondary);border:1px solid var(--border)}
-
-/* ===== TABS ===== */
-.tabs-bar{display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid var(--border)}
-.tabs-bar .tab{padding:10px 20px;font-size:.9rem;font-weight:500;color:var(--text-secondary);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font)}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+thead th{text-align:left;padding:10px 14px;font-size:.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:11px 14px;border-bottom:1px solid rgba(42,42,48,.4)}
+tbody tr{cursor:pointer;transition:background .1s}
+tbody tr:hover{background:var(--bg-input)}
+.block-link{color:var(--green);font-weight:600}
+.tx-link{color:var(--link)}
+.addr-link{color:var(--text-secondary)}
+.addr-link:hover{color:var(--link)}
+.copy-icon{cursor:pointer;opacity:.4;margin-left:4px;font-size:.7rem}
+.copy-icon:hover{opacity:1}
+.token-badge{display:inline-flex;align-items:center;gap:4px}
+.token-dot{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:700;margin-right:2px}
+.token-CARBON{background:#4caf50;color:#fff}.token-ECO{background:#2196f3;color:#fff}.token-TREE{background:#8d6e63;color:#fff}.token-GREEN{background:#14f195;color:#0a0a0a}.token-REDD{background:#ff5722;color:#fff}.token-VRDX{background:#3fbcfe;color:#0a0a0a}
+/* Tabs */
+.tabs-bar{display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.tabs-bar .tab{padding:10px 18px;font-size:.88rem;font-weight:500;color:var(--text-secondary);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font)}
 .tabs-bar .tab:hover{color:var(--text)}
 .tabs-bar .tab.active{color:var(--green);border-bottom-color:var(--green)}
-
-/* ===== DETAIL VIEW ===== */
+.tab-pane.hidden{display:none}
+/* Detail */
 .detail-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px}
-.detail-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.detail-header h2{font-size:1.1rem;font-weight:600}
-.detail-header .green{color:var(--green)}
-.detail-row{display:flex;padding:14px 20px;border-bottom:1px solid var(--border);align-items:flex-start;gap:16px}
+.detail-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.detail-header h2{font-size:1.05rem;font-weight:600}
+.detail-row{display:flex;padding:13px 18px;border-bottom:1px solid rgba(42,42,48,.4);align-items:flex-start;gap:16px}
 .detail-row:last-child{border-bottom:none}
-.detail-label{color:var(--text-secondary);font-size:.85rem;min-width:180px;flex-shrink:0;font-weight:500}
-.detail-value{color:var(--text);font-size:.88rem;font-family:var(--mono);word-break:break-all;flex:1}
-.detail-value .copy-btn{background:var(--bg-input);border:1px solid var(--border);color:var(--text-secondary);padding:3px 10px;border-radius:6px;font-size:.72rem;cursor:pointer;transition:all .15s;margin-left:8px;font-family:var(--font)}
+.detail-label{color:var(--text-secondary);font-size:.82rem;min-width:180px;flex-shrink:0;font-weight:500}
+.detail-value{color:var(--text);font-size:.86rem;font-family:var(--mono);word-break:break-all;flex:1}
+.detail-value .copy-btn{background:var(--bg-input);border:1px solid var(--border);color:var(--text-secondary);padding:3px 10px;border-radius:6px;font-size:.72rem;cursor:pointer;font-family:var(--font);margin-left:8px}
 .detail-value .copy-btn:hover{color:var(--text);border-color:var(--border-light)}
 .detail-value .copy-btn.copied{color:var(--green);border-color:var(--green)}
-
-/* ===== BACK BUTTON ===== */
-.back-btn{display:inline-flex;align-items:center;gap:6px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);padding:8px 16px;border-radius:8px;font-size:.85rem;cursor:pointer;transition:all .15s;margin-bottom:16px;font-family:var(--font)}
-.back-btn:hover{color:var(--text);background:var(--bg-card-hover);border-color:var(--border-light)}
-
-/* ===== TOKEN ICONS ===== */
-.token-badge{display:inline-flex;align-items:center;gap:6px}
-.token-dot{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:.65rem;font-weight:700}
-.token-VRDX{background:rgba(20,241,149,0.15);color:var(--green)}
-.token-CARBON{background:rgba(100,116,139,0.2);color:#94a3b8}
-.token-ECO{background:rgba(63,189,254,0.15);color:var(--link)}
-.token-TREE{background:rgba(34,197,94,0.15);color:#22c55e}
-.token-GREEN{background:rgba(16,185,129,0.15);color:#10b981}
-.token-REDD{background:rgba(239,68,68,0.15);color:var(--red)}
-.token-ECOGR{background:rgba(132,204,22,0.15);color:#84cc16}
-
-/* ===== TWO COLUMN LAYOUT (Solscan style) ===== */
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
-
-/* ===== PAGINATION ===== */
-.pagination{display:flex;justify-content:center;align-items:center;gap:8px;padding:16px 20px}
-.pagination button{background:var(--bg-input);border:1px solid var(--border);color:var(--text-secondary);padding:6px 14px;border-radius:8px;font-size:.82rem;cursor:pointer;transition:all .15s;font-family:var(--font)}
-.pagination button:hover{color:var(--text);border-color:var(--border-light)}
-.pagination button:disabled{opacity:.3;cursor:not-allowed}
-.pagination .info{color:var(--text-muted);font-size:.8rem}
-
-/* ===== LOADING ===== */
-.loading{text-align:center;padding:40px;color:var(--text-muted)}
-.spinner{display:inline-block;width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .6s linear infinite}
+.back-btn{display:inline-flex;align-items:center;gap:6px;background:var(--bg-input);border:1px solid var(--border);color:var(--text-secondary);padding:8px 16px;border-radius:10px;font-size:.85rem;font-weight:500;cursor:pointer;margin-bottom:16px;transition:all .15s;font-family:var(--font)}
+.back-btn:hover{color:var(--text);border-color:var(--border-light)}
+/* Eco card */
+.eco-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.eco-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.eco-card .eco-icon{font-size:1.5rem;margin-bottom:8px}
+.eco-card .eco-value{font-size:1.3rem;font-weight:700;color:var(--green);font-family:var(--mono)}
+.eco-card .eco-label{font-size:.75rem;color:var(--text-muted);margin-top:4px}
+/* Distribution bar */
+.dist-bar{display:flex;height:24px;border-radius:6px;overflow:hidden;margin:12px 0}
+.dist-segment{display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:600;color:#fff;transition:flex .3s}
+.dist-legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:8px}
+.dist-item{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--text-secondary)}
+.dist-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+/* Security checks */
+.security-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.security-item{background:var(--bg-input);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.security-item .sec-status{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:600;color:var(--green);margin-bottom:6px}
+.security-item .sec-status::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green)}
+.security-item .sec-name{font-size:.85rem;font-weight:600;margin-bottom:2px}
+.security-item .sec-desc{font-size:.75rem;color:var(--text-muted)}
+/* Loading */
+.loading{display:flex;justify-content:center;padding:30px}
+.spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* ===== HIDDEN ===== */
-.hidden{display:none!important}
-
-/* ===== RESPONSIVE ===== */
-@media(max-width:1024px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}}
-@media(max-width:768px){
-  .header{padding:0 12px;gap:8px;height:50px}
-  .header-nav{display:none}
-  .header-price{display:none}
-  .header-right .sign-in{padding:6px 12px;font-size:.8rem}
-  .search-section{padding:24px 12px}
-  .search-section h1{font-size:1.4rem}
-  .search-bar input{height:46px;font-size:.88rem}
-  .stats-grid{grid-template-columns:1fr;gap:10px}
-  .content-section{padding:0 12px 32px}
-  .detail-row{flex-direction:column;gap:6px}
-  .detail-label{min-width:auto}
-  table{font-size:.78rem}
-  thead th{padding:8px 12px}
-  tbody td{padding:8px 12px}
-  .two-col{grid-template-columns:1fr}
-}
+/* Swap feed */
+.swap-item{padding:10px 14px;border-bottom:1px solid rgba(42,42,48,.4);display:flex;align-items:center;gap:12px}
+.swap-item:last-child{border-bottom:none}
+.swap-icon{width:32px;height:32px;border-radius:8px;background:rgba(63,189,254,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.swap-info{flex:1;min-width:0}
+.swap-pair{font-size:.82rem;font-weight:600}
+.swap-detail{font-size:.75rem;color:var(--text-muted)}
+.swap-time{font-size:.72rem;color:var(--text-dim);white-space:nowrap}
+/* Responsive */
+@media(max-width:900px){.two-col{grid-template-columns:1fr}.three-col{grid-template-columns:1fr}.nav-links{display:none}.nav-search{max-width:200px}.stats-grid{grid-template-columns:repeat(2,1fr)}.detail-row{flex-direction:column;gap:4px}.detail-label{min-width:auto}}
+@media(max-width:600px){.search-section{padding:20px 12px}.search-section h1{font-size:1.3rem}.content-section{padding:0 12px 32px}.stats-grid{grid-template-columns:1fr}.nav-price{display:none}table{font-size:.76rem}thead th{font-size:.65rem}tbody td{padding:8px 10px}}
 </style>
 </head>
 <body>
-
-<!-- ===== HEADER ===== -->
-<header class="header">
-  <a href="/" class="header-logo">
-    <svg viewBox="0 0 100 100" fill="none"><polygon points="50,5 90,28 90,72 50,95 10,72 10,28" stroke="#14f195" stroke-width="4" fill="rgba(20,241,149,0.08)"/><path d="M50 30 C40 45 35 55 45 70 C55 60 60 50 55 35" stroke="#14f195" stroke-width="3" fill="rgba(20,241,149,0.12)" stroke-linejoin="round"/><line x1="50" y1="30" x2="50" y2="75" stroke="#14f195" stroke-width="2" opacity="0.5"/></svg>
-    <span>Verdis<span class="logo-green">Scan</span></span>
+<nav class="nav">
+  <a href="/" class="nav-logo">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L3 7v10l9 5 9-5V7z" stroke="#14f195" stroke-width="1.5" fill="rgba(20,241,149,0.08)"/><path d="M8 14l4-8 4 8" stroke="#14f195" stroke-width="1.5" fill="none"/></svg>
+    Verdiscan
   </a>
-  <div class="header-price">
-    <span class="price-val">VRS</span>
-    <span style="color:var(--text-muted)">|</span>
-    <span class="price-change">+0.00%</span>
+  <div class="nav-links">
+    <a href="/explorer.html" class="active">Explorer</a>
+    <a href="/dashboard">Dashboard</a>
+    <a href="/wallet.html">Wallet</a>
+    <a href="/staking">Staking</a>
   </div>
-  <nav class="header-nav">
-    <a href="/explorer.html" class="active">Blockchain</a>
-    <a href="/dashboard.html">Dashboard</a>
-    <a href="/staking.html">Staking</a>
-    <a href="/markets.html">Markets</a>
-    <a href="/whitepaper.html">Resources</a>
-  </nav>
-  <div class="header-right">
-    <div class="icon-btn" title="Search" onclick="document.querySelector('.search-bar input').focus()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    </div>
-    <button class="sign-in">Connect Wallet</button>
+  <div class="nav-search">
+    <input id="navSearch" placeholder="Search block / tx / address...">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
   </div>
-</header>
+  <div class="nav-price" id="navPrice">
+    <span class="price">$—</span>
+    <span class="change muted">—</span>
+  </div>
+</nav>
 
-<!-- ===== MAIN APP ===== -->
 <main id="app">
-
-  <!-- ===== HOME / OVERVIEW VIEW ===== -->
+  <!-- ===== HOME ===== -->
   <div id="view-home">
-    <!-- Search hero -->
     <div class="search-section">
-      <h1>Verdis Blockchain <span class="green">Explorer</span></h1>
+      <h1>Verdiscan <span class="green">Explorer</span></h1>
+      <div class="subtitle">The world's first fully green, carbon-negative blockchain — DPoS consensus · Chain ID 909 · 5s blocks</div>
       <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Search address, tx hash, block number, or contract..." />
+        <input id="searchInput" placeholder="Search by Block Number, Transaction Hash, or Address...">
         <button class="search-btn" onclick="handleSearch(document.getElementById('searchInput').value.trim())">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
         </button>
       </div>
     </div>
 
-    <!-- Stats grid (Solscan style 4-column) -->
     <div class="stats-section">
-      <div class="stats-grid">
-        <!-- Supply -->
-        <div class="stat-card">
-          <div class="stat-label">⚙ VRS Supply</div>
-          <div class="stat-rows">
-            <div class="stat-row"><span class="label">Total Supply</span><span class="val">100B VRS</span></div>
-            <div class="stat-row"><span class="label">Circulating</span><span class="val green" id="stat-circ">15B VRS</span></div>
-            <div class="stat-row"><span class="label">Max Block</span><span class="val">500 txs</span></div>
-          </div>
-        </div>
-        <!-- Network -->
-        <div class="stat-card">
-          <div class="stat-label">⚡ Network</div>
-          <div class="stat-rows">
-            <div class="stat-row"><span class="label">Block Height</span><span class="val green" id="stat-height">—</span></div>
-            <div class="stat-row"><span class="label">Block Time</span><span class="val">5s</span></div>
-            <div class="stat-row"><span class="label">Mempool</span><span class="val" id="stat-mempool">0</span></div>
-          </div>
-        </div>
-        <!-- Validators -->
-        <div class="stat-card">
-          <div class="stat-label">🗳 Validators</div>
-          <div class="stat-rows">
-            <div class="stat-row"><span class="label">Active</span><span class="val green" id="stat-validators">—</span></div>
-            <div class="stat-row"><span class="label">Registered</span><span class="val" id="stat-validators-reg">—</span></div>
-            <div class="stat-row"><span class="label">Block Reward</span><span class="val">16 VRS</span></div>
-          </div>
-        </div>
-        <!-- DEX -->
-        <div class="stat-card">
-          <div class="stat-label">📊 DEX</div>
-          <div class="stat-rows">
-            <div class="stat-row"><span class="label">TVL</span><span class="val green" id="stat-tvl">—</span></div>
-            <div class="stat-row"><span class="label">Pools</span><span class="val" id="stat-pools">—</span></div>
-            <div class="stat-row"><span class="label">Contracts</span><span class="val" id="stat-contracts">—</span></div>
-          </div>
-        </div>
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card"><div class="stat-label">⛓️ Block Height</div><div class="stat-value green" id="stat-height">—</div><div class="stat-sub" id="stat-total-blocks">— blocks total</div></div>
+        <div class="stat-card"><div class="stat-label">⚡ TPS</div><div class="stat-value" id="stat-tps">—</div><div class="stat-sub" id="stat-block-time">5s block time</div></div>
+        <div class="stat-card"><div class="stat-label">📊 Total Transactions</div><div class="stat-value" id="stat-total-txs">—</div><div class="stat-sub" id="stat-mempool">— in mempool</div></div>
+        <div class="stat-card"><div class="stat-label">👥 Active Wallets</div><div class="stat-value" id="stat-wallets">—</div><div class="stat-sub" id="stat-validators-sub">— validators</div></div>
+        <div class="stat-card"><div class="stat-label">💎 Market Cap</div><div class="stat-value link" id="stat-mcap">$—</div><div class="stat-sub" id="stat-price">$— / VRDX</div></div>
+        <div class="stat-card"><div class="stat-label">📈 24h Volume</div><div class="stat-value" id="stat-volume24h">$—</div><div class="stat-sub" id="stat-swaps">— total swaps</div></div>
+        <div class="stat-card"><div class="stat-label">🏦 Circulating Supply</div><div class="stat-value" id="stat-circulating">—</div><div class="stat-sub" id="stat-supply">of 100B max</div></div>
+        <div class="stat-card"><div class="stat-label">🌿 Eco Impact</div><div class="stat-value green" id="stat-co2">—</div><div class="stat-sub" id="stat-trees">— trees planted</div></div>
       </div>
     </div>
 
-    <!-- Two column: Blocks + Transactions (Solscan style) -->
     <div class="content-section">
+      <!-- Two col: Latest blocks + Latest txs -->
       <div class="two-col">
-        <!-- Latest Blocks -->
         <div class="table-card">
-          <div class="table-card-header">
-            <h2>Latest Blocks</h2>
-            <div class="header-right-items">
-              <a href="#" onclick="switchTab('blocks');return false" style="font-size:.82rem">View All →</a>
-            </div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Block</th><th>Hash</th><th>Validator</th><th>Tx</th><th>Time</th></tr></thead>
-              <tbody id="home-blocks-tbody"><tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
-            </table>
-          </div>
+          <div class="table-card-header"><h2>Latest Blocks</h2><div class="header-right-items"><a href="#" onclick="switchTab('blocks');return false" style="font-size:.8rem">View All →</a></div></div>
+          <div class="table-wrap"><table><thead><tr><th>Block</th><th>Hash</th><th>Validator</th><th>Tx</th><th>Time</th></tr></thead><tbody id="home-blocks-tbody"><tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table></div>
         </div>
-        <!-- Latest Transactions -->
         <div class="table-card">
-          <div class="table-card-header">
-            <h2>Latest Transactions</h2>
-            <div class="header-right-items">
-              <a href="#" onclick="switchTab('txs');return false" style="font-size:.82rem">View All →</a>
-            </div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Signature</th><th>Block</th><th>From</th><th>To</th><th>Value</th><th>Time</th></tr></thead>
-              <tbody id="home-txs-tbody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
-            </table>
-          </div>
+          <div class="table-card-header"><h2>Latest Transactions</h2><div class="header-right-items"><a href="#" onclick="switchTab('txs');return false" style="font-size:.8rem">View All →</a></div></div>
+          <div class="table-wrap"><table><thead><tr><th>Signature</th><th>Block</th><th>From</th><th>To</th><th>Value</th><th>Time</th></tr></thead><tbody id="home-txs-tbody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table></div>
         </div>
       </div>
 
-      <!-- Tabs for full tables -->
+      <!-- Two col: DEX Swaps + Eco Impact -->
+      <div class="two-col">
+        <div class="table-card">
+          <div class="table-card-header"><h2>Live DEX Swaps</h2><div class="header-right-items"><span class="badge badge-green">● Live</span></div></div>
+          <div id="home-swaps"><div class="loading"><div class="spinner"></div></div></div>
+        </div>
+        <div class="table-card">
+          <div class="table-card-header"><h2>Eco Impact</h2><div class="header-right-items"><span class="badge badge-green">Carbon Negative</span></div></div>
+          <div style="padding:16px" id="eco-impact-home"></div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
       <div class="tabs-bar">
-        <button class="tab" data-tab="blocks" onclick="switchTab('blocks')">Blocks</button>
+        <button class="tab active" data-tab="blocks" onclick="switchTab('blocks')">Blocks</button>
         <button class="tab" data-tab="txs" onclick="switchTab('txs')">Transactions</button>
         <button class="tab" data-tab="validators" onclick="switchTab('validators')">Validators</button>
         <button class="tab" data-tab="dex" onclick="switchTab('dex')">DEX Pools</button>
+        <button class="tab" data-tab="swaps" onclick="switchTab('swaps')">Swap History</button>
         <button class="tab" data-tab="contracts" onclick="switchTab('contracts')">Contracts</button>
+        <button class="tab" data-tab="tokenomics" onclick="switchTab('tokenomics')">Tokenomics</button>
+        <button class="tab" data-tab="eco" onclick="switchTab('eco')">Eco</button>
+        <button class="tab" data-tab="security" onclick="switchTab('security')">Security</button>
+        <button class="tab" data-tab="network" onclick="switchTab('network')">Network</button>
       </div>
 
-      <!-- Full Blocks table -->
-      <div id="tab-blocks" class="tab-pane hidden">
-        <div class="table-card">
-          <div class="table-card-header">
-            <h2>Blocks</h2>
-            <div class="header-right-items"><span class="badge badge-green">● Live</span></div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Block</th><th>Block Hash</th><th>Validator</th><th>Tx Count</th><th>Gas Used</th><th>Gas Limit</th><th>Time</th></tr></thead>
-              <tbody id="full-blocks-tbody"></tbody>
-            </table>
-          </div>
-        </div>
+      <!-- Blocks tab -->
+      <div id="tab-blocks" class="tab-pane">
+        <div class="table-card"><div class="table-card-header"><h2>Blocks</h2><div class="header-right-items"><span class="badge badge-green">● Live</span></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Block</th><th>Hash</th><th>Validator</th><th>Tx</th><th>Gas Used</th><th>Time</th></tr></thead><tbody id="full-blocks-tbody"></tbody></table></div></div>
       </div>
 
-      <!-- Full Transactions table -->
+      <!-- Transactions tab -->
       <div id="tab-txs" class="tab-pane hidden">
-        <div class="table-card">
-          <div class="table-card-header">
-            <h2>Transactions</h2>
-            <div class="header-right-items"><span class="badge badge-green">● Live</span></div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Signature</th><th>Block</th><th>From</th><th>To</th><th>Value (VRS)</th><th>Fee</th><th>Status</th><th>Time</th></tr></thead>
-              <tbody id="full-txs-tbody"></tbody>
-            </table>
-          </div>
-        </div>
+        <div class="table-card"><div class="table-card-header"><h2>Transactions</h2><div class="header-right-items"><span class="badge badge-green">● Live</span></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Signature</th><th>Block</th><th>From</th><th>To</th><th>Value (VRS)</th><th>Fee</th><th>Status</th><th>Time</th></tr></thead><tbody id="full-txs-tbody"></tbody></table></div></div>
       </div>
 
-      <!-- Validators table -->
+      <!-- Validators tab -->
       <div id="tab-validators" class="tab-pane hidden">
-        <div class="table-card">
-          <div class="table-card-header">
-            <h2>Active Validators</h2>
-            <div class="header-right-items"><span class="badge badge-info">DPoS</span></div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Rank</th><th>Address</th><th>Votes</th><th>Status</th><th>Blocks Produced</th><th>Rewards</th></tr></thead>
-              <tbody id="validators-tbody"></tbody>
-            </table>
-          </div>
-        </div>
+        <div class="table-card"><div class="table-card-header"><h2>Active Validators</h2><div class="header-right-items"><span class="badge badge-info">DPoS</span></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Rank</th><th>Address</th><th>Votes</th><th>Green Score</th><th>Energy</th><th>Status</th><th>Blocks</th><th>Rewards</th></tr></thead><tbody id="validators-tbody"></tbody></table></div></div>
       </div>
 
-      <!-- DEX table -->
+      <!-- DEX tab -->
       <div id="tab-dex" class="tab-pane hidden">
-        <div class="table-card">
-          <div class="table-card-header">
-            <h2>DEX Liquidity Pools</h2>
-            <div class="header-right-items"><span class="badge badge-info">AMM</span></div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Pair</th><th>Token A Reserve</th><th>Token B Reserve</th><th>Total LP</th><th>Fee</th><th>TVL (VRS)</th><th>Created</th></tr></thead>
-              <tbody id="dex-tbody"></tbody>
-            </table>
-          </div>
-        </div>
+        <div class="table-card"><div class="table-card-header"><h2>DEX Liquidity Pools</h2><div class="header-right-items"><span class="badge badge-info">AMM</span></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Pair</th><th>Price</th><th>Reserve A</th><th>Reserve B</th><th>TVL (VRS)</th><th>24h Vol</th><th>24h Swaps</th><th>Fee</th><th>LP Tokens</th></tr></thead><tbody id="dex-tbody"></tbody></table></div></div>
       </div>
 
-      <!-- Contracts table -->
+      <!-- Swaps tab -->
+      <div id="tab-swaps" class="tab-pane hidden">
+        <div class="table-card"><div class="table-card-header"><h2>Recent DEX Swaps</h2><div class="header-right-items"><span class="badge badge-green">● Live</span></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Time</th><th>Trader</th><th>Route</th><th>Amount In</th><th>Amount Out</th><th>Fee</th><th>Pool</th><th>Block</th></tr></thead><tbody id="swaps-tbody"></tbody></table></div></div>
+      </div>
+
+      <!-- Contracts tab -->
       <div id="tab-contracts" class="tab-pane hidden">
-        <div class="table-card">
-          <div class="table-card-header">
-            <h2>Deployed Smart Contracts</h2>
-            <div class="header-right-items"><span class="badge badge-info">EVM</span></div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Name</th><th>Category</th><th>Owner</th><th>Deployed</th><th>State Size</th><th>Holders</th><th>Version</th></tr></thead>
-              <tbody id="contracts-tbody"></tbody>
-            </table>
-          </div>
-        </div>
+        <div class="table-card"><div class="table-card-header"><h2>Deployed Smart Contracts</h2><div class="header-right-items"><span class="badge badge-purple">EVM</span></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Category</th><th>Owner</th><th>Deployed</th><th>State Size</th><th>Holders</th><th>Version</th></tr></thead><tbody id="contracts-tbody"></tbody></table></div></div>
+      </div>
+
+      <!-- Tokenomics tab -->
+      <div id="tab-tokenomics" class="tab-pane hidden">
+        <div class="table-card" id="tokenomics-content"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- Eco tab -->
+      <div id="tab-eco" class="tab-pane hidden">
+        <div id="eco-content"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- Security tab -->
+      <div id="tab-security" class="tab-pane hidden">
+        <div id="security-content"><div class="loading"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- Network tab -->
+      <div id="tab-network" class="tab-pane hidden">
+        <div id="network-content"><div class="loading"><div class="spinner"></div></div></div>
       </div>
     </div>
   </div>
@@ -426,10 +294,7 @@ tr:hover .copy-icon{opacity:.5}
   <div id="view-block" class="hidden">
     <div class="content-section" style="padding-top:24px">
       <button class="back-btn" onclick="goHome()">← Back</button>
-      <div class="detail-card">
-        <div class="detail-header"><h2>Block <span class="green">#<span id="bd-num">—</span></span></h2></div>
-        <div id="bd-content"></div>
-      </div>
+      <div class="detail-card"><div class="detail-header"><h2>Block <span class="green">#<span id="bd-num">—</span></span></h2></div><div id="bd-content"></div></div>
     </div>
   </div>
 
@@ -437,10 +302,7 @@ tr:hover .copy-icon{opacity:.5}
   <div id="view-tx" class="hidden">
     <div class="content-section" style="padding-top:24px">
       <button class="back-btn" onclick="goHome()">← Back</button>
-      <div class="detail-card">
-        <div class="detail-header"><h2>Transaction Details</h2></div>
-        <div id="td-content"></div>
-      </div>
+      <div class="detail-card"><div class="detail-header"><h2>Transaction Details</h2></div><div id="td-content"></div></div>
     </div>
   </div>
 
@@ -448,10 +310,7 @@ tr:hover .copy-icon{opacity:.5}
   <div id="view-addr" class="hidden">
     <div class="content-section" style="padding-top:24px">
       <button class="back-btn" onclick="goHome()">← Back</button>
-      <div class="detail-card">
-        <div class="detail-header"><h2>Address <span style="color:var(--link);font-family:var(--mono);font-size:.9rem" id="ad-hdr"></span></h2></div>
-        <div id="ad-content"></div>
-      </div>
+      <div class="detail-card"><div class="detail-header"><h2>Address <span style="color:var(--link);font-family:var(--mono);font-size:.85rem" id="ad-hdr"></span></h2></div><div id="ad-content"></div></div>
     </div>
   </div>
 
@@ -459,24 +318,22 @@ tr:hover .copy-icon{opacity:.5}
   <div id="view-contract" class="hidden">
     <div class="content-section" style="padding-top:24px">
       <button class="back-btn" onclick="goHome()">← Back</button>
-      <div class="detail-card">
-        <div class="detail-header"><h2>Contract: <span style="color:var(--green)" id="cd-name">—</span></h2></div>
-        <div id="cd-content"></div>
-      </div>
+      <div class="detail-card"><div class="detail-header"><h2>Contract: <span style="color:var(--green)" id="cd-name">—</span></h2></div><div id="cd-content"></div></div>
     </div>
   </div>
 </main>
 
 <script>
-const API=window.location.origin.includes('verdischain.com')?'https://verdischain.com':'http://'+window.location.hostname+':3200';
-let blocksCache=[],txsCache=[],validatorsCache=[],poolsCache=[],contractsCache=[];
+const API = location.origin.includes('verdischain.com') ? 'https://verdischain.com' : '';
+let blocksCache=[], txsCache=[], validatorsCache=[], poolsCache=[], contractsCache=[], swapsCache=[], marketCache=null, greenScoresCache=[], ecoImpactCache=null, tokenomicsCache=null, securityCache=null, networkCache=null, topWalletsCache=[];
 
 // === Helpers ===
-const fmt=(n,d=2)=>{if(n===null||n===undefined)return'—';return Number(n).toLocaleString('en-US',{maximumFractionDigits:d,minimumFractionDigits:0})};
-const short=(s,n=8)=>{if(!s)return'—';if(s.length<=n*2+2)return s;return s.slice(0,n)+'...'+s.slice(-4)};
-const timeAgo=(ts)=>{if(!ts)return'—';const s=Math.floor((Date.now()-ts)/1000);if(s<60)return s+'s ago';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago'};
-const fmtTime=(ts)=>{if(!ts)return'—';return new Date(ts).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'})};
-const esc=(s)=>{if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
+function fmt(n,d=2){if(n===undefined||n===null||isNaN(n))return'—';const abs=Math.abs(n);if(abs>=1e12)return(n/1e12).toFixed(d)+'T';if(abs>=1e9)return(n/1e9).toFixed(d)+'B';if(abs>=1e6)return(n/1e6).toFixed(d)+'M';if(abs>=1e3)return(n/1e3).toFixed(d)+'K';return Number(n).toFixed(d)}
+function fmtInt(n){return Number(n||0).toLocaleString()}
+function short(s,n=8){if(!s)return'—';return s.length<=n*2?s:s.slice(0,n)+'…'+s.slice(-n)}
+function timeAgo(ts){if(!ts)return'—';const s=Math.floor((Date.now()-ts)/1000);if(s<60)return s+'s ago';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago'}
+function fmtTime(ts){if(!ts)return'—';return new Date(ts).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
 function copy(text,el){navigator.clipboard.writeText(text).then(()=>{if(el){el.classList.add('copied');setTimeout(()=>el.classList.remove('copied'),1500)}})}
 
 // === Tab switching ===
@@ -486,16 +343,10 @@ function switchTab(tab){
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.add('hidden'));
   document.getElementById('tab-'+tab)?.classList.remove('hidden');
 }
-// Activate blocks tab by default when clicked
-document.querySelectorAll('.tabs-bar .tab').forEach(t=>{
-  t.addEventListener('click',()=>{
-    const tab=t.dataset.tab;
-    switchTab(tab);
-  });
-});
 
 // === Search ===
 document.getElementById('searchInput').addEventListener('keypress',e=>{if(e.key==='Enter')handleSearch(e.target.value.trim())});
+document.getElementById('navSearch').addEventListener('keypress',e=>{if(e.key==='Enter')handleSearch(e.target.value.trim())});
 function handleSearch(q){
   if(!q)return;
   if(/^\d+$/.test(q)){showBlock(parseInt(q));return}
@@ -508,47 +359,62 @@ function handleSearch(q){
 }
 
 // === View management ===
-function goHome(){
-  document.querySelectorAll('#app > div').forEach(v=>v.classList.add('hidden'));
-  document.getElementById('view-home').classList.remove('hidden');
-  window.scrollTo(0,0);
-}
-function showView(id){
-  document.querySelectorAll('#app > div').forEach(v=>v.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-}
+function goHome(){document.querySelectorAll('#app>div').forEach(v=>v.classList.add('hidden'));document.getElementById('view-home').classList.remove('hidden');window.scrollTo(0,0)}
+function showView(id){document.querySelectorAll('#app>div').forEach(v=>v.classList.add('hidden'));document.getElementById(id).classList.remove('hidden')}
 
 // === Fetch ===
-async function api(path){
-  try{const r=await fetch(API+path);if(!r.ok)throw new Error();return await r.json()}
-  catch(e){console.error('API:',path,e);return null}
-}
+async function api(path){try{const r=await fetch(API+path);if(!r.ok)throw 0;return await r.json()}catch(e){console.error('API:',path,e);return null}}
 
 // === Load stats ===
 async function loadStats(){
-  const info=await api('/api/blockchain/info');
+  const [info,stats,mkt,eco,tkn] = await Promise.all([
+    api('/api/blockchain/info'),
+    api('/api/explorer/stats'),
+    api('/api/token/market'),
+    api('/api/eco/impact'),
+    api('/api/tokenomics/stats')
+  ]);
+
   if(info){
-    document.getElementById('stat-height').textContent=fmt(info.height,0);
-    document.getElementById('stat-validators').textContent=info.validatorCount||5;
-    document.getElementById('stat-validators-reg').textContent=(info.validatorCount||5)+'+'+Math.floor(Math.random()*5);
-    document.getElementById('stat-mempool').textContent=info.mempoolSize||0;
+    document.getElementById('stat-height').textContent=fmtInt(info.height);
+    document.getElementById('stat-total-blocks').textContent=fmtInt((stats?stats.totalBlocks:info.height+1))+' blocks total';
+    document.getElementById('stat-mempool').textContent=(info.mempoolSize||0)+' in mempool';
+    document.getElementById('stat-validators-sub').textContent=(info.validatorCount||5)+' validators';
   }
-  const pools=await api('/api/dex/pools');
-  if(pools){
-    poolsCache=Array.isArray(pools)?pools:(pools.pools||[]);
-    let tvl=0;
-    poolsCache.forEach(p=>{tvl+=(p.tokenB==='VRDX'?p.reserveB:p.tokenA==='VRDX'?p.reserveA:0)*2});
-    document.getElementById('stat-tvl').textContent=fmt(tvl/1e6,2)+'M';
-    document.getElementById('stat-pools').textContent=poolsCache.length;
+
+  if(stats){
+    document.getElementById('stat-total-txs').textContent=fmtInt(stats.totalTransactions);
+    document.getElementById('stat-wallets').textContent=fmtInt(stats.activeWallets);
   }
-  const contracts=await api('/api/contracts');
-  if(contracts){
-    contractsCache=Array.isArray(contracts)?contracts:[];
-    document.getElementById('stat-contracts').textContent=contractsCache.length;
+
+  if(mkt){
+    document.getElementById('stat-tps').textContent=fmt(mkt.totalSwaps?((mkt.totalSwaps/((Date.now()/1000)-1))/1):0,2);
+    document.getElementById('stat-mcap').textContent='$'+fmt(mkt.marketCap||0,2);
+    document.getElementById('stat-price').textContent='$'+(mkt.priceUSD||0).toFixed(4)+' / VRDX';
+    const chg=mkt.priceChange24h||0;
+    document.getElementById('stat-volume24h').textContent='$'+fmt(mkt.volume24h||0,0);
+    document.getElementById('stat-swaps').textContent=fmtInt(mkt.totalSwaps||0)+' total swaps';
+    // Nav price
+    document.querySelector('#navPrice .price').textContent='$'+(mkt.priceUSD||0).toFixed(2);
+    const chgEl=document.querySelector('#navPrice .change');
+    chgEl.textContent=(chg>=0?'+':'')+chg.toFixed(2)+'%';
+    chgEl.className='change '+(chg>=0?'green':'red');
+  }
+
+  if(eco){
+    document.getElementById('stat-co2').textContent=fmt(eco.totalCO2Offset||0,0)+'t';
+    document.getElementById('stat-trees').textContent=fmtInt(eco.totalTrees||0)+' trees planted';
+    ecoImpactCache=eco;
+    renderEcoHome();
+  }
+
+  if(tkn){
+    document.getElementById('stat-circulating').textContent=fmt(tkn.circulating||0,0);
+    tokenomicsCache=tkn;
   }
 }
 
-// === Block row HTML (for both home and full table) ===
+// === Block rows ===
 function blockRow(b,full){
   const h=b.header||b;
   const idx=h.index||b.index||'?';
@@ -556,122 +422,139 @@ function blockRow(b,full){
   const val=h.validator||b.validator||'';
   const txs=(b.transactions||h.transactions||[]).length;
   const gas=h.gasUsed||0;
-  const gl=h.gasLimit||0;
   const ts=h.timestamp||b.timestamp||0;
   if(full){
-    return `<tr onclick="showBlock(${idx})">
-      <td><a class="block-link" onclick="event.stopPropagation();showBlock(${idx})">${fmt(idx,0)}</a></td>
-      <td class="mono"><span class="tx-link" onclick="event.stopPropagation();showBlockByHash('${hash}')">${short(hash,10)}</span><span class="copy-icon" onclick="event.stopPropagation();copy('${hash}',this)">📋</span></td>
-      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${val}')">${short(val,10)}</a></td>
-      <td>${txs}</td>
-      <td class="muted">${fmt(gas,0)}</td>
-      <td class="muted">${fmt(gl,0)}</td>
-      <td class="muted">${timeAgo(ts)}</td>
-    </tr>`;
-  }
-  return `<tr onclick="showBlock(${idx})">
-    <td><a class="block-link" onclick="event.stopPropagation();showBlock(${idx})">${fmt(idx,0)}</a></td>
-    <td class="mono"><span style="color:var(--text-secondary)">${short(hash,10)}</span></td>
+    return `<tr onclick="showBlock(${idx})"><td><a class="block-link" onclick="event.stopPropagation();showBlock(${idx})">${fmtInt(idx)}</a></td>
+    <td class="mono"><span style="color:var(--text-secondary)">${short(hash,10)}</span><span class="copy-icon" onclick="event.stopPropagation();copy('${hash}',this)">📋</span></td>
     <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${val}')">${short(val,8)}</a></td>
-    <td>${txs}</td>
-    <td class="muted">${timeAgo(ts)}</td>
-  </tr>`;
+    <td>${txs}</td><td class="muted">${fmtInt(gas)}</td><td class="muted">${timeAgo(ts)}</td></tr>`;
+  }
+  return `<tr onclick="showBlock(${idx})"><td><a class="block-link" onclick="event.stopPropagation();showBlock(${idx})">${fmtInt(idx)}</a></td>
+  <td class="mono"><span style="color:var(--text-secondary)">${short(hash,8)}</span></td>
+  <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${val}')">${short(val,6)}</a></td>
+  <td>${txs}</td><td class="muted">${timeAgo(ts)}</td></tr>`;
 }
 
-// === Load blocks ===
 async function loadBlocks(){
-  const data=await api('/api/blockchain/blocks?limit=20');
+  const data=await api('/api/blockchain/blocks?limit=25');
   if(!data)return;
   blocksCache=Array.isArray(data)?data:(data.blocks||[]);
-  const home=blocksCache.slice(0,8).map(b=>blockRow(b,false)).join('');
-  const full=blocksCache.map(b=>blockRow(b,true)).join('');
-  document.getElementById('home-blocks-tbody').innerHTML=home||'<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:30px">No blocks</td></tr>';
-  document.getElementById('full-blocks-tbody').innerHTML=full||'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px">No blocks</td></tr>';
+  document.getElementById('home-blocks-tbody').innerHTML=blocksCache.slice(0,8).map(b=>blockRow(b,false)).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:30px">No blocks</td></tr>';
+  document.getElementById('full-blocks-tbody').innerHTML=blocksCache.map(b=>blockRow(b,true)).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px">No blocks</td></tr>';
 }
 
-// === TX row HTML ===
+// === TX rows ===
 function txRow(t,full){
   const hash=t.id||t.hash||'';
-  const from=t.from||'';
-  const to=t.to||'';
-  const amt=t.amount||0;
-  const fee=t.fee||0;
-  const bi=t.blockIndex||'?';
-  const ts=t.timestamp||0;
+  const from=t.from||'',to=t.to||'',amt=t.amount||0,fee=t.fee||0;
+  const bi=t.blockIndex||'?',ts=t.timestamp||0;
+  const type = t.data ? (typeof t.data==='string'&&t.data.includes('swap')?'Swap':typeof t.data==='string'&&t.data.includes('stake')?'Stake':'Contract') : 'Transfer';
   if(full){
-    return `<tr onclick="showTx('${hash}')">
-      <td class="mono"><a class="tx-link" onclick="event.stopPropagation();showTx('${hash}')">${short(hash,8)}</a><span class="copy-icon" onclick="event.stopPropagation();copy('${hash}',this)">📋</span></td>
-      <td class="muted">${bi!=='#'?'#'+fmt(bi,0):'—'}</td>
-      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${from}')">${short(from,8)}</a></td>
-      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${to}')">${short(to,8)}</a></td>
-      <td class="green">${fmt(amt,2)}</td>
-      <td class="muted">${fmt(fee,0)}</td>
-      <td><span class="badge badge-success">Success</span></td>
-      <td class="muted">${timeAgo(ts)}</td>
-    </tr>`;
-  }
-  return `<tr onclick="showTx('${hash}')">
-    <td class="mono"><a class="tx-link" onclick="event.stopPropagation();showTx('${hash}')">${short(hash,8)}</a></td>
-    <td class="muted">${bi!=='#'?'#'+fmt(bi,0):'—'}</td>
+    return `<tr onclick="showTx('${hash}')"><td class="mono"><a class="tx-link" onclick="event.stopPropagation();showTx('${hash}')">${short(hash,8)}</a><span class="copy-icon" onclick="event.stopPropagation();copy('${hash}',this)">📋</span></td>
+    <td class="muted">${bi!=='?'?'#'+fmtInt(bi):'—'}</td>
     <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${from}')">${short(from,6)}</a></td>
     <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${to}')">${short(to,6)}</a></td>
-    <td class="green">${fmt(amt,2)} VRS</td>
-    <td class="muted">${timeAgo(ts)}</td>
-  </tr>`;
+    <td class="green">${fmt(amt,2)} VRS</td><td class="muted">${fmtInt(fee)}</td>
+    <td><span class="badge badge-success">Success</span></td><td class="muted">${timeAgo(ts)}</td></tr>`;
+  }
+  return `<tr onclick="showTx('${hash}')"><td class="mono"><a class="tx-link" onclick="event.stopPropagation();showTx('${hash}')">${short(hash,8)}</a></td>
+  <td class="muted">${bi!=='?'?'#'+fmtInt(bi):'—'}</td>
+  <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${from}')">${short(from,6)}</a></td>
+  <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${to}')">${short(to,6)}</a></td>
+  <td class="green">${fmt(amt,2)} VRS</td><td class="muted">${timeAgo(ts)}</td></tr>`;
 }
 
-// === Load transactions ===
 async function loadTxs(){
-  const data=await api('/api/blockchain/transactions?limit=20');
+  const data=await api('/api/blockchain/transactions?limit=25');
   if(!data)return;
   txsCache=Array.isArray(data)?data:(data.transactions||[]);
-  const home=txsCache.slice(0,8).map(t=>txRow(t,false)).join('');
-  const full=txsCache.map(t=>txRow(t,true)).join('');
-  document.getElementById('home-txs-tbody').innerHTML=home||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px">No transactions</td></tr>';
-  document.getElementById('full-txs-tbody').innerHTML=full||'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:30px">No transactions</td></tr>';
+  document.getElementById('home-txs-tbody').innerHTML=txsCache.slice(0,8).map(t=>txRow(t,false)).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px">No transactions</td></tr>';
+  document.getElementById('full-txs-tbody').innerHTML=txsCache.map(t=>txRow(t,true)).join('')||'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:30px">No transactions</td></tr>';
 }
 
-// === Load validators ===
+// === Validators ===
 async function loadValidators(){
-  const data=await api('/api/validators');
-  if(!data)return;
-  validatorsCache=Array.isArray(data)?data:(data.validators||[]);
+  const [vData, gData] = await Promise.all([api('/api/validators'), api('/api/eco/green-scores')]);
+  if(!vData)return;
+  validatorsCache=Array.isArray(vData)?vData:(vData.validators||[]);
+  if(gData)greenScoresCache=Array.isArray(gData)?gData:[];
   const sorted=validatorsCache.sort((a,b)=>(b.votes||0)-(a.votes||0));
+  const greenMap={};greenScoresCache.forEach(g=>greenMap[g.address]=g);
   document.getElementById('validators-tbody').innerHTML=sorted.map((v,i)=>{
     const addr=v.address||v.publicKey||'';
-    return `<tr onclick="showAddr('${addr}')">
-      <td style="font-weight:700;color:var(--green)">#${i+1}</td>
-      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${addr}')">${short(addr,12)}</a><span class="copy-icon" onclick="event.stopPropagation();copy('${addr}',this)">📋</span></td>
-      <td class="green">${fmt(v.votes||0,0)} VRS</td>
-      <td>${v.isProducer?'<span class="badge badge-success">Active Producer</span>':'<span class="badge badge-neutral">Registered</span>'}</td>
-      <td class="muted">${fmt(v.blocksProduced||0,0)}</td>
-      <td class="muted">${fmt(v.totalRewards||0,0)} VRS</td>
-    </tr>`;
-  }).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px">No validators</td></tr>';
+    const gs=greenMap[addr];
+    const score=gs?gs.score:'—';
+    const energy=gs?(gs.renewableEnergy?'✅ '+esc(gs.energySource||'Renewable'):'—'):'—';
+    return `<tr onclick="showAddr('${addr}')"><td style="font-weight:700;color:var(--green)">#${i+1}</td>
+    <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${addr}')">${short(addr,10)}</a><span class="copy-icon" onclick="event.stopPropagation();copy('${addr}',this)">📋</span></td>
+    <td class="green">${fmtInt(v.votes||0)} VRS</td>
+    <td>${gs?'<span class="badge badge-green">'+score+'/100</span>':'<span class="muted">—</span>'}</td>
+    <td style="font-size:.8rem">${energy}</td>
+    <td>${v.isProducer?'<span class="badge badge-success">Active Producer</span>':'<span class="badge badge-neutral">Registered</span>'}</td>
+    <td class="muted">${fmtInt(v.blocksProduced||0)}</td>
+    <td class="muted">${fmtInt(v.totalRewards||0)} VRS</td></tr>`;
+  }).join('')||'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:30px">No validators</td></tr>';
 }
 
-// === Load DEX ===
+// === DEX ===
 async function loadDex(){
-  const data=await api('/api/dex/pools');
-  if(!data)return;
-  poolsCache=Array.isArray(data)?data:(data.pools||[]);
+  const [pData, mkt] = await Promise.all([api('/api/dex/pools'), api('/api/token/market')]);
+  if(!pData)return;
+  poolsCache=Array.isArray(pData)?pData:(pData.pools||[]);
+  marketCache=mkt;
+
+  // Build pool stats map from market data
+  const poolStats={};
+  if(mkt&&mkt.pools)mkt.pools.forEach(p=>poolStats[p.pair.replace('/', '_')]=p);
+
   document.getElementById('dex-tbody').innerHTML=poolsCache.map(p=>{
     const pair=p.pair||p.id||'';
     const tA=p.tokenA||'',tB=p.tokenB||'';
     const tvl=(tB==='VRDX'?p.reserveB*2:tA==='VRDX'?p.reserveA*2:0);
-    return `<tr>
-      <td><span class="token-badge"><span class="token-dot token-${tA}">${tA[0]||''}</span><span class="token-dot token-${tB}">${tB[0]||''}</span> ${pair}</span></td>
-      <td class="mono green">${fmt(p.reserveA||0,2)} ${tA}</td>
-      <td class="mono" style="color:var(--link)">${fmt(p.reserveB||0,2)} ${tB}</td>
-      <td class="mono muted">${fmt(p.totalLP||0,0)}</td>
-      <td class="muted">${((p.fee||0.003)*100).toFixed(2)}%</td>
-      <td class="green">${fmt(tvl,0)} VRS</td>
-      <td class="muted">${timeAgo(p.createdAt||0)}</td>
-    </tr>`;
-  }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px">No pools</td></tr>';
+    const stats=poolStats[p.id]||{};
+    const price=stats.price?tA+'/'+tB+' = '+stats.price.toFixed(6):'—';
+    return `<tr><td><span class="token-badge"><span class="token-dot token-${tA}">${tA[0]||''}</span><span class="token-dot token-${tB}">${tB[0]||''}</span> ${pair}</span></td>
+    <td class="mono" style="color:var(--link)">${price}</td>
+    <td class="mono green">${fmt(p.reserveA||0,2)} ${tA}</td>
+    <td class="mono" style="color:var(--link)">${fmt(p.reserveB||0,2)} ${tB}</td>
+    <td class="green">${fmtInt(tvl)} VRS</td>
+    <td class="muted">$${fmt(stats.volume24h||0,0)}</td>
+    <td class="muted">${stats.swaps24h||'—'}</td>
+    <td class="muted">${((p.fee||0.003)*100).toFixed(2)}%</td>
+    <td class="mono muted">${fmtInt(p.totalLP||0)}</td></tr>`;
+  }).join('')||'<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:30px">No pools</td></tr>';
 }
 
-// === Load contracts ===
+// === Swaps ===
+async function loadSwaps(){
+  const data=await api('/api/token/swaps?limit=25');
+  if(!data)return;
+  swapsCache=Array.isArray(data)?data:[];
+  // Home: latest 6
+  let homeHtml='';
+  swapsCache.slice(0,6).forEach(s=>{
+    const tIn=s.tokenIn||'',tOut=s.tokenOut||'';
+    homeHtml+=`<div class="swap-item"><div class="swap-icon"><span class="token-dot token-${tIn}" style="width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700">${tIn[0]||''}</span></div>
+    <div class="swap-info"><div class="swap-pair">${fmt(s.amountIn||0,2)} ${tIn} → ${fmt(s.amountOut||0,2)} ${tOut}</div><div class="swap-detail"><a class="addr-link" onclick="showAddr('${s.trader||''}')">${short(s.trader||'',8)}</a> · ${s.poolId||''}</div></div>
+    <div class="swap-time">${timeAgo(s.timestamp)}</div></div>`;
+  });
+  document.getElementById('home-swaps').innerHTML=homeHtml||'<div style="padding:20px;text-align:center;color:var(--text-muted)">No recent swaps</div>';
+
+  // Full table
+  document.getElementById('swaps-tbody').innerHTML=swapsCache.map(s=>{
+    const tIn=s.tokenIn||'',tOut=s.tokenOut||'';
+    return `<tr><td class="muted">${timeAgo(s.timestamp)}</td>
+    <td class="mono"><a class="addr-link" onclick="showAddr('${s.trader||''}')">${short(s.trader||'',8)}</a></td>
+    <td><span class="token-badge"><span class="token-dot token-${tIn}">${tIn[0]||''}</span>${tIn}</span> → <span class="token-badge"><span class="token-dot token-${tOut}">${tOut[0]||''}</span>${tOut}</span></td>
+    <td class="green">${fmt(s.amountIn||0,2)} ${tIn}</td>
+    <td class="mono" style="color:var(--link)">${fmt(s.amountOut||0,2)} ${tOut}</td>
+    <td class="muted">${fmt(s.fee||0,4)}</td>
+    <td class="mono muted">${s.poolId||'—'}</td>
+    <td class="muted">#${s.blockNumber||'—'}</td></tr>`;
+  }).join('')||'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:30px">No swaps</td></tr>';
+}
+
+// === Contracts ===
 async function loadContracts(){
   const data=await api('/api/contracts');
   if(!data)return;
@@ -679,18 +562,222 @@ async function loadContracts(){
   document.getElementById('contracts-tbody').innerHTML=contractsCache.map(c=>{
     const m=c.metadata||{};
     return `<tr onclick="showContract(contractsCache.find(c=>c.name==='${esc(c.name||'')}'))">
-      <td style="font-weight:600;color:var(--green)">${esc(c.name||'')}</td>
-      <td><span class="badge badge-info">${esc(m.category||'—')}</span></td>
-      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${c.owner||''}')">${short(c.owner||'',10)}</a></td>
-      <td class="muted">${timeAgo(c.deployedAt||0)}</td>
-      <td class="muted">${fmt(c.stateSize||0,0)}</td>
-      <td>${c.holderCount||0}</td>
-      <td class="mono muted">${esc(m.version||'—')}</td>
-    </tr>`;
+    <td style="font-weight:600;color:var(--green)">${esc(c.name||'')}</td>
+    <td><span class="badge badge-blue">${esc(m.category||'—')}</span></td>
+    <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${c.owner||''}')">${short(c.owner||'',8)}</a></td>
+    <td class="muted">${timeAgo(c.deployedAt)}</td>
+    <td class="muted">${fmtInt(c.stateSize||0)}</td>
+    <td>${c.holderCount||0}</td>
+    <td class="muted">${esc(m.version||'—')}</td></tr>`;
   }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px">No contracts</td></tr>';
 }
 
-// === Block detail ===
+// === Eco home ===
+function renderEcoHome(){
+  if(!ecoImpactCache)return;
+  const e=ecoImpactCache;
+  document.getElementById('eco-impact-home').innerHTML=`
+    <div class="eco-grid" style="margin:0">
+      <div class="eco-card"><div class="eco-icon">🌱</div><div class="eco-value">${fmtInt(e.totalCO2Offset)}t</div><div class="eco-label">CO₂ Offset</div></div>
+      <div class="eco-card"><div class="eco-icon">🌳</div><div class="eco-value">${fmtInt(e.totalTrees)}</div><div class="eco-label">Trees Planted</div></div>
+      <div class="eco-card"><div class="eco-icon">🗺️</div><div class="eco-value">${fmtInt(e.totalArea)}ha</div><div class="eco-label">Area Restored</div></div>
+      <div class="eco-card"><div class="eco-icon">♻️</div><div class="eco-value">${e.greenValidators||0}</div><div class="eco-label">Green Validators</div></div>
+    </div>`;
+}
+
+// === Eco tab ===
+async function loadEcoTab(){
+  const [impact, credits, green, reforest] = await Promise.all([
+    api('/api/eco/impact'),
+    api('/api/eco/carbon/credits'),
+    api('/api/eco/green-scores'),
+    api('/api/eco/reforest/projects')
+  ]);
+
+  let html='';
+  // Impact overview
+  if(impact){
+    html+=`<div class="table-card"><div class="table-card-header"><h2>Network Eco Impact</h2><div class="header-right-items"><span class="badge badge-green">Carbon Negative</span></div></div>
+    <div style="padding:16px"><div class="eco-grid" style="margin:0">
+      <div class="eco-card"><div class="eco-icon">🌱</div><div class="eco-value">${fmtInt(impact.totalCO2Offset)}t</div><div class="eco-label">Total CO₂ Offset</div></div>
+      <div class="eco-card"><div class="eco-icon">🌳</div><div class="eco-value">${fmtInt(impact.totalTrees)}</div><div class="eco-label">Trees Planted</div></div>
+      <div class="eco-card"><div class="eco-icon">🗺️</div><div class="eco-value">${fmtInt(impact.totalArea)}ha</div><div class="eco-label">Area Restored (hectares)</div></div>
+      <div class="eco-card"><div class="eco-icon">♻️</div><div class="eco-value">${impact.greenValidators||0}</div><div class="eco-label">Green Validators</div></div>
+      <div class="eco-card"><div class="eco-icon">📄</div><div class="eco-value">${impact.creditsRetired||0}</div><div class="eco-label">Credits Retired</div></div>
+    </div></div></div>`;
+  }
+
+  // Green validator scores
+  if(green&&green.length){
+    html+=`<div class="table-card"><div class="table-card-header"><h2>Green Validator Scores</h2></div>
+    <div class="table-wrap"><table><thead><tr><th>Validator</th><th>Score</th><th>Renewable Energy</th><th>Source</th><th>Carbon Offset</th><th>Trees Planted</th><th>Last Updated</th></tr></thead><tbody>`;
+    green.forEach(g=>{
+      html+=`<tr onclick="showAddr('${g.address}')"><td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${g.address}')">${short(g.address,12)}</a></td>
+      <td><span class="badge badge-green">${g.score}/100</span></td>
+      <td>${g.renewableEnergy?'<span class="badge badge-success">Yes</span>':'<span class="badge badge-neutral">No</span>'}</td>
+      <td class="muted">${esc(g.energySource||'—')}</td>
+      <td class="green">${fmtInt(g.carbonOffset||0)}t</td>
+      <td class="green">${fmtInt(g.treesPlanted||0)}</td>
+      <td class="muted">${timeAgo(g.lastUpdated)}</td></tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+  }
+
+  // Carbon credits
+  if(credits&&credits.length){
+    html+=`<div class="table-card"><div class="table-card-header"><h2>Carbon Credits</h2><div class="header-right-items"><span class="badge badge-green">Verra Verified</span></div></div>
+    <div class="table-wrap"><table><thead><tr><th>ID</th><th>Project</th><th>Type</th><th>Amount</th><th>Status</th><th>Verifier</th><th>Location</th><th>Created</th></tr></thead><tbody>`;
+    credits.forEach(c=>{
+      const statusBadge=c.status==='retired'?'badge-neutral':'badge-success';
+      const loc=c.metadata&&c.metadata.location?c.metadata.location:'—';
+      html+=`<tr><td class="mono">${short(c.id,8)}</td>
+      <td>${esc(c.project||'—')}</td>
+      <td><span class="badge badge-blue">${esc(c.projectType||'—')}</span></td>
+      <td class="green">${fmtInt(c.amount)}t CO₂</td>
+      <td><span class="badge ${statusBadge}">${esc(c.status||'—')}</span></td>
+      <td class="muted">${esc(c.verifier||'—')}</td>
+      <td class="muted">${esc(loc)}</td>
+      <td class="muted">${timeAgo(c.createdAt)}</td></tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+  }
+
+  // Reforestation projects
+  if(reforest&&reforest.length){
+    html+=`<div class="table-card"><div class="table-card-header"><h2>Reforestation Projects</h2></div>
+    <div class="table-wrap"><table><thead><tr><th>Project</th><th>Location</th><th>Area</th><th>Trees Planted</th><th>CO₂ Sequestered</th><th>Species</th><th>Status</th><th>Started</th></tr></thead><tbody>`;
+    reforest.forEach(r=>{
+      const species=(r.species||[]).join(', ')||'—';
+      html+=`<tr><td style="font-weight:600">${esc(r.name||'—')}</td>
+      <td class="muted">${esc(r.location||'—')}</td>
+      <td class="green">${fmtInt(r.area)}ha</td>
+      <td class="green">${fmtInt(r.treesPlanted)}</td>
+      <td class="green">${fmtInt(r.co2Sequestered)}t</td>
+      <td class="muted" style="font-size:.78rem">${esc(species)}</td>
+      <td><span class="badge badge-success">${esc(r.status||'—')}</span></td>
+      <td class="muted">${timeAgo(r.startedAt)}</td></tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+  }
+
+  document.getElementById('eco-content').innerHTML=html||'<div style="padding:30px;text-align:center;color:var(--text-muted)">No eco data available</div>';
+}
+
+// === Tokenomics tab ===
+function renderTokenomics(){
+  if(!tokenomicsCache){return}
+  const t=tokenomicsCache;
+  const dist=t.distribution||{};
+  const colors={community:'#14f195',treasury:'#3fbcfe',team:'#a855f7',investors:'#f59e0b',staking:'#10b981',liquidity:'#06b6d4',advisors:'#ec4899',airdrop:'#f97316'};
+
+  let html=`<div class="table-card"><div class="table-card-header"><h2>VRDX Tokenomics</h2><div class="header-right-items"><span class="badge badge-green">100B Max Supply</span></div></div>
+  <div style="padding:16px">
+    <div class="stats-grid" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-label">Total Supply</div><div class="stat-value">${fmtInt(t.totalSupply)} VRDX</div><div class="stat-sub">${fmtInt(t.maxSupply)} max</div></div>
+      <div class="stat-card"><div class="stat-label">Circulating</div><div class="stat-value green">${fmtInt(t.circulating)} VRDX</div><div class="stat-sub">${t.tgeCirculatingPct||15}% at TGE</div></div>
+      <div class="stat-card"><div class="stat-label">Treasury</div><div class="stat-value link">${fmtInt(t.treasury)} VRDX</div><div class="stat-sub">20% allocation</div></div>
+      <div class="stat-card"><div class="stat-label">Block Reward</div><div class="stat-value">${t.blockReward||'16 VRDX'}</div><div class="stat-sub">5s block time</div></div>
+      <div class="stat-card"><div class="stat-label">Presale Price</div><div class="stat-value">${esc(t.presalePrice||'$0.0005')}</div><div class="stat-sub">${fmtInt(t.presaleSold)} sold</div></div>
+      <div class="stat-card"><div class="stat-label">Burned</div><div class="stat-value red">${fmtInt(t.burned)} VRDX</div><div class="stat-sub">100% carbon retirement</div></div>
+    </div>`;
+
+  // Distribution bar
+  html+=`<h3 style="margin:20px 0 8px;font-size:.95rem">Token Distribution</h3><div class="dist-bar">`;
+  Object.entries(dist).forEach(([k,v])=>{
+    const pct=v.pct||0;
+    if(pct>0)html+=`<div class="dist-segment" style="width:${pct}%;background:${colors[k]||'#666'}">${pct}%</div>`;
+  });
+  html+=`</div><div class="dist-legend">`;
+  Object.entries(dist).forEach(([k,v])=>{
+    html+=`<div class="dist-item"><span class="dist-dot" style="background:${colors[k]||'#666'}"></span>${esc(k.charAt(0).toUpperCase()+k.slice(1))}: ${v.pct}% (${fmtInt(v.amount)} VRDX)</div>`;
+  });
+  html+=`</div>`;
+
+  // Distribution table
+  html+=`<div style="margin-top:20px;overflow-x:auto"><table><thead><tr><th>Category</th><th>Allocation</th><th>Amount</th><th>Vesting Days</th><th>Cliff Days</th><th>TGE Unlock</th><th>Vesting Schedule</th></tr></thead><tbody>`;
+  Object.entries(dist).forEach(([k,v])=>{
+    html+=`<tr><td style="font-weight:600;color:${colors[k]||'var(--text)'}">${esc(k.charAt(0).toUpperCase()+k.slice(1))}</td>
+    <td class="green">${v.pct}%</td><td class="mono">${fmtInt(v.amount)}</td>
+    <td class="muted">${v.vestingDays||0} days</td><td class="muted">${v.cliffDays||0} days</td>
+    <td class="muted">${v.tgePct||0}%</td><td class="muted">${esc(v.vesting||'—')}</td></tr>`;
+  });
+  html+=`</tbody></table></div></div></div>`;
+  document.getElementById('tokenomics-content').innerHTML=html;
+}
+
+// === Security tab ===
+async function loadSecurityTab(){
+  const [audit, health] = await Promise.all([api('/api/security/audit'), api('/api/monitoring/health')]);
+  let html='';
+  if(audit&&audit.checks){
+    html+=`<div class="table-card"><div class="table-card-header"><h2>Security Audit — Active Checks</h2><div class="header-right-items"><span class="badge badge-green">All Active</span></div></div>
+    <div style="padding:16px"><div class="security-grid">`;
+    Object.entries(audit.checks).forEach(([k,v])=>{
+      html+=`<div class="security-item"><div class="sec-status">Active</div><div class="sec-name">${esc(k.replace(/([A-Z])/g,' $1').replace(/^./,c=>c.toUpperCase()))}</div><div class="sec-desc">${esc(v.description||'')}</div></div>`;
+    });
+    html+=`</div></div></div>`;
+  }
+
+  if(health){
+    const u=health.uptime||{};
+    const c=health.chain||{};
+    const cs=health.consensus||{};
+    html+=`<div class="table-card"><div class="table-card-header"><h2>Network Health Monitor</h2><div class="header-right-items"><span class="badge badge-${health.status==='healthy'?'green':'red'}">${esc(health.status||'—')}</span></div></div>
+    <div style="padding:0">
+      <div class="detail-row"><div class="detail-label">Uptime</div><div class="detail-value">${esc(u.human||'—')} (${fmtInt(u.seconds||0)}s)</div></div>
+      <div class="detail-row"><div class="detail-label">Chain Height</div><div class="detail-value">${fmtInt(c.height)} blocks</div></div>
+      <div class="detail-row"><div class="detail-label">Chain Valid</div><div class="detail-value"><span class="badge badge-${c.chainValid?'green':'red'}">${c.chainValid?'Valid':'Invalid'}</span></div></div>
+      <div class="detail-row"><div class="detail-label">Block Staleness</div><div class="detail-value">${esc(c.blockStalenessHuman||'—')}</div></div>
+      <div class="detail-row"><div class="detail-label">Block Time</div><div class="detail-value">${fmtInt(c.blockTime||5000)}ms (5s)</div></div>
+      <div class="detail-row"><div class="detail-label">Active Validators</div><div class="detail-value">${fmtInt(cs.validators||5)}</div></div>
+    </div></div>`;
+  }
+  document.getElementById('security-content').innerHTML=html;
+}
+
+// === Network tab ===
+async function loadNetworkTab(){
+  const [netInfo, chainInfo] = await Promise.all([api('/api/network/info'), api('/api/blockchain/info')]);
+  let html='';
+  if(netInfo){
+    const c=netInfo.cryptography||{};
+    const features=netInfo.features||[];
+    html+=`<div class="table-card"><div class="table-card-header"><h2>Network Information</h2></div>
+    <div style="padding:0">
+      <div class="detail-row"><div class="detail-label">Network Name</div><div class="detail-value">${esc(netInfo.name)} (${esc(netInfo.symbol)})</div></div>
+      <div class="detail-row"><div class="detail-label">Chain ID</div><div class="detail-value">${netInfo.chainId||909}</div></div>
+      <div class="detail-row"><div class="detail-label">Consensus</div><div class="detail-value">${esc(netInfo.consensus||'DPoS')}</div></div>
+      <div class="detail-row"><div class="detail-label">Block Time</div><div class="detail-value">${fmtInt(netInfo.blockTime||5000)}ms (5s)</div></div>
+      <div class="detail-row"><div class="detail-label">Total Supply</div><div class="detail-value">${fmtInt(netInfo.totalSupply)} VRDX</div></div>
+      <div class="detail-row"><div class="detail-label">Validator Count</div><div class="detail-value">${netInfo.validatorCount||27} registered</div></div>
+      <div class="detail-row"><div class="detail-label">RPC URL</div><div class="detail-value">${esc(netInfo.rpcUrl||'/rpc')}</div></div>
+      <div class="detail-row"><div class="detail-label">Curve</div><div class="detail-value">${esc(c.curve||'secp256k1')}</div></div>
+      <div class="detail-row"><div class="detail-label">Hash Function</div><div class="detail-value">${esc(c.hash||'SHA-256 + Keccak256')}</div></div>
+      <div class="detail-row"><div class="detail-label">Signatures</div><div class="detail-value">${esc(c.signatures||'ECDSA with recovery')}</div></div>
+      <div class="detail-row"><div class="detail-label">Address Format</div><div class="detail-value">${esc(c.addressFormat||'Ethereum-compatible (0x...)')}</div></div>
+    </div></div>`;
+
+    if(features.length){
+      html+=`<div class="table-card"><div class="table-card-header"><h2>Network Features</h2></div><div style="padding:16px">`;
+      features.forEach(f=>{html+=`<div style="padding:6px 0;color:var(--text-secondary);font-size:.85rem">• ${esc(f)}</div>`});
+      html+=`</div></div>`;
+    }
+  }
+  if(chainInfo){
+    html+=`<div class="table-card"><div class="table-card-header"><h2>Chain Statistics</h2></div>
+    <div style="padding:0">
+      <div class="detail-row"><div class="detail-label">Current Height</div><div class="detail-value green">${fmtInt(chainInfo.height)}</div></div>
+      <div class="detail-row"><div class="detail-label">Total Supply</div><div class="detail-value">${fmtInt(chainInfo.totalSupply)} VRDX</div></div>
+      <div class="detail-row"><div class="detail-label">Max Supply</div><div class="detail-value">${fmtInt(chainInfo.maxSupply)} VRDX</div></div>
+      <div class="detail-row"><div class="detail-label">Block Reward</div><div class="detail-value">${chainInfo.blockReward||16} VRDX</div></div>
+      <div class="detail-row"><div class="detail-label">Mempool Size</div><div class="detail-value">${chainInfo.mempoolSize||0} pending</div></div>
+      <div class="detail-row"><div class="detail-label">Chain Valid</div><div class="detail-value"><span class="badge badge-${chainInfo.chainValid?'green':'red'}">${chainInfo.chainValid?'Valid':'Invalid'}</span></div></div>
+    </div></div>`;
+  }
+  document.getElementById('network-content').innerHTML=html;
+}
+
+// ===== BLOCK DETAIL =====
 async function showBlock(num){
   showView('view-block');
   document.getElementById('bd-num').textContent=num;
@@ -703,13 +790,24 @@ async function showBlock(num){
   const h=block.header||block;
   const hash=block.hash||h.hash||'';
   const txs=block.transactions||h.transactions||[];
+  const currentHeight=blocks[0]?.header?.index||blocks[0]?.index||0;
+  const confirmations=currentHeight-num+1;
   const rows=[
-    ['Block Height',h.index||num],['Block Hash',hash],['Previous Hash',h.previousHash||''],
-    ['Timestamp',fmtTime(h.timestamp)+' ('+timeAgo(h.timestamp)+')'],['Validator',h.validator||''],
-    ['Validator Signature',h.validatorSignature||''],['Merkle Root',h.merkleRoot||''],
-    ['Difficulty',h.difficulty||0],['Nonce',h.nonce||0],
-    ['Gas Used',fmt(h.gasUsed,0)],['Gas Limit',fmt(h.gasLimit,0)],['Base Fee',h.baseFee||0],
-    ['Transactions',txs.length],['Extra Data',h.extraData||'0x']
+    ['Block Height',fmtInt(h.index||num)],
+    ['Block Hash',hash],
+    ['Previous Hash',h.previousHash||''],
+    ['Timestamp',fmtTime(h.timestamp)+' ('+timeAgo(h.timestamp)+')'],
+    ['Validator',h.validator||''],
+    ['Validator Signature',h.validatorSignature||''],
+    ['Merkle Root',h.merkleRoot||''],
+    ['Difficulty',fmtInt(h.difficulty||0)],
+    ['Nonce',fmtInt(h.nonce||0)],
+    ['Gas Used',fmtInt(h.gasUsed||0)],
+    ['Gas Limit',fmtInt(h.gasLimit||0)],
+    ['Base Fee',h.baseFee||0],
+    ['Confirmations',confirmations>0?confirmations:0],
+    ['Transactions',txs.length],
+    ['Extra Data',h.extraData||'0x']
   ];
   let html='<div style="padding:0">';
   rows.forEach(([l,v])=>{
@@ -723,7 +821,7 @@ async function showBlock(num){
     html+='<div class="table-card-header"><h2 style="font-size:.95rem">Transactions in Block ('+txs.length+')</h2></div>';
     html+='<div class="table-wrap"><table><thead><tr><th>Signature</th><th>From</th><th>To</th><th>Value</th><th>Fee</th></tr></thead><tbody>';
     txs.forEach(t=>{
-      html+=`<tr onclick="showTx('${t.id||t.hash||''}')"><td class="mono"><a class="tx-link">${short(t.id||t.hash||'',8)}</a></td><td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${t.from||''}')">${short(t.from||'',8)}</a></td><td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${t.to||''}')">${short(t.to||'',8)}</a></td><td class="green">${fmt(t.amount||0,2)} VRS</td><td class="muted">${fmt(t.fee||0,0)}</td></tr>`;
+      html+=`<tr onclick="showTx('${t.id||t.hash||''}')"><td class="mono"><a class="tx-link">${short(t.id||t.hash||'',8)}</a></td><td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${t.from||''}')">${short(t.from||'',8)}</a></td><td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${t.to||''}')">${short(t.to||'',8)}</a></td><td class="green">${fmt(t.amount||0,2)} VRS</td><td class="muted">${fmtInt(t.fee||0)}</td></tr>`;
     });
     html+='</tbody></table></div>';
   }
@@ -731,7 +829,7 @@ async function showBlock(num){
   window.scrollTo(0,0);
 }
 
-// === TX detail ===
+// ===== TX DETAIL =====
 async function showTx(hash){
   showView('view-tx');
   document.getElementById('td-content').innerHTML='<div class="loading"><div class="spinner"></div></div>';
@@ -740,13 +838,25 @@ async function showTx(hash){
   const txs=Array.isArray(data)?data:(data.transactions||[]);
   const tx=txs.find(t=>(t.id||t.hash||'')===hash);
   if(!tx){document.getElementById('td-content').innerHTML='<p style="padding:30px;color:var(--text-muted)">Transaction not found</p>';return}
+  const currentHeight=txs[0]?.blockIndex||0;
+  const confirmations=tx.blockIndex?(currentHeight-tx.blockIndex+1):0;
+  const txType=tx.data?(typeof tx.data==='string'&&tx.data.includes('swap')?'Swap':typeof tx.data==='string'&&tx.data.includes('stake')?'Stake':'Contract Call'):'Transfer';
   const rows=[
-    ['Signature',tx.id||tx.hash||''],['Status','<span class="badge badge-success">Success</span>'],
-    ['Block',tx.blockIndex||'?'],['From',tx.from||''],['To',tx.to||''],
-    ['Value',fmt(tx.amount,2)+' VRS'],['Fee',fmt(tx.fee,0)+' VRS'],
-    ['Nonce',tx.nonce||0],['Timestamp',fmtTime(tx.timestamp)+' ('+timeAgo(tx.timestamp)+')'],
-    ['Public Key',tx.publicKey||'—'],['Signature Data',tx.signature||''],
-    ['Recovery Flag',tx.recovery||0],['Data',tx.data?esc(JSON.stringify(tx.data)):'None']
+    ['Signature',tx.id||tx.hash||''],
+    ['Status','<span class="badge badge-success">Success</span>'],
+    ['Type','<span class="badge badge-blue">'+txType+'</span>'],
+    ['Block',tx.blockIndex?'<a class="tx-link" onclick="showBlock('+tx.blockIndex+')">#'+fmtInt(tx.blockIndex)+'</a>':'—'],
+    ['Confirmations',confirmations>0?confirmations:0],
+    ['From',tx.from||''],
+    ['To',tx.to||''],
+    ['Value',fmt(tx.amount,2)+' VRS'],
+    ['Fee',fmtInt(tx.fee)+' VRS'],
+    ['Nonce',fmtInt(tx.nonce||0)],
+    ['Timestamp',fmtTime(tx.timestamp)+' ('+timeAgo(tx.timestamp)+')'],
+    ['Public Key',tx.publicKey||'—'],
+    ['Signature Data',tx.signature||''],
+    ['Recovery Flag',tx.recovery||0],
+    ['Data',tx.data?esc(JSON.stringify(tx.data)):'None']
   ];
   let html='<div style="padding:0">';
   rows.forEach(([l,v])=>{
@@ -760,31 +870,44 @@ async function showTx(hash){
   window.scrollTo(0,0);
 }
 
-// === Address detail ===
+// ===== ADDRESS DETAIL =====
 async function showAddr(addr){
   showView('view-addr');
   document.getElementById('ad-hdr').textContent=short(addr,12);
   document.getElementById('ad-content').innerHTML='<div class="loading"><div class="spinner"></div></div>';
-  const [wallets,txData,valData]=await Promise.all([api('/api/wallets'),api('/api/blockchain/transactions?limit=100'),api('/api/validators')]);
-  let wallet=null;
-  if(wallets)wallet=(Array.isArray(wallets)?wallets:wallets.wallets||[]).find(w=>w.address===addr||w.publicKey===addr);
-  let relatedTxs=[];
-  if(txData)relatedTxs=(Array.isArray(txData)?txData:txData.transactions||[]).filter(t=>t.from===addr||t.to===addr);
+  const [details, txData, valData, tokenBal, greenData] = await Promise.all([
+    api('/api/wallet/'+addr+'/details'),
+    api('/api/wallet/'+addr+'/transactions'),
+    api('/api/validators'),
+    api('/api/dex/token/balances/'+addr),
+    api('/api/eco/green/'+addr)
+  ]);
+
   let validator=null;
   if(valData)validator=(Array.isArray(valData)?valData:valData.validators||[]).find(v=>v.address===addr||v.publicKey===addr);
+  let relatedTxs=txData&&Array.isArray(txData)?txData:[];
+  let greenScore=greenData||details?.greenScore;
+
   const rows=[
     ['Address',addr],
-    ['Balance',fmt(wallet?wallet.balance:0,2)+' VRS'],
-    ['Staked',fmt(wallet?wallet.staked:0,2)+' VRS'],
+    ['Balance',fmtInt(details?details.balance:0)+' VRDX'],
+    ['Staked',fmtInt(details?details.staked:0)+' VRDX'],
   ];
   if(validator){
     rows.push(['Role','<span class="badge badge-success">Validator</span>']);
-    rows.push(['Validator Status',validator.isProducer?'<span class="badge badge-success">Active Block Producer</span>':'<span class="badge badge-neutral">Registered</span>']);
-    rows.push(['Votes',fmt(validator.votes,0)+' VRS']);
-    rows.push(['Blocks Produced',fmt(validator.blocksProduced,0)]);
-    rows.push(['Total Rewards',fmt(validator.totalRewards,0)+' VRS']);
+    rows.push(['Status',validator.isProducer?'<span class="badge badge-success">Active Block Producer</span>':'<span class="badge badge-neutral">Registered</span>']);
+    rows.push(['Votes',fmtInt(validator.votes)+' VRS']);
+    rows.push(['Blocks Produced',fmtInt(validator.blocksProduced||0)]);
+    rows.push(['Total Rewards',fmtInt(validator.totalRewards||0)+' VRS']);
   }
-  rows.push(['Public Key',wallet?(wallet.publicKey||'—'):'—']);
+  if(greenScore){
+    rows.push(['Green Score','<span class="badge badge-green">'+greenScore.score+'/100</span>']);
+    rows.push(['Renewable Energy',greenScore.renewableEnergy?'<span class="badge badge-success">Yes — '+esc(greenScore.energySource||'Renewable')+'</span>':'No']);
+    rows.push(['Carbon Offset',fmtInt(greenScore.carbonOffset)+'t CO₂']);
+    rows.push(['Trees Planted',fmtInt(greenScore.treesPlanted)]);
+  }
+  rows.push(['Public Key',details?details.publicKey||'—':'—']);
+
   let html='<div style="padding:0">';
   rows.forEach(([l,v])=>{
     const isHash=typeof v==='string'&&v.length>20;
@@ -793,11 +916,28 @@ async function showAddr(addr){
     html+='</div></div>';
   });
   html+='</div>';
+
+  // Token holdings
+  if(tokenBal&&tokenBal.balances){
+    const bals=tokenBal.balances;
+    const tokens=Object.entries(bals).filter(([k,v])=>v>0);
+    if(tokens.length){
+      html+='<div class="table-card-header"><h2 style="font-size:.95rem">Token Holdings</h2></div>';
+      html+='<div class="table-wrap"><table><thead><tr><th>Token</th><th>Balance</th></tr></thead><tbody>';
+      tokens.forEach(([k,v])=>{
+        html+=`<tr><td><span class="token-badge"><span class="token-dot token-${k}">${k[0]||''}</span> ${esc(k)}</span></td><td class="green">${fmt(v,2)}</td></tr>`;
+      });
+      html+='</tbody></table></div>';
+    }
+  }
+
+  // Transaction history
   if(relatedTxs.length>0){
     html+='<div class="table-card-header"><h2 style="font-size:.95rem">Transaction History ('+relatedTxs.length+')</h2></div>';
-    html+='<div class="table-wrap"><table><thead><tr><th>Signature</th><th>Block</th><th>From</th><th>To</th><th>Value</th><th>Time</th></tr></thead><tbody>';
+    html+='<div class="table-wrap"><table><thead><tr><th>Signature</th><th>Block</th><th>Direction</th><th>From</th><th>To</th><th>Value</th><th>Time</th></tr></thead><tbody>';
     relatedTxs.forEach(t=>{
-      html+=`<tr onclick="showTx('${t.id||t.hash||''}')"><td class="mono"><a class="tx-link">${short(t.id||t.hash||'',8)}</a></td><td class="muted">${t.blockIndex?'#'+fmt(t.blockIndex,0):'—'}</td><td class="mono">${short(t.from||'',8)}</td><td class="mono">${short(t.to||'',8)}</td><td class="green">${fmt(t.amount||0,2)} VRS</td><td class="muted">${timeAgo(t.timestamp)}</td></tr>`;
+      const isIn=t.to===addr;
+      html+=`<tr onclick="showTx('${t.id||t.hash||''}')"><td class="mono"><a class="tx-link">${short(t.id||t.hash||'',8)}</a></td><td class="muted">${t.blockIndex?'#'+fmtInt(t.blockIndex):'—'}</td><td>${isIn?'<span class="badge badge-green">IN</span>':'<span class="badge badge-red">OUT</span>'}</td><td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${t.from||''}')">${short(t.from||'',8)}</a></td><td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${t.to||''}')">${short(t.to||'',8)}</a></td><td class="green">${fmt(t.amount||0,2)} VRS</td><td class="muted">${timeAgo(t.timestamp)}</td></tr>`;
     });
     html+='</tbody></table></div>';
   }else{
@@ -807,7 +947,7 @@ async function showAddr(addr){
   window.scrollTo(0,0);
 }
 
-// === Contract detail ===
+// ===== CONTRACT DETAIL =====
 function showContract(c){
   if(!c)return;
   showView('view-contract');
@@ -820,9 +960,9 @@ function showContract(c){
     ['Compiler',m.compiler||'—'],['License',m.license||'—'],
     ['Network',m.network||'—'],['Chain ID',m.chainId||'—'],
     ['Token Symbol',m.symbol||'—'],['Deployed At',fmtTime(c.deployedAt)+' ('+timeAgo(c.deployedAt)+')'],
-    ['State Size',fmt(c.stateSize,0)+' slots'],['Holder Count',c.holderCount||0],
+    ['State Size',fmtInt(c.stateSize)+' slots'],['Holder Count',c.holderCount||0],
     ['Website',m.website||'—'],['Tags',(m.tags||[]).join(', ')||'—'],
-    ['Bytecode','['+(c.bytecode||[]).join(', ')+']']
+    ['Bytecode','['+fmtInt((c.bytecode||[]).length)+' ops] — click to expand']
   ];
   let html='<div style="padding:0">';
   rows.forEach(([l,v])=>{
@@ -832,11 +972,16 @@ function showContract(c){
     html+='</div></div>';
   });
   html+='</div>';
+  // Bytecode detail
+  if(c.bytecode&&c.bytecode.length){
+    html+=`<div class="table-card-header"><h2 style="font-size:.95rem">Bytecode (${c.bytecode.length} operations)</h2></div>`;
+    html+=`<div style="padding:12px 18px;font-family:var(--mono);font-size:.75rem;color:var(--text-muted);max-height:200px;overflow-y:auto">${esc(c.bytecode.join(', '))}</div>`;
+  }
   document.getElementById('cd-content').innerHTML=html;
   window.scrollTo(0,0);
 }
 
-// === Block by hash ===
+// ===== BLOCK BY HASH =====
 async function showBlockByHash(hash){
   const data=await api('/api/blockchain/blocks?limit=100');
   if(!data)return;
@@ -846,11 +991,27 @@ async function showBlockByHash(hash){
   else alert('Block not found');
 }
 
-// === Init ===
+// ===== INIT =====
 async function init(){
-  await Promise.all([loadStats(),loadBlocks(),loadTxs(),loadValidators(),loadDex(),loadContracts()]);
+  await Promise.all([
+    loadStats(), loadBlocks(), loadTxs(), loadValidators(), loadDex(), loadSwaps(), loadContracts()
+  ]);
+  renderTokenomics();
+
+  // Load lazy tabs on click
+  let ecoLoaded=false, secLoaded=false, netLoaded=false;
+  document.querySelectorAll('.tabs-bar .tab').forEach(t=>{
+    t.addEventListener('click',()=>{
+      const tab=t.dataset.tab;
+      if(tab==='eco'&&!ecoLoaded){loadEcoTab();ecoLoaded=true}
+      if(tab==='security'&&!secLoaded){loadSecurityTab();secLoaded=true}
+      if(tab==='network'&&!netLoaded){loadNetworkTab();netLoaded=true}
+    });
+  });
+
+  // Auto-refresh
   setInterval(()=>{loadStats();loadBlocks()},10000);
-  setInterval(()=>loadTxs(),15000);
+  setInterval(()=>{loadTxs();loadSwaps()},15000);
 }
 init();
 </script>
