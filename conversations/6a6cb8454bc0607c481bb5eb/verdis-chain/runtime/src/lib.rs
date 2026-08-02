@@ -10,10 +10,10 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
-    create_runtime_str, generic, traits::{
+    create_runtime_str, generic, impl_opaque_keys, traits::{
         AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify,
     }, transaction_validity::{TransactionSource, TransactionValidity},
-    ApplyExtrinsicResult, BuildStorage, MultiSignature, Perbill,
+    ApplyExtrinsicResult, BuildStorage, ExtrinsicInclusionMode, MultiSignature, Perbill,
 };
 use sp_std::prelude::*;
 use sp_version::RuntimeVersion;
@@ -23,7 +23,7 @@ use sp_version::NativeVersion;
 
 use frame_support::{
     construct_runtime, parameter_types,
-    traits::{ConstU32, ConstU64, ConstU128, ConstBool, Everything, Randomness},
+    traits::{ConstU32, ConstU64, ConstU128, ConstBool, Everything, Get, Randomness},
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_REF_TIME_PER_SECOND},
         Weight, IdentityFee,
@@ -53,11 +53,6 @@ pub mod opaque {
     use super::*;
     pub type Block = generic::Block<Header, super::UncheckedExtrinsic>;
     pub type BlockId = generic::BlockId<Block>;
-    impl sp_runtime::traits::Block for Block {
-        type Extrinsic = UncheckedExtrinsic;
-        type Header = Header;
-        type Hash = sp_core::H256;
-    }
 }
 
 // === Session Keys ===
@@ -78,6 +73,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     impl_version: 2,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 2,
+    system_version: 2,
 };
 
 #[cfg(feature = "std")]
@@ -104,18 +100,16 @@ parameter_types! {
     pub const Version: RuntimeVersion = VERSION;
     pub const SS58Prefix: u16 = 909;
     pub BlockWeights: frame_system::limits::BlockWeights =
-        frame_system::limits::BlockWeights::builder()
-            .base_block(BlockExecutionWeight::get())
-            .for_class(frame_support::weights::constants::All::get(), |weights| {
-                weights.base_extrinsic = ExtrinsicBaseWeight::get();
-            })
-            .max_block(MAX_BLOCK_WEIGHT)
-            .build_or_panic();
+        frame_system::limits::BlockWeights::with_sensible_defaults(
+            MAX_BLOCK_WEIGHT,
+            Perbill::from_percent(75),
+        );
     pub BlockLength: frame_system::limits::BlockLength =
         frame_system::limits::BlockLength::max_with_normal_ratio(
-            Perbill::from_percent(75),
             5 * 1024 * 1024,
+            Perbill::from_percent(75),
         );
+    pub MaximumSchedulerWeight: Weight = MAX_BLOCK_WEIGHT;
 }
 
 // === System Pallet ===
@@ -262,7 +256,7 @@ impl pallet_scheduler::Config for Runtime {
     type WeightInfo = ();
     type OriginPrivilegeCmp = frame_support::traits::EqualPrivilegeOnly;
     type Preimages = Preimage;
-    type MaximumWeight = MAX_BLOCK_WEIGHT;
+    type MaximumWeight = MaximumSchedulerWeight;
     type ScheduleOrigin = EnsureRoot<AccountId>;
     type BlockNumberProvider = System;
 }
@@ -291,7 +285,7 @@ parameter_types! {
 
 impl pallet_contracts::Config for Runtime {
     type Time = Timestamp;
-    type Randomness = Babe;
+    type Randomness = pallet_babe::RandomnessFromOneEpochAgo<Runtime>;
     type Currency = Balances;
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
@@ -341,7 +335,7 @@ impl pallet_dpos::Config for Runtime {
     type ActiveValidatorCount = ValidatorCount;
     type EpochLength = EpochLength;
     type PalletId = DposPalletId;
-    type WeightInfo = pallet_dpos::SubstrateWeight<Runtime>;
+    type WeightInfo = ();
 }
 
 // === Verdis AMM DEX ===
@@ -361,7 +355,7 @@ impl pallet_amm_dex::Config for Runtime {
     type FeeDenominator = FeeDenominator;
     type MinLiquidity = MinLiquidity;
     type MaxPools = MaxPools;
-    type WeightInfo = pallet_amm_dex::SubstrateWeight<Runtime>;
+    type WeightInfo = ();
 }
 
 // === Verdis Eco ===
@@ -382,7 +376,7 @@ impl pallet_eco::Config for Runtime {
     type MaxGreenValidators = MaxGreenValidators;
     type MinGreenScore = MinGreenScore;
     type MaxGreenScore = MaxGreenScore;
-    type WeightInfo = pallet_eco::SubstrateWeight<Runtime>;
+    type WeightInfo = ();
 }
 
 // === Verdis Tokenomics ===
@@ -398,7 +392,7 @@ impl pallet_tokenomics::Config for Runtime {
     type TotalSupply = TotalSupplyConst;
     type InvestorAllocation = InvestorAllocationConst;
     type PalletId = TokenomicsPalletId;
-    type WeightInfo = pallet_tokenomics::SubstrateWeight<Runtime>;
+    type WeightInfo = ();
 }
 
 // === Verdis Vesting ===
@@ -410,7 +404,7 @@ impl pallet_vesting::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type PalletId = VestingPalletId;
-    type WeightInfo = pallet_vesting::SubstrateWeight<Runtime>;
+    type WeightInfo = ();
 }
 
 // === Verdis Storage ===
@@ -423,7 +417,7 @@ impl pallet_storage::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type PalletId = StoragePalletId;
     type MaxRecords = MaxStorageRecords;
-    type WeightInfo = pallet_storage::SubstrateWeight<Runtime>;
+    type WeightInfo = ();
 }
 
 // === Construct Runtime ===
@@ -451,6 +445,22 @@ construct_runtime! {
 
 // Type aliases that depend on construct_runtime!
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
+pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
+
+/// Signed extra data for transactions
+pub type SignedExtra = (
+    frame_system::CheckNonZeroSender<Runtime>,
+    frame_system::CheckSpecVersion<Runtime>,
+    frame_system::CheckTxVersion<Runtime>,
+    frame_system::CheckGenesis<Runtime>,
+    frame_system::CheckMortality<Runtime>,
+    frame_system::CheckNonce<Runtime>,
+    frame_system::CheckWeight<Runtime>,
+    pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
+);
+
+/// The UncheckedExtrinsic type
+pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
 
 // === Runtime API Implementation ===
 impl_runtime_apis! {
@@ -458,10 +468,10 @@ impl_runtime_apis! {
         fn version() -> RuntimeVersion {
             VERSION
         }
-        fn execute_block(block: Block) {
+        fn execute_block(block: <Block as BlockT>::LazyBlock) {
             Executive::execute_block(block);
         }
-        fn initialize_block(header: &<Block as BlockT>::Header) {
+        fn initialize_block(header: &<Block as BlockT>::Header) -> ExtrinsicInclusionMode {
             Executive::initialize_block(header)
         }
     }
@@ -489,7 +499,7 @@ impl_runtime_apis! {
             data.create_extrinsics()
         }
         fn check_inherents(
-            block: Block,
+            block: <Block as BlockT>::LazyBlock,
             data: sp_inherents::InherentData,
         ) -> sp_inherents::CheckInherentsResult {
             data.check_extrinsics(&block)
@@ -513,8 +523,8 @@ impl_runtime_apis! {
     }
 
     impl sp_session::SessionKeys<Block> for Runtime {
-        fn generate_session_keys(owner: Vec<u8>, seed: Option<Vec<u8>>) -> Vec<u8> {
-            SessionKeys::generate(owner, seed)
+        fn generate_session_keys(owner: Vec<u8>, seed: Option<Vec<u8>>) -> sp_session::OpaqueGeneratedSessionKeys {
+            SessionKeys::generate(&owner, seed).into()
         }
         fn decode_session_keys(
             encoded: Vec<u8>,
@@ -527,7 +537,7 @@ impl_runtime_apis! {
         fn configuration() -> sp_consensus_babe::BabeConfiguration {
             sp_consensus_babe::BabeConfiguration {
                 slot_duration: Babe::slot_duration(),
-                epoch_length: <Babe as pallet_babe::Config>::EpochDuration::get(),
+                epoch_length: <Runtime as pallet_babe::Config>::EpochDuration::get(),
                 c: (1, 4),
                 authorities: Babe::authorities().into_iter().map(|x| x.into()).collect(),
                 randomness: Babe::randomness().into(),
@@ -550,8 +560,8 @@ impl_runtime_apis! {
             None
         }
         fn submit_report_equivocation_unsigned_extrinsic(
-            _equivocation_proof: Vec<u8>,
-            _key_owner_proof: Vec<u8>,
+            _equivocation_proof: sp_consensus_babe::EquivocationProof<<Block as BlockT>::Header>,
+            _key_owner_proof: sp_consensus_babe::OpaqueKeyOwnershipProof,
         ) -> Option<()> {
             None
         }
@@ -602,6 +612,9 @@ impl_runtime_apis! {
         }
         fn query_weight_to_fee(weight: Weight) -> Balance {
             TransactionPayment::weight_to_fee(weight)
+        }
+        fn query_fee_details(uxt: <Block as BlockT>::Extrinsic, len: u32) -> pallet_transaction_payment_rpc_runtime_api::FeeDetails<Balance> {
+            TransactionPayment::query_fee_details(uxt, len)
         }
     }
 }
