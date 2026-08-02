@@ -11,11 +11,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::{DefaultNoBound,DebugNoBound,
+use frame_support::{DefaultNoBound,
     dispatch::DispatchResult,
     ensure,
     pallet_prelude::*,
-    traits::{Currency, ExistenceRequirement, Get, ReservableCurrency},
+    traits::{Currency, Get, ReservableCurrency, tokens::ExistenceRequirement},
     PalletId,
 };
 use frame_system::pallet_prelude::*;
@@ -171,7 +171,7 @@ pub mod pallet {
                     active: *active,
                     slashed: false,
                     green_score: 0,
-                    energy_source: b"Unknown".to_vec(),
+                    energy_source: b"Unknown".to_vec().try_into().unwrap_or_default(),
                 };
                 Validators::<T>::insert(addr, validator);
                 list.push(addr.clone());
@@ -254,7 +254,7 @@ pub mod pallet {
                 active: true,
                 slashed: false,
                 green_score,
-                energy_source,
+                energy_source: energy_source.clone().try_into().unwrap_or_default(),
             };
 
             Validators::<T>::insert(&who, validator);

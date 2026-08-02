@@ -10,12 +10,12 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::{DefaultNoBound,DebugNoBound,
+use frame_support::{
     dispatch::DispatchResult,
     ensure,
     pallet_prelude::*,
     traits::Get,
-    PalletId,
+    PalletId, DefaultNoBound,
 };
 use scale_info::TypeInfo;
 use frame_system::pallet_prelude::*;
@@ -40,11 +40,11 @@ pub mod pallet {
 
     #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
     pub struct StorageRecord<AccountId> {
-        pub id: BoundedVec<u8, ConstU32<64>>,           // CID or Arweave TX ID
+        pub id: BoundedVec<u8, ConstU32<64>>,
         pub backend: StorageBackend,
         pub owner: AccountId,
         pub size_bytes: u64,
-        pub blake3_hash: [u8; 32], // Content verification
+        pub blake3_hash: [u8; 32],
         pub pinned: bool,
         pub created_at: u64,
     }
@@ -53,7 +53,7 @@ pub mod pallet {
     pub struct StorageProvider<AccountId> {
         pub address: AccountId,
         pub backend: StorageBackend,
-        pub endpoint: BoundedVec<u8, ConstU32<128>>,     // IPFS gateway or Arweave gateway URL
+        pub endpoint: BoundedVec<u8, ConstU32<128>>,
         pub reputation: u32,
         pub total_stored: u64,
         pub active: bool,
@@ -85,31 +85,12 @@ pub mod pallet {
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
-        StorageRecordCreated {
-            id: Vec<u8>,
-            backend: StorageBackend,
-            owner: T::AccountId,
-            size: u64,
-        },
-        StorageRecordVerified {
-            id: Vec<u8>,
-            hash: [u8; 32],
-        },
-        ProviderRegistered {
-            address: T::AccountId,
-            backend: StorageBackend,
-            endpoint: Vec<u8>,
-        },
-        PinRequested {
-            id: Vec<u8>,
-        },
-        PinRemoved {
-            id: Vec<u8>,
-        },
-        ContentRetrieved {
-            id: Vec<u8>,
-            requester: T::AccountId,
-        },
+        StorageRecordCreated { id: Vec<u8>, backend: StorageBackend, owner: T::AccountId, size: u64 },
+        StorageRecordVerified { id: Vec<u8>, hash: [u8; 32] },
+        ProviderRegistered { address: T::AccountId, backend: StorageBackend, endpoint: Vec<u8> },
+        PinRequested { id: Vec<u8> },
+        PinRemoved { id: Vec<u8> },
+        ContentRetrieved { id: Vec<u8>, requester: T::AccountId },
     }
 
     // === Errors ===
@@ -125,6 +106,8 @@ pub mod pallet {
         InvalidHash,
         InvalidBackend,
         MaxRecordsReached,
+        IdTooLong,
+        EndpointTooLong,
     }
 
     // === Config ===
@@ -155,14 +138,16 @@ pub mod pallet {
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
-            ensure!(!StorageRecords::<T>::contains_key(&id), Error::<T>::RecordAlreadyExists);
+            let id_bv: BoundedVec<u8, ConstU32<64>> = id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
+
+            ensure!(!StorageRecords::<T>::contains_key(&id_bv), Error::<T>::RecordAlreadyExists);
             ensure!(
                 StorageRecords::<T>::iter().count() as u32 < T::MaxRecords::get(),
                 Error::<T>::MaxRecordsReached
             );
 
             let record = StorageRecord {
-                id: id.clone(),
+                id: id_bv.clone(),
                 backend,
                 owner: who.clone(),
                 size_bytes,
@@ -171,7 +156,7 @@ pub mod pallet {
                 created_at: 0,
             };
 
-            StorageRecords::<T>::insert(id.clone(), record);
+            StorageRecords::<T>::insert(id_bv, record);
             TotalStored::<T>::mutate(|t| *t = t.saturating_add(size_bytes));
 
             Self::deposit_event(Event::StorageRecordCreated {
@@ -189,7 +174,9 @@ pub mod pallet {
         pub fn verify_storage(origin: OriginFor<T>, id: Vec<u8>, hash: [u8; 32]) -> DispatchResult {
             let _who = ensure_signed(origin)?;
 
-            StorageRecords::<T>::mutate(&id, |r| {
+            let id_bv: BoundedVec<u8, ConstU32<64>> = id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
+
+            StorageRecords::<T>::mutate(&id_bv, |r| {
                 let record = r.as_mut().ok_or(Error::<T>::RecordNotFound)?;
                 ensure!(record.blake3_hash == hash, Error::<T>::InvalidHash);
                 Ok::<(), Error<T>>(())
@@ -211,10 +198,12 @@ pub mod pallet {
 
             ensure!(!StorageProviders::<T>::contains_key(&who), Error::<T>::ProviderAlreadyRegistered);
 
+            let endpoint_bv: BoundedVec<u8, ConstU32<128>> = endpoint.clone().try_into().map_err(|_| Error::<T>::EndpointTooLong)?;
+
             let provider = StorageProvider {
                 address: who.clone(),
                 backend,
-                endpoint,
+                endpoint: endpoint_bv,
                 reputation: 100,
                 total_stored: 0,
                 active: true,
@@ -225,7 +214,7 @@ pub mod pallet {
             Self::deposit_event(Event::ProviderRegistered {
                 address: who,
                 backend,
-                endpoint: Vec::new(),
+                endpoint,
             });
             Ok(())
         }
@@ -234,11 +223,13 @@ pub mod pallet {
         #[pallet::call_index(3)]
         #[pallet::weight(Weight::from_parts(20_000_000, 0))]
         pub fn request_pin(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
-            let who = ensure_signed(origin)?;
+            let _who = ensure_signed(origin)?;
 
-            ensure!(StorageRecords::<T>::contains_key(&id), Error::<T>::RecordNotFound);
-            PinRequests::<T>::insert(&id, true);
-            StorageRecords::<T>::mutate(&id, |r| {
+            let id_bv: BoundedVec<u8, ConstU32<64>> = id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
+
+            ensure!(StorageRecords::<T>::contains_key(&id_bv), Error::<T>::RecordNotFound);
+            PinRequests::<T>::insert(&id_bv, true);
+            StorageRecords::<T>::mutate(&id_bv, |r| {
                 if let Some(r) = r {
                     r.pinned = true;
                 }
@@ -254,11 +245,13 @@ pub mod pallet {
         pub fn remove_pin(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
-            let record = StorageRecords::<T>::get(&id).ok_or(Error::<T>::RecordNotFound)?;
+            let id_bv: BoundedVec<u8, ConstU32<64>> = id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
+
+            let record = StorageRecords::<T>::get(&id_bv).ok_or(Error::<T>::RecordNotFound)?;
             ensure!(record.owner == who, Error::<T>::NotRecordOwner);
 
-            PinRequests::<T>::remove(&id);
-            StorageRecords::<T>::mutate(&id, |r| {
+            PinRequests::<T>::remove(&id_bv);
+            StorageRecords::<T>::mutate(&id_bv, |r| {
                 if let Some(r) = r {
                     r.pinned = false;
                 }
@@ -271,7 +264,7 @@ pub mod pallet {
 
     // === Query Functions ===
     impl<T: Config> Pallet<T> {
-        pub fn get_record(id: &Vec<u8>) -> Option<StorageRecord<T::AccountId>> {
+        pub fn get_record(id: &BoundedVec<u8, ConstU32<64>>) -> Option<StorageRecord<T::AccountId>> {
             StorageRecords::<T>::get(id)
         }
 

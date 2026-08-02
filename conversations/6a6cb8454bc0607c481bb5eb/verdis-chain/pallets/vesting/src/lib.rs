@@ -10,16 +10,17 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::{DefaultNoBound,DebugNoBound,
+use frame_support::{
     dispatch::DispatchResult,
     ensure,
     pallet_prelude::*,
-    traits::{Currency, ExistenceRequirement, Get, ReservableCurrency},
-    PalletId,
+    traits::{Currency, Get, ReservableCurrency, tokens::ExistenceRequirement},
+    PalletId, DefaultNoBound,
 };
 use scale_info::TypeInfo;
 use frame_system::pallet_prelude::*;
 use sp_runtime::traits::Saturating;
+use sp_arithmetic::traits::SaturatedConversion;
 use sp_std::prelude::*;
 
 pub use pallet::*;
@@ -28,6 +29,8 @@ pub use pallet::*;
 pub mod pallet {
     use super::*;
 
+    type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+
     #[pallet::pallet]
     pub struct Pallet<T>(_);
 
@@ -35,16 +38,16 @@ pub mod pallet {
 
     #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
     pub struct VestingSchedule<Balance> {
-        pub label: BoundedVec<u8, ConstU32<64>>,      // "seed", "private", "public", "final"
+        pub label: BoundedVec<u8, ConstU32<64>>,
         pub total_amount: Balance,
-        pub vesting_days: u32,   // Total vesting period
-        pub cliff_days: u32,     // Cliff period before any release
+        pub vesting_days: u32,
+        pub cliff_days: u32,
     }
 
-    // === User Vesting ===
+    // === User Vesting Entry ===
 
     #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
-    pub struct UserVesting<Balance, BlockNumber> {
+    pub struct UserVestingEntry<Balance, BlockNumber> {
         pub schedule: BoundedVec<u8, ConstU32<64>>,
         pub total_amount: Balance,
         pub released: Balance,
@@ -61,8 +64,8 @@ pub mod pallet {
 
     #[pallet::storage]
     #[pallet::getter(fn user_vesting)]
-    pub type UserVesting<T: Config> =
-        StorageMap<_, Blake2_128Concat, T::AccountId, Vec<UserVesting<BalanceOf<T>, T::BlockNumber>>>;
+    pub type UserVestings<T: Config> =
+        StorageMap<_, Blake2_128Concat, T::AccountId, BoundedVec<UserVestingEntry<BalanceOf<T>, T::BlockNumber>, ConstU32<16>>>;
 
     #[pallet::storage]
     #[pallet::getter(fn locked_balances)]
@@ -91,6 +94,8 @@ pub mod pallet {
         NothingToRelease,
         InsufficientUnlocked,
         TransferLocked,
+        LabelTooLong,
+        MaxVestingSchedules,
     }
 
     // === Config ===
@@ -116,13 +121,14 @@ pub mod pallet {
     impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
         fn build(&self) {
             for (label, amount, vesting_days, cliff_days) in &self.vesting_schedules {
+                let label_bv: BoundedVec<u8, ConstU32<64>> = label.clone().try_into().unwrap_or_default();
                 let schedule = VestingSchedule {
-                    label: label.clone(),
+                    label: label_bv.clone(),
                     total_amount: *amount,
                     vesting_days: *vesting_days,
                     cliff_days: *cliff_days,
                 };
-                Schedules::<T>::insert(label.clone(), schedule);
+                Schedules::<T>::insert(label_bv, schedule);
             }
         }
     }
@@ -142,21 +148,23 @@ pub mod pallet {
         ) -> DispatchResult {
             ensure_root(origin)?;
 
-            let schedule = Schedules::<T>::get(&schedule_label)
+            let label_bv: BoundedVec<u8, ConstU32<64>> = schedule_label.clone().try_into().map_err(|_| Error::<T>::LabelTooLong)?;
+            let schedule = Schedules::<T>::get(&label_bv)
                 .ok_or(Error::<T>::ScheduleNotFound)?;
 
             let current_block = frame_system::Pallet::<T>::block_number();
 
-            let user_vest = UserVesting {
-                schedule: schedule_label.clone(),
+            let entry = UserVestingEntry {
+                schedule: label_bv.clone(),
                 total_amount: amount,
                 released: BalanceOf::<T>::zero(),
                 start_block: current_block,
                 vested: BalanceOf::<T>::zero(),
             };
 
-            UserVesting::<T>::mutate(&who, |v| {
-                v.get_or_insert_with(Vec::new).push(user_vest);
+            UserVestings::<T>::mutate(&who, |v| {
+                let vestings = v.get_or_insert_with(|| BoundedVec::default());
+                vestings.try_push(entry).map_err(|_| Error::<T>::MaxVestingSchedules).ok();
             });
 
             LockedBalances::<T>::mutate(&who, |l| *l = l.saturating_add(amount));
@@ -175,7 +183,7 @@ pub mod pallet {
         pub fn release_vested(origin: OriginFor<T>) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
-            let vesting = UserVesting::<T>::get(&who).ok_or(Error::<T>::NoVestingForAccount)?;
+            let vesting = UserVestings::<T>::get(&who).ok_or(Error::<T>::NoVestingForAccount)?;
             let current_block = frame_system::Pallet::<T>::block_number();
             let block_time_ms = 5000u64; // 5 second blocks
             let blocks_per_day = (86_400_000 / block_time_ms) as u32;
@@ -190,17 +198,15 @@ pub mod pallet {
                 let schedule = Schedules::<T>::get(&v.schedule)
                     .ok_or(Error::<T>::ScheduleNotFound)?;
 
-                // Check cliff
                 if elapsed_days < schedule.cliff_days {
                     continue;
                 }
 
-                // Calculate vested amount (linear vesting)
                 let vested = if elapsed_days >= schedule.vesting_days {
                     v.total_amount
                 } else {
-                    v.total_amount.saturating_mul(elapsed_days.into())
-                        / schedule.vesting_days.into()
+                    v.total_amount.saturating_mul(elapsed_days.saturated_into())
+                        / schedule.vesting_days.saturated_into()
                 };
 
                 let releasable = vested.saturating_sub(v.released);
@@ -210,7 +216,7 @@ pub mod pallet {
             ensure!(total_releasable > BalanceOf::<T>::zero(), Error::<T>::NothingToRelease);
 
             // Update vesting records
-            UserVesting::<T>::mutate(&who, |vests| {
+            UserVestings::<T>::mutate(&who, |vests| {
                 if let Some(vests) = vests {
                     for v in vests.iter_mut() {
                         let elapsed_blocks: u32 = current_block.saturating_sub(v.start_block)
@@ -222,8 +228,8 @@ pub mod pallet {
                                 let vested = if elapsed_days >= s.vesting_days {
                                     v.total_amount
                                 } else {
-                                    v.total_amount.saturating_mul(elapsed_days.into())
-                                        / s.vesting_days.into()
+                                    v.total_amount.saturating_mul(elapsed_days.saturated_into())
+                                        / s.vesting_days.saturated_into()
                                 };
                                 v.vested = vested;
                                 let releasable = vested.saturating_sub(v.released);
@@ -234,7 +240,6 @@ pub mod pallet {
                 }
             });
 
-            // Unlock tokens
             LockedBalances::<T>::mutate(&who, |l| *l = l.saturating_sub(total_releasable));
 
             Self::deposit_event(Event::VestingReleased {
@@ -273,7 +278,6 @@ pub mod pallet {
     // === beforeTransfer Hook ===
     impl<T: Config> Pallet<T> {
         /// Called before any token transfer to enforce vesting locks
-        /// Returns Ok if transfer is allowed, Err if blocked by vesting
         pub fn before_transfer(
             from: &T::AccountId,
             amount: BalanceOf<T>,
@@ -312,5 +316,3 @@ pub mod pallet {
         fn check_transfer() -> Weight { Weight::from_parts(30_000_000, 0) }
     }
 }
-
-type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
