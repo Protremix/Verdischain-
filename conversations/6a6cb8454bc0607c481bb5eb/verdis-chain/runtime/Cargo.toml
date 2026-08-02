@@ -58,7 +58,7 @@ pallet-vesting = { path = "../pallets/vesting", default-features = false }
 pallet-storage = { path = "../pallets/storage", default-features = false }
 
 [build-dependencies]
-substrate-wasm-builder = { workspace = true, optional = true }
+substrate-wasm-builder = { workspace = true }
 
 [features]
 default = ["std"]
@@ -102,7 +102,6 @@ std = [
     "pallet-tokenomics/std",
     "pallet-vesting/std",
     "pallet-storage/std",
-    "substrate-wasm-builder",
 ]
 runtime-benchmarks = [
     "frame-benchmarking/runtime-benchmarks",

@@ -15,7 +15,7 @@ use frame_support::{
     ensure,
     pallet_prelude::*,
     traits::{Currency, Get, ReservableCurrency},
-    PalletId, DebugNoBound, DefaultNoBound,
+    PalletId, DefaultNoBound,
 };
 use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
@@ -52,7 +52,7 @@ pub mod pallet {
 
     // === Types ===
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, DebugNoBound, TypeInfo)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
     pub struct Pool<AccountId, Balance> {
         pub id: u32,
         pub token_a: BoundedVec<u8, ConstU32<32>>,
@@ -300,7 +300,7 @@ pub mod pallet {
             Pools::<T>::insert(pool_id, pool.clone());
 
             LiquidityProviders::<T>::mutate(pool_id, &who, |lp| {
-                *lp = lp.unwrap_or(BalanceOf::<T>::zero()).saturating_add(lp_minted);
+                *lp = Some(lp.unwrap_or(BalanceOf::<T>::zero()).saturating_add(lp_minted));
             });
 
             Self::deposit_event(Event::LiquidityAdded {
@@ -342,7 +342,7 @@ pub mod pallet {
             Pools::<T>::insert(pool_id, pool.clone());
 
             LiquidityProviders::<T>::mutate(pool_id, &who, |lp| {
-                *lp = lp.unwrap_or(BalanceOf::<T>::zero()).saturating_sub(lp_amount);
+                *lp = Some(lp.unwrap_or(BalanceOf::<T>::zero()).saturating_sub(lp_amount));
             });
 
             Self::deposit_event(Event::LiquidityRemoved {

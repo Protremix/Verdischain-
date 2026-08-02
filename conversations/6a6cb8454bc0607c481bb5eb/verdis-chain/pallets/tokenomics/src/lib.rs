@@ -10,16 +10,17 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::{DefaultNoBound,DebugNoBound,
+use frame_support::{
     dispatch::DispatchResult,
     ensure,
     pallet_prelude::*,
-    traits::{Currency, Get, ReservableCurrency},
-    PalletId,
+    traits::{Currency, Get, ReservableCurrency, tokens::ExistenceRequirement},
+    PalletId, DefaultNoBound,
 };
-use scale_info::TypeInfo;
 use frame_system::pallet_prelude::*;
-use sp_runtime::traits::Saturating;
+use scale_info::TypeInfo;
+use sp_runtime::traits::{AccountIdConversion, Saturating};
+use sp_arithmetic::traits::SaturatedConversion;
 use sp_std::prelude::*;
 
 pub use pallet::*;
@@ -28,19 +29,21 @@ pub use pallet::*;
 pub mod pallet {
     use super::*;
 
+    type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+
     #[pallet::pallet]
     pub struct Pallet<T>(_);
 
     // === Distribution Category ===
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, DebugNoBound, TypeInfo)]
-    pub struct DistributionCategory {
-        pub name: Vec<u8>,
-        pub amount: BalanceOf<T>,
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
+    pub struct DistributionCategory<Balance> {
+        pub name: BoundedVec<u8, ConstU32<32>>,
+        pub amount: Balance,
         pub percentage: u8,
         pub vesting_days: u32,
         pub cliff_days: u32,
-        pub released: BalanceOf<T>,
+        pub released: Balance,
     }
 
     // === Storage ===
@@ -56,7 +59,7 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn distribution)]
     pub type Distribution<T: Config> =
-        StorageMap<_, Blake2_128Concat, Vec<u8>, DistributionCategory>;
+        StorageMap<_, Blake2_128Concat, BoundedVec<u8, ConstU32<32>>, DistributionCategory<BalanceOf<T>>>;
 
     #[pallet::storage]
     #[pallet::getter(fn presale_price)]
@@ -134,15 +137,16 @@ pub mod pallet {
             PresalePrice::<T>::put(self.presale_price);
 
             for (name, amount, pct, vesting, cliff) in &self.distribution {
+                let name_bv: BoundedVec<u8, ConstU32<32>> = name.clone().try_into().unwrap_or_default();
                 let cat = DistributionCategory {
-                    name: name.clone(),
+                    name: name_bv.clone(),
                     amount: *amount,
                     percentage: *pct,
                     vesting_days: *vesting,
                     cliff_days: *cliff,
                     released: BalanceOf::<T>::zero(),
                 };
-                Distribution::<T>::insert(name.clone(), cat);
+                Distribution::<T>::insert(name_bv, cat);
             }
         }
     }
@@ -178,12 +182,15 @@ pub mod pallet {
             let max = T::InvestorAllocation::get();
             ensure!(sold.saturating_add(amount) <= max, Error::<T>::MaxInvestorAllocationReached);
 
-            // Calculate price
-            let price_bps = PresalePrice::<T>::get(); // basis points
-            let cost = amount.saturating_mul(price_bps.into()) / 10_000;
+            // Calculate price (price_bps is in basis points)
+            let price_bps = PresalePrice::<T>::get();
+            let price_bal: BalanceOf<T> = price_bps.saturated_into();
+            let divisor: BalanceOf<T> = 10_000u32.saturated_into();
+            let cost = amount.saturating_mul(price_bal) / divisor;
 
-            // Transfer tokens
-            T::Currency::transfer(&T::PalletId::get().into_account_truncating(), &who, amount, ExistenceRequirement::AllowDeath)?;
+            // Transfer tokens from pallet treasury
+            let treasury = T::PalletId::get().into_account_truncating();
+            T::Currency::transfer(&treasury, &who, amount, ExistenceRequirement::AllowDeath)?;
 
             PresaleRaised::<T>::mutate(|r| *r = r.saturating_add(cost));
             PresaleSold::<T>::mutate(|s| *s = s.saturating_add(amount));
@@ -218,7 +225,9 @@ pub mod pallet {
         ) -> DispatchResult {
             ensure_root(origin)?;
 
-            Distribution::<T>::mutate(&category, |c| {
+            let cat_bv: BoundedVec<u8, ConstU32<32>> = category.clone().try_into().map_err(|_| Error::<T>::InvalidCategory)?;
+
+            Distribution::<T>::mutate(&cat_bv, |c| {
                 let cat = c.as_mut().ok_or(Error::<T>::InvalidCategory)?;
                 ensure!(
                     cat.released.saturating_add(amount) <= cat.amount,
@@ -254,5 +263,3 @@ pub mod pallet {
         fn release_distribution() -> Weight { Weight::from_parts(40_000_000, 0) }
     }
 }
-
-type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
