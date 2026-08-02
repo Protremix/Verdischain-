@@ -2,62 +2,84 @@
 
 use std::{sync::Arc, time::Duration};
 
-use futures::StreamExt;
-use log::info;
 use sc_basic_authorship::ProposerFactory;
-use sc_client_api::BlockBackend;
+use sc_client_api::{Backend, BlockBackend};
 use sc_consensus::{ImportQueue, LongestChain};
 use sc_consensus_babe::{
-    self, BabeBlockImport, BabeLink, BabeParams, ImportQueueParams,
+    self, BabeBlockImport, BabeLink, BabeParams, ImportQueueParams, SlotDuration,
 };
-use sc_consensus_grandpa::{self, Config as GrandpaConfig, GrandpaParams, LinkHalf, SharedVoterState, VotingRule};
+use sc_consensus_grandpa::{self, Config as GrandpaConfig, GrandpaParams, LinkHalf, SharedVoterState, VotingRulesBuilder};
 use sc_executor::NativeExecutionDispatch;
 use sc_service::{
     self, build_network, new_full_parts, spawn_tasks, BuildNetworkParams,
-    KeystoreContainer, SpawnTasksParams, TaskManager, TFullClient, TFullBackend,
+    KeystoreContainer, SpawnTasksParams, TaskManager,
+    TFullClient, TFullBackend,
     config::Configuration, Error,
 };
-use sc_telemetry::{Telemetry, TelemetryHandle};
-use sc_transaction_pool::{BasicPool, FullChainApi};
-use sp_blockchain::HeaderBackend;
+use sc_transaction_pool::BasicPool;
 use sp_consensus::SelectChain;
 use sp_keystore::KeystorePtr;
 use sp_runtime::BuildStorage;
+use verdis_runtime::opaque::Block;
 
-use verdis_runtime::{
-    opaque::Block, AccountId, Balance, RuntimeApi,
-};
+pub type FullClient = TFullClient<Block, verdis_runtime::RuntimeApi, sc_executor::NativeElseWasmExecutor<ExecutorDispatch>>;
+pub type FullBackend = TFullBackend<Block>;
 
 /// Native executor dispatch type
 pub struct ExecutorDispatch;
 
 impl NativeExecutionDispatch for ExecutorDispatch {
     type ExtendHostFunctions = sp_io::SubstrateHostFunctions;
-
     fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
         verdis_runtime::api::dispatch(method, data)
     }
-
     fn native_version() -> sc_executor::NativeVersion {
         verdis_runtime::native_version()
     }
 }
 
-/// Full node service
-pub fn new_full(config: Configuration) -> Result<TaskManager, Error> {
-    // Create executor
-    let executor = sc_service::new_native_or_wasm_executor::<ExecutorDispatch>(&config);
+/// Partial components for subcommands
+pub fn new_partial(
+    config: &Configuration,
+) -> Result<
+    (
+        Arc<FullClient>,
+        Arc<FullBackend>,
+        KeystoreContainer,
+        TaskManager,
+    ),
+    Error,
+> {
+    let executor = sc_service::new_native_or_wasm_executor::<ExecutorDispatch>(config);
+    let (client, backend, keystore_container, task_manager) =
+        new_full_parts::<Block, verdis_runtime::RuntimeApi, _>(
+            config,
+            None,
+            executor,
+            vec![],
+        )?;
+    Ok((client, backend, keystore_container, task_manager))
+}
 
-    // Create the initial parts: client, backend, keystore, task_manager
+/// Full node service
+#[allow(clippy::type_complexity)]
+pub fn new_full(config: Configuration) -> Result<TaskManager, Error> {
+    // Create executor + initial parts
+    let executor = sc_service::new_native_or_wasm_executor::<ExecutorDispatch>(&config);
     let (client, backend, keystore_container, mut task_manager) =
-        new_full_parts::<Block, RuntimeApi, _>(&config, None, executor, vec![])?;
+        new_full_parts::<Block, verdis_runtime::RuntimeApi, _>(
+            &config,
+            None,
+            executor,
+            vec![],
+        )?;
 
     let keystore: KeystorePtr = keystore_container.keystore();
 
-    // Create SelectChain
+    // SelectChain
     let select_chain = LongestChain::new(backend.clone());
 
-    // Create transaction pool
+    // Transaction pool
     let transaction_pool = BasicPool::new_full(
         Default::default(),
         config.role.is_authority().into(),
@@ -65,20 +87,27 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, Error> {
         task_manager.spawn_essential_handle(),
         client.clone(),
     );
-
     let transaction_pool = Arc::new(transaction_pool);
 
-    // Get BABE configuration from runtime API
-    let block_id = sp_runtime::generic::BlockId::GenesisBlock;
+    // BABE configuration from runtime API
     let babe_config = client
         .runtime_api()
-        .configuration(block_id)
+        .configuration(sp_runtime::generic::BlockId::GenesisBlock)
         .map_err(|e| Error::Application(Box::new(e)))?;
 
-    // Create BABE block import + link
+    // GRANDPA block import wrapping client
+    let (grandpa_block_import, grandpa_link) = sc_consensus_grandpa::block_import(
+        client.clone(),
+        0,
+        &*client.clone(),
+        select_chain.clone(),
+        None,
+    )?;
+
+    // BABE block import wrapping GRANDPA block import
     let (babe_block_import, babe_link) = sc_consensus_babe::block_import(
         babe_config,
-        client.clone(),
+        grandpa_block_import,
         client.clone(),
         move |_, _| async move {
             let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
@@ -92,65 +121,39 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, Error> {
         sc_transaction_pool_api::OffchainTransactionPoolFactory::new(transaction_pool.clone()),
     );
 
-    // Create GRANDPA block import wrapping BABE import
-    let (grandpa_block_import, grandpa_link) = sc_consensus_grandpa::block_import(
-        client.clone(),
-        0,
-        &*client.clone(),
-        select_chain.clone(),
-        None,
-    )?;
-
-    // Wrap the GRANDPA block import in BABE (BABE wraps GRANDPA wraps the actual import)
-    // Actually, the order is: BABE wraps GRANDPA wraps client
-    // But we already created babe_block_import which wraps the client.
-    // The GRANDPA block import should wrap the BABE block import.
-    // Let's swap: create GRANDPA first, then BABE wrapping GRANDPA.
-
-    // Actually, the standard pattern is:
-    // 1. Create GRANDPA block import wrapping the client
-    // 2. Create BABE block import wrapping the GRANDPA block import
-    // 3. The import queue uses the BABE block import
-
-    // Let me redo this properly:
-    // Actually, looking at the Substrate node template, the order is:
-    // grandpa_block_import wraps the client
-    // babe_block_import wraps grandpa_block_import
-    // import_queue uses babe_block_import
-
-    // But we already created babe_block_import wrapping the client directly.
-    // Let me fix this by creating GRANDPA first, then BABE wrapping it.
-
-    // For now, let's just use the babe_block_import and the grandpa_link separately.
-    // The grandpa_block_import will be used for justification importing.
-
-    // Create BABE import queue
+    // BABE import queue
     let import_queue = sc_consensus_babe::import_queue(
         ImportQueueParams {
             link: babe_link.clone(),
             block_import: babe_block_import.clone(),
-            justification_import: Some(Box::new(sc_consensus_grandpa::justification_import(
-                client.clone(),
-                grandpa_block_import.clone(),
-                0,
-                &*client.clone(),
-            ))),
+            justification_import: None,
             client: client.clone(),
-            slot_duration: sc_consensus_babe::SlotDuration::from_millis(6000),
+            slot_duration: SlotDuration::from_millis(6000),
             spawner: &task_manager.spawn_essential_handle(),
             registry: config.prometheus_config.as_ref().map(|cfg| &cfg.registry),
             telemetry: None,
         },
     )?;
 
+    // GRANDPA notification protocol
+    let grandpa_protocol_name = sc_consensus_grandpa::protocol_standard_name(&config.chain_spec);
+    let (grandpa_protocol_config, grandpa_notification_service) =
+        sc_consensus_grandpa::grandpa_peers_set_config::<Block, sc_network::NetworkWorker<_, _>>(
+            grandpa_protocol_name.clone(),
+        );
+
+    // Network configuration
+    let mut net_config = sc_network::config::FullNetworkConfiguration::new(
+        config.network.clone(),
+        config.prometheus_config.as_ref().map(|cfg| cfg.registry.clone()),
+    );
+    net_config.add_notification_protocol(grandpa_protocol_config);
+
     // Build network
     let (network, system_rpc_tx, tx_handler_controller, sync_service) = build_network(
         BuildNetworkParams {
             config: &config,
-            net_config: sc_network::config::FullNetworkConfiguration::new(
-                config.network.clone(),
-                config.prometheus_config.as_ref().map(|cfg| cfg.registry.clone()),
-            ),
+            net_config,
             client: client.clone(),
             transaction_pool: transaction_pool.clone(),
             spawn_handle: task_manager.spawn_handle(),
@@ -163,30 +166,28 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, Error> {
         },
     )?;
 
-    // Create RPC module
+    // RPC module builder
     let rpc_builder = {
         let client = client.clone();
         let pool = transaction_pool.clone();
-        let keystore = keystore.clone();
-
         Box::new(move |subscription_executor: sc_rpc::SubscriptionTaskExecutor| {
             let mut module = jsonrpsee::RpcModule::new(());
-            let full_deps = substrate_frame_rpc_system::System {
+            let system = substrate_frame_rpc_system::System {
                 client: client.clone(),
                 pool: pool.clone(),
                 _marker: std::marker::PhantomData::<Block>,
             };
-            module.merge(substrate_frame_rpc_system::SystemApiServer::into_rpc(full_deps))?;
-            let tp_deps = pallet_transaction_payment_rpc::TransactionPayment {
+            module.merge(substrate_frame_rpc_system::SystemApiServer::into_rpc(system))?;
+            let payment = pallet_transaction_payment_rpc::TransactionPayment {
                 client: client.clone(),
                 _marker: std::marker::PhantomData::<Block>,
             };
-            module.merge(pallet_transaction_payment_rpc::TransactionPaymentApiServer::into_rpc(tp_deps))?;
+            module.merge(pallet_transaction_payment_rpc::TransactionPaymentApiServer::into_rpc(payment))?;
             Ok(module)
         })
     };
 
-    // Spawn tasks
+    // Spawn all tasks
     let _rpc_handlers = spawn_tasks(
         SpawnTasksParams {
             config,
@@ -241,7 +242,6 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, Error> {
             },
         )?;
 
-        let babe_worker_handle = babe_worker.clone();
         task_manager.spawn_essential_handle().spawn("babe", None, babe_worker);
     }
 
@@ -255,7 +255,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, Error> {
             name: Some(config.network.node_name.clone()),
             keystore: Some(keystore.clone()),
             telemetry: None,
-            protocol_name: sc_consensus_grandpa::protocol_standard_name(&config.chain_spec),
+            protocol_name: grandpa_protocol_name,
         };
 
         let grandpa_future = sc_consensus_grandpa::run_grandpa_voter(
@@ -264,8 +264,8 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, Error> {
                 link: grandpa_link,
                 network: network.clone(),
                 sync: sync_service.clone(),
-                notification_service: sc_consensus_grandpa::grandpa_peers_set_config(),
-                voting_rule: VotingRule::default(),
+                notification_service: grandpa_notification_service,
+                voting_rule: VotingRulesBuilder::default().build(),
                 prometheus_registry: config.prometheus_config.as_ref().map(|cfg| cfg.registry.clone()),
                 shared_voter_state: SharedVoterState::empty(),
                 telemetry: None,
