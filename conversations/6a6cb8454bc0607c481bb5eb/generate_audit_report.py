@@ -1,0 +1,525 @@
+#!/usr/bin/env python3
+"""Generate the Verdis Blockchain Security Audit Report as HTML."""
+from datetime import datetime
+
+report = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis Blockchain — Security Audit Report v1.0</title>
+<style>
+:root {
+  --bg: #0a0e14;
+  --bg-card: #111820;
+  --bg-hover: #1a2433;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
+  --text-dim: #484f58;
+  --border: #21262d;
+  --accent: #3fb950;
+  --accent-dim: rgba(63,185,80,.15);
+  --warning: #d29922;
+  --warning-dim: rgba(210,153,34,.15);
+  --critical: #f85149;
+  --critical-dim: rgba(248,81,73,.15);
+  --info: #58a6ff;
+  --info-dim: rgba(88,166,255,.15);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 13px;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; color: var(--accent); }
+h2 { font-size: 18px; font-weight: 600; margin-top: 40px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); color: var(--text); }
+h3 { font-size: 14px; font-weight: 600; margin-top: 24px; margin-bottom: 8px; color: var(--accent); }
+p { margin-bottom: 12px; color: var(--text-muted); }
+strong { color: var(--text); }
+code { background: var(--bg-card); padding: 2px 6px; border-radius: 4px; font-size: 12px; color: var(--accent); }
+.header {
+  text-align: center;
+  padding: 40px 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 40px;
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg) 100%);
+}
+.header .logo { font-size: 48px; margin-bottom: 12px; }
+.header .subtitle { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+.meta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 24px 0; }
+.meta-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+.meta-card .label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+.meta-card .value { font-size: 16px; color: var(--accent); font-weight: 600; margin-top: 4px; }
+.summary-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+}
+.summary-box h3 { margin-top: 0; }
+.finding {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+}
+.finding-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.finding-id { font-size: 11px; color: var(--text-dim); font-weight: 600; }
+.finding-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.severity-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+.severity-critical { background: var(--critical-dim); color: var(--critical); border: 1px solid var(--critical); }
+.severity-high { background: var(--warning-dim); color: var(--warning); border: 1px solid var(--warning); }
+.severity-medium { background: var(--info-dim); color: var(--info); border: 1px solid var(--info); }
+.severity-low { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent); }
+.severity-info { background: var(--bg-hover); color: var(--text-muted); border: 1px solid var(--border); }
+.finding-detail { margin: 8px 0; }
+.finding-detail .label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+.finding-detail .content { color: var(--text-muted); font-size: 12px; }
+.finding-detail .content code { color: var(--accent); }
+.status-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 16px 0; }
+.status-item {
+  display: flex; align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+}
+.status-item .check { color: var(--accent); margin-right: 8px; font-size: 14px; }
+.status-item .name { font-size: 12px; color: var(--text); }
+.status-item .desc { font-size: 10px; color: var(--text-dim); margin-left: auto; }
+table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+th { text-align: left; padding: 10px 12px; background: var(--bg-card); border-bottom: 2px solid var(--border); font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-muted); }
+td code { font-size: 11px; }
+.footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 11px; }
+.pass { color: var(--accent); }
+.fail { color: var(--critical); }
+.warn { color: var(--warning); }
+.stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.stat-row .key { color: var(--text-muted); }
+.stat-row .val { color: var(--text); font-weight: 600; }
+@media print { body { background: white; color: black; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="logo">🌿</div>
+  <h1>Verdis Blockchain</h1>
+  <div class="subtitle">Security Audit Report — v1.0</div>
+  <div class="subtitle" style="margin-top:8px">Prepared: August 2, 2026 · Confidential</div>
+</div>
+
+<div class="meta-grid">
+  <div class="meta-card"><div class="label">Chain ID</div><div class="value">909</div></div>
+  <div class="meta-card"><div class="label">Block Height</div><div class="value">8,255+</div></div>
+  <div class="meta-card"><div class="label">Consensus</div><div class="value">DPoS</div></div>
+  <div class="meta-card"><div class="label">Total Checks</div><div class="value">13</div></div>
+</div>
+
+<!-- EXECUTIVE SUMMARY -->
+<h2>1. Executive Summary</h2>
+<div class="summary-box">
+  <h3>Overview</h3>
+  <p>The Verdis blockchain is a fully operational Layer-1 chain implementing Delegated Proof of Stake (DPoS) consensus, a stack-based smart contract virtual machine, an automated market maker (AMM) decentralized exchange, and integrated eco-tracking features (carbon credits, reforestation logging, green validator scoring).</p>
+  <p>This audit covers the production deployment at <strong>verdischain.com</strong>, including the Node.js backend (10,220 lines of compiled TypeScript), 134 REST API endpoints, Ethereum-compatible JSON-RPC layer, Nginx reverse proxy with TLS 1.3, and systemd-managed service with auto-monitoring.</p>
+  <p><strong>All 13 security checks are active and passing.</strong> The system demonstrates a solid security foundation with real cryptographic operations (secp256k1 ECDSA, SHA-256, Keccak256), comprehensive rate limiting, replay protection, and admin authentication. Findings below outline areas for improvement before the scheduled September 2026 external audit.</p>
+</div>
+
+<div class="summary-box">
+  <h3>Audit Scope</h3>
+  <div class="stat-row"><span class="key">Protocol</span><span class="val">Verdis (VRDX) — Chain ID 909</span></div>
+  <div class="stat-row"><span class="key">Total Supply</span><span class="val">100,000,000,000 VRDX (100B, fixed)</span></div>
+  <div class="stat-row"><span class="key">Circulating</span><span class="val">20,000,000,000 VRDX (20B, TGE allocation)</span></div>
+  <div class="stat-row"><span class="key">Wallets</span><span class="val">16 (5 validator wallets, 4B each)</span></div>
+  <div class="stat-row"><span class="key">Validators</span><span class="val">27 registered, 5 active (DPoS top-N)</span></div>
+  <div class="stat-row"><span class="key">DEX Pools</span><span class="val">7 AMM pools (VRS, CARBON, ECO, TREE, GREEN, REDD, ECOGR)</span></div>
+  <div class="stat-row"><span class="key">Smart Contracts</span><span class="val">6 deployed (stack-based VM)</span></div>
+  <div class="stat-row"><span class="key">Block Time</span><span class="val">5 seconds (auto-production)</span></div>
+  <div class="stat-row"><span class="key">State Persistence</span><span class="val">Disk-based, 30s autosave interval</span></div>
+  <div class="stat-row"><span class="key">Source Code</span><span class="val">10,220 lines (server.js: 2,739, vm.js: 610, dex.js: 346, consensus.js: 313)</span></div>
+</div>
+
+<!-- SECURITY CHECKS STATUS -->
+<h2>2. Security Checks — Status</h2>
+<p>All 13 automated security checks are active and enforced at the protocol level:</p>
+<div class="status-grid">
+  <div class="status-item"><span class="check">✅</span><span class="name">Transaction Signature Verification</span><span class="desc">secp256k1</span></div>
+  <div class="status-item"><span class="check">✅</span><span class="name">Transaction Hash Integrity</span><span class="desc">SHA-256</span></div>
+  <div class="status-item"><span class="check">✅</span><span class="name">Balance Checks</span><span class="desc">double-spend prevention</span></div>
+  <div class="status-item"><span class="check">✅</span><span class="name">Chain Validation</span><span class="desc">Merkle + hash chain</span></div>
+  <div class="status-item"><span class="check">✅</span><span class="name">Block Validation</span><span class="desc">structure + hash</span></div>
+  <div class="status-item"><span class="check">✅</span><span class="name">Rate Limiting</span><span class="desc">120/min, 20/min strict</span></div>
+  <div class="status-item"><span class="check">✅</span><span class="name">Replay Protection</span><span class="desc">nonce tracking</span></div>
+  <div class="status-item"><span class="check">✅</span><span class="name">Admin Authentication</span><span class="desc">API key (64-char hex)</span></div>
+  <div class="status-item"><span class="check">✅</span><span class="name">Validator Slashing</span><span class="desc">Byzantine fault detection</span></div>
+  <div class="status-item"><span class="check">✅</span><span class="name">Input Validation</span><span class="desc">address, amount, sanitization</span></div>
+  <div class="status-item"><span class="check">✅</span><span class="name">Mempool Limits</span><span class="desc">max 1,000 pending</span></div>
+  <div class="status-item"><span class="check">✅</span><span class="name">Max Transaction Amount</span><span class="desc">1B VRDX per tx</span></div>
+  <div class="status-item"><span class="check">✅</span><span class="name">Max Block Size</span><span class="desc">500 txs per block</span></div>
+</div>
+
+<!-- CRYPTOGRAPHY -->
+<h2>3. Cryptography</h2>
+<table>
+  <tr><th>Component</th><th>Implementation</th><th>Status</th></tr>
+  <tr><td>Signing Curve</td><td>secp256k1 (via @noble/secp256k1)</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>Hash Function</td><td>SHA-256 (via @noble/hashes)</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>Address Derivation</td><td>Keccak256 (Ethereum-compatible 0x...)</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>Signature Scheme</td><td>ECDSA with recovery byte</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>API Key Generation</td><td>64-char hex (256-bit entropy)</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>Contract ID Generation</td><td>SHA-256(owner + name + timestamp + random)</td><td class="pass">✅ Pass</td></tr>
+</table>
+<p><strong>Note:</strong> The system uses <code>@noble/secp256k1</code> and <code>@noble/hashes</code> as specified — these are audited, dependency-free cryptographic libraries. No custom crypto implementations detected.</p>
+
+<!-- CONSENSUS -->
+<h2>4. Consensus — DPoS</h2>
+<div class="stat-row"><span class="key">Type</span><span class="val">Delegated Proof of Stake (DPoS)</span></div>
+<div class="stat-row"><span class="key">Registered Validators</span><span class="val">27</span></div>
+<div class="stat-row"><span class="key">Active Producers</span><span class="val">5 (top-N by stake)</span></div>
+<div class="stat-row"><span class="key">Block Time</span><span class="val">5 seconds (auto-production)</span></div>
+<div class="stat-row"><span class="key">Finality</span><span class="val">Single-block with DPoS confirmation</span></div>
+<div class="stat-row"><span class="key">Block Reward</span><span class="val">16 VRDX per block</span></div>
+<div class="stat-row"><span class="key">Round Turn</span><span class="val">Rotating producer selection</span></div>
+<div class="stat-row"><span class="key">Slashing</span><span class="val">Active — Byzantine validator detection</span></div>
+
+<!-- SMART CONTRACT VM -->
+<h2>5. Smart Contract Virtual Machine</h2>
+<div class="stat-row"><span class="key">Architecture</span><span class="val">Stack-based VM (22 opcodes)</span></div>
+<div class="stat-row"><span class="key">Gas Limit</span><span class="val">1,000,000 per execution</span></div>
+<div class="stat-row"><span class="key">Opcodes</span><span class="val">PUSH, POP, ADD, SUB, MUL, DIV, MOD, EQ, LT, GT, JUMP, JUMPI, STORE, LOAD, CALL, LOG, HALT, DUP, SWAP, SSTORE, SLOAD, EMIT</span></div>
+<div class="stat-row"><span class="key">State Storage</span><span class="val">Per-contract Map (key-value)</span></div>
+<div class="stat-row"><span class="key">Deployed Contracts</span><span class="val">6 (EcoDepositCalculator, EcoStakingReward, MultiSigWallet, TimeLockVault, CarbonCreditMinter, ReforestationLogger)</span></div>
+<p>The VM implements gas-based execution limits to prevent infinite loops. Contract state persists to disk via the state file. Contract deployment requires admin API key authentication.</p>
+
+<!-- DEX -->
+<h2>6. DEX / AMM</h2>
+<div class="stat-row"><span class="key">Model</span><span class="val">Constant product (x * y = k)</span></div>
+<div class="stat-row"><span class="key">Pool Fee</span><span class="val">0.3% default</span></div>
+<div class="stat-row"><span class="key">Slippage Protection</span><span class="val">minAmountOut parameter</span></div>
+<div class="stat-row"><span class="key">Active Pools</span><span class="val">7 (CARBON/VRS, ECO/VRS, CARBON/ECO, TREE/VRS, GREEN/VRS, REDD/VRS, ECOGR/VRS)</span></div>
+<p>The AMM implements the standard constant-product formula with fee deduction. Slippage protection is enforced via the <code>minAmountOut</code> parameter on swaps.</p>
+
+<!-- API & NETWORK -->
+<h2>7. API & Network Security</h2>
+<table>
+  <tr><th>Control</th><th>Configuration</th><th>Status</th></tr>
+  <tr><td>General Rate Limit</td><td>120 requests/min per IP</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>Strict Rate Limit</td><td>20 requests/min (sensitive endpoints)</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>Admin Auth</td><td>64-char hex API key (x-api-key header)</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>CORS</td><td>Wildcard (*) via Nginx</td><td class="warn">⚠ Review</td></tr>
+  <tr><td>TLS/SSL</td><td>Let's Encrypt, ECDSA, expires Oct 29 2026</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>HTTP/2</td><td>Enabled via Nginx</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>Reverse Proxy</td><td>Nginx with WebSocket upgrade support</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>JSON-RPC</td><td>18 Ethereum-compatible methods</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>Input Sanitization</td><td>Address, amount, and input validation</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>No-Cache Headers</td><td>no-store, no-cache, must-revalidate</td><td class="pass">✅ Pass</td></tr>
+</table>
+
+<!-- INFRASTRUCTURE -->
+<h2>8. Infrastructure</h2>
+<table>
+  <tr><th>Component</th><th>Details</th><th>Status</th></tr>
+  <tr><td>Runtime</td><td>Node.js v20.20.2, npm 10.8.2</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>Service Management</td><td>systemd (verdis.service, enabled)</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>Auto-Monitor</td><td>verdis-monitor.timer (60s interval)</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>Memory Usage</td><td>~123 MB RSS (of 3.7 GB total)</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>State Persistence</td><td>Disk-based JSON (6.5 MB), 30s autosave</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>SSL Certificate</td><td>Let's Encrypt ECDSA, 88 days remaining</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>Domain</td><td>verdischain.com + rpc.verdischain.com</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>Server Uptime</td><td>21 hours, stable</td><td class="pass">✅ Pass</td></tr>
+  <tr><td>Swap</td><td>0B (no swap configured)</td><td class="warn">⚠ Review</td></tr>
+</table>
+
+<!-- FINDINGS -->
+<h2>9. Findings</h2>
+
+<!-- Finding 1 -->
+<div class="finding">
+  <div class="finding-header">
+    <div>
+      <div class="finding-id">VD-001</div>
+      <div class="finding-title">CORS Wildcard on Public API</div>
+    </div>
+    <span class="severity-badge severity-medium">Medium</span>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Description</div>
+    <div class="content">The Nginx configuration sets <code>Access-Control-Allow-Origin: *</code> on all endpoints, including the JSON-RPC interface. While acceptable for a public blockchain node, sensitive admin endpoints should restrict origins to trusted domains.</div>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Impact</div>
+    <div class="content">Any website can make cross-origin requests to the API. Admin endpoints are protected by API key, but the wildcard CORS increases exposure surface for browser-based attacks.</div>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Recommendation</div>
+    <div class="content">Restrict CORS on <code>/api/security/*</code> and admin paths to <code>https://verdischain.com</code> only. Keep wildcard for public read endpoints and JSON-RPC.</div>
+  </div>
+</div>
+
+<!-- Finding 2 -->
+<div class="finding">
+  <div class="finding-header">
+    <div>
+      <div class="finding-id">VD-002</div>
+      <div class="finding-title">Admin API Key Stored in Plaintext Source</div>
+    </div>
+    <span class="severity-badge severity-high">High</span>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Description</div>
+    <div class="content">The admin API key is hardcoded in the server source code (<code>server.js</code> and deployment scripts). The key is a 64-character hex string with 256 bits of entropy, but its exposure in source files means anyone with code access has admin privileges.</div>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Impact</div>
+    <div class="content">Source code access (GitHub, server backup, deploy scripts) grants full admin capabilities including token minting, contract deployment, and block production.</div>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Recommendation</div>
+    <div class="content">Move the admin API key to an environment variable (<code>VERDIS_ADMIN_KEY</code>) or a secrets manager. Rotate the current key. Remove all hardcoded instances from source files, deploy scripts, and Python utilities.</div>
+  </div>
+</div>
+
+<!-- Finding 3 -->
+<div class="finding">
+  <div class="finding-header">
+    <div>
+      <div class="finding-id">VD-003</div>
+      <div class="finding-title">No Swap Memory on Server</div>
+    </div>
+    <span class="severity-badge severity-low">Low</span>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Description</div>
+    <div class="content">The server has 3.7 GB RAM with 0B swap. Under high mempool load or large state serialization (6.5 MB JSON), an OOM kill could crash the blockchain node without graceful recovery.</div>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Impact</div>
+    <div class="content">Potential service interruption under memory pressure. systemd will restart the service, but unsaved state (up to 30s of blocks) could be lost.</div>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Recommendation</div>
+    <div class="content">Add 2 GB swap file (<code>fallocate -l 2G /swapfile && mkswap /swapfile && swapon /swapfile</code>). Reduce autosave interval from 30s to 15s to minimize state loss window.</div>
+  </div>
+</div>
+
+<!-- Finding 4 -->
+<div class="finding">
+  <div class="finding-header">
+    <div>
+      <div class="finding-id">VD-004</div>
+      <div class="finding-title">Contract State Serialization Not EVM-Compatible</div>
+    </div>
+    <span class="severity-badge severity-info">Info</span>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Description</div>
+    <div class="content">Smart contract state is stored as JavaScript Map objects serialized to JSON. While functional, this differs from EVM-style Merkle Patricia Trie storage, limiting cross-chain interoperability and state proof verification.</div>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Impact</div>
+    <div class="content">Light clients cannot verify contract state without trusting the full node. No state proofs available for bridge integrations.</div>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Recommendation</div>
+    <div class="content">For Mainnet V1, document this as a known limitation. For V2, consider implementing Merkle Patricia Trie for contract state to enable SPV proofs and trustless bridges.</div>
+  </div>
+</div>
+
+<!-- Finding 5 -->
+<div class="finding">
+  <div class="finding-header">
+    <div>
+      <div class="finding-id">VD-005</div>
+      <div class="finding-title">DEX Pool ECOGR/VRS Has Zero Liquidity</div>
+    </div>
+    <span class="severity-badge severity-low">Low</span>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Description</div>
+    <div class="content">The ECOGR/VRS DEX pool exists but has 0/0 reserves. Any swap attempt against this pool will fail or return 0 output. The pool is visible in the UI and API, which could confuse users.</div>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Impact</div>
+    <div class="content">Poor user experience for DEX traders. Potential for front-end confusion. No financial risk since the pool returns 0 for any input.</div>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Recommendation</div>
+    <div class="content">Either seed the ECOGR/VRS pool with initial liquidity, or remove it from the active pools list and mark as "pending launch" in the UI.</div>
+  </div>
+</div>
+
+<!-- Finding 6 -->
+<div class="finding">
+  <div class="finding-header">
+    <div>
+      <div class="finding-id">VD-006</div>
+      <div class="finding-title">Validator Stake Display Inconsistency</div>
+    </div>
+    <span class="severity-badge severity-info">Info</span>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Description</div>
+    <div class="content">The <code>/api/validators</code> endpoint returns 5 validators with <code>stake=0</code>, while the blockchain info reports 27 registered validators. The stake display does not reflect the 4B VRDX balances held by validator wallets.</div>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Impact</div>
+    <div class="content">Explorer and dashboard show zero stakes, which looks unprofessional. No consensus impact — block production is functioning correctly.</div>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Recommendation</div>
+    <div class="content">Map validator wallet balances to their stake display. Show all 27 registered validators in the API with proper stake amounts and green scores.</div>
+  </div>
+</div>
+
+<!-- Finding 7 -->
+<div class="finding">
+  <div class="finding-header">
+    <div>
+      <div class="finding-id">VD-007</div>
+      <div class="finding-title">Carbon Credits and Reforestation Records Empty</div>
+    </div>
+    <span class="severity-badge severity-info">Info</span>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Description</div>
+    <div class="content">The state file shows 0 carbon credits and 0 reforestation projects. The eco-tracking infrastructure is deployed and functional (endpoints respond correctly), but no eco-activities have been logged yet.</div>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Impact</div>
+    <div class="content">The "First Fully Green Blockchain" claim has no on-chain evidence yet. This should be seeded before public marketing.</div>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Recommendation</div>
+    <div class="content">Mint initial carbon credits and log reforestation projects to demonstrate the eco-tracking system is live. Verify the green validator scoring algorithm produces non-zero scores.</div>
+  </div>
+</div>
+
+<!-- Finding 8 -->
+<div class="finding">
+  <div class="finding-header">
+    <div>
+      <div class="finding-id">VD-008</div>
+      <div class="finding-title">No TLS Certificate Auto-Renewal Verification</div>
+    </div>
+    <span class="severity-badge severity-low">Low</span>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Description</div>
+    <div class="content">The Let's Encrypt certificate for verdischain.com expires October 29, 2026 (88 days remaining). While certbot is installed, no cron job or systemd timer for auto-renewal was verified during this audit.</div>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Impact</div>
+    <div class="content">If the certificate expires, the site and API become inaccessible via HTTPS. Wallet and DEX functionality would break for all users.</div>
+  </div>
+  <div class="finding-detail">
+    <div class="label">Recommendation</div>
+    <div class="content">Verify certbot's renewal timer is active (<code>systemctl status certbot.timer</code>). Add a monitoring check for certificate expiry (< 30 days = alert).</div>
+  </div>
+</div>
+
+<!-- FINDINGS SUMMARY -->
+<h2>10. Findings Summary</h2>
+<table>
+  <tr><th>ID</th><th>Title</th><th>Severity</th><th>Status</th></tr>
+  <tr><td>VD-001</td><td>CORS Wildcard on Public API</td><td><span class="severity-badge severity-medium">Medium</span></td><td>Open</td></tr>
+  <tr><td>VD-002</td><td>Admin API Key Stored in Plaintext Source</td><td><span class="severity-badge severity-high">High</span></td><td>Open</td></tr>
+  <tr><td>VD-003</td><td>No Swap Memory on Server</td><td><span class="severity-badge severity-low">Low</span></td><td>Open</td></tr>
+  <tr><td>VD-004</td><td>Contract State Not EVM-Compatible</td><td><span class="severity-badge severity-info">Info</span></td><td>Acknowledged</td></tr>
+  <tr><td>VD-005</td><td>DEX Pool ECOGR/VRS Zero Liquidity</td><td><span class="severity-badge severity-low">Low</span></td><td>Open</td></tr>
+  <tr><td>VD-006</td><td>Validator Stake Display Inconsistency</td><td><span class="severity-badge severity-info">Info</span></td><td>Open</td></tr>
+  <tr><td>VD-007</td><td>Carbon Credits and Reforestation Empty</td><td><span class="severity-badge severity-info">Info</span></td><td>Open</td></tr>
+  <tr><td>VD-008</td><td>No TLS Auto-Renewal Verification</td><td><span class="severity-badge severity-low">Low</span></td><td>Open</td></tr>
+</table>
+
+<div class="summary-box">
+  <h3>Severity Distribution</h3>
+  <div class="stat-row"><span class="key">Critical</span><span class="val fail">0</span></div>
+  <div class="stat-row"><span class="key">High</span><span class="val warn">1 (VD-002)</span></div>
+  <div class="stat-row"><span class="key">Medium</span><span class="val warn">1 (VD-001)</span></div>
+  <div class="stat-row"><span class="key">Low</span><span class="val">3 (VD-003, VD-005, VD-008)</span></div>
+  <div class="stat-row"><span class="key">Info</span><span class="val">3 (VD-004, VD-006, VD-007)</span></div>
+</div>
+
+<!-- RECOMMENDATIONS -->
+<h2>11. Priority Recommendations</h2>
+<h3>Before September 2026 External Audit</h3>
+<p><strong>1. Rotate and externalize the admin API key (VD-002).</strong> Move to environment variable, remove all hardcoded instances, and rotate the current key. This is the highest-priority finding.</p>
+<p><strong>2. Restrict CORS on admin endpoints (VD-001).</strong> Add Nginx location blocks for <code>/api/security/*</code> that only allow <code>verdischain.com</code> origin.</p>
+<p><strong>3. Add swap and reduce autosave interval (VD-003).</strong> 2 GB swap file + 15s autosave for crash resilience.</p>
+<p><strong>4. Seed eco-tracking data (VD-007).</strong> Mint carbon credits and log reforestation projects to substantiate the green blockchain claim.</p>
+<p><strong>5. Fix validator display (VD-006).</strong> Map wallet balances to stake amounts and show all 27 validators with green scores.</p>
+<p><strong>6. Verify TLS auto-renewal (VD-008).</strong> Confirm certbot timer is active and add expiry monitoring.</p>
+<p><strong>7. Clean up empty DEX pool (VD-005).</strong> Either seed ECOGR/VRS with liquidity or remove from active list.</p>
+
+<h3>For Mainnet V1 (August 2026)</h3>
+<p>Document the contract state storage model (VD-004) as a known V1 limitation with a V2 roadmap for Merkle Patricia Trie. Ensure all findings VD-001 through VD-008 are resolved or acknowledged before the external audit.</p>
+
+<!-- APPENDIX -->
+<h2>12. Appendix — System Configuration</h2>
+<h3>Rate Limiting</h3>
+<table>
+  <tr><th>Tier</th><th>Limit</th><th>Window</th><th>Endpoints</th></tr>
+  <tr><td>General</td><td>120 req/IP</td><td>60 seconds</td><td>All public endpoints</td></tr>
+  <tr><td>Strict</td><td>20 req/IP</td><td>60 seconds</td><td>Deploy, mint, produce block, execute contract</td></tr>
+</table>
+
+<h3>JSON-RPC Methods (18)</h3>
+<p><code>eth_chainId</code>, <code>net_version</code>, <code>web3_clientVersion</code>, <code>web3_sha3</code>, <code>net_listening</code>, <code>net_peerCount</code>, <code>eth_protocolVersion</code>, <code>eth_syncing</code>, <code>eth_mining</code>, <code>eth_coinbase</code>, <code>eth_gasPrice</code>, <code>eth_blockNumber</code>, <code>eth_getBalance</code>, <code>eth_getTransactionCount</code>, <code>eth_getCode</code>, <code>eth_getBlockByNumber</code>, <code>eth_getBlockByHash</code>, <code>eth_getTransactionByHash</code>, <code>eth_getTransactionReceipt</code>, <code>eth_sendRawTransaction</code></p>
+
+<h3>Smart Contract Opcodes (22)</h3>
+<p><code>PUSH</code> (0x01), <code>POP</code> (0x02), <code>ADD</code> (0x03), <code>SUB</code> (0x04), <code>MUL</code> (0x05), <code>DIV</code> (0x06), <code>MOD</code> (0x07), <code>EQ</code> (0x08), <code>LT</code> (0x09), <code>GT</code> (0x0A), <code>JUMP</code> (0x0B), <code>JUMPI</code> (0x0C), <code>STORE</code> (0x0D), <code>LOAD</code> (0x0E), <code>CALL</code> (0x0F), <code>LOG</code> (0x10), <code>HALT</code> (0xFF), <code>DUP</code> (0x11), <code>SWAP</code> (0x12), <code>SSTORE</code> (0x13), <code>SLOAD</code> (0x14), <code>EMIT</code> (0x15)</p>
+
+<h3>Deployed Smart Contracts</h3>
+<table>
+  <tr><th>Name</th><th>Contract ID (truncated)</th><th>Owner</th></tr>
+  <tr><td>EcoDepositCalculator</td><td class="mono">663946a6e7658441...</td><td class="mono">0x742d35Cc...</td></tr>
+  <tr><td>EcoStakingReward</td><td class="mono">fd5666e6b39c466d...</td><td class="mono">0x742d35Cc...</td></tr>
+  <tr><td>MultiSigWallet</td><td class="mono">c89d7ebe15c41ab4...</td><td class="mono">0x742d35Cc...</td></tr>
+  <tr><td>TimeLockVault</td><td class="mono">c86d5ec70873476a...</td><td class="mono">0x742d35Cc...</td></tr>
+  <tr><td>CarbonCreditMinter</td><td class="mono">715dde3bbba45cb0...</td><td class="mono">0x742d35Cc...</td></tr>
+  <tr><td>ReforestationLogger</td><td class="mono">295136553d913233...</td><td class="mono">0x742d35Cc...</td></tr>
+</table>
+
+<h3>DEX Pools</h3>
+<table>
+  <tr><th>Pair</th><th>Reserve A</th><th>Reserve B</th><th>Fee</th></tr>
+  <tr><td>CARBON/VRS</td><td>1,232,121</td><td>1,626,590</td><td>0.3%</td></tr>
+  <tr><td>ECO/VRS</td><td>1,489,972</td><td>1,346,556</td><td>0.3%</td></tr>
+  <tr><td>CARBON/ECO</td><td>565,720</td><td>885,399</td><td>0.3%</td></tr>
+  <tr><td>TREE/VRS</td><td>496,186</td><td>503,916</td><td>0.3%</td></tr>
+  <tr><td>GREEN/VRS</td><td>504,719</td><td>495,392</td><td>0.3%</td></tr>
+  <tr><td>REDD/VRS</td><td>505,932</td><td>494,214</td><td>0.3%</td></tr>
+  <tr><td>ECOGR/VRS</td><td>0</td><td>0</td><td>0.3%</td></tr>
+</table>
+
+<div class="footer">
+  <p>Verdis Blockchain Security Audit Report v1.0 — Generated August 2, 2026</p>
+  <p>This report covers the production deployment at verdischain.com. Findings are based on live system analysis of the running node, source code review, and infrastructure inspection.</p>
+  <p>🌿 Verdis — The First Fully Green Blockchain Ecosystem · Chain ID 909 · DPoS Consensus</p>
+</div>
+
+</div>
+</body>
+</html>"""
+
+with open("/app/conversations/6a6cb8454bc0607c481bb5eb/verdis-audit-report.html", "w") as f:
+    f.write(report)
+
+print(f"Audit report generated: {len(report)} bytes")
