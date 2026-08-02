@@ -9,7 +9,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use codec::{Decode, Encode, MaxEncodedLen};
+use codec::{Decode, DecodeWithMemTracking, Encode, MaxEncodedLen};
 use frame_support::{
     dispatch::DispatchResult,
     ensure,
@@ -32,13 +32,14 @@ pub mod pallet {
 
     // === Storage Types ===
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]
     pub enum StorageBackend {
         Ipfs,
         Arweave,
     }
+    impl DecodeWithMemTracking for StorageBackend {}
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]
     pub struct StorageRecord<AccountId> {
         pub id: BoundedVec<u8, ConstU32<64>>,
         pub backend: StorageBackend,
@@ -49,7 +50,7 @@ pub mod pallet {
         pub created_at: u64,
     }
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]
     pub struct StorageProvider<AccountId> {
         pub address: AccountId,
         pub backend: StorageBackend,

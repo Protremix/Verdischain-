@@ -84,7 +84,7 @@ pub mod pallet {
     pub type CurrentEpoch<T: Config> = StorageValue<_, u32, ValueQuery>;
 
     #[pallet::storage]
-    #[pallet::getter fn epoch_start_block]
+    #[pallet::getter(fn epoch_start_block)]
     pub type EpochStartBlock<T: Config> = StorageValue<_, u32, ValueQuery>;
 
     #[pallet::storage]
@@ -190,7 +190,7 @@ pub mod pallet {
 
     #[pallet::hooks]
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-        fn on_initialize(block: T::BlockNumber) -> Weight {
+        fn on_initialize(block: BlockNumberFor<T>) -> Weight {
             let block_num: u32 = block.try_into().unwrap_or(0);
 
             // Check epoch transition
