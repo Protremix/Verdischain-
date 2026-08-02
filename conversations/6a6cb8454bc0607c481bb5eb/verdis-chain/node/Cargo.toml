@@ -20,10 +20,6 @@ futures = "0.3"
 log = "0.4"
 tokio = { version = "1.40", features = ["full"] }
 
-# gRPC
-tonic = { version = "0.12", features = ["transport"] }
-prost = "0.13"
-
 # Substrate core
 frame-support = { workspace = true }
 frame-system = { workspace = true }
@@ -65,16 +61,9 @@ pallet-transaction-payment-rpc = { version = "52.0.0" }
 pallet-transaction-payment-rpc-runtime-api = { version = "49.0.0" }
 substrate-prometheus-endpoint = { version = "0.17.7" }
 
-# EVM RPC
-fc-rpc = { version = "1.0.0", optional = true }
-fp-rpc = { workspace = true }
-
 [build-dependencies]
 substrate-build-script-utils = { workspace = true }
-tonic-build = { version = "0.12", optional = true }
 
 [features]
 default = []
 runtime-benchmarks = ["verdis-runtime/runtime-benchmarks"]
-evm-rpc = ["fc-rpc", "tonic-build"]
-grpc = ["tonic-build"]

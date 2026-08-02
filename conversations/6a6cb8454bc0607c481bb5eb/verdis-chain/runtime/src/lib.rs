@@ -4,7 +4,7 @@
 //!
 //! Architecture:
 //! - Consensus: BABE (block production) + GRANDPA (finality)
-//! - Smart Contracts: WASM (pallet-contracts) + Solidity via EVM (pallet-evm)
+//! - Smart Contracts: WASM (pallet-contracts)
 //! - Cryptography: BLS (GRANDPA) + Ed25519 (session) + Blake3 (content hashing)
 //! - Storage: IPFS/Arweave (pallet-storage)
 //! - P2P: libp2p (Substrate native)
@@ -18,12 +18,12 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, U256, H256};
+use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
     create_runtime_str, generic, traits::{
         AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify,
     }, transaction_validity::{TransactionSource, TransactionValidity},
-    ApplyExtrinsicResult, BuildStorage, MultiSignature, Permill, Percent,
+    ApplyExtrinsicResult, BuildStorage, MultiSignature, Permill,
 };
 use sp_std::prelude::*;
 use sp_version::RuntimeVersion;
@@ -34,7 +34,7 @@ use sp_version::NativeVersion;
 // === Pallet Imports ===
 use frame_support::{
     construct_runtime, parameter_types,
-    traits::{ConstU32, ConstU64, ConstU8, Everything, FindAuthor, Randomness},
+    traits::{ConstU32, ConstU64, Everything, Randomness},
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_REF_TIME_PER_SECOND},
         IdentityFee, Weight,
@@ -166,7 +166,7 @@ impl pallet_timestamp::Config for Runtime {
 
 // === BABE Consensus (Block Production) ===
 impl pallet_babe::Config for Runtime {
-    type EpochDuration = ConstU64<600>;       // 600 blocks per epoch (~1 hour)
+    type EpochDuration = ConstU64<600>;
     type ExpectedBlockTime = ConstU64<BLOCK_TIME>;
     type ReportLongRanges = ();
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
@@ -190,7 +190,7 @@ impl pallet_grandpa::Config for Runtime {
 
 // === Session (for validator management) ===
 parameter_types! {
-    pub const Period: BlockNumber = 600;  // Same as BABE epoch
+    pub const Period: BlockNumber = 600;
     pub const Offset: BlockNumber = 0;
 }
 
@@ -252,7 +252,7 @@ impl pallet_sudo::Config for Runtime {
     type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
 }
 
-// === Scheduler (for governance/scheduled operations) ===
+// === Scheduler ===
 impl pallet_scheduler::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeOrigin = RuntimeOrigin;
@@ -275,7 +275,6 @@ impl pallet_preimage::Config for Runtime {
 }
 
 // === Randomness (for BABE VRF) ===
-impl pallet_randomness_collective_flip::Config for Runtime {}
 
 // === WASM Smart Contracts (pallet-contracts) ===
 parameter_types! {
@@ -287,7 +286,7 @@ parameter_types! {
 
 impl pallet_contracts::Config for Runtime {
     type Time = Timestamp;
-    type Randomness = RandomnessCollectiveFlip;
+    type Randomness = Babe;
     type Currency = Balances;
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
@@ -314,44 +313,6 @@ impl pallet_contracts::Config for Runtime {
     type ApiVersion = ();
     type Migrations = ();
     type Xcm = ();
-}
-
-// === EVM (Solidity via Frontier) ===
-parameter_types! {
-    // Chain ID 909 for EVM compatibility
-    pub const ChainId: u64 = 909;
-    pub const EvmPalletId: PalletId = PalletId(*b"verdiev");
-    // Gas and fee configuration
-    pub const BlockGasLimit: u64 = 30_000_000;
-    pub const WeightPerGas: frame_support::weights::Weight = frame_support::weights::Weight::from_parts(1, 0);
-}
-
-impl pallet_evm::Config for Runtime {
-    type FeeCalculator = ();
-    type GasWeightMapping = ();
-    type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Runtime>;
-    type CallOrigin = pallet_evm::EnsureAddressTruncated;
-    type InvokeOrigin = pallet_evm::EnsureAddressTruncated;
-    type RuntimeEvent = RuntimeEvent;
-    type Precompiles = ();
-    type ChainId = ChainId;
-    type BlockGasLimit = BlockGasLimit;
-    type WeightPerGas = WeightPerGas;
-    type WeightInfo = ();
-    type AddressMapping = pallet_evm::HashedAddressMapping<BlakeTwo256>;
-    type Currency = Balances;
-    type OnChargeTransaction = ();
-    type Treasury = ();
-    type GasLimitPovSizeRatio = ConstU32<4>;
-    type SuicideQuickClearLimit = ConstU32<0>;
-    type Timestamp = Timestamp;
-    type WeightPerGas = WeightPerGas;
-}
-
-// === Ethereum Compatibility (Frontier) ===
-impl pallet_ethereum::Config for Runtime {
-    type RuntimeEvent = RuntimeEvent;
-    type StateRoot = pallet_ethereum::IntermediateStateRoot<Runtime>;
 }
 
 // === Verdis DPoS Pallet ===
@@ -424,7 +385,7 @@ impl pallet_eco::Config for Runtime {
 parameter_types! {
     pub const TokenomicsPalletId: PalletId = PalletId(*b"verdistk");
     pub const TotalSupplyConst: Balance = 100_000_000_000 * UNITS;
-    pub const InvestorAllocation: Balance = 12_000_000_000 * UNITS;
+    pub const InvestorAllocationConst: Balance = 12_000_000_000 * UNITS;
 }
 
 impl pallet_tokenomics::Config for Runtime {
@@ -432,7 +393,7 @@ impl pallet_tokenomics::Config for Runtime {
     type RuntimeOrigin = RuntimeOrigin;
     type Currency = Balances;
     type TotalSupply = TotalSupplyConst;
-    type InvestorAllocation = InvestorAllocation;
+    type InvestorAllocation = InvestorAllocationConst;
     type PalletId = TokenomicsPalletId;
     type WeightInfo = pallet_tokenomics::weights::SubstrateWeight<Runtime>;
 }
@@ -477,12 +438,9 @@ construct_runtime! {
         Session: pallet_session = 7,
         Scheduler: pallet_scheduler = 8,
         Preimage: pallet_preimage = 9,
-        RandomnessCollectiveFlip: pallet_randomness_collective_flip = 10,
 
-        // Smart Contracts
+        // Smart Contracts (WASM)
         Contracts: pallet_contracts = 20,
-        Evm: pallet_evm = 21,
-        Ethereum: pallet_ethereum = 22,
 
         // Verdis Custom Pallets
         Dpos: pallet_dpos = 30,
@@ -657,79 +615,6 @@ impl_runtime_apis! {
         }
         fn query_weight_to_fee(weight: Weight) -> Balance {
             TransactionPayment::weight_to_fee(weight)
-        }
-    }
-
-    // EVM Runtime API
-    impl pallet_evm::runtime_api::EVMRuntimeApi<Block, H160, Balance> for Runtime {
-        fn call(
-            from: H160,
-            to: H160,
-            data: Vec<u8>,
-            value: Balance,
-            gas_limit: u64,
-            max_fee_per_gas: U256,
-            max_priority_fee_per_gas: Option<U256>,
-            nonce: Option<U256>,
-            estimate: bool,
-        ) -> Result<pallet_evm::CallInfo, pallet_evm::PrecompileSet> {
-            Evm::call(
-                from,
-                to,
-                data,
-                value,
-                gas_limit,
-                max_fee_per_gas,
-                max_priority_fee_per_gas,
-                nonce,
-                estimate,
-            )
-        }
-
-        fn create(
-            from: H160,
-            data: Vec<u8>,
-            value: Balance,
-            gas_limit: u64,
-            max_fee_per_gas: U256,
-            max_priority_fee_per_gas: Option<U256>,
-            nonce: Option<U256>,
-            estimate: bool,
-        ) -> Result<pallet_evm::CreateInfo, pallet_evm::PrecompileSet> {
-            Evm::create(
-                from,
-                data,
-                value,
-                gas_limit,
-                max_fee_per_gas,
-                max_priority_fee_per_gas,
-                nonce,
-                estimate,
-            )
-        }
-
-        fn create2(
-            from: H160,
-            data: Vec<u8>,
-            salt: H256,
-            value: Balance,
-            gas_limit: u64,
-            max_fee_per_gas: U256,
-            max_priority_fee_per_gas: Option<U256>,
-            nonce: Option<U256>,
-            estimate: bool,
-        ) -> Result<pallet_evm::CreateInfo, pallet_evm::PrecompileSet> {
-            Evm::create2(
-                from,
-                data,
-                salt,
-                value,
-                gas_limit,
-                max_fee_per_gas,
-                max_priority_fee_per_gas,
-                nonce,
-                estimate,
-            )
         }
     }
 }
