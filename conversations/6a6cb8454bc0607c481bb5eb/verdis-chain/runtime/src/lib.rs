@@ -13,7 +13,7 @@ use sp_runtime::{
     create_runtime_str, generic, traits::{
         AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify,
     }, transaction_validity::{TransactionSource, TransactionValidity},
-    ApplyExtrinsicResult, BuildStorage, MultiSignature, Permill,
+    ApplyExtrinsicResult, BuildStorage, MultiSignature, Perbill,
 };
 use sp_std::prelude::*;
 use sp_version::RuntimeVersion;
@@ -21,10 +21,9 @@ use sp_version::RuntimeVersion;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 
-// === Pallet Imports ===
 use frame_support::{
     construct_runtime, parameter_types,
-    traits::{ConstU32, ConstU64, ConstU128, Everything, Randomness},
+    traits::{ConstU32, ConstU64, ConstU128, ConstBool, Everything, Randomness},
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_REF_TIME_PER_SECOND},
         Weight, IdentityFee,
@@ -46,6 +45,7 @@ pub type AccountId = sp_core::sr25519::Public;
 pub type Balance = u128;
 pub type BlockNumber = u32;
 pub type Signature = MultiSignature;
+pub type Hash = sp_core::H256;
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 
 /// Opaque types for the node
@@ -53,10 +53,18 @@ pub mod opaque {
     use super::*;
     pub type Block = generic::Block<Header, super::UncheckedExtrinsic>;
     pub type BlockId = generic::BlockId<Block>;
-    impl sp_api::BlockT for Block {
+    impl sp_runtime::traits::Block for Block {
         type Extrinsic = UncheckedExtrinsic;
         type Header = Header;
         type Hash = sp_core::H256;
+    }
+}
+
+// === Session Keys ===
+impl_opaque_keys! {
+    pub struct SessionKeys {
+        pub babe: pallet_babe,
+        pub grandpa: pallet_grandpa,
     }
 }
 
@@ -86,31 +94,29 @@ pub const TOTAL_SUPPLY: Balance = 100_000_000_000 * UNITS;
 pub const CIRCULATING_SUPPLY: Balance = 15_000_000_000 * UNITS;
 pub const BLOCK_TIME: u64 = 6000;
 
-parameter_types! {
-    pub const BlockHashCount: BlockNumber = 2400;
-    pub const Version: RuntimeVersion = VERSION;
-    pub const SS58Prefix: u8 = 909;
-    pub BlockWeights: frame_system::limits::BlockWeights =
-        frame_system::limits::BlockWeights::builder()
-            .base_block(BlockExecutionWeight::get())
-            .for_class(All::get(), |weights| {
-                weights.base_extrinsic = ExtrinsicBaseWeight::get();
-            })
-            .for_class(All::get(), |weights| {
-                weights.max_block = MAX_BLOCK_WEIGHT;
-            })
-            .build_or_panic();
-    pub BlockLength: frame_system::limits::BlockLength =
-        frame_system::limits::BlockLength::max_with_normal_ratio(5, 5 * 1024 * 1024);
-}
-
 const MAX_BLOCK_WEIGHT: Weight = Weight::from_parts(
     WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2),
     u64::MAX,
 );
 
-// Import All from frame_support
-use frame_support::weights::constants::All;
+parameter_types! {
+    pub const BlockHashCount: BlockNumber = 2400;
+    pub const Version: RuntimeVersion = VERSION;
+    pub const SS58Prefix: u16 = 909;
+    pub BlockWeights: frame_system::limits::BlockWeights =
+        frame_system::limits::BlockWeights::builder()
+            .base_block(BlockExecutionWeight::get())
+            .for_class(frame_support::weights::constants::All::get(), |weights| {
+                weights.base_extrinsic = ExtrinsicBaseWeight::get();
+            })
+            .max_block(MAX_BLOCK_WEIGHT)
+            .build_or_panic();
+    pub BlockLength: frame_system::limits::BlockLength =
+        frame_system::limits::BlockLength::max_with_normal_ratio(
+            Perbill::from_percent(75),
+            5 * 1024 * 1024,
+        );
+}
 
 // === System Pallet ===
 impl frame_system::Config for Runtime {
@@ -119,11 +125,13 @@ impl frame_system::Config for Runtime {
     type BlockLength = BlockLength;
     type AccountId = AccountId;
     type Lookup = AccountIdLookup<AccountId, ()>;
-    type Hash = sp_core::H256;
+    type Hash = Hash;
     type Hashing = BlakeTwo256;
     type RuntimeEvent = RuntimeEvent;
     type RuntimeOrigin = RuntimeOrigin;
     type RuntimeCall = RuntimeCall;
+    type RuntimeTask = RuntimeTask;
+    type Nonce = u32;
     type BlockHashCount = BlockHashCount;
     type DbWeight = RocksDbWeight;
     type Version = Version;
@@ -132,13 +140,11 @@ impl frame_system::Config for Runtime {
     type OnNewAccount = ();
     type OnKilledAccount = ();
     type SystemWeightInfo = ();
+    type ExtensionsWeightInfo = ();
     type SS58Prefix = SS58Prefix;
     type OnSetCode = ();
     type MaxConsumers = ConstU32<16>;
     type Block = Block;
-    type Task = ();
-    type Nonce = u32;
-    type ExtensionsWeightInfo = ();
     type SingleBlockMigrations = ();
     type MultiBlockMigrator = ();
     type PreInherents = ();
@@ -154,17 +160,17 @@ impl pallet_timestamp::Config for Runtime {
     type WeightInfo = ();
 }
 
-// === BABE Consensus (Block Production) ===
+// === BABE Consensus ===
 impl pallet_babe::Config for Runtime {
     type EpochDuration = ConstU64<600>;
     type ExpectedBlockTime = ConstU64<BLOCK_TIME>;
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
-    type DisabledValidators = ();
+    type DisabledValidators = Session;
     type WeightInfo = ();
     type MaxAuthorities = ConstU32<101>;
-    type DisablingStrategy = ();
-    type Currency = Balances;
-    type KeyDeposit = ConstU128<0>;
+    type MaxNominators = ConstU32<0>;
+    type KeyOwnerProof = sp_session::MembershipProof;
+    type EquivocationReportSystem = ();
 }
 
 // === GRANDPA Finality ===
@@ -172,9 +178,9 @@ impl pallet_grandpa::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type WeightInfo = ();
     type MaxAuthorities = ConstU32<101>;
-    type MaxSetIdSessionEntries = ConstU64<0>;
     type MaxNominators = ConstU32<0>;
-    type KeyOwnerProof = sp_core::Void;
+    type MaxSetIdSessionEntries = ConstU64<0>;
+    type KeyOwnerProof = sp_session::MembershipProof;
     type EquivocationReportSystem = ();
 }
 
@@ -191,9 +197,12 @@ impl pallet_session::Config for Runtime {
     type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
     type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
     type SessionManager = pallet_dpos::Pallet<Runtime>;
-    type SessionHandler = <pallet_session::PeriodicSessions<Period, Offset> as pallet_session::SessionHandler<AccountId>>::SessionHandler;
-    type Keys = pallet_session::Keys;
+    type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
+    type Keys = SessionKeys;
+    type DisablingStrategy = pallet_session::disabling::UpToLimitWithReEnablingDisablingStrategy;
     type WeightInfo = ();
+    type Currency = Balances;
+    type KeyDeposit = ();
 }
 
 // === Balances ===
@@ -213,10 +222,10 @@ impl pallet_balances::Config for Runtime {
     type ExistentialDeposit = ExistentialDeposit;
     type AccountStore = System;
     type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
-    type FreezeIdentifier = ();
-    type MaxFreezes = ConstU32<0>;
-    type RuntimeHoldReason = ();
-    type RuntimeFreezeReason = ();
+    type FreezeIdentifier = RuntimeFreezeReason;
+    type MaxFreezes = frame_support::traits::VariantCountOf<RuntimeFreezeReason>;
+    type RuntimeHoldReason = RuntimeHoldReason;
+    type RuntimeFreezeReason = RuntimeFreezeReason;
     type DoneSlashHandler = ();
 }
 
@@ -234,7 +243,6 @@ impl pallet_transaction_payment::Config for Runtime {
     type LengthToFee = IdentityFee<Balance>;
     type FeeMultiplierUpdate = ();
     type WeightInfo = ();
-    type Longevity = ConstU64<64>;
 }
 
 // === Sudo ===
@@ -274,10 +282,11 @@ parameter_types! {
     pub const DepositPerByte: Balance = 1 * UNITS;
     pub const MaxStorageKeyLen: u32 = 128;
     pub Schedule: pallet_contracts::Schedule<Runtime> = Default::default();
-    pub CodeHashLockupDepositPercent: Permill = Permill::from_percent(30);
+    pub CodeHashLockupDepositPercent: Perbill = Perbill::from_percent(30);
     pub const DefaultDepositLimit: Balance = 100 * UNITS;
-    pub const MaxTransientStorageSize: u32 = 1024 * 1024;
+    pub const MaxTransientStorageSize: u32 = 1 * 1024 * 1024;
     pub const MaxDebugBufferLen: u32 = 2 * 1024 * 1024;
+    pub const MaxCodeLen: u32 = 123 * 1024;
 }
 
 impl pallet_contracts::Config for Runtime {
@@ -286,6 +295,7 @@ impl pallet_contracts::Config for Runtime {
     type Currency = Balances;
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
+    type RuntimeHoldReason = RuntimeHoldReason;
     type CallFilter = Everything;
     type DepositPerItem = DepositPerItem;
     type DepositPerByte = DepositPerByte;
@@ -293,23 +303,23 @@ impl pallet_contracts::Config for Runtime {
     type WeightPrice = pallet_transaction_payment::Pallet<Runtime>;
     type WeightInfo = ();
     type ChainExtension = ();
-    type AddressGenerator = pallet_contracts::DefaultAddressGenerator;
     type Schedule = Schedule;
-    type UploadOrigin = frame_system::EnsureSigned<AccountId>;
-    type InstantiateOrigin = frame_system::EnsureSigned<AccountId>;
-    type RuntimeHoldReason = pallet_contracts::HoldReason;
+    type CallStack = [pallet_contracts::Frame<Self>; 5];
+    type AddressGenerator = pallet_contracts::DefaultAddressGenerator;
+    type MaxCodeLen = MaxCodeLen;
     type CodeHashLockupDepositPercent = CodeHashLockupDepositPercent;
     type MaxDelegateDependencies = ConstU32<32>;
-    type Environment = ();
-    type Debug = ();
-    type ApiVersion = ();
-    type Migrations = ();
-    type Xcm = ();
-    type CallStack = [pallet_contracts::Frame<Self>; 5];
+    type UnsafeUnstableInterface = ConstBool<false>;
+    type UploadOrigin = frame_system::EnsureSigned<AccountId>;
+    type InstantiateOrigin = frame_system::EnsureSigned<AccountId>;
     type DefaultDepositLimit = DefaultDepositLimit;
     type MaxTransientStorageSize = MaxTransientStorageSize;
     type MaxDebugBufferLen = MaxDebugBufferLen;
-    type UnsafeUnstableInterface = ();
+    type Migrations = ();
+    type Debug = ();
+    type Environment = ();
+    type ApiVersion = ();
+    type Xcm = ();
 }
 
 // === Verdis DPoS ===
@@ -503,27 +513,25 @@ impl_runtime_apis! {
     }
 
     impl sp_session::SessionKeys<Block> for Runtime {
-        fn generate_session_keys(seed: Option<Vec<u8>>) -> Vec<u8> {
-            pallet_session::Keys::generate(seed)
+        fn generate_session_keys(owner: Vec<u8>, seed: Option<Vec<u8>>) -> Vec<u8> {
+            SessionKeys::generate(owner, seed)
         }
         fn decode_session_keys(
             encoded: Vec<u8>,
         ) -> Option<Vec<(Vec<u8>, KeyTypeId)>> {
-            pallet_session::Keys::decode_into_raw_public_keys(&encoded)
+            SessionKeys::decode_into_raw_public_keys(&encoded)
         }
     }
 
     impl sp_consensus_babe::BabeApi<Block> for Runtime {
         fn configuration() -> sp_consensus_babe::BabeConfiguration {
-            let epoch_config = Babe::epoch_config().unwrap_or(Default::default());
             sp_consensus_babe::BabeConfiguration {
                 slot_duration: Babe::slot_duration(),
                 epoch_length: <Babe as pallet_babe::Config>::EpochDuration::get(),
-                c: sp_consensus_babe::SlotProbability::from_percent(100),
-                genesis_authorities: Babe::authorities().into_iter().map(|x| x.into()).collect(),
+                c: (1, 4),
+                authorities: Babe::authorities().into_iter().map(|x| x.into()).collect(),
                 randomness: Babe::randomness().into(),
                 allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
-                epoch_config,
             }
         }
         fn current_epoch_start() -> sp_consensus_babe::Slot {
@@ -557,16 +565,13 @@ impl_runtime_apis! {
             Grandpa::current_set_id()
         }
         fn submit_report_equivocation_unsigned_extrinsic(
-            equivocation: sp_consensus_grandpa::EquivocationProof<
+            _equivocation: sp_consensus_grandpa::EquivocationProof<
                 <Block as BlockT>::Hash,
                 NumberFor<Block>,
             >,
-            key_owner: sp_consensus_grandpa::OpaqueKeyOwnershipProof,
+            _key_owner: sp_consensus_grandpa::OpaqueKeyOwnershipProof,
         ) -> Option<()> {
-            Grandpa::submit_unsigned_equivocation_report(
-                equivocation,
-                key_owner,
-            )
+            None
         }
         fn generate_key_ownership_proof(
             _set_id: sp_consensus_grandpa::SetId,
