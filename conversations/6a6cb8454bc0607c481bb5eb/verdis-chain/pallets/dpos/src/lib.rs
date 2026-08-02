@@ -11,7 +11,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::{
+use frame_support::{DefaultNoBound,DebugNoBound,
     dispatch::DispatchResult,
     ensure,
     pallet_prelude::*,
@@ -37,7 +37,7 @@ pub mod pallet {
 
     // === Types ===
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, DebugNoBound)]
     #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
     pub struct Validator<AccountId, Balance> {
         pub address: AccountId,
@@ -51,7 +51,7 @@ pub mod pallet {
         pub energy_source: Vec<u8>,
     }
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, RuntimeDebug)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, DebugNoBound)]
     pub struct VoteRecord<AccountId, Balance> {
         pub voter: AccountId,
         pub validator: AccountId,
@@ -131,7 +131,6 @@ pub mod pallet {
     #[pallet::config]
     pub trait Config: frame_system::Config {
         type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-        type RuntimeOrigin: Into<Result<CryptoOrigin, RuntimeOrigin>> + From<RuntimeOrigin>;
         type Currency: ReservableCurrency<Self::AccountId>;
         #[pallet::constant]
         type BlockReward: Get<BalanceOf<Self>>;
@@ -505,7 +504,6 @@ pub mod pallet {
 
 // === Type Aliases ===
 type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
-type CryptoOrigin = T::RuntimeOrigin;
 
 pub struct ValidatorIdOf<T>(PhantomData<T>);
 impl<T: Config> sp_runtime::traits::Convert<T::AccountId, Option<T::AccountId>>

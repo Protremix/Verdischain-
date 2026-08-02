@@ -10,13 +10,14 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::{
+use frame_support::{DefaultNoBound,DebugNoBound,
     dispatch::DispatchResult,
     ensure,
     pallet_prelude::*,
     traits::{Currency, Get, ReservableCurrency},
     PalletId,
 };
+use scale_info::TypeInfo;
 use frame_system::pallet_prelude::*;
 use sp_runtime::traits::Saturating;
 use sp_std::prelude::*;
@@ -32,7 +33,7 @@ pub mod pallet {
 
     // === Distribution Category ===
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, RuntimeDebug)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, DebugNoBound, TypeInfo)]
     pub struct DistributionCategory {
         pub name: Vec<u8>,
         pub amount: BalanceOf<T>,
@@ -102,7 +103,6 @@ pub mod pallet {
     #[pallet::config]
     pub trait Config: frame_system::Config {
         type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-        type RuntimeOrigin: Into<Result<CryptoOrigin, RuntimeOrigin>> + From<RuntimeOrigin>;
         type Currency: ReservableCurrency<Self::AccountId>;
         #[pallet::constant]
         type TotalSupply: Get<BalanceOf<Self>>;
@@ -256,4 +256,3 @@ pub mod pallet {
 }
 
 type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
-type CryptoOrigin = T::RuntimeOrigin;

@@ -10,13 +10,14 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::{
+use frame_support::{DefaultNoBound,DebugNoBound,
     dispatch::DispatchResult,
     ensure,
     pallet_prelude::*,
     traits::Get,
     PalletId,
 };
+use scale_info::TypeInfo;
 use frame_system::pallet_prelude::*;
 use sp_std::prelude::*;
 
@@ -31,13 +32,13 @@ pub mod pallet {
 
     // === Storage Types ===
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, RuntimeDebug)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, DebugNoBound, TypeInfo)]
     pub enum StorageBackend {
         Ipfs,
         Arweave,
     }
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, RuntimeDebug)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, DebugNoBound, TypeInfo)]
     pub struct StorageRecord<AccountId> {
         pub id: Vec<u8>,           // CID or Arweave TX ID
         pub backend: StorageBackend,
@@ -48,7 +49,7 @@ pub mod pallet {
         pub created_at: u64,
     }
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, RuntimeDebug)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, DebugNoBound, TypeInfo)]
     pub struct StorageProvider<AccountId> {
         pub address: AccountId,
         pub backend: StorageBackend,

@@ -9,13 +9,14 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::{
+use frame_support::{DefaultNoBound,DebugNoBound,
     dispatch::DispatchResult,
     ensure,
     pallet_prelude::*,
     traits::Get,
     PalletId,
 };
+use scale_info::TypeInfo;
 use frame_system::pallet_prelude::*;
 use sp_std::prelude::*;
 
@@ -30,7 +31,7 @@ pub mod pallet {
 
     // === Carbon Credit ===
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, RuntimeDebug)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, DebugNoBound, TypeInfo)]
     pub struct CarbonCredit<AccountId> {
         pub id: Vec<u8>,
         pub project_name: Vec<u8>,
@@ -43,7 +44,7 @@ pub mod pallet {
 
     // === Reforestation Project ===
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, RuntimeDebug)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, DebugNoBound, TypeInfo)]
     pub struct ReforestProject {
         pub id: Vec<u8>,
         pub name: Vec<u8>,
@@ -55,7 +56,7 @@ pub mod pallet {
 
     // === Green Validator ===
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, RuntimeDebug)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, DebugNoBound, TypeInfo)]
     pub struct GreenValidator<AccountId> {
         pub address: AccountId,
         pub renewable_energy: bool,
@@ -136,7 +137,6 @@ pub mod pallet {
     #[pallet::config]
     pub trait Config: frame_system::Config {
         type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-        type RuntimeOrigin: Into<Result<CryptoOrigin, RuntimeOrigin>> + From<RuntimeOrigin>;
         #[pallet::constant]
         type PalletId: Get<PalletId>;
         #[pallet::constant]
@@ -492,4 +492,3 @@ pub mod pallet {
     }
 }
 
-type CryptoOrigin = T::RuntimeOrigin;
