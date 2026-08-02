@@ -276,7 +276,7 @@ pub mod pallet {
                 let credit = c.as_mut().ok_or(Error::<T>::CreditNotFound)?;
                 ensure!(!credit.verified, Error::<T>::AlreadyVerified);
                 credit.verified = true;
-                Ok(())
+                Ok::<(), Error<T>>(())
             })?;
 
             Self::deposit_event(Event::CarbonCreditVerified { id });

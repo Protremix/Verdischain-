@@ -65,7 +65,7 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn user_vesting)]
     pub type UserVestings<T: Config> =
-        StorageMap<_, Blake2_128Concat, T::AccountId, BoundedVec<UserVestingEntry<BalanceOf<T>, T::BlockNumber>, ConstU32<16>>>;
+        StorageMap<_, Blake2_128Concat, T::AccountId, BoundedVec<UserVestingEntry<BalanceOf<T>, BlockNumberFor<T>>, ConstU32<16>>>;
 
     #[pallet::storage]
     #[pallet::getter(fn locked_balances)]

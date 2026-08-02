@@ -31,6 +31,7 @@ pub use pallet::*;
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
+    type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
     #[pallet::pallet]
     pub struct Pallet<T>(_);
@@ -72,7 +73,7 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn votes)]
     pub type Votes<T: Config> =
-        StorageMap<_, Blake2_128Concat, T::AccountId, Vec<VoteRecord<T::AccountId, BalanceOf<T>>>;
+        StorageMap<_, Blake2_128Concat, T::AccountId, BoundedVec<VoteRecord<T::AccountId, BalanceOf<T>>, ConstU32<64>>>;
 
     #[pallet::storage]
     #[pallet::getter(fn active_validators)]
@@ -302,7 +303,7 @@ pub mod pallet {
             };
 
             Votes::<T>::mutate(&who, |v| {
-                v.get_or_insert_with(Vec::new).push(vote);
+                v.get_or_insert_with(BoundedVec::default).try_push(vote).ok();
             });
 
             Validators::<T>::mutate(&validator, |val| {
@@ -503,7 +504,6 @@ pub mod pallet {
 }
 
 // === Type Aliases ===
-type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 pub struct ValidatorIdOf<T>(PhantomData<T>);
 impl<T: Config> sp_runtime::traits::Convert<T::AccountId, Option<T::AccountId>>
