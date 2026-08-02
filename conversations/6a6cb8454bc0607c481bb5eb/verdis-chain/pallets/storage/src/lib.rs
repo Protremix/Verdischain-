@@ -32,15 +32,15 @@ pub mod pallet {
 
     // === Storage Types ===
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, DebugNoBound, TypeInfo)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
     pub enum StorageBackend {
         Ipfs,
         Arweave,
     }
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, DebugNoBound, TypeInfo)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
     pub struct StorageRecord<AccountId> {
-        pub id: Vec<u8>,           // CID or Arweave TX ID
+        pub id: BoundedVec<u8, ConstU32<64>>,           // CID or Arweave TX ID
         pub backend: StorageBackend,
         pub owner: AccountId,
         pub size_bytes: u64,
@@ -49,11 +49,11 @@ pub mod pallet {
         pub created_at: u64,
     }
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, DebugNoBound, TypeInfo)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
     pub struct StorageProvider<AccountId> {
         pub address: AccountId,
         pub backend: StorageBackend,
-        pub endpoint: Vec<u8>,     // IPFS gateway or Arweave gateway URL
+        pub endpoint: BoundedVec<u8, ConstU32<128>>,     // IPFS gateway or Arweave gateway URL
         pub reputation: u32,
         pub total_stored: u64,
         pub active: bool,
@@ -64,7 +64,7 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn storage_records)]
     pub type StorageRecords<T: Config> =
-        StorageMap<_, Blake2_128Concat, Vec<u8>, StorageRecord<T::AccountId>>;
+        StorageMap<_, Blake2_128Concat, BoundedVec<u8, ConstU32<64>>, StorageRecord<T::AccountId>>;
 
     #[pallet::storage]
     #[pallet::getter(fn storage_providers)]
@@ -78,7 +78,7 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn pin_requests)]
     pub type PinRequests<T: Config> =
-        StorageMap<_, Blake2_128Concat, Vec<u8>, bool, ValueQuery>;
+        StorageMap<_, Blake2_128Concat, BoundedVec<u8, ConstU32<64>>, bool, ValueQuery>;
 
     // === Events ===
 

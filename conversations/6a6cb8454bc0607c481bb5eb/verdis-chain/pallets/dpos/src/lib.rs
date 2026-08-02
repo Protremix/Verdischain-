@@ -37,7 +37,7 @@ pub mod pallet {
 
     // === Types ===
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, DebugNoBound)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
     #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
     pub struct Validator<AccountId, Balance> {
         pub address: AccountId,
@@ -48,10 +48,10 @@ pub mod pallet {
         pub active: bool,
         pub slashed: bool,
         pub green_score: u8,
-        pub energy_source: Vec<u8>,
+        pub energy_source: BoundedVec<u8, ConstU32<64>>,
     }
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, DebugNoBound)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
     pub struct VoteRecord<AccountId, Balance> {
         pub voter: AccountId,
         pub validator: AccountId,

@@ -33,9 +33,9 @@ pub mod pallet {
 
     // === Vesting Schedule ===
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, DebugNoBound, TypeInfo)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
     pub struct VestingSchedule<Balance> {
-        pub label: Vec<u8>,      // "seed", "private", "public", "final"
+        pub label: BoundedVec<u8, ConstU32<64>>,      // "seed", "private", "public", "final"
         pub total_amount: Balance,
         pub vesting_days: u32,   // Total vesting period
         pub cliff_days: u32,     // Cliff period before any release
@@ -43,9 +43,9 @@ pub mod pallet {
 
     // === User Vesting ===
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, DebugNoBound, TypeInfo)]
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
     pub struct UserVesting<Balance, BlockNumber> {
-        pub schedule: Vec<u8>,
+        pub schedule: BoundedVec<u8, ConstU32<64>>,
         pub total_amount: Balance,
         pub released: Balance,
         pub start_block: BlockNumber,
@@ -57,7 +57,7 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn schedules)]
     pub type Schedules<T: Config> =
-        StorageMap<_, Blake2_128Concat, Vec<u8>, VestingSchedule<BalanceOf<T>>>;
+        StorageMap<_, Blake2_128Concat, BoundedVec<u8, ConstU32<64>>, VestingSchedule<BalanceOf<T>>>;
 
     #[pallet::storage]
     #[pallet::getter(fn user_vesting)]
