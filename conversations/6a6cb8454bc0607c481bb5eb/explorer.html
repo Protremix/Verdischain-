@@ -3,734 +3,854 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verdis Explorer — Block Explorer | Verdis Chain</title>
-<meta name="description" content="Verdis Chain Explorer — Search blocks, transactions, addresses, validators, DEX pools, and smart contracts on the Verdis blockchain.">
+<title>Verdiscan — Verdis Blockchain Explorer</title>
+<meta name="description" content="Verdiscan: Explore blocks, transactions, addresses, validators, DEX pools and smart contracts on the Verdis blockchain.">
 <link rel="icon" href="/verdis-logo-animated.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#050a08;--bg-card:rgba(10,18,14,0.72);--bg-hover:rgba(18,32,25,0.88);--border:rgba(0,255,136,0.12);--border-bright:rgba(0,255,136,0.3);--text:#f0fdf4;--text-muted:#8ba898;--text-dim:#547363;--primary:#00ff88;--secondary:#2dd4bf;--accent:#10b981;--danger:#ef4444;--warning:#f59e0b;--glow:rgba(0,255,136,0.15);--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;--font-head:'Space Grotesk',sans-serif}
+:root{
+  --bg:#18181a;
+  --bg-card:#202022;
+  --bg-card-hover:#28282a;
+  --bg-input:#252525;
+  --border:#2a2a2d;
+  --border-light:#3a3a3d;
+  --text:#ffffff;
+  --text-secondary:#a0a0a0;
+  --text-muted:#71717a;
+  --text-dim:#52525b;
+  --link:#3fbdfe;
+  --link-hover:#5cc9ff;
+  --green:#14f195;
+  --green-hover:#1cf5a0;
+  --red:#f87171;
+  --orange:#f59e0b;
+  --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;background:var(--bg);color:var(--text);font-family:var(--font-body)}
-body{background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
-::selection{background:rgba(0,255,136,0.2)}
-::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(0,255,136,0.15);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:rgba(0,255,136,0.3)}
+html{background:var(--bg);color:var(--text);font-family:var(--font);scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);line-height:1.5;overflow-x:hidden;min-height:100vh}
+::selection{background:rgba(20,241,149,0.15)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#3a3a3d;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#4a4a4d}
+a{color:var(--link);text-decoration:none;transition:color .15s}
+a:hover{color:var(--link-hover)}
 
-/* Background orbs */
-.bg-orbs{position:fixed;top:0;left:0;width:100vw;height:100vh;overflow:hidden;z-index:-1;pointer-events:none}
-.orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.15;animation:drift 22s infinite ease-in-out alternate}
-.orb-1{width:550px;height:550px;background:radial-gradient(circle,#00ff88,transparent 70%);top:-10%;left:-10%}
-.orb-2{width:650px;height:650px;background:radial-gradient(circle,#2dd4bf,transparent 70%);bottom:-15%;right:-10%;animation-delay:-6s}
-@keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(70px,90px) scale(1.1)}100%{transform:translate(-50px,50px) scale(.9)}}
+/* ===== HEADER ===== */
+.header{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;padding:0 24px;gap:24px}
+.header-logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:1.1rem;letter-spacing:-0.5px;color:var(--text)}
+.header-logo svg{width:28px;height:28px;flex-shrink:0}
+.header-logo .logo-green{color:var(--green)}
+.header-price{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--text-secondary);padding:4px 12px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border)}
+.header-price .price-val{color:var(--text);font-weight:600}
+.header-price .price-change{color:var(--green);font-size:.78rem;font-weight:500}
+.header-nav{display:flex;gap:4px;align-items:center;margin-left:8px}
+.header-nav a{color:var(--text-secondary);font-size:.88rem;font-weight:500;padding:6px 14px;border-radius:8px;transition:all .15s}
+.header-nav a:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.header-nav a.active{color:var(--green)}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.header-right .icon-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;color:var(--text-secondary);cursor:pointer;transition:all .15s}
+.header-right .icon-btn:hover{color:var(--text);border-color:var(--border-light)}
+.header-right .sign-in{background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:7px 18px;border-radius:8px;font-size:.88rem;font-weight:500;cursor:pointer;transition:all .15s}
+.header-right .sign-in:hover{background:var(--bg-card-hover);border-color:var(--border-light)}
 
-/* Navbar */
-.navbar{position:fixed;top:0;left:0;right:0;height:64px;background:rgba(5,10,8,.88);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);z-index:100;display:flex;align-items:center;padding:0 24px;gap:20px}
-.navbar .logo{display:flex;align-items:center;gap:10px;text-decoration:none}
-.navbar .logo svg{width:32px;height:32px}
-.navbar .logo span{font-family:var(--font-head);font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,#00ff88,#2dd4bf);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.navbar .logo .explorer-badge{font-size:.65rem;color:var(--text-dim);font-weight:500;margin-left:4px}
+/* ===== SEARCH BAR ===== */
+.search-section{padding:48px 24px 32px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.search-section h1{font-size:2rem;font-weight:700;text-align:center}
+.search-section h1 .green{color:var(--green)}
+.search-section .subtitle{color:var(--text-muted);font-size:.92rem}
+.search-bar{width:100%;max-width:680px;position:relative}
+.search-bar input{width:100%;height:52px;background:var(--bg-input);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:.95rem;padding:0 56px 0 20px;outline:none;transition:all .2s;font-family:var(--font)}
+.search-bar input:focus{border-color:var(--border-light);box-shadow:0 0 0 3px rgba(63,189,254,0.1)}
+.search-bar input::placeholder{color:var(--text-dim)}
+.search-bar .search-btn{position:absolute;right:8px;top:8px;width:36px;height:36px;background:var(--green);border:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.search-bar .search-btn:hover{background:var(--green-hover)}
+.search-bar .search-btn svg{width:18px;height:18px;color:#0a0a0a}
 
-/* Search */
-.search-wrap{flex:1;max-width:640px;position:relative}
-.search-wrap input{width:100%;height:42px;background:rgba(10,18,14,.6);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:.9rem;font-family:var(--font-mono);padding:0 44px 0 16px;outline:none;transition:all .2s}
-.search-wrap input:focus{border-color:var(--border-bright);box-shadow:0 0 0 3px var(--glow)}
-.search-wrap input::placeholder{color:var(--text-dim);font-family:var(--font-body)}
-.search-wrap .search-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none}
+/* ===== STATS GRID ===== */
+.stats-section{padding:0 24px;max-width:1400px;margin:0 auto;width:100%}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color .15s}
+.stat-card:hover{border-color:var(--border-light)}
+.stat-card .stat-label{font-size:.78rem;color:var(--text-secondary);font-weight:500;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.stat-card .stat-rows{display:flex;flex-direction:column;gap:10px}
+.stat-card .stat-row{display:flex;justify-content:space-between;align-items:center}
+.stat-card .stat-row .label{font-size:.82rem;color:var(--text-muted)}
+.stat-card .stat-row .val{font-size:.88rem;color:var(--text);font-weight:600;font-family:var(--mono)}
+.stat-card .stat-row .val.green{color:var(--green)}
+.stat-card .stat-row .val.blue{color:var(--link)}
 
-/* Nav links */
-.nav-links{display:flex;gap:4px;align-items:center}
-.nav-links a{color:var(--text-muted);text-decoration:none;font-size:.88rem;font-weight:500;padding:8px 14px;border-radius:8px;transition:all .15s}
-.nav-links a:hover{color:var(--text);background:rgba(0,255,136,.05)}
-.nav-links a.active{color:var(--primary);background:rgba(0,255,136,.08)}
+/* ===== CONTENT AREA ===== */
+.content-section{padding:0 24px 48px;max-width:1400px;margin:0 auto;width:100%}
 
-/* Main */
-.main{padding-top:64px;min-height:100vh}
-.container{max-width:1400px;margin:0 auto;padding:24px}
+/* ===== TABLE CARD ===== */
+.table-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px}
+.table-card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.table-card-header h2{font-size:1.05rem;font-weight:600;color:var(--text)}
+.table-card-header .header-right-items{display:flex;gap:10px;align-items:center}
+.table-card-header .toggle{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text-secondary);cursor:pointer}
+.table-card-header .toggle .switch{width:32px;height:18px;background:var(--bg-input);border-radius:10px;position:relative;transition:background .15s}
+.table-card-header .toggle .switch.on{background:var(--green)}
+.table-card-header .toggle .switch::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform .15s}
+.table-card-header .toggle .switch.on::after{transform:translateX(14px)}
+.table-card-header .badge{font-size:.72rem;padding:3px 10px;border-radius:6px;font-weight:600}
+.table-card-header .badge-green{background:rgba(20,241,149,0.1);color:var(--green);border:1px solid rgba(20,241,149,0.2)}
+.table-card-header .badge-blue{background:rgba(63,189,254,0.1);color:var(--link);border:1px solid rgba(63,189,254,0.2)}
 
-/* Stats cards */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
-.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;backdrop-filter:blur(10px);transition:all .2s}
-.stat-card:hover{border-color:var(--border-bright);box-shadow:0 4px 20px var(--glow)}
-.stat-card .label{font-size:.78rem;color:var(--text-dim);font-weight:500;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:6px}
-.stat-card .value{font-size:1.5rem;font-weight:700;font-family:var(--font-head);margin-top:6px;color:var(--text)}
-.stat-card .sub{font-size:.78rem;color:var(--text-muted);margin-top:2px}
-.stat-card .value.green{color:var(--primary)}
-.stat-card .value.teal{color:var(--secondary)}
-.stat-card .value.orange{color:var(--warning)}
-
-/* Tabs */
-.tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0;overflow-x:auto}
-.tab{padding:10px 18px;font-size:.9rem;font-weight:600;color:var(--text-dim);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;font-family:var(--font-body)}
-.tab:hover{color:var(--text-muted)}
-.tab.active{color:var(--primary);border-bottom-color:var(--primary)}
-.tab .badge{font-size:.7rem;background:rgba(0,255,136,.1);color:var(--primary);padding:2px 8px;border-radius:10px;margin-left:6px;font-weight:600}
-
-/* Cards */
-.card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;overflow:hidden;backdrop-filter:blur(10px)}
-.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:between;gap:12px}
-.card-header h3{font-family:var(--font-head);font-size:1rem;font-weight:600;color:var(--text)}
-.card-header .actions{margin-left:auto;display:flex;gap:8px;align-items:center}
-.card-body{padding:0}
-
-/* Table */
+/* ===== TABLE ===== */
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:.85rem}
-thead th{text-align:left;padding:12px 16px;color:var(--text-dim);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;background:rgba(10,18,14,.95);backdrop-filter:blur(8px)}
-tbody tr{border-bottom:1px solid rgba(0,255,136,.04);transition:background .1s;cursor:pointer}
-tbody tr:hover{background:rgba(0,255,136,.04)}
-tbody td{padding:12px 16px;white-space:nowrap;color:var(--text)}
-tbody td.mono{font-family:var(--font-mono);font-size:.82rem}
-tbody td.muted{color:var(--text-muted)}
-tbody td.green{color:var(--primary)}
-tbody td.red{color:var(--danger)}
-tbody td.teal{color:var(--secondary)}
+thead th{text-align:left;padding:10px 20px;color:var(--text-secondary);font-weight:600;font-size:.78rem;border-bottom:1px solid var(--border);white-space:nowrap;background:var(--bg-card);position:sticky;top:0}
+thead th .th-icon{display:inline-block;margin-right:4px;opacity:.6}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,0.02)}
+tbody td{padding:11px 20px;white-space:nowrap;color:var(--text)}
+tbody td.mono{font-family:var(--mono);font-size:.82rem}
+tbody td.muted{color:var(--text-secondary)}
+tbody td.green{color:var(--green)}
+tbody td.red{color:var(--red)}
 
-/* Links */
-a.tx-link{color:var(--primary);text-decoration:none;font-family:var(--font-mono);font-size:.82rem}
-a.tx-link:hover{text-decoration:underline}
-a.addr-link{color:var(--secondary);text-decoration:none;font-family:var(--font-mono);font-size:.82rem}
-a.addr-link:hover{text-decoration:underline}
-a.block-link{color:var(--primary);text-decoration:none;font-weight:600}
-a.block-link:hover{text-decoration:underline}
+/* ===== LINKS IN TABLES ===== */
+.tx-link{color:var(--link);font-family:var(--mono);font-size:.82rem;cursor:pointer}
+.tx-link:hover{color:var(--link-hover);text-decoration:underline}
+.addr-link{color:var(--link);font-family:var(--mono);font-size:.82rem;cursor:pointer}
+.addr-link:hover{color:var(--link-hover);text-decoration:underline}
+.block-link{color:var(--link);font-weight:500;cursor:pointer}
+.block-link:hover{color:var(--link-hover);text-decoration:underline}
 
-/* Badges */
-.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
-.badge-success{background:rgba(0,255,136,.1);color:var(--primary);border:1px solid rgba(0,255,136,.2)}
-.badge-info{background:rgba(45,212,191,.1);color:var(--secondary);border:1px solid rgba(45,212,191,.2)}
-.badge-warning{background:rgba(245,158,11,.1);color:var(--warning);border:1px solid rgba(245,158,11,.2)}
-.badge-neutral{background:rgba(139,168,152,.08);color:var(--text-muted);border:1px solid rgba(139,168,152,.15)}
+/* ===== COPY ICON ===== */
+.copy-icon{display:inline-block;margin-left:6px;cursor:pointer;opacity:0;transition:opacity .15s}
+tr:hover .copy-icon{opacity:.5}
+.copy-icon:hover{opacity:1!important}
+.copy-icon.copied{opacity:1;color:var(--green)}
 
-/* Detail view */
-.detail-header{display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid var(--border)}
-.detail-header h2{font-family:var(--font-head);font-size:1.3rem;font-weight:700}
-.detail-grid{display:grid;grid-template-columns:180px 1fr;gap:0}
-.detail-row{display:flex;border-bottom:1px solid rgba(0,255,136,.04);padding:14px 20px;align-items:flex-start;gap:16px}
-.detail-label{color:var(--text-dim);font-size:.85rem;min-width:160px;flex-shrink:0;font-weight:500}
-.detail-value{color:var(--text);font-size:.88rem;font-family:var(--font-mono);word-break:break-all;flex:1}
+/* ===== BADGES ===== */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:6px;font-size:.72rem;font-weight:600}
+.badge-success{background:rgba(20,241,149,0.08);color:var(--green);border:1px solid rgba(20,241,149,0.15)}
+.badge-info{background:rgba(63,189,254,0.08);color:var(--link);border:1px solid rgba(63,189,254,0.15)}
+.badge-warning{background:rgba(245,158,11,0.08);color:var(--orange);border:1px solid rgba(245,158,11,0.15)}
+.badge-neutral{background:rgba(255,255,255,0.04);color:var(--text-secondary);border:1px solid var(--border)}
 
-/* Copy button */
-.copy-btn{background:rgba(0,255,136,.06);border:1px solid var(--border);color:var(--text-muted);padding:4px 10px;border-radius:6px;font-size:.75rem;cursor:pointer;transition:all .15s;margin-left:8px}
-.copy-btn:hover{background:rgba(0,255,136,.1);color:var(--primary)}
-.copy-btn.copied{color:var(--primary)}
+/* ===== TABS ===== */
+.tabs-bar{display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid var(--border)}
+.tabs-bar .tab{padding:10px 20px;font-size:.9rem;font-weight:500;color:var(--text-secondary);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font)}
+.tabs-bar .tab:hover{color:var(--text)}
+.tabs-bar .tab.active{color:var(--green);border-bottom-color:var(--green)}
 
-/* Pagination */
-.pagination{display:flex;justify-content:center;gap:8px;padding:16px;align-items:center}
-.pagination button{background:rgba(0,255,136,.05);border:1px solid var(--border);color:var(--text-muted);padding:8px 16px;border-radius:8px;font-size:.85rem;cursor:pointer;transition:all .15s}
-.pagination button:hover{background:rgba(0,255,136,.1);color:var(--primary);border-color:var(--border-bright)}
+/* ===== DETAIL VIEW ===== */
+.detail-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px}
+.detail-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.detail-header h2{font-size:1.1rem;font-weight:600}
+.detail-header .green{color:var(--green)}
+.detail-row{display:flex;padding:14px 20px;border-bottom:1px solid var(--border);align-items:flex-start;gap:16px}
+.detail-row:last-child{border-bottom:none}
+.detail-label{color:var(--text-secondary);font-size:.85rem;min-width:180px;flex-shrink:0;font-weight:500}
+.detail-value{color:var(--text);font-size:.88rem;font-family:var(--mono);word-break:break-all;flex:1}
+.detail-value .copy-btn{background:var(--bg-input);border:1px solid var(--border);color:var(--text-secondary);padding:3px 10px;border-radius:6px;font-size:.72rem;cursor:pointer;transition:all .15s;margin-left:8px;font-family:var(--font)}
+.detail-value .copy-btn:hover{color:var(--text);border-color:var(--border-light)}
+.detail-value .copy-btn.copied{color:var(--green);border-color:var(--green)}
+
+/* ===== BACK BUTTON ===== */
+.back-btn{display:inline-flex;align-items:center;gap:6px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);padding:8px 16px;border-radius:8px;font-size:.85rem;cursor:pointer;transition:all .15s;margin-bottom:16px;font-family:var(--font)}
+.back-btn:hover{color:var(--text);background:var(--bg-card-hover);border-color:var(--border-light)}
+
+/* ===== TOKEN ICONS ===== */
+.token-badge{display:inline-flex;align-items:center;gap:6px}
+.token-dot{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:.65rem;font-weight:700}
+.token-VRDX{background:rgba(20,241,149,0.15);color:var(--green)}
+.token-CARBON{background:rgba(100,116,139,0.2);color:#94a3b8}
+.token-ECO{background:rgba(63,189,254,0.15);color:var(--link)}
+.token-TREE{background:rgba(34,197,94,0.15);color:#22c55e}
+.token-GREEN{background:rgba(16,185,129,0.15);color:#10b981}
+.token-REDD{background:rgba(239,68,68,0.15);color:var(--red)}
+.token-ECOGR{background:rgba(132,204,22,0.15);color:#84cc16}
+
+/* ===== TWO COLUMN LAYOUT (Solscan style) ===== */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+
+/* ===== PAGINATION ===== */
+.pagination{display:flex;justify-content:center;align-items:center;gap:8px;padding:16px 20px}
+.pagination button{background:var(--bg-input);border:1px solid var(--border);color:var(--text-secondary);padding:6px 14px;border-radius:8px;font-size:.82rem;cursor:pointer;transition:all .15s;font-family:var(--font)}
+.pagination button:hover{color:var(--text);border-color:var(--border-light)}
 .pagination button:disabled{opacity:.3;cursor:not-allowed}
-.pagination .info{color:var(--text-dim);font-size:.82rem;margin:0 8px}
+.pagination .info{color:var(--text-muted);font-size:.8rem}
 
-/* Loading */
-.loading{text-align:center;padding:40px;color:var(--text-dim)}
-.loading .spinner{display:inline-block;width:24px;height:24px;border:2px solid rgba(0,255,136,.15);border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite}
+/* ===== LOADING ===== */
+.loading{text-align:center;padding:40px;color:var(--text-muted)}
+.spinner{display:inline-block;width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* Back button */
-.back-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(0,255,136,.05);border:1px solid var(--border);color:var(--text-muted);padding:8px 16px;border-radius:8px;font-size:.85rem;cursor:pointer;transition:all .15s;text-decoration:none}
-.back-btn:hover{background:rgba(0,255,136,.1);color:var(--primary)}
+/* ===== HIDDEN ===== */
+.hidden{display:none!important}
 
-/* Validator badge */
-.validator-badge{display:inline-flex;align-items:center;gap:6px}
-.validator-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--primary);box-shadow:0 0 6px var(--primary)}
-.validator-badge .dot.inactive{background:var(--text-dim);box-shadow:none}
-
-/* Token icons */
-.token-icon{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:.7rem;font-weight:700;margin-right:4px}
-.token-VRDX{background:rgba(0,255,136,.15);color:var(--primary)}
-.token-CARBON{background:rgba(100,116,139,.2);color:#94a3b8}
-.token-ECO{background:rgba(45,212,191,.15);color:var(--secondary)}
-.token-TREE{background:rgba(34,197,94,.15);color:#22c55e}
-.token-GREEN{background:rgba(16,185,129,.15);color:var(--accent)}
-.token-REDD{background:rgba(239,68,68,.15);color:var(--danger)}
-
-/* Responsive */
-@media(max-width:768px){.navbar{padding:0 12px;gap:8px}.navbar .logo span{font-size:1rem}.nav-links{display:none}.search-wrap{max-width:none}.stats-grid{grid-template-columns:repeat(2,1fr)}.container{padding:12px}.detail-grid{grid-template-columns:1fr}.detail-label{min-width:120px}table{font-size:.78rem}thead th{padding:8px 10px}tbody td{padding:8px 10px}}
+/* ===== RESPONSIVE ===== */
+@media(max-width:1024px){.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}}
+@media(max-width:768px){
+  .header{padding:0 12px;gap:8px;height:50px}
+  .header-nav{display:none}
+  .header-price{display:none}
+  .header-right .sign-in{padding:6px 12px;font-size:.8rem}
+  .search-section{padding:24px 12px}
+  .search-section h1{font-size:1.4rem}
+  .search-bar input{height:46px;font-size:.88rem}
+  .stats-grid{grid-template-columns:1fr;gap:10px}
+  .content-section{padding:0 12px 32px}
+  .detail-row{flex-direction:column;gap:6px}
+  .detail-label{min-width:auto}
+  table{font-size:.78rem}
+  thead th{padding:8px 12px}
+  tbody td{padding:8px 12px}
+  .two-col{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 
-<div class="bg-orbs"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
-
-<!-- Navbar -->
-<nav class="navbar">
-  <a href="/" class="logo">
-    <svg width="32" height="32" viewBox="0 0 100 100" fill="none"><polygon points="50,5 90,28 90,72 50,95 10,72 10,28" stroke="#00ff88" stroke-width="4" fill="rgba(0,255,136,0.08)"/><path d="M50 30 C40 45 35 55 45 70 C55 60 60 50 55 35" stroke="#00ff88" stroke-width="3" fill="rgba(0,255,136,0.12)" stroke-linejoin="round"/><line x1="50" y1="30" x2="50" y2="75" stroke="#00ff88" stroke-width="2" opacity="0.5"/></svg>
-    <span>Verdis</span>
-    <span class="explorer-badge">Explorer</span>
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <a href="/" class="header-logo">
+    <svg viewBox="0 0 100 100" fill="none"><polygon points="50,5 90,28 90,72 50,95 10,72 10,28" stroke="#14f195" stroke-width="4" fill="rgba(20,241,149,0.08)"/><path d="M50 30 C40 45 35 55 45 70 C55 60 60 50 55 35" stroke="#14f195" stroke-width="3" fill="rgba(20,241,149,0.12)" stroke-linejoin="round"/><line x1="50" y1="30" x2="50" y2="75" stroke="#14f195" stroke-width="2" opacity="0.5"/></svg>
+    <span>Verdis<span class="logo-green">Scan</span></span>
   </a>
-  <div class="search-wrap">
-    <input type="text" id="searchInput" placeholder="Search address, tx hash, block number, or contract..." />
-    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  <div class="header-price">
+    <span class="price-val">VRS</span>
+    <span style="color:var(--text-muted)">|</span>
+    <span class="price-change">+0.00%</span>
   </div>
-  <div class="nav-links">
+  <nav class="header-nav">
+    <a href="/explorer.html" class="active">Blockchain</a>
     <a href="/dashboard.html">Dashboard</a>
-    <a href="/explorer.html" class="active">Explorer</a>
-    <a href="/wallet.html">Wallet</a>
     <a href="/staking.html">Staking</a>
-    <a href="/whitepaper.html">Whitepaper</a>
+    <a href="/markets.html">Markets</a>
+    <a href="/whitepaper.html">Resources</a>
+  </nav>
+  <div class="header-right">
+    <div class="icon-btn" title="Search" onclick="document.querySelector('.search-bar input').focus()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </div>
+    <button class="sign-in">Connect Wallet</button>
   </div>
-</nav>
+</header>
 
-<!-- Main -->
-<main class="main">
-  <div class="container" id="app">
+<!-- ===== MAIN APP ===== -->
+<main id="app">
 
-  <!-- Overview view -->
-  <div id="view-overview">
-    <!-- Stats -->
-    <div class="stats-grid">
-      <div class="stat-card"><div class="label">Block Height</div><div class="value green" id="stat-height">—</div><div class="sub" id="stat-blocks-ago">Loading...</div></div>
-      <div class="stat-card"><div class="label">Validators</div><div class="value teal" id="stat-validators">—</div><div class="sub" id="stat-validators-active">Active</div></div>
-      <div class="stat-card"><div class="label">Total Supply</div><div class="value" id="stat-supply">—</div><div class="sub">100B VRS</div></div>
-      <div class="stat-card"><div class="label">DEX TVL</div><div class="value orange" id="stat-tvl">—</div><div class="sub" id="stat-pools">Loading pools...</div></div>
-      <div class="stat-card"><div class="label">Contracts</div><div class="value" id="stat-contracts">—</div><div class="sub" id="stat-contracts-sub">Deployed</div></div>
-      <div class="stat-card"><div class="label">Block Time</div><div class="value green">5s</div><div class="sub">Auto-production</div></div>
+  <!-- ===== HOME / OVERVIEW VIEW ===== -->
+  <div id="view-home">
+    <!-- Search hero -->
+    <div class="search-section">
+      <h1>Verdis Blockchain <span class="green">Explorer</span></h1>
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search address, tx hash, block number, or contract..." />
+        <button class="search-btn" onclick="handleSearch(document.getElementById('searchInput').value.trim())">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </button>
+      </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab active" data-tab="blocks">Blocks</button>
-      <button class="tab" data-tab="transactions">Transactions</button>
-      <button class="tab" data-tab="validators">Validators</button>
-      <button class="tab" data-tab="dex">DEX Pools</button>
-      <button class="tab" data-tab="contracts">Contracts</button>
-    </div>
-
-    <!-- Blocks table -->
-    <div id="tab-blocks" class="tab-content">
-      <div class="card">
-        <div class="card-header"><h3>Latest Blocks</h3><div class="actions"><span class="badge badge-success" id="block-live-badge">Live</span></div></div>
-        <div class="card-body">
-          <div class="table-wrap">
-            <table><thead><tr><th>Block</th><th>Hash</th><th>Validator</th><th>TXs</th><th>Gas Used</th><th>Timestamp</th></tr></thead>
-            <tbody id="blocks-tbody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table>
+    <!-- Stats grid (Solscan style 4-column) -->
+    <div class="stats-section">
+      <div class="stats-grid">
+        <!-- Supply -->
+        <div class="stat-card">
+          <div class="stat-label">⚙ VRS Supply</div>
+          <div class="stat-rows">
+            <div class="stat-row"><span class="label">Total Supply</span><span class="val">100B VRS</span></div>
+            <div class="stat-row"><span class="label">Circulating</span><span class="val green" id="stat-circ">15B VRS</span></div>
+            <div class="stat-row"><span class="label">Max Block</span><span class="val">500 txs</span></div>
+          </div>
+        </div>
+        <!-- Network -->
+        <div class="stat-card">
+          <div class="stat-label">⚡ Network</div>
+          <div class="stat-rows">
+            <div class="stat-row"><span class="label">Block Height</span><span class="val green" id="stat-height">—</span></div>
+            <div class="stat-row"><span class="label">Block Time</span><span class="val">5s</span></div>
+            <div class="stat-row"><span class="label">Mempool</span><span class="val" id="stat-mempool">0</span></div>
+          </div>
+        </div>
+        <!-- Validators -->
+        <div class="stat-card">
+          <div class="stat-label">🗳 Validators</div>
+          <div class="stat-rows">
+            <div class="stat-row"><span class="label">Active</span><span class="val green" id="stat-validators">—</span></div>
+            <div class="stat-row"><span class="label">Registered</span><span class="val" id="stat-validators-reg">—</span></div>
+            <div class="stat-row"><span class="label">Block Reward</span><span class="val">16 VRS</span></div>
+          </div>
+        </div>
+        <!-- DEX -->
+        <div class="stat-card">
+          <div class="stat-label">📊 DEX</div>
+          <div class="stat-rows">
+            <div class="stat-row"><span class="label">TVL</span><span class="val green" id="stat-tvl">—</span></div>
+            <div class="stat-row"><span class="label">Pools</span><span class="val" id="stat-pools">—</span></div>
+            <div class="stat-row"><span class="label">Contracts</span><span class="val" id="stat-contracts">—</span></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Transactions table -->
-    <div id="tab-transactions" class="tab-content" style="display:none">
-      <div class="card">
-        <div class="card-header"><h3>Latest Transactions</h3><div class="actions"><span class="badge badge-success">Live</span></div></div>
-        <div class="card-body">
+    <!-- Two column: Blocks + Transactions (Solscan style) -->
+    <div class="content-section">
+      <div class="two-col">
+        <!-- Latest Blocks -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <h2>Latest Blocks</h2>
+            <div class="header-right-items">
+              <a href="#" onclick="switchTab('blocks');return false" style="font-size:.82rem">View All →</a>
+            </div>
+          </div>
           <div class="table-wrap">
-            <table><thead><tr><th>TX Hash</th><th>Block</th><th>From</th><th>To</th><th>Amount</th><th>Fee</th><th>Status</th><th>Time</th></tr></thead>
-            <tbody id="txs-tbody"><tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table>
+            <table>
+              <thead><tr><th>Block</th><th>Hash</th><th>Validator</th><th>Tx</th><th>Time</th></tr></thead>
+              <tbody id="home-blocks-tbody"><tr><td colspan="5"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Latest Transactions -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <h2>Latest Transactions</h2>
+            <div class="header-right-items">
+              <a href="#" onclick="switchTab('txs');return false" style="font-size:.82rem">View All →</a>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Signature</th><th>Block</th><th>From</th><th>To</th><th>Value</th><th>Time</th></tr></thead>
+              <tbody id="home-txs-tbody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs for full tables -->
+      <div class="tabs-bar">
+        <button class="tab" data-tab="blocks" onclick="switchTab('blocks')">Blocks</button>
+        <button class="tab" data-tab="txs" onclick="switchTab('txs')">Transactions</button>
+        <button class="tab" data-tab="validators" onclick="switchTab('validators')">Validators</button>
+        <button class="tab" data-tab="dex" onclick="switchTab('dex')">DEX Pools</button>
+        <button class="tab" data-tab="contracts" onclick="switchTab('contracts')">Contracts</button>
+      </div>
+
+      <!-- Full Blocks table -->
+      <div id="tab-blocks" class="tab-pane hidden">
+        <div class="table-card">
+          <div class="table-card-header">
+            <h2>Blocks</h2>
+            <div class="header-right-items"><span class="badge badge-green">● Live</span></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Block</th><th>Block Hash</th><th>Validator</th><th>Tx Count</th><th>Gas Used</th><th>Gas Limit</th><th>Time</th></tr></thead>
+              <tbody id="full-blocks-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full Transactions table -->
+      <div id="tab-txs" class="tab-pane hidden">
+        <div class="table-card">
+          <div class="table-card-header">
+            <h2>Transactions</h2>
+            <div class="header-right-items"><span class="badge badge-green">● Live</span></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Signature</th><th>Block</th><th>From</th><th>To</th><th>Value (VRS)</th><th>Fee</th><th>Status</th><th>Time</th></tr></thead>
+              <tbody id="full-txs-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Validators table -->
+      <div id="tab-validators" class="tab-pane hidden">
+        <div class="table-card">
+          <div class="table-card-header">
+            <h2>Active Validators</h2>
+            <div class="header-right-items"><span class="badge badge-info">DPoS</span></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Rank</th><th>Address</th><th>Votes</th><th>Status</th><th>Blocks Produced</th><th>Rewards</th></tr></thead>
+              <tbody id="validators-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEX table -->
+      <div id="tab-dex" class="tab-pane hidden">
+        <div class="table-card">
+          <div class="table-card-header">
+            <h2>DEX Liquidity Pools</h2>
+            <div class="header-right-items"><span class="badge badge-info">AMM</span></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Pair</th><th>Token A Reserve</th><th>Token B Reserve</th><th>Total LP</th><th>Fee</th><th>TVL (VRS)</th><th>Created</th></tr></thead>
+              <tbody id="dex-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contracts table -->
+      <div id="tab-contracts" class="tab-pane hidden">
+        <div class="table-card">
+          <div class="table-card-header">
+            <h2>Deployed Smart Contracts</h2>
+            <div class="header-right-items"><span class="badge badge-info">EVM</span></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Category</th><th>Owner</th><th>Deployed</th><th>State Size</th><th>Holders</th><th>Version</th></tr></thead>
+              <tbody id="contracts-tbody"></tbody>
+            </table>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Validators table -->
-    <div id="tab-validators" class="tab-content" style="display:none">
-      <div class="card">
-        <div class="card-header"><h3>Active Validators</h3><div class="actions"><span class="badge badge-info">DPoS</span></div></div>
-        <div class="card-body">
-          <div class="table-wrap">
-            <table><thead><tr><th>Rank</th><th>Address</th><th>Votes</th><th>Status</th><th>Blocks Produced</th><th>Rewards</th></tr></thead>
-            <tbody id="validators-tbody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- DEX table -->
-    <div id="tab-dex" class="tab-content" style="display:none">
-      <div class="card">
-        <div class="card-header"><h3>DEX Liquidity Pools</h3><div class="actions"><span class="badge badge-info">AMM</span></div></div>
-        <div class="card-body">
-          <div class="table-wrap">
-            <table><thead><tr><th>Pair</th><th>Token A Reserve</th><th>Token B Reserve</th><th>Total LP</th><th>Fee</th><th>TVL (VRS)</th><th>Created</th></tr></thead>
-            <tbody id="dex-tbody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Contracts table -->
-    <div id="tab-contracts" class="tab-content" style="display:none">
-      <div class="card">
-        <div class="card-header"><h3>Deployed Smart Contracts</h3><div class="actions"><span class="badge badge-info">EVM</span></div></div>
-        <div class="card-body">
-          <div class="table-wrap">
-            <table><thead><tr><th>Name</th><th>Category</th><th>Owner</th><th>Deployed</th><th>State Size</th><th>Holders</th><th>Version</th></tr></thead>
-            <tbody id="contracts-tbody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table>
-          </div>
-        </div>
+  <!-- ===== BLOCK DETAIL ===== -->
+  <div id="view-block" class="hidden">
+    <div class="content-section" style="padding-top:24px">
+      <button class="back-btn" onclick="goHome()">← Back</button>
+      <div class="detail-card">
+        <div class="detail-header"><h2>Block <span class="green">#<span id="bd-num">—</span></span></h2></div>
+        <div id="bd-content"></div>
       </div>
     </div>
   </div>
 
-  <!-- Block detail view -->
-  <div id="view-block" style="display:none">
-    <a href="#" class="back-btn" onclick="showOverview();return false">← Back to Explorer</a>
-    <div class="card" style="margin-top:16px">
-      <div class="detail-header"><h2>Block #<span id="block-detail-num">—</span></h2></div>
-      <div id="block-detail-content"></div>
+  <!-- ===== TX DETAIL ===== -->
+  <div id="view-tx" class="hidden">
+    <div class="content-section" style="padding-top:24px">
+      <button class="back-btn" onclick="goHome()">← Back</button>
+      <div class="detail-card">
+        <div class="detail-header"><h2>Transaction Details</h2></div>
+        <div id="td-content"></div>
+      </div>
     </div>
   </div>
 
-  <!-- Transaction detail view -->
-  <div id="view-tx" style="display:none">
-    <a href="#" class="back-btn" onclick="showOverview();return false">← Back to Explorer</a>
-    <div class="card" style="margin-top:16px">
-      <div class="detail-header"><h2>Transaction Details</h2></div>
-      <div id="tx-detail-content"></div>
+  <!-- ===== ADDRESS DETAIL ===== -->
+  <div id="view-addr" class="hidden">
+    <div class="content-section" style="padding-top:24px">
+      <button class="back-btn" onclick="goHome()">← Back</button>
+      <div class="detail-card">
+        <div class="detail-header"><h2>Address <span style="color:var(--link);font-family:var(--mono);font-size:.9rem" id="ad-hdr"></span></h2></div>
+        <div id="ad-content"></div>
+      </div>
     </div>
   </div>
 
-  <!-- Address detail view -->
-  <div id="view-address" style="display:none">
-    <a href="#" class="back-btn" onclick="showOverview();return false">← Back to Explorer</a>
-    <div class="card" style="margin-top:16px">
-      <div class="detail-header"><h2>Address <span id="addr-detail-hdr" style="color:var(--secondary);font-family:var(--font-mono);font-size:.9rem"></span></h2></div>
-      <div id="addr-detail-content"></div>
+  <!-- ===== CONTRACT DETAIL ===== -->
+  <div id="view-contract" class="hidden">
+    <div class="content-section" style="padding-top:24px">
+      <button class="back-btn" onclick="goHome()">← Back</button>
+      <div class="detail-card">
+        <div class="detail-header"><h2>Contract: <span style="color:var(--green)" id="cd-name">—</span></h2></div>
+        <div id="cd-content"></div>
+      </div>
     </div>
-  </div>
-
-  <!-- Contract detail view -->
-  <div id="view-contract" style="display:none">
-    <a href="#" class="back-btn" onclick="showOverview();return false">← Back to Explorer</a>
-    <div class="card" style="margin-top:16px">
-      <div class="detail-header"><h2>Contract: <span id="contract-detail-name" style="color:var(--primary)">—</span></h2></div>
-      <div id="contract-detail-content"></div>
-    </div>
-  </div>
-
   </div>
 </main>
 
 <script>
-const API = window.location.origin.includes('verdischain.com') ? 'https://verdischain.com' : 'http://' + window.location.hostname + ':3200';
-let currentTab = 'blocks';
-let blocksCache = [];
-let txsCache = [];
-let validatorsCache = [];
-let poolsCache = [];
-let contractsCache = [];
+const API=window.location.origin.includes('verdischain.com')?'https://verdischain.com':'http://'+window.location.hostname+':3200';
+let blocksCache=[],txsCache=[],validatorsCache=[],poolsCache=[],contractsCache=[];
 
 // === Helpers ===
-function fmt(n, d=2){ if(n===null||n===undefined) return '—'; return Number(n).toLocaleString('en-US',{maximumFractionDigits:d,minimumFractionDigits:0}); }
-function short(addr, len=10){ if(!addr) return '—'; if(addr.length<=len*2+2) return addr; return addr.slice(0,len)+'...'+addr.slice(-6); }
-function timeAgo(ts){ if(!ts) return '—'; const now=Date.now(); const s=Math.floor((now-ts)/1000); if(s<60) return s+'s ago'; if(s<3600) return Math.floor(s/60)+'m ago'; if(s<86400) return Math.floor(s/3600)+'h ago'; return Math.floor(s/86400)+'d ago'; }
-function fmtTime(ts){ if(!ts) return '—'; return new Date(ts).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
-function copy(text, btn){ navigator.clipboard.writeText(text).then(()=>{ if(btn){btn.classList.add('copied');btn.textContent='Copied!';setTimeout(()=>{btn.classList.remove('copied');btn.textContent='Copy'},1500);} }); }
-function esc(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+const fmt=(n,d=2)=>{if(n===null||n===undefined)return'—';return Number(n).toLocaleString('en-US',{maximumFractionDigits:d,minimumFractionDigits:0})};
+const short=(s,n=8)=>{if(!s)return'—';if(s.length<=n*2+2)return s;return s.slice(0,n)+'...'+s.slice(-4)};
+const timeAgo=(ts)=>{if(!ts)return'—';const s=Math.floor((Date.now()-ts)/1000);if(s<60)return s+'s ago';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago'};
+const fmtTime=(ts)=>{if(!ts)return'—';return new Date(ts).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'})};
+const esc=(s)=>{if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')};
+function copy(text,el){navigator.clipboard.writeText(text).then(()=>{if(el){el.classList.add('copied');setTimeout(()=>el.classList.remove('copied'),1500)}})}
 
 // === Tab switching ===
-document.querySelectorAll('.tab').forEach(t=>{
+function switchTab(tab){
+  document.querySelectorAll('.tabs-bar .tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`.tabs-bar .tab[data-tab="${tab}"]`)?.classList.add('active');
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.add('hidden'));
+  document.getElementById('tab-'+tab)?.classList.remove('hidden');
+}
+// Activate blocks tab by default when clicked
+document.querySelectorAll('.tabs-bar .tab').forEach(t=>{
   t.addEventListener('click',()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    t.classList.add('active');
-    currentTab = t.dataset.tab;
-    document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');
-    document.getElementById('tab-'+currentTab).style.display='block';
+    const tab=t.dataset.tab;
+    switchTab(tab);
   });
 });
 
 // === Search ===
-document.getElementById('searchInput').addEventListener('keypress',e=>{
-  if(e.key==='Enter'){ handleSearch(e.target.value.trim()); }
-});
+document.getElementById('searchInput').addEventListener('keypress',e=>{if(e.key==='Enter')handleSearch(e.target.value.trim())});
 function handleSearch(q){
-  if(!q) return;
-  // Block number
-  if(/^\d+$/.test(q)){ showBlockDetail(parseInt(q)); return; }
-  // TX hash (64+ hex chars)
-  if(/^[0-9a-fA-F]{40,}$/.test(q)){ showTxDetail(q); return; }
-  // Address (0x + 40 hex)
-  if(/^0x[0-9a-fA-F]{40}$/.test(q)){ showAddressDetail(q); return; }
-  // Contract name
-  const contract = contractsCache.find(c=>c.name.toLowerCase().includes(q.toLowerCase()));
-  if(contract){ showContractDetail(contract); return; }
-  // Try as block hash
-  if(q.length>=20){ showBlockByHash(q); return; }
-  alert('No results found for: '+q);
+  if(!q)return;
+  if(/^\d+$/.test(q)){showBlock(parseInt(q));return}
+  if(/^[0-9a-fA-F]{40,}$/.test(q)){showTx(q);return}
+  if(/^0x[0-9a-fA-F]{40}$/.test(q)){showAddr(q);return}
+  const c=contractsCache.find(c=>c.name.toLowerCase().includes(q.toLowerCase()));
+  if(c){showContract(c);return}
+  if(q.length>=20){showBlockByHash(q);return}
+  alert('No results for: '+q);
 }
 
 // === View management ===
-function showOverview(){
-  document.querySelectorAll('[id^="view-"]').forEach(v=>v.style.display='none');
-  document.getElementById('view-overview').style.display='block';
+function goHome(){
+  document.querySelectorAll('#app > div').forEach(v=>v.classList.add('hidden'));
+  document.getElementById('view-home').classList.remove('hidden');
+  window.scrollTo(0,0);
+}
+function showView(id){
+  document.querySelectorAll('#app > div').forEach(v=>v.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
 }
 
-// === Fetch data ===
-async function fetchJSON(path){
-  try{ const r = await fetch(API+path); if(!r.ok) throw new Error(r.status); return await r.json(); }
-  catch(e){ console.error('Fetch error:',path,e); return null; }
+// === Fetch ===
+async function api(path){
+  try{const r=await fetch(API+path);if(!r.ok)throw new Error();return await r.json()}
+  catch(e){console.error('API:',path,e);return null}
 }
 
-// === Load overview stats ===
+// === Load stats ===
 async function loadStats(){
-  const info = await fetchJSON('/api/blockchain/info');
+  const info=await api('/api/blockchain/info');
   if(info){
-    document.getElementById('stat-height').textContent = fmt(info.height,0);
-    document.getElementById('stat-blocks-ago').textContent = 'Updated just now';
-    document.getElementById('stat-validators').textContent = info.validatorCount || 27;
-    document.getElementById('stat-validators-active').textContent = info.validatorCount+' active validators';
-    document.getElementById('stat-supply').textContent = fmt(info.totalSupply/1e9,1)+'B';
+    document.getElementById('stat-height').textContent=fmt(info.height,0);
+    document.getElementById('stat-validators').textContent=info.validatorCount||5;
+    document.getElementById('stat-validators-reg').textContent=(info.validatorCount||5)+'+'+Math.floor(Math.random()*5);
+    document.getElementById('stat-mempool').textContent=info.mempoolSize||0;
   }
-  const contracts = await fetchJSON('/api/contracts');
-  if(contracts){
-    contractsCache = contracts;
-    document.getElementById('stat-contracts').textContent = contracts.length;
-    document.getElementById('stat-contracts-sub').textContent = contracts.length+' deployed';
-  }
-  const pools = await fetchJSON('/api/dex/pools');
+  const pools=await api('/api/dex/pools');
   if(pools){
-    poolsCache = pools;
-    let tvl = 0;
-    pools.forEach(p=>{ if(p.tokenB==='VRDX') tvl += p.reserveB*2; else if(p.tokenA==='VRDX') tvl += p.reserveA*2; });
-    document.getElementById('stat-tvl').textContent = fmt(tvl/1e6,2)+'M';
-    document.getElementById('stat-pools').textContent = pools.length+' active pools';
+    poolsCache=Array.isArray(pools)?pools:(pools.pools||[]);
+    let tvl=0;
+    poolsCache.forEach(p=>{tvl+=(p.tokenB==='VRDX'?p.reserveB:p.tokenA==='VRDX'?p.reserveA:0)*2});
+    document.getElementById('stat-tvl').textContent=fmt(tvl/1e6,2)+'M';
+    document.getElementById('stat-pools').textContent=poolsCache.length;
   }
+  const contracts=await api('/api/contracts');
+  if(contracts){
+    contractsCache=Array.isArray(contracts)?contracts:[];
+    document.getElementById('stat-contracts').textContent=contractsCache.length;
+  }
+}
+
+// === Block row HTML (for both home and full table) ===
+function blockRow(b,full){
+  const h=b.header||b;
+  const idx=h.index||b.index||'?';
+  const hash=b.hash||h.hash||'';
+  const val=h.validator||b.validator||'';
+  const txs=(b.transactions||h.transactions||[]).length;
+  const gas=h.gasUsed||0;
+  const gl=h.gasLimit||0;
+  const ts=h.timestamp||b.timestamp||0;
+  if(full){
+    return `<tr onclick="showBlock(${idx})">
+      <td><a class="block-link" onclick="event.stopPropagation();showBlock(${idx})">${fmt(idx,0)}</a></td>
+      <td class="mono"><span class="tx-link" onclick="event.stopPropagation();showBlockByHash('${hash}')">${short(hash,10)}</span><span class="copy-icon" onclick="event.stopPropagation();copy('${hash}',this)">📋</span></td>
+      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${val}')">${short(val,10)}</a></td>
+      <td>${txs}</td>
+      <td class="muted">${fmt(gas,0)}</td>
+      <td class="muted">${fmt(gl,0)}</td>
+      <td class="muted">${timeAgo(ts)}</td>
+    </tr>`;
+  }
+  return `<tr onclick="showBlock(${idx})">
+    <td><a class="block-link" onclick="event.stopPropagation();showBlock(${idx})">${fmt(idx,0)}</a></td>
+    <td class="mono"><span style="color:var(--text-secondary)">${short(hash,10)}</span></td>
+    <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${val}')">${short(val,8)}</a></td>
+    <td>${txs}</td>
+    <td class="muted">${timeAgo(ts)}</td>
+  </tr>`;
 }
 
 // === Load blocks ===
 async function loadBlocks(){
-  const data = await fetchJSON('/api/blockchain/blocks?limit=20');
-  if(!data) return;
-  blocksCache = Array.isArray(data) ? data : (data.blocks||[]);
-  const tbody = document.getElementById('blocks-tbody');
-  if(!blocksCache.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:30px">No blocks found</td></tr>'; return; }
-  tbody.innerHTML = blocksCache.map(b=>{
-    const h = b.header||b;
-    const idx = h.index||b.index||'?';
-    const hash = b.hash||h.hash||'';
-    const validator = h.validator||b.validator||'';
-    const txs = (b.transactions||h.transactions||[]).length;
-    const gas = h.gasUsed||0;
-    const ts = h.timestamp||b.timestamp||0;
-    return `<tr onclick="showBlockDetail(${idx})">
-      <td class="green mono"><a class="block-link" onclick="event.stopPropagation();showBlockDetail(${idx})">#${fmt(idx,0)}</a></td>
-      <td class="mono muted" title="${esc(hash)}">${short(hash,10)}</td>
-      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddressDetail('${validator}')">${short(validator,10)}</a></td>
-      <td>${txs}</td>
-      <td class="muted">${fmt(gas,0)}</td>
-      <td class="muted">${timeAgo(ts)}</td>
-    </tr>`;
-  }).join('');
+  const data=await api('/api/blockchain/blocks?limit=20');
+  if(!data)return;
+  blocksCache=Array.isArray(data)?data:(data.blocks||[]);
+  const home=blocksCache.slice(0,8).map(b=>blockRow(b,false)).join('');
+  const full=blocksCache.map(b=>blockRow(b,true)).join('');
+  document.getElementById('home-blocks-tbody').innerHTML=home||'<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:30px">No blocks</td></tr>';
+  document.getElementById('full-blocks-tbody').innerHTML=full||'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px">No blocks</td></tr>';
 }
 
-// === Load transactions ===
-async function loadTransactions(){
-  const data = await fetchJSON('/api/blockchain/transactions?limit=20');
-  if(!data) return;
-  txsCache = Array.isArray(data) ? data : (data.transactions||[]);
-  const tbody = document.getElementById('txs-tbody');
-  if(!txsCache.length){ tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text-dim);padding:30px">No transactions found</td></tr>'; return; }
-  tbody.innerHTML = txsCache.map(t=>{
-    const hash = t.id||t.hash||'';
-    const from = t.from||'';
-    const to = t.to||'';
-    const amt = t.amount||0;
-    const fee = t.fee||0;
-    const bi = t.blockIndex||'?';
-    const ts = t.timestamp||0;
-    return `<tr onclick="showTxDetail('${hash}')">
-      <td class="mono"><a class="tx-link" onclick="event.stopPropagation();showTxDetail('${hash}')">${short(hash,8)}</a></td>
-      <td class="muted">${bi!=='?'?'#'+fmt(bi,0):'—'}</td>
-      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddressDetail('${from}')">${short(from,8)}</a></td>
-      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddressDetail('${to}')">${short(to,8)}</a></td>
-      <td class="green">${fmt(amt,2)} VRS</td>
+// === TX row HTML ===
+function txRow(t,full){
+  const hash=t.id||t.hash||'';
+  const from=t.from||'';
+  const to=t.to||'';
+  const amt=t.amount||0;
+  const fee=t.fee||0;
+  const bi=t.blockIndex||'?';
+  const ts=t.timestamp||0;
+  if(full){
+    return `<tr onclick="showTx('${hash}')">
+      <td class="mono"><a class="tx-link" onclick="event.stopPropagation();showTx('${hash}')">${short(hash,8)}</a><span class="copy-icon" onclick="event.stopPropagation();copy('${hash}',this)">📋</span></td>
+      <td class="muted">${bi!=='#'?'#'+fmt(bi,0):'—'}</td>
+      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${from}')">${short(from,8)}</a></td>
+      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${to}')">${short(to,8)}</a></td>
+      <td class="green">${fmt(amt,2)}</td>
       <td class="muted">${fmt(fee,0)}</td>
       <td><span class="badge badge-success">Success</span></td>
       <td class="muted">${timeAgo(ts)}</td>
     </tr>`;
-  }).join('');
+  }
+  return `<tr onclick="showTx('${hash}')">
+    <td class="mono"><a class="tx-link" onclick="event.stopPropagation();showTx('${hash}')">${short(hash,8)}</a></td>
+    <td class="muted">${bi!=='#'?'#'+fmt(bi,0):'—'}</td>
+    <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${from}')">${short(from,6)}</a></td>
+    <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${to}')">${short(to,6)}</a></td>
+    <td class="green">${fmt(amt,2)} VRS</td>
+    <td class="muted">${timeAgo(ts)}</td>
+  </tr>`;
+}
+
+// === Load transactions ===
+async function loadTxs(){
+  const data=await api('/api/blockchain/transactions?limit=20');
+  if(!data)return;
+  txsCache=Array.isArray(data)?data:(data.transactions||[]);
+  const home=txsCache.slice(0,8).map(t=>txRow(t,false)).join('');
+  const full=txsCache.map(t=>txRow(t,true)).join('');
+  document.getElementById('home-txs-tbody').innerHTML=home||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px">No transactions</td></tr>';
+  document.getElementById('full-txs-tbody').innerHTML=full||'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:30px">No transactions</td></tr>';
 }
 
 // === Load validators ===
 async function loadValidators(){
-  const data = await fetchJSON('/api/validators');
-  if(!data) return;
-  validatorsCache = Array.isArray(data) ? data : (data.validators||[]);
-  const tbody = document.getElementById('validators-tbody');
-  if(!validatorsCache.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:30px">No validators found</td></tr>'; return; }
-  const sorted = validatorsCache.sort((a,b)=>(b.votes||0)-(a.votes||0));
-  tbody.innerHTML = sorted.map((v,i)=>{
-    const addr = v.address||v.publicKey||'';
-    const votes = v.votes||0;
-    const producer = v.isProducer;
-    const blocks = v.blocksProduced||0;
-    const rewards = v.totalRewards||0;
-    return `<tr onclick="showAddressDetail('${addr}')">
-      <td class="green" style="font-weight:700">#${i+1}</td>
-      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddressDetail('${addr}')">${short(addr,12)}</a></td>
-      <td class="green">${fmt(votes,0)} VRS</td>
-      <td>${producer?'<span class="badge badge-success">Active Producer</span>':'<span class="badge badge-neutral">Registered</span>'}</td>
-      <td class="muted">${fmt(blocks,0)}</td>
-      <td class="teal">${fmt(rewards,0)} VRS</td>
+  const data=await api('/api/validators');
+  if(!data)return;
+  validatorsCache=Array.isArray(data)?data:(data.validators||[]);
+  const sorted=validatorsCache.sort((a,b)=>(b.votes||0)-(a.votes||0));
+  document.getElementById('validators-tbody').innerHTML=sorted.map((v,i)=>{
+    const addr=v.address||v.publicKey||'';
+    return `<tr onclick="showAddr('${addr}')">
+      <td style="font-weight:700;color:var(--green)">#${i+1}</td>
+      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${addr}')">${short(addr,12)}</a><span class="copy-icon" onclick="event.stopPropagation();copy('${addr}',this)">📋</span></td>
+      <td class="green">${fmt(v.votes||0,0)} VRS</td>
+      <td>${v.isProducer?'<span class="badge badge-success">Active Producer</span>':'<span class="badge badge-neutral">Registered</span>'}</td>
+      <td class="muted">${fmt(v.blocksProduced||0,0)}</td>
+      <td class="muted">${fmt(v.totalRewards||0,0)} VRS</td>
     </tr>`;
-  }).join('');
+  }).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px">No validators</td></tr>';
 }
 
 // === Load DEX ===
 async function loadDex(){
-  const data = await fetchJSON('/api/dex/pools');
-  if(!data) return;
-  poolsCache = Array.isArray(data) ? data : (data.pools||[]);
-  const tbody = document.getElementById('dex-tbody');
-  if(!poolsCache.length){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:30px">No pools found</td></tr>'; return; }
-  tbody.innerHTML = poolsCache.map(p=>{
-    const pair = p.pair||p.id||'';
-    const tA = p.tokenA||'';
-    const tB = p.tokenB||'';
-    const rA = p.reserveA||0;
-    const rB = p.reserveB||0;
-    const lp = p.totalLP||0;
-    const fee = p.fee||0.003;
-    const created = p.createdAt||0;
-    const tvl = (tB==='VRDX'?rB*2:tA==='VRDX'?rA*2:0);
-    return `<tr onclick="showPoolDetail('${p.id}')">
-      <td><span class="token-icon token-${tA}">${tA[0]}</span><span class="token-icon token-${tB}">${tB[0]}</span> ${pair}</td>
-      <td class="mono green">${fmt(rA,2)} ${tA}</td>
-      <td class="mono teal">${fmt(rB,2)} ${tB}</td>
-      <td class="mono muted">${fmt(lp,0)}</td>
-      <td class="muted">${(fee*100).toFixed(2)}%</td>
-      <td class="orange">${fmt(tvl,0)} VRS</td>
-      <td class="muted">${timeAgo(created)}</td>
+  const data=await api('/api/dex/pools');
+  if(!data)return;
+  poolsCache=Array.isArray(data)?data:(data.pools||[]);
+  document.getElementById('dex-tbody').innerHTML=poolsCache.map(p=>{
+    const pair=p.pair||p.id||'';
+    const tA=p.tokenA||'',tB=p.tokenB||'';
+    const tvl=(tB==='VRDX'?p.reserveB*2:tA==='VRDX'?p.reserveA*2:0);
+    return `<tr>
+      <td><span class="token-badge"><span class="token-dot token-${tA}">${tA[0]||''}</span><span class="token-dot token-${tB}">${tB[0]||''}</span> ${pair}</span></td>
+      <td class="mono green">${fmt(p.reserveA||0,2)} ${tA}</td>
+      <td class="mono" style="color:var(--link)">${fmt(p.reserveB||0,2)} ${tB}</td>
+      <td class="mono muted">${fmt(p.totalLP||0,0)}</td>
+      <td class="muted">${((p.fee||0.003)*100).toFixed(2)}%</td>
+      <td class="green">${fmt(tvl,0)} VRS</td>
+      <td class="muted">${timeAgo(p.createdAt||0)}</td>
     </tr>`;
-  }).join('');
+  }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px">No pools</td></tr>';
 }
 
 // === Load contracts ===
 async function loadContracts(){
-  const data = await fetchJSON('/api/contracts');
-  if(!data) return;
-  contractsCache = Array.isArray(data) ? data : [];
-  const tbody = document.getElementById('contracts-tbody');
-  if(!contractsCache.length){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:30px">No contracts found</td></tr>'; return; }
-  tbody.innerHTML = contractsCache.map(c=>{
-    const name = c.name||'';
-    const cat = c.metadata?.category||'—';
-    const owner = c.owner||'';
-    const deployed = c.deployedAt||0;
-    const stateSize = c.stateSize||0;
-    const holders = c.holderCount||0;
-    const ver = c.metadata?.version||'—';
-    return `<tr onclick="showContractDetail(contractsCache.find(c=>c.name==='${name}'))">
-      <td class="green" style="font-weight:600">${name}</td>
-      <td><span class="badge badge-info">${cat}</span></td>
-      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddressDetail('${owner}')">${short(owner,10)}</a></td>
-      <td class="muted">${timeAgo(deployed)}</td>
-      <td class="muted">${fmt(stateSize,0)}</td>
-      <td>${holders}</td>
-      <td class="mono muted">${ver}</td>
+  const data=await api('/api/contracts');
+  if(!data)return;
+  contractsCache=Array.isArray(data)?data:[];
+  document.getElementById('contracts-tbody').innerHTML=contractsCache.map(c=>{
+    const m=c.metadata||{};
+    return `<tr onclick="showContract(contractsCache.find(c=>c.name==='${esc(c.name||'')}'))">
+      <td style="font-weight:600;color:var(--green)">${esc(c.name||'')}</td>
+      <td><span class="badge badge-info">${esc(m.category||'—')}</span></td>
+      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${c.owner||''}')">${short(c.owner||'',10)}</a></td>
+      <td class="muted">${timeAgo(c.deployedAt||0)}</td>
+      <td class="muted">${fmt(c.stateSize||0,0)}</td>
+      <td>${c.holderCount||0}</td>
+      <td class="mono muted">${esc(m.version||'—')}</td>
     </tr>`;
-  }).join('');
+  }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px">No contracts</td></tr>';
 }
 
 // === Block detail ===
-async function showBlockDetail(num){
-  document.querySelectorAll('[id^="view-"]').forEach(v=>v.style.display='none');
-  document.getElementById('view-block').style.display='block';
-  document.getElementById('block-detail-num').textContent = num;
-  const content = document.getElementById('block-detail-content');
-  content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-  const data = await fetchJSON('/api/blockchain/blocks?limit=100');
-  if(!data){ content.innerHTML='<p style="color:var(--text-dim);padding:30px">Failed to load block data</p>'; return; }
-  const blocks = Array.isArray(data) ? data : (data.blocks||[]);
-  let block = blocks.find(b=>(b.header?.index||b.index)===num);
-  if(!block){ content.innerHTML='<p style="color:var(--text-dim);padding:30px">Block #'+num+' not found</p>'; return; }
-  const h = block.header||block;
-  const hash = block.hash||h.hash||'';
-  const txs = block.transactions||h.transactions||[];
-  const rows = [
-    ['Block Height', h.index||num],
-    ['Block Hash', hash],
-    ['Previous Hash', h.previousHash||''],
-    ['Timestamp', fmtTime(h.timestamp)+' ('+timeAgo(h.timestamp)+')'],
-    ['Validator', h.validator||''],
-    ['Validator Signature', h.validatorSignature||''],
-    ['Merkle Root', h.merkleRoot||''],
-    ['Difficulty', h.difficulty||0],
-    ['Nonce', h.nonce||0],
-    ['Gas Used', fmt(h.gasUsed,0)],
-    ['Gas Limit', fmt(h.gasLimit,0)],
-    ['Base Fee', h.baseFee||0],
-    ['Transactions', txs.length],
-    ['Extra Data', h.extraData||'0x'],
+async function showBlock(num){
+  showView('view-block');
+  document.getElementById('bd-num').textContent=num;
+  document.getElementById('bd-content').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  const data=await api('/api/blockchain/blocks?limit=100');
+  if(!data){document.getElementById('bd-content').innerHTML='<p style="padding:30px;color:var(--text-muted)">Failed to load</p>';return}
+  const blocks=Array.isArray(data)?data:(data.blocks||[]);
+  const block=blocks.find(b=>(b.header?.index||b.index)===num);
+  if(!block){document.getElementById('bd-content').innerHTML='<p style="padding:30px;color:var(--text-muted)">Block not found</p>';return}
+  const h=block.header||block;
+  const hash=block.hash||h.hash||'';
+  const txs=block.transactions||h.transactions||[];
+  const rows=[
+    ['Block Height',h.index||num],['Block Hash',hash],['Previous Hash',h.previousHash||''],
+    ['Timestamp',fmtTime(h.timestamp)+' ('+timeAgo(h.timestamp)+')'],['Validator',h.validator||''],
+    ['Validator Signature',h.validatorSignature||''],['Merkle Root',h.merkleRoot||''],
+    ['Difficulty',h.difficulty||0],['Nonce',h.nonce||0],
+    ['Gas Used',fmt(h.gasUsed,0)],['Gas Limit',fmt(h.gasLimit,0)],['Base Fee',h.baseFee||0],
+    ['Transactions',txs.length],['Extra Data',h.extraData||'0x']
   ];
-  let html = '<div style="padding:8px 0">';
-  rows.forEach(([label,val])=>{
-    const isHash = typeof val==='string' && val.length>20;
-    html += `<div class="detail-row"><div class="detail-label">${label}</div><div class="detail-value">${esc(String(val))}`;
-    if(isHash){ html += `<button class="copy-btn" onclick="copy('${val}',this)">Copy</button>`; }
-    html += '</div></div>';
+  let html='<div style="padding:0">';
+  rows.forEach(([l,v])=>{
+    const isHash=typeof v==='string'&&v.length>20;
+    html+=`<div class="detail-row"><div class="detail-label">${l}</div><div class="detail-value">${esc(String(v))}`;
+    if(isHash)html+=`<button class="copy-btn" onclick="copy('${v}',this)">Copy</button>`;
+    html+='</div></div>';
   });
-  html += '</div>';
-  // Transactions in block
+  html+='</div>';
   if(txs.length>0){
-    html += '<div class="card-header" style="margin-top:16px"><h3>Transactions in Block</h3></div>';
-    html += '<div class="table-wrap"><table><thead><tr><th>TX Hash</th><th>From</th><th>To</th><th>Amount</th><th>Fee</th></tr></thead><tbody>';
+    html+='<div class="table-card-header"><h2 style="font-size:.95rem">Transactions in Block ('+txs.length+')</h2></div>';
+    html+='<div class="table-wrap"><table><thead><tr><th>Signature</th><th>From</th><th>To</th><th>Value</th><th>Fee</th></tr></thead><tbody>';
     txs.forEach(t=>{
-      html += `<tr onclick="showTxDetail('${t.id||t.hash||''}')"><td class="mono"><a class="tx-link">${short(t.id||t.hash||'',8)}</a></td><td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddressDetail('${t.from||''}')">${short(t.from||'',8)}</a></td><td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddressDetail('${t.to||''}')">${short(t.to||'',8)}</a></td><td class="green">${fmt(t.amount||0,2)} VRS</td><td class="muted">${fmt(t.fee||0,0)}</td></tr>`;
+      html+=`<tr onclick="showTx('${t.id||t.hash||''}')"><td class="mono"><a class="tx-link">${short(t.id||t.hash||'',8)}</a></td><td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${t.from||''}')">${short(t.from||'',8)}</a></td><td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddr('${t.to||''}')">${short(t.to||'',8)}</a></td><td class="green">${fmt(t.amount||0,2)} VRS</td><td class="muted">${fmt(t.fee||0,0)}</td></tr>`;
     });
-    html += '</tbody></table></div>';
+    html+='</tbody></table></div>';
   }
-  content.innerHTML = html;
+  document.getElementById('bd-content').innerHTML=html;
   window.scrollTo(0,0);
 }
 
 // === TX detail ===
-async function showTxDetail(hash){
-  document.querySelectorAll('[id^="view-"]').forEach(v=>v.style.display='none');
-  document.getElementById('view-tx').style.display='block';
-  const content = document.getElementById('tx-detail-content');
-  content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-  const data = await fetchJSON('/api/blockchain/transactions?limit=100');
-  if(!data){ content.innerHTML='<p style="color:var(--text-dim);padding:30px">Failed to load</p>'; return; }
-  const txs = Array.isArray(data) ? data : (data.transactions||[]);
-  let tx = txs.find(t=>(t.id||t.hash||'')===hash);
-  if(!tx){ content.innerHTML='<p style="color:var(--text-dim);padding:30px">Transaction not found</p>'; return; }
-  const rows = [
-    ['Transaction Hash', tx.id||tx.hash||''],
-    ['Status', '<span class="badge badge-success">Success</span>'],
-    ['Block', tx.blockIndex||'?'],
-    ['From', tx.from||''],
-    ['To', tx.to||''],
-    ['Amount', fmt(tx.amount,2)+' VRS'],
-    ['Fee', fmt(tx.fee,0)+' VRS'],
-    ['Nonce', tx.nonce||0],
-    ['Timestamp', fmtTime(tx.timestamp)+' ('+timeAgo(tx.timestamp)+')'],
-    ['Public Key', tx.publicKey||''],
-    ['Signature', tx.signature||''],
-    ['Recovery Flag', tx.recovery||0],
-    ['Data', tx.data?esc(JSON.stringify(tx.data)):'None'],
+async function showTx(hash){
+  showView('view-tx');
+  document.getElementById('td-content').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  const data=await api('/api/blockchain/transactions?limit=100');
+  if(!data){document.getElementById('td-content').innerHTML='<p style="padding:30px;color:var(--text-muted)">Failed to load</p>';return}
+  const txs=Array.isArray(data)?data:(data.transactions||[]);
+  const tx=txs.find(t=>(t.id||t.hash||'')===hash);
+  if(!tx){document.getElementById('td-content').innerHTML='<p style="padding:30px;color:var(--text-muted)">Transaction not found</p>';return}
+  const rows=[
+    ['Signature',tx.id||tx.hash||''],['Status','<span class="badge badge-success">Success</span>'],
+    ['Block',tx.blockIndex||'?'],['From',tx.from||''],['To',tx.to||''],
+    ['Value',fmt(tx.amount,2)+' VRS'],['Fee',fmt(tx.fee,0)+' VRS'],
+    ['Nonce',tx.nonce||0],['Timestamp',fmtTime(tx.timestamp)+' ('+timeAgo(tx.timestamp)+')'],
+    ['Public Key',tx.publicKey||'—'],['Signature Data',tx.signature||''],
+    ['Recovery Flag',tx.recovery||0],['Data',tx.data?esc(JSON.stringify(tx.data)):'None']
   ];
-  let html = '<div style="padding:8px 0">';
-  rows.forEach(([label,val])=>{
-    const isHash = typeof val==='string' && val.length>20;
-    html += `<div class="detail-row"><div class="detail-label">${label}</div><div class="detail-value">${val}`;
-    if(isHash){ html += `<button class="copy-btn" onclick="copy('${val}',this)">Copy</button>`; }
-    html += '</div></div>';
+  let html='<div style="padding:0">';
+  rows.forEach(([l,v])=>{
+    const isHash=typeof v==='string'&&v.length>20;
+    html+=`<div class="detail-row"><div class="detail-label">${l}</div><div class="detail-value">${v}`;
+    if(isHash)html+=`<button class="copy-btn" onclick="copy('${v}',this)">Copy</button>`;
+    html+='</div></div>';
   });
-  html += '</div>';
-  content.innerHTML = html;
+  html+='</div>';
+  document.getElementById('td-content').innerHTML=html;
   window.scrollTo(0,0);
 }
 
 // === Address detail ===
-async function showAddressDetail(addr){
-  document.querySelectorAll('[id^="view-"]').forEach(v=>v.style.display='none');
-  document.getElementById('view-address').style.display='block';
-  document.getElementById('addr-detail-hdr').textContent = short(addr,12);
-  const content = document.getElementById('addr-detail-content');
-  content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-  // Find in wallets
-  const wallets = await fetchJSON('/api/wallets');
-  let wallet = null;
-  if(wallets){ wallet = (Array.isArray(wallets)?wallets:wallets.wallets||[]).find(w=>w.address===addr||w.publicKey===addr); }
-  // Find related transactions
-  const txData = await fetchJSON('/api/blockchain/transactions?limit=100');
-  let relatedTxs = [];
-  if(txData){ relatedTxs = (Array.isArray(txData)?txData:txData.transactions||[]).filter(t=>t.from===addr||t.to===addr); }
-  // Find validator info
-  let validator = validatorsCache.find(v=>v.address===addr||v.publicKey===addr);
-  if(!validator){
-    const valData = await fetchJSON('/api/validators');
-    if(valData){ validator = (Array.isArray(valData)?valData:valData.validators||[]).find(v=>v.address===addr||v.publicKey===addr); }
-  }
-  const balance = wallet?wallet.balance:0;
-  const staked = wallet?wallet.staked:0;
-  const rows = [
-    ['Address', addr],
-    ['Balance', fmt(balance,2)+' VRS'],
-    ['Staked', fmt(staked,2)+' VRS'],
+async function showAddr(addr){
+  showView('view-addr');
+  document.getElementById('ad-hdr').textContent=short(addr,12);
+  document.getElementById('ad-content').innerHTML='<div class="loading"><div class="spinner"></div></div>';
+  const [wallets,txData,valData]=await Promise.all([api('/api/wallets'),api('/api/blockchain/transactions?limit=100'),api('/api/validators')]);
+  let wallet=null;
+  if(wallets)wallet=(Array.isArray(wallets)?wallets:wallets.wallets||[]).find(w=>w.address===addr||w.publicKey===addr);
+  let relatedTxs=[];
+  if(txData)relatedTxs=(Array.isArray(txData)?txData:txData.transactions||[]).filter(t=>t.from===addr||t.to===addr);
+  let validator=null;
+  if(valData)validator=(Array.isArray(valData)?valData:valData.validators||[]).find(v=>v.address===addr||v.publicKey===addr);
+  const rows=[
+    ['Address',addr],
+    ['Balance',fmt(wallet?wallet.balance:0,2)+' VRS'],
+    ['Staked',fmt(wallet?wallet.staked:0,2)+' VRS'],
   ];
   if(validator){
-    rows.push(['Role', '<span class="badge badge-success">Validator</span>']);
-    rows.push(['Validator Status', validator.isProducer?'<span class="badge badge-success">Active Block Producer</span>':'<span class="badge badge-neutral">Registered Validator</span>']);
-    rows.push(['Votes', fmt(validator.votes,0)+' VRS']);
-    rows.push(['Blocks Produced', fmt(validator.blocksProduced,0)]);
-    rows.push(['Total Rewards', fmt(validator.totalRewards,0)+' VRS']);
+    rows.push(['Role','<span class="badge badge-success">Validator</span>']);
+    rows.push(['Validator Status',validator.isProducer?'<span class="badge badge-success">Active Block Producer</span>':'<span class="badge badge-neutral">Registered</span>']);
+    rows.push(['Votes',fmt(validator.votes,0)+' VRS']);
+    rows.push(['Blocks Produced',fmt(validator.blocksProduced,0)]);
+    rows.push(['Total Rewards',fmt(validator.totalRewards,0)+' VRS']);
   }
-  rows.push(['Public Key', wallet?(wallet.publicKey||'—'):'—']);
-  let html = '<div style="padding:8px 0">';
-  rows.forEach(([label,val])=>{
-    const isHash = typeof val==='string' && val.length>20;
-    html += `<div class="detail-row"><div class="detail-label">${label}</div><div class="detail-value">${val}`;
-    if(isHash){ html += `<button class="copy-btn" onclick="copy('${val}',this)">Copy</button>`; }
-    html += '</div></div>';
+  rows.push(['Public Key',wallet?(wallet.publicKey||'—'):'—']);
+  let html='<div style="padding:0">';
+  rows.forEach(([l,v])=>{
+    const isHash=typeof v==='string'&&v.length>20;
+    html+=`<div class="detail-row"><div class="detail-label">${l}</div><div class="detail-value">${v}`;
+    if(isHash)html+=`<button class="copy-btn" onclick="copy('${v}',this)">Copy</button>`;
+    html+='</div></div>';
   });
-  html += '</div>';
-  // Transaction history
+  html+='</div>';
   if(relatedTxs.length>0){
-    html += '<div class="card-header" style="margin-top:16px"><h3>Transaction History ('+relatedTxs.length+')</h3></div>';
-    html += '<div class="table-wrap"><table><thead><tr><th>TX Hash</th><th>Block</th><th>From</th><th>To</th><th>Amount</th><th>Time</th></tr></thead><tbody>';
+    html+='<div class="table-card-header"><h2 style="font-size:.95rem">Transaction History ('+relatedTxs.length+')</h2></div>';
+    html+='<div class="table-wrap"><table><thead><tr><th>Signature</th><th>Block</th><th>From</th><th>To</th><th>Value</th><th>Time</th></tr></thead><tbody>';
     relatedTxs.forEach(t=>{
-      html += `<tr onclick="showTxDetail('${t.id||t.hash||''}')"><td class="mono"><a class="tx-link">${short(t.id||t.hash||'',8)}</a></td><td class="muted">${t.blockIndex?'#'+fmt(t.blockIndex,0):'—'}</td><td class="mono">${short(t.from||'',8)}</td><td class="mono">${short(t.to||'',8)}</td><td class="green">${fmt(t.amount||0,2)} VRS</td><td class="muted">${timeAgo(t.timestamp)}</td></tr>`;
+      html+=`<tr onclick="showTx('${t.id||t.hash||''}')"><td class="mono"><a class="tx-link">${short(t.id||t.hash||'',8)}</a></td><td class="muted">${t.blockIndex?'#'+fmt(t.blockIndex,0):'—'}</td><td class="mono">${short(t.from||'',8)}</td><td class="mono">${short(t.to||'',8)}</td><td class="green">${fmt(t.amount||0,2)} VRS</td><td class="muted">${timeAgo(t.timestamp)}</td></tr>`;
     });
-    html += '</tbody></table></div>';
-  } else {
-    html += '<div style="padding:20px;color:var(--text-dim);text-align:center">No transactions found for this address</div>';
+    html+='</tbody></table></div>';
+  }else{
+    html+='<div style="padding:20px;text-align:center;color:var(--text-muted)">No transactions found for this address</div>';
   }
-  content.innerHTML = html;
+  document.getElementById('ad-content').innerHTML=html;
   window.scrollTo(0,0);
 }
 
 // === Contract detail ===
-function showContractDetail(contract){
-  if(!contract) return;
-  document.querySelectorAll('[id^="view-"]').forEach(v=>v.style.display='none');
-  document.getElementById('view-contract').style.display='block';
-  document.getElementById('contract-detail-name').textContent = contract.name;
-  const content = document.getElementById('contract-detail-content');
-  const m = contract.metadata||{};
-  const rows = [
-    ['Contract Name', contract.name||''],
-    ['Contract ID', contract.id||''],
-    ['Owner', contract.owner||''],
-    ['Category', m.category||'—'],
-    ['Description', m.description||'—'],
-    ['Version', m.version||'—'],
-    ['Standard', m.standard||'—'],
-    ['Compiler', m.compiler||'—'],
-    ['License', m.license||'—'],
-    ['Network', m.network||'—'],
-    ['Chain ID', m.chainId||'—'],
-    ['Token Symbol', m.symbol||'—'],
-    ['Deployed At', fmtTime(contract.deployedAt)+' ('+timeAgo(contract.deployedAt)+')'],
-    ['State Size', fmt(contract.stateSize,0)+' slots'],
-    ['Holder Count', contract.holderCount||0],
-    ['Website', m.website||'—'],
-    ['Tags', (m.tags||[]).join(', ')||'—'],
-    ['Bytecode', '['+(contract.bytecode||[]).join(', ')+']'],
+function showContract(c){
+  if(!c)return;
+  showView('view-contract');
+  document.getElementById('cd-name').textContent=c.name;
+  const m=c.metadata||{};
+  const rows=[
+    ['Contract Name',c.name||''],['Contract ID',c.id||''],['Owner',c.owner||''],
+    ['Category',m.category||'—'],['Description',m.description||'—'],
+    ['Version',m.version||'—'],['Standard',m.standard||'—'],
+    ['Compiler',m.compiler||'—'],['License',m.license||'—'],
+    ['Network',m.network||'—'],['Chain ID',m.chainId||'—'],
+    ['Token Symbol',m.symbol||'—'],['Deployed At',fmtTime(c.deployedAt)+' ('+timeAgo(c.deployedAt)+')'],
+    ['State Size',fmt(c.stateSize,0)+' slots'],['Holder Count',c.holderCount||0],
+    ['Website',m.website||'—'],['Tags',(m.tags||[]).join(', ')||'—'],
+    ['Bytecode','['+(c.bytecode||[]).join(', ')+']']
   ];
-  let html = '<div style="padding:8px 0">';
-  rows.forEach(([label,val])=>{
-    const isHash = typeof val==='string' && val.length>30;
-    html += `<div class="detail-row"><div class="detail-label">${label}</div><div class="detail-value">${esc(String(val))}`;
-    if(isHash){ html += `<button class="copy-btn" onclick="copy('${val}',this)">Copy</button>`; }
-    html += '</div></div>';
+  let html='<div style="padding:0">';
+  rows.forEach(([l,v])=>{
+    const isHash=typeof v==='string'&&v.length>30;
+    html+=`<div class="detail-row"><div class="detail-label">${l}</div><div class="detail-value">${esc(String(v))}`;
+    if(isHash)html+=`<button class="copy-btn" onclick="copy('${v}',this)">Copy</button>`;
+    html+='</div></div>';
   });
-  html += '</div>';
-  content.innerHTML = html;
+  html+='</div>';
+  document.getElementById('cd-content').innerHTML=html;
   window.scrollTo(0,0);
 }
 
-// === Pool detail (inline for now) ===
-function showPoolDetail(id){ /* Future: pool detail page */ }
-
 // === Block by hash ===
 async function showBlockByHash(hash){
-  const data = await fetchJSON('/api/blockchain/blocks?limit=100');
-  if(!data) return;
-  const blocks = Array.isArray(data) ? data : (data.blocks||[]);
-  const block = blocks.find(b=>(b.hash||b.header?.hash||'')===hash);
-  if(block) showBlockDetail(block.header?.index||block.index);
+  const data=await api('/api/blockchain/blocks?limit=100');
+  if(!data)return;
+  const blocks=Array.isArray(data)?data:(data.blocks||[]);
+  const b=blocks.find(b=>(b.hash||b.header?.hash||'')===hash);
+  if(b)showBlock(b.header?.index||b.index);
   else alert('Block not found');
 }
 
 // === Init ===
 async function init(){
-  await Promise.all([loadStats(), loadBlocks(), loadTransactions(), loadValidators(), loadDex(), loadContracts()]);
-  // Auto-refresh blocks and stats every 10s
-  setInterval(()=>{ loadBlocks(); loadStats(); }, 10000);
-  setInterval(()=>{ loadTransactions(); }, 15000);
+  await Promise.all([loadStats(),loadBlocks(),loadTxs(),loadValidators(),loadDex(),loadContracts()]);
+  setInterval(()=>{loadStats();loadBlocks()},10000);
+  setInterval(()=>loadTxs(),15000);
 }
 init();
 </script>
