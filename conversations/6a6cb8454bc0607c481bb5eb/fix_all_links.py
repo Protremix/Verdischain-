@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
-Phase 2: Replace all existing footers with the standardized footer.
-Also add footer to dashboard.html which has none.
+Comprehensive link fix for Verdis website.
+- Fixes broken external links (GitHub, Discord, Medium)
+- Fixes broken internal links (/wallet.html -> /wallet, missing PDFs)
+- Adds consistent footer to all pages
+- Fixes navigation inconsistencies
 """
 
 import os
@@ -9,6 +12,7 @@ import re
 
 WEB_DIR = "/opt/verdis/app/dist/web"
 
+# Standard footer HTML (consistent across all pages)
 FOOTER_HTML = '''<footer style="background:#080d0b;border-top:1px solid #1a2a20;padding:40px 20px 20px;margin-top:40px;">
   <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:30px;">
     <div>
@@ -48,74 +52,93 @@ FOOTER_HTML = '''<footer style="background:#080d0b;border-top:1px solid #1a2a20;
   </div>
 </footer>'''
 
-# Files to process
-files_to_process = [
-    "landing.html",
-    "dashboard.html",
-    "bridge.html",
-    "markets.html",
-    "ecosystem.html",
-    "token-sale.html",
-    "whitepaper.html",
-    "download.html",
-    "staking.html",
-    "team.html",
+# Social link replacements (fix all variations)
+SOCIAL_FIXES = [
+    # GitHub fixes
+    (r'https://github\.com/verdis-chain', 'https://github.com/verdischain'),
+    (r'https://github\.com["\x27>]', 'https://github.com/verdischain'),
+    (r'https://github\.comverdischain', 'https://github.com/verdischain'),
+    # Discord - remove generic discord.com, keep discord.gg/verdis
+    (r'https://discord\.com["\x27> ]', 'https://t.me/verdischain'),
+    # Medium - remove, replace with Telegram
+    (r'https://medium\.com/@verdischain', 'https://t.me/verdischain'),
+    # verdis-tokenomics.pdf -> verdis-whitepaper.pdf
+    (r'/verdis-tokenomics\.pdf', '/verdis-whitepaper.pdf'),
+    # wallet.html -> /wallet
+    (r'/wallet\.html', '/wallet'),
+    # explorer.html -> /explorer
+    (r'/explorer\.html', '/explorer'),
+    # dashboard.html#bridge -> /bridge
+    (r'dashboard\.html#bridge', '/bridge'),
 ]
 
-for filename in files_to_process:
-    filepath = os.path.join(WEB_DIR, filename)
-    if not os.path.exists(filepath):
-        print(f"[SKIP] {filename} - not found")
-        continue
-    
+# Pages that need footer added (no <footer> tag exists)
+PAGES_NEEDING_FOOTER = [
+    "api-docs.html",
+    "code.html", 
+    "competitive-analysis.html",
+    "explorer.html",
+    "ssh-terminal.html",
+    "status.html",
+    "templates.html",
+    "trust-connect.html",
+    "wallet.html",
+    "audit-report.html",
+]
+
+def fix_file(filepath):
     with open(filepath, "r", encoding="utf-8", errors="replace") as f:
         content = f.read()
-    
     original = content
     changes = []
     
-    # Find and replace existing footer
-    footer_pattern = re.compile(r"<footer[^>]*>.*?</footer>", re.DOTALL | re.IGNORECASE)
+    # Apply social/external link fixes
+    for pattern, replacement in SOCIAL_FIXES:
+        matches = re.findall(pattern, content)
+        if matches:
+            content = re.sub(pattern, replacement, content)
+            changes.append(f"Fixed {pattern} -> {replacement}")
     
-    has_footer = footer_pattern.search(content)
+    # Check if page has a proper footer
+    has_footer = bool(re.search(r"<footer", content, re.IGNORECASE))
     
-    if has_footer:
-        # Replace existing footer
-        content = footer_pattern.sub(FOOTER_HTML, content, count=1)
-        changes.append("Replaced existing footer with standard")
-    else:
-        # Add footer before </body>
+    if not has_footer and os.path.basename(filepath) in PAGES_NEEDING_FOOTER:
+        # Find </body> and insert footer before it
         body_close = content.rfind("</body>")
         if body_close >= 0:
             content = content[:body_close] + FOOTER_HTML + "\n" + content[body_close:]
-            changes.append("Added footer before </body>")
+            changes.append("Added footer")
         else:
+            # No </body> tag, append at end
             content = content + "\n" + FOOTER_HTML
-            changes.append("Appended footer")
+            changes.append("Appended footer (no </body> found)")
     
-    # Also fix twitter.com -> x.com for consistency
-    if "twitter.com/Verdischain" in content:
-        content = content.replace("https://twitter.com/Verdischain", "https://x.com/Verdischain")
-        changes.append("Fixed twitter.com -> x.com")
-    
-    # Remove any remaining discord.gg links (already replaced in footer, but may exist elsewhere)
-    if "discord.gg/verdis" in content and "discord.gg/verdis" not in FOOTER_HTML:
-        content = content.replace("https://discord.gg/verdis", "https://t.me/verdischain")
-        changes.append("Fixed remaining discord.gg -> telegram")
-    
-    if "discord.com" in content and "discord.com" not in FOOTER_HTML:
-        # Only replace standalone discord.com links, not in comments
-        content = re.sub(r'href="https://discord\.com"', 'href="https://t.me/verdischain"', content)
-        content = re.sub(r"href='https://discord\.com'", "href='https://t.me/verdischain'", content)
-        changes.append("Fixed discord.com -> telegram")
+    # Also fix the Telegram bot link in footers - replace with main channel
+    if "t.me/Verdis_official_bot" in content:
+        content = content.replace("https://t.me/Verdis_official_bot", "https://t.me/verdischain")
+        changes.append("Fixed Telegram bot -> main channel")
     
     if content != original:
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(content)
+        return changes
+    return None
+
+# Process all HTML files
+all_changes = {}
+for filename in sorted(os.listdir(WEB_DIR)):
+    if not filename.endswith(".html"):
+        continue
+    filepath = os.path.join(WEB_DIR, filename)
+    changes = fix_file(filepath)
+    if changes:
+        all_changes[filename] = changes
         print(f"[FIXED] {filename}:")
         for c in changes:
             print(f"  - {c}")
     else:
-        print(f"[OK] {filename} - no changes needed")
+        print(f"[OK] {filename}")
 
-print("\nDone!")
+print(f"\n=== SUMMARY ===")
+print(f"Files modified: {len(all_changes)}")
+print(f"Files unchanged: {len([f for f in os.listdir(WEB_DIR) if f.endswith('.html')]) - len(all_changes)}")
