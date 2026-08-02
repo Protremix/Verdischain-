@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis Explorer — Block Explorer | Verdis Chain</title>
+<meta name="description" content="Verdis Chain Explorer — Search blocks, transactions, addresses, validators, DEX pools, and smart contracts on the Verdis blockchain.">
+<link rel="icon" href="/verdis-logo-animated.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050a08;--bg-card:rgba(10,18,14,0.72);--bg-hover:rgba(18,32,25,0.88);--border:rgba(0,255,136,0.12);--border-bright:rgba(0,255,136,0.3);--text:#f0fdf4;--text-muted:#8ba898;--text-dim:#547363;--primary:#00ff88;--secondary:#2dd4bf;--accent:#10b981;--danger:#ef4444;--warning:#f59e0b;--glow:rgba(0,255,136,0.15);--font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;--font-head:'Space Grotesk',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--bg);color:var(--text);font-family:var(--font-body)}
+body{background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+::selection{background:rgba(0,255,136,0.2)}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(0,255,136,0.15);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:rgba(0,255,136,0.3)}
+
+/* Background orbs */
+.bg-orbs{position:fixed;top:0;left:0;width:100vw;height:100vh;overflow:hidden;z-index:-1;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(120px);opacity:.15;animation:drift 22s infinite ease-in-out alternate}
+.orb-1{width:550px;height:550px;background:radial-gradient(circle,#00ff88,transparent 70%);top:-10%;left:-10%}
+.orb-2{width:650px;height:650px;background:radial-gradient(circle,#2dd4bf,transparent 70%);bottom:-15%;right:-10%;animation-delay:-6s}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(70px,90px) scale(1.1)}100%{transform:translate(-50px,50px) scale(.9)}}
+
+/* Navbar */
+.navbar{position:fixed;top:0;left:0;right:0;height:64px;background:rgba(5,10,8,.88);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);z-index:100;display:flex;align-items:center;padding:0 24px;gap:20px}
+.navbar .logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.navbar .logo svg{width:32px;height:32px}
+.navbar .logo span{font-family:var(--font-head);font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,#00ff88,#2dd4bf);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.navbar .logo .explorer-badge{font-size:.65rem;color:var(--text-dim);font-weight:500;margin-left:4px}
+
+/* Search */
+.search-wrap{flex:1;max-width:640px;position:relative}
+.search-wrap input{width:100%;height:42px;background:rgba(10,18,14,.6);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:.9rem;font-family:var(--font-mono);padding:0 44px 0 16px;outline:none;transition:all .2s}
+.search-wrap input:focus{border-color:var(--border-bright);box-shadow:0 0 0 3px var(--glow)}
+.search-wrap input::placeholder{color:var(--text-dim);font-family:var(--font-body)}
+.search-wrap .search-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-dim);pointer-events:none}
+
+/* Nav links */
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-links a{color:var(--text-muted);text-decoration:none;font-size:.88rem;font-weight:500;padding:8px 14px;border-radius:8px;transition:all .15s}
+.nav-links a:hover{color:var(--text);background:rgba(0,255,136,.05)}
+.nav-links a.active{color:var(--primary);background:rgba(0,255,136,.08)}
+
+/* Main */
+.main{padding-top:64px;min-height:100vh}
+.container{max-width:1400px;margin:0 auto;padding:24px}
+
+/* Stats cards */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;backdrop-filter:blur(10px);transition:all .2s}
+.stat-card:hover{border-color:var(--border-bright);box-shadow:0 4px 20px var(--glow)}
+.stat-card .label{font-size:.78rem;color:var(--text-dim);font-weight:500;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:6px}
+.stat-card .value{font-size:1.5rem;font-weight:700;font-family:var(--font-head);margin-top:6px;color:var(--text)}
+.stat-card .sub{font-size:.78rem;color:var(--text-muted);margin-top:2px}
+.stat-card .value.green{color:var(--primary)}
+.stat-card .value.teal{color:var(--secondary)}
+.stat-card .value.orange{color:var(--warning)}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:0;overflow-x:auto}
+.tab{padding:10px 18px;font-size:.9rem;font-weight:600;color:var(--text-dim);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;font-family:var(--font-body)}
+.tab:hover{color:var(--text-muted)}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+.tab .badge{font-size:.7rem;background:rgba(0,255,136,.1);color:var(--primary);padding:2px 8px;border-radius:10px;margin-left:6px;font-weight:600}
+
+/* Cards */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;overflow:hidden;backdrop-filter:blur(10px)}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:between;gap:12px}
+.card-header h3{font-family:var(--font-head);font-size:1rem;font-weight:600;color:var(--text)}
+.card-header .actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.card-body{padding:0}
+
+/* Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{text-align:left;padding:12px 16px;color:var(--text-dim);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;background:rgba(10,18,14,.95);backdrop-filter:blur(8px)}
+tbody tr{border-bottom:1px solid rgba(0,255,136,.04);transition:background .1s;cursor:pointer}
+tbody tr:hover{background:rgba(0,255,136,.04)}
+tbody td{padding:12px 16px;white-space:nowrap;color:var(--text)}
+tbody td.mono{font-family:var(--font-mono);font-size:.82rem}
+tbody td.muted{color:var(--text-muted)}
+tbody td.green{color:var(--primary)}
+tbody td.red{color:var(--danger)}
+tbody td.teal{color:var(--secondary)}
+
+/* Links */
+a.tx-link{color:var(--primary);text-decoration:none;font-family:var(--font-mono);font-size:.82rem}
+a.tx-link:hover{text-decoration:underline}
+a.addr-link{color:var(--secondary);text-decoration:none;font-family:var(--font-mono);font-size:.82rem}
+a.addr-link:hover{text-decoration:underline}
+a.block-link{color:var(--primary);text-decoration:none;font-weight:600}
+a.block-link:hover{text-decoration:underline}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
+.badge-success{background:rgba(0,255,136,.1);color:var(--primary);border:1px solid rgba(0,255,136,.2)}
+.badge-info{background:rgba(45,212,191,.1);color:var(--secondary);border:1px solid rgba(45,212,191,.2)}
+.badge-warning{background:rgba(245,158,11,.1);color:var(--warning);border:1px solid rgba(245,158,11,.2)}
+.badge-neutral{background:rgba(139,168,152,.08);color:var(--text-muted);border:1px solid rgba(139,168,152,.15)}
+
+/* Detail view */
+.detail-header{display:flex;align-items:center;gap:12px;padding:20px 24px;border-bottom:1px solid var(--border)}
+.detail-header h2{font-family:var(--font-head);font-size:1.3rem;font-weight:700}
+.detail-grid{display:grid;grid-template-columns:180px 1fr;gap:0}
+.detail-row{display:flex;border-bottom:1px solid rgba(0,255,136,.04);padding:14px 20px;align-items:flex-start;gap:16px}
+.detail-label{color:var(--text-dim);font-size:.85rem;min-width:160px;flex-shrink:0;font-weight:500}
+.detail-value{color:var(--text);font-size:.88rem;font-family:var(--font-mono);word-break:break-all;flex:1}
+
+/* Copy button */
+.copy-btn{background:rgba(0,255,136,.06);border:1px solid var(--border);color:var(--text-muted);padding:4px 10px;border-radius:6px;font-size:.75rem;cursor:pointer;transition:all .15s;margin-left:8px}
+.copy-btn:hover{background:rgba(0,255,136,.1);color:var(--primary)}
+.copy-btn.copied{color:var(--primary)}
+
+/* Pagination */
+.pagination{display:flex;justify-content:center;gap:8px;padding:16px;align-items:center}
+.pagination button{background:rgba(0,255,136,.05);border:1px solid var(--border);color:var(--text-muted);padding:8px 16px;border-radius:8px;font-size:.85rem;cursor:pointer;transition:all .15s}
+.pagination button:hover{background:rgba(0,255,136,.1);color:var(--primary);border-color:var(--border-bright)}
+.pagination button:disabled{opacity:.3;cursor:not-allowed}
+.pagination .info{color:var(--text-dim);font-size:.82rem;margin:0 8px}
+
+/* Loading */
+.loading{text-align:center;padding:40px;color:var(--text-dim)}
+.loading .spinner{display:inline-block;width:24px;height:24px;border:2px solid rgba(0,255,136,.15);border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Back button */
+.back-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(0,255,136,.05);border:1px solid var(--border);color:var(--text-muted);padding:8px 16px;border-radius:8px;font-size:.85rem;cursor:pointer;transition:all .15s;text-decoration:none}
+.back-btn:hover{background:rgba(0,255,136,.1);color:var(--primary)}
+
+/* Validator badge */
+.validator-badge{display:inline-flex;align-items:center;gap:6px}
+.validator-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--primary);box-shadow:0 0 6px var(--primary)}
+.validator-badge .dot.inactive{background:var(--text-dim);box-shadow:none}
+
+/* Token icons */
+.token-icon{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:.7rem;font-weight:700;margin-right:4px}
+.token-VRDX{background:rgba(0,255,136,.15);color:var(--primary)}
+.token-CARBON{background:rgba(100,116,139,.2);color:#94a3b8}
+.token-ECO{background:rgba(45,212,191,.15);color:var(--secondary)}
+.token-TREE{background:rgba(34,197,94,.15);color:#22c55e}
+.token-GREEN{background:rgba(16,185,129,.15);color:var(--accent)}
+.token-REDD{background:rgba(239,68,68,.15);color:var(--danger)}
+
+/* Responsive */
+@media(max-width:768px){.navbar{padding:0 12px;gap:8px}.navbar .logo span{font-size:1rem}.nav-links{display:none}.search-wrap{max-width:none}.stats-grid{grid-template-columns:repeat(2,1fr)}.container{padding:12px}.detail-grid{grid-template-columns:1fr}.detail-label{min-width:120px}table{font-size:.78rem}thead th{padding:8px 10px}tbody td{padding:8px 10px}}
+</style>
+</head>
+<body>
+
+<div class="bg-orbs"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <a href="/" class="logo">
+    <svg width="32" height="32" viewBox="0 0 100 100" fill="none"><polygon points="50,5 90,28 90,72 50,95 10,72 10,28" stroke="#00ff88" stroke-width="4" fill="rgba(0,255,136,0.08)"/><path d="M50 30 C40 45 35 55 45 70 C55 60 60 50 55 35" stroke="#00ff88" stroke-width="3" fill="rgba(0,255,136,0.12)" stroke-linejoin="round"/><line x1="50" y1="30" x2="50" y2="75" stroke="#00ff88" stroke-width="2" opacity="0.5"/></svg>
+    <span>Verdis</span>
+    <span class="explorer-badge">Explorer</span>
+  </a>
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="Search address, tx hash, block number, or contract..." />
+    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  </div>
+  <div class="nav-links">
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/explorer.html" class="active">Explorer</a>
+    <a href="/wallet.html">Wallet</a>
+    <a href="/staking.html">Staking</a>
+    <a href="/whitepaper.html">Whitepaper</a>
+  </div>
+</nav>
+
+<!-- Main -->
+<main class="main">
+  <div class="container" id="app">
+
+  <!-- Overview view -->
+  <div id="view-overview">
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card"><div class="label">Block Height</div><div class="value green" id="stat-height">—</div><div class="sub" id="stat-blocks-ago">Loading...</div></div>
+      <div class="stat-card"><div class="label">Validators</div><div class="value teal" id="stat-validators">—</div><div class="sub" id="stat-validators-active">Active</div></div>
+      <div class="stat-card"><div class="label">Total Supply</div><div class="value" id="stat-supply">—</div><div class="sub">100B VRS</div></div>
+      <div class="stat-card"><div class="label">DEX TVL</div><div class="value orange" id="stat-tvl">—</div><div class="sub" id="stat-pools">Loading pools...</div></div>
+      <div class="stat-card"><div class="label">Contracts</div><div class="value" id="stat-contracts">—</div><div class="sub" id="stat-contracts-sub">Deployed</div></div>
+      <div class="stat-card"><div class="label">Block Time</div><div class="value green">5s</div><div class="sub">Auto-production</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="blocks">Blocks</button>
+      <button class="tab" data-tab="transactions">Transactions</button>
+      <button class="tab" data-tab="validators">Validators</button>
+      <button class="tab" data-tab="dex">DEX Pools</button>
+      <button class="tab" data-tab="contracts">Contracts</button>
+    </div>
+
+    <!-- Blocks table -->
+    <div id="tab-blocks" class="tab-content">
+      <div class="card">
+        <div class="card-header"><h3>Latest Blocks</h3><div class="actions"><span class="badge badge-success" id="block-live-badge">Live</span></div></div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table><thead><tr><th>Block</th><th>Hash</th><th>Validator</th><th>TXs</th><th>Gas Used</th><th>Timestamp</th></tr></thead>
+            <tbody id="blocks-tbody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transactions table -->
+    <div id="tab-transactions" class="tab-content" style="display:none">
+      <div class="card">
+        <div class="card-header"><h3>Latest Transactions</h3><div class="actions"><span class="badge badge-success">Live</span></div></div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table><thead><tr><th>TX Hash</th><th>Block</th><th>From</th><th>To</th><th>Amount</th><th>Fee</th><th>Status</th><th>Time</th></tr></thead>
+            <tbody id="txs-tbody"><tr><td colspan="8"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Validators table -->
+    <div id="tab-validators" class="tab-content" style="display:none">
+      <div class="card">
+        <div class="card-header"><h3>Active Validators</h3><div class="actions"><span class="badge badge-info">DPoS</span></div></div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table><thead><tr><th>Rank</th><th>Address</th><th>Votes</th><th>Status</th><th>Blocks Produced</th><th>Rewards</th></tr></thead>
+            <tbody id="validators-tbody"><tr><td colspan="6"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEX table -->
+    <div id="tab-dex" class="tab-content" style="display:none">
+      <div class="card">
+        <div class="card-header"><h3>DEX Liquidity Pools</h3><div class="actions"><span class="badge badge-info">AMM</span></div></div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table><thead><tr><th>Pair</th><th>Token A Reserve</th><th>Token B Reserve</th><th>Total LP</th><th>Fee</th><th>TVL (VRS)</th><th>Created</th></tr></thead>
+            <tbody id="dex-tbody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contracts table -->
+    <div id="tab-contracts" class="tab-content" style="display:none">
+      <div class="card">
+        <div class="card-header"><h3>Deployed Smart Contracts</h3><div class="actions"><span class="badge badge-info">EVM</span></div></div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table><thead><tr><th>Name</th><th>Category</th><th>Owner</th><th>Deployed</th><th>State Size</th><th>Holders</th><th>Version</th></tr></thead>
+            <tbody id="contracts-tbody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div></div></td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Block detail view -->
+  <div id="view-block" style="display:none">
+    <a href="#" class="back-btn" onclick="showOverview();return false">← Back to Explorer</a>
+    <div class="card" style="margin-top:16px">
+      <div class="detail-header"><h2>Block #<span id="block-detail-num">—</span></h2></div>
+      <div id="block-detail-content"></div>
+    </div>
+  </div>
+
+  <!-- Transaction detail view -->
+  <div id="view-tx" style="display:none">
+    <a href="#" class="back-btn" onclick="showOverview();return false">← Back to Explorer</a>
+    <div class="card" style="margin-top:16px">
+      <div class="detail-header"><h2>Transaction Details</h2></div>
+      <div id="tx-detail-content"></div>
+    </div>
+  </div>
+
+  <!-- Address detail view -->
+  <div id="view-address" style="display:none">
+    <a href="#" class="back-btn" onclick="showOverview();return false">← Back to Explorer</a>
+    <div class="card" style="margin-top:16px">
+      <div class="detail-header"><h2>Address <span id="addr-detail-hdr" style="color:var(--secondary);font-family:var(--font-mono);font-size:.9rem"></span></h2></div>
+      <div id="addr-detail-content"></div>
+    </div>
+  </div>
+
+  <!-- Contract detail view -->
+  <div id="view-contract" style="display:none">
+    <a href="#" class="back-btn" onclick="showOverview();return false">← Back to Explorer</a>
+    <div class="card" style="margin-top:16px">
+      <div class="detail-header"><h2>Contract: <span id="contract-detail-name" style="color:var(--primary)">—</span></h2></div>
+      <div id="contract-detail-content"></div>
+    </div>
+  </div>
+
+  </div>
+</main>
+
+<script>
+const API = window.location.origin.includes('verdischain.com') ? 'https://verdischain.com' : 'http://' + window.location.hostname + ':3200';
+let currentTab = 'blocks';
+let blocksCache = [];
+let txsCache = [];
+let validatorsCache = [];
+let poolsCache = [];
+let contractsCache = [];
+
+// === Helpers ===
+function fmt(n, d=2){ if(n===null||n===undefined) return '—'; return Number(n).toLocaleString('en-US',{maximumFractionDigits:d,minimumFractionDigits:0}); }
+function short(addr, len=10){ if(!addr) return '—'; if(addr.length<=len*2+2) return addr; return addr.slice(0,len)+'...'+addr.slice(-6); }
+function timeAgo(ts){ if(!ts) return '—'; const now=Date.now(); const s=Math.floor((now-ts)/1000); if(s<60) return s+'s ago'; if(s<3600) return Math.floor(s/60)+'m ago'; if(s<86400) return Math.floor(s/3600)+'h ago'; return Math.floor(s/86400)+'d ago'; }
+function fmtTime(ts){ if(!ts) return '—'; return new Date(ts).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+function copy(text, btn){ navigator.clipboard.writeText(text).then(()=>{ if(btn){btn.classList.add('copied');btn.textContent='Copied!';setTimeout(()=>{btn.classList.remove('copied');btn.textContent='Copy'},1500);} }); }
+function esc(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// === Tab switching ===
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    currentTab = t.dataset.tab;
+    document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');
+    document.getElementById('tab-'+currentTab).style.display='block';
+  });
+});
+
+// === Search ===
+document.getElementById('searchInput').addEventListener('keypress',e=>{
+  if(e.key==='Enter'){ handleSearch(e.target.value.trim()); }
+});
+function handleSearch(q){
+  if(!q) return;
+  // Block number
+  if(/^\d+$/.test(q)){ showBlockDetail(parseInt(q)); return; }
+  // TX hash (64+ hex chars)
+  if(/^[0-9a-fA-F]{40,}$/.test(q)){ showTxDetail(q); return; }
+  // Address (0x + 40 hex)
+  if(/^0x[0-9a-fA-F]{40}$/.test(q)){ showAddressDetail(q); return; }
+  // Contract name
+  const contract = contractsCache.find(c=>c.name.toLowerCase().includes(q.toLowerCase()));
+  if(contract){ showContractDetail(contract); return; }
+  // Try as block hash
+  if(q.length>=20){ showBlockByHash(q); return; }
+  alert('No results found for: '+q);
+}
+
+// === View management ===
+function showOverview(){
+  document.querySelectorAll('[id^="view-"]').forEach(v=>v.style.display='none');
+  document.getElementById('view-overview').style.display='block';
+}
+
+// === Fetch data ===
+async function fetchJSON(path){
+  try{ const r = await fetch(API+path); if(!r.ok) throw new Error(r.status); return await r.json(); }
+  catch(e){ console.error('Fetch error:',path,e); return null; }
+}
+
+// === Load overview stats ===
+async function loadStats(){
+  const info = await fetchJSON('/api/blockchain/info');
+  if(info){
+    document.getElementById('stat-height').textContent = fmt(info.height,0);
+    document.getElementById('stat-blocks-ago').textContent = 'Updated just now';
+    document.getElementById('stat-validators').textContent = info.validatorCount || 27;
+    document.getElementById('stat-validators-active').textContent = info.validatorCount+' active validators';
+    document.getElementById('stat-supply').textContent = fmt(info.totalSupply/1e9,1)+'B';
+  }
+  const contracts = await fetchJSON('/api/contracts');
+  if(contracts){
+    contractsCache = contracts;
+    document.getElementById('stat-contracts').textContent = contracts.length;
+    document.getElementById('stat-contracts-sub').textContent = contracts.length+' deployed';
+  }
+  const pools = await fetchJSON('/api/dex/pools');
+  if(pools){
+    poolsCache = pools;
+    let tvl = 0;
+    pools.forEach(p=>{ if(p.tokenB==='VRDX') tvl += p.reserveB*2; else if(p.tokenA==='VRDX') tvl += p.reserveA*2; });
+    document.getElementById('stat-tvl').textContent = fmt(tvl/1e6,2)+'M';
+    document.getElementById('stat-pools').textContent = pools.length+' active pools';
+  }
+}
+
+// === Load blocks ===
+async function loadBlocks(){
+  const data = await fetchJSON('/api/blockchain/blocks?limit=20');
+  if(!data) return;
+  blocksCache = Array.isArray(data) ? data : (data.blocks||[]);
+  const tbody = document.getElementById('blocks-tbody');
+  if(!blocksCache.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:30px">No blocks found</td></tr>'; return; }
+  tbody.innerHTML = blocksCache.map(b=>{
+    const h = b.header||b;
+    const idx = h.index||b.index||'?';
+    const hash = b.hash||h.hash||'';
+    const validator = h.validator||b.validator||'';
+    const txs = (b.transactions||h.transactions||[]).length;
+    const gas = h.gasUsed||0;
+    const ts = h.timestamp||b.timestamp||0;
+    return `<tr onclick="showBlockDetail(${idx})">
+      <td class="green mono"><a class="block-link" onclick="event.stopPropagation();showBlockDetail(${idx})">#${fmt(idx,0)}</a></td>
+      <td class="mono muted" title="${esc(hash)}">${short(hash,10)}</td>
+      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddressDetail('${validator}')">${short(validator,10)}</a></td>
+      <td>${txs}</td>
+      <td class="muted">${fmt(gas,0)}</td>
+      <td class="muted">${timeAgo(ts)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// === Load transactions ===
+async function loadTransactions(){
+  const data = await fetchJSON('/api/blockchain/transactions?limit=20');
+  if(!data) return;
+  txsCache = Array.isArray(data) ? data : (data.transactions||[]);
+  const tbody = document.getElementById('txs-tbody');
+  if(!txsCache.length){ tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--text-dim);padding:30px">No transactions found</td></tr>'; return; }
+  tbody.innerHTML = txsCache.map(t=>{
+    const hash = t.id||t.hash||'';
+    const from = t.from||'';
+    const to = t.to||'';
+    const amt = t.amount||0;
+    const fee = t.fee||0;
+    const bi = t.blockIndex||'?';
+    const ts = t.timestamp||0;
+    return `<tr onclick="showTxDetail('${hash}')">
+      <td class="mono"><a class="tx-link" onclick="event.stopPropagation();showTxDetail('${hash}')">${short(hash,8)}</a></td>
+      <td class="muted">${bi!=='?'?'#'+fmt(bi,0):'—'}</td>
+      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddressDetail('${from}')">${short(from,8)}</a></td>
+      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddressDetail('${to}')">${short(to,8)}</a></td>
+      <td class="green">${fmt(amt,2)} VRS</td>
+      <td class="muted">${fmt(fee,0)}</td>
+      <td><span class="badge badge-success">Success</span></td>
+      <td class="muted">${timeAgo(ts)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// === Load validators ===
+async function loadValidators(){
+  const data = await fetchJSON('/api/validators');
+  if(!data) return;
+  validatorsCache = Array.isArray(data) ? data : (data.validators||[]);
+  const tbody = document.getElementById('validators-tbody');
+  if(!validatorsCache.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:30px">No validators found</td></tr>'; return; }
+  const sorted = validatorsCache.sort((a,b)=>(b.votes||0)-(a.votes||0));
+  tbody.innerHTML = sorted.map((v,i)=>{
+    const addr = v.address||v.publicKey||'';
+    const votes = v.votes||0;
+    const producer = v.isProducer;
+    const blocks = v.blocksProduced||0;
+    const rewards = v.totalRewards||0;
+    return `<tr onclick="showAddressDetail('${addr}')">
+      <td class="green" style="font-weight:700">#${i+1}</td>
+      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddressDetail('${addr}')">${short(addr,12)}</a></td>
+      <td class="green">${fmt(votes,0)} VRS</td>
+      <td>${producer?'<span class="badge badge-success">Active Producer</span>':'<span class="badge badge-neutral">Registered</span>'}</td>
+      <td class="muted">${fmt(blocks,0)}</td>
+      <td class="teal">${fmt(rewards,0)} VRS</td>
+    </tr>`;
+  }).join('');
+}
+
+// === Load DEX ===
+async function loadDex(){
+  const data = await fetchJSON('/api/dex/pools');
+  if(!data) return;
+  poolsCache = Array.isArray(data) ? data : (data.pools||[]);
+  const tbody = document.getElementById('dex-tbody');
+  if(!poolsCache.length){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:30px">No pools found</td></tr>'; return; }
+  tbody.innerHTML = poolsCache.map(p=>{
+    const pair = p.pair||p.id||'';
+    const tA = p.tokenA||'';
+    const tB = p.tokenB||'';
+    const rA = p.reserveA||0;
+    const rB = p.reserveB||0;
+    const lp = p.totalLP||0;
+    const fee = p.fee||0.003;
+    const created = p.createdAt||0;
+    const tvl = (tB==='VRDX'?rB*2:tA==='VRDX'?rA*2:0);
+    return `<tr onclick="showPoolDetail('${p.id}')">
+      <td><span class="token-icon token-${tA}">${tA[0]}</span><span class="token-icon token-${tB}">${tB[0]}</span> ${pair}</td>
+      <td class="mono green">${fmt(rA,2)} ${tA}</td>
+      <td class="mono teal">${fmt(rB,2)} ${tB}</td>
+      <td class="mono muted">${fmt(lp,0)}</td>
+      <td class="muted">${(fee*100).toFixed(2)}%</td>
+      <td class="orange">${fmt(tvl,0)} VRS</td>
+      <td class="muted">${timeAgo(created)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// === Load contracts ===
+async function loadContracts(){
+  const data = await fetchJSON('/api/contracts');
+  if(!data) return;
+  contractsCache = Array.isArray(data) ? data : [];
+  const tbody = document.getElementById('contracts-tbody');
+  if(!contractsCache.length){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:30px">No contracts found</td></tr>'; return; }
+  tbody.innerHTML = contractsCache.map(c=>{
+    const name = c.name||'';
+    const cat = c.metadata?.category||'—';
+    const owner = c.owner||'';
+    const deployed = c.deployedAt||0;
+    const stateSize = c.stateSize||0;
+    const holders = c.holderCount||0;
+    const ver = c.metadata?.version||'—';
+    return `<tr onclick="showContractDetail(contractsCache.find(c=>c.name==='${name}'))">
+      <td class="green" style="font-weight:600">${name}</td>
+      <td><span class="badge badge-info">${cat}</span></td>
+      <td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddressDetail('${owner}')">${short(owner,10)}</a></td>
+      <td class="muted">${timeAgo(deployed)}</td>
+      <td class="muted">${fmt(stateSize,0)}</td>
+      <td>${holders}</td>
+      <td class="mono muted">${ver}</td>
+    </tr>`;
+  }).join('');
+}
+
+// === Block detail ===
+async function showBlockDetail(num){
+  document.querySelectorAll('[id^="view-"]').forEach(v=>v.style.display='none');
+  document.getElementById('view-block').style.display='block';
+  document.getElementById('block-detail-num').textContent = num;
+  const content = document.getElementById('block-detail-content');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  const data = await fetchJSON('/api/blockchain/blocks?limit=100');
+  if(!data){ content.innerHTML='<p style="color:var(--text-dim);padding:30px">Failed to load block data</p>'; return; }
+  const blocks = Array.isArray(data) ? data : (data.blocks||[]);
+  let block = blocks.find(b=>(b.header?.index||b.index)===num);
+  if(!block){ content.innerHTML='<p style="color:var(--text-dim);padding:30px">Block #'+num+' not found</p>'; return; }
+  const h = block.header||block;
+  const hash = block.hash||h.hash||'';
+  const txs = block.transactions||h.transactions||[];
+  const rows = [
+    ['Block Height', h.index||num],
+    ['Block Hash', hash],
+    ['Previous Hash', h.previousHash||''],
+    ['Timestamp', fmtTime(h.timestamp)+' ('+timeAgo(h.timestamp)+')'],
+    ['Validator', h.validator||''],
+    ['Validator Signature', h.validatorSignature||''],
+    ['Merkle Root', h.merkleRoot||''],
+    ['Difficulty', h.difficulty||0],
+    ['Nonce', h.nonce||0],
+    ['Gas Used', fmt(h.gasUsed,0)],
+    ['Gas Limit', fmt(h.gasLimit,0)],
+    ['Base Fee', h.baseFee||0],
+    ['Transactions', txs.length],
+    ['Extra Data', h.extraData||'0x'],
+  ];
+  let html = '<div style="padding:8px 0">';
+  rows.forEach(([label,val])=>{
+    const isHash = typeof val==='string' && val.length>20;
+    html += `<div class="detail-row"><div class="detail-label">${label}</div><div class="detail-value">${esc(String(val))}`;
+    if(isHash){ html += `<button class="copy-btn" onclick="copy('${val}',this)">Copy</button>`; }
+    html += '</div></div>';
+  });
+  html += '</div>';
+  // Transactions in block
+  if(txs.length>0){
+    html += '<div class="card-header" style="margin-top:16px"><h3>Transactions in Block</h3></div>';
+    html += '<div class="table-wrap"><table><thead><tr><th>TX Hash</th><th>From</th><th>To</th><th>Amount</th><th>Fee</th></tr></thead><tbody>';
+    txs.forEach(t=>{
+      html += `<tr onclick="showTxDetail('${t.id||t.hash||''}')"><td class="mono"><a class="tx-link">${short(t.id||t.hash||'',8)}</a></td><td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddressDetail('${t.from||''}')">${short(t.from||'',8)}</a></td><td class="mono"><a class="addr-link" onclick="event.stopPropagation();showAddressDetail('${t.to||''}')">${short(t.to||'',8)}</a></td><td class="green">${fmt(t.amount||0,2)} VRS</td><td class="muted">${fmt(t.fee||0,0)}</td></tr>`;
+    });
+    html += '</tbody></table></div>';
+  }
+  content.innerHTML = html;
+  window.scrollTo(0,0);
+}
+
+// === TX detail ===
+async function showTxDetail(hash){
+  document.querySelectorAll('[id^="view-"]').forEach(v=>v.style.display='none');
+  document.getElementById('view-tx').style.display='block';
+  const content = document.getElementById('tx-detail-content');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  const data = await fetchJSON('/api/blockchain/transactions?limit=100');
+  if(!data){ content.innerHTML='<p style="color:var(--text-dim);padding:30px">Failed to load</p>'; return; }
+  const txs = Array.isArray(data) ? data : (data.transactions||[]);
+  let tx = txs.find(t=>(t.id||t.hash||'')===hash);
+  if(!tx){ content.innerHTML='<p style="color:var(--text-dim);padding:30px">Transaction not found</p>'; return; }
+  const rows = [
+    ['Transaction Hash', tx.id||tx.hash||''],
+    ['Status', '<span class="badge badge-success">Success</span>'],
+    ['Block', tx.blockIndex||'?'],
+    ['From', tx.from||''],
+    ['To', tx.to||''],
+    ['Amount', fmt(tx.amount,2)+' VRS'],
+    ['Fee', fmt(tx.fee,0)+' VRS'],
+    ['Nonce', tx.nonce||0],
+    ['Timestamp', fmtTime(tx.timestamp)+' ('+timeAgo(tx.timestamp)+')'],
+    ['Public Key', tx.publicKey||''],
+    ['Signature', tx.signature||''],
+    ['Recovery Flag', tx.recovery||0],
+    ['Data', tx.data?esc(JSON.stringify(tx.data)):'None'],
+  ];
+  let html = '<div style="padding:8px 0">';
+  rows.forEach(([label,val])=>{
+    const isHash = typeof val==='string' && val.length>20;
+    html += `<div class="detail-row"><div class="detail-label">${label}</div><div class="detail-value">${val}`;
+    if(isHash){ html += `<button class="copy-btn" onclick="copy('${val}',this)">Copy</button>`; }
+    html += '</div></div>';
+  });
+  html += '</div>';
+  content.innerHTML = html;
+  window.scrollTo(0,0);
+}
+
+// === Address detail ===
+async function showAddressDetail(addr){
+  document.querySelectorAll('[id^="view-"]').forEach(v=>v.style.display='none');
+  document.getElementById('view-address').style.display='block';
+  document.getElementById('addr-detail-hdr').textContent = short(addr,12);
+  const content = document.getElementById('addr-detail-content');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  // Find in wallets
+  const wallets = await fetchJSON('/api/wallets');
+  let wallet = null;
+  if(wallets){ wallet = (Array.isArray(wallets)?wallets:wallets.wallets||[]).find(w=>w.address===addr||w.publicKey===addr); }
+  // Find related transactions
+  const txData = await fetchJSON('/api/blockchain/transactions?limit=100');
+  let relatedTxs = [];
+  if(txData){ relatedTxs = (Array.isArray(txData)?txData:txData.transactions||[]).filter(t=>t.from===addr||t.to===addr); }
+  // Find validator info
+  let validator = validatorsCache.find(v=>v.address===addr||v.publicKey===addr);
+  if(!validator){
+    const valData = await fetchJSON('/api/validators');
+    if(valData){ validator = (Array.isArray(valData)?valData:valData.validators||[]).find(v=>v.address===addr||v.publicKey===addr); }
+  }
+  const balance = wallet?wallet.balance:0;
+  const staked = wallet?wallet.staked:0;
+  const rows = [
+    ['Address', addr],
+    ['Balance', fmt(balance,2)+' VRS'],
+    ['Staked', fmt(staked,2)+' VRS'],
+  ];
+  if(validator){
+    rows.push(['Role', '<span class="badge badge-success">Validator</span>']);
+    rows.push(['Validator Status', validator.isProducer?'<span class="badge badge-success">Active Block Producer</span>':'<span class="badge badge-neutral">Registered Validator</span>']);
+    rows.push(['Votes', fmt(validator.votes,0)+' VRS']);
+    rows.push(['Blocks Produced', fmt(validator.blocksProduced,0)]);
+    rows.push(['Total Rewards', fmt(validator.totalRewards,0)+' VRS']);
+  }
+  rows.push(['Public Key', wallet?(wallet.publicKey||'—'):'—']);
+  let html = '<div style="padding:8px 0">';
+  rows.forEach(([label,val])=>{
+    const isHash = typeof val==='string' && val.length>20;
+    html += `<div class="detail-row"><div class="detail-label">${label}</div><div class="detail-value">${val}`;
+    if(isHash){ html += `<button class="copy-btn" onclick="copy('${val}',this)">Copy</button>`; }
+    html += '</div></div>';
+  });
+  html += '</div>';
+  // Transaction history
+  if(relatedTxs.length>0){
+    html += '<div class="card-header" style="margin-top:16px"><h3>Transaction History ('+relatedTxs.length+')</h3></div>';
+    html += '<div class="table-wrap"><table><thead><tr><th>TX Hash</th><th>Block</th><th>From</th><th>To</th><th>Amount</th><th>Time</th></tr></thead><tbody>';
+    relatedTxs.forEach(t=>{
+      html += `<tr onclick="showTxDetail('${t.id||t.hash||''}')"><td class="mono"><a class="tx-link">${short(t.id||t.hash||'',8)}</a></td><td class="muted">${t.blockIndex?'#'+fmt(t.blockIndex,0):'—'}</td><td class="mono">${short(t.from||'',8)}</td><td class="mono">${short(t.to||'',8)}</td><td class="green">${fmt(t.amount||0,2)} VRS</td><td class="muted">${timeAgo(t.timestamp)}</td></tr>`;
+    });
+    html += '</tbody></table></div>';
+  } else {
+    html += '<div style="padding:20px;color:var(--text-dim);text-align:center">No transactions found for this address</div>';
+  }
+  content.innerHTML = html;
+  window.scrollTo(0,0);
+}
+
+// === Contract detail ===
+function showContractDetail(contract){
+  if(!contract) return;
+  document.querySelectorAll('[id^="view-"]').forEach(v=>v.style.display='none');
+  document.getElementById('view-contract').style.display='block';
+  document.getElementById('contract-detail-name').textContent = contract.name;
+  const content = document.getElementById('contract-detail-content');
+  const m = contract.metadata||{};
+  const rows = [
+    ['Contract Name', contract.name||''],
+    ['Contract ID', contract.id||''],
+    ['Owner', contract.owner||''],
+    ['Category', m.category||'—'],
+    ['Description', m.description||'—'],
+    ['Version', m.version||'—'],
+    ['Standard', m.standard||'—'],
+    ['Compiler', m.compiler||'—'],
+    ['License', m.license||'—'],
+    ['Network', m.network||'—'],
+    ['Chain ID', m.chainId||'—'],
+    ['Token Symbol', m.symbol||'—'],
+    ['Deployed At', fmtTime(contract.deployedAt)+' ('+timeAgo(contract.deployedAt)+')'],
+    ['State Size', fmt(contract.stateSize,0)+' slots'],
+    ['Holder Count', contract.holderCount||0],
+    ['Website', m.website||'—'],
+    ['Tags', (m.tags||[]).join(', ')||'—'],
+    ['Bytecode', '['+(contract.bytecode||[]).join(', ')+']'],
+  ];
+  let html = '<div style="padding:8px 0">';
+  rows.forEach(([label,val])=>{
+    const isHash = typeof val==='string' && val.length>30;
+    html += `<div class="detail-row"><div class="detail-label">${label}</div><div class="detail-value">${esc(String(val))}`;
+    if(isHash){ html += `<button class="copy-btn" onclick="copy('${val}',this)">Copy</button>`; }
+    html += '</div></div>';
+  });
+  html += '</div>';
+  content.innerHTML = html;
+  window.scrollTo(0,0);
+}
+
+// === Pool detail (inline for now) ===
+function showPoolDetail(id){ /* Future: pool detail page */ }
+
+// === Block by hash ===
+async function showBlockByHash(hash){
+  const data = await fetchJSON('/api/blockchain/blocks?limit=100');
+  if(!data) return;
+  const blocks = Array.isArray(data) ? data : (data.blocks||[]);
+  const block = blocks.find(b=>(b.hash||b.header?.hash||'')===hash);
+  if(block) showBlockDetail(block.header?.index||block.index);
+  else alert('Block not found');
+}
+
+// === Init ===
+async function init(){
+  await Promise.all([loadStats(), loadBlocks(), loadTransactions(), loadValidators(), loadDex(), loadContracts()]);
+  // Auto-refresh blocks and stats every 10s
+  setInterval(()=>{ loadBlocks(); loadStats(); }, 10000);
+  setInterval(()=>{ loadTransactions(); }, 15000);
+}
+init();
+</script>
+</body>
+</html>
