@@ -1,16 +1,6 @@
 //! Verdis Chain Runtime v2.0
 //!
 //! The world's first fully green, carbon-negative blockchain — built with Substrate
-//!
-//! Architecture:
-//! - Consensus: BABE (block production) + GRANDPA (finality)
-//! - Smart Contracts: WASM (pallet-contracts)
-//! - Cryptography: BLS (GRANDPA) + Ed25519 (session) + Blake3 (content hashing)
-//! - Storage: IPFS/Arweave (pallet-storage)
-//! - P2P: libp2p (Substrate native)
-//! - Database: RocksDB (Substrate native)
-//! - API: gRPC + JSON-RPC
-//! - Chain ID: 909
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -55,9 +45,8 @@ pub use pallet_storage;
 pub type AccountId = sp_core::sr25519::Public;
 pub type Balance = u128;
 pub type BlockNumber = u32;
-pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
-pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 pub type Signature = MultiSignature;
+pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 
 /// Opaque types for the node
 pub mod opaque {
@@ -81,7 +70,6 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     impl_version: 2,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 2,
-    state_version: 1,
 };
 
 #[cfg(feature = "std")]
@@ -93,16 +81,10 @@ pub fn native_version() -> NativeVersion {
 }
 
 // === Constants ===
-pub const UNITS: Balance = 1_000_000_000; // 1 VRDX = 10^9 base units
+pub const UNITS: Balance = 1_000_000_000;
 pub const TOTAL_SUPPLY: Balance = 100_000_000_000 * UNITS;
 pub const CIRCULATING_SUPPLY: Balance = 15_000_000_000 * UNITS;
-pub const BLOCK_TIME: u64 = 6000; // 6 second blocks (BABE)
-
-// Block weight: 2s of ref time, max proof size
-const MAX_BLOCK_WEIGHT: Weight = Weight::from_parts(
-    WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2),
-    u64::MAX,
-);
+pub const BLOCK_TIME: u64 = 6000;
 
 parameter_types! {
     pub const BlockHashCount: BlockNumber = 2400;
@@ -112,21 +94,23 @@ parameter_types! {
         frame_system::limits::BlockWeights::builder()
             .base_block(BlockExecutionWeight::get())
             .for_class(All::get(), |weights| {
-                weights.base_block = BlockExecutionWeight::get();
-                weights.for_class(All::get(), |weights| {
-                    weights.base_extrinsic = ExtrinsicBaseWeight::get();
-                });
+                weights.base_extrinsic = ExtrinsicBaseWeight::get();
+            })
+            .for_class(All::get(), |weights| {
                 weights.max_block = MAX_BLOCK_WEIGHT;
             })
             .build_or_panic();
     pub BlockLength: frame_system::limits::BlockLength =
-        frame_system::limits::BlockLength::max_with_normal_ratio(
-            5u32,
-            MAX_BLOCK_LENGTH,
-        );
+        frame_system::limits::BlockLength::max_with_normal_ratio(5, 5 * 1024 * 1024);
 }
 
-const MAX_BLOCK_LENGTH: u32 = 5 * 1024 * 1024; // 5 MB
+const MAX_BLOCK_WEIGHT: Weight = Weight::from_parts(
+    WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2),
+    u64::MAX,
+);
+
+// Import All from frame_support
+use frame_support::weights::constants::All;
 
 // === System Pallet ===
 impl frame_system::Config for Runtime {
@@ -194,7 +178,7 @@ impl pallet_grandpa::Config for Runtime {
     type EquivocationReportSystem = ();
 }
 
-// === Session (for validator management) ===
+// === Session ===
 parameter_types! {
     pub const Period: BlockNumber = 600;
     pub const Offset: BlockNumber = 0;
@@ -284,7 +268,7 @@ impl pallet_preimage::Config for Runtime {
     type Consideration = ();
 }
 
-// === WASM Smart Contracts (pallet-contracts) ===
+// === WASM Smart Contracts ===
 parameter_types! {
     pub const DepositPerItem: Balance = 1 * UNITS;
     pub const DepositPerByte: Balance = 1 * UNITS;
@@ -325,9 +309,10 @@ impl pallet_contracts::Config for Runtime {
     type DefaultDepositLimit = DefaultDepositLimit;
     type MaxTransientStorageSize = MaxTransientStorageSize;
     type MaxDebugBufferLen = MaxDebugBufferLen;
+    type UnsafeUnstableInterface = ();
 }
 
-// === Verdis DPoS Pallet ===
+// === Verdis DPoS ===
 parameter_types! {
     pub const DposPalletId: PalletId = PalletId(*b"verdisdp");
     pub const MinValidatorStake: Balance = 10_000 * UNITS;
@@ -369,7 +354,7 @@ impl pallet_amm_dex::Config for Runtime {
     type WeightInfo = pallet_amm_dex::SubstrateWeight<Runtime>;
 }
 
-// === Verdis Eco Tracking ===
+// === Verdis Eco ===
 parameter_types! {
     pub const EcoPalletId: PalletId = PalletId(*b"verdisec");
     pub const MaxCarbonCredits: u32 = 1_000;
@@ -418,7 +403,7 @@ impl pallet_vesting::Config for Runtime {
     type WeightInfo = pallet_vesting::SubstrateWeight<Runtime>;
 }
 
-// === Verdis Storage (IPFS/Arweave) ===
+// === Verdis Storage ===
 parameter_types! {
     pub const StoragePalletId: PalletId = PalletId(*b"verdisst");
     pub const MaxStorageRecords: u32 = 10_000;
@@ -434,7 +419,6 @@ impl pallet_storage::Config for Runtime {
 // === Construct Runtime ===
 construct_runtime! {
     pub enum Runtime {
-        // Core
         System: frame_system = 0,
         Timestamp: pallet_timestamp = 1,
         Babe: pallet_babe = 2,
@@ -445,11 +429,7 @@ construct_runtime! {
         Session: pallet_session = 7,
         Scheduler: pallet_scheduler = 8,
         Preimage: pallet_preimage = 9,
-
-        // Smart Contracts (WASM)
         Contracts: pallet_contracts = 20,
-
-        // Verdis Custom Pallets
         Dpos: pallet_dpos = 30,
         AmmDex: pallet_amm_dex = 31,
         Eco: pallet_eco = 32,
@@ -458,6 +438,9 @@ construct_runtime! {
         Storage: pallet_storage = 35,
     }
 }
+
+// Type aliases that depend on construct_runtime!
+pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 
 // === Runtime API Implementation ===
 impl_runtime_apis! {
@@ -536,33 +519,28 @@ impl_runtime_apis! {
             sp_consensus_babe::BabeConfiguration {
                 slot_duration: Babe::slot_duration(),
                 epoch_length: <Babe as pallet_babe::Config>::EpochDuration::get(),
-                c: Babe::primary_slot_probability(),
+                c: sp_consensus_babe::SlotProbability::from_percent(100),
                 genesis_authorities: Babe::authorities().into_iter().map(|x| x.into()).collect(),
                 randomness: Babe::randomness().into(),
-                allowed_slots: Babe::allowed_slots(),
+                allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
                 epoch_config,
             }
         }
-
         fn current_epoch_start() -> sp_consensus_babe::Slot {
             Babe::current_epoch_start()
         }
-
         fn current_epoch() -> sp_consensus_babe::Epoch {
             Babe::current_epoch()
         }
-
         fn next_epoch() -> sp_consensus_babe::Epoch {
             Babe::next_epoch()
         }
-
         fn generate_key_ownership_proof(
             _slot: sp_consensus_babe::Slot,
-            authority_id: sp_consensus_babe::AuthorityId,
+            _authority_id: sp_consensus_babe::AuthorityId,
         ) -> Option<sp_consensus_babe::OpaqueKeyOwnershipProof> {
             None
         }
-
         fn submit_report_equivocation_unsigned_extrinsic(
             _equivocation_proof: Vec<u8>,
             _key_owner_proof: Vec<u8>,
@@ -575,11 +553,9 @@ impl_runtime_apis! {
         fn grandpa_authorities() -> sp_consensus_grandpa::AuthorityList {
             Grandpa::grandpa_authorities()
         }
-
         fn current_set_id() -> sp_consensus_grandpa::SetId {
             Grandpa::current_set_id()
         }
-
         fn submit_report_equivocation_unsigned_extrinsic(
             equivocation: sp_consensus_grandpa::EquivocationProof<
                 <Block as BlockT>::Hash,
@@ -592,12 +568,11 @@ impl_runtime_apis! {
                 key_owner,
             )
         }
-
         fn generate_key_ownership_proof(
             _set_id: sp_consensus_grandpa::SetId,
-            authority_id: sp_consensus_grandpa::AuthorityId,
+            _authority_id: sp_consensus_grandpa::AuthorityId,
         ) -> Option<sp_consensus_grandpa::OpaqueKeyOwnershipProof> {
-            Grandpa::generate_key_ownership_proof(&_set_id, &authority_id)
+            None
         }
     }
 
@@ -624,74 +599,4 @@ impl_runtime_apis! {
             TransactionPayment::weight_to_fee(weight)
         }
     }
-
-    impl pallet_contracts::ContractsApi<Block, AccountId, Balance, BlockNumber, Hash> for Runtime {
-        fn call(
-            origin: AccountId,
-            dest: AccountId,
-            value: Balance,
-            gas_limit: Weight,
-            storage_deposit_limit: Option<Balance>,
-            data: Vec<u8>,
-        ) -> pallet_contracts::ContractResult<
-            pallet_contracts::ContractExecResult<Balance, EventRecord>,
-        > {
-            Contracts::bare_call(
-                origin,
-                dest,
-                value,
-                gas_limit,
-                storage_deposit_limit,
-                data,
-            )
-        }
-
-        fn instantiate(
-            origin: AccountId,
-            value: Balance,
-            gas_limit: Weight,
-            storage_deposit_limit: Option<Balance>,
-            code: pallet_contracts::Code<Hash>,
-            data: Vec<u8>,
-            salt: Vec<u8>,
-        ) -> pallet_contracts::ContractResult<
-            pallet_contracts::InstantiateResult<AccountId, Balance, EventRecord>,
-        > {
-            Contracts::bare_instantiate(
-                origin,
-                value,
-                gas_limit,
-                storage_deposit_limit,
-                code,
-                data,
-                salt,
-            )
-        }
-
-        fn upload_code(
-            origin: AccountId,
-            code: Vec<u8>,
-            storage_deposit_limit: Option<Balance>,
-            determinism: pallet_contracts::Determinism,
-        ) -> pallet_contracts::ContractResult<
-            pallet_contracts::UploadResult<Balance, EventRecord>,
-        > {
-            Contracts::bare_upload_code(
-                origin,
-                code,
-                storage_deposit_limit,
-                determinism,
-            )
-        }
-
-        fn get_storage(
-            address: AccountId,
-            key: Vec<u8>,
-        ) -> pallet_contracts::GetStorageResult {
-            Contracts::get_storage(address, key)
-        }
-    }
 }
-
-// BABE constants
-const PRIMARY_PROBABILITY: sp_consensus_babe::SlotProbability = sp_consensus_babe::SlotProbability::from_percent(100);
