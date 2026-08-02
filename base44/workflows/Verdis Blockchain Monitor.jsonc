@@ -1,0 +1,75 @@
+{
+  "name": "Verdis Blockchain Monitor",
+  "description": "24/7 monitoring agent that checks Verdis blockchain health every 5 minutes. If the chain is unhealthy (service down, block production stalled, chain invalid), triggers the agent to send an email alert and attempt remote repair.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/5 * * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Madrid",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "verdis_blockchain_monitor",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "check_health": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "checkVerdisHealth"
+          },
+          "then": "evaluate_health",
+          "x-base44": {
+            "title": "Check blockchain health",
+            "description": "Fetch Verdis monitor status"
+          }
+        }
+      },
+      {
+        "evaluate_health": {
+          "switch": [
+            {
+              "when": "${ .check_health.healthy == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "alert_agent"
+            }
+          ],
+          "x-base44": {
+            "title": "Is blockchain healthy?",
+            "description": "Branch: healthy \u2192 end, unhealthy \u2192 alert"
+          }
+        }
+      },
+      {
+        "alert_agent": {
+          "call": "invoke_superagent_step",
+          "with": {
+            "message": "\ud83d\udea8 VERDIS BLOCKCHAIN ALERT \u2014 IMMEDIATE ACTION REQUIRED\n\nThe 5-minute health check detected an issue with the Verdis blockchain at verdischain.com.\n\nHealth Check Results:\n- Status: ${ .check_health.status }\n- Block Height: ${ .check_health.blockHeight }\n- Chain Valid: ${ .check_health.chainValid }\n- Block Staleness: ${ .check_health.blockStalenessMs } ms\n- Mempool Size: ${ .check_health.mempoolSize }\n- Validators: ${ .check_health.validatorCount }\n- Uptime: ${ .check_health.uptime } seconds\n- Severity: ${ .check_health.severity }\n- Message: ${ .check_health.message }\n\nRecent alerts from the server-side monitor:\n${ .check_health.recentAlerts }\n\nINSTRUCTIONS:\n1. SSH into verdischain.com and check the service status: systemctl status verdis\n2. If the service is down, try restarting it: systemctl restart verdis\n3. Check if block production resumed by curling: curl http://localhost:3200/api/health\n4. If the issue is a chain validation failure, check the state file integrity\n5. Once you have diagnosed and attempted repair, send an email to the owner (Rojs Gordons) at their email address with a detailed report of:\n   - What went wrong\n   - What the monitoring daemon detected\n   - What auto-repair actions were taken\n   - Current blockchain status after your intervention\n   - Any recommended manual actions\n\nUse the Gmail connector to send the email. The email subject should be: '\ud83d\udea8 Verdis Blockchain Alert \u2014 ${ .check_health.severity }: ${ .check_health.message }'\n\nThis is a 24/7 monitoring system \u2014 act quickly and decisively."
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Alert agent \u2014 diagnose & email",
+            "description": "Agent investigates, repairs, and sends email alert"
+          }
+        }
+      }
+    ]
+  }
+}
