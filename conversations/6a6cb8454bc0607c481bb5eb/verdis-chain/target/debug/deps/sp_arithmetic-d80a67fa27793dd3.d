@@ -1,0 +1,11 @@
+/app/conversations/6a6cb8454bc0607c481bb5eb/verdis-chain/target/debug/deps/sp_arithmetic-d80a67fa27793dd3.d: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/biguint.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/fixed_point.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/helpers_128bit.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/per_things.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/rational.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/traits.rs
+
+/app/conversations/6a6cb8454bc0607c481bb5eb/verdis-chain/target/debug/deps/libsp_arithmetic-d80a67fa27793dd3.rmeta: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/biguint.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/fixed_point.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/helpers_128bit.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/per_things.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/rational.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/traits.rs
+
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/lib.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/biguint.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/fixed_point.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/helpers_128bit.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/per_things.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/rational.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sp-arithmetic-28.0.1/src/traits.rs:

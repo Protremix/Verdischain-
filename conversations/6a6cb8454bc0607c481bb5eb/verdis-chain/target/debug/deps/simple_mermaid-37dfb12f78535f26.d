@@ -1,0 +1,12 @@
+/app/conversations/6a6cb8454bc0607c481bb5eb/verdis-chain/target/debug/deps/simple_mermaid-37dfb12f78535f26.d: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/sequence.mmd /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/flowchart.mmd /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/er.mmd /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/graph.mmd /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/timeline.mmd /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/larger.mmd /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/netflix.mmd
+
+/app/conversations/6a6cb8454bc0607c481bb5eb/verdis-chain/target/debug/deps/libsimple_mermaid-37dfb12f78535f26.rmeta: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/sequence.mmd /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/flowchart.mmd /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/er.mmd /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/graph.mmd /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/timeline.mmd /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/larger.mmd /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/netflix.mmd
+
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/lib.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/sequence.mmd:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/flowchart.mmd:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/er.mmd:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/graph.mmd:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/timeline.mmd:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/larger.mmd:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/simple-mermaid-0.1.1/src/netflix.mmd:
