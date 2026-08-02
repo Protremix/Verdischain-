@@ -1,60 +1,107 @@
-import re
+#!/usr/bin/env python3
+"""
+Fix APK version mismatch:
+- verdis-wallet.apk is actually v2.5.1 (confirmed from AndroidManifest.xml)
+- Download page says v2.3.3
+- Server Content-Disposition says v2.3.2
+- Need to sync everything to v2.5.1
+"""
 
-# Fix 1: VerdisApi.kt - Add consent: true to purchaseIdo
-with open("/opt/verdis-wallet-native/app/src/main/java/com/verdis/wallet/VerdisApi.kt", "r") as f:
-    api_content = f.read()
+import os, shutil, re
 
-old_purchase = '''    suspend fun purchaseIdo(address: String, asset: String, usdAmount: Double): Boolean {
-        val body = gson.toJson(mapOf("address" to address, "asset" to asset, "amount" to usdAmount))
-        val r = post("/api/ido/purchase", body) ?: return false
-        return try { JsonParser.parseString(r).asJsonObject.get("success")?.asBoolean ?: false } catch (e: Exception) { false }
-    }'''
+BASE = "/opt/verdis/app/dist/web"
+SERVER = "/opt/verdis/app/dist/api/server.js"
+changes = []
 
-new_purchase = '''    suspend fun purchaseIdo(address: String, asset: String, usdAmount: Double): Boolean {
-        val body = gson.toJson(mapOf(
-            "address" to address,
-            "asset" to asset,
-            "amount" to usdAmount.toString(),
-            "consent" to true
-        ))
-        val r = post("/api/ido/purchase", body) ?: return false
-        return try { JsonParser.parseString(r).asJsonObject.get("success")?.asBoolean ?: false } catch (e: Exception) { false }
-    }'''
-
-if old_purchase in api_content:
-    api_content = api_content.replace(old_purchase, new_purchase)
-    print("Fix 1: Added consent:true to purchaseIdo")
+# 1. Create properly named v2.5.1 APK
+src = f"{BASE}/verdis-wallet.apk"
+dst = f"{BASE}/verdis-wallet-v2.5.1.apk"
+if not os.path.exists(dst):
+    shutil.copy2(src, dst)
+    changes.append("Created verdis-wallet-v2.5.1.apk (copy of latest build)")
 else:
-    print("ERROR: Could not find purchaseIdo function")
+    changes.append("verdis-wallet-v2.5.1.apk already exists")
 
-with open("/opt/verdis-wallet-native/app/src/main/java/com/verdis/wallet/VerdisApi.kt", "w") as f:
-    f.write(api_content)
+# 2. Update download.html to show v2.5.1
+with open(f"{BASE}/download.html") as f:
+    content = f.read()
 
-# Fix 2: build.gradle - Remove Material Components dependency, bump version
-with open("/opt/verdis-wallet-native/app/build.gradle", "r") as f:
-    gradle = f.read()
+# Fix version text
+content = content.replace("v2.3.3", "v2.5.1")
+# Fix download link version param
+content = content.replace("/verdis-wallet.apk?v=250", "/verdis-wallet.apk?v=251")
+# Also fix any reference to v2.3.2 in download page
+content = content.replace("v2.3.2", "v2.5.1")
 
-# Remove Material dependency
-gradle = gradle.replace('    implementation("com.google.android.material:material:1.11.0")\n', '')
-print("Fix 2: Removed Material Components dependency")
+with open(f"{BASE}/download.html", "w") as f:
+    f.write(content)
+changes.append("Updated download.html: v2.3.3 -> v2.5.1")
 
-# Bump version
-gradle = gradle.replace('versionCode 5', 'versionCode 6')
-gradle = gradle.replace('versionName = "2.5.0"', 'versionName = "2.5.1"')
-print("Fix 3: Bumped version to 2.5.1 (code 6)")
+# 3. Update server.js routes
+with open(SERVER) as f:
+    server = f.read()
 
-with open("/opt/verdis-wallet-native/app/build.gradle", "w") as f:
-    f.write(gradle)
+# Update the main /verdis-wallet.apk route to serve v2.5.1 filename
+server = server.replace(
+    'filename="verdis-wallet-v2.3.2.apk"',
+    'filename="verdis-wallet-v2.5.1.apk"'
+)
 
-# Fix 3: IdoFragment.kt - Fix the null check on getIdoInfo (empty map is not null)
-with open("/opt/verdis-wallet-native/app/src/main/java/com/verdis/wallet/IdoFragment.kt", "r") as f:
-    ido_content = f.read()
+# Update the versioned route from v2.3.2 to v2.5.1
+old_route = """this.app.get('/verdis-wallet-v2.3.2.apk', (req, res) => {
+            const apkPath = path_1.default.resolve(__dirname, '../web/verdis-wallet-v2.3.2.apk');"""
+new_route = """this.app.get('/verdis-wallet-v2.5.1.apk', (req, res) => {
+            const apkPath = path_1.default.resolve(__dirname, '../web/verdis-wallet-v2.5.1.apk');"""
+server = server.replace(old_route, new_route)
 
-# Replace "if (r != null)" with "if (r.isNotEmpty())" since getIdoInfo returns emptyMap() not null
-ido_content = ido_content.replace("if (r != null) {", "if (r.isNotEmpty()) {")
-print("Fix 4: Fixed IDO info null check (empty map != null)")
+with open(SERVER, "w") as f:
+    f.write(server)
+changes.append("Updated server.js: routes now serve v2.5.1 filename")
 
-with open("/opt/verdis-wallet-native/app/src/main/java/com/verdis/wallet/IdoFragment.kt", "w") as f:
-    f.write(ido_content)
+# 4. Clean up old APK files (keep only the canonical ones)
+old_apks = [
+    f"{BASE}/verdis-wallet-v2.3.2.apk",
+    f"{BASE}/verdis-wallet-v2.4.0.apk",
+    f"{BASE}/verdis-wallet-v2.5.0.apk",
+]
+for old in old_apks:
+    if os.path.exists(old):
+        os.remove(old)
+        changes.append(f"Removed old APK: {os.path.basename(old)}")
 
-print("\nAll source fixes applied. Ready to build.")
+# 5. Update landing.html if it references the old version
+with open(f"{BASE}/landing.html") as f:
+    content = f.read()
+if "v2.3.2" in content or "v2.3.3" in content:
+    content = content.replace("v2.3.2", "v2.5.1").replace("v2.3.3", "v2.5.1")
+    with open(f"{BASE}/landing.html", "w") as f:
+        f.write(content)
+    changes.append("Updated landing.html: old version -> v2.5.1")
+
+# 6. Update any other HTML pages referencing old APK versions
+for fname in os.listdir(BASE):
+    if not fname.endswith(".html"):
+        continue
+    filepath = f"{BASE}/{fname}"
+    with open(filepath) as f:
+        content = f.read()
+    modified = False
+    for old_ver in ["v2.3.2", "v2.3.3", "v2.4.0", "v2.5.0"]:
+        if old_ver in content and "download" not in fname:  # download.html already handled
+            content = content.replace(old_ver, "v2.5.1")
+            modified = True
+    if modified:
+        with open(filepath, "w") as f:
+            f.write(content)
+        changes.append(f"Updated {fname}: version refs -> v2.5.1")
+
+print(f"\n=== {len(changes)} fixes applied ===")
+for c in changes:
+    print(f"  ✓ {c}")
+
+# Verify final state
+print("\n=== FINAL APK STATE ===")
+for f in sorted(os.listdir(BASE)):
+    if f.endswith(".apk"):
+        size = os.path.getsize(f"{BASE}/{f}")
+        print(f"  {f} ({size:,} bytes)")
