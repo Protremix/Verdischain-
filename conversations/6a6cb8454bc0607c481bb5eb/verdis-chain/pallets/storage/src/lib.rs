@@ -32,7 +32,7 @@ pub mod pallet {
 
     // === Storage Types ===
 
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]
+    #[derive(Encode, Decode, Clone, Copy, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]
     pub enum StorageBackend {
         Ipfs,
         Arweave,
@@ -143,7 +143,7 @@ pub mod pallet {
 
             ensure!(!StorageRecords::<T>::contains_key(&id_bv), Error::<T>::RecordAlreadyExists);
             ensure!(
-                StorageRecords::<T>::iter().count() as u32 < T::MaxRecords::get(),
+                (StorageRecords::<T>::iter().count() as u32) < T::MaxRecords::get(),
                 Error::<T>::MaxRecordsReached
             );
 

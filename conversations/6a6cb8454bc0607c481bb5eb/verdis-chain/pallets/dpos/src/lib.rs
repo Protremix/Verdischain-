@@ -15,13 +15,13 @@ use frame_support::{DefaultNoBound,
     dispatch::DispatchResult,
     ensure,
     pallet_prelude::*,
-    traits::{Currency, Get, ReservableCurrency, tokens::ExistenceRequirement},
+    traits::{Currency, Get, ReservableCurrency},
     PalletId,
 };
 use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
-use sp_runtime::traits::{AccountIdConversion, Saturating};
-use sp_std::{collections::btree_map::BTreeMap, prelude::*};
+use sp_runtime::traits::{Saturating};
+use sp_std::prelude::*;
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -68,7 +68,8 @@ pub mod pallet {
 
     #[pallet::storage]
     #[pallet::getter(fn validator_list)]
-    pub type ValidatorList<T: Config> = StorageValue<_, Vec<T::AccountId>, ValueQuery>;
+    pub type ValidatorList<T: Config> =
+        StorageValue<_, BoundedVec<T::AccountId, ConstU32<101>>, ValueQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn votes)]
@@ -77,7 +78,8 @@ pub mod pallet {
 
     #[pallet::storage]
     #[pallet::getter(fn active_validators)]
-    pub type ActiveValidators<T: Config> = StorageValue<_, Vec<T::AccountId>, ValueQuery>;
+    pub type ActiveValidators<T: Config> =
+        StorageValue<_, BoundedVec<T::AccountId, ConstU32<101>>, ValueQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn current_epoch)]
@@ -160,7 +162,7 @@ pub mod pallet {
     #[pallet::genesis_build]
     impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
         fn build(&self) {
-            let mut list = Vec::new();
+            let mut list: BoundedVec<T::AccountId, ConstU32<101>> = BoundedVec::default();
             let mut total = BalanceOf::<T>::zero();
             for (addr, stake, active) in &self.validators {
                 let validator = Validator {
@@ -175,7 +177,7 @@ pub mod pallet {
                     energy_source: b"Unknown".to_vec().try_into().unwrap_or_default(),
                 };
                 Validators::<T>::insert(addr, validator);
-                list.push(addr.clone());
+                list.try_push(addr.clone()).ok();
                 total = total.saturating_add(*stake);
             }
             ValidatorList::<T>::put(list.clone());
@@ -200,14 +202,6 @@ pub mod pallet {
             if block_num.saturating_sub(epoch_start) >= epoch_length {
                 Self::rotate_epoch(block_num);
             }
-
-            // Reward the block producer
-            let block_author = frame_system::Pallet::<T>::events()
-                .last()
-                .map(|e| {
-                    // In production, block author is determined by Aura
-                    T::AccountId::decode(&mut &[][..]).unwrap_or_default()
-                });
 
             Weight::zero()
         }
@@ -259,7 +253,7 @@ pub mod pallet {
             };
 
             Validators::<T>::insert(&who, validator);
-            ValidatorList::<T>::mutate(|v| v.push(who.clone()));
+            ValidatorList::<T>::mutate(|v| v.try_push(who.clone()).ok());
             TotalStaked::<T>::mutate(|t| *t = t.saturating_add(stake));
 
             Self::deposit_event(Event::ValidatorRegistered { who, stake });
@@ -314,7 +308,7 @@ pub mod pallet {
 
             TotalStaked::<T>::mutate(|t| *t = t.saturating_add(amount));
 
-            Self::deposit_event(Event::Voted { who, validator, amount });
+            Self::deposit_event(Event::Voted { voter: who, validator, amount });
             Ok(())
         }
 
@@ -341,7 +335,7 @@ pub mod pallet {
 
             TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(amount));
 
-            Self::deposit_event(Event::Unvoted { who, validator });
+            Self::deposit_event(Event::Unvoted { voter: who, validator });
             Ok(())
         }
 
@@ -359,21 +353,22 @@ pub mod pallet {
             let val = Validators::<T>::get(&validator).ok_or(Error::<T>::ValidatorNotFound)?;
             ensure!(!reason.is_empty(), Error::<T>::InvalidSlashReason);
 
-            let slashed = T::Currency::slash(&validator, penalty.min(val.stake)).0;
+            let slash_amount = penalty.min(val.stake);
+            let (_imbalance, _actual_slashed) = T::Currency::slash(&validator, slash_amount);
 
             Validators::<T>::mutate(&validator, |v| {
                 if let Some(v) = v {
-                    v.stake = v.stake.saturating_sub(slashed);
+                    v.stake = v.stake.saturating_sub(slash_amount);
                     v.slashed = true;
                 }
             });
 
             SlashingEvents::<T>::mutate(&validator, |c| *c += 1);
-            TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(slashed));
+            TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(slash_amount));
 
             Self::deposit_event(Event::ValidatorSlashed {
                 who: validator,
-                penalty: slashed,
+                penalty: slash_amount,
                 reason,
             });
             Ok(())
@@ -393,7 +388,7 @@ pub mod pallet {
                 }
             });
 
-            Self::deposit_event(Event::GreenScoreUpdated { who, score });
+            Self::deposit_event(Event::GreenScoreUpdated { validator: who, score });
             Ok(())
         }
     }
@@ -425,7 +420,12 @@ pub mod pallet {
             let epoch = CurrentEpoch::<T>::get() + 1;
             CurrentEpoch::<T>::put(epoch);
             EpochStartBlock::<T>::put(block);
-            ActiveValidators::<T>::put(new_active.clone());
+
+            let mut bounded_active: BoundedVec<T::AccountId, ConstU32<101>> = BoundedVec::default();
+            for addr in new_active.iter().take(101) {
+                bounded_active.try_push(addr.clone()).ok();
+            }
+            ActiveValidators::<T>::put(bounded_active);
 
             Self::deposit_event(Event::EpochChanged {
                 epoch,
@@ -437,7 +437,7 @@ pub mod pallet {
         pub fn reward_block_producer(validator: &T::AccountId, block: u32) {
             let reward = T::BlockReward::get();
 
-            if let Some(val) = Validators::<T>::get(validator) {
+            if let Some(_val) = Validators::<T>::get(validator) {
                 let _ = T::Currency::deposit_creating(validator, reward);
                 Validators::<T>::mutate(validator, |v| {
                     if let Some(v) = v {
@@ -457,17 +457,18 @@ pub mod pallet {
 
     // === Session Manager Implementation ===
     impl<T: Config> pallet_session::SessionManager<T::AccountId> for Pallet<T> {
-        fn new_session(index: u32) -> Option<Vec<T::AccountId>> {
+        fn new_session(_index: u32) -> Option<Vec<T::AccountId>> {
             let active = ActiveValidators::<T>::get();
             if active.is_empty() {
                 None
             } else {
-                Some(active)
+                Some(active.into_iter().collect())
             }
         }
 
-        fn end_session(index: u32) {}
-        fn before_session_start() {}
+        fn start_session(_index: u32) {}
+
+        fn end_session(_index: u32) {}
     }
 
     // === WeightInfo Trait ===
@@ -515,32 +516,5 @@ impl<T: Config> sp_runtime::traits::Convert<T::AccountId, Option<T::AccountId>>
         } else {
             None
         }
-    }
-}
-
-pub struct ShouldEndSession<T>(PhantomData<T>);
-impl<T: Config> pallet_session::ShouldEndSession<u32> for ShouldEndSession<T> {
-    fn should_end_session(now: u32) -> bool {
-        let epoch_length = T::EpochLength::get();
-        now % epoch_length == 0
-    }
-}
-
-pub struct NextSessionRotation<T>(PhantomData<T>);
-impl<T: Config> pallet_session::EstimateNextSessionRotation<u32> for NextSessionRotation<T> {
-    fn average_session_length() -> u32 {
-        T::EpochLength::get()
-    }
-    fn estimate_current_session_progress(now: u32) -> (Option<sp_runtime::Percent>, Weight) {
-        let epoch_length = T::EpochLength::get();
-        let epoch_start = EpochStartBlock::<T>::get();
-        let progress = now.saturating_sub(epoch_start);
-        let percent = sp_runtime::Percent::from_rational(progress, epoch_length);
-        (Some(percent), Weight::zero())
-    }
-    fn estimate_next_session_rotation(now: u32) -> (Option<u32>, Weight) {
-        let epoch_length = T::EpochLength::get();
-        let next = (now / epoch_length + 1) * epoch_length;
-        (Some(next), Weight::zero())
     }
 }
