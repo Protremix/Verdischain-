@@ -1,0 +1,12 @@
+[Unit]
+Description=Verdis Blockchain Monitor — 24/7 auto-repair daemon
+After=network.target verdis.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/verdis/verdis-monitor.sh
+TimeoutSec=30
+User=root
+
+[Install]
+WantedBy=multi-user.target

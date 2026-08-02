@@ -1,0 +1,12 @@
+[Unit]
+Description=Verdis Blockchain Monitor Timer — runs every 60 seconds
+Requires=verdis-monitor.service
+
+[Timer]
+OnBootSec=30
+OnUnitActiveSec=60
+AccuracySec=5
+Unit=verdis-monitor.service
+
+[Install]
+WantedBy=timers.target
