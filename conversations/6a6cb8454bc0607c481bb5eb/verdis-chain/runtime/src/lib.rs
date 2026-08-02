@@ -34,16 +34,14 @@ use sp_version::NativeVersion;
 // === Pallet Imports ===
 use frame_support::{
     construct_runtime, parameter_types,
-    traits::{ConstU32, ConstU64, Everything, Randomness},
+    traits::{ConstU32, ConstU64, ConstU128, Everything, Randomness},
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_REF_TIME_PER_SECOND},
-        IdentityFee, Weight,
+        Weight, IdentityFee,
     },
     PalletId,
 };
 use frame_system::EnsureRoot;
-
-pub use frame_support::weights::constants as weight_constants;
 
 // === Verdis Custom Pallets ===
 pub use pallet_dpos;
@@ -59,7 +57,6 @@ pub type Balance = u128;
 pub type BlockNumber = u32;
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
-pub type Index = u32;
 pub type Signature = MultiSignature;
 
 /// Opaque types for the node
@@ -100,9 +97,11 @@ pub const UNITS: Balance = 1_000_000_000; // 1 VRDX = 10^9 base units
 pub const TOTAL_SUPPLY: Balance = 100_000_000_000 * UNITS;
 pub const CIRCULATING_SUPPLY: Balance = 15_000_000_000 * UNITS;
 pub const BLOCK_TIME: u64 = 6000; // 6 second blocks (BABE)
-pub const MAX_BLOCK_WEIGHT: Weight = Weight::from_parts(
+
+// Block weight: 2s of ref time, max proof size
+const MAX_BLOCK_WEIGHT: Weight = Weight::from_parts(
     WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2),
-    weight_constants::MAX_POSSIBLE_PROOF_SIZE,
+    u64::MAX,
 );
 
 parameter_types! {
@@ -121,11 +120,13 @@ parameter_types! {
             })
             .build_or_panic();
     pub BlockLength: frame_system::limits::BlockLength =
-        frame_system::limits::BlockLength::max_with_normal_noise_ratio(
-            weight_constants::NORMAL_DISPATCH_RATIO,
-            weight_constants::MAX_POSSIBLE_LENGTH,
+        frame_system::limits::BlockLength::max_with_normal_ratio(
+            5u32,
+            MAX_BLOCK_LENGTH,
         );
 }
+
+const MAX_BLOCK_LENGTH: u32 = 5 * 1024 * 1024; // 5 MB
 
 // === System Pallet ===
 impl frame_system::Config for Runtime {
@@ -134,11 +135,8 @@ impl frame_system::Config for Runtime {
     type BlockLength = BlockLength;
     type AccountId = AccountId;
     type Lookup = AccountIdLookup<AccountId, ()>;
-    type Index = Index;
-    type BlockNumber = BlockNumber;
     type Hash = sp_core::H256;
     type Hashing = BlakeTwo256;
-    type Header = Header;
     type RuntimeEvent = RuntimeEvent;
     type RuntimeOrigin = RuntimeOrigin;
     type RuntimeCall = RuntimeCall;
@@ -154,6 +152,14 @@ impl frame_system::Config for Runtime {
     type OnSetCode = ();
     type MaxConsumers = ConstU32<16>;
     type Block = Block;
+    type Task = ();
+    type Nonce = u32;
+    type ExtensionsWeightInfo = ();
+    type SingleBlockMigrations = ();
+    type MultiBlockMigrator = ();
+    type PreInherents = ();
+    type PostInherents = ();
+    type PostTransactions = ();
 }
 
 // === Timestamp ===
@@ -168,12 +174,13 @@ impl pallet_timestamp::Config for Runtime {
 impl pallet_babe::Config for Runtime {
     type EpochDuration = ConstU64<600>;
     type ExpectedBlockTime = ConstU64<BLOCK_TIME>;
-    type ReportLongRanges = ();
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = ();
     type WeightInfo = ();
     type MaxAuthorities = ConstU32<101>;
-    type MaxNominatorRewardedPerValidator = ConstU32<64>;
+    type DisablingStrategy = ();
+    type Currency = Balances;
+    type KeyDeposit = ConstU128<0>;
 }
 
 // === GRANDPA Finality ===
@@ -182,10 +189,9 @@ impl pallet_grandpa::Config for Runtime {
     type WeightInfo = ();
     type MaxAuthorities = ConstU32<101>;
     type MaxSetIdSessionEntries = ConstU64<0>;
-    type MaxNominators = ConstU32<256>;
+    type MaxNominators = ConstU32<0>;
     type KeyOwnerProof = sp_core::Void;
     type EquivocationReportSystem = ();
-    type VoterEquivocationReportSystem = ();
 }
 
 // === Session (for validator management) ===
@@ -198,9 +204,9 @@ impl pallet_session::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type ValidatorId = AccountId;
     type ValidatorIdOf = pallet_dpos::ValidatorIdOf<Runtime>;
-    type ShouldEndSession = pallet_dpos::ShouldEndSession<Runtime>;
+    type ShouldEndSession = pallet_session::PeriodicSessions<Period, Offset>;
     type NextSessionRotation = pallet_session::PeriodicSessions<Period, Offset>;
-    type SessionManager = pallet_dpos::SessionManager<Runtime>;
+    type SessionManager = pallet_dpos::Pallet<Runtime>;
     type SessionHandler = <pallet_session::PeriodicSessions<Period, Offset> as pallet_session::SessionHandler<AccountId>>::SessionHandler;
     type Keys = pallet_session::Keys;
     type WeightInfo = ();
@@ -226,7 +232,8 @@ impl pallet_balances::Config for Runtime {
     type FreezeIdentifier = ();
     type MaxFreezes = ConstU32<0>;
     type RuntimeHoldReason = ();
-    type MaxHolds = ConstU32<0>;
+    type RuntimeFreezeReason = ();
+    type DoneSlashHandler = ();
 }
 
 // === Transaction Payment ===
@@ -237,12 +244,13 @@ parameter_types! {
 
 impl pallet_transaction_payment::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, ()>;
+    type OnChargeTransaction = pallet_transaction_payment::FungibleAdapter<Balances, ()>;
     type OperationalFeeMultiplier = OperationalFeeMultiplier;
     type WeightToFee = IdentityFee<Balance>;
     type LengthToFee = IdentityFee<Balance>;
-    type FeeMultiplierChangeTarget = ();
     type FeeMultiplierUpdate = ();
+    type WeightInfo = ();
+    type Longevity = ConstU64<64>;
 }
 
 // === Sudo ===
@@ -262,6 +270,9 @@ impl pallet_scheduler::Config for Runtime {
     type WeightInfo = ();
     type OriginPrivilegeCmp = frame_support::traits::EqualPrivilegeOnly;
     type Preimages = Preimage;
+    type MaximumWeight = MAX_BLOCK_WEIGHT;
+    type ScheduleOrigin = EnsureRoot<AccountId>;
+    type BlockNumberProvider = System;
 }
 
 // === Preimage ===
@@ -270,11 +281,8 @@ impl pallet_preimage::Config for Runtime {
     type WeightInfo = ();
     type Currency = Balances;
     type ManagerOrigin = EnsureRoot<AccountId>;
-    type BaseDeposit = ConstU128<1>;
-    type ByteDeposit = ConstU128<1>;
+    type Consideration = ();
 }
-
-// === Randomness (for BABE VRF) ===
 
 // === WASM Smart Contracts (pallet-contracts) ===
 parameter_types! {
@@ -282,6 +290,10 @@ parameter_types! {
     pub const DepositPerByte: Balance = 1 * UNITS;
     pub const MaxStorageKeyLen: u32 = 128;
     pub Schedule: pallet_contracts::Schedule<Runtime> = Default::default();
+    pub CodeHashLockupDepositPercent: Permill = Permill::from_percent(30);
+    pub const DefaultDepositLimit: Balance = 100 * UNITS;
+    pub const MaxTransientStorageSize: u32 = 1024 * 1024;
+    pub const MaxDebugBufferLen: u32 = 2 * 1024 * 1024;
 }
 
 impl pallet_contracts::Config for Runtime {
@@ -297,22 +309,22 @@ impl pallet_contracts::Config for Runtime {
     type WeightPrice = pallet_transaction_payment::Pallet<Runtime>;
     type WeightInfo = ();
     type ChainExtension = ();
-    type Schedule = Schedule;
     type AddressGenerator = pallet_contracts::DefaultAddressGenerator;
-    type MaxCodeLen = ConstU32<{ 256 * 1024 }>;
-    type MaxStorageDataLen = ConstU32<{ 16 * 1024 }>;
-    type UnsafeUnstableInterface = ();
+    type Schedule = Schedule;
     type UploadOrigin = frame_system::EnsureSigned<AccountId>;
     type InstantiateOrigin = frame_system::EnsureSigned<AccountId>;
-    type RuntimeHoldReason = ();
-    type MaxDecorations = ConstU32<64>;
-    type CodeHashLockupDepositPercent = Permill::from_percent(30);
+    type RuntimeHoldReason = pallet_contracts::HoldReason;
+    type CodeHashLockupDepositPercent = CodeHashLockupDepositPercent;
     type MaxDelegateDependencies = ConstU32<32>;
     type Environment = ();
     type Debug = ();
     type ApiVersion = ();
     type Migrations = ();
     type Xcm = ();
+    type CallStack = [pallet_contracts::Frame<Self>; 5];
+    type DefaultDepositLimit = DefaultDepositLimit;
+    type MaxTransientStorageSize = MaxTransientStorageSize;
+    type MaxDebugBufferLen = MaxDebugBufferLen;
 }
 
 // === Verdis DPoS Pallet ===
@@ -327,7 +339,6 @@ parameter_types! {
 
 impl pallet_dpos::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type RuntimeOrigin = RuntimeOrigin;
     type Currency = Balances;
     type BlockReward = BlockReward;
     type MinStake = MinValidatorStake;
@@ -335,7 +346,7 @@ impl pallet_dpos::Config for Runtime {
     type ActiveValidatorCount = ValidatorCount;
     type EpochLength = EpochLength;
     type PalletId = DposPalletId;
-    type WeightInfo = pallet_dpos::weights::SubstrateWeight<Runtime>;
+    type WeightInfo = pallet_dpos::SubstrateWeight<Runtime>;
 }
 
 // === Verdis AMM DEX ===
@@ -349,14 +360,13 @@ parameter_types! {
 
 impl pallet_amm_dex::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type RuntimeOrigin = RuntimeOrigin;
     type Currency = Balances;
     type PalletId = DexPalletId;
     type FeeNumerator = FeeNumerator;
     type FeeDenominator = FeeDenominator;
     type MinLiquidity = MinLiquidity;
     type MaxPools = MaxPools;
-    type WeightInfo = pallet_amm_dex::weights::SubstrateWeight<Runtime>;
+    type WeightInfo = pallet_amm_dex::SubstrateWeight<Runtime>;
 }
 
 // === Verdis Eco Tracking ===
@@ -371,14 +381,13 @@ parameter_types! {
 
 impl pallet_eco::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type RuntimeOrigin = RuntimeOrigin;
     type PalletId = EcoPalletId;
     type MaxCarbonCredits = MaxCarbonCredits;
     type MaxReforestProjects = MaxReforestProjects;
     type MaxGreenValidators = MaxGreenValidators;
     type MinGreenScore = MinGreenScore;
     type MaxGreenScore = MaxGreenScore;
-    type WeightInfo = pallet_eco::weights::SubstrateWeight<Runtime>;
+    type WeightInfo = pallet_eco::SubstrateWeight<Runtime>;
 }
 
 // === Verdis Tokenomics ===
@@ -390,12 +399,11 @@ parameter_types! {
 
 impl pallet_tokenomics::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type RuntimeOrigin = RuntimeOrigin;
     type Currency = Balances;
     type TotalSupply = TotalSupplyConst;
     type InvestorAllocation = InvestorAllocationConst;
     type PalletId = TokenomicsPalletId;
-    type WeightInfo = pallet_tokenomics::weights::SubstrateWeight<Runtime>;
+    type WeightInfo = pallet_tokenomics::SubstrateWeight<Runtime>;
 }
 
 // === Verdis Vesting ===
@@ -405,10 +413,9 @@ parameter_types! {
 
 impl pallet_vesting::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type RuntimeOrigin = RuntimeOrigin;
     type Currency = Balances;
     type PalletId = VestingPalletId;
-    type WeightInfo = pallet_vesting::weights::SubstrateWeight<Runtime>;
+    type WeightInfo = pallet_vesting::SubstrateWeight<Runtime>;
 }
 
 // === Verdis Storage (IPFS/Arweave) ===
@@ -421,7 +428,7 @@ impl pallet_storage::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type PalletId = StoragePalletId;
     type MaxRecords = MaxStorageRecords;
-    type WeightInfo = pallet_storage::weights::SubstrateWeight<Runtime>;
+    type WeightInfo = pallet_storage::SubstrateWeight<Runtime>;
 }
 
 // === Construct Runtime ===
@@ -529,7 +536,7 @@ impl_runtime_apis! {
             sp_consensus_babe::BabeConfiguration {
                 slot_duration: Babe::slot_duration(),
                 epoch_length: <Babe as pallet_babe::Config>::EpochDuration::get(),
-                c: PRIMARY_PROBABILITY,
+                c: Babe::primary_slot_probability(),
                 genesis_authorities: Babe::authorities().into_iter().map(|x| x.into()).collect(),
                 randomness: Babe::randomness().into(),
                 allowed_slots: Babe::allowed_slots(),
@@ -553,17 +560,14 @@ impl_runtime_apis! {
             _slot: sp_consensus_babe::Slot,
             authority_id: sp_consensus_babe::AuthorityId,
         ) -> Option<sp_consensus_babe::OpaqueKeyOwnershipProof> {
-            Babe::generate_key_ownership_proof(&_slot, &authority_id)
+            None
         }
 
         fn submit_report_equivocation_unsigned_extrinsic(
-            equivocation_proof: sp_consensus_babe::OpaqueEquivocationProof,
-            key_owner_proof: sp_consensus_babe::OpaqueKeyOwnershipProof,
+            _equivocation_proof: Vec<u8>,
+            _key_owner_proof: Vec<u8>,
         ) -> Option<()> {
-            Babe::submit_unsigned_equivocation_report(
-                equivocation_proof,
-                key_owner_proof,
-            )
+            None
         }
     }
 
@@ -597,24 +601,94 @@ impl_runtime_apis! {
         }
     }
 
-    impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Index> for Runtime {
-        fn account_nonce(account: AccountId) -> Index {
+    impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, u32> for Runtime {
+        fn account_nonce(account: AccountId) -> u32 {
             System::account_nonce(account)
         }
     }
 
-    impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance> for Runtime {
+    impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<
+        Block,
+        Balance,
+    > for Runtime {
         fn query_info(
-            utx: <Block as BlockT>::Extrinsic,
+            uxt: <Block as BlockT>::Extrinsic,
             len: u32,
         ) -> pallet_transaction_payment_rpc_runtime_api::RuntimeDispatchInfo<Balance> {
-            TransactionPayment::query_info(utx, len)
+            TransactionPayment::query_info(uxt, len)
         }
-        fn query_length_fee(len: u32) -> Balance {
-            TransactionPayment::query_length_fee(len)
+        fn query_length_to_fee(length: u32) -> Balance {
+            TransactionPayment::length_to_fee(length)
         }
         fn query_weight_to_fee(weight: Weight) -> Balance {
             TransactionPayment::weight_to_fee(weight)
+        }
+    }
+
+    impl pallet_contracts::ContractsApi<Block, AccountId, Balance, BlockNumber, Hash> for Runtime {
+        fn call(
+            origin: AccountId,
+            dest: AccountId,
+            value: Balance,
+            gas_limit: Weight,
+            storage_deposit_limit: Option<Balance>,
+            data: Vec<u8>,
+        ) -> pallet_contracts::ContractResult<
+            pallet_contracts::ContractExecResult<Balance, EventRecord>,
+        > {
+            Contracts::bare_call(
+                origin,
+                dest,
+                value,
+                gas_limit,
+                storage_deposit_limit,
+                data,
+            )
+        }
+
+        fn instantiate(
+            origin: AccountId,
+            value: Balance,
+            gas_limit: Weight,
+            storage_deposit_limit: Option<Balance>,
+            code: pallet_contracts::Code<Hash>,
+            data: Vec<u8>,
+            salt: Vec<u8>,
+        ) -> pallet_contracts::ContractResult<
+            pallet_contracts::InstantiateResult<AccountId, Balance, EventRecord>,
+        > {
+            Contracts::bare_instantiate(
+                origin,
+                value,
+                gas_limit,
+                storage_deposit_limit,
+                code,
+                data,
+                salt,
+            )
+        }
+
+        fn upload_code(
+            origin: AccountId,
+            code: Vec<u8>,
+            storage_deposit_limit: Option<Balance>,
+            determinism: pallet_contracts::Determinism,
+        ) -> pallet_contracts::ContractResult<
+            pallet_contracts::UploadResult<Balance, EventRecord>,
+        > {
+            Contracts::bare_upload_code(
+                origin,
+                code,
+                storage_deposit_limit,
+                determinism,
+            )
+        }
+
+        fn get_storage(
+            address: AccountId,
+            key: Vec<u8>,
+        ) -> pallet_contracts::GetStorageResult {
+            Contracts::get_storage(address, key)
         }
     }
 }
