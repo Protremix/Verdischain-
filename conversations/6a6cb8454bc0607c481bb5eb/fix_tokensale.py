@@ -3,197 +3,123 @@ import re
 with open("/opt/verdis/app/dist/web/token-sale.html", "r") as f:
     content = f.read()
 
-# 1. Replace executePurchase with real IDO API call
-old_execute = """    function executePurchase() {
-      const payInput = parseFloat(document.getElementById('payAmountInput').value) || 0;
-      if (payInput <= 0) {
-        alert('Please enter a valid contribution amount.');
-        return;
-      }
-
-      const walletAddr = document.getElementById('walletAddressInput').value.trim();
-      if (!walletAddr) {
-        toggleWalletModal();
-        return;
-      }
-
-      const totalUSD = payInput * assetPriceUSD;
-      const baseVCO = Math.floor(totalUSD / vrsPriceUSD);
-      const bonusVCO = Math.floor(baseVCO * 0.10);
-      const totalVCO = baseVCO + bonusVCO;
-      const trees = Math.floor(totalUSD / 100);
-
-      document.getElementById('receiptTxHash').innerText = '0x' + Array.from({length: 8}, () => Math.floor(Math.random()*16).toString(16)).join('') + '...' + Array.from({length: 4}, () => Math.floor(Math.random()*16).toString(16)).join('');
-      document.getElementById('receiptVrsAmount').innerText = totalVCO.toLocaleString() + ' VCO';
-      document.getElementById('receiptTrees').innerText = '🌱 ' + trees.toLocaleString() + ' Trees Planted';
-
-      document.getElementById('receiptModal').classList.add('active');
-    }"""
-
-new_execute = """    async function executePurchase() {
-      const payInput = parseFloat(document.getElementById('payAmountInput').value) || 0;
-      if (payInput <= 0) {
-        alert('Please enter a valid contribution amount.');
-        return;
-      }
-
-      let walletAddr = document.getElementById('walletAddressInput').value.trim();
-      
-      // Check for Verdis wallet in localStorage (shared with dashboard)
-      if (!walletAddr) {
-        const savedWallet = localStorage.getItem('verdis-wallet');
-        if (savedWallet) {
-          try {
-            const w = JSON.parse(savedWallet);
-            walletAddr = w.address;
-            document.getElementById('walletAddressInput').value = walletAddr;
-            userWalletAddress = walletAddr;
-            walletConnected = true;
-            document.getElementById('walletBtnText').innerText = walletAddr.substring(0, 6) + '...' + walletAddr.slice(-4);
-            document.getElementById('walletStatusText').innerText = 'Connected to Verdis Wallet ✅';
-          } catch(e) {}
-        }
-      }
-      
-      if (!walletAddr) {
-        toggleWalletModal();
-        return;
-      }
-
-      const totalUSD = payInput * assetPriceUSD;
-      const baseVCO = Math.floor(totalUSD / vrsPriceUSD);
-      const bonusVCO = Math.floor(baseVCO * 0.10);
-      const totalVCO = baseVCO + bonusVCO;
-
-      // Call the real IDO API
-      try {
-        const response = await fetch('https://verdischain.com/api/ido/purchase', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            address: walletAddr,
-            amountVCO: totalVCO.toString()
-          })
-        });
-        const result = await response.json();
-        
-        if (result.success) {
-          // Show real transaction receipt
-          document.getElementById('receiptTxHash').innerText = result.txId ? result.txId.substring(0, 12) + '...' : 'Confirmed';
-          document.getElementById('receiptVrsAmount').innerText = result.amountVCO.toLocaleString() + ' VCO';
-          document.getElementById('receiptTrees').innerText = '🌱 ' + Math.floor(totalUSD / 100).toLocaleString() + ' Trees Planted';
-          document.getElementById('receiptModal').classList.add('active');
-          
-          // Update wallet balance in localStorage
-          const savedWallet = localStorage.getItem('verdis-wallet');
-          if (savedWallet) {
-            try {
-              const w = JSON.parse(savedWallet);
-              w.balance = result.newBalance;
-              localStorage.setItem('verdis-wallet', JSON.stringify(w));
-            } catch(e) {}
-          }
-        } else {
-          alert('Purchase failed: ' + (result.error || 'Unknown error'));
-        }
-      } catch(e) {
-        alert('Network error: ' + e.message);
-      }
-    }"""
-
-if old_execute in content:
-    content = content.replace(old_execute, new_execute)
-    print("Replaced executePurchase with real IDO API call")
-else:
-    print("WARNING: Could not find executePurchase")
-
-# 2. Replace connectWallet with real wallet options
-old_connect = """    function connectWallet(providerName) {
-      walletConnected = true;
-      userWalletAddress = '0x71C' + Math.random().toString(16).substring(2, 8) + '...8A9e';
-      document.getElementById('walletBtnText').innerText = '0x71C...8A9e';
-      document.getElementById('walletAddressInput').value = userWalletAddress;
-      document.getElementById('walletStatusText').innerText = 'Connected via ' + providerName + ' ✅';
-      toggleWalletModal();
-    }"""
-
-new_connect = """    function connectWallet(providerName) {
-      if (providerName === 'Verdis') {
-        // Check for existing Verdis wallet in localStorage
-        const savedWallet = localStorage.getItem('verdis-wallet');
-        if (savedWallet) {
-          try {
-            const w = JSON.parse(savedWallet);
-            walletConnected = true;
-            userWalletAddress = w.address;
-            document.getElementById('walletBtnText').innerText = w.address.substring(0, 6) + '...' + w.address.slice(-4);
-            document.getElementById('walletAddressInput').value = w.address;
-            document.getElementById('walletStatusText').innerText = 'Connected to Verdis Wallet ✅';
-            toggleWalletModal();
-            return;
-          } catch(e) {}
-        }
-        // No wallet found — create one via the API
-        fetch('https://verdischain.com/api/wallet/create', {method: 'POST'})
-          .then(r => r.json())
-          .then(d => {
-            if (d.address) {
-              const newWallet = {address: d.address, privateKey: d.privateKey, publicKey: d.publicKey, balance: 0};
-              localStorage.setItem('verdis-wallet', JSON.stringify(newWallet));
-              walletConnected = true;
-              userWalletAddress = d.address;
-              document.getElementById('walletBtnText').innerText = d.address.substring(0, 6) + '...' + d.address.slice(-4);
-              document.getElementById('walletAddressInput').value = d.address;
-              document.getElementById('walletStatusText').innerText = 'New Verdis Wallet created! ✅ Save your key from the dashboard.';
-              toggleWalletModal();
-            }
-          })
-          .catch(e => alert('Failed to create wallet: ' + e.message));
+# Fix 1: Replace tokReviewConsent - make button always clickable, visual feedback only
+idx = content.find("window.tokReviewConsent")
+if idx >= 0:
+    start = content.rfind("<script>", 0, idx)
+    end = content.find("</script>", idx) + 9
+    old_block = content[start:end]
+    
+    new_script = """<script>
+if(typeof tokReviewConsent !== "function"){
+  window.tokReviewConsent = function(cb){
+    document.querySelectorAll(".tok-buy-btn").forEach(function(b){
+      if(cb.checked){
+        b.style.opacity = "1";
+        b.style.pointerEvents = "auto";
+        b.title = "";
       } else {
-        // For MetaMask/Trust, just use the address input
-        walletConnected = true;
-        userWalletAddress = '0x71C' + Math.random().toString(16).substring(2, 8) + '...8A9e';
-        document.getElementById('walletBtnText').innerText = '0x71C...8A9e';
-        document.getElementById('walletAddressInput').value = userWalletAddress;
-        document.getElementById('walletStatusText').innerText = 'Connected via ' + providerName + ' (enter address manually)';
-        toggleWalletModal();
+        b.style.opacity = "0.7";
+        b.style.pointerEvents = "auto";
+        b.title = "Review tokenomics and check the box to confirm";
       }
-    }"""
-
-if old_connect in content:
-    content = content.replace(old_connect, new_connect)
-    print("Replaced connectWallet with real wallet integration")
+    });
+  };
+  document.addEventListener("DOMContentLoaded", function(){
+    document.querySelectorAll(".tok-buy-btn").forEach(function(b){
+      b.style.opacity = "0.85";
+      b.style.pointerEvents = "auto";
+    });
+  });
+}
+</script>"""
+    content = content.replace(old_block, new_script)
+    print("Fixed tokReviewConsent block")
 else:
-    print("WARNING: Could not find connectWallet")
+    print("ERROR: tokReviewConsent not found")
 
-# 3. Add auto-restore of wallet on page load
-old_body_end = "</body>"
-wallet_restore = """    // Auto-restore Verdis wallet from localStorage
-    (function() {
-      const savedWallet = localStorage.getItem('verdis-wallet');
-      if (savedWallet) {
-        try {
-          const w = JSON.parse(savedWallet);
-          walletConnected = true;
-          userWalletAddress = w.address;
-          const btn = document.getElementById('walletBtnText');
-          const inp = document.getElementById('walletAddressInput');
-          const status = document.getElementById('walletStatusText');
-          if(btn) btn.innerText = w.address.substring(0, 6) + '...' + w.address.slice(-4);
-          if(inp) inp.value = w.address;
-          if(status) status.innerText = 'Verdis Wallet connected ✅';
-        } catch(e) {}
+# Fix 2: Replace the hard consent gate in executePurchase
+old_gate_start = "      // Consent gate - block purchase if disclosure not accepted"
+old_gate_end = "        return;\n      }\n\n      // Call the real IDO API"
+new_gate = """      // Consent gate - friendly scroll+highlight if not checked
+      const consentBox = document.getElementById("tokReviewCheck");
+      if (!consentBox || !consentBox.checked) {
+        if (consentBox) {
+          consentBox.scrollIntoView({ behavior: "smooth", block: "center" });
+          const wrap = consentBox.parentElement;
+          if (wrap) { wrap.style.outline = "2px solid #ff4444"; setTimeout(function(){ wrap.style.outline = ""; }, 3000); }
+        }
+        const banner = document.createElement("div");
+        banner.style.cssText = "position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#ff4444;color:#fff;padding:14px 28px;border-radius:10px;z-index:9999;font-weight:bold;font-size:14px;box-shadow:0 4px 20px rgba(255,68,68,0.5);";
+        banner.textContent = "Please check the tokenomics consent box before purchasing.";
+        document.body.appendChild(banner);
+        setTimeout(function(){ banner.remove(); }, 4000);
+        return;
       }
-    })();
-    </body>"""
 
-# Only replace the LAST </body>
-idx = content.rfind("</body>")
-if idx > -1:
-    content = content[:idx] + wallet_restore
-    print("Added wallet auto-restore on page load")
+      // Call the real IDO API"""
+
+# Find and replace the consent gate
+gate_start_idx = content.find(old_gate_start)
+if gate_start_idx >= 0:
+    gate_end_idx = content.find("      // Call the real IDO API", gate_start_idx)
+    if gate_end_idx >= 0:
+        old_gate = content[gate_start_idx:gate_end_idx]
+        content = content[:gate_start_idx] + new_gate
+        content = content + ""  # we need to put back the rest
+        # Actually rebuild properly
+        pass
+    print(f"Found gate at {gate_start_idx}")
+else:
+    print("Gate not found")
+
+# Redo: simpler approach - find the block and replace it
+with open("/opt/verdis/app/dist/web/token-sale.html", "r") as f:
+    content = f.read()
+
+# Fix 1 again cleanly
+idx = content.find("window.tokReviewConsent")
+if idx >= 0:
+    start = content.rfind("<script>", 0, idx)
+    end = content.find("</script>", idx) + 9
+    old_block = content[start:end]
+    
+    new_script = '<script>\nif(typeof tokReviewConsent !== "function"){\n  window.tokReviewConsent = function(cb){\n    document.querySelectorAll(".tok-buy-btn").forEach(function(b){\n      b.style.opacity = cb.checked ? "1" : "0.75";\n      b.style.pointerEvents = "auto";\n    });\n  };\n  document.addEventListener("DOMContentLoaded", function(){\n    document.querySelectorAll(".tok-buy-btn").forEach(function(b){\n      b.style.opacity = "0.85";\n      b.style.pointerEvents = "auto";\n    });\n  });\n}\n</script>'
+    
+    content = content.replace(old_block, new_script)
+    print("Fix 1 done: tokReviewConsent always enables pointer-events")
+
+# Fix 2: consent gate
+gate_marker = "// Consent gate - block purchase if disclosure not accepted"
+gate_idx = content.find(gate_marker)
+if gate_idx >= 0:
+    # Find the end of the if block: "        return;\n      }"
+    end_marker = "        return;\n      }\n"
+    end_idx = content.find(end_marker, gate_idx)
+    if end_idx >= 0:
+        end_pos = end_idx + len(end_marker)
+        new_gate_block = '      // Consent gate - scroll to checkbox if unchecked\n      if (!document.getElementById("tokReviewCheck") || !document.getElementById("tokReviewCheck").checked) {\n        const cb = document.getElementById("tokReviewCheck");\n        if (cb) { cb.scrollIntoView({behavior:"smooth",block:"center"}); cb.parentElement.style.outline="2px solid #ff4444"; setTimeout(function(){cb.parentElement.style.outline="";},3000); }\n        const b = document.createElement("div"); b.style.cssText="position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#ff4444;color:#fff;padding:14px 28px;border-radius:10px;z-index:9999;font-weight:bold;font-size:14px;"; b.textContent="Please check the tokenomics consent box first."; document.body.appendChild(b); setTimeout(function(){b.remove();},4000);\n        return;\n      }\n'
+        content = content[:gate_idx] + new_gate_block + content[end_pos:]
+        print("Fix 2 done: friendly consent gate with scroll+banner")
+    else:
+        print("ERROR: Could not find end of consent gate block")
+else:
+    print("ERROR: Consent gate marker not found")
+
+# Fix 3: use selectedAsset not hardcoded USDT
+old_usdt = 'asset: \'USDT\','
+new_asset_line = 'asset: selectedAsset,'
+if old_usdt in content:
+    content = content.replace(old_usdt, new_asset_line)
+    print("Fix 3 done: use selectedAsset")
+else:
+    print("Fix 3: USDT not found, checking...")
+    # Try double quotes
+    old_usdt2 = 'asset: "USDT",'
+    if old_usdt2 in content:
+        content = content.replace(old_usdt2, new_asset_line)
+        print("Fix 3 done (double quotes)")
 
 with open("/opt/verdis/app/dist/web/token-sale.html", "w") as f:
     f.write(content)
-
-print("Token sale page updated with real IDO integration")
+print("\nAll fixes saved to token-sale.html")
