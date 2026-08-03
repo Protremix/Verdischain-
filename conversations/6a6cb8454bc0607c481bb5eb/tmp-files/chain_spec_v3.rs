@@ -4,28 +4,29 @@ use sc_chain_spec::ChainType;
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_consensus_grandpa::AuthorityId as GrandpaId;
 use sp_keyring::{Ed25519Keyring, Sr25519Keyring};
-use verdis_runtime::{
-    AccountId, SessionKeys,
-};
+use verdis_runtime::{AccountId, SessionKeys};
 
-pub type VerdisChainSpec = sc_service::GenericChainSpec<verdis_runtime::GenesisConfig>;
+pub type VerdisChainSpec =
+    sc_service::GenericChainSpec<verdis_runtime::RuntimeGenesisConfig>;
 
 /// Create the development chain spec for Verdis
 pub fn chain_spec() -> VerdisChainSpec {
-    VerdisChainSpec::from_genesis(
-        "Verdis",
-        "verdis",
-        ChainType::Development,
-        genesis_config,
-        vec![],
-        None,
-        None,
-        None,
+    let genesis = genesis_config();
+    let patch = serde_json::to_value(&genesis)
+        .expect("Failed to serialize genesis config");
+
+    sc_chain_spec::GenericChainSpec::builder(
+        verdis_runtime::WASM_BINARY,
         Default::default(),
     )
+    .with_name("Verdis")
+    .with_id("verdis")
+    .with_chain_type(ChainType::Development)
+    .with_genesis_config_patch(patch)
+    .build()
 }
 
-fn genesis_config() -> verdis_runtime::GenesisConfig {
+fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
     use verdis_runtime::{
         BalancesConfig, SudoConfig, BabeConfig, GrandpaConfig, SessionConfig,
     };
@@ -74,41 +75,43 @@ fn genesis_config() -> verdis_runtime::GenesisConfig {
         ),
     ];
 
-    verdis_runtime::GenesisConfig {
+    verdis_runtime::RuntimeGenesisConfig {
         // Core pallets
         system: Default::default(),
-        timestamp: Default::default(),
         balances: BalancesConfig {
             balances: vec![
                 (sudo_account.clone(), 100_000_000_000_000_000u128),
                 (Sr25519Keyring::Bob.to_account_id(), 50_000_000_000_000_000u128),
                 (Sr25519Keyring::Charlie.to_account_id(), 50_000_000_000_000_000u128),
             ],
+            dev_accounts: None,
         },
         sudo: SudoConfig {
-            key: sudo_account,
+            key: Some(sudo_account),
         },
         transaction_payment: Default::default(),
         // Consensus
         babe: BabeConfig {
             authorities: babe_authorities,
+            epoch_config: sp_consensus_babe::BabeEpochConfiguration {
+                c: (1, 4),
+                allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
+            },
+            _config: Default::default(),
         },
         grandpa: GrandpaConfig {
             authorities: grandpa_authorities,
+            _config: Default::default(),
         },
         session: SessionConfig {
             keys: session_keys,
+            non_authority_keys: Vec::new(),
         },
-        // Other pallets with Default
-        scheduler: Default::default(),
-        preimage: Default::default(),
-        contracts: Default::default(),
         // Verdis custom pallets
         dpos: Default::default(),
         amm_dex: Default::default(),
         eco: Default::default(),
         tokenomics: Default::default(),
         vesting: Default::default(),
-        storage: Default::default(),
     }
 }
