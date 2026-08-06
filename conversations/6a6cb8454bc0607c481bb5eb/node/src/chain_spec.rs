@@ -97,12 +97,6 @@ fn testnet_genesis(
                 (account.clone(), account, SessionKeys { babe, grandpa })
             }).collect::<Vec<_>>(),
         },
-        "babe": {
-            "authorities": initial_authorities.iter().map(|(_, babe, _)| (babe.clone(), 1u64)).collect::<Vec<_>>(),
-        },
-        "grandpa": {
-            "authorities": initial_authorities.iter().map(|(_, _, grandpa)| (grandpa.clone(), 1u64)).collect::<Vec<_>>(),
-        },
         "sudo": {
             "key": Some(root_key),
         }
