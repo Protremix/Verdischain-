@@ -74,6 +74,78 @@ class SandboxConfig:
 # Default Sandbox Configs by Plugin Type
 # =========================================================================
 
+class NetworkIsolation:
+    """Network isolation helper for sandboxed plugins."""
+    
+    # Providers that need network access (by domain)
+    NETWORK_WHITELIST = {
+        "api.openai.com",
+        "api.anthropic.com", 
+        "generativelanguage.googleapis.com",
+        "api.x.ai",
+        "api.deepseek.com",
+        "api.cohere.ai",
+        "api.ai21.ai",
+        "api.mistral.ai",
+        "localhost:11434",  # Ollama
+        "localhost:8000",   # vLLM
+        "api.tavily.com",
+        "api.search.brave.com",
+        "api-free.deepl.com",
+        "api.stability.ai",
+        "api.elevenlabs.io",
+        "vision.googleapis.com",
+        "localhost:6333",   # Qdrant
+    }
+    
+    @staticmethod
+    def is_network_allowed(url: str, allow_network: bool) -> bool:
+        """Check if a network request to the given URL is allowed."""
+        if not allow_network:
+            return False
+        
+        # Extract domain from URL
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(url)
+            domain = parsed.hostname or ""
+            port = parsed.port
+            if port and port not in (80, 443):
+                domain_with_port = f"{domain}:{port}"
+            else:
+                domain_with_port = domain
+            
+            # Check if domain matches any whitelisted entry
+            for allowed in NetworkIsolation.NETWORK_WHITELIST:
+                if domain == allowed or domain_with_port == allowed:
+                    return True
+                # Allow subdomain matching
+                if allowed.startswith("*."):
+                    if domain.endswith(allowed[1:]):
+                        return True
+            return False
+        except Exception:
+            return False
+    
+    @staticmethod
+    def get_blocked_domains() -> list:
+        """Get a list of domains that are always blocked."""
+        return [
+            "169.254.169.254",  # AWS metadata
+            "metadata.google.internal",  # GCP metadata
+            "169.254.169.253",  # Azure metadata
+        ]
+    
+    @staticmethod
+    def validate_url(url: str) -> bool:
+        """Validate that a URL is not accessing metadata services or blocked domains."""
+        blocked = NetworkIsolation.get_blocked_domains()
+        for b in blocked:
+            if b in url:
+                return False
+        return True
+
+
 DEFAULT_SANDBOX_CONFIGS = {
     "llm_provider": SandboxConfig(
         level=SandboxLevel.BASIC,
@@ -421,6 +493,9 @@ class SandboxManager:
             "LANG": os.environ.get("LANG", "en_US.UTF-8"),
             "PYTHONPATH": os.environ.get("PYTHONPATH", ""),
         }
+        # Set NO_PROXY to block metadata services
+        env["NO_PROXY"] = "169.254.169.254,metadata.google.internal"
+        env["no_proxy"] = "169.254.169.254,metadata.google.internal"
         
         # Add whitelisted env vars
         for key in config.env_whitelist:
@@ -440,6 +515,8 @@ class SandboxManager:
             "by_outcome": dict(self._stats),
             "violation_count": self._violation_count,
             "runner_path": self._runner_path,
+            "network_whitelist_size": len(NetworkIsolation.NETWORK_WHITELIST),
+            "blocked_domains": len(NetworkIsolation.get_blocked_domains()),
         }
     
     def health_check(self) -> Dict[str, Any]:
