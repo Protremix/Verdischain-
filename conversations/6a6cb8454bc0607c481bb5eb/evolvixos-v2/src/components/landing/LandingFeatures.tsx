@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn'
+import { Reveal } from './Reveal'
 
 interface GridFeature {
   name: string
@@ -74,27 +75,30 @@ export function LandingFeatures() {
   return (
     <div className="mx-auto my-16 flex max-w-7xl flex-col gap-4 px-6 lg:px-8" id="features">
       {/* Section title */}
-      <div className="text-center mb-8">
+      <Reveal direction="up" className="text-center mb-8">
         <h2 className="text-3xl font-bold tracking-tight text-text-primary">Everything you need to ship</h2>
         <p className="mt-2 text-text-secondary">A complete AI-powered engineering platform, from idea to production.</p>
-      </div>
+      </Reveal>
 
-      {/* Bento grid */}
+      {/* Bento grid with staggered reveals */}
       <div className="grid auto-rows-[minmax(140px,auto)] grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-        {features.map(feature => (
-          <div
+        {features.map((feature, idx) => (
+          <Reveal
             key={feature.name}
+            direction="scale"
+            delay={idx * 80}
+            duration={500}
             className={cn(
-              'group rounded-xl border border-border bg-bg-surface p-5 transition-all duration-300 hover:border-brand/30 hover:shadow-lg cursor-pointer',
+              'group rounded-xl border border-border bg-bg-surface p-5 transition-all duration-300 hover:border-brand/30 hover:shadow-lg cursor-pointer card-lift glow-border',
               sizeClasses[feature.size],
             )}
           >
             <div className="flex h-full flex-col items-center justify-center text-center">
-              <div className="mb-3 text-4xl transition-transform group-hover:scale-110">{feature.emoji}</div>
+              <div className="mb-3 text-4xl transition-transform duration-300 group-hover:scale-125">{feature.emoji}</div>
               <h3 className="text-sm font-semibold text-text-primary mb-2">{feature.name}</h3>
               <p className="text-xs text-text-tertiary leading-relaxed">{feature.description}</p>
             </div>
-          </div>
+          </Reveal>
         ))}
       </div>
     </div>

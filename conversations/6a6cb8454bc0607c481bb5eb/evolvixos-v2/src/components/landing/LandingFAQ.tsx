@@ -1,52 +1,78 @@
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
+import { Reveal } from './Reveal'
 import { cn } from '@/lib/cn'
 
-interface FAQ {
-  id: number
+interface FAQItem {
   question: string
   answer: string
-  href?: string
 }
 
-const faqs: FAQ[] = [
-  { id: 1, question: 'What is EvolvixOS?', answer: 'EvolvixOS is an AI Engineering Operating System — a platform that combines autonomous AI agents, real-time monitoring, blockchain integration, and deployment automation to help you build, secure, and operate world-class software systems.' },
-  { id: 2, question: 'How does the AI CTO work?', answer: 'The AI CTO agent connects to GPT-4o with full project context — architecture, code, and deployment state. It makes architecture decisions, reviews implementations, and runs weekly security audits automatically, without requiring human approval for each step.' },
-  { id: 3, question: 'Is EvolvixOS open source?', answer: 'The platform is built on open-source technologies (React, FastAPI, PostgreSQL, Redis, Docker, Substrate). The core platform code is proprietary, built by Protremix.' },
-  { id: 4, question: 'What blockchain does it integrate with?', answer: 'EvolvixOS integrates natively with the Verdis Chain — a carbon-negative blockchain with DPoS consensus, 101 EVM opcodes, native AMM DEX, and carbon credit tracking. The integration includes real-time block data, validator management, and DEX analytics.' },
-  { id: 5, question: 'Can I self-host EvolvixOS?', answer: 'Yes. EvolvixOS is designed for self-hosting with Docker containers, systemd services, and Nginx reverse proxy. Full deployment scripts and documentation are included.' },
-  { id: 6, question: 'What\'s the pricing model?', answer: 'EvolvixOS is currently in private beta. Contact us for early access and pricing details.' },
+const faqs: FAQItem[] = [
+  {
+    question: 'Can I self-host EvolvixOS?',
+    answer: 'Yes. EvolvixOS is designed for self-hosting with Docker containers, systemd services, and automated deployment scripts. The entire stack — frontend, API, workers, database, monitoring — can be deployed on a single server.',
+  },
+  {
+    question: "What's the pricing model?",
+    answer: 'EvolvixOS uses a credits-based model. AI agent consultations consume credits, while the core platform (monitoring, deployment, security) is included. Contact us for enterprise pricing.',
+  },
+  {
+    question: 'How does the Verdis Chain integration work?',
+    answer: 'EvolvixOS provides a native bridge to the Verdis blockchain via JSON-RPC and gRPC. The integration includes real-time block updates, validator management, DEX analytics, and carbon credit tracking — all accessible through the platform API.',
+  },
+  {
+    question: 'Which AI models power the agents?',
+    answer: 'The AI agents use GPT-4o for architecture decisions, code review, and strategic planning. Each agent has specialized system prompts and full project context including code, documentation, and historical decisions.',
+  },
 ]
 
-export function LandingFAQ() {
-  const [openId, setOpenId] = useState<number | null>(1)
+function FAQAccordion({ item, idx }: { item: FAQItem; idx: number }) {
+  const [open, setOpen] = useState(false)
 
   return (
-    <div className="mx-auto mt-32 max-w-4xl px-6 pb-8 lg:px-8 lg:py-32" id="faq">
-      <h2 className="mb-12 text-center text-2xl font-bold tracking-tight text-text-primary">
-        Frequently asked questions
-      </h2>
-
-      <div className="space-y-4">
-        {faqs.map(faq => (
-          <div
-            key={faq.id}
-            className={cn(
-              'rounded-lg border px-6 py-2 transition-all',
-              openId === faq.id ? 'border-brand/30 bg-bg-surface' : 'border-border bg-bg-surface hover:bg-bg-hover',
-            )}
-          >
-            <button
-              onClick={() => setOpenId(openId === faq.id ? null : faq.id)}
-              className="flex w-full items-center justify-between py-3 text-left text-base font-semibold text-text-primary"
-            >
-              {faq.question}
-              <ChevronDown className={cn('h-4 w-4 text-text-tertiary transition-transform', openId === faq.id && 'rotate-180')} />
-            </button>
-            {openId === faq.id && (
-              <p className="pb-4 text-sm text-text-secondary leading-7">{faq.answer}</p>
-            )}
+    <Reveal direction="up" delay={idx * 80} duration={400}>
+      <div
+        className={cn(
+          'rounded-xl border border-border bg-bg-surface overflow-hidden transition-all duration-300 card-lift',
+          open && 'border-brand/30',
+        )}
+      >
+        <button
+          className="flex w-full items-center justify-between p-5 text-left"
+          onClick={() => setOpen(!open)}
+        >
+          <span className="text-sm font-medium text-text-primary">{item.question}</span>
+          <ChevronDown
+            className={cn('h-4 w-4 text-text-tertiary transition-transform duration-300', open && 'rotate-180 text-brand')}
+          />
+        </button>
+        <div
+          className={cn(
+            'grid transition-all duration-300 ease-in-out',
+            open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
+          )}
+        >
+          <div className="overflow-hidden">
+            <p className="px-5 pb-5 text-sm text-text-secondary leading-relaxed">{item.answer}</p>
           </div>
+        </div>
+      </div>
+    </Reveal>
+  )
+}
+
+export function LandingFAQ() {
+  return (
+    <div className="mx-auto max-w-3xl px-6 lg:px-8 mt-24 mb-16">
+      <Reveal direction="up" className="text-center mb-8">
+        <h2 className="text-3xl font-bold tracking-tight text-text-primary">Frequently asked questions</h2>
+        <p className="mt-2 text-text-secondary">Everything you need to know about the platform.</p>
+      </Reveal>
+
+      <div className="space-y-3">
+        {faqs.map((item, idx) => (
+          <FAQAccordion key={idx} item={item} idx={idx} />
         ))}
       </div>
     </div>

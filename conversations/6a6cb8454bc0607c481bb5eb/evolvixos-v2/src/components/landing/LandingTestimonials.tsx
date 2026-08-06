@@ -1,3 +1,5 @@
+import { Reveal } from './Reveal'
+
 interface Testimonial {
   name: string
   role: string
@@ -17,20 +19,26 @@ const testimonials: Testimonial[] = [
 export function LandingTestimonials() {
   return (
     <div className="mx-auto mt-32 max-w-7xl px-6 lg:px-8" id="testimonials">
-      <div className="text-center mb-12">
+      <Reveal direction="up" className="text-center mb-12">
         <h2 className="text-3xl font-bold tracking-tight text-text-primary">What our team says</h2>
         <p className="mt-2 text-text-secondary">Real feedback from engineers using EvolvixOS every day.</p>
-      </div>
+      </Reveal>
 
       <div className="columns-1 gap-4 px-0 md:columns-2 md:gap-6 lg:columns-3">
         {testimonials.map((t, idx) => (
-          <div key={idx} className="mb-4 break-inside-avoid">
-            <div className="rounded-xl border border-border bg-bg-surface p-5 flex flex-col">
+          <Reveal
+            key={idx}
+            direction="up"
+            delay={(idx % 3) * 120}
+            duration={500}
+            className="mb-4 break-inside-avoid"
+          >
+            <div className="rounded-xl border border-border bg-bg-surface p-5 flex flex-col card-lift glow-border">
               <blockquote className="mb-4">
                 <p className="text-sm italic text-text-secondary leading-relaxed">"{t.quote}"</p>
               </blockquote>
               <div className="flex items-center gap-3 mt-auto pt-2">
-                <div className="h-10 w-10 rounded-full bg-brand/10 text-brand flex items-center justify-center text-xs font-medium flex-shrink-0">
+                <div className="h-10 w-10 rounded-full bg-brand/10 text-brand flex items-center justify-center text-xs font-medium flex-shrink-0 transition-transform duration-300 hover:scale-110">
                   {t.initials}
                 </div>
                 <div className="min-w-0">
@@ -39,7 +47,7 @@ export function LandingTestimonials() {
                 </div>
               </div>
             </div>
-          </div>
+          </Reveal>
         ))}
       </div>
     </div>
