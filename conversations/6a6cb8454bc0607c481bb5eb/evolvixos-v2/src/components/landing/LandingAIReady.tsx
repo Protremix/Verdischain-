@@ -1,0 +1,99 @@
+import { Link } from 'react-router-dom'
+import { Cpu, Bot, Shield, GitBranch, Zap, ArrowRight } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+
+export function LandingAIReady() {
+  return (
+    <div className="mx-auto max-w-7xl px-6 lg:px-8 mt-24" id="ai-agents">
+      <div className="rounded-2xl border border-border bg-gradient-to-br from-bg-surface to-bg-elevated overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+          {/* Left: Content */}
+          <div className="p-8 lg:p-12">
+            <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/5 px-3 py-1 mb-6">
+              <Bot className="h-3.5 w-3.5 text-brand" />
+              <span className="text-xs font-medium text-brand">AI-Ready</span>
+            </div>
+            <h2 className="text-3xl font-bold tracking-tight text-text-primary">
+              5 autonomous AI agents
+              <span className="block text-text-tertiary text-2xl mt-1">working around the clock</span>
+            </h2>
+            <p className="mt-4 text-text-secondary leading-relaxed">
+              Each agent specializes in a different engineering discipline — from architecture
+              decisions to security audits. They consult GPT-4o with full project context
+              and execute recommendations automatically.
+            </p>
+
+            <div className="mt-8 space-y-4">
+              {[
+                { icon: Cpu, name: 'AI CTO', desc: 'Architecture decisions and strategic guidance' },
+                { icon: Bot, name: 'AI Architect', desc: 'Code review and system design' },
+                { icon: GitBranch, name: 'AI Planner', desc: 'Roadmaps and sprint planning' },
+                { icon: Shield, name: 'AI Reviewer', desc: 'Security and quality audits' },
+                { icon: Zap, name: 'AI Developer', desc: 'Code generation and refactoring' },
+              ].map(agent => (
+                <div key={agent.name} className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-brand/10 flex items-center justify-center flex-shrink-0">
+                    <agent.icon className="h-4 w-4 text-brand" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-text-primary">{agent.name}</p>
+                    <p className="text-xs text-text-tertiary">{agent.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <Link to="/" className="inline-block mt-8">
+              <Button variant="outline" size="sm" icon={<ArrowRight className="h-3.5 w-3.5" />}>
+                Explore AI Workspace
+              </Button>
+            </Link>
+          </div>
+
+          {/* Right: Visual */}
+          <div className="bg-bg-elevated p-8 lg:p-12 flex items-center justify-center border-l border-border">
+            <div className="w-full max-w-sm space-y-3">
+              {/* Mock chat */}
+              <div className="rounded-lg bg-bg-surface border border-border p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-6 w-6 rounded bg-brand-gradient flex items-center justify-center">
+                    <Cpu className="h-3 w-3 text-white" />
+                  </div>
+                  <span className="text-xs font-medium text-text-primary">AI CTO</span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse ml-auto" />
+                </div>
+                <p className="text-xs text-text-secondary leading-relaxed">
+                  Reviewed DPoS consensus. Security score: 8.5/10. Recommending VRF-based
+                  validator selection to prevent stake concentration attacks.
+                </p>
+              </div>
+
+              <div className="rounded-lg bg-brand/10 border border-brand/20 p-3 ml-8">
+                <p className="text-xs text-text-primary">
+                  Shall I generate the implementation?
+                </p>
+              </div>
+
+              <div className="rounded-lg bg-bg-surface border border-border p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-6 w-6 rounded bg-success/10 flex items-center justify-center">
+                    <Shield className="h-3 w-3 text-success" />
+                  </div>
+                  <span className="text-xs font-medium text-text-primary">AI Reviewer</span>
+                </div>
+                <p className="text-xs text-text-secondary leading-relaxed">
+                  Weekly security audit complete. 0 critical issues. 2 medium findings
+                  auto-resolved. Security score: 92/100 (Grade A).
+                </p>
+              </div>
+
+              <div className="text-center text-xs text-text-tertiary pt-2">
+                Powered by GPT-4o · Always on
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
