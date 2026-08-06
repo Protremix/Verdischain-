@@ -98,11 +98,10 @@ fn testnet_genesis(
             }).collect::<Vec<_>>(),
         },
         "babe": {
-            "epoch_config": {
+            "epochConfig": {
                 "c": [1, 4],
                 "allowed_slots": "PrimaryAndSecondaryPlainSlots"
-            },
-            "current_epoch_start": 0
+            }
         },
         "sudo": {
             "key": Some(root_key),
