@@ -1,8 +1,10 @@
 import { LandingNavBar } from '@/components/landing/LandingNavBar'
 import { LandingHero } from '@/components/landing/LandingHero'
+import { LandingTrustedBy } from '@/components/landing/LandingTrustedBy'
 import { LandingAIReady } from '@/components/landing/LandingAIReady'
 import { LandingFeatures } from '@/components/landing/LandingFeatures'
 import { LandingTestimonials } from '@/components/landing/LandingTestimonials'
+import { LandingCTA } from '@/components/landing/LandingCTA'
 import { LandingFAQ } from '@/components/landing/LandingFAQ'
 import { LandingFooter } from '@/components/landing/LandingFooter'
 
@@ -12,9 +14,11 @@ export function LandingPage() {
       <LandingNavBar />
       <main className="isolate">
         <LandingHero />
+        <LandingTrustedBy />
         <LandingAIReady />
         <LandingFeatures />
         <LandingTestimonials />
+        <LandingCTA />
         <LandingFAQ />
       </main>
       <LandingFooter />

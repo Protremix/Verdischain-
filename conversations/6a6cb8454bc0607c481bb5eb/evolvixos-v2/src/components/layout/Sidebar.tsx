@@ -45,22 +45,31 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
 
       <aside className={cn(
         'fixed left-0 top-0 z-50 h-screen flex flex-col bg-bg-surface border-r border-border transition-all duration-300 ease-out',
-        collapsed ? 'w-[60px]' : 'w-[240px]',
+        collapsed ? 'w-[72px]' : 'w-[260px]',
         mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
       )}>
-        {/* Logo */}
-        <div className="flex items-center h-16 px-4 border-b border-border">
-          <NavLink to="/" className="flex items-center gap-2 min-w-0">
+        {/* Logo - BIG at top of all dashboard pages */}
+        <div className="flex items-center h-20 px-4 border-b border-border">
+          <NavLink to="/" className="flex items-center gap-2.5 min-w-0 group">
             {collapsed
-              ? <img src="/evolvixos-icon.png" alt="EvolvixOS" className="h-8 w-8 object-contain flex-shrink-0" />
-              : <img src="/evolvixos-logo.png" alt="EvolvixOS" className="h-7 w-auto" />}
+              ? <img
+                  src="/evolvixos-icon.png"
+                  alt="EvolvixOS"
+                  className="h-11 w-11 object-contain flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
+                />
+              : <img
+                  src="/evolvixos-logo.png"
+                  alt="EvolvixOS"
+                  className="h-10 w-auto transition-transform duration-300 group-hover:scale-105"
+                  style={{ maxHeight: '40px' }}
+                />}
           </NavLink>
         </div>
 
         {/* Collapse toggle */}
         <button
           onClick={onToggle}
-          className="hidden lg:flex absolute -right-3 top-20 h-6 w-6 items-center justify-center rounded-full bg-bg-elevated border border-border text-text-tertiary hover:text-text-primary hover:border-border-strong transition-all z-10"
+          className="hidden lg:flex absolute -right-3 top-24 h-6 w-6 items-center justify-center rounded-full bg-bg-elevated border border-border text-text-tertiary hover:text-text-primary hover:border-border-strong transition-all z-10"
         >
           <ChevronLeft className={cn('h-3.5 w-3.5 transition-transform', collapsed && 'rotate-180')} />
         </button>
