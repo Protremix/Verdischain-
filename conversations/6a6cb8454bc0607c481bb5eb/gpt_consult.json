@@ -1,0 +1,15 @@
+{
+  "model": "gpt-4o",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a senior blockchain architect and Substrate expert. Review the project status and provide specific recommendations for the next phase. Be precise and technical."
+    },
+    {
+      "role": "user",
+      "content": "PROJECT: Verdis Chain - EVM-compatible Substrate blockchain with DPoS/BABE/GRANDPA consensus, eco-features (carbon credits, reforestation, green validator scoring), native AMM DEX, and tokenomics (100B supply, 12B investor allocation).\n\nCURRENT STATE (Phase 87 in progress):\n- Substrate Node v2.0.0 functional, producing blocks with BABE/GRANDPA\n- 218/218 tests passing across 7 pallets:\n  * DPoS: 21 tests (consensus, validator selection)\n  * AmmDex: 23 tests (liquidity pools, swaps, fees)\n  * Eco: 31 tests (carbon credits, reforestation, green scoring)\n  * EVM: 82 tests (137 opcodes, deploy, call, storage, interpreter)\n  * Storage: 32 tests (key-value, batching, iteration)\n  * Tokenomics: 8 tests (supply, vesting, allocation)\n  * Vesting: 7 tests (cliff, linear release)\n- 0 compilation errors, 98 clippy warnings\n- Native binary (66MB) + WASM runtime compiled\n- Benchmarking infrastructure: 27 benchmarks across 5 pallets (define_benchmarks! integrated)\n- frame-benchmarking-cli blocked by yanked core2 crate (documented)\n- Production server: 62.238.61.145, 14 Docker containers running\n- Domains: evolvixos.com + verdischain.com deployed\n\nEVM PALLETS DETAILS (just expanded):\n- 137 opcodes implemented (arithmetic, bitwise, comparison, environment, stack/memory, flow control, PUSH/DUP/SWAP, LOG, system, KECCAK256)\n- Missing opcodes: CALL, CALLCODE, DELEGATECALL, STATICCALL, CREATE, CREATE2, EXTCODESIZE, EXTCODECOPY, EXTCODEHASH, RETURNDATASIZE, RETURNDATACOPY, BLOCKHASH, NUMBER, TIMESTAMP, GASPRICE, GASLIMIT, SELFBALANCE, MSIZE, BLOBHASH, BLOBBASEFEE\n- Full interpreter with stack (1024 limit), memory (expandable), gas tracking, JUMPDEST validation\n- Contract deployment with nonce-based address derivation (keccak256)\n- Storage CRUD with H160/H256 key-value pairs\n\nWHAT WAS DONE IN THIS PHASE:\n1. Expanded EVM pallet from 27 tests to 82 tests (55 new opcode tests)\n2. Fixed interpreter operand ordering to match EVM spec (top OP second)\n3. Fixed U256 API compatibility issues (to_big_endian, as_sint, From<bool>, From<&[u8]>)\n4. All 218 tests passing, 0 errors\n\nQUESTION: What are the next highest-priority tasks? Please provide:\n1. Architecture review of the EVM expansion\n2. Security issues with the current EVM implementation\n3. Scalability risks\n4. Recommended next implementation tasks (in priority order)\n5. Missing components for production readiness\n6. Estimated effort per task\n\nRate the current state out of 10 and give a GO/NO-GO recommendation."
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 3000
+}
