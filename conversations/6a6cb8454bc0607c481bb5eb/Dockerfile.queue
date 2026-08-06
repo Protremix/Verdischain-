@@ -4,6 +4,7 @@ WORKDIR /app
 RUN pip install --no-cache-dir fastapi uvicorn structlog pydantic redis asyncpg httpx
 
 COPY async_execution_queue.py .
+COPY agent_queue_integration.py .
 COPY queue_api.py .
 
 EXPOSE 4300
