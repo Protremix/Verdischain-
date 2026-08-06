@@ -18,8 +18,8 @@ const faqs: FAQItem[] = [
     answer: 'EvolvixOS uses a credits-based model. AI agent consultations consume credits, while the core platform (monitoring, deployment, security) is included. Contact us for enterprise pricing.',
   },
   {
-    question: 'How does the Verdis Chain integration work?',
-    answer: 'EvolvixOS provides a native bridge to the Verdis blockchain via JSON-RPC and gRPC. The integration includes real-time block updates, validator management, DEX analytics, and carbon credit tracking — all accessible through the platform API.',
+    question: 'Why is EvolvixOS the first platform of its kind?',
+    answer: 'EvolvixOS is the world\'s first AI Engineering Operating System — a platform that combines autonomous AI agents, full-stack engineering tools, and infrastructure management into a single unified system. Unlike traditional DevOps tools that require manual configuration, EvolvixOS agents continuously analyze, review, and improve your systems autonomously, 24/7.',
   },
   {
     question: 'Which AI models power the agents?',

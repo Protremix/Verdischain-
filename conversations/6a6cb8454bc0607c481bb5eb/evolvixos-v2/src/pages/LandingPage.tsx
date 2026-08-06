@@ -2,6 +2,7 @@ import { LandingNavBar } from '@/components/landing/LandingNavBar'
 import { LandingHero } from '@/components/landing/LandingHero'
 import { LandingTrustedBy } from '@/components/landing/LandingTrustedBy'
 import { LandingAIReady } from '@/components/landing/LandingAIReady'
+import { LandingProductDemo } from '@/components/landing/LandingProductDemo'
 import { LandingFeatures } from '@/components/landing/LandingFeatures'
 import { LandingTestimonials } from '@/components/landing/LandingTestimonials'
 import { LandingCTA } from '@/components/landing/LandingCTA'
@@ -16,6 +17,7 @@ export function LandingPage() {
         <LandingHero />
         <LandingTrustedBy />
         <LandingAIReady />
+        <LandingProductDemo />
         <LandingFeatures />
         <LandingTestimonials />
         <LandingCTA />

@@ -1,9 +1,9 @@
 import { Reveal } from './Reveal'
 
 const trustedBrands = [
-  'Verdis Chain', 'Protremix', 'Anerium', 'AegisOS',
-  'Verdiscan', 'EvolvixOS', 'GitHub', 'Docker',
-  'GPT-4o', 'Substrate', 'Grafana', 'Prometheus',
+  'Protremix', 'Anerium', 'AegisOS', 'EvolvixOS',
+  'GitHub', 'Docker', 'GPT-4o', 'Grafana',
+  'Prometheus', 'Redis', 'PostgreSQL', 'Nginx',
 ]
 
 export function LandingTrustedBy() {

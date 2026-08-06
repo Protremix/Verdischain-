@@ -1,18 +1,18 @@
 import { Link } from 'react-router-dom'
-import { Zap, Github } from 'lucide-react'
+import { Github } from 'lucide-react'
 
 const footerNav = {
   Product: [
     { name: 'Features', href: '/#features' },
-    { name: 'AI Workspace', href: '/' },
+    { name: 'AI Workspace', href: '/#ai-agents' },
     { name: 'Monitoring', href: '/' },
     { name: 'Security', href: '/' },
   ],
   Platform: [
-    { name: 'Verdis Chain', href: 'https://verdischain.com' },
-    { name: 'Verdiscan', href: 'https://verdischain.com' },
-    { name: 'AegisOS', href: '#' },
     { name: 'API Docs', href: '/docs' },
+    { name: 'Pricing', href: '/#pricing' },
+    { name: 'Changelog', href: '/' },
+    { name: 'Status', href: '/' },
   ],
   Company: [
     { name: 'About', href: '#' },
@@ -41,9 +41,9 @@ export function LandingFooter() {
               The AI Engineering Operating System for building, operating, and securing
               world-class software systems.
             </p>
-            <a href="https://github.com/verdischain" className="inline-flex items-center gap-2 mt-4 text-sm text-text-secondary hover:text-text-primary transition-colors">
+            <a href="https://github.com/evolvixos" className="inline-flex items-center gap-2 mt-4 text-sm text-text-secondary hover:text-text-primary transition-colors">
               <Github className="h-4 w-4" />
-              github.com/verdischain
+              github.com/evolvixos
             </a>
           </div>
 

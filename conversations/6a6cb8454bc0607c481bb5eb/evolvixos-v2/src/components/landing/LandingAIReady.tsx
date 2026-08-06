@@ -65,11 +65,11 @@ export function LandingAIReady() {
                         <Cpu className="h-3 w-3 text-white" />
                       </div>
                       <span className="text-xs font-medium text-text-primary">AI CTO</span>
-                      <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse ml-auto" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse ml-auto" />
                     </div>
                     <p className="text-xs text-text-secondary leading-relaxed">
-                      Reviewed DPoS consensus. Security score: 8.5/10. Recommending VRF-based
-                      leader selection for improved randomness.
+                      Analyzed microservices architecture. Security score: 8.5/10. Recommending
+                      API gateway pattern for better request routing.
                     </p>
                   </div>
                 </Reveal>
@@ -81,7 +81,7 @@ export function LandingAIReady() {
                         <Shield className="h-3 w-3 text-white" />
                       </div>
                       <span className="text-xs font-medium text-text-primary">AI Reviewer</span>
-                      <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse ml-auto" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse ml-auto" />
                     </div>
                     <p className="text-xs text-text-secondary leading-relaxed">
                       Security audit complete. 0 critical, 2 medium findings.
@@ -97,11 +97,11 @@ export function LandingAIReady() {
                         <GitBranch className="h-3 w-3 text-white" />
                       </div>
                       <span className="text-xs font-medium text-text-primary">AI Planner</span>
-                      <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse ml-auto" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse ml-auto" />
                     </div>
                     <p className="text-xs text-text-secondary leading-relaxed">
                       Q3 roadmap generated. 12 epics, 47 stories. Priority:
-                      Substrate runtime, storage pallet tests, benchmarking weights.
+                      API refactoring, test coverage expansion, CI/CD pipeline upgrades.
                     </p>
                   </div>
                 </Reveal>

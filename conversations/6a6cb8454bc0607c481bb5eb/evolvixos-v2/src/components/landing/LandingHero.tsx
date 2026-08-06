@@ -1,9 +1,10 @@
 import { cn } from '@/lib/cn'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Sparkles, Cpu, Shield, Bot, GitBranch } from 'lucide-react'
+import { ArrowRight, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
 import { useAnimatedCounter } from '@/hooks/useAnimatedCounter'
+import { useState, useEffect, useRef } from 'react'
 
 function AnimatedStat({ value, label, suffix = '', delay = 0 }: { value: number; label: string; suffix?: string; delay?: number }) {
   const { ref, isVisible } = useScrollReveal<HTMLDivElement>({ threshold: 0.3 })
@@ -19,6 +20,82 @@ function AnimatedStat({ value, label, suffix = '', delay = 0 }: { value: number;
         {count}{suffix}
       </p>
       <p className="text-sm text-text-tertiary mt-1">{label}</p>
+    </div>
+  )
+}
+
+const terminalLines = [
+  { text: '$ evolvixos deploy --production', color: 'text-text-primary' },
+  { text: '→ Building application...', color: 'text-text-tertiary' },
+  { text: '→ Running 2000+ tests...', color: 'text-text-tertiary' },
+  { text: '✓ 133 tests passed', color: 'text-emerald-400' },
+  { text: '→ Security scan: 0 critical issues', color: 'text-text-tertiary' },
+  { text: '✓ Deployed to production in 42s', color: 'text-emerald-400' },
+  { text: '$ evolvixos agent run --cto', color: 'text-text-primary' },
+  { text: '→ AI CTO analyzing architecture...', color: 'text-text-tertiary' },
+  { text: '→ Security score: 8.5/10', color: 'text-blue-400' },
+  { text: '→ Recommendation: Apply CSP headers', color: 'text-amber-400' },
+  { text: '✓ Architecture review complete', color: 'text-emerald-400' },
+  { text: '$ evolvixos monitor --live', color: 'text-text-primary' },
+  { text: '→ 14 services online', color: 'text-text-tertiary' },
+  { text: '✓ All systems operational', color: 'text-emerald-400' },
+]
+
+function AnimatedTerminal() {
+  const [visibleLines, setVisibleLines] = useState<number>(0)
+  const [currentChar, setCurrentChar] = useState<number>(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (visibleLines >= terminalLines.length) {
+      const resetTimer = setTimeout(() => {
+        setVisibleLines(0)
+        setCurrentChar(0)
+      }, 3000)
+      return () => clearTimeout(resetTimer)
+    }
+
+    const currentLine = terminalLines[visibleLines]
+    if (currentChar < currentLine.text.length) {
+      const charTimer = setTimeout(() => {
+        setCurrentChar(prev => prev + 1)
+      }, 25 + Math.random() * 30)
+      return () => clearTimeout(charTimer)
+    } else {
+      const lineTimer = setTimeout(() => {
+        setVisibleLines(prev => prev + 1)
+        setCurrentChar(0)
+      }, 400)
+      return () => clearTimeout(lineTimer)
+    }
+  }, [visibleLines, currentChar])
+
+  return (
+    <div className="w-full max-w-3xl mx-auto rounded-xl border border-border bg-[#0d0d0f] shadow-2xl overflow-hidden glow-border animate-float" style={{ animationDelay: '0.5s' }}>
+      {/* Title bar */}
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-[#151518]">
+        <div className="flex gap-1.5">
+          <div className="h-3 w-3 rounded-full bg-red-500/80" />
+          <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
+          <div className="h-3 w-3 rounded-full bg-green-500/80" />
+        </div>
+        <span className="ml-2 text-xs text-text-tertiary font-mono">evolvixos — terminal</span>
+      </div>
+      {/* Terminal content */}
+      <div ref={containerRef} className="p-5 font-mono text-sm space-y-1 min-h-[280px] max-h-[280px] overflow-hidden">
+        {terminalLines.slice(0, visibleLines).map((line, idx) => (
+          <div key={idx} className={line.color}>
+            <span className="select-none">{line.text}</span>
+            <span className="ml-1 inline-block w-2 h-4 bg-text-primary/50 animate-pulse" />
+          </div>
+        ))}
+        {visibleLines < terminalLines.length && (
+          <div className={terminalLines[visibleLines].color}>
+            <span className="select-none">{terminalLines[visibleLines].text.slice(0, currentChar)}</span>
+            <span className="ml-0.5 inline-block w-2 h-4 bg-emerald-400/70 animate-pulse" />
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -43,9 +120,7 @@ export function LandingHero() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           {/* Badge with pop animation */}
-          <div
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-surface/50 backdrop-blur-sm px-4 py-1.5 mb-8 animate-badge-pop"
-          >
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-surface/50 backdrop-blur-sm px-4 py-1.5 mb-8 animate-badge-pop">
             <Sparkles className="h-3.5 w-3.5 text-brand" />
             <span className="text-xs font-medium text-text-secondary">The AI Engineering Operating System</span>
           </div>
@@ -53,7 +128,7 @@ export function LandingHero() {
           {/* Headline with shimmer gradient */}
           <h1 className="text-5xl font-bold tracking-tight text-text-primary sm:text-6xl animate-slide-up">
             Build software with
-            <span className="block sm:inline bg-gradient-to-r from-indigo-400 via-purple-400 to-blue-400 via-pink-400 bg-clip-text text-transparent animate-shimmer">
+            <span className="block sm:inline bg-gradient-to-r from-indigo-400 via-purple-400 to-blue-400 bg-clip-text text-transparent animate-shimmer">
               {' '}autonomous intelligence
             </span>
           </h1>
@@ -85,52 +160,14 @@ export function LandingHero() {
           {/* Stats bar with animated counters */}
           <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
             <AnimatedStat value={5} label="AI Agents" delay={0} />
-            <AnimatedStat value={100} label="Token Supply" suffix="B" delay={100} />
+            <AnimatedStat value={2000} label="Tests Automated" suffix="+" delay={100} />
             <AnimatedStat value={14} label="Services Online" delay={200} />
           </div>
         </div>
 
-        {/* Product preview card with float animation */}
+        {/* Animated terminal — video-like typing demo */}
         <div className="mt-16 flow-root">
-          <div className="hidden justify-center rounded-xl md:flex lg:rounded-2xl lg:p-4 animate-float" style={{ animationDelay: '0.5s' }}>
-            <div className="max-w-4xl w-full rounded-xl border border-border bg-bg-surface shadow-2xl overflow-hidden glow-border">
-              {/* Mock app screenshot */}
-              <div className="flex">
-                {/* Sidebar */}
-                <div className="w-48 bg-bg-elevated border-r border-border p-3 space-y-1">
-                  <div className="flex items-center gap-2 px-2 py-1.5 mb-2">
-                    <img src="/evolvixos-icon.png" alt="EvolvixOS" className="h-6 w-6 object-contain" />
-                    <span className="text-xs font-semibold text-text-primary">EvolvixOS</span>
-                  </div>
-                  {['Dashboard', 'Projects', 'AI Workspace', 'Monitoring', 'Security'].map((item, i) => (
-                    <div key={item} className={cn('flex items-center gap-2 px-2 py-1.5 rounded text-xs', i === 0 ? 'bg-brand/10 text-brand' : 'text-text-tertiary')}>
-                      {i === 0 && <div className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />}
-                      {item}
-                    </div>
-                  ))}
-                </div>
-                {/* Main area */}
-                <div className="flex-1 p-6">
-                  <div className="grid grid-cols-3 gap-3 mb-4">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="rounded-lg border border-border bg-bg-surface p-3">
-                        <div className="h-2 w-12 bg-bg-hover rounded mb-2" />
-                        <div className="h-5 w-16 bg-brand/20 rounded" />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-lg border border-border bg-bg-surface p-4 h-32 flex items-center justify-center">
-                      <Cpu className="h-8 w-8 text-text-tertiary" />
-                    </div>
-                    <div className="rounded-lg border border-border bg-bg-surface p-4 h-32 flex items-center justify-center">
-                      <Bot className="h-8 w-8 text-text-tertiary" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <AnimatedTerminal />
         </div>
 
         {/* Scroll-down indicator */}
@@ -138,7 +175,7 @@ export function LandingHero() {
           <div className="flex flex-col items-center gap-1">
             <span className="text-xs text-text-tertiary">Scroll to explore</span>
             <div className="h-8 w-5 rounded-full border-2 border-border flex items-start justify-center p-1">
-              <div className="h-1.5 w-1.5 rounded-full bg-text-tertiary animate-scroll-down" />
+              <div className="h-2 w-1 rounded-full bg-brand animate-bounce" />
             </div>
           </div>
         </div>
