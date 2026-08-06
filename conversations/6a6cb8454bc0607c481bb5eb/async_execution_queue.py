@@ -265,6 +265,9 @@ class AsyncExecutionQueue:
                 self._total_failed += 1
                 logger.error(f"Task {task.id} failed after {task.retry_count} retries: {task.error}")
             task.completed_at = time.time()
+            # Move permanently failed tasks to dead letter queue
+            if self._dlq:
+                self._dlq.add(task)
 
     def get_task(self, task_id: str) -> Optional[Dict[str, Any]]:
         task = self._tasks.get(task_id)
