@@ -97,6 +97,13 @@ fn testnet_genesis(
                 (account.clone(), account, SessionKeys { babe, grandpa })
             }).collect::<Vec<_>>(),
         },
+        "babe": {
+            "epoch_config": {
+                "c": [1, 4],
+                "allowed_slots": "PrimaryAndSecondaryPlainSlots"
+            },
+            "current_epoch_start": 0
+        },
         "sudo": {
             "key": Some(root_key),
         }
