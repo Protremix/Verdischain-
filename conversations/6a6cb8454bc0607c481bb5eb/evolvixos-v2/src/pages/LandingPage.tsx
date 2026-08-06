@@ -6,6 +6,7 @@ import { LandingAIReady } from '@/components/landing/LandingAIReady'
 import { LandingProductDemo } from '@/components/landing/LandingProductDemo'
 import { LandingFeatures } from '@/components/landing/LandingFeatures'
 import { LandingTestimonials } from '@/components/landing/LandingTestimonials'
+import { LandingCaseStudies } from '@/components/landing/LandingCaseStudies'
 import { LandingCTA } from '@/components/landing/LandingCTA'
 import { LandingFAQ } from '@/components/landing/LandingFAQ'
 import { LandingFooter } from '@/components/landing/LandingFooter'
@@ -22,6 +23,7 @@ export function LandingPage() {
         <LandingProductDemo />
         <LandingFeatures />
         <LandingTestimonials />
+        <LandingCaseStudies />
         <LandingCTA />
         <LandingFAQ />
       </main>
