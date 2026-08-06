@@ -186,20 +186,25 @@ async def gateway_executor(task: QueuedTask) -> Dict[str, Any]:
     capability = task.capability or "chat"
     input_data = task.input_data or {}
     
-    # Determine gateway endpoint based on capability
+    # Determine gateway capability and provider based on task capability
     if "code_review" in capability or "review" in capability:
-        endpoint = f"{GATEWAY_URL}/invoke"
-        payload = {"provider": "code-reviewer", "input": input_data}
+        gw_capability = "code_review"
+        gw_provider = "openai"
     elif "sentiment" in capability:
-        endpoint = f"{GATEWAY_URL}/invoke"
-        payload = {"provider": "sentiment-analyzer", "input": input_data}
+        gw_capability = "sentiment_analysis"
+        gw_provider = "openai"
     elif "embedding" in capability:
-        endpoint = f"{GATEWAY_URL}/invoke"
-        payload = {"provider": "openai-gpt4o", "capability": "embedding", "input": input_data}
+        gw_capability = "embedding"
+        gw_provider = "openai-embedding"
+    elif "code_gen" in capability or "generation" in capability:
+        gw_capability = "code_generation"
+        gw_provider = "openai"
     else:
-        # Default: chat/completion
-        endpoint = f"{GATEWAY_URL}/invoke"
-        payload = {"provider": "openai-gpt4o", "capability": "chat", "input": input_data}
+        gw_capability = "chat"
+        gw_provider = "openai"
+    
+    endpoint = f"{GATEWAY_URL}/invoke"
+    payload = {"provider": gw_provider, "capability": gw_capability, "input_data": input_data, "options": {}}
     
     headers = {"Content-Type": "application/json"}
     if GATEWAY_API_KEY:
@@ -211,11 +216,24 @@ async def gateway_executor(task: QueuedTask) -> Dict[str, Any]:
             resp.raise_for_status()
             result = resp.json()
             
+            # Gateway v2 response: {output: {content, model, tokens_used, provider}, provider, capability}
+            output = result.get("output", result)
+            if isinstance(output, dict):
+                content = output.get("content", str(output))
+                tokens = output.get("tokens_used", output.get("tokens", 0))
+                model = output.get("model", "gpt-4o")
+                used_provider = output.get("provider", result.get("provider", "gateway"))
+            else:
+                content = str(output)
+                tokens = 0
+                model = "gpt-4o"
+                used_provider = result.get("provider", "gateway")
+            
             return {
-                "content": result.get("content", result.get("response", str(result))),
-                "tokens": result.get("tokens", 0),
-                "provider": result.get("provider", "gateway"),
-                "model": result.get("model", "gpt-4o"),
+                "content": content,
+                "tokens": tokens,
+                "provider": used_provider,
+                "model": model,
                 "latency_ms": result.get("latency_ms", 0),
             }
     except httpx.TimeoutException:
@@ -708,6 +726,22 @@ async def get_ttl_config(): return {"ttl_seconds":ttl_manager.ttl_seconds,"clean
 async def set_ttl_config(req: TTLConfigRequest):
     ttl_manager.set_ttl(req.ttl_seconds)
     return {"status":"updated","ttl_seconds":ttl_manager.ttl_seconds,"cleanup_interval":req.cleanup_interval}
+
+@app.get("/ttl/overrides")
+async def list_ttl_overrides():
+    """List all per-task TTL overrides."""
+    overrides = []
+    if _redis_client:
+        for key in _redis_client.keys(f"{ttl_registry.TTL_PREFIX}*"):
+            task_id = key.replace(ttl_registry.TTL_PREFIX, "")
+            ttl_val = _redis_client.get(key)
+            overrides.append({"task_id": task_id, "ttl_seconds": int(ttl_val) if ttl_val else 0})
+    else:
+        for key, val in _FALLBACK_TOKENS.items():
+            if key.startswith(ttl_registry.TTL_PREFIX):
+                task_id = key.replace(ttl_registry.TTL_PREFIX, "")
+                overrides.append({"task_id": task_id, "ttl_seconds": val})
+    return {"overrides": overrides, "count": len(overrides)}
 
 
 # =========================================================================
