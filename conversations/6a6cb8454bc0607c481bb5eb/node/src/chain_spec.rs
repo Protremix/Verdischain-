@@ -98,20 +98,13 @@ fn testnet_genesis(
             }).collect::<Vec<_>>(),
         },
         "babe": {
-            "epoch_config": {
-                "c": [1, 4],
-                "allowed_slots": "PrimaryAndSecondaryPlainSlots"
-            },
-            "genesis_authorities": initial_authorities.iter().map(|(_, babe, _)| (babe.clone(), 1u64)).collect::<Vec<_>>(),
+            "authorities": initial_authorities.iter().map(|(_, babe, _)| (babe.clone(), 1u64)).collect::<Vec<_>>(),
         },
         "grandpa": {
-            "authorities": initial_authorities.iter().map(|(account, _, grandpa)| (grandpa.clone(), 1u64)).collect::<Vec<_>>(),
+            "authorities": initial_authorities.iter().map(|(_, _, grandpa)| (grandpa.clone(), 1u64)).collect::<Vec<_>>(),
         },
         "sudo": {
             "key": Some(root_key),
-        },
-        "transaction_payment": {
-            "operational_fee_multiplier": 1,
-        },
+        }
     })
 }
