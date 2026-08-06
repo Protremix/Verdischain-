@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, FolderGit2, Bot, BookOpen, Activity,
   Shield, Settings, BarChart3, FileText, Rocket, Network,
-  ChevronLeft, Zap
+  ChevronLeft
 } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
@@ -50,11 +50,10 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
       )}>
         {/* Logo */}
         <div className="flex items-center h-16 px-4 border-b border-border">
-          <NavLink to="/" className="flex items-center gap-2.5 min-w-0">
-            <div className="h-8 w-8 rounded-lg bg-brand-gradient flex items-center justify-center flex-shrink-0">
-              <Zap className="h-4 w-4 text-white" strokeWidth={2.5} />
-            </div>
-            {!collapsed && <span className="text-[15px] font-semibold tracking-tight text-text-primary truncate">EvolvixOS</span>}
+          <NavLink to="/" className="flex items-center gap-2 min-w-0">
+            {collapsed
+              ? <img src="/evolvixos-icon.png" alt="EvolvixOS" className="h-8 w-8 object-contain flex-shrink-0" />
+              : <img src="/evolvixos-logo.png" alt="EvolvixOS" className="h-7 w-auto" />}
           </NavLink>
         </div>
 

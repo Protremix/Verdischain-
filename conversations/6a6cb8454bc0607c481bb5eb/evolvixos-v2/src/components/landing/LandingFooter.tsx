@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Zap, Github } from 'lucide-react'
+import { Github } from 'lucide-react'
 
 const footerNav = {
   Product: [
@@ -29,11 +29,8 @@ export function LandingFooter() {
         <div className="flex flex-col lg:flex-row justify-between gap-12">
           {/* Brand */}
           <div className="max-w-sm">
-            <Link to="/" className="flex items-center gap-2.5 mb-4">
-              <div className="h-8 w-8 rounded-lg bg-brand-gradient flex items-center justify-center">
-                <Zap className="h-4 w-4 text-white" strokeWidth={2.5} />
-              </div>
-              <span className="text-sm font-semibold tracking-tight text-text-primary">EvolvixOS</span>
+            <Link to="/" className="flex items-center gap-2 mb-4">
+              <img src="/evolvixos-logo.png" alt="EvolvixOS" className="h-8 w-auto" />
             </Link>
             <p className="text-sm text-text-tertiary leading-relaxed">
               The AI Engineering Operating System for building, operating, and securing
