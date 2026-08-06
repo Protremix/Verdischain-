@@ -1,6 +1,7 @@
 import { LandingNavBar } from '@/components/landing/LandingNavBar'
 import { LandingHero } from '@/components/landing/LandingHero'
 import { LandingTrustedBy } from '@/components/landing/LandingTrustedBy'
+import { LandingWhyEvolvixOS } from '@/components/landing/LandingWhyEvolvixOS'
 import { LandingAIReady } from '@/components/landing/LandingAIReady'
 import { LandingProductDemo } from '@/components/landing/LandingProductDemo'
 import { LandingFeatures } from '@/components/landing/LandingFeatures'
@@ -16,6 +17,7 @@ export function LandingPage() {
       <main className="isolate">
         <LandingHero />
         <LandingTrustedBy />
+        <LandingWhyEvolvixOS />
         <LandingAIReady />
         <LandingProductDemo />
         <LandingFeatures />

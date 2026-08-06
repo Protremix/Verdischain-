@@ -127,9 +127,9 @@ export function LandingHero() {
 
           {/* Headline with shimmer gradient */}
           <h1 className="text-5xl font-bold tracking-tight text-text-primary sm:text-6xl animate-slide-up">
-            Build software with
+            Ship software faster with
             <span className="block sm:inline bg-gradient-to-r from-indigo-400 via-purple-400 to-blue-400 bg-clip-text text-transparent animate-shimmer">
-              {' '}autonomous intelligence
+              {' '}autonomous AI engineers
             </span>
           </h1>
 
@@ -138,21 +138,22 @@ export function LandingHero() {
             className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-text-secondary animate-fade-in"
             style={{ animationDelay: '0.2s', opacity: 0, animationFillMode: 'forwards' }}
           >
-            EvolvixOS is the AI engineering platform that helps you design, build, deploy, and secure
-            world-class software systems — with autonomous AI agents that never stop improving.
+            EvolvixOS is the world's first AI Engineering Operating System. Five autonomous AI agents
+            design, build, deploy, and secure your software — 24/7. No scripts. No manual ops.
+            Just autonomous engineering.
           </p>
 
-          {/* CTA buttons with stagger */}
+          {/* CTA buttons with stagger — more action-oriented */}
           <div
             className="mt-10 flex items-center justify-center gap-x-6 animate-slide-up"
             style={{ animationDelay: '0.4s', opacity: 0, animationFillMode: 'forwards' }}
           >
             <Link to="/">
-              <Button size="lg" variant="outline" className="card-lift">Learn More</Button>
+              <Button size="lg" variant="outline" className="card-lift">See How It Works</Button>
             </Link>
             <Link to="/">
               <Button size="lg" icon={<ArrowRight className="h-4 w-4" />} className="card-lift">
-                Get Started
+                Start Building Free
               </Button>
             </Link>
           </div>

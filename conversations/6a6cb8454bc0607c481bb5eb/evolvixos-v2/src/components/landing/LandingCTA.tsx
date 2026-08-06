@@ -14,24 +14,24 @@ export function LandingCTA() {
 
           <div className="relative z-10">
             <h2 className="text-4xl font-bold tracking-tight text-text-primary">
-              Ready to build with
+              Ready to ship with
               <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-blue-400 bg-clip-text text-transparent animate-shimmer">
-                {' '}autonomous intelligence
+                {' '}autonomous AI engineers
               </span>
               ?
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-lg text-text-secondary">
-              Join the next generation of AI-powered engineering. Start building world-class
-              software systems with autonomous AI agents today.
+              Stop configuring tools. Start shipping software. Deploy EvolvixOS in under an hour
+              and let AI agents handle the engineering — while you focus on building.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link to="/">
                 <Button size="lg" icon={<ArrowRight className="h-4 w-4" />} className="card-lift">
-                  Get Started Free
+                  Start Building Free
                 </Button>
               </Link>
-              <Link to="/">
-                <Button size="lg" variant="outline" className="card-lift">Talk to Us</Button>
+              <Link to="/support">
+                <Button size="lg" variant="outline" className="card-lift">Book a Demo</Button>
               </Link>
             </div>
           </div>

@@ -258,10 +258,10 @@ export function LandingProductDemo() {
       {/* Section title */}
       <Reveal direction="up" className="text-center mb-16">
         <h2 className="text-4xl font-bold tracking-tight text-text-primary">
-          See EvolvixOS in action
+          Experience autonomous AI engineering in action
         </h2>
         <p className="mt-3 text-lg text-text-secondary max-w-2xl mx-auto">
-          Watch how autonomous AI agents build, deploy, and monitor your systems —
+          Watch AI agents design, build, deploy, and secure your systems — in real time —
           all from a single unified platform.
         </p>
       </Reveal>

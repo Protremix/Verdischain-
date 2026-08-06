@@ -16,13 +16,13 @@ export function LandingAIReady() {
                 <span className="text-xs font-medium text-brand">AI-Ready</span>
               </div>
               <h2 className="text-3xl font-bold tracking-tight text-text-primary">
-                5 autonomous AI agents
-                <span className="block text-text-tertiary text-2xl mt-1">working around the clock</span>
+                Meet your 24/7
+                <span className="block text-text-tertiary text-2xl mt-1">AI engineering team</span>
               </h2>
               <p className="mt-4 text-text-secondary leading-relaxed">
-                Each agent specializes in a different engineering discipline — from architecture
-                decisions to security audits. They consult GPT-4o with full project context
-                and execute recommendations automatically.
+                Five specialized AI agents that don't just suggest — they execute. Each one
+                analyzes your codebase, makes engineering decisions with full project context,
+                and implements changes automatically. Powered by GPT-4o.
               </p>
 
               <div className="mt-8 space-y-4">
