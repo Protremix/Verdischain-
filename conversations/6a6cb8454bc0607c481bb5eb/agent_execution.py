@@ -186,7 +186,10 @@ class AgentOrchestrator:
             input_data = {**step.get("input_data", {}), **context}
             options = step.get("options", {})
             
-            agent = get_agent(AgentRole(agent_role)) if agent_role else None
+            try:
+                agent = get_agent(AgentRole(agent_role)) if agent_role else None
+            except ValueError:
+                agent = None
             if not agent:
                 results.append({"error": f"Unknown agent role: {agent_role}"})
                 continue
@@ -206,7 +209,10 @@ class AgentOrchestrator:
         """Execute multiple agent invocations in parallel."""
         async def run_task(task):
             agent_role = task.get("role")
-            agent = get_agent(AgentRole(agent_role)) if agent_role else None
+            try:
+                agent = get_agent(AgentRole(agent_role)) if agent_role else None
+            except ValueError:
+                agent = None
             if not agent:
                 return {"error": f"Unknown agent: {agent_role}"}
             return await self.engine.execute(agent, task.get("input_data", {}), task.get("options", {}))

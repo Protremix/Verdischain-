@@ -1,0 +1,11 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir fastapi uvicorn httpx structlog pydantic
+
+COPY core_agents.py agent_execution.py agent_execution_api.py /app/
+
+EXPOSE 4100
+
+CMD ["uvicorn", "agent_execution_api:app", "--host", "0.0.0.0", "--port", "4100", "--workers", "1"]
