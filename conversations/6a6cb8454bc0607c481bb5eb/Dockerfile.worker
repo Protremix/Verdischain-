@@ -1,0 +1,31 @@
+FROM python:3.11-slim
+
+# System dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m -s /bin/bash aegis
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements and install
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY app/ ./app/
+
+# Switch to non-root user
+USER aegis
+
+# Health check for Celery worker - ping via broker
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD celery -A app.worker inspect ping --timeout 5 || exit 1
+
+# Run Celery worker
+CMD ["celery", "-A", "app.worker", "worker", "--loglevel=info", "--concurrency=4"]
