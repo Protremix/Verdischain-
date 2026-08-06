@@ -1,0 +1,15 @@
+{
+  "model": "gpt-4o",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a senior blockchain architect and AI platform advisor for the EvolvixOS project. Your role is to recommend the next highest-priority development tasks."
+    },
+    {
+      "role": "user",
+      "content": "Phase 87 is COMPLETE. Here's what was accomplished:\n\n**EVM Pallet Expansion:**\n- Added 13 new opcodes: CALL, CALLCODE, DELEGATECALL, STATICCALL, CREATE, CREATE2, EXTCODESIZE, EXTCODECOPY, EXTCODEHASH, RETURNDATASIZE, RETURNDATACOPY, BLOCKHASH, SELFBALANCE, BASEFEE\n- EvmHost trait pattern: interpreter accesses storage via trait, not directly\n- VerdisHost<T> struct implements EvmHost using Substrate StorageMap\n- 96 EVM tests (up from 82), 232 total workspace tests (all passing)\n- 78 clippy warnings (down from 111, no errors)\n\n**Current Architecture:**\n- Substrate Node v2.0.0 with BABE/GRANDPA consensus, producing blocks\n- 7 FRAME pallets: DPoS, AmmDex, Eco, EVM, Storage, Tokenomics, Vesting\n- 232 tests passing across all pallets\n- Production deployment: 14 Docker containers on 62.238.61.145\n- EvolvixOS platform: FastAPI backend, React frontend, AI Customer Success, monitoring stack, automated backups\n- Domains: evolvixos.com + verdischain.com\n\n**GPT-4o's Previous Recommendations (from architecture review):**\n1. Security audit of EVM implementation\n2. State pruning and archiving\n3. Service mesh for EvolvixOS\n4. Expand automated testing (security, performance, e2e)\n5. Enhanced documentation\n6. Unified AI Gateway with plugin architecture\n7. Agent framework with plug-and-play capabilities\n8. Long-term memory: Redis + PostgreSQL\n\n**Question:** What should be the next phase? Please provide:\n1. The single highest-priority next task\n2. Why it's the highest priority\n3. A detailed implementation plan with small executable steps\n4. Estimated effort\n5. What components/files need to be created or modified\n6. What tests should be written\n\nConsider: the blockchain core is functional with 150+ EVM opcodes, the platform is deployed and running, but the AI-native features of EvolvixOS are not yet built. The unified AI Gateway, agent framework, and intelligent routing are the core differentiators that need to be implemented."
+    }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 3000
+}
