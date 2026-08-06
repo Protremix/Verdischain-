@@ -5,7 +5,6 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Background layers
         bg: {
           base: 'rgb(var(--bg-base) / <alpha-value>)',
           surface: 'rgb(var(--bg-surface) / <alpha-value>)',
@@ -13,27 +12,23 @@ export default {
           hover: 'rgb(var(--bg-hover) / <alpha-value>)',
           input: 'rgb(var(--bg-input) / <alpha-value>)',
         },
-        // Border layers
         border: {
           DEFAULT: 'rgb(var(--border-base) / <alpha-value>)',
           subtle: 'rgb(var(--border-subtle) / <alpha-value>)',
           strong: 'rgb(var(--border-strong) / <alpha-value>)',
         },
-        // Text layers
         text: {
           primary: 'rgb(var(--text-primary) / <alpha-value>)',
           secondary: 'rgb(var(--text-secondary) / <alpha-value>)',
           tertiary: 'rgb(var(--text-tertiary) / <alpha-value>)',
           disabled: 'rgb(var(--text-disabled) / <alpha-value>)',
         },
-        // Brand
         brand: {
           DEFAULT: 'rgb(var(--brand) / <alpha-value>)',
           hover: 'rgb(var(--brand-hover) / <alpha-value>)',
           active: 'rgb(var(--brand-active) / <alpha-value>)',
           subtle: 'rgb(var(--brand-subtle) / <alpha-value>)',
         },
-        // Semantic
         success: {
           DEFAULT: 'rgb(var(--success) / <alpha-value>)',
           subtle: 'rgb(var(--success-subtle) / <alpha-value>)',
@@ -57,16 +52,6 @@ export default {
       },
       fontSize: {
         '2xs': ['0.6875rem', { lineHeight: '1rem' }],
-        xs: ['0.75rem', { lineHeight: '1.125rem' }],
-        sm: ['0.875rem', { lineHeight: '1.25rem' }],
-        base: ['1rem', { lineHeight: '1.5rem' }],
-        lg: ['1.125rem', { lineHeight: '1.75rem' }],
-        xl: ['1.25rem', { lineHeight: '1.75rem' }],
-        '2xl': ['1.5rem', { lineHeight: '2rem' }],
-        '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
-        '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
-        '5xl': ['3rem', { lineHeight: '1' }],
-        '6xl': ['3.75rem', { lineHeight: '1' }],
       },
       borderRadius: {
         sm: '0.375rem',
@@ -88,6 +73,7 @@ export default {
         glow: '0 0 24px -4px rgb(var(--brand) / 0.25)',
       },
       spacing: {
+        '4.5': '1.125rem',
         '18': '4.5rem',
         '22': '5.5rem',
         '88': '22rem',

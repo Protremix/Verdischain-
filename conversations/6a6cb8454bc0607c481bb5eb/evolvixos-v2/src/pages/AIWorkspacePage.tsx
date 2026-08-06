@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { Bot, Send, Sparkles, Code2, Architecture, Shield, Map, Cpu } from 'lucide-react'
+import { Bot, Send, Sparkles, Code2, Building2, Shield, Compass, Cpu } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { Badge } from '@/components/ui/Badge'
 
 const agents = [
   { id: 'cto', name: 'AI CTO', icon: Cpu, description: 'Architecture & strategy decisions' },
-  { id: 'architect', name: 'AI Architect', icon: Architecture, description: 'Code review & system design' },
-  { id: 'planner', name: 'AI Planner', icon: Map, description: 'Roadmaps & sprint planning' },
+  { id: 'architect', name: 'AI Architect', icon: Building2, description: 'Code review & system design' },
+  { id: 'planner', name: 'AI Planner', icon: Compass, description: 'Roadmaps & sprint planning' },
   { id: 'reviewer', name: 'AI Reviewer', icon: Shield, description: 'Security & quality audits' },
   { id: 'developer', name: 'AI Developer', icon: Code2, description: 'Code generation & refactoring' },
 ]
@@ -25,7 +25,6 @@ export function AIWorkspacePage() {
     if (!input.trim()) return
     setMessages([...messages, { role: 'user', content: input }])
     setInput('')
-    // Simulate AI response
     setTimeout(() => {
       setMessages(prev => [...prev, {
         role: 'assistant',
@@ -38,7 +37,6 @@ export function AIWorkspacePage() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] animate-fade-in">
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-text-primary">AI Workspace</h1>
@@ -48,8 +46,7 @@ export function AIWorkspacePage() {
       </div>
 
       <div className="flex-1 flex gap-4 min-h-0">
-        {/* Agent selector */}
-        <div className="w-64 flex-shrink-0 space-y-1.5">
+        <div className="w-64 flex-shrink-0 space-y-1.5 hidden sm:block">
           {agents.map(agent => (
             <button
               key={agent.id}
@@ -65,7 +62,7 @@ export function AIWorkspacePage() {
                 'h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0',
                 activeAgent === agent.id ? 'bg-brand text-white' : 'bg-bg-hover text-text-secondary'
               )}>
-                <agent.icon className="h-4.5 w-4.5" />
+                <agent.icon className="h-4 w-4" />
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-medium text-text-primary truncate">{agent.name}</p>
@@ -75,9 +72,7 @@ export function AIWorkspacePage() {
           ))}
         </div>
 
-        {/* Chat */}
         <div className="flex-1 flex flex-col rounded-xl border border-border bg-bg-surface overflow-hidden">
-          {/* Chat header */}
           <div className="flex items-center gap-3 px-4 h-14 border-b border-border">
             <div className="h-8 w-8 rounded-lg bg-brand-gradient flex items-center justify-center">
               <currentAgent.icon className="h-4 w-4 text-white" />
@@ -91,7 +86,6 @@ export function AIWorkspacePage() {
             </div>
           </div>
 
-          {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((msg, i) => (
               <div key={i} className={cn('flex gap-3 animate-fade-in-up', msg.role === 'user' && 'flex-row-reverse')}>
@@ -115,7 +109,6 @@ export function AIWorkspacePage() {
             ))}
           </div>
 
-          {/* Input */}
           <div className="border-t border-border p-3">
             <div className="flex items-end gap-2">
               <textarea
