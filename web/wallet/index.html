@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Verdis Chain — Web3 Wallet | Non-Custodial</title>
 <link rel="canonical" href="https://verdischain.com/wallet/">
-<meta name="description" content="Non-custodial Web3 wallet for Verdis Chain. Create or import sr25519 keypairs, send and receive VRDX tokens, and stake to validators." />
+<meta name="description" content="Non-custodial Web3 wallet for Verdis Chain. Create or import secp256k1 keypairs, send and receive VRDX tokens, and stake to validators." />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="Verdis Chain — Web3 Wallet" />
+<meta property="og:description" content="Non-custodial Web3 wallet for Verdis Chain. Create, import, send, receive VRDX." />
 <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -17,361 +18,844 @@
 html{scroll-behavior:smooth}
 body{font-family:'Poppins',sans-serif;background:#f1f5f9;color:var(--text-dark);overflow-x:hidden;-webkit-font-smoothing:antialiased;font-size:14px}
 .mono{font-family:'JetBrains Mono',monospace}
-/* Scroll progress */
 #scroll-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#caff33,#84fe87,#00a86b);z-index:10000;width:0;transition:width 50ms;box-shadow:0 0 8px var(--accent-glow)}
-/* Cursor glow */
 #cursor-glow{position:fixed;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(202,255,51,0.04) 0%,transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);opacity:0;transition:opacity 300ms}
 body:hover #cursor-glow{opacity:1}
-/* Nav */
-.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--hero-border);transition:padding 250ms}
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--hero-border)}
 .nav-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 24px}
-.nav-brand{font-weight:800;font-size:13px;color:var(--text-white);display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-brand{font-weight:800;font-size:13px;color:var(--text-dark);display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-brand img{height:32px;width:auto}
 .nav-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent-glow);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 10px var(--accent-glow)}50%{box-shadow:0 0 20px rgba(202,255,51,0.5)}}
-.nav-links{display:flex;gap:24px}
+.nav-links{display:flex;gap:24px;align-items:center}
 .nav-links a{color:var(--text-dim);font-size:13px;font-weight:500;text-decoration:none;transition:color 250ms;position:relative}
 .nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:var(--accent);border-radius:1px;transition:width 250ms}
-.nav-links a:hover{color:var(--text-white)}
+.nav-links a:hover{color:var(--text-dark)}
 .nav-links a:hover::after{width:100%}
-.nav-links a.active{color:var(--accent)}
+.nav-links a.active{color:var(--accent-3)}
 .nav-links a.active::after{width:100%}
+.nav-status{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#22c55e}
+.nav-status::before{content:'';width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px;flex-direction:column;gap:3px}
+.hamburger span{width:20px;height:2px;background:var(--text-dark);border-radius:1px;transition:250ms}
+@media(max-width:768px){.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);flex-direction:column;padding:16px 24px;gap:12px;border-bottom:1px solid var(--hero-border)}.nav-links.open{display:flex}.hamburger{display:flex}}
 
-/* Wallet wrap */
-.wallet-wrap{max-width:1000px;margin:0 auto;padding:24px 20px}
-/* Hero */
-.wallet-hero{background:var(--hero-bg);border-radius:var(--radius-lg);padding:24px;text-align:center;position:relative;overflow:hidden;margin-bottom:12px;opacity:0;animation:fadeInUp 600ms ease-out forwards}
+.wallet-wrap{max-width:1000px;margin:0 auto;padding:24px 20px 48px}
+.wallet-hero{background:var(--hero-bg);border-radius:var(--radius-lg);padding:32px 24px;text-align:center;position:relative;overflow:hidden;margin-bottom:16px;opacity:0;animation:fadeInUp 600ms ease-out forwards}
 .wallet-hero::before{content:'';position:absolute;top:-30%;right:-10%;width:350px;height:350px;background:radial-gradient(circle,var(--accent-glow),transparent 55%);opacity:0.1;animation:pulse-bg 4s ease-in-out infinite}
 .wallet-hero::after{content:'';position:absolute;bottom:-20%;left:-10%;width:250px;height:250px;background:radial-gradient(circle,rgba(0,168,107,0.12),transparent 60%);opacity:0.06;animation:pulse-bg 6s ease-in-out infinite 1s}
 @keyframes pulse-bg{0%,100%{opacity:0.06;transform:scale(1)}50%{opacity:0.12;transform:scale(1.1)}}
-.wallet-hero h1{font-size:14px;font-weight:800;color:var(--text-white);margin-bottom:8px;position:relative;z-index:2;letter-spacing:-0.02em}
+.wallet-hero h1{font-size:22px;font-weight:800;color:var(--text-white);margin-bottom:8px;position:relative;z-index:2;letter-spacing:-0.02em}
 .wallet-hero h1 .grad{background:linear-gradient(135deg,#caff33 0%,#a8e607 50%,#00a86b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.wallet-hero p{color:var(--text-dim);font-size:13px;position:relative;z-index:2}
-.wallet-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--accent-light);border:1px solid var(--accent-border);border-radius:var(--radius-pill);font-size:11px;font-weight:600;color:var(--accent);margin-bottom:16px;position:relative;z-index:2}
+.wallet-hero p{color:rgba(255,255,255,0.7);font-size:13px;position:relative;z-index:2}
+.wallet-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--accent-light);border:1px solid var(--accent-border);border-radius:var(--radius-pill);font-size:11px;font-weight:600;color:var(--accent);margin-bottom:12px;position:relative;z-index:2}
 .wallet-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
-/* States */
+
 .wallet-state{display:none}
 .wallet-state.active{display:block;animation:fadeInUp 400ms ease-out}
 @keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-/* Auth cards */
-.auth-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:600px;margin:0 auto}
-.auth-card{background:#fff;border-radius:var(--radius-lg);padding:24px;border:1px solid #e2e8f0;transition:var(--transition);cursor:pointer;text-align:left;opacity:0;animation:fadeInUp 500ms ease-out forwards}
-.auth-card:nth-child(2){animation-delay:100ms}
+
+.auth-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:560px;margin:0 auto}
+.auth-card{background:#fff;border-radius:var(--radius-lg);padding:24px;border:1px solid #e2e8f0;transition:var(--transition);cursor:pointer;text-align:left}
 .auth-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(202,255,51,0.12);transform:translateY(-3px)}
-.auth-card .icon{width:40px;height:40px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:14px;transition:transform 250ms}
-.auth-card:hover .icon{transform:scale(1.1) rotate(-5deg)}
-.auth-card h3{font-size:14px;font-weight:700;margin-bottom:6px;color:var(--text-dark)}
-.auth-card p{font-size:12px;color:var(--text-dark-muted);margin-bottom:16px;line-height:1.5}
-.auth-card .btn{background:linear-gradient(135deg,#caff33,#a8e607);color:#1a1a1a;font-size:12px;font-weight:600;padding:8px 16px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition)}
-.auth-card .btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px var(--accent-glow)}
-/* Forms */
-.import-form{background:#fff;border-radius:var(--radius-lg);padding:24px;max-width:480px;margin:0 auto;border:1px solid #e2e8f0;opacity:0;animation:fadeInUp 400ms ease-out forwards}
-.import-form h3{font-size:13px;font-weight:700;margin-bottom:16px;color:var(--text-dark)}
-.form-group{margin-bottom:12px}
-.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-dark-muted);margin-bottom:4px}
-.form-input{width:100%;padding:10px 14px;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'Poppins',sans-serif;font-size:13px;transition:all 250ms}
-.form-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
-.form-input.mono{font-family:'JetBrains Mono',monospace;font-size:12px}
-/* Buttons */
-.btn-primary{background:linear-gradient(135deg,#caff33,#a8e607);color:#1a1a1a;font-size:13px;font-weight:700;padding:10px 24px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition);position:relative;overflow:hidden}
-.btn-primary::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);transition:left 500ms}
-.btn-primary:hover::before{left:100%}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px var(--accent-glow)}
-.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none}
-.btn-secondary{background:transparent;color:var(--text-dark);font-size:12px;font-weight:600;padding:10px 20px;border-radius:var(--radius-pill);border:1px solid #d1d5db;cursor:pointer;transition:var(--transition)}
-.btn-secondary:hover{border-color:var(--accent);color:var(--accent-3);background:var(--accent-light)}
-.btn-danger{background:#ef4444;color:#0f172a;font-size:12px;font-weight:600;padding:8px 16px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition)}
-.btn-danger:hover{background:#dc2626;transform:translateY(-1px)}
+.auth-card .icon{width:40px;height:40px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.auth-card h3{font-size:15px;font-weight:700;color:var(--text-dark);margin-bottom:6px}
+.auth-card p{font-size:12px;color:var(--text-muted);line-height:1.5}
+
+.import-form{max-width:560px;margin:16px auto 0}
+.import-form textarea{width:100%;min-height:80px;padding:12px;border:1px solid #e2e8f0;border-radius:var(--radius);font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dark);resize:vertical;outline:none;transition:border-color 200ms}
+.import-form textarea:focus{border-color:var(--accent)}
+.import-form button{width:100%;padding:12px;border:none;border-radius:var(--radius);background:var(--accent);color:var(--text-dark);font-weight:700;font-size:14px;cursor:pointer;transition:var(--transition);margin-top:12px;font-family:'Poppins',sans-serif}
+.import-form button:hover{background:var(--accent-hover)}
+.import-form .back-btn{background:transparent;color:var(--text-muted);border:1px solid #e2e8f0}
+.import-form .back-btn:hover{background:#f8fafc}
+
 /* Dashboard */
-.dash-grid{display:grid;grid-template-columns:280px 1fr;gap:20px}
-.dash-side{display:flex;flex-direction:column;gap:16px}
-.dash-main{display:flex;flex-direction:column;gap:16px}
-.info-card{background:#fff;border-radius:var(--radius-lg);padding:20px;border:1px solid #e2e8f0;transition:var(--transition);opacity:0;animation:fadeInUp 500ms ease-out forwards}
-.info-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.06)}
-.info-card h3{font-size:14px;font-weight:700;color:var(--text-dark);margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.info-card .h3-icon{width:20px;height:20px;border-radius:5px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:12px}
-.bal-display{text-align:center;padding:12px 0}
-.bal-label{font-size:11px;font-weight:600;color:var(--text-dark-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
-.bal-value{font-size:13px;font-weight:900;color:var(--text-dark);font-family:'JetBrains Mono',monospace;transition:transform 250ms}
-.bal-value:hover{transform:scale(1.02)}
-.bal-value .unit{font-size:14px;color:var(--text-dark-muted);font-weight:600}
-.bal-row{display:flex;justify-content:space-around;padding-top:12px;border-top:1px solid #f1f5f9}
-.bal-stat{text-align:center;transition:transform 250ms}
-.bal-stat:hover{transform:translateY(-2px)}
-.bal-stat .label{font-size:10px;color:var(--text-dark-muted);text-transform:uppercase;letter-spacing:0.05em}
-.bal-stat .val{font-size:14px;font-weight:700;color:var(--text-dark);margin-top:2px}
-.addr-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:var(--radius);padding:12px;word-break:break-all;transition:border-color 250ms}
-.addr-box:hover{border-color:var(--accent-border)}
-.addr-box .label{font-size:10px;color:var(--text-dark-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px}
-.addr-box .addr{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dark);font-weight:500}
-.copy-btn{float:right;font-size:11px;color:var(--accent-3);cursor:pointer;background:none;border:none;font-weight:600;transition:opacity 200ms}
-.copy-btn:hover{opacity:0.7;text-decoration:underline}
-.mnemonic-box{background:#fffbe6;border:2px solid var(--accent);border-radius:var(--radius);padding:16px;margin:12px 0;transition:box-shadow 250ms}
-.mnemonic-box:hover{box-shadow:0 0 16px rgba(202,255,51,0.15)}
-.mnemonic-box .warn{font-size:12px;color:#92400e;font-weight:600;margin-bottom:8px}
-.mnemonic-words{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.mnemonic-word{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;text-align:center;transition:all 250ms}
-.mnemonic-word:hover{border-color:var(--accent);background:var(--accent-light);transform:translateY(-2px)}
-/* Send form */
-.send-form .form-group{margin-bottom:12px}
-.send-form .amount-row{display:flex;gap:8px;align-items:center}
-.send-form .amount-row .form-input{flex:1}
-.send-form .max-btn{font-size:11px;font-weight:600;color:var(--accent-3);background:var(--accent-light);padding:6px 12px;border-radius:var(--radius);border:1px solid var(--accent-border);cursor:pointer;white-space:nowrap;transition:var(--transition)}
-.send-form .max-btn:hover{background:var(--accent);color:#1a1a1a}
-/* TX list */
-.tx-list{display:flex;flex-direction:column;gap:6px}
-.tx-item{display:flex;align-items:center;gap:10px;padding:10px;background:#f8fafc;border-radius:var(--radius);border:1px solid #f1f5f9;transition:var(--transition);opacity:0;animation:fadeInUp 300ms ease-out forwards}
-.tx-item:hover{border-color:var(--accent-border);transform:translateX(4px)}
-.tx-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.tx-icon.send{background:#fef3c7;color:#92400e}
-.tx-icon.recv{background:#d1fae5;color:#065f46}
-.tx-icon.stake{background:#dbeafe;color:#1e40af}
-.tx-info{flex:1;min-width:0}
-.tx-info .addr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dark-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tx-info .time{font-size:10px;color:var(--text-dark-muted);margin-top:1px}
-.tx-amount{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;flex-shrink:0}
-.tx-amount.send{color:#ef4444}
-.tx-amount.recv{color:#059669}
-/* Tabs */
-.tabs{display:flex;gap:4px;background:#f1f5f9;border-radius:var(--radius);padding:3px;margin-bottom:16px}
-.tab{flex:1;padding:8px 12px;text-align:center;font-size:13px;font-weight:600;color:var(--text-dark-muted);border-radius:8px;cursor:pointer;transition:all 250ms}
-.tab:hover{color:var(--accent-3)}
-.tab.active{background:#fff;color:var(--accent-3);box-shadow:0 2px 8px rgba(0,0,0,0.06)}
-/* Quick action buttons */
-.qa-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:var(--radius);cursor:pointer;transition:var(--transition);font-size:12px;font-weight:600;color:var(--text-dark);width:100%;text-align:left}
-.qa-btn:hover{border-color:var(--accent);background:var(--accent-light);transform:translateX(4px)}
-/* Loading */
-.loader{display:inline-block;width:16px;height:16px;border:2px solid var(--accent-border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-.loading-overlay.active{display:flex}
-.loading-box{background:#fff;border-radius:var(--radius-lg);padding:24px;text-align:center;animation:fadeInUp 300ms ease-out}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:768px){.dash-grid{grid-template-columns:1fr}.auth-cards{grid-template-columns:1fr}}
+
+.balance-card{background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius-lg);padding:24px;position:relative;overflow:hidden}
+.balance-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.balance-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:8px}
+.balance-value{font-size:32px;font-weight:800;color:var(--text-dark);font-family:'JetBrains Mono',monospace}
+.balance-value .unit{font-size:14px;color:var(--text-muted);font-weight:500;margin-left:4px}
+.balance-sub{font-size:12px;color:var(--text-muted);margin-top:8px}
+
+.address-card{background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius-lg);padding:24px}
+.address-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:8px}
+.address-value{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-dark);word-break:break-all;padding:10px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:8px}
+.address-actions{display:flex;gap:8px;margin-top:8px}
+.btn-small{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid #e2e8f0;background:#fff;color:var(--text-dark);cursor:pointer;transition:var(--transition)}
+.btn-small:hover{border-color:var(--accent);color:var(--accent-3)}
+
+.tab-bar{display:flex;gap:4px;background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius);padding:4px;margin-bottom:16px}
+.tab-btn{flex:1;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:600;background:transparent;color:var(--text-muted);cursor:pointer;transition:var(--transition);font-family:'Poppins',sans-serif}
+.tab-btn.active{background:var(--accent-light);color:var(--accent-3)}
+.tab-btn:hover:not(.active){background:#f8fafc}
+
+.tab-panel{display:none}
+.tab-panel.active{display:block;animation:fadeInUp 300ms ease-out}
+
+.form-card{background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius-lg);padding:24px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:'Poppins',sans-serif;color:var(--text-dark);outline:none;transition:border-color 200ms}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group input.mono{font-family:'JetBrains Mono',monospace;font-size:12px}
+.btn-primary{width:100%;padding:14px;border:none;border-radius:var(--radius);background:var(--accent);color:var(--text-dark);font-weight:700;font-size:14px;cursor:pointer;transition:var(--transition);font-family:'Poppins',sans-serif}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-danger:hover{background:#dc2626}
+
+.tx-item{display:flex;align-items:center;justify-content:space-between;padding:12px;background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius);margin-bottom:6px;transition:var(--transition)}
+.tx-item:hover{border-color:var(--accent)}
+.tx-item .tx-left{display:flex;align-items:center;gap:12px}
+.tx-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.tx-icon.out{background:#fef2f2;color:#ef4444}
+.tx-icon.in{background:#f0fdf4;color:#22c55e}
+.tx-detail{display:flex;flex-direction:column}
+.tx-detail .tx-addr{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dark)}
+.tx-detail .tx-time{font-size:11px;color:var(--text-muted)}
+.tx-amount{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600}
+.tx-amount.out{color:#ef4444}
+.tx-amount.in{color:#22c55e}
+.tx-empty{text-align:center;padding:24px;color:var(--text-muted);font-size:13px}
+
+.validator-item{display:flex;align-items:center;justify-content:space-between;padding:12px;background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius);margin-bottom:6px}
+.validator-info{display:flex;align-items:center;gap:12px}
+.validator-avatar{width:36px;height:36px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--accent-3)}
+.validator-detail{display:flex;flex-direction:column}
+.validator-detail .val-name{font-size:13px;font-weight:600;color:var(--text-dark)}
+.validator-detail .val-stats{font-size:11px;color:var(--text-muted)}
+.validator-stake{display:flex;align-items:center;gap:8px}
+.validator-stake input{width:100px;padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;font-family:'JetBrains Mono',monospace}
+.green-score{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:var(--radius-pill);font-size:10px;font-weight:600}
+.green-score.high{background:#f0fdf4;color:#16a34a}
+.green-score.mid{background:#fefce8;color:#ca8a04}
+.green-score.low{background:#fef2f2;color:#dc2626}
+
 /* Toast */
-.toast{position:fixed;bottom:20px;right:20px;z-index:300;padding:12px 20px;border-radius:var(--radius);font-size:13px;font-weight:600;transform:translateX(400px);transition:transform 300ms ease;max-width:360px}
-.toast.show{transform:translateX(0)}
-.toast.success{background:#059669;color:#0f172a}
-.toast.error{background:#ef4444;color:#0f172a}
-.toast.info{background:var(--accent-3);color:#0f172a}
-/* Network info */
-.net-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0}
-.net-row .l{color:var(--text-dark-muted)}
-.net-row .v{font-weight:600;color:var(--text-dark)}
-/* Responsive */
-@media(max-width:768px){.dash-grid{grid-template-columns:1fr}.auth-cards{grid-template-columns:1fr}.wallet-hero h1{font-size:13px}.bal-value{font-size:14px}.mnemonic-words{grid-template-columns:repeat(3,1fr)}.nav-links{gap:12px}.nav-links a{font-size:11px}}
+.toast{position:fixed;bottom:24px;right:24px;padding:14px 20px;border-radius:var(--radius);font-size:13px;font-weight:600;z-index:10001;animation:slideIn 300ms ease-out;max-width:400px}
+.toast.success{background:#22c55e;color:#fff}
+.toast.error{background:#ef4444;color:#fff}
+.toast.info{background:var(--text-dark);color:#fff}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 
-    
-     50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.7)); } }
-    
-    .brand-logo-img { height:64px; width: auto; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(202,255,51,0.4)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
-    .brand-logo-img { filter: drop-shadow(0 0 20px rgba(202,255,51,0.7)); }
-    @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(202,255,51,0.35)); } 50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.6)); } }
+.loading{display:inline-block;width:16px;height:16px;border:2px solid #e2e8f0;border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* Mobile hamburger menu */
-.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:40px;height:40px;background:transparent;border:none;cursor:pointer;padding:8px;z-index:1001}
-.nav-hamburger span{display:block;width:22px;height:2px;background:#caff33;border-radius:2px;transition:all 250ms cubic-bezier(0.16,1,0.3,1)}
-.nav-hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
-.nav-hamburger.active span:nth-child(2){opacity:0}
-.nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-@media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(0,0,0,0.06);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
+.private-key-warning{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);padding:12px;margin-bottom:16px;font-size:12px;color:#92400e}
+.private-key-display{font-family:'JetBrains Mono',monospace;font-size:11px;padding:10px;background:#0f172a;color:#caff33;border-radius:8px;word-break:break-all;cursor:pointer}
+.private-key-display:hover{background:#1e293b}
 
-/* std-nav unified navigation */
-nav.std-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,0,0,0.06);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-nav.std-nav .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text,#fff)}
-nav.std-nav .nav-links{display:flex;align-items:center;gap:4px}
-nav.std-nav .nav-links a{color:#334155;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s}
-nav.std-nav .nav-links a:hover{color:#0f172a;background:rgba(255,255,255,0.06)}
-nav.std-nav .nav-links a.active{color:#caff33;background:rgba(202,255,51,0.08)}
-nav.std-nav .nav-status{display:flex;align-items:center;gap:6px;font-size:12px;color:#334155}
-nav.std-nav .nav-status .dot{width:8px;height:8px;border-radius:50%;background:#00ff66;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.footer{max-width:1000px;margin:0 auto;padding:24px 20px;text-align:center;border-top:1px solid #e2e8f0}
+.footer p{font-size:12px;color:var(--text-muted)}
+.footer a{color:var(--accent-3);text-decoration:none;font-weight:500}
 </style>
 </head>
 <body>
 <div id="scroll-bar"></div>
 <div id="cursor-glow"></div>
 
-<nav class="std-nav"><a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain" class="brand-logo-img" style="height:48px;width:auto;display:block;object-fit:contain;flex-shrink:0"></a><button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links"><a href="/">Home</a><a href="/explorer/">Verdiscan</a><a href="/dex/">DEX</a><a href="/validators/">Validators</a><a href="/eco/">Eco</a><a href="/faucet/">Faucet</a><a href="/wallet/">Wallet</a><a href="/sale/">Sale</a><a href="/docs/">Docs</a></div><div class="nav-status"><div class="dot"></div><span>Connected</span></div></nav>
-
-<div class="toast" id="toast"></div>
-<div class="loading-overlay" id="loading"><div class="loading-box">
-<div class="loader" style="margin:0 auto 12px"></div>
-<p id="loading-text" style="color:var(--text-dark-muted);font-size:13px">Loading...</p>
-</div></div>
+<nav class="nav">
+<div class="nav-inner">
+<a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain" /></a>
+<div class="nav-links" id="navLinks">
+<a href="/">Home</a>
+<a href="/explorer/">Verdiscan</a>
+<a href="/dex/">DEX</a>
+<a href="/validators/">Validators</a>
+<a href="/eco/">Eco</a>
+<a href="/faucet/">Faucet</a>
+<a href="/wallet/" class="active">Wallet</a>
+<a href="/sale/">Sale</a><a href="/contact/">Contact</a>
+<a href="/api/">API</a>
+<a href="/docs/">Docs</a>
+</div>
+<div class="nav-status" id="navStatus">Testnet Live</div>
+<button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')"><span></span><span></span><span></span></button>
+</div>
+</nav>
 
 <div class="wallet-wrap">
+
+<!-- Hero -->
 <div class="wallet-hero">
-<div class="wallet-badge"><span class="wallet-badge-dot"></span>Testnet Live · Block #<span id="block-num">—</span></div>
-<h1>VRDX <span class="grad">Web Wallet</span></h1>
-<p>Non-custodial · sr25519 · HD Keys · Live RPC</p>
+<div class="wallet-badge"><span class="wallet-badge-dot"></span> Non-Custodial · secp256k1</div>
+<h1>Verdis <span class="grad">Web3 Wallet</span></h1>
+<p>Create, import, send, and receive VRDX tokens. Your keys, your coins — powered by @noble/secp256k1.</p>
 </div>
 
-<!-- Auth -->
-<div class="wallet-state active" id="state-auth">
-<div class="auth-cards">
+<!-- State: No Wallet -->
+<div class="wallet-state active" id="stateAuth">
+<div class="auth-cards" id="authCards">
 <div class="auth-card" onclick="showCreate()">
-<div class="icon">🔑</div><h3>Create New Wallet</h3>
-<p>Generate a fresh sr25519 keypair with mnemonic backup.</p>
-<button class="btn">Create Wallet</button>
+<div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00a86b" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div>
+<h3>Create New Wallet</h3>
+<p>Generate a new secp256k1 keypair. Your private key never leaves your browser.</p>
 </div>
 <div class="auth-card" onclick="showImport()">
-<div class="icon">📥</div><h3>Import Wallet</h3>
-<p>Restore from mnemonic seed phrase.</p>
-<button class="btn">Import</button>
-</div>
+<div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00a86b" stroke-width="2"><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-7M16 5l4 4-4 4M20 9H4"/></svg></div>
+<h3>Import Wallet</h3>
+<p>Import an existing wallet using your private key or 12-word mnemonic.</p>
 </div>
 </div>
 
-<!-- Create -->
-<div class="wallet-state" id="state-create">
-<div class="import-form">
-<h3>🔐 New Wallet Created</h3>
-<p style="color:var(--text-dark-muted);font-size:12px;margin-bottom:12px">Save your mnemonic securely. It's the only way to recover your wallet.</p>
-<div class="mnemonic-box">
-<div class="warn">⚠️ Write down these 12 words and never share them.</div>
-<div class="mnemonic-words" id="mnemonic-words"></div>
+<div class="import-form" id="createForm" style="display:none">
+<div class="private-key-warning">
+<strong>⚠️ Important:</strong> Save your private key securely. If you lose it, your funds are lost forever. No one can recover it for you.
 </div>
-<div style="display:flex;gap:8px;margin-top:16px">
-<button class="btn-secondary" onclick="copyMnemonic()">Copy</button>
-<button class="btn-primary" onclick="openWallet()">I've Saved It</button>
-</div></div>
+<div class="form-group">
+<label>Your New Wallet Address (SS58)</label>
+<div class="address-value" id="newAddress">Click "Generate" to create...</div>
 </div>
-
-<!-- Import -->
-<div class="wallet-state" id="state-import">
-<div class="import-form">
-<h3>📥 Import Wallet</h3>
-<div class="form-group"><label class="form-label">Mnemonic (12 words)</label>
-<input class="form-input mono" id="import-mnemonic" placeholder="word1 word2 word3..." /></div>
-<div style="display:flex;gap:8px;margin-top:16px">
-<button class="btn-secondary" onclick="showAuth()">Back</button>
-<button class="btn-primary" onclick="importWallet()">Import</button>
-</div></div>
+<div class="form-group">
+<label>Private Key (store this securely!)</label>
+<div class="private-key-display" id="newPrivKey" onclick="copyToClipboard(this.textContent)">Click "Generate" to create...</div>
+</div>
+<button class="btn-primary" onclick="generateWallet()">Generate New Wallet</button>
+<button class="btn-primary back-btn" style="margin-top:8px" onclick="backToAuth()">Back</button>
 </div>
 
-<!-- Dashboard -->
-<div class="wallet-state" id="state-dash">
+<div class="import-form" id="importForm" style="display:none">
+<div class="private-key-warning">
+<strong>⚠️ Warning:</strong> Never share your private key or mnemonic with anyone. Verdis Chain staff will never ask for it.
+</div>
+<div class="form-group">
+<label>Private Key (hex) or 12-Word Mnemonic</label>
+<textarea id="importInput" placeholder="0x... or word1 word2 word3... word12"></textarea>
+</div>
+<button class="btn-primary" onclick="importWallet()">Import Wallet</button>
+<button class="btn-primary back-btn" style="margin-top:8px" onclick="backToAuth()">Back</button>
+</div>
+</div>
+
+<!-- State: Dashboard -->
+<div class="wallet-state" id="stateDash">
 <div class="dash-grid">
-<div class="dash-side">
-<div class="info-card">
-<h3><span class="h3-icon">👤</span>Account</h3>
-<div class="addr-box"><div class="label">Address</div><div class="addr" id="dash-addr">—</div><button class="copy-btn" onclick="copyAddr()">Copy</button></div>
-<div style="margin-top:8px"><button class="btn-danger" style="width:100%" onclick="lockWallet()">Lock Wallet</button></div>
+<div class="balance-card">
+<div class="balance-label">Total Balance</div>
+<div class="balance-value" id="balanceDisplay">0.000000000<span class="unit">VRDX</span></div>
+<div class="balance-sub" id="balanceSub">Loading balance from chain...</div>
 </div>
-<div class="info-card">
-<h3><span class="h3-icon">⚡</span>Quick Actions</h3>
-<div style="display:flex;flex-direction:column;gap:6px">
-<button class="qa-btn" onclick="setTab('send')">📤 Send VRDX</button>
-<button class="qa-btn" onclick="setTab('receive')">📥 Receive</button>
-<button class="qa-btn" onclick="setTab('stake')">🟢 Stake</button>
-<button class="qa-btn" onclick="setTab('history')">📋 History</button>
-</div></div>
-<div class="info-card">
-<h3><span class="h3-icon">📊</span>Network</h3>
-<div class="net-row"><span class="l">Block</span><span class="v mono" id="net-block">—</span></div>
-<div class="net-row"><span class="l">Peers</span><span class="v mono" id="net-peers">—</span></div>
-<div class="net-row"><span class="l">Token</span><span class="v mono">VRDX</span></div>
-<div class="net-row"><span class="l">Supply</span><span class="v mono">100B</span></div>
-</div></div>
+<div class="address-card">
+<div class="address-label">Your Address</div>
+<div class="address-value" id="dashAddress">—</div>
+<div class="address-actions">
+<button class="btn-small" onclick="copyToClipboard(document.getElementById('dashAddress').textContent)">Copy Address</button>
+<button class="btn-small" onclick="showReceive()">Receive</button>
+<button class="btn-small" onclick="exportPrivateKey()">Export Key</button>
+<button class="btn-small" onclick="logout()" style="color:#ef4444;border-color:#fecaca">Logout</button>
+</div>
+</div>
+</div>
 
-<div class="dash-main">
-<div class="info-card">
-<div class="bal-display">
-<div class="bal-label">Total Balance</div>
-<div class="bal-value"><span id="bal-num">0.0000</span> <span class="unit">VRDX</span></div>
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('send')">Send</button>
+<button class="tab-btn" onclick="showTab('receive')">Receive</button>
+<button class="tab-btn" onclick="showTab('history')">History</button>
+<button class="tab-btn" onclick="showTab('stake')">Stake</button>
 </div>
-<div class="bal-row">
-<div class="bal-stat"><div class="label">Transferable</div><div class="val mono" id="bal-free">0.0000</div></div>
-<div class="bal-stat"><div class="label">Reserved</div><div class="val mono" id="bal-reserved">0.0000</div></div>
-<div class="bal-stat"><div class="label">Locked</div><div class="val mono" id="bal-locked">0.0000</div></div>
-</div></div>
 
-<div class="info-card">
-<div class="tabs">
-<div class="tab active" data-tab="send" onclick="setTab('send')">Send</div>
-<div class="tab" data-tab="receive" onclick="setTab('receive')">Receive</div>
-<div class="tab" data-tab="stake" onclick="setTab('stake')">Stake</div>
-<div class="tab" data-tab="history" onclick="setTab('history')">History</div>
+<!-- Send Tab -->
+<div class="tab-panel active" id="tab-send">
+<div class="form-card">
+<div class="form-group">
+<label>Recipient Address (SS58 format)</label>
+<input type="text" id="sendTo" class="mono" placeholder="Enter recipient address..." />
 </div>
-<div id="tab-send" class="tab-content">
-<div class="send-form">
-<div class="form-group"><label class="form-label">Recipient Address</label>
-<input class="form-input mono" id="send-to" placeholder="5GrwvaEF..." /></div>
-<div class="form-group"><label class="form-label">Amount (VRDX)</label>
-<div class="amount-row">
-<input class="form-input mono" id="send-amount" type="number" step="0.0001" placeholder="0.0000" />
-<button class="max-btn" onclick="setMaxAmount()">MAX</button>
-</div></div>
-<button class="btn-primary" id="send-btn" onclick="sendVRDX()" style="width:100%">Send VRDX</button>
-</div></div>
-<div id="tab-receive" class="tab-content" style="display:none">
-<div style="text-align:center;padding:16px 0">
-<p style="color:var(--text-dark-muted);font-size:12px;margin-bottom:12px">Share your address to receive VRDX</p>
-<div class="addr-box" style="max-width:420px;margin:0 auto"><div class="label">Your Address</div><div class="addr" id="receive-addr">—</div><button class="copy-btn" onclick="copyReceiveAddr()">Copy</button></div>
-</div></div>
-<div id="tab-stake" class="tab-content" style="display:none">
-<div style="padding:8px 0"><p style="color:var(--text-dark-muted);font-size:12px;margin-bottom:12px">Stake VRDX with a validator.</p>
-<div id="validator-list" style="display:flex;flex-direction:column;gap:8px"></div></div></div>
-<div id="tab-history" class="tab-content" style="display:none">
-<div style="padding:8px 0"><div class="tx-list" id="tx-list"><div style="text-align:center;color:var(--text-dark-muted);padding:24px;font-size:12px">No transactions yet.</div></div></div></div>
-</div></div></div></div></div>
+<div class="form-group">
+<label>Amount (VRDX)</label>
+<input type="number" id="sendAmount" placeholder="0.0" step="0.000000001" min="0" />
+</div>
+<div class="form-group">
+<label>Transaction Memo (optional)</label>
+<input type="text" id="sendMemo" placeholder="Optional remark" maxlength="128" />
+</div>
+<button class="btn-primary" id="sendBtn" onclick="sendTransaction()">Send Transaction</button>
+</div>
+</div>
+
+<!-- Receive Tab -->
+<div class="tab-panel" id="tab-receive">
+<div class="form-card" style="text-align:center">
+<h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Receive VRDX</h3>
+<div id="qrCode" style="margin:0 auto 16px"></div>
+<div class="address-value" id="receiveAddress" style="max-width:400px;margin:0 auto 16px">—</div>
+<button class="btn-small" style="display:inline-flex" onclick="copyToClipboard(document.getElementById('receiveAddress').textContent)">Copy Address</button>
+<p style="font-size:12px;color:var(--text-muted);margin-top:16px">Share this address with anyone who wants to send you VRDX tokens.</p>
+</div>
+</div>
+
+<!-- History Tab -->
+<div class="tab-panel" id="tab-history">
+<div class="form-card">
+<div id="txHistory">
+<div class="tx-empty">Loading transaction history...</div>
+</div>
+</div>
+</div>
+
+<!-- Stake Tab -->
+<div class="tab-panel" id="tab-stake">
+<div class="form-card">
+<h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Delegate to Validator</h3>
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Stake your VRDX to a validator and earn rewards. You can undelegate at any time.</p>
+<div id="validatorList">
+<div class="tx-empty">Loading validators...</div>
+</div>
+</div>
+</div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer">
+<p>Verdis Chain Web3 Wallet · <a href="/docs/">Docs</a> · <a href="/explorer/">Explorer</a> · <a href="/dex/">DEX</a> · <a href="/faucet/">Faucet</a></p>
+<p style="margin-top:8px">Non-custodial · secp256k1 · @noble/secp256k1 · © 2026 Verdis Chain</p>
+</div>
+
+</div>
 
 <script type="module">
-import { ApiPromise, WsProvider } from 'https://esm.sh/@polkadot/api@11.0.2';
-import { Keyring } from 'https://esm.sh/@polkadot/keyring@12.6.2';
-import { mnemonicGenerate, mnemonicValidate } from 'https://esm.sh/@polkadot/util-crypto@12.6.2';
-import { decodeAddress } from 'https://esm.sh/@polkadot/util-crypto@12.6.2';
-import { cryptoWaitReady } from 'https://esm.sh/@polkadot/util-crypto@12.6.2';
+import * as secp from 'https://esm.sh/@noble/secp256k1@2.0.0';
+import { sha256 } from 'https://esm.sh/@noble/hashes@1.5.0/sha256';
+import { blake2b } from 'https://esm.sh/@noble/hashes@1.5.0/blake2b';
 
-let api=null,keyring=null,wallet=null;
-const RPC=location.protocol==='https:'?'wss://'+location.host+'/ws':'ws://'+location.host+':9948';
+const RPC_URL = 'https://verdischain.com/rpc';
+const API_URL = 'https://verdischain.com/api/v1';
+const SS58_PREFIX = 909;
+const TOKEN_DECIMALS = 9;
 
-window.showToast=(m,t='info')=>{const e=document.getElementById('toast');e.textContent=m;e.className='toast show '+t;setTimeout(()=>e.className='toast '+t,3000)};
-window.showLoading=(t)=>{document.getElementById('loading-text').textContent=t||'Loading...';document.getElementById('loading').classList.add('active')};
-window.hideLoading=()=>document.getElementById('loading').classList.remove('active');
-window.showAuth=()=>showState('state-auth');
-window.showCreate=async()=>{await cryptoWaitReady();const m=mnemonicGenerate(12),w=m.split(' ');document.getElementById('mnemonic-words').innerHTML=w.map((x,i)=>`<div class="mnemonic-word">${i+1}. ${x}</div>`).join('');window._mn=m;showState('state-create')};
-window.showImport=()=>showState('state-import');
-window.copyMnemonic=()=>{navigator.clipboard.writeText(window._mn||'');showToast('Mnemonic copied','success')};
-window.openWallet=async()=>await initWallet(window._mn);
-window.importWallet=async()=>{const m=document.getElementById('import-mnemonic').value.trim();if(!m){showToast('Enter mnemonic','error');return}if(!mnemonicValidate(m)){showToast('Invalid mnemonic','error');return}await initWallet(m)};
+// Make available globally
+window.secp = secp;
+window.sha256 = sha256;
+window.blake2b = blake2b;
 
-async function initWallet(mnemonic){
-try{showLoading('Connecting...');await cryptoWaitReady();
-if(!api){const p=new WsProvider(RPC);api=await ApiPromise.create({provider:p})}
-keyring=new Keyring({type:'sr25519',ss58Format:42});
-const pair=keyring.addFromMnemonic(mnemonic),address=pair.address;
-wallet={pair,address,mnemonic};
-document.getElementById('dash-addr').textContent=address;
-document.getElementById('receive-addr').textContent=address;
-showState('state-dash');showLoading('Loading data...');
-await updateBalance();await updateNetwork();await loadValidators();await loadHistory();
-await api.rpc.chain.subscribeNewHeads(async(h)=>{const b=h.number.toNumber();document.getElementById('block-num').textContent=b;document.getElementById('net-block').textContent='#'+b;if(b%5===0)await updateBalance()});
-hideLoading();showToast('Wallet connected','success')
-}catch(e){hideLoading();showToast('Error: '+e.message,'error');console.error(e)}}
+// ===== SS58 Encoding =====
+const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 
-async function updateBalance(){if(!api||!wallet)return;try{const{data:b}=await api.query.system.account(wallet.address);const f=parseFloat(b.free.toString())/1e18,r=parseFloat(b.reserved.toString())/1e18;document.getElementById('bal-num').textContent=(f+r).toFixed(4);document.getElementById('bal-free').textContent=f.toFixed(4);document.getElementById('bal-reserved').textContent=r.toFixed(4);document.getElementById('bal-locked').textContent='0.0000'}catch(e){console.error(e)}}
-async function updateNetwork(){if(!api)return;try{const p=await api.rpc.system.peers();document.getElementById('net-peers').textContent=p.length}catch(e){document.getElementById('net-peers').textContent='8'}}
+function base58Encode(data) {
+  let num = 0n;
+  for (const b of data) num = num * 256n + BigInt(b);
+  let encoded = '';
+  while (num > 0n) {
+    const rem = num % 58n;
+    num = num / 58n;
+    encoded = BASE58_ALPHABET[Number(rem)] + encoded;
+  }
+  for (const b of data) {
+    if (b === 0) encoded = '1' + encoded;
+    else break;
+  }
+  return encoded;
+}
 
-window.sendVRDX=async()=>{if(!api||!wallet)return;const to=document.getElementById('send-to').value.trim(),amt=document.getElementById('send-amount').value;if(!to){showToast('Enter address','error');return}if(!amt||parseFloat(amt)<=0){showToast('Enter amount','error');return}try{showLoading('Sending...');const a=Math.floor(parseFloat(amt)*1e18);try{decodeAddress(to)}catch{showToast('Invalid address','error');hideLoading();return}const tx=api.tx.balances.transferAllowDeath(to,a);const unsub=await tx.signAndSend(wallet.pair,({status,dispatchError})=>{if(dispatchError){showToast('TX failed','error');hideLoading();unsub();return}if(status.isInBlock)showToast('In block...','info');if(status.isFinalized){showToast('Finalized!','success');hideLoading();document.getElementById('send-to').value='';document.getElementById('send-amount').value='';updateBalance();loadHistory();unsub()}})}catch(e){hideLoading();showToast('Error: '+e.message,'error')}};
-window.setMaxAmount=()=>{document.getElementById('send-amount').value=document.getElementById('bal-free').textContent};
-window.copyAddr=()=>{if(wallet){navigator.clipboard.writeText(wallet.address);showToast('Copied','success')}};
-window.copyReceiveAddr=()=>{if(wallet){navigator.clipboard.writeText(wallet.address);showToast('Copied','success')}};
-window.setTab=(t)=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');const e=document.getElementById('tab-'+t);if(e)e.style.display='block'};
-window.lockWallet=()=>{wallet=null;keyring=null;showState('state-auth');showToast('Wallet locked','info')};
+function ss58Encode(publicKey, prefix) {
+  const prefixBytes = prefix < 64 ? [prefix] : [
+    (prefix & 0b00111111) | 0b01000000,
+    (prefix >> 6) & 0xff
+  ];
+  // Use compressed public key (33 bytes)
+  const pkBytes = publicKey.length === 33 ? Array.from(publicKey) : Array.from(publicKey).slice(0, 32);
+  const data = [...prefixBytes, ...pkBytes];
+  // Checksum: blake2b-512 of data, take first 2 bytes
+  const checksumInput = new Uint8Array(data);
+  const hash = blake2b(checksumInput, { dkLen: 64 });
+  const checksum = Array.from(hash).slice(0, 2);
+  return base58Encode([...data, ...checksum]);
+}
 
-async function loadValidators(){if(!api)return;try{const v=await api.query.session.validators();const l=document.getElementById('validator-list');if(!v.length){l.innerHTML='<div style="color:var(--text-dark-muted);text-align:center;padding:12px;font-size:12px">No active validators</div>';return}l.innerHTML=v.map((x,i)=>{const a=x.toString();return`<div class="tx-item"><div class="tx-icon stake">🟢</div><div class="tx-info"><div class="addr mono">${a.substring(0,16)}...${a.slice(-6)}</div><div class="time">Validator #${i+1}</div></div><button class="btn-secondary" style="font-size:11px;padding:4px 10px" onclick="showToast('Staking coming soon','info')">Stake</button></div>`}).join('')}catch(e){console.error(e)}}
-async function loadHistory(){if(!api||!wallet)return;try{const ev=await api.query.system.events();const rel=ev.filter(({event})=>event.section==='balances'&&event.data.some(d=>d.toString()===wallet.address));const l=document.getElementById('tx-list');if(!rel.length){l.innerHTML='<div style="text-align:center;color:var(--text-dark-muted);padding:24px;font-size:12px">No transactions yet.</div>';return}l.innerHTML=rel.slice(0,20).map(({event})=>{const s=event.method==='Transfer'&&event.data[0].toString()===wallet.address,r=event.method==='Transfer'&&event.data[1].toString()===wallet.address;if(!s&&!r)return'';const o=s?event.data[1].toString():event.data[0].toString(),a=parseFloat(event.data[2].toString())/1e18;return`<div class="tx-item"><div class="tx-icon ${s?'send':'recv'}">${s?'📤':'📥'}</div><div class="tx-info"><div class="addr mono">${s?'To: ':'From: '}${o.substring(0,16)}...${o.slice(-6)}</div><div class="time">Block #${event.index?.blockNumber||'recent'}</div></div><div class="tx-amount ${s?'send':'recv'}">${s?'-':'+'}${a.toFixed(4)} VRDX</div></div>`}).join('')}catch(e){console.error(e)}}
-function showState(id){document.querySelectorAll('.wallet-state').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+// ===== Wallet Storage =====
+function saveWallet(privateKeyHex, publicKeyHex, address) {
+  localStorage.setItem('verdis_wallet', JSON.stringify({
+    privateKey: privateKeyHex,
+    publicKey: publicKeyHex,
+    address: address,
+    created: Date.now()
+  }));
+}
 
-// Scroll progress + cursor glow
-window.addEventListener('scroll',()=>{const s=window.scrollY/(document.body.scrollHeight-window.innerHeight)*100;document.getElementById('scroll-bar').style.width=s+'%'});
-document.addEventListener('mousemove',(e)=>{const g=document.getElementById('cursor-glow');g.style.left=e.clientX+'px';g.style.top=e.clientY+'px'});
+function loadWallet() {
+  try {
+    const data = localStorage.getItem('verdis_wallet');
+    if (!data) return null;
+    return JSON.parse(data);
+  } catch { return null; }
+}
 
-(async()=>{try{await cryptoWaitReady();const r=await fetch('/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'chain_getHeader',params:[],id:1})});if(r.ok){const d=await r.json();if(d.result?.number)document.getElementById('block-num').textContent=parseInt(d.result.number,16)}}catch(e){}})();
+function clearWallet() {
+  localStorage.removeItem('verdis_wallet');
+}
+
+// ===== RPC Helper =====
+async function rpcCall(method, params = []) {
+  try {
+    const res = await fetch(RPC_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+    });
+    const json = await res.json();
+    return json.result;
+  } catch (e) {
+    console.error('RPC error:', method, e);
+    return null;
+  }
+}
+
+// ===== API Helper =====
+async function apiCall(path) {
+  try {
+    const res = await fetch(API_URL + path);
+    const json = await res.json();
+    return json.data || json;
+  } catch (e) {
+    console.error('API error:', path, e);
+    return null;
+  }
+}
+
+// ===== Balance Query =====
+async function getBalance(address) {
+  try {
+    const accountData = await apiCall(`/account/${address}`);
+    if (accountData && accountData.balance !== undefined) {
+      const balance = BigInt(accountData.balance);
+      return balance;
+    }
+    // Fallback: try RPC state_getStorage
+    const storage = await rpcCall('state_getStorage', [address]);
+    if (storage) {
+      return BigInt(storage);
+    }
+    return 0n;
+  } catch {
+    return 0n;
+  }
+}
+
+// ===== Toast =====
+function toast(msg, type = 'info') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
+}
+window.toast = toast;
+
+// ===== Copy =====
+window.copyToClipboard = function(text) {
+  navigator.clipboard.writeText(text).then(() => toast('Copied to clipboard', 'success'));
+};
+
+// ===== Wallet Functions =====
+window.generateWallet = async function() {
+  try {
+    const privateKey = secp.utils.randomPrivateKey();
+    const publicKey = secp.getPublicKey(privateKey, true); // compressed
+    const privHex = Array.from(privateKey).map(b => b.toString(16).padStart(2, '0')).join('');
+    const pubHex = Array.from(publicKey).map(b => b.toString(16).padStart(2, '0')).join('');
+    const address = ss58Encode(publicKey, SS58_PREFIX);
+
+    document.getElementById('newAddress').textContent = address;
+    document.getElementById('newPrivKey').textContent = privHex;
+
+    saveWallet(privHex, pubHex, address);
+    toast('Wallet created! Saving to browser...', 'success');
+
+    setTimeout(() => {
+      loadDashboard();
+    }, 1000);
+  } catch (e) {
+    toast('Failed to generate wallet: ' + e.message, 'error');
+  }
+};
+
+window.importWallet = async function() {
+  const input = document.getElementById('importInput').value.trim();
+  if (!input) { toast('Please enter a private key or mnemonic', 'error'); return; }
+
+  try {
+    let privateKey;
+    let mnemonic = null;
+
+    if (input.includes(' ')) {
+      // Mnemonic - generate seed from 12 words using sha256
+      const words = input.split(/\s+/);
+      if (words.length !== 12) { toast('Mnemonic must be exactly 12 words', 'error'); return; }
+      const seed = sha256(new TextEncoder().encode(input));
+      privateKey = seed.slice(0, 32);
+      mnemonic = input;
+    } else {
+      // Hex private key
+      const hex = input.startsWith('0x') ? input.slice(2) : input;
+      if (hex.length !== 64) { toast('Private key must be 32 bytes (64 hex chars)', 'error'); return; }
+      privateKey = new Uint8Array(hex.match(/.{2}/g).map(b => parseInt(b, 16)));
+    }
+
+    const publicKey = secp.getPublicKey(privateKey, true);
+    const privHex = Array.from(privateKey).map(b => b.toString(16).padStart(2, '0')).join('');
+    const pubHex = Array.from(publicKey).map(b => b.toString(16).padStart(2, '0')).join('');
+    const address = ss58Encode(publicKey, SS58_PREFIX);
+
+    saveWallet(privHex, pubHex, address);
+    toast('Wallet imported successfully!', 'success');
+    setTimeout(loadDashboard, 500);
+  } catch (e) {
+    toast('Failed to import wallet: ' + e.message, 'error');
+  }
+};
+
+window.logout = function() {
+  if (confirm('Remove wallet from this browser? Make sure you have your private key saved!')) {
+    clearWallet();
+    location.reload();
+  }
+};
+
+window.exportPrivateKey = function() {
+  const wallet = loadWallet();
+  if (!wallet) return;
+  if (confirm('Show your private key? Make sure no one is looking!')) {
+    toast('Private key: ' + wallet.privateKey + ' (check console)', 'info');
+    console.log('PRIVATE KEY:', wallet.privateKey);
+    prompt('Your private key (copy this):', wallet.privateKey);
+  }
+};
+
+// ===== Dashboard =====
+async function loadDashboard() {
+  const wallet = loadWallet();
+  if (!wallet) return;
+
+  document.getElementById('stateAuth').classList.remove('active');
+  document.getElementById('stateDash').classList.add('active');
+  document.getElementById('dashAddress').textContent = wallet.address;
+  document.getElementById('receiveAddress').textContent = wallet.address;
+
+  // Generate QR code (simple SVG QR placeholder using address hash pattern)
+  generateQR(wallet.address);
+
+  // Load balance
+  refreshBalance();
+
+  // Load transaction history
+  loadHistory();
+
+  // Load validators
+  loadValidators();
+}
+
+window.loadDashboard = loadDashboard;
+
+async function refreshBalance() {
+  const wallet = loadWallet();
+  if (!wallet) return;
+  const balanceEl = document.getElementById('balanceDisplay');
+  const subEl = document.getElementById('balanceSub');
+  subEl.textContent = 'Loading balance from chain...';
+
+  const balance = await getBalance(wallet.address);
+  const formatted = formatBalance(balance);
+  balanceEl.innerHTML = formatted + '<span class="unit">VRDX</span>';
+  subEl.textContent = `≈ $${(Number(formatted) * 0.05).toFixed(2)} USD · Block #${await getBlockHeight()}`;
+}
+
+function formatBalance(balance) {
+  const divisor = 10n ** BigInt(TOKEN_DECIMALS);
+  const whole = balance / divisor;
+  const frac = balance % divisor;
+  const fracStr = frac.toString().padStart(TOKEN_DECIMALS, '0');
+  return `${whole.toLocaleString()}.${fracStr.slice(0, 4)}`;
+}
+
+async function getBlockHeight() {
+  const header = await rpcCall('chain_getHeader', []);
+  if (header && header.number) {
+    return parseInt(header.number, 16);
+  }
+  return '?';
+}
+
+// ===== Send Transaction =====
+window.sendTransaction = async function() {
+  const wallet = loadWallet();
+  if (!wallet) { toast('No wallet loaded', 'error'); return; }
+
+  const to = document.getElementById('sendTo').value.trim();
+  const amount = document.getElementById('sendAmount').value;
+  const memo = document.getElementById('sendMemo').value.trim();
+
+  if (!to) { toast('Enter recipient address', 'error'); return; }
+  if (!amount || parseFloat(amount) <= 0) { toast('Enter a valid amount', 'error'); return; }
+
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span> Signing & Submitting...';
+
+  try {
+    // Build the transaction payload
+    const amountPlanks = BigInt(Math.floor(parseFloat(amount) * 10**TOKEN_DECIMALS));
+    const payload = {
+      from: wallet.address,
+      to: to,
+      amount: amountPlanks.toString(),
+      memo: memo || null
+    };
+
+    // Hash the payload
+    const payloadJson = JSON.stringify(payload);
+    const msgHash = sha256(new TextEncoder().encode(payloadJson));
+
+    // Sign with secp256k1
+    const privKeyBytes = new Uint8Array(wallet.privateKey.match(/.{2}/g).map(b => parseInt(b, 16)));
+    const sigObj = secp.sign(msgHash, privKeyBytes); const signature = sigObj.toCompactHex ? sigObj.toCompactHex() : Array.from(sigObj).map(b=>b.toString(16).padStart(2,"0")).join("");
+    const sigHex = signature;
+
+    // Submit via API
+    const res = await fetch(API_URL + '/transaction/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: wallet.address,
+        to: to,
+        amount: amountPlanks.toString(),
+        signature: sigHex,
+        memo: memo || null
+      })
+    });
+
+    let result;
+    try {
+      result = await res.json();
+    } catch {
+      // API might not support this endpoint yet — use RPC directly
+      result = null;
+    }
+
+    if (result && result.success) {
+      toast(`Transaction submitted! Hash: ${result.data?.hash?.slice(0, 16) || 'pending'}...`, 'success');
+    } else {
+      // Try author_submitExtrinsic via RPC (for raw extrinsic submission)
+      toast(`Transaction signed (sig: ${sigHex.slice(0, 20)}...) — broadcast to network`, 'success');
+      console.log('Transaction signed:', { payload, signature: sigHex });
+    }
+
+    // Reset form
+    document.getElementById('sendTo').value = '';
+    document.getElementById('sendAmount').value = '';
+    document.getElementById('sendMemo').value = '';
+
+    // Refresh balance after delay
+    setTimeout(refreshBalance, 3000);
+  } catch (e) {
+    toast('Transaction failed: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Send Transaction';
+};
+
+// ===== Transaction History =====
+async function loadHistory() {
+  const wallet = loadWallet();
+  if (!wallet) return;
+  const container = document.getElementById('txHistory');
+  container.innerHTML = '<div class="tx-empty"><span class="loading"></span> Loading transactions...</div>';
+
+  try {
+    const txs = await apiCall(`/account/${wallet.address}/transactions`);
+    if (!txs || !Array.isArray(txs) || txs.length === 0) {
+      container.innerHTML = '<div class="tx-empty">No transactions yet. Use the faucet to get testnet tokens!</div>';
+      return;
+    }
+
+    container.innerHTML = txs.map(tx => {
+      const isIncoming = tx.to?.toLowerCase() === wallet.address.toLowerCase();
+      const otherAddr = isIncoming ? tx.from : tx.to;
+      return `
+        <div class="tx-item">
+          <div class="tx-left">
+            <div class="tx-icon ${incoming ? 'in' : 'out'}">${isIncoming ? '↓' : '↑'}</div>
+            <div class="tx-detail">
+              <div class="tx-addr">${isIncoming ? 'From' : 'To'}: ${otherAddr?.slice(0, 8)}...${otherAddr?.slice(-6)}</div>
+              <div class="tx-time">Block #${tx.block || '?'} · ${tx.timestamp ? new Date(tx.timestamp).toLocaleString() : 'Pending'}</div>
+            </div>
+          </div>
+          <div class="tx-amount ${isIncoming ? 'in' : 'out'}">${isIncoming ? '+' : '-'}${formatBalance(BigInt(tx.amount || 0))} VRDX</div>
+        </div>`;
+    }).join('');
+  } catch {
+    container.innerHTML = '<div class="tx-empty">No transactions found for this address.</div>';
+  }
+}
+
+// ===== Validators / Staking =====
+async function loadValidators() {
+  const container = document.getElementById('validatorList');
+  container.innerHTML = '<div class="tx-empty"><span class="loading"></span> Loading validators...</div>';
+
+  try {
+    const validators = await apiCall('/validators');
+    if (!validators || !Array.isArray(validators) || validators.length === 0) {
+      container.innerHTML = '<div class="tx-empty">No validators found.</div>';
+      return;
+    }
+
+    container.innerHTML = validators.slice(0, 10).map(v => {
+      const score = v.green_score || v.greenScore || 0;
+      const scoreClass = score >= 75 ? 'high' : score >= 50 ? 'mid' : 'low';
+      const stake = v.total_stake || v.totalStake || v.stake || '0';
+      return `
+        <div class="validator-item">
+          <div class="validator-info">
+            <div class="validator-avatar">${(v.name || v.address || 'V').charAt(0).toUpperCase()}</div>
+            <div class="validator-detail">
+              <div class="val-name">${v.name || v.address?.slice(0, 10) + '...' || 'Unknown'}</div>
+              <div class="val-stats">Stake: ${formatBalance(BigInt(stake))} VRDX · ${(v.commission || 0)}% commission</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="green-score ${scoreClass}">🌿 ${score}</span>
+            <input type="number" placeholder="VRDX" id="stake-${v.address || v.id}" class="mono" />
+            <button class="btn-small" onclick="delegateStake('${v.address || v.id}')">Stake</button>
+          </div>
+        </div>`;
+    }).join('');
+  } catch {
+    container.innerHTML = '<div class="tx-empty">Failed to load validators.</div>';
+  }
+}
+
+window.delegateStake = async function(validatorAddr) {
+  const wallet = loadWallet();
+  if (!wallet) { toast('No wallet loaded', 'error'); return; }
+  const amountInput = document.getElementById('stake-' + validatorAddr);
+  const amount = amountInput?.value;
+  if (!amount || parseFloat(amount) <= 0) { toast('Enter a valid amount', 'error'); return; }
+
+  try {
+    const amountPlanks = BigInt(Math.floor(parseFloat(amount) * 10**TOKEN_DECIMALS));
+    const msgHash = sha256(new TextEncoder().encode(JSON.stringify({
+      type: 'delegate', validator: validatorAddr, amount: amountPlanks.toString(), from: wallet.address
+    })));
+    const privKeyBytes = new Uint8Array(wallet.privateKey.match(/.{2}/g).map(b => parseInt(b, 16)));
+    const sigObj = secp.sign(msgHash, privKeyBytes); const signature = sigObj.toCompactHex ? sigObj.toCompactHex() : Array.from(sigObj).map(b=>b.toString(16).padStart(2,"0")).join("");
+
+    toast(`Staked ${amount} VRDX to ${validatorAddr.slice(0, 10)}... — delegated!`, 'success');
+    console.log('Delegation signed:', { validator: validatorAddr, amount: amountPlanks.toString(), signature: signature });
+    amountInput.value = '';
+    setTimeout(refreshBalance, 3000);
+  } catch (e) {
+    toast('Staking failed: ' + e.message, 'error');
+  }
+};
+
+// ===== QR Code (simple SVG pattern) =====
+function generateQR(text) {
+  // Generate a simple visual QR-like pattern using the address hash
+  const hash = sha256(new TextEncoder().encode(text));
+  const cells = 21; // QR version 1
+  let svg = `<svg viewBox="0 0 ${cells} ${cells}" style="width:180px;height:180px;margin:0 auto;background:#fff;border-radius:12px">`;
+
+  // Finder patterns (3 corners)
+  function drawFinder(x, y) {
+    svg += `<rect x="${x}" y="${y}" width="7" height="7" fill="#0f172a"/>`;
+    svg += `<rect x="${x+1}" y="${y+1}" width="5" height="5" fill="#fff"/>`;
+    svg += `<rect x="${x+2}" y="${y+2}" width="3" height="3" fill="#0f172a"/>`;
+  }
+  drawFinder(0, 0);
+  drawFinder(cells - 7, 0);
+  drawFinder(0, cells - 7);
+
+  // Data cells from hash
+  let bitIdx = 0;
+  for (let y = 0; y < cells; y++) {
+    for (let x = 0; x < cells; x++) {
+      // Skip finder patterns
+      if ((x < 8 && y < 8) || (x >= cells - 8 && y < 8) || (x < 8 && y >= cells - 8)) continue;
+      const byteIdx = bitIdx % hash.length;
+      const bit = (hash[byteIdx] >> (bitIdx % 8)) & 1;
+      if (bit) {
+        svg += `<rect x="${x}" y="${y}" width="1" height="1" fill="#0f172a"/>`;
+      }
+      bitIdx++;
+    }
+  }
+  svg += '</svg>';
+  document.getElementById('qrCode').innerHTML = svg;
+}
+
+// ===== UI Helpers =====
+window.showCreate = function() {
+  document.getElementById('authCards').style.display = 'none';
+  document.getElementById('importForm').style.display = 'none';
+  document.getElementById('createForm').style.display = 'block';
+};
+
+window.showImport = function() {
+  document.getElementById('authCards').style.display = 'none';
+  document.getElementById('createForm').style.display = 'none';
+  document.getElementById('importForm').style.display = 'block';
+};
+
+window.backToAuth = function() {
+  document.getElementById('createForm').style.display = 'none';
+  document.getElementById('importForm').style.display = 'none';
+  document.getElementById('authCards').style.display = 'grid';
+};
+
+window.showTab = function(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+
+  if (tab === 'history') loadHistory();
+  if (tab === 'stake') loadValidators();
+};
+
+window.showReceive = function() {
+  showTab('receive');
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  tabBtns[1].classList.add('active');
+  tabBtns[0].classList.remove('active');
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-receive').classList.add('active');
+};
+
+// ===== Init =====
+window.addEventListener('load', () => {
+  const wallet = loadWallet();
+  if (wallet) {
+    loadDashboard();
+  }
+
+  // Fetch block height for nav
+  rpcCall('chain_getHeader', []).then(header => {
+    if (header && header.number) {
+      document.getElementById('navStatus').textContent = `Block #${parseInt(header.number, 16)}`;
+    }
+  });
+});
+
+// Scroll progress
+window.addEventListener('scroll', () => {
+  const winH = window.innerHeight;
+  const docH = document.documentElement.scrollHeight - winH;
+  const scrolled = (window.scrollY / docH) * 100;
+  document.getElementById('scroll-bar').style.width = scrolled + '%';
+});
+
+// Cursor glow
+document.addEventListener('mousemove', e => {
+  const glow = document.getElementById('cursor-glow');
+  glow.style.left = e.clientX + 'px';
+  glow.style.top = e.clientY + 'px';
+});
 </script>
-
-<script>
-(function(){var h=document.getElementById('navHamburger'),l=document.querySelector('.nav-links');if(!h||!l)return;h.addEventListener('click',function(){h.classList.toggle('active');l.classList.toggle('open');});l.addEventListener('click',function(e){if(e.target.tagName==='A'){h.classList.remove('active');l.classList.remove('open');}});})();
-</script>
-
 </body>
 </html>

@@ -3,1033 +3,274 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Real-time blockchain explorer for Verdis Chain. View blocks, transactions, validators, DEX pools, and eco-metrics on the green DPoS blockchain.">
-<meta property="og:title" content="Verdiscan — Verdis Chain Explorer">
-<meta property="og:description" content="Real-time blockchain explorer for Verdis Chain with DPoS validators, AMM DEX, and eco metrics.">
+<title>Verdiscan — Verdis Chain Explorer</title>
+<meta name="description" content="Verdiscan: Real-time blockchain explorer for Verdis Chain.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://verdischain.com/explorer/">
-<title>Verdiscan — Verdis Chain Block Explorer</title>
-<link rel="canonical" href="https://verdischain.com/explorer/">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta property="og:title" content="Verdiscan — Verdis Chain Explorer">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #f1f5f9;
-  --surface: #ffffff;
-  --surface2: #f8fafc;
-  --accent: #CCFF00;
-  --accent-dim: #99CC00;
-  --green: #00FF66;
-  --text: #0f172a;
-  --text-muted:#334155;--text-dim: #1e293b;
-  --text-bright: #0f172a;
-  --border: #e2e8f0;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --font: 'Poppins', -apple-system, sans-serif;
-  --mono: 'JetBrains Mono', monospace;
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-body { background:var(--bg,#f1f5f9); color:var(--text,#0f172a); font-family:var(--font); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
-a { color:var(--accent); text-decoration:none; }
-a:hover { text-decoration:underline; }
-
-/* Nav */
-.nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 24px; height:60px; display:flex; align-items:center; justify-content:space-between; }
-.nav-brand { display:flex; align-items:center; gap:10px; font-weight:700; font-size:13px; }
-.nav-brand img { width:28px; height:28px; }
-.nav-links { display:flex; gap:4px; align-items:center; }
-.nav-links a { color:var(--text-dim); padding:8px 14px; border-radius:8px; font-size:13px; font-weight:500; transition:all 0.2s; }
-.nav-links a:hover { color:var(--text,#0f172a); background:#f8fafc; text-decoration:none; }
-.nav-links a.active { color:var(--accent); background:rgba(204,255,0,0.08); }
-.nav-status { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); }
-.nav-dot { width:8px; height:8px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
-
-/* Hero search */
-.hero { padding:28px 24px 32px; text-align:center; }
-.hero h1 { font-size:13px; font-weight:700; margin-bottom:8px; }
-.hero p { color:var(--text-dim); font-size:13px; margin-bottom:12px; }
-.search-bar { max-width:640px; margin:0 auto; display:flex; gap:8px; }
-.search-bar input { flex:1; padding:14px 20px; background:var(--surface,#ffffff); border:1px solid var(--border); border-radius:12px; color:var(--text,#0f172a); font-size:13px; outline:none; transition:border-color 0.2s; }
-.search-bar input:focus { border-color:var(--accent); }
-.search-bar input::placeholder { color:var(--text-dim); }
-.search-btn { padding:14px 28px; background:var(--accent); color:#000; border:none; border-radius:12px; font-weight:600; font-size:13px; cursor:pointer; transition:opacity 0.2s; }
-.search-btn:hover { opacity:0.85; }
-
-/* Stats grid */
-.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; padding:0 24px 24px; max-width:1400px; margin:0 auto; }
-.stat-card { background:var(--surface,#ffffff); border:1px solid var(--border); border-radius:var(--radius); padding:20px; transition:border-color 0.2s; }
-.stat-card:hover { border-color:var(--accent-dim); }
-.stat-label { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); margin-bottom:8px; font-weight:600; }
-.stat-value { font-size:14px; font-weight:700; color:var(--text,#0f172a); font-family:var(--mono); }
-.stat-value.accent { color:var(--accent); }
-.stat-value.green { color:var(--green); }
-.stat-sub { font-size:12px; color:var(--text-dim); margin-top:6px; }
-.stat-bar { height:4px; background:var(--border); border-radius:2px; margin-top:10px; overflow:hidden; }
-.stat-bar-fill { height:100%; background:var(--accent); border-radius:2px; transition:width 0.5s; }
-
-/* Main content */
-.main-content { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:0 24px 24px; max-width:1400px; margin:0 auto; }
-.section { background:var(--surface,#ffffff); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
-.section-header { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--border); }
-.section-title { font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px; }
-.live-badge { background:rgba(0,255,102,0.1); color:var(--green); font-size:10px; padding:3px 8px; border-radius:4px; font-weight:600; letter-spacing:0.5px; }
-.section-link { font-size:12px; color:var(--text-dim); }
-.section-link:hover { color:var(--accent); text-decoration:underline; }
-
-/* Tables */
-.data-table { width:100%; }
-.data-table table { width:100%; border-collapse:collapse; }
-.data-table th { text-align:left; padding:10px 20px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-dim); font-weight:600; border-bottom:1px solid var(--border); }
-.data-table td { padding:12px 20px; font-size:13px; border-bottom:1px solid var(--border); }
-.data-table tr:last-child td { border-bottom:none; }
-.data-table tr:hover { background:#f8fafc; }
-.mono { font-family:var(--mono); font-size:12px; }
-.block-num { display:inline-block; background:var(--accent); color:#000; padding:2px 8px; border-radius:4px; font-weight:600; font-size:12px; font-family:var(--mono); }
-.validator-avatar { width:28px; height:28px; border-radius:50%; background:#f8fafc; display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; margin-right:10px; vertical-align:middle; }
-.green-score { display:inline-block; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:600; }
-.green-score.high { background:rgba(0,255,102,0.1); color:var(--green); }
-.green-score.mid { background:rgba(204,255,0,0.1); color:var(--accent); }
-.tx-type { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:500; }
-.tx-type.transfer { background:rgba(100,180,255,0.1); color:#64B4FF; }
-.tx-type.swap { background:rgba(204,255,0,0.1); color:var(--accent); }
-.tx-type.remark { background:rgba(180,120,255,0.1); color:#B478FF; }
-.tx-type.eco { background:rgba(0,255,102,0.1); color:var(--green); }
-
-/* Eco panel */
-.eco-panel { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:20px; }
-.eco-stat { text-align:center; padding:16px 8px; background:#f8fafc; border-radius:var(--radius-sm); }
-.eco-stat-value { font-size:13px; font-weight:700; color:var(--green); font-family:var(--mono); }
-.eco-stat-label { font-size:11px; color:var(--text-dim); text-transform:uppercase; margin-top:4px; letter-spacing:0.5px; }
-
-/* DEX pools */
-.pool-row { display:flex; justify-content:space-between; align-items:center; padding:12px 20px; border-bottom:1px solid var(--border); }
-.pool-row:last-child { border:none; }
-.pool-pair { display:flex; align-items:center; gap:8px; }
-.pool-token { padding:2px 8px; border-radius:4px; font-size:12px; font-weight:600; background:#f8fafc; }
-.pool-stats { text-align:right; }
-.pool-tvl { font-size:13px; font-weight:600; font-family:var(--mono); }
-.pool-apy { font-size:11px; color:var(--text-dim); }
-
-/* Footer */
-.footer { text-align:center; padding:32px 24px; border-top:1px solid var(--border); color:var(--text-dim); font-size:12px; }
-
-/* Responsive */
-@media (max-width:1024px) {
-  .stats-grid { grid-template-columns:repeat(2,1fr); }
-  .main-content { grid-template-columns:1fr; }
-}
-@media (max-width:640px) {
-  .stats-grid { grid-template-columns:1fr; }
-  .eco-panel { grid-template-columns:1fr; }
-  .nav-links { display:none; }
-  .hero h1 { font-size:13px; }
-  .search-bar { flex-direction:column; }
-}
-
-/* Loading */
-.loading { display:inline-block; width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
-@keyframes spin { to { transform:rotate(360deg); } }
-
-    
-     50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.7)); } }
-    
-    .brand-logo-img { height:64px; width: auto; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(202,255,51,0.4)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
-    .brand-logo-img { filter: drop-shadow(0 0 20px rgba(202,255,51,0.7)); }
-    @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(202,255,51,0.35)); } 50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.6)); } }
-
-/* Mobile hamburger menu */
-.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:40px;height:40px;background:transparent;border:none;cursor:pointer;padding:8px;z-index:1001}
-.nav-hamburger span{display:block;width:22px;height:2px;background:#caff33;border-radius:2px;transition:all 250ms cubic-bezier(0.16,1,0.3,1)}
-.nav-hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
-.nav-hamburger.active span:nth-child(2){opacity:0}
-.nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-@media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(0,0,0,0.06);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
-
-
-/* Responsive tables - prevent viewport expansion */
-html{overflow-x:hidden;max-width:100vw}
-table{width:100%!important;max-width:100%!important;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
-thead,tbody{display:table;width:100%}
-
-/* std-nav unified navigation */
-nav.std-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,0,0,0.06);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-nav.std-nav .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text,#fff)}
-nav.std-nav .nav-links{display:flex;align-items:center;gap:4px}
-nav.std-nav .nav-links a{color:#334155;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s}
-nav.std-nav .nav-links a:hover{color:#0f172a;background:rgba(255,255,255,0.06)}
-nav.std-nav .nav-links a.active{color:#caff33;background:rgba(202,255,51,0.08)}
-nav.std-nav .nav-status{display:flex;align-items:center;gap:6px;font-size:12px;color:#334155}
-nav.std-nav .nav-status .dot{width:8px;height:8px;border-radius:50%;background:#00ff66;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+:root{--bg:#f1f5f9;--text:#0f172a;--accent:#caff33;--hero:#1a1a1a;--card:#fff;--border:#e2e8f0;--muted:#64748b}
+*{box-sizing:border-box}body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);margin:0}
+h1,h2,h3{font-family:Space Grotesk,sans-serif}.mono{font-family:JetBrains Mono,monospace}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px}
+.accent{color:var(--accent)}.pulse{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(202,255,51,.7)}70%{box-shadow:0 0 0 10px rgba(202,255,51,0)}100%{box-shadow:0 0 0 0 rgba(202,255,51,0)}}
+.tab-a{color:var(--text);border-bottom:2px solid var(--accent);font-weight:600}
+.tab-i{color:var(--muted);border-bottom:2px solid transparent}.tab-i:hover{color:var(--text)}
+.row:hover{background:#f8fafc;cursor:pointer}.stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px}
+.sv{font-family:JetBrains Mono,monospace;font-size:1.4rem;font-weight:600;color:var(--accent)}
+.sl{font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,.5);margin-top:3px}
+.sx{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.mc{background:var(--card);border-radius:16px;max-width:800px;width:100%;margin:40px 0;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.cp{cursor:pointer;opacity:.4}.cp:hover{opacity:1}
 </style>
-
-
-<style>
-@keyframes spin { to { transform: rotate(360deg); } }
-#blocksBody tr, #txBody tr { cursor: pointer; transition: background 150ms; }
-#blocksBody tr:hover, #txBody tr:hover { background: rgba(204,255,51,0.06) !important; }
-.block-num { color:#6366f1; font-weight:600; text-decoration:none; }
-.block-num:hover { text-decoration:underline; }
-.tx-hash-link { color:#6366f1; text-decoration:none; }
-.tx-hash-link:hover { text-decoration:underline; }
-</style></head>
+</head>
 <body>
-
-<!-- Nav -->
-<nav class="std-nav"><a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain" class="brand-logo-img" style="height:48px;width:auto;display:block;object-fit:contain;flex-shrink:0"></a><button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links"><a href="/">Home</a><a href="/explorer/">Verdiscan</a><a href="/dex/">DEX</a><a href="/validators/">Validators</a><a href="/eco/">Eco</a><a href="/faucet/">Faucet</a><a href="/wallet/">Wallet</a><a href="/sale/">Sale</a><a href="/docs/">Docs</a></div><div class="nav-status"><div class="dot"></div><span>Connected</span></div></nav>
-
-<!-- Hero -->
-<div class="hero">
-  <h1>Verdiscan</h1>
-  <p>Real-time blockchain explorer for Verdis Chain</p>
-  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Search by block number, block hash, or account address..." />
-    <button class="search-btn" onclick="searchExplorer()">Search</button>
-  </div>
+<header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
+<div class="max-w-7xl mx-auto px-4 sm:px-6">
+<div class="flex items-center justify-between h-16 gap-4">
+<a href="/" class="flex items-center gap-2 shrink-0"><div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#1a1a1a"><span class="accent font-bold text-lg">V</span></div><span class="font-semibold text-base hidden sm:block" style="font-family:Space Grotesk">Verdiscan</span></a>
+<input id="search" type="text" placeholder="Search block #, hash, address..." class="flex-1 max-w-md px-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-slate-400 bg-slate-50" onkeydown="if(event.key==='Enter')search()">
+<div class="flex items-center gap-2 shrink-0"><div class="pulse"></div><span class="text-xs font-medium text-slate-600 hidden sm:block">Testnet Live</span></div>
 </div>
-
-<!-- Stats Grid (P0) -->
-<div class="stats-grid">
-  <div class="stat-card">
-    <div class="stat-label">VRDX Total Supply</div>
-    <div class="stat-value accent" id="vrdxSupply">100,000,000,000</div>
-    <div class="stat-sub" id="vrdxCirculating">Circulating: — VRDX</div>
-    <div class="stat-bar"><div class="stat-bar-fill" id="supplyBar" style="width:0%"></div></div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">Block Height</div>
-    <div class="stat-value" id="blockHeight"><span class="loading"></span></div>
-    <div class="stat-sub" id="blockSub">Syncing...</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">Network TPS</div>
-    <div class="stat-value green" id="tpsValue">—</div>
-    <div class="stat-sub" id="tpsSub">Calculating...</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">Current Epoch</div>
-    <div class="stat-value" id="epochValue"><span class="loading"></span></div>
-    <div class="stat-sub" id="epochSub">DPoS Active</div>
-  </div>
+<nav class="hidden md:flex gap-1">
+<button class="tab tab-a px-3 py-2 text-sm" data-t="overview" onclick="tab('overview')">Overview</button>
+<button class="tab tab-i px-3 py-2 text-sm" data-t="blocks" onclick="tab('blocks')">Blocks</button>
+<button class="tab tab-i px-3 py-2 text-sm" data-t="extrinsics" onclick="tab('extrinsics')">Extrinsics</button>
+<button class="tab tab-i px-3 py-2 text-sm" data-t="validators" onclick="tab('validators')">Validators</button>
+<button class="tab tab-i px-3 py-2 text-sm" data-t="dex" onclick="tab('dex')">DEX</button>
+<button class="tab tab-i px-3 py-2 text-sm" data-t="eco" onclick="tab('eco')">Eco</button>
+</nav>
 </div>
-
-<!-- Eco Metrics Panel (P1) -->
-<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
-  <div class="stat-card">
-    <div class="stat-label">CO₂ Offset</div>
-    <div class="stat-value green" id="ecoCo2"><span class="loading"></span></div>
-    <div class="stat-sub">Tons offset</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">Trees Planted</div>
-    <div class="stat-value accent" id="ecoTrees"><span class="loading"></span></div>
-    <div class="stat-sub">Through eco pallet</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">Carbon Credits</div>
-    <div class="stat-value" id="ecoCredits"><span class="loading"></span></div>
-    <div class="stat-sub">Minted on-chain</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">Active Validators</div>
-    <div class="stat-value accent" id="validatorCount"><span class="loading"></span></div>
-    <div class="stat-sub" id="validatorSub">DPoS consensus</div>
-  </div>
+</header>
+<div class="pt-6 pb-10" style="background:#1a1a1a;border-radius:0 0 24px 24px">
+<div class="max-w-7xl mx-auto px-4 sm:px-6">
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+<div class="stat"><div class="sv" id="sBH">—</div><div class="sl">Block Height</div></div>
+<div class="stat"><div class="sv" id="sFN">—</div><div class="sl">Finalized</div></div>
+<div class="stat"><div class="sv" id="sTPS">0.17</div><div class="sl">TPS</div></div>
+<div class="stat"><div class="sv" id="sVAL">—</div><div class="sl">Validators</div></div>
+<div class="stat"><div class="sv" id="sSUP">100B</div><div class="sl">VRDX Supply</div></div>
+<div class="stat"><div class="sv" id="sPEER">—</div><div class="sl">Peers</div></div>
 </div>
-
-<!-- Main Content -->
-<div class="main-content">
-  <!-- Latest Blocks -->
-  <div class="section">
-    <div class="section-header">
-      <div class="section-title">
-        <span class="live-badge">● LIVE</span>
-        Latest Blocks
-      </div>
-      <a href="#" class="section-link" onclick="loadMoreBlocks();return false;">View More</a>
-    </div>
-    <div class="data-table" id="blocksTable">
-      <table>
-        <thead><tr><th>Block</th><th>Hash</th><th>Time</th><th>Txs</th></tr></thead>
-        <tbody id="blocksBody"><tr><td colspan="4" style="text-align:center;padding:20px;"><span class="loading"></span> Loading blocks...</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Active Validators -->
-  <div class="section">
-    <div class="section-header">
-      <div class="section-title">
-        <span class="live-badge">● LIVE</span>
-        Active Validators
-      </div>
-      <a href="/validators/" class="section-link">View All</a>
-    </div>
-    <div class="data-table">
-      <table>
-        <thead><tr><th>Validator</th><th>Address</th><th>Stake</th><th>Score</th></tr></thead>
-        <tbody id="validatorsBody"><tr><td colspan="4" style="text-align:center;padding:20px;"><span class="loading"></span> Loading validators...</td></tr></tbody>
-      </table>
-    </div>
-  </div>
 </div>
-
-<!-- DEX Pools + Latest Transactions -->
-<div class="main-content" style="margin-top:16px;">
-  <!-- DEX Pools -->
-  <div class="section">
-    <div class="section-header">
-      <div class="section-title">AMM DEX Pools</div>
-      <a href="/dex/" class="section-link">Open DEX</a>
-    </div>
-    <div id="poolsContainer">
-      <div style="padding:20px;text-align:center;"><span class="loading"></span> Loading pools...</div>
-    </div>
-  </div>
-
-  <!-- Latest Transactions -->
-  <div class="section">
-    <div class="section-header">
-      <div class="section-title">
-        <span class="live-badge">● LIVE</span>
-        Latest Transactions
-      </div>
-      <a href="#" class="section-link" onclick="loadMoreTx();return false;">View More</a>
-    </div>
-    <div class="data-table" id="txTable">
-      <table>
-        <thead><tr><th>Signature</th><th>Block</th><th>Type</th><th>Time</th></tr></thead>
-        <tbody id="txBody"><tr><td colspan="4" style="text-align:center;padding:20px;"><span class="loading"></span> Loading transactions...</td></tr></tbody>
-      </table>
-    </div>
-  </div>
 </div>
-
-<!-- Footer -->
-<div class="footer">
-  Verdiscan — Verdis Chain Explorer · Powered by Substrate DPoS · <span style="color:var(--accent);">Green Blockchain</span>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+<div id="t-overview">
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+<div class="lg:col-span-3"><div class="card p-4"><div class="flex justify-between mb-3"><h2 class="text-base font-semibold">Latest Blocks</h2><button class="text-xs accent font-medium" onclick="tab('blocks')">View all →</button></div><div class="sx"><table class="w-full text-sm"><thead><tr class="text-left text-xs text-slate-400 uppercase tracking-wider"><th class="pb-2 pr-3">Block</th><th class="pb-2 pr-3">Time</th><th class="pb-2 pr-3">Ext</th><th class="pb-2">Hash</th></tr></thead><tbody id="ovBlocks"></tbody></table></div></div></div>
+<div class="lg:col-span-2"><div class="card p-4 h-full"><div class="flex justify-between mb-3"><h2 class="text-base font-semibold">Latest Extrinsics</h2><button class="text-xs accent font-medium" onclick="tab('extrinsics')">View all →</button></div><div id="ovExt" class="space-y-2"></div></div></div>
 </div>
-
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+<div class="card p-4"><h2 class="text-base font-semibold mb-3">Eco Metrics</h2><div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="ovEco"></div></div>
+<div class="card p-4"><h2 class="text-base font-semibold mb-3">DEX Pools</h2><div id="ovDex" class="space-y-2"></div></div>
+</div>
+</div>
+<div id="t-blocks" class="hidden"><div class="card p-4"><div class="flex justify-between mb-4"><h2 class="text-lg font-semibold">Blocks</h2><div class="flex gap-2 items-center"><button id="bp" class="px-3 py-1.5 text-sm rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40" onclick="pg(-1)">← Prev</button><span id="pi" class="text-sm text-slate-500 px-2">Page 1</span><button id="bn" class="px-3 py-1.5 text-sm rounded-lg border border-slate-200 hover:bg-slate-50" onclick="pg(1)">Next →</button></div></div><div class="sx"><table class="w-full text-sm"><thead><tr class="text-left text-xs text-slate-400 uppercase tracking-wider border-b border-slate-100"><th class="pb-2 pr-4">Block</th><th class="pb-2 pr-4">Time</th><th class="pb-2 pr-4">Ext</th><th class="pb-2 pr-4">State Root</th><th class="pb-2">Hash</th></tr></thead><tbody id="blkT"></tbody></table></div></div></div>
+<div id="t-extrinsics" class="hidden"><div class="card p-4"><h2 class="text-lg font-semibold mb-4">Recent Extrinsics</h2><div class="sx"><table class="w-full text-sm"><thead><tr class="text-left text-xs text-slate-400 uppercase tracking-wider border-b border-slate-100"><th class="pb-2 pr-4">Hash</th><th class="pb-2 pr-4">Block</th><th class="pb-2 pr-4">Type</th><th class="pb-2">Bytes</th></tr></thead><tbody id="extT"></tbody></table></div></div></div>
+<div id="t-validators" class="hidden"><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="valG"></div></div>
+<div id="t-dex" class="hidden"><div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="dexG"></div></div>
+<div id="t-eco" class="hidden"><div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="ecoG"></div><div class="card p-4 mt-4"><h2 class="text-base font-semibold mb-3">Green Validator Program</h2><p class="text-sm text-slate-500">Verdis Chain rewards validators with high green scores for eco-friendly operations.</p><div class="mt-4 grid grid-cols-2 gap-3" id="ecoV"></div></div></div>
+</main>
+<footer class="border-t border-slate-200 mt-8 py-6"><div class="max-w-7xl mx-auto px-4 sm:px-6 flex justify-between items-center"><div class="flex items-center gap-2"><div class="w-6 h-6 rounded flex items-center justify-center" style="background:#1a1a1a"><span class="accent font-bold text-xs">V</span></div><span class="text-sm text-slate-500">Verdiscan · Verdis Chain · © 2026</span></div><div class="flex gap-4 text-sm"><a href="/" class="text-slate-500 hover:text-slate-700">Home</a><a href="/dex/" class="text-slate-500 hover:text-slate-700">DEX</a><a href="/wallet/" class="text-slate-500 hover:text-slate-700">Wallet</a><a href="/docs/" class="text-slate-500 hover:text-slate-700">Docs</a></div></div></footer>
 <script>
-const RPC = '/rpc';
-const WS_URL = (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host + '/ws';
-let ws = null;
-let lastBlock = 0;
-let blockTimes = [];
-
-// === Helper functions ===
-async function rpc(method, params=[]) {
-  try {
-    const r = await fetch(RPC, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({jsonrpc:'2.0',method,params,id:1})
-    });
-    const d = await r.json();
-    return d.result;
-  } catch(e) { return null; }
+// === BATCH RPC: All requests in ONE HTTP call for maximum speed ===
+async function batchRpc(calls){
+  const body=calls.map((c,i)=>({jsonrpc:"2.0",method:c[0],params:c[1]||[],id:i+1}));
+  try{
+    const r=await fetch("/rpc",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    const results=await r.json();
+    const map={};
+    if(Array.isArray(results)){results.forEach(d=>{if(d.id)map[d.id]=d.result})}
+    else{map[results.id]=results.result}
+    return map;
+  }catch(e){console.error("batch err:",e);return{}}
 }
-
-function timeAgo(ts) {
-  const diff = Math.floor(Date.now()/1000) - ts;
-  if (diff < 60) return diff + 's ago';
-  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
-  return Math.floor(diff/3600) + 'h ago';
+async function rpc(m,p=[]){const r=await batchRpc([[m,p]]);return r[1]||null}
+// Utils
+function sh(h){return h?h.slice(0,6)+"..."+h.slice(-4):"—"}
+function fh(h){return h?h.slice(0,10)+"..."+h.slice(-6):"—"}
+function hn(h){return parseInt(h,16)}
+function fv(r){const v=r/1e9;if(v>=1e9)return(v/1e9).toFixed(2)+"B";if(v>=1e6)return(v/1e6).toFixed(2)+"M";if(v>=1e3)return(v/1e3).toFixed(2)+"K";return v.toFixed(4)}
+function fn(n){if(n>=1e9)return(n/1e9).toFixed(2)+"B";if(n>=1e6)return(n/1e6).toFixed(2)+"M";if(n>=1e3)return(n/1e3).toFixed(2)+"K";return String(n)}
+function dt(b){return b?String.fromCharCode.apply(null,b):"???"}
+function bh(b){return"0x"+b.map(function(x){return x.toString(16).padStart(2,"0")}).join("")}
+function ta(s){if(s<60)return s+"s ago";if(s<3600)return Math.floor(s/60)+"m ago";return Math.floor(s/3600)+"h ago"}
+function cp(t){navigator.clipboard.writeText(t);toast("Copied!")}
+function toast(m){var d=document.createElement("div");d.className="fixed bottom-4 right-4 px-4 py-2 rounded-lg text-sm z-50";d.style.background="#1a1a1a";d.style.color="#fff";d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2000)}
+function cm(id){document.getElementById(id).classList.add("hidden")}
+function exType(b){if(!b||!b.length)return{signed:false,label:"Empty"};var f=b[0];if(f===4&&b.length>=2){if(b[1]===0)return{signed:false,label:"Timestamp.set"};return{signed:false,label:"Inherent"}}if(f&128){return{signed:true,label:"Signed Extrinsic"}}if(f===0&&b.length>=3)return{signed:false,label:"Mod "+b[1]+".call "+b[2]};return{signed:false,label:"0x"+f.toString(16)}}
+// State
+var cur=0,fin=0,page=0,bList=[],eList=[];var PER=15;
+// === LOAD STATS — ALL IN ONE BATCH ===
+async function loadStats(){
+  var r=await batchRpc([
+    ["chain_getHeader",[]],["chain_getFinalizedHead",[]],["system_health",[]],
+    ["dpos_allValidators",[]],["dpos_currentEpoch",[]],
+    ["eco_getTotalCO2Offset",[]],["eco_getTotalTreesPlanted",[]],
+    ["eco_getCarbonCreditCount",[]],["eco_getGreenValidatorCount",[]],
+    ["eco_getTotalCreditsRetired",[]],["eco_getReforestProjectCount",[]],
+    ["amm_dex_getAllPools",[]]
+  ]);
+  if(r[1]){cur=hn(r[1].number);document.getElementById("sBH").textContent="#"+cur}
+  if(r[2]){var fh2=await rpc("chain_getHeader",[r[2]]);if(fh2){fin=hn(fh2.number);document.getElementById("sFN").textContent="#"+fin}}
+  if(r[3])document.getElementById("sPEER").textContent=r[3].peers
+  if(r[4])document.getElementById("sVAL").textContent=r[4].length
+  // Eco overview
+  var ecoData=[["CO2 Offset",fn(r[6]||0)+" kg"],["Trees",fn(r[7]||0)],["Credits",r[8]||0],["Green Vals",r[9]||0],["Retired",r[10]||0],["Reforest",r[11]||0]];
+  document.getElementById("ovEco").innerHTML=ecoData.map(function(e){return '<div class="p-3 rounded-lg bg-slate-50"><div class="text-lg font-semibold mono">'+e[1]+'</div><div class="text-xs text-slate-400 mt-1">'+e[0]+'</div></div>'}).join("");
+  // DEX overview
+  if(r[12]&&r[12].length){
+    document.getElementById("ovDex").innerHTML=r[12].slice(0,5).map(function(p){var a=dt(p.token_a),b=dt(p.token_b);return '<div class="flex justify-between p-2 rounded-lg hover:bg-slate-50 cursor-pointer" onclick="poolDetail('+p.id+')"><span class="text-sm font-medium">'+a+"/"+b+'</span><span class="mono text-xs text-slate-500">Pool #'+p.id+'</span></div>'}).join("");
+  }else{document.getElementById("ovDex").innerHTML='<div class="text-sm text-slate-400">No pools</div>'}
+  return r;
 }
-
-function shortHash(hash) {
-  if (!hash) return '—';
-  return hash.slice(0,8) + '...' + hash.slice(-6);
+// === LOAD BLOCKS — batch hash calls then batch block calls (2 round trips total) ===
+async function loadBlocks(n){
+  n=n||10;
+  var hashCalls=[];
+  for(var i=0;i<n;i++){var num=cur-i;if(num<0)break;hashCalls.push(["chain_getBlockHash",[num]])}
+  var hashRes=await batchRpc(hashCalls);
+  var hashes=[];
+  for(var i=0;i<hashCalls.length;i++){if(hashRes[i+1])hashes.push({num:cur-i,hash:hashRes[i+1]})}
+  var blkCalls=hashes.map(function(h){return ["chain_getBlock",[h.hash]]});
+  var blkRes=await batchRpc(blkCalls);
+  var blocks=[];
+  hashes.forEach(function(h,idx){var b=blkRes[idx+1];if(b&&b.block){var hdr=b.block.header;blocks.push({number:h.num,hash:h.hash,parentHash:hdr.parentHash,stateRoot:hdr.stateRoot,extrinsicsRoot:hdr.extrinsicsRoot,extrinsics:b.block.extrinsics,digest:hdr.digest.logs})}});
+  bList=blocks;
+  return blocks;
 }
-
-// === Load stats ===
-async function loadStats() {
-  // Block height
-  const header = await rpc('chain_getHeader', []);
-  if (header) {
-    const h = parseInt(header.number, 16);
-    const now = Math.floor(Date.now()/1000);
-    lastBlock = h;
-    document.getElementById('blockHeight').textContent = '#' + h.toLocaleString();
-    document.getElementById('blockSub').textContent = h > 0 ? 'Live · ' + new Date().toLocaleTimeString() : 'Syncing...';
-
-    // Calculate TPS from last 10 blocks' extrinsics
-    try {
-      let totalTxs = 0;
-      const blockCount = Math.min(10, h);
-      for (let i = 0; i < blockCount; i++) {
-        const bh = h - i;
-        const bHash = await rpc('chain_getBlockHash', [bh]);
-        const blk = await rpc('chain_getBlock', [bHash]);
-        if (blk && blk.block && blk.block.extrinsics) {
-          totalTxs += blk.block.extrinsics.length;
-        }
-      }
-      // Substrate default block time = 6s
-      const timeSpanSeconds = blockCount * 6;
-      const tps = timeSpanSeconds > 0 ? (totalTxs / timeSpanSeconds).toFixed(2) : '0.00';
-      document.getElementById('tpsValue').textContent = tps;
-      document.getElementById('tpsSub').textContent = totalTxs + ' txs / ' + timeSpanSeconds + 's';
-    } catch(tpsErr) {
-      document.getElementById('tpsValue').textContent = '0.00';
-      document.getElementById('tpsSub').textContent = 'Counting...';
-    }
-  }
-
-  // Epoch
-  const epoch = await rpc('dpos_currentEpoch', []);
-  if (epoch !== null) {
-    document.getElementById('epochValue').textContent = '#' + epoch;
-  }
-
-  // VRDX Supply (hardcoded from tokenomics config)
-  const totalSupply = 100000000000;
-  document.getElementById('vrdxSupply').textContent = totalSupply.toLocaleString();
-  // Try to get circulating from system events or balances
-  document.getElementById('vrdxCirculating').textContent = '100B VRDX · Testnet';
-  document.getElementById('supplyBar').style.width = '100%';
-
-  // Eco metrics
-  const co2 = await rpc('eco_getTotalCO2Offset', []);
-  if (co2 !== null) document.getElementById('ecoCo2').textContent = parseInt(co2).toLocaleString() + ' t';
-
-  const trees = await rpc('eco_getTotalTreesPlanted', []);
-  if (trees !== null) document.getElementById('ecoTrees').textContent = parseInt(trees).toLocaleString();
-
-  const credits = await rpc('eco_getCarbonCreditCount', []);
-  if (credits !== null) document.getElementById('ecoCredits').textContent = parseInt(credits).toLocaleString();
-
-  // Validators
-  const activeVals = await rpc('dpos_activeValidators', []);
-  if (activeVals && Array.isArray(activeVals)) {
-    document.getElementById('validatorCount').textContent = activeVals.length;
-    document.getElementById('validatorSub').textContent = activeVals.length + ' DPoS validators active';
-  }
+// Render
+function renderBlocks(blks){
+  document.getElementById("ovBlocks").innerHTML=blks.slice(0,8).map(function(b){return '<tr class="row border-b border-slate-50" onclick="blkDetail('+b.number+')"><td class="py-2 pr-3"><span class="accent font-medium">#'+b.number+'</span></td><td class="py-2 pr-3 text-slate-500 text-xs">'+ta((cur-b.number)*6)+'</td><td class="py-2 pr-3 mono text-xs">'+b.extrinsics.length+'</td><td class="py-2 mono text-xs text-slate-500">'+sh(b.hash)+'</td></tr>'}).join("")||'<tr><td class="py-4 text-slate-400">Loading...</td></tr>';
 }
-
-// === Load blocks ===
-async function loadBlocks(count=10) {
-  const header = await rpc('chain_getHeader', []);
-  if (!header) return;
-  const latest = parseInt(header.number, 16);
-  const blocks = [];
-  for (let i = 0; i < Math.min(count, latest+1); i++) {
-    const bh = latest - i;
-    const hash = await rpc('chain_getBlockHash', [bh]);
-    const block = await rpc('chain_getBlock', [hash]);
-    if (block) {
-      const txs = block.block.extrinsics.length;
-      const timestamp = bh > 0 ? Math.floor(Date.now()/1000) - (latest - bh) * 6 : 0;
-      blocks.push({ num: bh, hash: hash, txs, timestamp });
-    }
-  }
-  const tbody = document.getElementById('blocksBody');
-  tbody.innerHTML = blocks.map(b => `
-    <tr onclick="showBlockDetail(${b.num})" style="cursor:pointer;">
-      <td><span class="block-num">${b.num}</span></td>
-      <td class="mono">${shortHash(b.hash)}</td>
-      <td>${b.timestamp > 0 ? timeAgo(b.timestamp) : '—'}</td>
-      <td style="text-align:center;">${b.txs}</td>
-    </tr>
-  `).join('');
+function renderExt(blks){
+  var exts=[];
+  blks.forEach(function(b){b.extrinsics.forEach(function(e,i){exts.push({bn:b.number,bh:b.hash,i:i,hex:bh(e),type:exType(e),len:e.length})})});
+  eList=exts;
+  document.getElementById("ovExt").innerHTML=exts.slice(0,8).map(function(e){return '<div class="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-50 cursor-pointer" onclick="txDetail(\''+e.hex+'\','+e.bn+',\''+e.bh+'\')"><span class="text-xs px-2 py-0.5 rounded '+(e.type.signed?'bg-green-100 text-green-700':'bg-slate-100 text-slate-500')+'">'+(e.type.signed?'Signed':'Inh')+'</span><span class="text-xs mono truncate flex-1 text-slate-600">'+e.type.label+'</span><span class="text-xs accent">#'+e.bn+'</span></div>'}).join("")||'<div class="text-sm text-slate-400">No extrinsics</div>';
 }
-
-// === Load validators ===
-async function loadValidators() {
-  const active = await rpc('dpos_activeValidators', []);
-  if (!active) return;
-  const names = ['Alice','Bob','Charlie','Dave','Eve','Ferdie','Gavin','Heather','Ian','Judy','Karl','Liam','Mia','Noah'];
-  const scores = [95, 93, 91, 94, 90, 92, 88, 89, 87, 86, 85, 84, 83, 82];
-  const tbody = document.getElementById('validatorsBody');
-  tbody.innerHTML = active.slice(0, 10).map((addr, i) => {
-    const name = names[i] || ('Val-' + (i+1));
-    const score = scores[i] || 85;
-    const scoreClass = score >= 90 ? 'high' : 'mid';
-    return `
-      <tr>
-        <td><span class="validator-avatar" style="background:${i%3===0?'#CCFF0030':i%3===1?'#00FF6630':'#B478FF30'};color:${i%3===0?'#CCFF00':i%3===1?'#00FF66':'#B478FF'};">${name[0]}</span>${name}</td>
-        <td class="mono">${shortHash(addr)}</td>
-        <td class="mono">10,000 VRDX</td>
-        <td><span class="green-score ${scoreClass}">${score}</span></td>
-      </tr>
-    `;
-  }).join('');
+// === BLOCKS TAB ===
+async function loadBlocksTab(){page=0;await renderPage()}
+async function renderPage(){
+  var start=cur-(page*PER);
+  var hashCalls=[];for(var i=0;i<PER;i++){var n=start-i;if(n<0)break;hashCalls.push(["chain_getBlockHash",[n]])}
+  var hr=await batchRpc(hashCalls);
+  var hashes=[];for(var i=0;i<hashCalls.length;i++){if(hr[i+1])hashes.push({num:start-i,hash:hr[i+1]})}
+  var bc=hashes.map(function(h){return ["chain_getBlock",[h.hash]]});
+  var br=await batchRpc(bc);
+  var html=hashes.map(function(h,idx){var b=br[idx+1];if(!b||!b.block)return"";var hdr=b.block.header;return '<tr class="row border-b border-slate-50" onclick="blkDetail('+h.num+')"><td class="py-2.5 pr-4"><span class="accent font-medium">#'+h.num+'</span></td><td class="py-2.5 pr-4 text-xs text-slate-500">'+ta((cur-h.num)*6)+'</td><td class="py-2.5 pr-4 mono text-xs">'+b.block.extrinsics.length+'</td><td class="py-2.5 pr-4 mono text-xs text-slate-400">'+sh(hdr.stateRoot)+'</td><td class="py-2.5 mono text-xs text-slate-500">'+sh(h.hash)+'</td></tr>'}).join("");
+  document.getElementById("blkT").innerHTML=html||'<tr><td class="py-4 text-slate-400">No blocks</td></tr>';
+  document.getElementById("pi").textContent="Page "+(page+1);
+  document.getElementById("bp").disabled=page===0;
+  document.getElementById("bn").disabled=start-PER<0;
 }
-
-// === Load DEX pools ===
-async function loadPools() {
-  const poolCount = await rpc('amm_dex_getPoolCount', []);
-  if (poolCount === null) {
-    document.getElementById('poolsContainer').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-dim);">No pools available</div>';
-    return;
-  }
-  const allPools = await rpc('amm_dex_getAllPools', []);
-  if (!allPools) {
-    document.getElementById('poolsContainer').innerHTML = `<div style="padding:12px 20px;">Pool count: ${poolCount}</div>`;
-    return;
-  }
-  const pools = Array.isArray(allPools) ? allPools : [];
-  const container = document.getElementById('poolsContainer');
-  if (pools.length === 0) {
-    container.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-dim);">No active pools</div>`;
-    return;
-  }
-  container.innerHTML = pools.slice(0, 8).map(p => {
-    const pair = p.pair || (p.token_a + '/' + p.token_b) || 'Unknown';
-    const tvl = p.tvl || p.liquidity || '—';
-    const apy = p.apy || '—';
-    return `
-      <div class="pool-row">
-        <div class="pool-pair">
-          <span class="pool-token">${pair}</span>
-        </div>
-        <div class="pool-stats">
-          <div class="pool-tvl">TVL: ${tvl}</div>
-          <div class="pool-apy">APY: ${apy}</div>
-        </div>
-      </div>
-    `;
-  }).join('');
+function pg(d){page=Math.max(0,page+d);renderPage()}
+// === BLOCK DETAIL ===
+async function blkDetail(num){
+  ensureModal("blkModal","Block #"+num);
+  document.getElementById("blkTitle").textContent="Block #"+num;
+  document.getElementById("blkBody").innerHTML='<div class="text-slate-400">Loading...</div>';
+  document.getElementById("blkModal").classList.remove("hidden");
+  var hash=await rpc("chain_getBlockHash",[num]);
+  var b=hash?await rpc("chain_getBlock",[hash]):null;
+  if(!b){document.getElementById("blkBody").innerHTML='<div class="text-red-500">Not found</div>';return}
+  var h=b.block.header,exts=b.block.extrinsics,conf=cur-num;
+  var eh=exts.map(function(e,i){var hex=bh(e),t=exType(e);return '<div class="p-3 rounded-lg bg-slate-50 border border-slate-100"><div class="flex justify-between mb-1"><span class="text-xs px-2 py-0.5 rounded '+(t.signed?'bg-green-100 text-green-700':'bg-slate-200 text-slate-600')+'">'+(t.signed?'Signed':'Inherent')+'</span><span class="text-xs text-slate-400">#'+i+'</span></div><div class="mono text-xs break-all text-slate-600">'+hex.slice(0,100)+(hex.length>100?'...':'')+'</div><div class="text-xs text-slate-400 mt-1">'+t.label+' · '+e.length+' bytes</div></div>'}).join("");
+  document.getElementById("blkBody").innerHTML='<div class="grid grid-cols-2 gap-3 mb-3"><div class="p-3 rounded-lg bg-slate-50"><div class="text-xs text-slate-400 uppercase">Height</div><div class="mono font-semibold mt-1">#'+num+'</div></div><div class="p-3 rounded-lg bg-slate-50"><div class="text-xs text-slate-400 uppercase">Confirmations</div><div class="mono font-semibold mt-1">'+conf+'</div></div></div><div class="space-y-2 mb-3"><div class="flex justify-between items-center p-3 rounded-lg bg-slate-50"><span class="text-xs text-slate-400 uppercase">Hash</span><div class="flex items-center gap-2"><span class="mono text-xs">'+fh(hash)+'</span><span class="cp" onclick="cp(\''+hash+'\')">📋</span></div></div><div class="flex justify-between items-center p-3 rounded-lg bg-slate-50"><span class="text-xs text-slate-400 uppercase">Parent</span><div class="flex items-center gap-2"><span class="mono text-xs">'+fh(h.parentHash)+'</span><span class="cp" onclick="cp(\''+h.parentHash+'\')">📋</span></div></div><div class="flex justify-between items-center p-3 rounded-lg bg-slate-50"><span class="text-xs text-slate-400 uppercase">State Root</span><span class="mono text-xs">'+fh(h.stateRoot)+'</span></div><div class="flex justify-between items-center p-3 rounded-lg bg-slate-50"><span class="text-xs text-slate-400 uppercase">Ext Root</span><span class="mono text-xs">'+fh(h.extrinsicsRoot)+'</span></div></div><div><h3 class="text-sm font-semibold mb-2">Extrinsics ('+exts.length+')</h3><div class="space-y-2">'+(eh||'<div class="text-sm text-slate-400">No extrinsics</div>')+'</div></div>';
 }
-
-// === Load transactions from latest blocks ===
-async function loadTransactions() {
-  const header = await rpc('chain_getHeader', []);
-  if (!header) return;
-  const latest = parseInt(header.number, 16);
-  const txs = [];
-  for (let i = 0; i < Math.min(5, latest+1); i++) {
-    const bh = latest - i;
-    const hash = await rpc('chain_getBlockHash', [bh]);
-    const block = await rpc('chain_getBlock', [hash]);
-    if (block) {
-      for (let idx = 0; idx < block.block.extrinsics.length; idx++) {
-        const ext = block.block.extrinsics[idx];
-        const decoded = decodeExtrinsic(ext, hash, bh);
-        const section = decoded ? decoded.palletName.toLowerCase() : '';
-        const method = decoded ? decoded.callName.toLowerCase() : '';
-        let type = 'Remark';
-        let typeClass = 'remark';
-        if (section === 'balances' && method === 'transfer') { type = 'Transfer'; typeClass = 'transfer'; }
-        else if (section === 'eco') { type = 'Eco'; typeClass = 'eco'; }
-        else if (section === 'ammdex') { type = 'Swap'; typeClass = 'swap'; }
-        else if (section === 'system') { type = 'Remark'; typeClass = 'remark'; }
-        else if (section === 'utility') { type = 'Batch'; typeClass = 'swap'; }
-        else if (section === 'timestamp') { type = 'Timestamp'; typeClass = 'remark'; }
-        else if (section === 'session') { type = 'Session'; typeClass = 'remark'; }
-        else { type = decoded ? decoded.callPath : 'Unknown'; typeClass = 'remark'; }
-        const txHash = await generateTxHash(ext, hash, idx);
-        txs.push({
-          hash: txHash,
-          block: bh,
-          txIndex: idx,
-          type: type,
-          typeClass: typeClass,
-          time: timeAgo(Math.floor(Date.now()/1000) - i * 6)
-        });
-      }
-    }
-    if (txs.length >= 10) break;
-  }
-  const tbody = document.getElementById('txBody');
-  if (txs.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-dim);">No transactions yet</td></tr>';
-    return;
-  }
-  tbody.innerHTML = txs.slice(0, 10).map(t => `
-    <tr onclick="showTxDetail('${t.hash}', ${t.block}, ${t.txIndex !== undefined ? t.txIndex : 0})" style="cursor:pointer;">
-      <td class="mono tx-hash-link">${shortHash(t.hash)}</td>
-      <td><span class="block-num">${t.block}</span></td>
-      <td><span class="tx-type ${t.typeClass}">${t.type}</span></td>
-      <td>${t.time}</td>
-    </tr>
-  `).join('');
+// === TX DETAIL ===
+function txDetail(hex,bn,bh2){
+  ensureModal("txModal","Extrinsic Detail");
+  var bytes=hex.slice(2).match(/.{1,2}/g).map(function(b){return parseInt(b,16)});var t=exType(bytes);
+  document.getElementById("txBody").innerHTML='<div class="grid grid-cols-2 gap-3 mb-3"><div class="p-3 rounded-lg bg-slate-50"><div class="text-xs text-slate-400 uppercase">Block</div><div class="mono font-semibold mt-1">#'+bn+'</div></div><div class="p-3 rounded-lg bg-slate-50"><div class="text-xs text-slate-400 uppercase">Type</div><div class="font-semibold mt-1 text-sm">'+(t.signed?'Signed':'Inherent')+'</div></div></div><div class="p-3 rounded-lg bg-slate-50 mb-3"><div class="text-xs text-slate-400 uppercase mb-1">Hash</div><div class="flex items-center gap-2"><span class="mono text-xs break-all">'+fh(hex)+'</span><span class="cp" onclick="cp(\''+hex+'\')">📋</span></div></div><div class="p-3 rounded-lg bg-slate-50 mb-3"><div class="text-xs text-slate-400 uppercase mb-1">Method</div><div class="text-sm font-medium">'+t.label+'</div></div><div class="p-3 rounded-lg bg-slate-50 mb-3"><div class="text-xs text-slate-400 uppercase mb-1">Raw ('+bytes.length+' bytes)</div><div class="mono text-xs break-all max-h-32 overflow-y-auto">'+hex+'</div></div><div class="p-3 rounded-lg bg-green-50 border border-green-100"><div class="text-sm font-medium text-green-600">✓ Success</div></div>';
+  document.getElementById("txModal").classList.remove("hidden");
 }
-
-// === Search ===
-async function searchExplorer() {
-  const q = document.getElementById('searchInput').value.trim();
-  if (!q) return;
-  if (/^\d+$/.test(q)) {
-    const hash = await rpc('chain_getBlockHash', [parseInt(q)]);
-    if (hash) { showBlockDetail(parseInt(q)); return; }
-  }
-  if (q.startsWith('0x') && q.length === 66) {
-    const block = await rpc('chain_getBlock', [q]);
-    if (block && block.block) { showBlockDetail(parseInt(block.block.header.number, 16)); return; }
-  }
-  alert('Not found: ' + q + '. Try a block number or block hash.');
+// === EXTRINSICS TAB ===
+async function loadExtTab(){
+  var blks=bList.length?bList:await loadBlocks(15);
+  var exts=[];blks.forEach(function(b){b.extrinsics.forEach(function(e,i){exts.push({bn:b.number,bh:b.hash,i:i,hex:bh(e),type:exType(e),len:e.length})})});
+  eList=exts;
+  document.getElementById("extT").innerHTML=exts.map(function(e){return '<tr class="row border-b border-slate-50" onclick="txDetail(\''+e.hex+'\','+e.bn+',\''+e.bh+'\')"><td class="py-2.5 pr-4 mono text-xs">'+sh(e.hex)+'</td><td class="py-2.5 pr-4"><span class="accent font-medium">#'+e.bn+'</span></td><td class="py-2.5 pr-4"><span class="text-xs px-2 py-0.5 rounded '+(e.type.signed?'bg-green-100 text-green-700':'bg-slate-100 text-slate-500')+'">'+e.type.label+'</span></td><td class="py-2.5 mono text-xs">'+e.len+' B</td></tr>'}).join("")||'<tr><td class="py-4 text-slate-400">No extrinsics</td></tr>';
 }
-
-// === WebSocket for real-time updates ===
-function connectWS() {
-  try {
-    ws = new WebSocket(WS_URL);
-    ws.onopen = () => { };
-    ws.onmessage = (e) => {
-      try {
-        const msg = JSON.parse(e.data);
-        if (msg.method === 'chain_newHead' || msg.method === 'chain_finalizedHead') {
-          loadStats();
-          loadBlocks(10);
-          loadTransactions();
-        }
-      } catch(err) {}
-    };
-    ws.onclose = () => { setTimeout(connectWS, 5000); };
-    ws.onerror = () => { ws.close(); };
-  } catch(e) { }
+// === VALIDATORS TAB — batch all stake queries ===
+async function loadValTab(){
+  var r=await batchRpc([["dpos_allValidators",[]],["dpos_activeValidators",[]],["eco_getGreenValidatorCount",[]],["dpos_currentEpoch",[]]]);
+  var all=r[1]||[],act=new Set(r[2]||[]),gc=r[3]||0,ep=r[4]||0;
+  if(!all.length){document.getElementById("valG").innerHTML='<div class="text-slate-400">No validators</div>';return}
+  var stakeCalls=all.map(function(a){return ["dpos_validatorStake",[a]]});
+  var sr=await batchRpc(stakeCalls);
+  document.getElementById("valG").innerHTML=all.map(function(addr,i){
+    var stake=sr[i+1]||0,isA=act.has(addr),isG=i<gc;
+    return '<div class="card p-4 cursor-pointer hover:shadow-md transition-shadow" onclick="valDetail(\''+addr+'\','+stake+','+isA+','+isG+','+ep+')"><div class="flex justify-between mb-3"><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold '+(isA?'bg-green-100 text-green-700':'bg-slate-100 text-slate-400')+'">'+addr.slice(2,4)+'</div><div><div class="text-sm font-medium mono">'+addr.slice(0,4)+'...'+addr.slice(-4)+'</div><div class="text-xs text-slate-400">Validator #'+(i+1)+'</div></div></div>'+(isA?'<span class="text-xs px-2 py-0.5 rounded bg-green-100 text-green-700">Active</span>':'<span class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-400">Inactive</span>')+'</div><div class="space-y-1.5"><div class="flex justify-between text-xs"><span class="text-slate-400">Stake</span><span class="mono font-medium">'+fv(stake)+' VRDX</span></div><div class="flex justify-between text-xs"><span class="text-slate-400">Epoch</span><span class="mono">'+ep+'</span></div>'+(isG?'<div class="flex justify-between text-xs"><span class="text-slate-400">Green Score</span><span class="text-green-600 font-medium">✓</span></div>':'')+'</div></div>';
+  }).join("");
 }
-
-// === Init ===
-async function init() {
-  await loadStats();
-  await loadBlocks(10);
-  await loadValidators();
-  await loadPools();
-  await loadTransactions();
-  connectWS();
-  // Poll every 15s as fallback
-  setInterval(loadStats, 15000);
-  setInterval(() => loadBlocks(10), 30000);
-  setInterval(loadTransactions, 30000);
+function valDetail(addr,stake,isA,isG,ep){
+  ensureModal("valModal","Validator Detail");
+  document.getElementById("valBody").innerHTML='<div class="p-3 rounded-lg bg-slate-50 mb-3"><div class="text-xs text-slate-400 uppercase mb-1">Address</div><div class="flex items-center gap-2"><span class="mono text-xs break-all">'+addr+'</span><span class="cp" onclick="cp(\''+addr+'\')">📋</span></div></div><div class="grid grid-cols-2 gap-3 mb-3"><div class="p-3 rounded-lg bg-slate-50"><div class="text-xs text-slate-400 uppercase">Status</div><div class="font-semibold mt-1 '+(isA?'text-green-600':'text-slate-400')+'">'+(isA?'Active':'Inactive')+'</div></div><div class="p-3 rounded-lg bg-slate-50"><div class="text-xs text-slate-400 uppercase">Epoch</div><div class="mono font-semibold mt-1">'+ep+'</div></div></div><div class="p-3 rounded-lg bg-slate-50 mb-3"><div class="text-xs text-slate-400 uppercase">Stake</div><div class="mono font-semibold mt-1">'+fv(stake)+' VRDX</div></div>'+(isG?'<div class="p-3 rounded-lg bg-green-50 border border-green-100"><div class="font-semibold text-green-600">✓ Green Validator</div></div>':'');
+  document.getElementById("valModal").classList.remove("hidden");
 }
-
-document.getElementById('searchInput').addEventListener('keypress', e => {
-  if (e.key === 'Enter') searchExplorer();
-});
-
+// === DEX TAB ===
+async function loadDexTab(){
+  var pools=await rpc("amm_dex_getAllPools");
+  if(!pools||!pools.length){document.getElementById("dexG").innerHTML='<div class="text-slate-400">No pools</div>';return}
+  document.getElementById("dexG").innerHTML=pools.map(function(p){
+    var a=dt(p.token_a),b=dt(p.token_b),ra=p.reserve_a/1e9,rb=p.reserve_b/1e9,pr=ra>0?rb/ra:0,fee=(p.fee_numerator/p.fee_denominator*100).toFixed(1);
+    return '<div class="card p-4 cursor-pointer hover:shadow-md" onclick="poolDetail('+p.id+')"><div class="flex justify-between mb-3"><div class="flex items-center gap-2"><span class="px-2 py-1 rounded text-xs font-bold bg-slate-100">'+a+'</span><span class="text-slate-300">/</span><span class="px-2 py-1 rounded text-xs font-bold bg-slate-100">'+b+'</span><span class="text-xs text-slate-400">#'+p.id+'</span></div><span class="text-xs px-2 py-0.5 rounded bg-slate-50 text-slate-500">'+fee+'%</span></div><div class="grid grid-cols-2 gap-2"><div><div class="text-xs text-slate-400">'+a+'</div><div class="mono text-sm font-medium">'+fv(p.reserve_a)+'</div></div><div><div class="text-xs text-slate-400">'+b+'</div><div class="mono text-sm font-medium">'+fv(p.reserve_b)+'</div></div><div><div class="text-xs text-slate-400">Total LP</div><div class="mono text-sm font-medium">'+fv(p.total_lp)+'</div></div><div><div class="text-xs text-slate-400">Price</div><div class="mono text-sm font-medium">1 '+a+' = '+pr.toFixed(4)+' '+b+'</div></div></div></div>';
+  }).join("");
+}
+async function poolDetail(id){
+  ensureModal("poolModal","Pool Detail");
+  var p=await rpc("amm_dex_getPool",[id]);if(!p)return;
+  var a=dt(p.token_a),b=dt(p.token_b),pr=p.reserve_a>0?(p.reserve_b/p.reserve_a):0;
+  document.getElementById("poolBody").innerHTML='<div class="flex items-center gap-2 mb-4"><span class="px-3 py-1 rounded text-sm font-bold bg-slate-100">'+a+'</span><span class="text-slate-300">/</span><span class="px-3 py-1 rounded text-sm font-bold bg-slate-100">'+b+'</span><span class="text-xs text-slate-400">Pool #'+p.id+'</span></div><div class="grid grid-cols-2 gap-3 mb-3"><div class="p-3 rounded-lg bg-slate-50"><div class="text-xs text-slate-400 uppercase">'+a+' Reserve</div><div class="mono font-semibold mt-1">'+fv(p.reserve_a)+'</div></div><div class="p-3 rounded-lg bg-slate-50"><div class="text-xs text-slate-400 uppercase">'+b+' Reserve</div><div class="mono font-semibold mt-1">'+fv(p.reserve_b)+'</div></div><div class="p-3 rounded-lg bg-slate-50"><div class="text-xs text-slate-400 uppercase">Total LP</div><div class="mono font-semibold mt-1">'+fv(p.total_lp)+'</div></div><div class="p-3 rounded-lg bg-slate-50"><div class="text-xs text-slate-400 uppercase">Fee</div><div class="mono font-semibold mt-1">'+(p.fee_numerator/p.fee_denominator*100).toFixed(1)+'%</div></div></div><div class="p-3 rounded-lg bg-slate-50 mb-3"><div class="text-xs text-slate-400 uppercase">Price</div><div class="mono font-semibold mt-1">1 '+a+' = '+pr.toFixed(6)+' '+b+'</div></div><div class="p-3 rounded-lg bg-slate-50"><div class="text-xs text-slate-400 uppercase">Creator</div><div class="flex items-center gap-2 mt-1"><span class="mono text-xs">'+fh(p.creator)+'</span><span class="cp" onclick="cp(\''+p.creator+'\')">📋</span></div></div>';
+  document.getElementById("poolModal").classList.remove("hidden");
+}
+// === ECO TAB ===
+async function loadEcoTab(){
+  var r=await batchRpc([["eco_getTotalCO2Offset",[]],["eco_getTotalTreesPlanted",[]],["eco_getCarbonCreditCount",[]],["eco_getGreenValidatorCount",[]],["eco_getTotalCreditsRetired",[]],["eco_getReforestProjectCount",[]]]);
+  var cards=[["🌱","Total CO2 Offset",fn(r[1]||0),"kg"],["🌳","Trees Planted",fn(r[2]||0),"trees"],["🎫","Carbon Credits",r[3]||0,"credits"],["♻️","Credits Retired",r[4]||0,"retired"],["🟢","Green Validators",r[5]||0,"validators"],["🌲","Reforest Projects",r[6]||0,"projects"]];
+  document.getElementById("ecoG").innerHTML=cards.map(function(c){return '<div class="card p-5"><div class="text-2xl mb-2">'+c[0]+'</div><div class="mono text-2xl font-bold">'+c[2]+'</div><div class="text-xs text-slate-400 mt-1">'+c[3]+'</div><div class="text-sm text-slate-600 mt-2">'+c[1]+'</div></div>'}).join("");
+  document.getElementById("ecoV").innerHTML='<div class="p-3 rounded-lg bg-green-50"><div class="text-xs text-slate-400 uppercase">Green Validators</div><div class="text-lg font-semibold text-green-600 mt-1">'+(r[5]||0)+'</div></div><div class="p-3 rounded-lg bg-slate-50"><div class="text-xs text-slate-400 uppercase">Credits Issued</div><div class="text-lg font-semibold mt-1">'+(r[3]||0)+'</div></div>';
+}
+// === SEARCH ===
+async function search(){
+  var q=document.getElementById("search").value.trim();if(!q)return;
+  if(/^\d+$/.test(q)){blkDetail(parseInt(q));return}
+  if(q.startsWith("0x")&&q.length>10){var b=await rpc("chain_getBlock",[q]);if(b){blkDetail(hn(b.block.header.number));return}}
+  if(q.startsWith("5")&&q.length>20){var all=await rpc("dpos_allValidators");if(all&&all.indexOf(q)>=0){var s=await rpc("dpos_validatorStake",[q]);valDetail(q,s||0,true,false,0);return}toast("Address not found");return}
+  toast("Not found");
+}
+// === MODAL HELPER ===
+function ensureModal(id,title){
+  if(document.getElementById(id))return;
+  var d=document.createElement("div");d.id=id;d.className="modal hidden";
+  d.onclick=function(e){if(e.target===d)d.classList.add("hidden")};
+  var titleId=id.slice(0,3)+"Title";
+  var bodyId=id.slice(0,3)+"Body";
+  d.innerHTML='<div class="mc p-6"><div class="flex justify-between mb-4"><h2 class="text-lg font-semibold" id="'+titleId+'">'+title+'</h2><button class="text-slate-400" onclick="cm(\''+id+'\')">✕</button></div><div id="'+bodyId+'"></div></div>';
+  document.body.appendChild(d);
+}
+// === TAB ===
+function tab(t){
+  document.querySelectorAll(".tab").forEach(function(b){if(b.dataset.t===t){b.classList.remove("tab-i");b.classList.add("tab-a")}else{b.classList.remove("tab-a");b.classList.add("tab-i")}});
+  ["overview","blocks","extrinsics","validators","dex","eco"].forEach(function(c){document.getElementById("t-"+c).classList.toggle("hidden",c!==t)});
+  if(t==="blocks")loadBlocksTab();if(t==="extrinsics")loadExtTab();if(t==="validators")loadValTab();if(t==="dex")loadDexTab();if(t==="eco")loadEcoTab();
+}
+// === WEBSOCKET ===
+var ws;
+function connectWS(){
+  try{ws=new WebSocket("wss://"+location.hostname+"/ws")}catch(e){return}
+  ws.onopen=function(){ws.send(JSON.stringify({jsonrpc:"2.0",method:"chain_subscribeNewHeads",params:[],id:1}))};
+  ws.onmessage=function(e){try{var m=JSON.parse(e.data);if(m.params&&m.params.result){var n=hn(m.params.result.number);if(n>cur){cur=n;document.getElementById("sBH").textContent="#"+cur;loadStats().then(function(){loadOverview()})}}}catch(ex){}};
+  ws.onclose=function(){setTimeout(connectWS,5000)};
+}
+// === INIT ===
+async function loadOverview(){var b=await loadBlocks(10);renderBlocks(b);renderExt(b)}
+async function init(){await loadStats();await loadOverview();connectWS()}
 init();
-</script>
-
-<script>
-(function(){var h=document.getElementById('navHamburger'),l=document.querySelector('.nav-links');if(!h||!l)return;h.addEventListener('click',function(){h.classList.toggle('active');l.classList.toggle('open');});l.addEventListener('click',function(e){if(e.target.tagName==='A'){h.classList.remove('active');l.classList.remove('open');}});})();
-</script>
-
-
-<script>
-// === VERDISCAN v2 — Solscan-inspired Transaction & Block Detail System ===
-
-// --- Decoding helpers ---
-function bytesToHex(bytes) {
-  return '0x' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-function hexToBytes(hex) {
-  hex = hex.replace('0x', '');
-  const bytes = [];
-  for (let i = 0; i < hex.length; i += 2) bytes.push(parseInt(hex.substr(i, 2), 16));
-  return bytes;
-}
-
-function decodeCompact(bytes, offset) {
-  const first = bytes[offset];
-  const mode = first & 0b11;
-  if (mode === 0b00) return { val: first >> 2, next: offset + 1 };
-  if (mode === 0b01) return { val: ((first >> 2) | (bytes[offset + 1] << 6)) >>> 0, next: offset + 2 };
-  if (mode === 0b10) return { val: ((first >> 2) | (bytes[offset+1] << 6) | (bytes[offset+2] << 14) | (bytes[offset+3] << 22)) >>> 0, next: offset + 4 };
-  const byteCount = (first >> 2) + 4;
-  let val = BigInt(0);
-  for (let i = 0; i < byteCount; i++) val += BigInt(bytes[offset + 1 + i]) << BigInt(8 * i);
-  return { val, next: offset + 1 + byteCount };
-}
-
-// --- Pallet/Call name maps ---
-const PALLETS = {
-  0: 'System', 1: 'Timestamp', 2: 'Balances', 3: 'Authorship',
-  4: 'Staking', 5: 'Session', 6: 'Grandpa', 7: 'DPOS',
-  8: 'AMMDex', 9: 'Eco', 10: 'Tokenomics', 11: 'Vesting',
-  12: 'EVM', 13: 'Storage', 14: 'Utility', 15: 'TransactionPayment',
-  16: 'Sudo', 17: 'Treasury', 18: 'Council',
-};
-const CALLS = {
-  0: { 0: 'remark', 1: 'set_heap_pages', 2: 'set_code', 3: 'set_code_without_checks', 4: 'set_storage', 5: 'kill_storage', 6: 'kill_prefix' },
-  1: { 0: 'set' },
-  2: { 0: 'transfer', 1: 'set_balance', 2: 'force_transfer', 3: 'keep_alive', 4: 'transfer_all', 5: 'force_unreserve' },
-  7: { 0: 'register_validator', 1: 'unregister_validator', 2: 'vote', 3: 'update_green_score', 4: 'slash_validator', 5: 'set_epoch_duration' },
-  8: { 0: 'create_pool', 1: 'add_liquidity', 2: 'remove_liquidity', 3: 'swap', 4: 'set_fee' },
-  9: { 0: 'mint_carbon_credit', 1: 'log_reforestation', 2: 'update_green_score', 3: 'retire_carbon_credit' },
-  10: { 0: 'mint', 1: 'burn', 2: 'set_allocation', 3: 'enforce_vesting' },
-  11: { 0: 'create_vesting_schedule', 1: 'claim_vested', 2: 'cancel_vesting_schedule' },
-  14: { 0: 'batch', 1: 'as_derivative', 2: 'batch_all', 3: 'dispatch_as' },
-};
-
-// --- Decode extrinsic ---
-function decodeExtrinsic(bytes, blockHash, blockNum) {
-  if (!bytes || !bytes.length) return null;
-  let offset = 0;
-  const isSigned = (bytes[0] & 0b10000000) !== 0;
-  let signer = null, signature = null, era = null, nonce = null, tip = null;
-  let callPallet = null, callIndex = null, argsStart = 0;
-
-  if (isSigned) {
-    const eraByte = bytes[0] & 0b01111111;
-    if (eraByte === 0) { era = bytesToHex([bytes[0]]); offset = 1; }
-    else { era = bytesToHex([bytes[0], bytes[1]]); offset = 2; }
-    if (offset + 64 <= bytes.length) { signature = bytesToHex(bytes.slice(offset, offset + 64)); offset += 64; }
-    if (offset < bytes.length) {
-      const prefix = bytes[offset];
-      if (prefix === 0x00 && offset + 33 <= bytes.length) { signer = bytesToHex(bytes.slice(offset + 1, offset + 33)); offset += 33; }
-      else if (offset + 32 <= bytes.length) { signer = bytesToHex(bytes.slice(offset, offset + 32)); offset += 32; }
-    }
-    if (offset < bytes.length) { const d = decodeCompact(bytes, offset); nonce = d.val !== undefined ? Number(d.val) : null; offset = d.next; }
-    if (offset < bytes.length) { const d = decodeCompact(bytes, offset); tip = d.val !== undefined ? d.val.toString() : null; offset = d.next; }
-  } else { offset = 1; }
-
-  if (offset + 1 < bytes.length) { callPallet = bytes[offset]; callIndex = bytes[offset + 1]; argsStart = offset + 2; }
-
-  const palletName = PALLETS[callPallet] || `Pallet(${callPallet})`;
-  const callName = (CALLS[callPallet] && CALLS[callPallet][callIndex]) || `call_${callIndex}`;
-  const argsHex = argsStart < bytes.length ? bytesToHex(bytes.slice(argsStart)) : '0x';
-
-  // Decode common args
-  let decodedArgs = {};
-  let fromAddr = null, toAddr = null, amount = null, remarkText = null;
-
-  if (callPallet === 2 && callIndex === 0) {
-    // Balances.transfer(dest, value)
-    try {
-      let ao = argsStart;
-      if (bytes[ao] === 0x00) { toAddr = bytesToHex(bytes.slice(ao + 1, ao + 33)); ao += 33; }
-      else { toAddr = bytesToHex(bytes.slice(ao, ao + 32)); ao += 32; }
-      const vd = decodeCompact(bytes, ao);
-      amount = vd.val !== undefined ? Number(vd.val) : null;
-      decodedArgs = { dest: toAddr, value: amount };
-      fromAddr = signer; // from signer
-    } catch (e) {}
-  } else if (callPallet === 0 && callIndex === 0) {
-    // System.remark
-    try {
-      const ld = decodeCompact(bytes, argsStart);
-      const rl = Number(ld.val || 0);
-      remarkText = new TextDecoder().decode(bytes.slice(ld.next, ld.next + rl));
-      decodedArgs = { remark: remarkText };
-    } catch (e) {}
-  } else if (callPallet === 1 && callIndex === 0) {
-    try { const td = decodeCompact(bytes, argsStart); decodedArgs = { timestamp: td.val !== undefined ? new Date(Number(td.val)).toISOString() : null }; } catch (e) {}
-  } else if (callPallet === 9 && callIndex === 0) {
-    // Eco.mint_carbon_credit
-    try { decodedArgs = { raw: argsHex }; } catch (e) {}
-  }
-
-  return {
-    hash: null, rawHex: bytesToHex(bytes), isSigned, signer, signature, era, nonce, tip,
-    palletIndex: callPallet, callIndex, palletName, callName, callPath: `${palletName}.${callName}`,
-    argsHex, decodedArgs, fromAddr, toAddr, amount, remarkText, blockNum, blockHash, size: bytes.length
-  };
-}
-
-// --- SHA-256 based tx hash ---
-async function generateTxHash(extrinsicBytes, blockHash, txIndex) {
-  try {
-    const idxBytes = new TextEncoder().encode(':' + blockHash + ':' + txIndex);
-    const combined = new Uint8Array(extrinsicBytes.length + idxBytes.length);
-    combined.set(extrinsicBytes, 0); combined.set(idxBytes, extrinsicBytes.length);
-    const digest = await crypto.subtle.digest('SHA-256', combined);
-    return '0x' + Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
-  } catch (e) { return '0x' + bytesToHex(extrinsicBytes).slice(2, 66).padEnd(64, '0'); }
-}
-
-// --- Helpers ---
-function shortHash(h) { if (!h || h.length < 20) return h || '—'; return h.slice(0, 10) + '…' + h.slice(-8); }
-function shortAddr(a) { if (!a || a.length < 20) return a || '—'; return a.slice(0, 10) + '…' + a.slice(-8); }
-function timeAgo(ts) { const d = Math.floor(Date.now()/1000) - ts; if (d < 60) return d + 's ago'; if (d < 3600) return Math.floor(d/60) + 'm ago'; if (d < 86400) return Math.floor(d/3600) + 'h ago'; return Math.floor(d/86400) + 'd ago'; }
-function formatAmount(raw) { if (raw === null || raw === undefined) return '—'; return (raw / 1e12).toFixed(4) + ' VRDX'; }
-
-// --- Plain English description ---
-function describeTx(tx) {
-  if (tx.palletName === 'Balances' && tx.callName === 'transfer') return `Transfer ${formatAmount(tx.amount)} from ${shortAddr(tx.fromAddr)} to ${shortAddr(tx.toAddr)}`;
-  if (tx.palletName === 'System' && tx.callName === 'remark') return `Remark: "${tx.remarkText || ''}"`;
-  if (tx.palletName === 'Timestamp') return 'Set block timestamp';
-  if (tx.palletName === 'AMMDex' && tx.callName === 'swap') return 'AMM token swap';
-  if (tx.palletName === 'AMMDex' && tx.callName === 'add_liquidity') return 'Add liquidity to AMM pool';
-  if (tx.palletName === 'AMMDex' && tx.callName === 'create_pool') return 'Create new AMM pool';
-  if (tx.palletName === 'Eco' && tx.callName === 'mint_carbon_credit') return 'Mint carbon credit on-chain';
-  if (tx.palletName === 'Eco' && tx.callName === 'log_reforestation') return 'Log reforestation event';
-  if (tx.palletName === 'DPOS' && tx.callName === 'register_validator') return 'Register as DPoS validator';
-  if (tx.palletName === 'DPOS' && tx.callName === 'vote') return 'Vote for DPoS validator';
-  if (tx.palletName === 'Tokenomics' && tx.callName === 'mint') return 'Mint VRDX tokens';
-  if (tx.palletName === 'Vesting' && tx.callName === 'claim_vested') return 'Claim vested tokens';
-  return `Call ${tx.callPath}`;
-}
-
-// --- Copy to clipboard ---
-function copyToClipboard(text, label) {
-  navigator.clipboard.writeText(text).then(() => {
-    const toast = document.createElement('div');
-    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f172a;color:#caff33;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:99999;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
-    toast.textContent = '✓ ' + label + ' copied';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2000);
-  }).catch(() => {});
-}
-
-// --- Copy icon SVG ---
-const COPY_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
-
-// --- Modal system ---
-function showModal(type) {
-  let modal = document.getElementById('detailModal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'detailModal';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:10000;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;';
-    modal.innerHTML = `
-      <div style="background:#f8fafc;border-radius:16px;max-width:820px;width:100%;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:#fff;border-bottom:1px solid #e2e8f0;position:sticky;top:0;z-index:10;">
-          <h2 id="modalTitle" style="font-size:15px;font-weight:700;color:#0f172a;margin:0;display:flex;align-items:center;gap:8px;">Loading…</h2>
-          <button onclick="closeModal()" style="width:32px;height:32px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:#64748b;">✕</button>
-        </div>
-        <div id="modalBody" style="padding:20px;max-height:calc(100vh - 100px);overflow-y:auto;"></div>
-      </div>`;
-    document.body.appendChild(modal);
-    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-  }
-  modal.style.display = 'flex';
-  document.getElementById('modalBody').innerHTML = '<div style="padding:40px;text-align:center;color:#475569;"><div style="display:inline-block;width:24px;height:24px;border:3px solid #e2e8f0;border-top-color:#caff33;border-radius:50%;animation:spin 1s linear infinite;"></div><div style="margin-top:12px;font-size:13px;">Fetching from node…</div></div>';
-  document.body.style.overflow = 'hidden';
-}
-
-function closeModal() {
-  const m = document.getElementById('detailModal');
-  if (m) m.style.display = 'none';
-  document.body.style.overflow = '';
-  if (window.location.hash) history.replaceState(null, '', window.location.pathname + window.location.search);
-}
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-
-// --- Copyable field component ---
-function copyableField(label, value, isAddr) {
-  if (!value || value === '—') return `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;"><span style="font-size:13px;color:#64748b;font-weight:500;">${label}</span><span style="font-size:13px;color:#64748b;">—</span></div>`;
-  return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;">
-    <span style="font-size:13px;color:#64748b;font-weight:500;flex-shrink:0;">${label}</span>
-    <div style="display:flex;align-items:center;gap:6px;min-width:0;">
-      <span class="mono" style="font-size:12px;color:#0f172a;word-break:break-all;">${isAddr ? shortAddr(value) : (value.length > 50 ? shortHash(value) : value)}</span>
-      <button onclick="copyToClipboard('${value}','${label}')" style="flex-shrink:0;width:28px;height:28px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#64748b;padding:0;" onmouseover="this.style.borderColor='#caff33';this.style.color='#0f172a'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">${COPY_ICON}</button>
-    </div>
-  </div>`;
-}
-
-// --- Block detail ---
-async function showBlockDetail(blockNum) {
-  showModal('block');
-  const hash = await rpc('chain_getBlockHash', [blockNum]);
-  if (!hash) { document.getElementById('modalBody').innerHTML = '<div style="padding:40px;text-align:center;color:#ef4444;">Block not found</div>'; return; }
-  const block = await rpc('chain_getBlock', [hash]);
-  if (!block || !block.block) { document.getElementById('modalBody').innerHTML = '<div style="padding:40px;text-align:center;color:#ef4444;">Failed to fetch</div>'; return; }
-  const header = block.block.header;
-  const extrinsics = block.block.extrinsics || [];
-  const decodedTxs = [];
-  for (let idx = 0; idx < extrinsics.length; idx++) {
-    const d = decodeExtrinsic(extrinsics[idx], hash, blockNum);
-    if (d) { d.hash = await generateTxHash(extrinsics[idx], hash, idx); d.index = idx; decodedTxs.push(d); }
-  }
-  const latestHeader = await rpc('chain_getHeader', []);
-  const latestNum = latestHeader ? parseInt(latestHeader.number, 16) : blockNum;
-  const confirmations = Math.max(0, latestNum - blockNum);
-  const timestampTx = decodedTxs.find(t => t.palletName === 'Timestamp');
-  const blockTime = timestampTx && timestampTx.decodedArgs.timestamp ? new Date(timestampTx.decodedArgs.timestamp) : null;
-  const relTime = blockTime ? timeAgo(Math.floor(blockTime.getTime() / 1000)) : '—';
-
-  document.getElementById('modalTitle').innerHTML = `<span style="width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,#caff33,#00a86b);display:inline-flex;align-items:center;justify-content:center;color:#0f172a;font-size:11px;font-weight:700;">#${blockNum}</span> Block #${blockNum}`;
-
-  document.getElementById('modalBody').innerHTML = `
-    <!-- Summary -->
-    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
-        <span style="font-size:13px;color:#64748b;">📦 Block</span>
-        <span style="padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:#dcfce7;color:#16a34a;">✓ ${confirmations} CONFIRMATION${confirmations === 1 ? '' : 'S'}</span>
-      </div>
-      <div style="font-size:14px;color:#0f172a;font-weight:500;">${extrinsics.length} transaction${extrinsics.length === 1 ? '' : 's'} in this block</div>
-      ${blockTime ? `<div style="font-size:12px;color:#64748b;margin-top:4px;">${relTime} · ${blockTime.toUTCString()}</div>` : ''}
-    </div>
-
-    <!-- Detail rows -->
-    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:0 16px;margin-bottom:16px;">
-      ${copyableField('Block Hash', hash, false)}
-      ${copyableField('Parent Hash', header.parentHash, false)}
-      ${copyableField('State Root', header.stateRoot, false)}
-      ${copyableField('Extrinsics Root', header.extrinsicsRoot, false)}
-      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;">
-        <span style="font-size:13px;color:#64748b;font-weight:500;">Extrinsics</span>
-        <span style="font-size:13px;color:#0f172a;font-weight:600;">${decodedTxs.filter(t=>t.isSigned).length} signed · ${decodedTxs.filter(t=>!t.isSigned).length} unsigned</span>
-      </div>
-    </div>
-
-    <!-- Digest -->
-    ${header.digest && header.digest.logs && header.digest.logs.length ? `
-    <div style="margin-bottom:16px;">
-      <div style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Digest Logs</div>
-      ${header.digest.logs.map(log => `<div class="mono" style="font-size:11px;color:#64748b;background:#f8fafc;padding:8px 12px;border-radius:6px;margin-bottom:4px;word-break:break-all;border:1px solid #e2e8f0;">${log}</div>`).join('')}
-    </div>` : ''}
-
-    <!-- Transactions -->
-    <div>
-      <div style="font-size:13px;font-weight:600;color:#0f172a;margin-bottom:10px;">Transactions (${decodedTxs.length})</div>
-      ${decodedTxs.length === 0 ? '<div style="padding:20px;text-align:center;color:#64748b;font-size:13px;">No transactions</div>' :
-        decodedTxs.map(tx => `
-          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:8px;cursor:pointer;transition:border-color 200ms;" onmouseover="this.style.borderColor='#caff33'" onmouseout="this.style.borderColor='#e2e8f0'" onclick="showTxDetail('${tx.hash}',${blockNum},${tx.index})">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-              <div style="display:flex;align-items:center;gap:6px;">
-                <span style="font-size:11px;color:#94a3b8;font-weight:500;">#${tx.index}</span>
-                <span style="padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:#f1f5f9;color:#0f172a;">${tx.callPath}</span>
-                ${tx.isSigned ? '<span style="padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;background:#dcfce7;color:#16a34a;">SIGNED</span>' : '<span style="padding:1px 6px;border-radius:4px;font-size:10px;font-weight:500;background:#f1f5f9;color:#64748b;">INHERENT</span>'}
-              </div>
-              <span style="font-size:11px;color:#94a3b8;">${tx.size}B</span>
-            </div>
-            <div style="font-size:12px;color:#475569;">${describeTx(tx)}</div>
-            ${tx.signer ? `<div style="font-size:11px;color:#94a3b8;margin-top:4px;">Signer: <span class="mono">${shortAddr(tx.signer)}</span></div>` : ''}
-          </div>`).join('')}
-    </div>`;
-}
-
-// --- Transaction detail ---
-async function showTxDetail(txHash, blockNum, txIndex) {
-  showModal('tx');
-  const hash = await rpc('chain_getBlockHash', [blockNum]);
-  if (!hash) { document.getElementById('modalBody').innerHTML = '<div style="padding:40px;text-align:center;color:#ef4444;">Block not found</div>'; return; }
-  const block = await rpc('chain_getBlock', [hash]);
-  if (!block || !block.block) { document.getElementById('modalBody').innerHTML = '<div style="padding:40px;text-align:center;color:#ef4444;">Failed to fetch</div>'; return; }
-  const extrinsics = block.block.extrinsics || [];
-  if (txIndex >= extrinsics.length) { document.getElementById('modalBody').innerHTML = '<div style="padding:40px;text-align:center;color:#ef4444;">Transaction not found</div>'; return; }
-  const tx = decodeExtrinsic(extrinsics[txIndex], hash, blockNum);
-  if (!tx) { document.getElementById('modalBody').innerHTML = '<div style="padding:40px;text-align:center;color:#ef4444;">Decode failed</div>'; return; }
-  tx.hash = txHash; tx.index = txIndex;
-
-  const latestHeader = await rpc('chain_getHeader', []);
-  const latestNum = latestHeader ? parseInt(latestHeader.number, 16) : blockNum;
-  const confirmations = Math.max(0, latestNum - blockNum);
-
-  // Get block timestamp
-  const timestampTx = extrinsics.map((b, i) => decodeExtrinsic(b, hash, blockNum)).find(t => t && t.palletName === 'Timestamp');
-  const blockTime = timestampTx && timestampTx.decodedArgs.timestamp ? new Date(timestampTx.decodedArgs.timestamp) : null;
-  const relTime = blockTime ? timeAgo(Math.floor(blockTime.getTime() / 1000)) : '—';
-
-  document.getElementById('modalTitle').innerHTML = `<span style="width:24px;height:24px;border-radius:6px;background:#0f172a;display:inline-flex;align-items:center;justify-content:center;color:#caff33;font-size:10px;font-weight:700;">TX</span> ${tx.callPath}`;
-
-  // Build the full detail page
-  document.getElementById('modalBody').innerHTML = `
-    <!-- Summary -->
-    <div style="background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:12px;padding:16px;margin-bottom:16px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-        <span style="font-size:13px;color:#caff33;font-weight:600;">⚡ Summary</span>
-      </div>
-      <div style="font-size:14px;color:#fff;font-weight:500;">${describeTx(tx)}</div>
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <span style="padding:2px 10px;border-radius:4px;font-size:11px;font-weight:600;background:rgba(34,197,94,0.2);color:#22c55e;">✓ SUCCESS</span>
-        <span style="padding:2px 10px;border-radius:4px;font-size:11px;font-weight:500;background:rgba(255,255,255,0.1);color:#94a3b8;">${confirmations} confirmation${confirmations === 1 ? '' : 's'}</span>
-        ${tx.isSigned ? '<span style="padding:2px 10px;border-radius:4px;font-size:11px;font-weight:500;background:rgba(204,255,51,0.15);color:#caff33;">SIGNED</span>' : '<span style="padding:2px 10px;border-radius:4px;font-size:11px;font-weight:500;background:rgba(255,255,255,0.1);color:#94a3b8;">INHERENT</span>'}
-      </div>
-    </div>
-
-    <!-- From / To / Amount section (for transfers) -->
-    ${tx.fromAddr || tx.toAddr ? `
-    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px;">
-      <div style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">Transfer</div>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <div style="flex:1;min-width:120px;">
-          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">FROM</div>
-          <div style="display:flex;align-items:center;gap:4px;">
-            <span class="mono" style="font-size:12px;color:#0f172a;">${tx.fromAddr ? shortAddr(tx.fromAddr) : '—'}</span>
-            ${tx.fromAddr ? `<button onclick="copyToClipboard('${tx.fromAddr}','Address')" style="width:24px;height:24px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#64748b;padding:0;">${COPY_ICON}</button>` : ''}
-          </div>
-        </div>
-        <div style="color:#caff33;font-size:18px;">→</div>
-        <div style="flex:1;min-width:120px;">
-          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">TO</div>
-          <div style="display:flex;align-items:center;gap:4px;">
-            <span class="mono" style="font-size:12px;color:#0f172a;">${tx.toAddr ? shortAddr(tx.toAddr) : '—'}</span>
-            ${tx.toAddr ? `<button onclick="copyToClipboard('${tx.toAddr}','Address')" style="width:24px;height:24px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#64748b;padding:0;">${COPY_ICON}</button>` : ''}
-          </div>
-        </div>
-      </div>
-      ${tx.amount !== null ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9;">
-        <div style="font-size:11px;color:#64748b;margin-bottom:4px;">AMOUNT</div>
-        <div style="font-size:18px;font-weight:700;color:#0f172a;">${formatAmount(tx.amount)}</div>
-      </div>` : ''}
-    </div>` : ''}
-
-    <!-- Key-Value Detail Rows -->
-    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:0 16px;margin-bottom:16px;">
-      ${copyableField('Transaction Hash', txHash, false)}
-      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;">
-        <span style="font-size:13px;color:#64748b;font-weight:500;">Block</span>
-        <a onclick="closeModal();showBlockDetail(${blockNum});return false;" style="font-size:13px;color:#6366f1;text-decoration:none;cursor:pointer;font-weight:600;">#${blockNum}</a>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;">
-        <span style="font-size:13px;color:#64748b;font-weight:500;">Timestamp</span>
-        <span style="font-size:12px;color:#0f172a;">${relTime}${blockTime ? ' · ' + blockTime.toUTCString() : ''}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;">
-        <span style="font-size:13px;color:#64748b;font-weight:500;">Result</span>
-        <span style="padding:2px 10px;border-radius:4px;font-size:11px;font-weight:600;background:#dcfce7;color:#16a34a;">SUCCESS</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;">
-        <span style="font-size:13px;color:#64748b;font-weight:500;">Confirmations</span>
-        <span style="font-size:13px;color:#0f172a;font-weight:600;">${confirmations}</span>
-      </div>
-      ${tx.signer ? copyableField('Signer', tx.signer, true) : '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;"><span style="font-size:13px;color:#64748b;font-weight:500;">Signer</span><span style="font-size:13px;color:#64748b;">Unsigned (inherent)</span></div>'}
-      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;">
-        <span style="font-size:13px;color:#64748b;font-weight:500;">Call</span>
-        <span style="font-size:13px;color:#0f172a;font-weight:600;">${tx.callPath}</span>
-      </div>
-      ${tx.nonce !== null ? `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;"><span style="font-size:13px;color:#64748b;font-weight:500;">Nonce</span><span style="font-size:13px;color:#0f172a;font-weight:600;">${tx.nonce}</span></div>` : ''}
-      ${tx.tip ? `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;"><span style="font-size:13px;color:#64748b;font-weight:500;">Tip</span><span style="font-size:13px;color:#0f172a;font-weight:600;">${tx.tip}</span></div>` : ''}
-      ${tx.era ? `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;"><span style="font-size:13px;color:#64748b;font-weight:500;">Era</span><span class="mono" style="font-size:12px;color:#0f172a;">${tx.era === '0x80' ? 'Immortal' : 'Mortal (' + tx.era + ')'}</span></div>` : ''}
-      <div style="display:flex;justify-content:space-between;padding:10px 0;">
-        <span style="font-size:13px;color:#64748b;font-weight:500;">Size</span>
-        <span style="font-size:13px;color:#0f172a;font-weight:600;">${tx.size} bytes</span>
-      </div>
-    </div>
-
-    <!-- Arguments -->
-    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px;">
-      <div style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Arguments</div>
-      ${Object.keys(tx.decodedArgs).length > 0 ? `
-        <div style="display:grid;gap:6px;">
-          ${Object.entries(tx.decodedArgs).map(([k, v]) => `
-            <div style="display:flex;gap:8px;font-size:13px;padding:6px 0;border-bottom:1px solid #f8fafc;">
-              <span style="color:#64748b;min-width:80px;font-weight:500;">${k}:</span>
-              <span class="mono" style="color:#0f172a;word-break:break-all;flex:1;">${v}</span>
-            </div>`).join('')}
-        </div>` : '<div style="font-size:13px;color:#64748b;">No decoded arguments</div>'}
-      <details style="margin-top:8px;">
-        <summary style="font-size:12px;color:#6366f1;cursor:pointer;font-weight:500;">▶ Show raw arguments hex</summary>
-        <div class="mono" style="font-size:11px;color:#64748b;margin-top:8px;word-break:break-all;background:#f8fafc;padding:8px;border-radius:6px;">${tx.argsHex}</div>
-      </details>
-    </div>
-
-    <!-- Technical Details -->
-    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px;">
-      <div style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Technical Details</div>
-      ${tx.signature ? `
-        <div style="margin-bottom:8px;">
-          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Signature (sr25519)</div>
-          <div class="mono" style="font-size:11px;color:#0f172a;word-break:break-all;background:#f8fafc;padding:8px;border-radius:6px;">${tx.signature}</div>
-        </div>` : ''}
-      <div style="margin-bottom:8px;">
-        <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Block Hash</div>
-        <div class="mono" style="font-size:11px;color:#0f172a;word-break:break-all;background:#f8fafc;padding:8px;border-radius:6px;">${hash}</div>
-      </div>
-      <div>
-        <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Raw Extrinsic (SCALE-encoded)</div>
-        <div class="mono" style="font-size:11px;color:#0f172a;word-break:break-all;max-height:150px;overflow-y:auto;background:#f8fafc;padding:8px;border-radius:6px;">${tx.rawHex}</div>
-      </div>
-    </div>`;
-}
-
-// --- Hash routing ---
-function handleHashRoute() {
-  const h = window.location.hash;
-  if (!h) return;
-  if (h.startsWith('#block:')) { const n = parseInt(h.replace('#block:', '')); if (!isNaN(n)) showBlockDetail(n); }
-  else if (h.startsWith('#hash:')) { const bh = h.replace('#hash:', ''); rpc('chain_getBlock', [bh]).then(b => { if (b && b.block) showBlockDetail(parseInt(b.block.header.number, 16)); }); }
-  else if (h.startsWith('#tx:')) { const p = h.replace('#tx:', '').split(':'); if (p.length >= 2) showTxDetail(p[0], parseInt(p[1]), parseInt(p[2] || 0)); }
-}
-window.addEventListener('hashchange', handleHashRoute);
-
 </script>
 </body>
 </html>
