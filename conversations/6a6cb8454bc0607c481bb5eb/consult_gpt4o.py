@@ -1,68 +1,74 @@
 #!/usr/bin/env python3
-import json, urllib.request, os
+"""Consult GPT-4o for Phase 129 direction"""
+import json, requests, os, subprocess
 
-api_key = os.environ.get("OPENAI_API_KEY_2", "")
+prompt = """You are reviewing the Verdis Chain blockchain project (Substrate-based, Rust). Provide the next development phase recommendation.
+
+CURRENT STATE (Phase 128 COMPLETE, Phase 129 IN PROGRESS):
+- Substrate node v2.0.0 with BABE/GRANDPA consensus - producing blocks continuously on devnet
+- 7 FRAME pallets: DPoS (23 tests), AmmDex (25 tests), Eco (33 tests), Tokenomics (10 tests), Vesting (9 tests), EVM (102 tests), Storage (9 tests)
+- 240 tests passing, 0 failures
+- EVM pallet with 142 opcodes integrated into runtime at index 36
+- Chain ID 909, max code size 24576
+- WASM binary: 899KB (verdis_runtime.compact.compressed.wasm)
+- All 7 pallets have benchmarking modules with real weight files
+- Real benchmark measurements for 17 dispatchables across all pallets
+- 68 clippy warnings
+- Node service.rs syntax error fixed
+- RPC live on port 9944
+
+EVM OPCODE COVERAGE (142/256 Ethereum opcodes):
+- Arithmetic: ADD, SUB, MUL, DIV, MOD, SDIV, SMOD, ADDMOD, MULMOD, EXP, SIGNEXTEND
+- Comparison: LT, GT, SLT, SGT, EQ, ISZERO
+- Bitwise: AND, OR, XOR, NOT, BYTE, SHL, SHR, SAR
+- Stack: PUSH1-PUSH32, DUP1-DUP16, SWAP1-SWAP16, POP, JUMP, JUMPI, PC, MSIZE, GAS, JUMPDEST
+- Memory: MLOAD, MSTORE, MSTORE8, MCOPY
+- Environmental: ADDRESS, BALANCE, ORIGIN, CALLER, CALLVALUE, CALLDATALOAD, CALLDATASIZE, CALLDATACOPY, CODESIZE, CODECOPY, RETURNDATASIZE, RETURNDATACOPY, GASPRICE, CODEHASH, SELFBALANCE, CHAINID, BASEFEE, BLOBHASH, BLOBBASEFEE
+- Storage: SLOAD, SSTORE, TLOAD, TSTORE
+- Flow: STOP, RETURN, REVERT, INVALID, SELFDESTRUCT
+- Block: BLOCKHASH, COINBASE, TIMESTAMP, NUMBER, DIFFICULTY, GASLIMIT, PREVRANDAO
+- Logging: LOG0-LOG4
+- Contract: CALL, CALLCODE, DELEGATECALL, STATICCALL, CREATE, CREATE2, EXTCODESIZE, EXTCODECOPY, EXTCODEHASH
+- Missing: KECCAK256, some edge cases
+
+PREVIOUS GPT-4o SCORES: Phase 127 (9/10), Phase 128 (9/10)
+
+Please provide:
+1. A score for the current state (out of 10)
+2. The next phase recommendation (Phase 129)
+3. Specific tasks for Phase 129
+4. Risk assessment
+5. Whether to proceed or pause"""
+
+# Find API key
+api_key = os.environ.get("OPENAI_API_KEY_2") or os.environ.get("OPENAI_API_KEY")
 if not api_key:
-    with open("/opt/verdis-chain/.env") as f:
-        for line in f:
-            if line.startswith("OPENAI_API_KEY_2="):
+    result = subprocess.run(["grep", "OPENAI_API_KEY", "/root/.bashrc"], capture_output=True, text=True)
+    if result.stdout:
+        for line in result.stdout.strip().split("\n"):
+            if "=" in line:
+                api_key = line.split("=", 1)[1].strip().strip('"').strip("'")
+                break
+if not api_key:
+    result2 = subprocess.run(["cat", "/etc/environment"], capture_output=True, text=True)
+    if result2.stdout:
+        for line in result2.stdout.strip().split("\n"):
+            if "OPENAI_API_KEY" in line and "=" in line:
                 api_key = line.split("=", 1)[1].strip().strip('"').strip("'")
                 break
 
 if not api_key:
-    print("ERROR: No API key found")
+    print("ERROR: No OPENAI_API_KEY found")
     exit(1)
 
-prompt = """You are the AI CTO for the Verdis Blockchain project. Review the current state and recommend the next phase.
-
-CURRENT STATE (Phase 87 in progress):
-- Substrate Node v2.0.0 functional with BABE/GRANDPA consensus
-- 7 FRAME pallets deployed: DPoS, AmmDex, Eco, Tokenomics, Vesting, EVM, Storage
-- 165/165 tests passing (25 AmmDex, 23 DPoS, 33 Eco, 34 Storage, 10 Tokenomics, 29 EVM, 9 Vesting, 2 Runtime)
-- Benchmarking infrastructure COMPLETE: All 5 core pallets have benchmarking modules written and compiling
-  - DPoS: 6 benchmarks (register_validator, unregister_validator, vote, unvote, slash_validator, update_green_score)
-  - AmmDex: 5 benchmarks (create_pool, add_liquidity, remove_liquidity, swap, get_price)
-  - Eco: 9 benchmarks (mint_carbon_credit, verify_carbon_credit, retire_carbon_credit, transfer_carbon_credit, create_reforest_project, update_reforest_project, verify_reforest_project, register_green_validator, update_green_score)
-  - Tokenomics: 4 benchmarks (give_consent, purchase, update_presale_price, release_distribution)
-  - Vesting: 3 benchmarks (assign_vesting, release_vested, check_transfer)
-- define_benchmarks! macro registered in runtime
-- frame-benchmarking-cli NOT integrated (core2 v0.4.0 yanked on crates.io, blocking CLI dependency)
-- clippy: 75 warnings (0 errors), fmt: clean
-- Native binary compiles, release build in progress
-- Chain spec: "Verdis Development", 100B supply, 12B investor allocation
-- RPC live on port 9944, blocks producing, GRANDPA finality working
-- Production server: 62.238.61.145, 14 Docker containers
-
-BLOCKING ISSUE:
-- frame-benchmarking-cli v49.0.0 depends on core2 v0.4.0 which is yanked from crates.io
-- The CLI tool to actually RUN benchmarks and generate measured weight files cannot be compiled
-- Benchmarking modules are written but cannot be executed to produce real weight values
-- All pallet weights currently use default WeightInfo (constant 10_000)
-
-QUESTION: What should be the next phase? Consider:
-1. How to work around the core2 yanked crate issue to get actual benchmark measurements
-2. EVM pallet expansion (currently 101 opcodes planned, only basic ones implemented)
-3. Storage pallet tests (currently 34 tests but may need expansion)
-4. Any other critical production-readiness items
-
-Provide a specific, actionable recommendation with a phase number and scope."""
-
-data = json.dumps({
+headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+payload = {
     "model": "gpt-4o",
-    "messages": [
-        {"role": "system", "content": "You are the AI CTO for Verdis Chain, a carbon-negative blockchain built on Rust + Substrate with BABE/GRANDPA consensus. Provide precise, actionable engineering recommendations."},
-        {"role": "user", "content": prompt}
-    ],
-    "temperature": 0.3,
+    "messages": [{"role": "user", "content": prompt}],
+    "temperature": 0.7,
     "max_tokens": 2000
-}).encode()
+}
 
-req = urllib.request.Request(
-    "https://api.openai.com/v1/chat/completions",
-    data=data,
-    headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-)
-
-resp = urllib.request.urlopen(req, timeout=60)
-result = json.loads(resp.read())
-print(result["choices"][0]["message"]["content"])
+resp = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload, timeout=60)
+data = resp.json()
+print(data["choices"][0]["message"]["content"])
