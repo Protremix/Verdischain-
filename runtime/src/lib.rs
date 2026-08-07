@@ -65,6 +65,7 @@ pub use pallet_turbine;
 pub use pallet_zk_compression;
 pub use pallet_address_lookup_tables;
 pub use pallet_sealevel;
+pub use pallet_ibc;
 pub use pallet_storage;
 pub use pallet_tokenomics;
 pub use pallet_vesting;
@@ -1066,6 +1067,18 @@ impl pallet_sealevel::Config for Runtime {
 // Update storage config to add ShardCount
 // Note: Storage Config already exists, we need to add ShardCount
 
+
+parameter_types! {
+    pub const IbcMaxPortIdLen: u32 = 128;
+    pub const IbcMaxPacketDataLen: u32 = 1024;
+}
+
+impl pallet_ibc::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type MaxPortIdLen = IbcMaxPortIdLen;
+    type MaxPacketDataLen = IbcMaxPacketDataLen;
+}
+
 construct_runtime! {
     pub enum Runtime {
         System: frame_system = 0,
@@ -1104,6 +1117,7 @@ construct_runtime! {
         ZkCompression: pallet_zk_compression = 54,
         AddressLookupTables: pallet_address_lookup_tables = 55,
         Sealevel: pallet_sealevel = 56,
+        Ibc: pallet_ibc = 57,
     }
 }
 
