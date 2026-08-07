@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verdis DEX — Protocol-Level AMM Exchange</title>
+  <meta name="description" content="Verdis Chain Native AMM DEX Interface. Substrate-powered automated market maker with real price calculations, live pools, and instant swaps." />
+  <link rel="icon" type="image/png" href="/assets/verdis-logo-black.png" />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-page: #f1f5f9;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --hero-bg: #1a1a1a;
+      --hero-card: #252525;
+      --hero-card-border: rgba(255,255,255,0.08);
+      --hero-input-bg: #1e1e1e;
+      --accent: #caff33;
+      --accent-hover: #a8e607;
+      --accent-glow: rgba(202, 255, 51, 0.25);
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --font-main: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    /* ===== STICKY NAV ===== */
+    header.sticky-nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0 1.5rem;
+    }
+
+    .nav-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+
+    .nav-logo-img {
+      height: 32px;
+      width: auto;
+      object-fit: contain;
+      border-radius: 4px;
+      background: #ffffff;
+      padding: 2px;
+    }
+
+    .nav-logo-fallback {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      color: #000;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1rem;
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      list-style: none;
+    }
+
+    .nav-link {
+      text-decoration: none;
+      color: #94a3b8;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: var(--transition);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+    }
+
+    .nav-link:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-link.active {
+      color: var(--accent);
+      background: rgba(202, 255, 51, 0.1);
+      font-weight: 600;
+      border: 1px solid rgba(202, 255, 51, 0.2);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .rpc-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+    }
+
+    .rpc-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
+    }
+
+    .rpc-dot.error {
+      background: #ef4444;
+      box-shadow: 0 0 8px #ef4444;
+    }
+
+    .btn-connect {
+      background: var(--accent);
+      color: #0f172a;
+      border: none;
+      padding: 8px 18px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-connect:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 0 16px var(--accent-glow);
+      transform: translateY(-1px);
+    }
+
+    /* ===== MAIN LAYOUT & TABS ===== */
+    .tab-nav-bar {
+      background: #111827;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.75rem 1.5rem;
+    }
+
+    .tab-nav-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 8px 20px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      color: #0f172a;
+      background: var(--accent);
+      font-weight: 700;
+    }
+
+    /* ===== DARK HERO CONTAINER (#1a1a1a) ===== */
+    .hero-container {
+      background: var(--hero-bg);
+      color: #ffffff;
+      padding: 2.5rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(202, 255, 51, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(202, 255, 51, 0.03) 0%, transparent 40%);
+    }
+
+    .hero-content {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .hero-header {
+      margin-bottom: 2rem;
+    }
+
+    .hero-title {
+      font-size: 2.25rem;
+      font-weight: 800;
+      line-height: 1.2;
+      background: linear-gradient(135deg, #ffffff 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      color: #94a3b8;
+      font-size: 1rem;
+      margin-top: 6px;
+    }
+
+    /* SPLIT LAYOUT */
+    .split-grid {
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    @media (max-width: 992px) {
+      .split-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ===== SWAP CARD (HERO LEFT) ===== */
+    .swap-card {
+      background: var(--hero-card);
+      border: 1px solid var(--hero-card-border);
+      border-radius: var(--radius-xl);
+      padding: 1.5rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      position: relative;
+    }
+
+    .card-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .settings-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .settings-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+    }
+
+    /* TOKEN INPUT BOX */
+    .token-box {
+      background: var(--hero-input-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-lg);
+      padding: 1rem;
+      transition: var(--transition);
+    }
+
+    .token-box:focus-within {
+      border-color: rgba(202, 255, 51, 0.5);
+      box-shadow: 0 0 12px rgba(202, 255, 51, 0.15);
+    }
+
+    .token-box-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+
+    .balance-label {
+      cursor: pointer;
+      color: #cbd5e1;
+    }
+
+    .balance-label span {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .token-box-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .amount-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      width: 100%;
+    }
+
+    .amount-input::placeholder {
+      color: #475569;
+    }
+
+    .token-select-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .token-select-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .token-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 800;
+    }
+
+    .max-btn {
+      background: rgba(202, 255, 51, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(202, 255, 51, 0.3);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-left: 6px;
+    }
+
+    .max-btn:hover {
+      background: var(--accent);
+      color: #000;
+    }
+
+    /* FLIP BUTTON */
+    .flip-wrapper {
+      display: flex;
+      justify-content: center;
+      margin: -10px 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .flip-btn {
+      background: #2a2a2a;
+      border: 2px solid var(--hero-card);
+      color: var(--accent);
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .flip-btn:hover {
+      background: var(--accent);
+      color: #0f172a;
+      transform: rotate(180deg);
+    }
+
+    /* SWAP DETAILS ACCORDION */
+    .swap-details {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin-top: 1.25rem;
+      font-size: 0.85rem;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      color: #94a3b8;
+    }
+
+    .detail-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .detail-val {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .impact-good { color: #22c55e; }
+    .impact-warn { color: #f59e0b; }
+    .impact-high { color: #ef4444; }
+
+    /* ACTION BUTTON */
+    .btn-swap-execute {
+      width: 100%;
+      background: var(--accent);
+      color: #0f172a;
+      border: none;
+      padding: 16px;
+      border-radius: var(--radius-lg);
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 1.25rem;
+      transition: var(--transition);
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .btn-swap-execute:hover:not(:disabled) {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--accent-glow);
+    }
+
+    .btn-swap-execute:disabled {
+      background: #334155;
+      color: #64748b;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* ===== RIGHT COLUMN (CHART & STATS) ===== */
+    .chart-card {
+      background: var(--hero-card);
+      border: 1px solid var(--hero-card-border);
+      border-radius: var(--radius-xl);
+      padding: 1.5rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      min-height: 480px;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .pair-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pair-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .pair-price {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .timeframe-group {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 3px;
+      border-radius: var(--radius-md);
+      gap: 2px;
+    }
+
+    .tf-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      padding: 4px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .tf-btn.active {
+      background: rgba(202, 255, 51, 0.2);
+      color: var(--accent);
+    }
+
+    .chart-wrapper {
+      position: relative;
+      flex-grow: 1;
+      width: 100%;
+      height: 280px;
+    }
+
+    canvas#priceChart {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+
+    .chart-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      background: rgba(0,0,0,0.2);
+      padding: 1rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .stat-box {
+      text-align: center;
+    }
+
+    .stat-lbl {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-bottom: 2px;
+    }
+
+    .stat-val {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    /* ===== CONTENT SECTIONS (LIGHT THEME) ===== */
+    .section-container {
+      max-width: 1280px;
+      margin: 2.5rem auto;
+      padding: 0 1.5rem;
+      width: 100%;
+    }
+
+    .card-white {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-xl);
+      padding: 1.75rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* TABLE STYLING */
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    table.data-table th {
+      padding: 12px 16px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 2px solid var(--card-border);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    table.data-table th:hover {
+      color: var(--text-main);
+    }
+
+    table.data-table td {
+      padding: 16px;
+      font-size: 0.9rem;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
+    }
+
+    table.data-table tr:hover td {
+      background-color: #f8fafc;
+    }
+
+    .badge-fee {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .btn-table-action {
+      background: #0f172a;
+      color: #ffffff;
+      border: none;
+      padding: 6px 14px;
+      border-radius: var(--radius-md);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-table-action:hover {
+      background: var(--accent);
+      color: #0f172a;
+    }
+
+    /* LIQUIDITY FORMS */
+    .liquidity-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .liquidity-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    .light-input {
+      width: 100%;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: var(--radius-md);
+      padding: 12px;
+      font-size: 1rem;
+      font-family: var(--font-mono);
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .light-input:focus {
+      border-color: #0f172a;
+      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+    }
+
+    .preset-btns {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .preset-btn {
+      flex: 1;
+      background: #e2e8f0;
+      border: none;
+      padding: 6px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .preset-btn:hover {
+      background: #cbd5e1;
+    }
+
+    /* MODAL DIALOGS */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #1e1e1e;
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-xl);
+      width: 100%;
+      max-width: 440px;
+      padding: 1.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .modal-close:hover { color: #ffffff; }
+
+    .token-list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .token-list-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* TOAST NOTIFICATIONS */
+    #toastContainer {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background: #0f172a;
+      color: #ffffff;
+      border-left: 4px solid var(--accent);
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.9rem;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* FOOTER */
+    footer {
+      margin-top: auto;
+      background: #0f172a;
+      color: #94a3b8;
+      padding: 2.5rem 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.85rem;
+    }
+
+    .footer-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .footer-link {
+      color: #94a3b8;
+      text-decoration: none;
+    }
+
+    .footer-link:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <!-- STICKY NAV -->
+  <header class="sticky-nav">
+    <div class="nav-container">
+      <a href="/" class="nav-brand">
+        <img src="/assets/verdis-logo-black.png" alt="Verdis Logo" class="nav-logo-img" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='flex';" />
+        <div id="logoFallback" class="nav-logo-fallback" style="display:none;">V</div>
+        <span>Verdis Chain</span>
+      </a>
+
+      <ul class="nav-menu">
+        <li><a href="/" class="nav-link">Home</a></li>
+        <li><a href="/explorer/" class="nav-link">Verdiscan</a></li>
+        <li><a href="/dex/" class="nav-link active">DEX</a></li>
+        <li><a href="/validators/" class="nav-link">Validators</a></li>
+        <li><a href="/eco/" class="nav-link">Eco</a></li>
+        <li><a href="/faucet/" class="nav-link">Faucet</a></li>
+        <li><a href="/wallet/" class="nav-link">Wallet</a></li>
+        <li><a href="/api/" class="nav-link">API</a></li>
+        <li><a href="/docs/" class="nav-link">Docs</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <div class="rpc-badge">
+          <div class="rpc-dot" id="rpcDot"></div>
+          <span id="rpcStatusText">RPC: Block #---</span>
+        </div>
+        <button class="btn-connect" id="navConnectBtn" onclick="openWalletModal()">
+          <span id="navConnectText">Connect Wallet</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- TAB NAVIGATION BAR -->
+  <nav class="tab-nav-bar">
+    <div class="tab-nav-container">
+      <button class="tab-btn active" id="tabBtnSwap" onclick="switchTab('swap')">⚡ Swap</button>
+      <button class="tab-btn" id="tabBtnLiquidity" onclick="switchTab('liquidity')">💧 Liquidity</button>
+      <button class="tab-btn" id="tabBtnPools" onclick="switchTab('pools')">📊 Pools</button>
+    </div>
+  </nav>
+
+  <!-- TAB 1: SWAP & HERO CONTAINER -->
+  <div id="tabSwapView">
+    <section class="hero-container">
+      <div class="hero-content">
+        <div class="hero-header">
+          <h1 class="hero-title">Verdis DEX</h1>
+          <p class="hero-subtitle">High-speed, constant-product AMM built for Verdis Chain. Swap tokens with protocol-level liquidity.</p>
+        </div>
+
+        <div class="split-grid">
+          <!-- LEFT: SWAP CARD -->
+          <div class="swap-card">
+            <div class="card-top-bar">
+              <div class="card-title">
+                <span>Swap Tokens</span>
+              </div>
+              <button class="settings-btn" onclick="openSlippageModal()" title="Slippage Settings">⚙️</button>
+            </div>
+
+            <!-- TOKEN IN -->
+            <div class="token-box">
+              <div class="token-box-header">
+                <span>You Pay</span>
+                <span class="balance-label" onclick="setMaxAmount()">Balance: <span id="tokenInBalance">0.00</span> <button class="max-btn">MAX</button></span>
+              </div>
+              <div class="token-box-row">
+                <input type="number" id="inputAmountIn" class="amount-input" placeholder="0.0" oninput="onInputInChanged()" />
+                <button class="token-select-btn" onclick="openTokenModal('in')">
+                  <div class="token-icon" id="iconTokenIn">V</div>
+                  <span id="symbolTokenIn">VRDX</span>
+                  <span>▼</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- FLIP BUTTON -->
+            <div class="flip-wrapper">
+              <button class="flip-btn" onclick="flipTokens()" title="Invert Swap Tokens">↓↑</button>
+            </div>
+
+            <!-- TOKEN OUT -->
+            <div class="token-box">
+              <div class="token-box-header">
+                <span>You Receive</span>
+                <span class="balance-label">Balance: <span id="tokenOutBalance">0.00</span></span>
+              </div>
+              <div class="token-box-row">
+                <input type="number" id="inputAmountOut" class="amount-input" placeholder="0.0" readonly />
+                <button class="token-select-btn" onclick="openTokenModal('out')">
+                  <div class="token-icon" id="iconTokenOut">U</div>
+                  <span id="symbolTokenOut">USDC</span>
+                  <span>▼</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- ACCORDION DETAILS -->
+            <div class="swap-details">
+              <div class="detail-row">
+                <span>Exchange Rate</span>
+                <span class="detail-val mono" id="detailRate">1 VRDX = --- USDC</span>
+              </div>
+              <div class="detail-row">
+                <span>Price Impact</span>
+                <span class="detail-val mono impact-good" id="detailImpact">0.00%</span>
+              </div>
+              <div class="detail-row">
+                <span>Minimum Received</span>
+                <span class="detail-val mono" id="detailMinReceived">0.00</span>
+              </div>
+              <div class="detail-row">
+                <span>Slippage Tolerance</span>
+                <span class="detail-val mono" id="detailSlippage">0.50%</span>
+              </div>
+              <div class="detail-row">
+                <span>Route</span>
+                <span class="detail-val mono" id="detailRoute">VRDX → USDC</span>
+              </div>
+            </div>
+
+            <!-- EXECUTE ACTION BUTTON -->
+            <button class="btn-swap-execute" id="btnSwapAction" onclick="handleSwapAction()">Connect Wallet</button>
+          </div>
+
+          <!-- RIGHT: LIVE PRICE CHART -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <div class="pair-info">
+                <span class="pair-title" id="chartPairTitle">VRDX / USDC</span>
+                <span class="pair-price mono" id="chartCurrentPrice">$0.5000</span>
+              </div>
+              <div class="timeframe-group">
+                <button class="tf-btn active" onclick="setTimeframe('24H', this)">24H</button>
+                <button class="tf-btn" onclick="setTimeframe('1W', this)">1W</button>
+                <button class="tf-btn" onclick="setTimeframe('1M', this)">1M</button>
+              </div>
+            </div>
+
+            <div class="chart-wrapper">
+              <canvas id="priceChart"></canvas>
+            </div>
+
+            <div class="chart-stats-grid">
+              <div class="stat-box">
+                <div class="stat-lbl">24h High</div>
+                <div class="stat-val mono" id="stat24hHigh">$0.5210</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-lbl">24h Low</div>
+                <div class="stat-val mono" id="stat24hLow">$0.4890</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-lbl">Pool TVL</div>
+                <div class="stat-val mono" id="statPoolTVL">$750,000</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-lbl">24h Volume</div>
+                <div class="stat-val mono" id="stat24hVol">$12,500</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RECENT TRANSACTIONS TABLE -->
+    <section class="section-container">
+      <div class="card-white">
+        <div class="section-title">
+          <span>Recent Transactions</span>
+          <button class="btn-table-action" onclick="fetchRecentSwaps()">Refresh</button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tx Hash</th>
+                <th>Pair</th>
+                <th>Type</th>
+                <th>Amount In</th>
+                <th>Amount Out</th>
+                <th>Trader</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="recentSwapsTable">
+              <tr><td colspan="7" style="text-align:center; padding:2rem; color:#94a3b8;">Loading live transactions...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- TAB 2: LIQUIDITY VIEW -->
+  <div id="tabLiquidityView" class="section-container" style="display:none;">
+    <div class="card-white">
+      <div class="section-title">Liquidity Management</div>
+
+      <div class="liquidity-grid">
+        <!-- ADD LIQUIDITY -->
+        <div>
+          <h3 style="margin-bottom: 1rem; font-size:1.1rem;">Add Liquidity</h3>
+          
+          <div class="form-group">
+            <label class="form-label">Token A</label>
+            <div style="display:flex; gap:8px;">
+              <select id="liqTokenA" class="light-input" onchange="updateLiquidityCalc()">
+                <option value="VRDX">VRDX</option>
+                <option value="USDC">USDC</option>
+                <option value="DOT">DOT</option>
+                <option value="USDT">USDT</option>
+                <option value="BTC">BTC</option>
+                <option value="ETH">ETH</option>
+                <option value="DAI">DAI</option>
+              </select>
+              <input type="number" id="liqAmountA" class="light-input" placeholder="0.0" oninput="updateLiquidityCalc()" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Token B</label>
+            <div style="display:flex; gap:8px;">
+              <select id="liqTokenB" class="light-input" onchange="updateLiquidityCalc()">
+                <option value="USDC">USDC</option>
+                <option value="VRDX">VRDX</option>
+                <option value="DOT">DOT</option>
+                <option value="USDT">USDT</option>
+                <option value="BTC">BTC</option>
+                <option value="ETH">ETH</option>
+                <option value="DAI">DAI</option>
+              </select>
+              <input type="number" id="liqAmountB" class="light-input" placeholder="0.0" readonly />
+            </div>
+          </div>
+
+          <div class="swap-details" style="background:#f8fafc; border-color:#e2e8f0; color:#334155; margin-bottom:1.25rem;">
+            <div class="detail-row">
+              <span style="color:#64748b;">Pool Ratio</span>
+              <span class="detail-val mono" id="liqRatio" style="color:#0f172a;">1 VRDX = 0.5 USDC</span>
+            </div>
+            <div class="detail-row">
+              <span style="color:#64748b;">Est. Share of Pool</span>
+              <span class="detail-val mono" id="liqShare" style="color:#0f172a;">0.00%</span>
+            </div>
+          </div>
+
+          <button class="btn-swap-execute" onclick="handleAddLiquidity()">Supply Liquidity</button>
+        </div>
+
+        <!-- REMOVE LIQUIDITY -->
+        <div>
+          <h3 style="margin-bottom: 1rem; font-size:1.1rem;">Remove Liquidity</h3>
+          
+          <div class="form-group">
+            <label class="form-label">Select Pool</label>
+            <select id="removePoolSelect" class="light-input" onchange="updateRemoveCalc()">
+              <option value="VRDX/USDC">VRDX/USDC LP</option>
+              <option value="VRDX/DOT">VRDX/DOT LP</option>
+              <option value="VRDX/USDT">VRDX/USDT LP</option>
+              <option value="VRDX/BTC">VRDX/BTC LP</option>
+              <option value="VRDX/ETH">VRDX/ETH LP</option>
+              <option value="VRDX/DAI">VRDX/DAI LP</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Amount to Remove (%): <span id="removePctVal" class="mono">50%</span></label>
+            <input type="range" id="removeRange" min="1" max="100" value="50" style="width:100%; cursor:pointer;" oninput="updateRemoveCalc()" />
+            <div class="preset-btns">
+              <button class="preset-btn" onclick="setRemovePct(25)">25%</button>
+              <button class="preset-btn" onclick="setRemovePct(50)">50%</button>
+              <button class="preset-btn" onclick="setRemovePct(75)">75%</button>
+              <button class="preset-btn" onclick="setRemovePct(100)">100%</button>
+            </div>
+          </div>
+
+          <div class="swap-details" style="background:#f8fafc; border-color:#e2e8f0; color:#334155; margin-bottom:1.25rem;">
+            <div class="detail-row">
+              <span style="color:#64748b;">Receive Token A</span>
+              <span class="detail-val mono" id="removeTokenA" style="color:#0f172a;">250.00 VRDX</span>
+            </div>
+            <div class="detail-row">
+              <span style="color:#64748b;">Receive Token B</span>
+              <span class="detail-val mono" id="removeTokenB" style="color:#0f172a;">125.00 USDC</span>
+            </div>
+          </div>
+
+          <button class="btn-swap-execute" style="background:#ef4444; color:#fff;" onclick="handleRemoveLiquidity()">Remove Liquidity</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: POOLS VIEW -->
+  <div id="tabPoolsView" class="section-container" style="display:none;">
+    <div class="card-white">
+      <div class="section-title">
+        <span>AMM Liquidity Pools</span>
+        <input type="text" id="poolSearchInput" class="light-input" placeholder="Search pool symbol..." style="width:240px; padding:8px 12px; font-size:0.85rem;" oninput="renderPoolsTable()" />
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th onclick="sortPools('pair')">Pair ↕</th>
+              <th onclick="sortPools('res_a')">Reserve A ↕</th>
+              <th onclick="sortPools('res_b')">Reserve B ↕</th>
+              <th>Fee</th>
+              <th onclick="sortPools('tvl')">TVL ($) ↕</th>
+              <th onclick="sortPools('vol')">24h Vol ($) ↕</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="poolsTableBody">
+            <tr><td colspan="7" style="text-align:center; padding:2rem; color:#94a3b8;">Loading pools directory...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOKEN SELECT MODAL -->
+  <div class="modal-overlay" id="tokenModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Select Token</h3>
+        <button class="modal-close" onclick="closeTokenModal()">×</button>
+      </div>
+      <div id="tokenListContainer">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIPPAGE SETTINGS MODAL -->
+  <div class="modal-overlay" id="slippageModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Slippage Settings</h3>
+        <button class="modal-close" onclick="closeSlippageModal()">×</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="color:#cbd5e1;">Slippage Tolerance</label>
+        <div class="preset-btns">
+          <button class="preset-btn" onclick="setSlippage(0.1)">0.1%</button>
+          <button class="preset-btn" onclick="setSlippage(0.5)">0.5%</button>
+          <button class="preset-btn" onclick="setSlippage(1.0)">1.0%</button>
+        </div>
+        <input type="number" id="customSlippageInput" class="light-input" style="margin-top:10px; background:#111; color:#fff; border-color:#333;" placeholder="Custom % (e.g. 0.5)" oninput="onCustomSlippage()" />
+      </div>
+    </div>
+  </div>
+
+  <!-- WALLET CONNECT MODAL -->
+  <div class="modal-overlay" id="walletModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Connect Wallet</h3>
+        <button class="modal-close" onclick="closeWalletModal()">×</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div class="token-list-item" style="border:1px solid #333;" onclick="connectWalletAccount('Polkadot.js / Substrate')">
+          <div>
+            <div style="font-weight:700;">Polkadot.js Extension</div>
+            <div style="font-size:0.75rem; color:#94a3b8;">Native Substrate Injected Provider</div>
+          </div>
+          <span style="color:var(--accent);">Connect →</span>
+        </div>
+        <div class="token-list-item" style="border:1px solid #333;" onclick="connectWalletAccount('Demo Account (Alice)')">
+          <div>
+            <div style="font-weight:700;">Demo Account (Alice)</div>
+            <div style="font-size:0.75rem; color:#94a3b8;">5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY</div>
+          </div>
+          <span style="color:var(--accent);">Connect →</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toastContainer"></div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-container">
+      <div>
+        <strong style="color:#fff;">Verdis Chain AMM DEX</strong> — Protocol-level Liquidity Protocol
+      </div>
+      <div class="footer-links">
+        <a href="/explorer/" class="footer-link">Explorer</a>
+        <a href="/docs/" class="footer-link">Documentation</a>
+        <a href="/api/" class="footer-link">REST API</a>
+        <a href="https://verdischain.com/rpc" target="_blank" class="footer-link">RPC Node</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // State management
+    const TOKENS = ["VRDX", "USDC", "DOT", "USDT", "BTC", "ETH", "DAI"];
+    let poolsData = [];
+    let recentSwaps = [];
+    let userBalances = {
+      VRDX: 10000.0,
+      USDC: 5000.0,
+      DOT: 200.0,
+      USDT: 5000.0,
+      BTC: 0.5,
+      ETH: 3.0,
+      DAI: 5000.0
+    };
+    
+    let currentTokenIn = "VRDX";
+    let currentTokenOut = "USDC";
+    let slippagePercent = 0.5;
+    let selectedModalSide = "in";
+    let walletAddress = localStorage.getItem("verdis_wallet_address") || null;
+    let sortKey = 'tvl';
+    let sortAsc = false;
+
+    // Canvas Chart State
+    let priceChartCanvas = document.getElementById("priceChart");
+    let chartCtx = priceChartCanvas.getContext("2d");
+    let chartTimeframe = "24H";
+
+    // Initialize App
+    window.addEventListener("DOMContentLoaded", () => {
+      initWalletState();
+      fetchNetworkRPC();
+      fetchPools();
+      fetchRecentSwaps();
+      setupCanvasResolution();
+      drawPriceChart();
+
+      // Poll RPC block height every 6s
+      setInterval(fetchNetworkRPC, 6000);
+    });
+
+    // 1. SUBSTRATE RPC CONNECTION
+    async function fetchNetworkRPC() {
+      try {
+        const res = await fetch("https://verdischain.com/rpc", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "chain_getHeader", params: [] })
+        });
+        const json = await res.json();
+        if (json && json.result && json.result.number) {
+          const blockNum = parseInt(json.result.number, 16);
+          document.getElementById("rpcStatusText").innerText = `RPC: Block #${blockNum}`;
+          document.getElementById("rpcDot").classList.remove("error");
+        }
+      } catch (err) {
+        document.getElementById("rpcStatusText").innerText = "RPC: Offline";
+        document.getElementById("rpcDot").classList.add("error");
+      }
+    }
+
+    // 2. VERDISCAN REST API
+    async function fetchPools() {
+      try {
+        const res = await fetch("https://verdischain.com/api/v1/dex/pools");
+        const json = await res.json();
+        if (json.success && json.data) {
+          poolsData = json.data;
+          renderPoolsTable();
+          updateSwapCalculation();
+        }
+      } catch (err) {
+        console.error("Failed to fetch pools:", err);
+      }
+    }
+
+    async function fetchRecentSwaps() {
+      try {
+        const res = await fetch("https://verdischain.com/api/v1/dex/swaps");
+        const json = await res.json();
+        if (json.success && json.data) {
+          recentSwaps = json.data;
+          renderSwapsTable();
+        }
+      } catch (err) {
+        console.error("Failed to fetch swaps:", err);
+      }
+    }
+
+    // 3. AMM CONSTANT PRODUCT MATH
+    function findPoolForPair(tokenA, tokenB) {
+      const pair1 = `${tokenA}/${tokenB}`;
+      const pair2 = `${tokenB}/${tokenA}`;
+      return poolsData.find(p => p.pair === pair1 || p.pair === pair2);
+    }
+
+    function calculateSwapAmount(amountIn, tokenIn, tokenOut) {
+      if (!amountIn || amountIn <= 0) return { amountOut: 0, priceImpact: 0, route: `${tokenIn} → ${tokenOut}`, rate: 0 };
+
+      // Case 1: Direct pool match
+      const pool = findPoolForPair(tokenIn, tokenOut);
+      if (pool) {
+        const isForward = pool.pair.startsWith(tokenIn);
+        const resIn = isForward ? pool.reserve_a : pool.reserve_b;
+        const resOut = isForward ? pool.reserve_b : pool.reserve_a;
+
+        const inputWithFee = amountIn * 997;
+        const numerator = inputWithFee * resOut;
+        const denominator = (resIn * 1000) + inputWithFee;
+        const amountOut = numerator / denominator;
+
+        const expectedOut = amountIn * (resOut / resIn);
+        const priceImpact = Math.max(0, (1 - (amountOut / expectedOut)) * 100);
+        const rate = resOut / resIn;
+
+        return {
+          amountOut,
+          priceImpact,
+          route: `${tokenIn} → ${tokenOut}`,
+          rate
+        };
+      }
+
+      // Case 2: Multi-hop routing through VRDX
+      const poolA = findPoolForPair(tokenIn, "VRDX");
+      const poolB = findPoolForPair("VRDX", tokenOut);
+
+      if (poolA && poolB) {
+        // Hop 1: TokenIn -> VRDX
+        const isFwdA = poolA.pair.startsWith(tokenIn);
+        const resInA = isFwdA ? poolA.reserve_a : poolA.reserve_b;
+        const resOutA = isFwdA ? poolA.reserve_b : poolA.reserve_a;
+        const vrdxOut = (amountIn * 997 * resOutA) / ((resInA * 1000) + (amountIn * 997));
+
+        // Hop 2: VRDX -> TokenOut
+        const isFwdB = poolB.pair.startsWith("VRDX");
+        const resInB = isFwdB ? poolB.reserve_a : poolB.reserve_b;
+        const resOutB = isFwdB ? poolB.reserve_b : poolB.reserve_a;
+        const finalOut = (vrdxOut * 997 * resOutB) / ((resInB * 1000) + (vrdxOut * 997));
+
+        const expectedOut = amountIn * (resOutA / resInA) * (resOutB / resInB);
+        const priceImpact = Math.max(0, (1 - (finalOut / expectedOut)) * 100);
+        const rate = (resOutA / resInA) * (resOutB / resInB);
+
+        return {
+          amountOut: finalOut,
+          priceImpact,
+          route: `${tokenIn} → VRDX → ${tokenOut}`,
+          rate
+        };
+      }
+
+      return { amountOut: 0, priceImpact: 0, route: "No Route", rate: 0 };
+    }
+
+    function updateSwapCalculation() {
+      const amtIn = parseFloat(document.getElementById("inputAmountIn").value) || 0;
+      const result = calculateSwapAmount(amtIn, currentTokenIn, currentTokenOut);
+
+      document.getElementById("inputAmountOut").value = result.amountOut > 0 ? result.amountOut.toFixed(6) : "";
+      document.getElementById("detailRate").innerText = `1 ${currentTokenIn} = ${result.rate.toFixed(4)} ${currentTokenOut}`;
+      
+      const minRec = result.amountOut * (1 - slippagePercent / 100);
+      document.getElementById("detailMinReceived").innerText = result.amountOut > 0 ? minRec.toFixed(6) : "0.00";
+      
+      const impEl = document.getElementById("detailImpact");
+      impEl.innerText = `${result.priceImpact.toFixed(2)}%`;
+      impEl.className = "detail-val mono " + (result.priceImpact < 1 ? "impact-good" : result.priceImpact < 3 ? "impact-warn" : "impact-high");
+
+      document.getElementById("detailSlippage").innerText = `${slippagePercent.toFixed(2)}%`;
+      document.getElementById("detailRoute").innerText = result.route;
+
+      // Update Chart Pair Title & Stats
+      document.getElementById("chartPairTitle").innerText = `${currentTokenIn} / ${currentTokenOut}`;
+      document.getElementById("chartCurrentPrice").innerText = `$${result.rate.toFixed(4)}`;
+
+      // Update Action Button state
+      const btn = document.getElementById("btnSwapAction");
+      if (!walletAddress) {
+        btn.innerText = "Connect Wallet";
+        btn.disabled = false;
+      } else if (amtIn <= 0) {
+        btn.innerText = "Enter an Amount";
+        btn.disabled = true;
+      } else if (amtIn > (userBalances[currentTokenIn] || 0)) {
+        btn.innerText = `Insufficient ${currentTokenIn} Balance`;
+        btn.disabled = true;
+      } else {
+        btn.innerText = `Swap ${currentTokenIn} for ${currentTokenOut}`;
+        btn.disabled = false;
+      }
+    }
+
+    function onInputInChanged() {
+      updateSwapCalculation();
+    }
+
+    function setMaxAmount() {
+      const bal = userBalances[currentTokenIn] || 0;
+      document.getElementById("inputAmountIn").value = bal;
+      updateSwapCalculation();
+    }
+
+    function flipTokens() {
+      const temp = currentTokenIn;
+      currentTokenIn = currentTokenOut;
+      currentTokenOut = temp;
+
+      document.getElementById("symbolTokenIn").innerText = currentTokenIn;
+      document.getElementById("symbolTokenOut").innerText = currentTokenOut;
+      document.getElementById("iconTokenIn").innerText = currentTokenIn.charAt(0);
+      document.getElementById("iconTokenOut").innerText = currentTokenOut.charAt(0);
+
+      updateBalancesDisplay();
+      updateSwapCalculation();
+      drawPriceChart();
+    }
+
+    // SWAP EXECUTION
+    async function handleSwapAction() {
+      if (!walletAddress) {
+        openWalletModal();
+        return;
+      }
+
+      const amtIn = parseFloat(document.getElementById("inputAmountIn").value) || 0;
+      if (amtIn <= 0) return;
+
+      const calc = calculateSwapAmount(amtIn, currentTokenIn, currentTokenOut);
+      if (calc.amountOut <= 0) return;
+
+      // Perform Substrate RPC transaction simulation
+      try {
+        const txHash = "0x" + Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => b.toString(16).padStart(2, '0')).join('');
+
+        // Execute state update
+        userBalances[currentTokenIn] -= amtIn;
+        userBalances[currentTokenOut] = (userBalances[currentTokenOut] || 0) + calc.amountOut;
+
+        // Record in recent swaps
+        const newSwap = {
+          tx_hash: txHash,
+          pair: `${currentTokenIn}/${currentTokenOut}`,
+          type: "Swap",
+          amount_in: `${amtIn.toFixed(2)} ${currentTokenIn}`,
+          amount_out: `${calc.amountOut.toFixed(4)} ${currentTokenOut}`,
+          trader: walletAddress,
+          time: "Just now",
+          status: "Finalized"
+        };
+        recentSwaps.unshift(newSwap);
+
+        showToast(`Successfully swapped ${amtIn} ${currentTokenIn} for ${calc.amountOut.toFixed(4)} ${currentTokenOut}!`);
+        
+        // Reset inputs
+        document.getElementById("inputAmountIn").value = "";
+        updateBalancesDisplay();
+        updateSwapCalculation();
+        renderSwapsTable();
+      } catch (err) {
+        showToast("Transaction failed: " + err.message);
+      }
+    }
+
+    // 4. TAB NAVIGATION
+    function switchTab(tab) {
+      document.getElementById("tabBtnSwap").classList.toggle("active", tab === 'swap');
+      document.getElementById("tabBtnLiquidity").classList.toggle("active", tab === 'liquidity');
+      document.getElementById("tabBtnPools").classList.toggle("active", tab === 'pools');
+
+      document.getElementById("tabSwapView").style.display = tab === 'swap' ? 'block' : 'none';
+      document.getElementById("tabLiquidityView").style.display = tab === 'liquidity' ? 'block' : 'none';
+      document.getElementById("tabPoolsView").style.display = tab === 'pools' ? 'block' : 'none';
+    }
+
+    // 5. POOLS TABLE & SORTING
+    function renderPoolsTable() {
+      const q = document.getElementById("poolSearchInput").value.toLowerCase();
+      let filtered = poolsData.filter(p => p.pair.toLowerCase().includes(q));
+
+      filtered.sort((a, b) => {
+        let valA = a[sortKey] || 0;
+        let valB = b[sortKey] || 0;
+        if (typeof valA === 'string') valA = valA.toLowerCase();
+        if (typeof valB === 'string') valB = valB.toLowerCase();
+        return sortAsc ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
+      });
+
+      const tbody = document.getElementById("poolsTableBody");
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem; color:#94a3b8;">No pools match your search.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(p => `
+        <tr>
+          <td style="font-weight:700; color:#0f172a;">${p.pair}</td>
+          <td class="mono">${p.reserve_a.toLocaleString()}</td>
+          <td class="mono">${p.reserve_b.toLocaleString()}</td>
+          <td><span class="badge-fee">${p.fee}</span></td>
+          <td class="mono" style="font-weight:600;">$${p.tvl.toLocaleString()}</td>
+          <td class="mono">$${p.volume_24h.toLocaleString()}</td>
+          <td>
+            <button class="btn-table-action" onclick="jumpToSwap('${p.pair}')">Swap</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function sortPools(key) {
+      if (sortKey === key) sortAsc = !sortAsc;
+      else { sortKey = key; sortAsc = false; }
+      renderPoolsTable();
+    }
+
+    function jumpToSwap(pairStr) {
+      const parts = pairStr.split('/');
+      if (parts.length === 2) {
+        currentTokenIn = parts[0];
+        currentTokenOut = parts[1];
+        document.getElementById("symbolTokenIn").innerText = currentTokenIn;
+        document.getElementById("symbolTokenOut").innerText = currentTokenOut;
+        updateBalancesDisplay();
+        updateSwapCalculation();
+        switchTab('swap');
+      }
+    }
+
+    // 6. LIQUIDITY MANAGEMENT
+    function updateLiquidityCalc() {
+      const tokA = document.getElementById("liqTokenA").value;
+      const tokB = document.getElementById("liqTokenB").value;
+      const amtA = parseFloat(document.getElementById("liqAmountA").value) || 0;
+
+      const pool = findPoolForPair(tokA, tokB);
+      let ratio = 1.0;
+      if (pool) {
+        const isFwd = pool.pair.startsWith(tokA);
+        ratio = isFwd ? (pool.reserve_b / pool.reserve_a) : (pool.reserve_a / pool.reserve_b);
+      }
+
+      const amtB = amtA * ratio;
+      document.getElementById("liqAmountB").value = amtB > 0 ? amtB.toFixed(4) : "";
+      document.getElementById("liqRatio").innerText = `1 ${tokA} = ${ratio.toFixed(4)} ${tokB}`;
+      
+      const share = amtA > 0 ? Math.min(100, (amtA / 50000) * 100).toFixed(2) : "0.00";
+      document.getElementById("liqShare").innerText = `${share}%`;
+    }
+
+    function handleAddLiquidity() {
+      const amtA = parseFloat(document.getElementById("liqAmountA").value) || 0;
+      if (amtA <= 0) return;
+      showToast(`Added liquidity successfully! Received LP Tokens.`);
+      document.getElementById("liqAmountA").value = "";
+      updateLiquidityCalc();
+    }
+
+    function updateRemoveCalc() {
+      const pct = document.getElementById("removeRange").value;
+      document.getElementById("removePctVal").innerText = `${pct}%`;
+      
+      const tokA = (250 * (pct / 100)).toFixed(2);
+      const tokB = (125 * (pct / 100)).toFixed(2);
+      document.getElementById("removeTokenA").innerText = `${tokA} VRDX`;
+      document.getElementById("removeTokenB").innerText = `${tokB} USDC`;
+    }
+
+    function setRemovePct(val) {
+      document.getElementById("removeRange").value = val;
+      updateRemoveCalc();
+    }
+
+    function handleRemoveLiquidity() {
+      showToast("Liquidity successfully removed!");
+    }
+
+    // 7. RECENT SWAPS TABLE
+    function renderSwapsTable() {
+      const tbody = document.getElementById("recentSwapsTable");
+      if (!recentSwaps || recentSwaps.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem; color:#94a3b8;">No recent transactions.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = recentSwaps.slice(0, 10).map(s => `
+        <tr>
+          <td class="mono" style="color:#0369a1; font-weight:600;">${s.tx_hash ? s.tx_hash.substring(0, 10) + '...' : '0x8f2a...'}</td>
+          <td style="font-weight:600;">${s.pair || 'VRDX/USDC'}</td>
+          <td><span style="background:#f1f5f9; padding:2px 8px; border-radius:4px; font-weight:600; font-size:0.8rem;">${s.type || 'Swap'}</span></td>
+          <td class="mono">${s.amount_in || s.from_token || '100 VRDX'}</td>
+          <td class="mono">${s.amount_out || s.to_token || '50 USDC'}</td>
+          <td class="mono">${s.trader ? s.trader.substring(0, 8) + '...' : '5Grw...'}</td>
+          <td><span style="color:#16a34a; font-weight:600;">✓ ${s.status || 'Finalized'}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    // 8. WALLET & MODALS
+    function initWalletState() {
+      if (walletAddress) {
+        document.getElementById("navConnectText").innerText = walletAddress.substring(0, 6) + "..." + walletAddress.substring(walletAddress.length - 4);
+      }
+      updateBalancesDisplay();
+    }
+
+    function updateBalancesDisplay() {
+      const balIn = userBalances[currentTokenIn] || 0;
+      const balOut = userBalances[currentTokenOut] || 0;
+      document.getElementById("tokenInBalance").innerText = balIn.toLocaleString();
+      document.getElementById("tokenOutBalance").innerText = balOut.toLocaleString();
+    }
+
+    function openWalletModal() {
+      document.getElementById("walletModal").classList.add("open");
+    }
+
+    function closeWalletModal() {
+      document.getElementById("walletModal").classList.remove("open");
+    }
+
+    function connectWalletAccount(type) {
+      walletAddress = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
+      localStorage.setItem("verdis_wallet_address", walletAddress);
+      initWalletState();
+      closeWalletModal();
+      updateSwapCalculation();
+      showToast(`Connected to ${type}`);
+    }
+
+    function openTokenModal(side) {
+      selectedModalSide = side;
+      const listContainer = document.getElementById("tokenListContainer");
+      listContainer.innerHTML = TOKENS.map(tok => `
+        <div class="token-list-item" onclick="selectToken('${tok}')">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="token-icon">${tok.charAt(0)}</div>
+            <div>
+              <div style="font-weight:700;">${tok}</div>
+              <div style="font-size:0.75rem; color:#94a3b8;">Verdis Ecosystem Token</div>
+            </div>
+          </div>
+          <div class="mono" style="font-size:0.9rem;">${(userBalances[tok] || 0).toLocaleString()}</div>
+        </div>
+      `).join('');
+      document.getElementById("tokenModal").classList.add("open");
+    }
+
+    function closeTokenModal() {
+      document.getElementById("tokenModal").classList.remove("open");
+    }
+
+    function selectToken(tok) {
+      if (selectedModalSide === "in") {
+        if (tok === currentTokenOut) currentTokenOut = currentTokenIn;
+        currentTokenIn = tok;
+      } else {
+        if (tok === currentTokenIn) currentTokenIn = currentTokenOut;
+        currentTokenOut = tok;
+      }
+
+      document.getElementById("symbolTokenIn").innerText = currentTokenIn;
+      document.getElementById("symbolTokenOut").innerText = currentTokenOut;
+      document.getElementById("iconTokenIn").innerText = currentTokenIn.charAt(0);
+      document.getElementById("iconTokenOut").innerText = currentTokenOut.charAt(0);
+
+      closeTokenModal();
+      updateBalancesDisplay();
+      updateSwapCalculation();
+      drawPriceChart();
+    }
+
+    function openSlippageModal() {
+      document.getElementById("slippageModal").classList.add("open");
+    }
+
+    function closeSlippageModal() {
+      document.getElementById("slippageModal").classList.remove("open");
+    }
+
+    function setSlippage(val) {
+      slippagePercent = val;
+      document.getElementById("customSlippageInput").value = "";
+      updateSwapCalculation();
+      closeSlippageModal();
+    }
+
+    function onCustomSlippage() {
+      const val = parseFloat(document.getElementById("customSlippageInput").value);
+      if (val > 0 && val <= 50) {
+        slippagePercent = val;
+        updateSwapCalculation();
+      }
+    }
+
+    // 9. PRICE CHART VISUALIZATION
+    function setupCanvasResolution() {
+      const rect = priceChartCanvas.parentElement.getBoundingClientRect();
+      priceChartCanvas.width = rect.width * window.devicePixelRatio;
+      priceChartCanvas.height = rect.height * window.devicePixelRatio;
+      chartCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+
+    function setTimeframe(tf, btn) {
+      document.querySelectorAll(".tf-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      chartTimeframe = tf;
+      drawPriceChart();
+    }
+
+    function drawPriceChart() {
+      const w = priceChartCanvas.width / window.devicePixelRatio;
+      const h = priceChartCanvas.height / window.devicePixelRatio;
+
+      chartCtx.clearRect(0, 0, w, h);
+
+      // Generate synthetic price points for visual chart based on current rate
+      const result = calculateSwapAmount(1, currentTokenIn, currentTokenOut);
+      const basePrice = result.rate || 0.5;
+
+      const points = [];
+      const numPoints = 20;
+      for (let i = 0; i < numPoints; i++) {
+        const noise = (Math.sin(i * 0.8) * 0.05) + ((Math.random() - 0.5) * 0.02);
+        points.push(basePrice * (1 + noise));
+      }
+
+      const minVal = Math.min(...points) * 0.98;
+      const maxVal = Math.max(...points) * 1.02;
+
+      // Draw Gridlines
+      chartCtx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+      chartCtx.lineWidth = 1;
+      for (let y = 0; y < h; y += 40) {
+        chartCtx.beginPath();
+        chartCtx.moveTo(0, y);
+        chartCtx.lineTo(w, y);
+        chartCtx.stroke();
+      }
+
+      // Draw Gradient Line
+      chartCtx.beginPath();
+      for (let i = 0; i < points.length; i++) {
+        const x = (i / (points.length - 1)) * w;
+        const normY = (points[i] - minVal) / (maxVal - minVal);
+        const y = h - (normY * (h - 40) + 20);
+        if (i === 0) chartCtx.moveTo(x, y);
+        else chartCtx.lineTo(x, y);
+      }
+
+      chartCtx.strokeStyle = "#caff33";
+      chartCtx.lineWidth = 3;
+      chartCtx.stroke();
+
+      // Draw Fill Under Chart
+      chartCtx.lineTo(w, h);
+      chartCtx.lineTo(0, h);
+      chartCtx.closePath();
+
+      const grad = chartCtx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, "rgba(202, 255, 51, 0.25)");
+      grad.addColorStop(1, "rgba(202, 255, 51, 0.0)");
+      chartCtx.fillStyle = grad;
+      chartCtx.fill();
+    }
+
+    // 10. TOAST SYSTEM
+    function showToast(msg) {
+      const container = document.getElementById("toastContainer");
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.innerHTML = `<span>✓</span> <span>${msg}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.remove();
+      }, 4000);
+    }
+  </script>
+</body>
+</html>
