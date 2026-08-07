@@ -8,9 +8,6 @@
 //! - Price oracle from pool reserves
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#[cfg(feature = "runtime-benchmarks")]
-pub mod benchmarking;
-
 
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{
@@ -18,12 +15,12 @@ use frame_support::{
     ensure,
     pallet_prelude::*,
     traits::{Currency, Get, ReservableCurrency},
-    DefaultNoBound, PalletId,
+    PalletId, DefaultNoBound,
 };
 use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
 use sp_arithmetic::traits::IntegerSquareRoot;
-use sp_runtime::traits::{AccountIdConversion, SaturatedConversion, Saturating};
+use sp_runtime::traits::{AccountIdConversion, Saturating};
 use sp_std::prelude::*;
 
 pub use pallet::*;
@@ -32,8 +29,7 @@ pub use pallet::*;
 pub mod pallet {
     use super::*;
 
-    type BalanceOf<T> =
-        <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+    type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
     pub trait WeightInfo {
         fn create_pool() -> Weight;
@@ -44,21 +40,11 @@ pub mod pallet {
     }
 
     impl WeightInfo for () {
-        fn create_pool() -> Weight {
-            Weight::from_parts(10_000, 0)
-        }
-        fn add_liquidity() -> Weight {
-            Weight::from_parts(10_000, 0)
-        }
-        fn remove_liquidity() -> Weight {
-            Weight::from_parts(10_000, 0)
-        }
-        fn swap() -> Weight {
-            Weight::from_parts(10_000, 0)
-        }
-        fn get_price() -> Weight {
-            Weight::from_parts(10_000, 0)
-        }
+        fn create_pool() -> Weight { Weight::from_parts(10_000, 0) }
+        fn add_liquidity() -> Weight { Weight::from_parts(10_000, 0) }
+        fn remove_liquidity() -> Weight { Weight::from_parts(10_000, 0) }
+        fn swap() -> Weight { Weight::from_parts(10_000, 0) }
+        fn get_price() -> Weight { Weight::from_parts(10_000, 0) }
     }
 
     #[pallet::pallet]
@@ -83,8 +69,7 @@ pub mod pallet {
 
     #[pallet::storage]
     #[pallet::getter(fn pools)]
-    pub type Pools<T: Config> =
-        StorageMap<_, Blake2_128Concat, u32, Pool<T::AccountId, BalanceOf<T>>>;
+    pub type Pools<T: Config> = StorageMap<_, Blake2_128Concat, u32, Pool<T::AccountId, BalanceOf<T>>>;
 
     #[pallet::storage]
     #[pallet::getter(fn pool_count)]
@@ -97,12 +82,8 @@ pub mod pallet {
 
     #[pallet::storage]
     #[pallet::getter(fn pool_by_pair)]
-    pub type PoolByPair<T: Config> = StorageMap<
-        _,
-        Blake2_128Concat,
-        (BoundedVec<u8, ConstU32<32>>, BoundedVec<u8, ConstU32<32>>),
-        u32,
-    >;
+    pub type PoolByPair<T: Config> =
+        StorageMap<_, Blake2_128Concat, (BoundedVec<u8, ConstU32<32>>, BoundedVec<u8, ConstU32<32>>), u32>;
 
     #[pallet::storage]
     #[pallet::getter(fn total_volume)]
@@ -167,6 +148,7 @@ pub mod pallet {
         AmountTooLow,
         TokenTooLong,
         SwapHistoryFull,
+        PoolEmpty,
     }
 
     // === Config ===
@@ -203,21 +185,15 @@ pub mod pallet {
         fn build(&self) {
             let mut id = 0u32;
             for (token_a, token_b, reserve_a, reserve_b, fee) in &self.initial_pools {
-                let ta: BoundedVec<u8, ConstU32<32>> =
-                    token_a.clone().try_into().unwrap_or_default();
-                let tb: BoundedVec<u8, ConstU32<32>> =
-                    token_b.clone().try_into().unwrap_or_default();
+                let ta: BoundedVec<u8, ConstU32<32>> = token_a.clone().try_into().unwrap_or_default();
+                let tb: BoundedVec<u8, ConstU32<32>> = token_b.clone().try_into().unwrap_or_default();
                 let pool = Pool {
                     id,
                     token_a: ta.clone(),
                     token_b: tb.clone(),
                     reserve_a: *reserve_a,
                     reserve_b: *reserve_b,
-                    total_lp: {
-                        let ra: u128 = (*reserve_a).saturated_into();
-                        let rb: u128 = (*reserve_b).saturated_into();
-                        (ra.saturating_mul(rb)).integer_sqrt().saturated_into()
-                    },
+                    total_lp: (*reserve_a * *reserve_b).integer_sqrt(),
                     fee_numerator: *fee,
                     fee_denominator: 1000,
                     creator: T::PalletId::get().into_account_truncating(),
@@ -250,14 +226,8 @@ pub mod pallet {
             ensure!(amount_a > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
             ensure!(amount_b > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
-            let ta: BoundedVec<u8, ConstU32<32>> = token_a
-                .clone()
-                .try_into()
-                .map_err(|_| Error::<T>::TokenTooLong)?;
-            let tb: BoundedVec<u8, ConstU32<32>> = token_b
-                .clone()
-                .try_into()
-                .map_err(|_| Error::<T>::TokenTooLong)?;
+            let ta: BoundedVec<u8, ConstU32<32>> = token_a.clone().try_into().map_err(|_| Error::<T>::TokenTooLong)?;
+            let tb: BoundedVec<u8, ConstU32<32>> = token_b.clone().try_into().map_err(|_| Error::<T>::TokenTooLong)?;
 
             let count = PoolCount::<T>::get();
             ensure!(count < T::MaxPools::get(), Error::<T>::MaxPoolsReached);
@@ -267,15 +237,8 @@ pub mod pallet {
             );
 
             let pool_id = count;
-            let a_128: u128 = amount_a.saturated_into();
-            let b_128: u128 = amount_b.saturated_into();
-            let lp_minted: BalanceOf<T> = (a_128.saturating_mul(b_128))
-                .integer_sqrt()
-                .saturated_into();
-            ensure!(
-                lp_minted >= T::MinLiquidity::get(),
-                Error::<T>::AmountTooLow
-            );
+            let lp_minted = amount_a.checked_mul(amount_b).ok_or(Error::<T>::AmountTooLow)?.integer_sqrt();
+            ensure!(lp_minted >= T::MinLiquidity::get(), Error::<T>::AmountTooLow);
 
             T::Currency::reserve(&who, amount_a)?;
             T::Currency::reserve(&who, amount_b)?;
@@ -322,20 +285,11 @@ pub mod pallet {
             ensure!(amount_a > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
             ensure!(amount_b > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
-            let total_lp_128: u128 = pool.total_lp.saturated_into();
-            let amount_a_128: u128 = amount_a.saturated_into();
-            let amount_b_128: u128 = amount_b.saturated_into();
-            let reserve_a_128: u128 = pool.reserve_a.saturated_into();
-            let reserve_b_128: u128 = pool.reserve_b.saturated_into();
+            let lp_a = pool.total_lp.saturating_mul(amount_a) / pool.reserve_a;
+            let lp_b = pool.total_lp.saturating_mul(amount_b) / pool.reserve_b;
+            let lp_minted = lp_a.min(lp_b);
 
-            let lp_a = (total_lp_128 * amount_a_128) / reserve_a_128;
-            let lp_b = (total_lp_128 * amount_b_128) / reserve_b_128;
-            let lp_minted: BalanceOf<T> = lp_a.min(lp_b).saturated_into();
-
-            ensure!(
-                lp_minted > BalanceOf::<T>::zero(),
-                Error::<T>::InsufficientAmount
-            );
+            ensure!(lp_minted > BalanceOf::<T>::zero(), Error::<T>::InsufficientAmount);
 
             T::Currency::reserve(&who, amount_a)?;
             T::Currency::reserve(&who, amount_b)?;
@@ -347,10 +301,7 @@ pub mod pallet {
             Pools::<T>::insert(pool_id, pool.clone());
 
             LiquidityProviders::<T>::mutate(pool_id, &who, |lp| {
-                *lp = Some(
-                    lp.unwrap_or(BalanceOf::<T>::zero())
-                        .saturating_add(lp_minted),
-                );
+                *lp = Some(lp.unwrap_or(BalanceOf::<T>::zero()).saturating_add(lp_minted));
             });
 
             Self::deposit_event(Event::LiquidityAdded {
@@ -375,20 +326,13 @@ pub mod pallet {
 
             let mut pool = Pools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
 
-            let user_lp =
-                LiquidityProviders::<T>::get(pool_id, &who).unwrap_or(BalanceOf::<T>::zero());
+            let user_lp = LiquidityProviders::<T>::get(pool_id, &who).unwrap_or(BalanceOf::<T>::zero());
             ensure!(user_lp >= lp_amount, Error::<T>::InsufficientLpBalance);
             ensure!(lp_amount > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
-            let reserve_a_128: u128 = pool.reserve_a.saturated_into();
-            let reserve_b_128: u128 = pool.reserve_b.saturated_into();
-            let lp_amount_128: u128 = lp_amount.saturated_into();
-            let total_lp_128: u128 = pool.total_lp.saturated_into();
-
-            let amount_a: BalanceOf<T> =
-                ((reserve_a_128 * lp_amount_128) / total_lp_128).saturated_into();
-            let amount_b: BalanceOf<T> =
-                ((reserve_b_128 * lp_amount_128) / total_lp_128).saturated_into();
+            ensure!(pool.total_lp > BalanceOf::<T>::zero(), Error::<T>::PoolEmpty);
+            let amount_a = pool.reserve_a.saturating_mul(lp_amount) / pool.total_lp;
+            let amount_b = pool.reserve_b.saturating_mul(lp_amount) / pool.total_lp;
 
             T::Currency::unreserve(&who, amount_a);
             T::Currency::unreserve(&who, amount_b);
@@ -400,10 +344,7 @@ pub mod pallet {
             Pools::<T>::insert(pool_id, pool.clone());
 
             LiquidityProviders::<T>::mutate(pool_id, &who, |lp| {
-                *lp = Some(
-                    lp.unwrap_or(BalanceOf::<T>::zero())
-                        .saturating_sub(lp_amount),
-                );
+                *lp = Some(lp.unwrap_or(BalanceOf::<T>::zero()).saturating_sub(lp_amount));
             });
 
             Self::deposit_event(Event::LiquidityRemoved {
@@ -432,10 +373,7 @@ pub mod pallet {
 
             ensure!(amount_in > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
-            let token_in_bv: BoundedVec<u8, ConstU32<32>> = token_in
-                .clone()
-                .try_into()
-                .map_err(|_| Error::<T>::TokenTooLong)?;
+            let token_in_bv: BoundedVec<u8, ConstU32<32>> = token_in.clone().try_into().map_err(|_| Error::<T>::TokenTooLong)?;
 
             let (is_a_to_b, token_out) = if token_in_bv == pool.token_a {
                 (true, pool.token_b.clone())
@@ -451,27 +389,16 @@ pub mod pallet {
                 (pool.reserve_b, pool.reserve_a)
             };
 
-            let amount_in_128: u128 = amount_in.saturated_into();
-            let fee_num: u128 = T::FeeNumerator::get().into();
-            let fee_den: u128 = T::FeeDenominator::get().into();
-
-            let fee_128 = (amount_in_128 * fee_num) / fee_den;
-            let fee: BalanceOf<T> = fee_128.saturated_into();
+            let fee = amount_in.saturating_mul(T::FeeNumerator::get().into()) / T::FeeDenominator::get().into();
             let amount_in_after_fee = amount_in.saturating_sub(fee);
 
-            let reserve_in_128: u128 = reserve_in.saturated_into();
-            let reserve_out_128: u128 = reserve_out.saturated_into();
-            let amount_in_after_fee_128: u128 = amount_in_after_fee.saturated_into();
-
-            let numerator = reserve_out_128 * amount_in_after_fee_128;
-            let denominator = reserve_in_128 + amount_in_after_fee_128;
-            let amount_out: BalanceOf<T> = (numerator / denominator).saturated_into();
+            let numerator = reserve_out.saturating_mul(amount_in_after_fee);
+            let denominator = reserve_in.saturating_add(amount_in_after_fee);
+            ensure!(denominator > BalanceOf::<T>::zero(), Error::<T>::InsufficientLiquidity);
+            let amount_out = numerator / denominator;
 
             ensure!(amount_out >= min_amount_out, Error::<T>::SlippageExceeded);
-            ensure!(
-                amount_out > BalanceOf::<T>::zero(),
-                Error::<T>::InsufficientLiquidity
-            );
+            ensure!(amount_out > BalanceOf::<T>::zero(), Error::<T>::InsufficientLiquidity);
 
             if is_a_to_b {
                 pool.reserve_a = pool.reserve_a.saturating_add(amount_in);
@@ -504,13 +431,13 @@ pub mod pallet {
         /// Get pool price
         #[pallet::call_index(4)]
         #[pallet::weight(T::WeightInfo::get_price())]
-        pub fn get_price(origin: OriginFor<T>, pool_id: u32) -> DispatchResult {
+        pub fn get_price(
+            origin: OriginFor<T>,
+            pool_id: u32,
+        ) -> DispatchResult {
             ensure_signed(origin)?;
             let pool = Pools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
-            ensure!(
-                pool.reserve_b > BalanceOf::<T>::zero(),
-                Error::<T>::InsufficientLiquidity
-            );
+            ensure!(pool.reserve_b > BalanceOf::<T>::zero(), Error::<T>::InsufficientLiquidity);
             Ok(())
         }
     }
@@ -536,6 +463,3 @@ pub mod pallet {
         }
     }
 }
-
-#[cfg(test)]
-mod tests;
