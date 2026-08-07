@@ -81,3 +81,6 @@ pub mod pallet {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;
