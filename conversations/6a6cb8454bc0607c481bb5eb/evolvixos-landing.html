@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EvolvixOS — The AI Engineering Operating System</title>
+  <meta name="description" content="EvolvixOS is the world's first AI Engineering Operating System. Five autonomous AI agents design, build, deploy, and secure your software 24/7. 16 core agents, 24 AI providers, plugin marketplace, and enterprise-grade infrastructure." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="EvolvixOS — The AI Engineering Operating System" />
+  <meta property="og:description" content="Autonomous AI agents that design, build, deploy, and secure software 24/7. 34 containers, 615+ tests, plugin marketplace." />
+  <meta property="og:url" content="https://evolvixos.com" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "EvolvixOS",
+    "description": "The AI Engineering Operating System — autonomous AI agents that design, build, deploy, and secure software 24/7.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Web, Self-hosted",
+    "creator": { "@type": "Organization", "name": "Protremix" },
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --bg-subtle: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      --border: #e2e8f0;
+      --border-hover: #cbd5e1;
+      --primary: #6366f1;
+      --primary-hover: #5457e6;
+      --primary-light: #eef2ff;
+      --primary-border: #c7d2fe;
+      --accent: #8b5cf6;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --radius: 12px;
+      --radius-lg: 16px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.10);
+      --transition: 200ms ease-out;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; letter-spacing: -0.02em; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    a { color: var(--primary); text-decoration: none; transition: var(--transition); }
+    a:hover { color: var(--primary-hover); }
+
+    /* NAV */
+    .nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+    .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; }
+    .nav-brand { display: flex; align-items: center; gap: 10px; font-family: 'Space Grotesk'; font-weight: 700; font-size: 20px; color: var(--text); }
+    .nav-brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 12px rgba(99,102,241,0.4); }
+    .nav-links { display: flex; gap: 32px; }
+    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta { display: flex; gap: 12px; align-items: center; }
+    .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; transition: var(--transition); cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--border-hover); background: var(--bg-subtle); }
+
+    /* HERO */
+    .hero { max-width: 1200px; margin: 0 auto; padding: 80px 24px 40px; text-align: center; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--primary-light); border: 1px solid var(--primary-border); border-radius: 100px; font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 24px; }
+    .hero-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .hero h1 { font-size: 52px; line-height: 1.1; margin-bottom: 20px; max-width: 800px; margin-left: auto; margin-right: auto; }
+    .hero h1 span { color: var(--primary); }
+    .hero p { font-size: 18px; color: var(--text-muted); max-width: 640px; margin: 0 auto 32px; line-height: 1.7; }
+    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .hero-actions .btn { padding: 14px 28px; font-size: 15px; }
+
+    /* STATS BAR */
+    .stats-bar { max-width: 1100px; margin: 48px auto; padding: 0 24px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .stat-item { background: var(--card); padding: 32px 24px; text-align: center; }
+    .stat-value { font-family: 'Space Grotesk'; font-size: 36px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .stat-value.indigo { color: var(--primary); }
+    .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* SECTIONS */
+    .section { max-width: 1200px; margin: 0 auto; padding: 80px 24px; }
+    .section-header { text-align: center; margin-bottom: 56px; }
+    .section-label { font-size: 13px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+    .section-header h2 { font-size: 36px; margin-bottom: 16px; }
+    .section-header p { font-size: 17px; color: var(--text-muted); max-width: 600px; margin: 0 auto; }
+
+    /* FEATURES */
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; transition: var(--transition); }
+    .feature-card:hover { border-color: var(--primary-border); box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+    .feature-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 20px; }
+    .feature-card h3 { font-size: 18px; margin-bottom: 8px; }
+    .feature-card p { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+    .feature-tag { display: inline-block; margin-top: 16px; padding: 4px 12px; background: var(--bg-subtle); border-radius: 6px; font-family: 'JetBrains Mono'; font-size: 12px; color: var(--text-muted); }
+
+    /* AGENT CARDS */
+    .agents-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .agent-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; transition: var(--transition); }
+    .agent-card:hover { border-color: var(--primary-border); box-shadow: var(--shadow-md); }
+    .agent-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 16px; }
+    .agent-card h4 { font-size: 15px; margin-bottom: 6px; }
+    .agent-card p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+    .agent-status { display: inline-block; margin-top: 12px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 100px; }
+    .agent-status.live { background: #dcfce7; color: #16a34a; }
+    .agent-status.auto { background: #dbeafe; color: #2563eb; }
+
+    /* INFRASTRUCTURE */
+    .infra-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .infra-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; display: flex; align-items: center; gap: 16px; }
+    .infra-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .infra-info h4 { font-size: 14px; margin-bottom: 2px; }
+    .infra-info p { font-size: 12px; color: var(--text-muted); }
+    .infra-badge { margin-left: auto; font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 600; color: var(--emerald); }
+
+    /* PROVIDERS */
+    .providers-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+    .provider-pill { background: var(--card); border: 1px solid var(--border); border-radius: 100px; padding: 10px 20px; text-align: center; font-size: 13px; font-weight: 500; transition: var(--transition); }
+    .provider-pill:hover { border-color: var(--primary-border); background: var(--primary-light); }
+
+    /* METRICS */
+    .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .metric-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; }
+    .metric-value { font-family: 'Space Grotesk'; font-size: 48px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+    .metric-label { font-size: 14px; color: var(--text-muted); }
+    .metric-bar { margin-top: 20px; height: 8px; background: var(--bg-subtle); border-radius: 100px; overflow: hidden; }
+    .metric-bar-fill { height: 100%; background: var(--primary); border-radius: 100px; }
+
+    /* ROADMAP */
+    .roadmap { position: relative; padding-left: 32px; border-left: 2px solid var(--border); }
+    .roadmap-item { position: relative; margin-bottom: 40px; }
+    .roadmap-item::before { content: ''; position: absolute; left: -39px; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--border); border: 3px solid var(--bg); }
+    .roadmap-item.done::before { background: var(--primary); }
+    .roadmap-item.active::before { background: var(--accent); box-shadow: 0 0 0 4px rgba(139,92,246,0.15); }
+    .roadmap-status { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+    .roadmap-status.done { color: var(--primary); }
+    .roadmap-status.active { color: var(--accent); }
+    .roadmap-status.planned { color: var(--text-light); }
+    .roadmap-item h4 { font-size: 16px; margin-bottom: 6px; }
+    .roadmap-item p { font-size: 14px; color: var(--text-muted); }
+
+    /* CTA */
+    .cta { max-width: 1100px; margin: 80px auto; padding: 0 24px; }
+    .cta-card { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: var(--radius-lg); padding: 64px 48px; text-align: center; color: #fff; }
+    .cta-card h2 { font-size: 32px; margin-bottom: 16px; color: #fff; }
+    .cta-card p { font-size: 17px; opacity: 0.9; max-width: 500px; margin: 0 auto 32px; }
+    .cta-card .btn { background: #fff; color: var(--primary); padding: 14px 32px; font-size: 15px; }
+    .cta-card .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+
+    /* FOOTER */
+    .footer { border-top: 1px solid var(--border); background: var(--card); padding: 48px 24px 32px; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
+    .footer-brand h4 { font-size: 18px; margin-bottom: 12px; }
+    .footer-brand p { font-size: 14px; color: var(--text-muted); max-width: 280px; }
+    .footer-col h5 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 16px; }
+    .footer-col a { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 10px; }
+    .footer-col a:hover { color: var(--text); }
+    .footer-bottom { max-width: 1200px; margin: 32px auto 0; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .agents-grid { grid-template-columns: repeat(2, 1fr); }
+      .infra-grid { grid-template-columns: repeat(2, 1fr); }
+      .providers-grid { grid-template-columns: repeat(4, 1fr); }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero h1 { font-size: 36px; }
+      .hero { padding: 48px 24px 32px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .features-grid { grid-template-columns: 1fr; }
+      .agents-grid { grid-template-columns: 1fr; }
+      .infra-grid { grid-template-columns: 1fr; }
+      .providers-grid { grid-template-columns: repeat(3, 1fr); }
+      .metrics-grid { grid-template-columns: 1fr; }
+      .section { padding: 56px 24px; }
+      .section-header h2 { font-size: 28px; }
+      .cta-card { padding: 40px 24px; }
+      .cta-card h2 { font-size: 24px; }
+      .footer-inner { grid-template-columns: 1fr; gap: 24px; }
+      .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+    }
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .providers-grid { grid-template-columns: repeat(2, 1fr); }
+      .hero h1 { font-size: 30px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-brand">
+        <span class="nav-brand-dot"></span>
+        EvolvixOS
+      </a>
+      <nav class="nav-links">
+        <a href="#agents">Agents</a>
+        <a href="#features">Features</a>
+        <a href="#infrastructure">Infrastructure</a>
+        <a href="#providers">Providers</a>
+        <a href="#roadmap">Roadmap</a>
+      </nav>
+      <div class="nav-cta">
+        <a href="/marketplace" class="btn btn-secondary">Marketplace</a>
+        <a href="#" class="btn btn-primary">Get Started</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        34 Containers Running · Production Live
+      </div>
+      <h1>The <span>AI Engineering</span><br>Operating System</h1>
+      <p>EvolvixOS deploys autonomous AI agents that design, build, test, and secure your software 24/7. 16 core agents, 24 AI providers, a plugin marketplace, and enterprise-grade infrastructure — all in one platform.</p>
+      <div class="hero-actions">
+        <a href="/agents" class="btn btn-primary">Explore Agents →</a>
+        <a href="#features" class="btn btn-secondary">View Features</a>
+      </div>
+    </section>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value indigo mono">34</div>
+          <div class="stat-label">Live Containers</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value mono">615+</div>
+          <div class="stat-label">Tests Passing</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value mono">16</div>
+          <div class="stat-label">Core AI Agents</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value mono">24</div>
+          <div class="stat-label">AI Providers</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AGENTS -->
+    <section class="section" id="agents">
+      <div class="section-header">
+        <div class="section-label">AI Agents</div>
+        <h2>Sixteen agents working around the clock</h2>
+        <p>Each agent specializes in a specific engineering task — from code review to security to deployment.</p>
+      </div>
+      <div class="agents-grid">
+        <div class="agent-card">
+          <div class="agent-icon">🤖</div>
+          <h4>Code Reviewer</h4>
+          <p>Automated code quality, style, and security review for every pull request.</p>
+          <span class="agent-status auto">Auto-Run</span>
+        </div>
+        <div class="agent-card">
+          <div class="agent-icon">🏗️</div>
+          <h4>Architecture Reviewer</h4>
+          <p>Analyze system design, patterns, and structural decisions.</p>
+          <span class="agent-status auto">Auto-Run</span>
+        </div>
+        <div class="agent-card">
+          <div class="agent-icon">🔒</div>
+          <h4>Security Auditor</h4>
+          <p>Continuous vulnerability scanning and penetration testing.</p>
+          <span class="agent-status auto">Auto-Run</span>
+        </div>
+        <div class="agent-card">
+          <div class="agent-icon">🧪</div>
+          <h4>Test Generator</h4>
+          <p>Generate unit, integration, and end-to-end tests automatically.</p>
+          <span class="agent-status auto">Auto-Run</span>
+        </div>
+        <div class="agent-card">
+          <div class="agent-icon">📝</div>
+          <h4>Documentation Writer</h4>
+          <p>Auto-generate API docs, runbooks, and architecture guides.</p>
+          <span class="agent-status auto">Auto-Run</span>
+        </div>
+        <div class="agent-card">
+          <div class="agent-icon">🚀</div>
+          <h4>Deployment Manager</h4>
+          <p>Manage CI/CD pipelines, rollouts, and rollback strategies.</p>
+          <span class="agent-status live">Live</span>
+        </div>
+        <div class="agent-card">
+          <div class="agent-icon">📊</div>
+          <h4>Performance Monitor</h4>
+          <p>Track metrics, set alerts, and optimize system performance.</p>
+          <span class="agent-status live">Live</span>
+        </div>
+        <div class="agent-card">
+          <div class="agent-icon">🔍</div>
+          <h4>Sentiment Analyzer</h4>
+          <p>Analyze user feedback and team sentiment in real-time.</p>
+          <span class="agent-status live">Live</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="section" id="features">
+      <div class="section-header">
+        <div class="section-label">Platform Features</div>
+        <h2>Everything an engineering team needs</h2>
+        <p>From AI gateway to plugin marketplace to enterprise SSO — built for production.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🧠</div>
+          <h3>AI Gateway</h3>
+          <p>Universal router for 24 AI providers with intelligent load balancing, caching, rate limiting, and circuit breakers. Routes by capability, cost, and latency.</p>
+          <span class="feature-tag">24 Providers · 10 LLM · 14 Specialized</span>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔌</div>
+          <h3>Plugin Marketplace</h3>
+          <p>12 pre-seeded plugins with verification pipeline, dependency management, versioning, paid plugins, and analytics. Publish, install, and review in one place.</p>
+          <span class="feature-tag">12 Plugins · 8-Step Verification</span>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎭</div>
+          <h3>Agent Orchestration</h3>
+          <p>DAG-based multi-agent workflows with 9 step types, retry logic, parallel execution, and 4 built-in templates including code-review pipeline.</p>
+          <span class="feature-tag">DAG · 9 Step Types · 4 Templates</span>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🏢</div>
+          <h3>Enterprise & SSO</h3>
+          <p>SAML 2.0, OAuth2, multi-tenancy with organizations, GDPR compliance (data export, deletion, consent), audit logs, and API usage tracking.</p>
+          <span class="feature-tag">SAML · OAuth2 · GDPR · Multi-Tenant</span>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🛡️</div>
+          <h3>RBAC & Security</h3>
+          <p>Granular role-based access control with 6 system roles, 33 permissions across 14 resources, custom roles, and allow/deny policies with conditions.</p>
+          <span class="feature-tag">6 Roles · 33 Permissions · 14 Resources</span>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⌨️</div>
+          <h3>Developer SDK & CLI</h3>
+          <p>Python and TypeScript SDKs with async clients, plus a system-wide CLI with project scaffolding, contract management, and deployment.</p>
+          <span class="feature-tag">Python · TypeScript · CLI</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- INFRASTRUCTURE -->
+    <section class="section" id="infrastructure">
+      <div class="section-header">
+        <div class="section-label">Infrastructure</div>
+        <h2>Production-grade from day one</h2>
+        <p>34 containers running with PostgreSQL, Redis, WebSocket, and Nginx — all monitored and healthy.</p>
+      </div>
+      <div class="infra-grid">
+        <div class="infra-card">
+          <div class="infra-icon">🐘</div>
+          <div class="infra-info">
+            <h4>PostgreSQL</h4>
+            <p>Primary data store</p>
+          </div>
+          <span class="infra-badge">Connected</span>
+        </div>
+        <div class="infra-card">
+          <div class="infra-icon">⚡</div>
+          <div class="infra-info">
+            <h4>Redis</h4>
+            <p>Cache & rate limiting</p>
+          </div>
+          <span class="infra-badge">Connected</span>
+        </div>
+        <div class="infra-card">
+          <div class="infra-icon">🐳</div>
+          <div class="infra-info">
+            <h4>Docker</h4>
+            <p>34 containers</p>
+          </div>
+          <span class="infra-badge">Running</span>
+        </div>
+        <div class="infra-card">
+          <div class="infra-icon">🌐</div>
+          <div class="infra-info">
+            <h4>Nginx</h4>
+            <p>Reverse proxy + TLS</p>
+          </div>
+          <span class="infra-badge">Active</span>
+        </div>
+        <div class="infra-card">
+          <div class="infra-icon">📡</div>
+          <div class="infra-info">
+            <h4>WebSocket</h4>
+            <p>Real-time communication</p>
+          </div>
+          <span class="infra-badge">Live</span>
+        </div>
+        <div class="infra-card">
+          <div class="infra-icon">📬</div>
+          <div class="infra-info">
+            <h4>Task Queue</h4>
+            <p>DLQ + retry + persistence</p>
+          </div>
+          <span class="infra-badge">Healthy</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROVIDERS -->
+    <section class="section" id="providers">
+      <div class="section-header">
+        <div class="section-label">AI Providers</div>
+        <h2>Twenty-four providers, one gateway</h2>
+        <p>Route to any AI model by capability, cost, or latency — with automatic fallback.</p>
+      </div>
+      <div class="providers-grid">
+        <div class="provider-pill">OpenAI GPT-4o</div>
+        <div class="provider-pill">Anthropic Claude</div>
+        <div class="provider-pill">Sentiment Analyzer</div>
+        <div class="provider-pill">Code Reviewer</div>
+        <div class="provider-pill">Verdis Blockchain</div>
+        <div class="provider-pill">Redis Cache</div>
+        <div class="provider-pill">Prometheus</div>
+        <div class="provider-pill">Email Notifier</div>
+        <div class="provider-pill">Webhook Dispatcher</div>
+        <div class="provider-pill">File Storage</div>
+        <div class="provider-pill">ERC20 Token</div>
+        <div class="provider-pill">Carbon Credit</div>
+      </div>
+    </section>
+
+    <!-- METRICS -->
+    <section class="section">
+      <div class="section-header">
+        <div class="section-label">Platform Metrics</div>
+        <h2>Real numbers, real production</h2>
+      </div>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-value mono">615+</div>
+          <div class="metric-label">Tests passing across all 34 containers</div>
+          <div class="metric-bar"><div class="metric-bar-fill" style="width: 98%"></div></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value mono">47</div>
+          <div class="metric-label">Documented API endpoints across services</div>
+          <div class="metric-bar"><div class="metric-bar-fill" style="width: 85%"></div></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value mono">33</div>
+          <div class="metric-label">RBAC permissions across 14 resources</div>
+          <div class="metric-bar"><div class="metric-bar-fill" style="width: 92%"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROADMAP -->
+    <section class="section" id="roadmap">
+      <div class="section-header">
+        <div class="section-label">Roadmap</div>
+        <h2>What's built and what's next</h2>
+      </div>
+      <div class="arch-card" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:48px;">
+        <div class="roadmap">
+          <div class="roadmap-item done">
+            <div class="roadmap-status done">✓ Completed</div>
+            <h4>Core Platform (Phases 88–126)</h4>
+            <p>AI Gateway, Agent Framework, Plugin Marketplace, Smart Contracts, Developer CLI, Orchestration, Enterprise SSO, RBAC, K8s hardening, security audit.</p>
+          </div>
+          <div class="roadmap-item done">
+            <div class="roadmap-status done">✓ Completed</div>
+            <h4>Infrastructure Hardening</h4>
+            <p>34 containers, PostgreSQL persistence, Redis caching, WebSocket auth, DLQ with retry, K8s manifests, network policies, PDBs, notification channels.</p>
+          </div>
+          <div class="roadmap-item active">
+            <div class="roadmap-status active">● In Progress</div>
+            <h4>Premium Platform Launch</h4>
+            <p>Light-mode SaaS interface, design studio agent, production hardening, load testing, developer documentation, SDK release.</p>
+          </div>
+          <div class="roadmap-item">
+            <div class="roadmap-status planned">○ Planned</div>
+            <h4>Public API & Marketplace Launch</h4>
+            <p>Public API access, plugin marketplace monetization, community features, reputation system, developer tutorials.</p>
+          </div>
+          <div class="roadmap-item">
+            <div class="roadmap-status planned">○ Planned</div>
+            <h4>Enterprise Expansion</h4>
+            <p>K8s deployment, auto-scaling, multi-region support, on-premise deployment, enterprise support tier.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+      <div class="cta-card">
+        <h2>Let AI engineering handle the heavy lifting</h2>
+        <p>Deploy autonomous agents that write, review, test, and secure your code — 24/7.</p>
+        <a href="/agents" class="btn">Explore Agents →</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <h4>EvolvixOS</h4>
+        <p>The AI Engineering Operating System. Autonomous agents that design, build, deploy, and secure software 24/7. Built by Protremix.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Platform</h5>
+        <a href="/agents">Agents</a>
+        <a href="/ai-gateway">AI Gateway</a>
+        <a href="/marketplace">Marketplace</a>
+        <a href="/orchestration">Orchestration</a>
+      </div>
+      <div class="footer-col">
+        <h5>Developers</h5>
+        <a href="/contracts">Smart Contracts</a>
+        <a href="/dev-support">Documentation</a>
+        <a href="#">SDK</a>
+        <a href="#">GitHub</a>
+      </div>
+      <div class="footer-col">
+        <h5>Enterprise</h5>
+        <a href="/enterprise">SSO & SAML</a>
+        <a href="/rbac">RBAC</a>
+        <a href="/monitoring">Monitoring</a>
+        <a href="/infra">Infrastructure</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 EvolvixOS · Powered by Protremix</span>
+      <span>evolvixos.com · 62.238.61.145</span>
+    </div>
+  </footer>
+</body>
+</html>
