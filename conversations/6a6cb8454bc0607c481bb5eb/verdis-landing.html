@@ -1,2315 +1,556 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verdis Chain | The World's First Green Blockchain Engineered in Rust</title>
-    <meta name="description" content="Verdis Chain is a carbon-negative, high-performance Layer-1 blockchain built on Substrate and Rust. Featuring native DPoS consensus, EVM compatibility, AMM DEX, and zero-carbon proofs.">
-    <meta property="og:title" content="Verdis Chain — Green Blockchain Infrastructure">
-    <meta property="og:description" content="Engineered in Rust. Carbon-negative, ultra-fast, and EVM compatible. Explore the architecture.">
-    <meta property="og:type" content="website">
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-
-    <style>
-        /* ==========================================================================
-           DESIGN SYSTEM & CSS VARIABLES (LIGHT THEME)
-           ========================================================================== */
-        :root {
-            --bg-main: #f8fafc;
-            --bg-card: #ffffff;
-            --bg-card-hover: #f1f5f9;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --text-light: #94a3b8;
-            --border-color: #e2e8f0;
-            --border-focus: #a7f3d0;
-
-            --primary: #00a86b;
-            --primary-hover: #009460;
-            --primary-light: #ecfdf5;
-            --primary-border: #a7f3d0;
-
-            --accent-emerald: #10b981;
-            --accent-teal: #2dd4bf;
-            --accent-indigo: #6366f1;
-
-            --font-heading: 'Space Grotesk', -apple-system, sans-serif;
-            --font-body: 'Inter', -apple-system, sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 24px;
-
-            --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
-            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.10);
-            --shadow-xl: 0 16px 36px rgba(15, 23, 42, 0.12);
-            --shadow-glow: 0 0 25px rgba(0, 168, 107, 0.22);
-
-            --mouse-x: 50vw;
-            --mouse-y: 50vh;
-        }
-
-        /* Reset & Base Styles */
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html {
-            scroll-behavior: smooth;
-            font-size: 16px;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            font-family: var(--font-body);
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        body {
-            position: relative;
-            min-height: 100vh;
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        /* WCAG Focus Visible */
-        a:focus-visible, button:focus-visible {
-            outline: 3px solid var(--primary);
-            outline-offset: 3px;
-            border-radius: 4px;
-        }
-
-        /* Typography */
-        h1, h2, h3, h4, h5, h6 {
-            font-family: var(--font-heading);
-            color: var(--text-main);
-            line-height: 1.15;
-            letter-spacing: -0.02em;
-        }
-
-        .font-mono {
-            font-family: var(--font-mono);
-        }
-
-        /* Gradient Text */
-        .gradient-text {
-            background: linear-gradient(135deg, #00a86b 0%, #10b981 50%, #2dd4bf 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: inline-block;
-        }
-
-        /* ==========================================================================
-           1. CURSOR GLOW EFFECT
-           ========================================================================== */
-        #cursor-glow {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            pointer-events: none;
-            z-index: 9999;
-            background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(0, 168, 107, 0.08), transparent 80%);
-            transition: opacity 0.3s ease;
-        }
-
-        /* ==========================================================================
-           2. SCROLL PROGRESS BAR
-           ========================================================================== */
-        #scroll-progress-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: rgba(226, 232, 240, 0.5);
-            z-index: 10000;
-        }
-
-        #scroll-progress {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #00a86b, #10b981, #2dd4bf);
-            transition: width 0.1s linear;
-        }
-
-        /* ==========================================================================
-           HEADER & NAVIGATION (11. NAV UNDERLINE & 12. BUTTON SHINE)
-           ========================================================================== */
-        header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
-            background: rgba(248, 250, 252, 0.88);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-            transition: padding 0.3s ease, background-color 0.3s ease;
-        }
-
-        .nav-container {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .brand-logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
-            font-family: var(--font-heading);
-            font-weight: 700;
-            font-size: 1.4rem;
-            color: var(--text-main);
-        }
-
-        .logo-icon {
-            width: 38px;
-            height: 38px;
-            background: linear-gradient(135deg, var(--primary), var(--accent-teal));
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 168, 107, 0.3);
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 2.25rem;
-            list-style: none;
-        }
-
-        .nav-link {
-            position: relative;
-            text-decoration: none;
-            color: var(--text-muted);
-            font-weight: 500;
-            font-size: 0.95rem;
-            padding: 0.5rem 0;
-            transition: color 0.2s ease;
-        }
-
-        .nav-link:hover {
-            color: var(--primary);
-        }
-
-        /* 11. Nav Underline Animation */
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: var(--primary);
-            transform: scaleX(0);
-            transform-origin: right;
-            transition: transform 0.3s cubic-bezier(0.65, 0, 0.35, 1);
-        }
-
-        .nav-link:hover::after {
-            transform: scaleX(1);
-            transform-origin: left;
-        }
-
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        /* 12. Button Shine Effect */
-        .btn-shine {
-            position: relative;
-            overflow: hidden;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--radius-md);
-            font-family: var(--font-body);
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.25s ease;
-            min-height: 44px;
-        }
-
-        .btn-shine::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(255, 255, 255, 0.45),
-                transparent
-            );
-            transition: left 0.65s ease;
-        }
-
-        .btn-shine:hover::before {
-            left: 100%;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-            border: none;
-            box-shadow: var(--shadow-md), 0 2px 8px rgba(0, 168, 107, 0.25);
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-hover);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg), var(--shadow-glow);
-        }
-
-        .btn-secondary {
-            background: white;
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .btn-secondary:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        /* Mobile Menu Button */
-        .mobile-toggle {
-            display: none;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0.5rem;
-            color: var(--text-main);
-            min-height: 44px;
-            min-width: 44px;
-        }
-
-        /* ==========================================================================
-           SECTION 1: HERO SECTION (FULL SCREEN, CINEMATIC)
-           ========================================================================== */
-        .hero-section {
-            position: relative;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 8rem 2rem 4rem;
-            overflow: hidden;
-            background: radial-gradient(circle at 50% 20%, #f0fdf4 0%, #f8fafc 70%);
-        }
-
-        /* 9. Hero Canvas Particle Network */
-        #hero-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: auto;
-        }
-
-        /* 8. Floating Gradient Blobs */
-        .blob-container {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 2;
-            overflow: hidden;
-        }
-
-        .blob {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(90px);
-            opacity: 0.35;
-            animation: floatBlob 20s infinite ease-in-out alternate;
-        }
-
-        .blob-1 {
-            top: -10%;
-            left: 15%;
-            width: 500px;
-            height: 500px;
-            background: #a7f3d0;
-            animation-duration: 18s;
-        }
-
-        .blob-2 {
-            top: 30%;
-            right: 10%;
-            width: 450px;
-            height: 450px;
-            background: #99f6e4;
-            animation-duration: 22s;
-            animation-delay: -5s;
-        }
-
-        .blob-3 {
-            bottom: 5%;
-            left: 30%;
-            width: 400px;
-            height: 400px;
-            background: #6ee7b7;
-            animation-duration: 25s;
-            animation-delay: -10s;
-        }
-
-        @keyframes floatBlob {
-            0% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(40px, -60px) scale(1.1); }
-            66% { transform: translate(-30px, 40px) scale(0.92); }
-            100% { transform: translate(20px, -20px) scale(1.05); }
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 10;
-            max-width: 900px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* Badge with Pulsing Dot */
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
-            padding: 0.45rem 1.1rem;
-            border-radius: 100px;
-            background: rgba(236, 253, 245, 0.9);
-            border: 1px solid var(--primary-border);
-            color: var(--primary);
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 10px rgba(0, 168, 107, 0.1);
-            backdrop-filter: blur(8px);
-        }
-
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--primary);
-            border-radius: 50%;
-            position: relative;
-        }
-
-        .pulse-dot::after {
-            content: '';
-            position: absolute;
-            inset: -4px;
-            border-radius: 50%;
-            background-color: var(--primary);
-            opacity: 0.6;
-            animation: pulseRing 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-        }
-
-        @keyframes pulseRing {
-            0% { transform: scale(0.5); opacity: 0.8; }
-            100% { transform: scale(2.2); opacity: 0; }
-        }
-
-        /* 10. Staggered Text Reveals */
-        .hero-stagger-1 {
-            opacity: 0;
-            transform: translateY(30px);
-            animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.1s;
-        }
-
-        .hero-stagger-2 {
-            opacity: 0;
-            transform: translateY(30px);
-            animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.3s;
-        }
-
-        .hero-stagger-3 {
-            opacity: 0;
-            transform: translateY(30px);
-            animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.5s;
-        }
-
-        .hero-stagger-4 {
-            opacity: 0;
-            transform: translateY(30px);
-            animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.7s;
-        }
-
-        @keyframes slideUpFade {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .hero-title {
-            font-size: clamp(2.5rem, 5vw + 1rem, 4.25rem);
-            font-weight: 700;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            letter-spacing: -0.03em;
-        }
-
-        .hero-subtitle {
-            font-size: clamp(1.1rem, 2vw, 1.35rem);
-            color: var(--text-muted);
-            max-width: 680px;
-            margin-bottom: 2.5rem;
-            font-weight: 400;
-        }
-
-        .hero-ctas {
-            display: flex;
-            align-items: center;
-            gap: 1.25rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .scroll-indicator {
-            position: absolute;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            font-family: var(--font-mono);
-            z-index: 10;
-            opacity: 0.8;
-            text-decoration: none;
-            transition: opacity 0.2s ease;
-        }
-
-        .scroll-indicator:hover {
-            opacity: 1;
-            color: var(--primary);
-        }
-
-        .scroll-arrow {
-            width: 20px;
-            height: 20px;
-            animation: bounceArrow 2s infinite;
-        }
-
-        @keyframes bounceArrow {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(6px); }
-            60% { transform: translateY(3px); }
-        }
-
-        /* ==========================================================================
-           SECTION HEADER UTILITY (UNIQUE SECTION DESIGNS)
-           ========================================================================== */
-        .section-header {
-            text-align: center;
-            max-width: 750px;
-            margin: 0 auto 4rem;
-        }
-
-        .section-tag {
-            display: inline-block;
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 0.75rem;
-            background: var(--primary-light);
-            padding: 0.25rem 0.75rem;
-            border-radius: 100px;
-            border: 1px solid var(--primary-border);
-        }
-
-        .section-title {
-            font-size: clamp(2rem, 3.5vw, 2.8rem);
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-
-        .section-desc {
-            font-size: 1.1rem;
-            color: var(--text-muted);
-        }
-
-        /* 3. Intersection Observer Scroll Reveal */
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* 13. Card Hover Lift + Shadow Utility */
-        .hover-lift {
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
-        }
-
-        .hover-lift:hover {
-            transform: translateY(-6px);
-            box-shadow: var(--shadow-xl), 0 0 20px rgba(0, 168, 107, 0.1);
-            border-color: var(--primary-border);
-        }
-
-        /* ==========================================================================
-           SECTION 2: HORIZONTAL SCROLL FEATURES (PINNED/STICKY)
-           ========================================================================== */
-        .horizontal-scroll-wrapper {
-            position: relative;
-            height: 260vh; /* Extra scroll distance for horizontal movement */
-            background: #ffffff;
-            border-top: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .horizontal-sticky-container {
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            overflow: hidden;
-            padding: 3rem 0;
-        }
-
-        .horizontal-header {
-            margin-bottom: 2rem;
-            padding: 0 2rem;
-        }
-
-        .horizontal-track-container {
-            width: 100%;
-            overflow: hidden;
-        }
-
-        /* 7. Horizontal Scroll Section */
-        .horizontal-track {
-            display: flex;
-            gap: 2rem;
-            padding: 1rem 5vw;
-            width: max-content;
-            will-change: transform;
-            transition: transform 0.1s ease-out;
-        }
-
-        .feature-card {
-            width: 380px;
-            flex-shrink: 0;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 2.25rem;
-            box-shadow: var(--shadow-md);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-        }
-
-        .feature-icon-box {
-            width: 52px;
-            height: 52px;
-            border-radius: var(--radius-md);
-            background: var(--primary-light);
-            border: 1px solid var(--primary-border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-            margin-bottom: 1.5rem;
-        }
-
-        .feature-card h3 {
-            font-size: 1.35rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .feature-card p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-bottom: 1.75rem;
-        }
-
-        .tag-pill {
-            display: inline-block;
-            align-self: flex-start;
-            padding: 0.3rem 0.75rem;
-            border-radius: 100px;
-            background: #f1f5f9;
-            color: var(--text-main);
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            font-weight: 600;
-            border: 1px solid var(--border-color);
-        }
-
-        /* ==========================================================================
-           SECTION 3: VERTICAL TIMELINE (ARCHITECTURE LAYERS)
-           ========================================================================== */
-        .timeline-section {
-            padding: 7rem 2rem;
-            background: var(--bg-main);
-            position: relative;
-        }
-
-        .timeline-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            position: relative;
-            padding: 2rem 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* 14. Timeline Line Fill Animation */
-        .timeline-center-line {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 50%;
-            width: 4px;
-            background: var(--border-color);
-            transform: translateX(-50%);
-            border-radius: 2px;
-        }
-
-        .timeline-line-fill {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 0%;
-            background: linear-gradient(180deg, var(--primary), var(--accent-teal));
-            border-radius: 2px;
-            transition: height 0.1s linear;
-        }
-
-        .timeline-item {
-            display: flex;
-            justify-content: flex-end;
-            padding-right: 50px;
-            position: relative;
-            margin-bottom: 4rem;
-            width: 50%;
-        }
-
-        .timeline-item.right {
-            align-self: flex-end;
-            margin-left: 50%;
-            padding-right: 0;
-            padding-left: 50px;
-            justify-content: flex-start;
-        }
-
-        .timeline-dot {
-            position: absolute;
-            top: 24px;
-            right: -12px;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: white;
-            border: 4px solid var(--primary);
-            box-shadow: 0 0 10px rgba(0, 168, 107, 0.4);
-            z-index: 5;
-            transition: transform 0.3s ease;
-        }
-
-        .timeline-item.right .timeline-dot {
-            right: auto;
-            left: -12px;
-        }
-
-        .timeline-card {
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            box-shadow: var(--shadow-md);
-            width: 100%;
-            max-width: 440px;
-            position: relative;
-        }
-
-        .timeline-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 0.75rem;
-        }
-
-        .timeline-number {
-            font-family: var(--font-mono);
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .status-badge {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--primary);
-            background: var(--primary-light);
-            padding: 0.25rem 0.6rem;
-            border-radius: 100px;
-            border: 1px solid var(--primary-border);
-        }
-
-        .timeline-card h3 {
-            font-size: 1.25rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .timeline-card p {
-            color: var(--text-muted);
-            font-size: 0.92rem;
-            line-height: 1.55;
-        }
-
-        /* ==========================================================================
-           SECTION 4: 3D TILT CARDS (PALLETS)
-           ========================================================================== */
-        .pallets-section {
-            padding: 7rem 2rem;
-            background: #ffffff;
-            border-top: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        /* 6. 3D Tilt Cards Container */
-        .pallets-grid {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
-            perspective: 1000px;
-        }
-
-        .pallet-card {
-            background: var(--bg-main);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, border-color 0.2s ease;
-            cursor: pointer;
-            box-shadow: var(--shadow-md);
-        }
-
-        .pallet-card:hover {
-            border-color: var(--primary);
-            box-shadow: var(--shadow-xl), 0 0 25px rgba(0, 168, 107, 0.15);
-        }
-
-        .pallet-glare {
-            position: absolute;
-            inset: 0;
-            border-radius: var(--radius-lg);
-            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.6), transparent 70%);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.15s ease-out;
-            z-index: 10;
-        }
-
-        .pallet-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.25rem;
-            transform: translateZ(30px);
-        }
-
-        .pallet-name {
-            font-family: var(--font-mono);
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .tests-badge {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--primary);
-            background: var(--primary-light);
-            border: 1px solid var(--primary-border);
-            padding: 0.2rem 0.6rem;
-            border-radius: 6px;
-        }
-
-        .pallet-card p {
-            color: var(--text-muted);
-            font-size: 0.92rem;
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-            transform: translateZ(20px);
-        }
-
-        .pallet-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            color: var(--text-light);
-            transform: translateZ(25px);
-            border-top: 1px dashed var(--border-color);
-            padding-top: 1rem;
-        }
-
-        /* ==========================================================================
-           SECTION 5: CIRCLE COUNTERS (STATS)
-           ========================================================================== */
-        .stats-section {
-            padding: 7rem 2rem;
-            background: var(--bg-main);
-        }
-
-        .stats-grid {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 2.5rem;
-        }
-
-        .stat-card {
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-xl);
-            padding: 2.5rem 1.5rem;
-            text-align: center;
-            box-shadow: var(--shadow-md);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* 5. SVG Progress Rings & 4. Animated Counters */
-        .ring-container {
-            position: relative;
-            width: 160px;
-            height: 160px;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .ring-svg {
-            transform: rotate(-90deg);
-            width: 100%;
-            height: 100%;
-        }
-
-        .ring-bg {
-            fill: none;
-            stroke: #f1f5f9;
-            stroke-width: 8;
-        }
-
-        .ring-circle {
-            fill: none;
-            stroke: url(#ring-gradient);
-            stroke-width: 8;
-            stroke-linecap: round;
-            stroke-dasharray: 440;
-            stroke-dashoffset: 440;
-            transition: stroke-dashoffset 2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .ring-content {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: var(--font-mono);
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .stat-label {
-            font-family: var(--font-heading);
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 0.35rem;
-        }
-
-        .stat-sub {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        /* ==========================================================================
-           SECTION 6: ROADMAP (PARALLAX DEPTH)
-           ========================================================================== */
-        .roadmap-section {
-            padding: 7rem 2rem;
-            background: #ffffff;
-            border-top: 1px solid var(--border-color);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .roadmap-container {
-            max-width: 1280px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        /* 15. Parallax Depth Roadmap Cards */
-        .roadmap-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-            gap: 1.5rem;
-            position: relative;
-            z-index: 5;
-        }
-
-        .roadmap-card {
-            background: var(--bg-main);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 1.75rem;
-            box-shadow: var(--shadow-md);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            will-change: transform;
-            transition: transform 0.1s ease-out;
-        }
-
-        .roadmap-card.done {
-            border-top: 4px solid var(--primary);
-        }
-
-        .roadmap-card.active {
-            border-top: 4px solid var(--accent-indigo);
-            background: #f5f3ff;
-            border-color: #c7d2fe;
-            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
-        }
-
-        .roadmap-card.planned {
-            border-top: 4px solid #cbd5e1;
-            opacity: 0.85;
-        }
-
-        .roadmap-phase {
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-        }
-
-        .roadmap-card h3 {
-            font-size: 1.15rem;
-            margin-bottom: 1rem;
-        }
-
-        .roadmap-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.25rem 0.6rem;
-            border-radius: 100px;
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            font-weight: 700;
-            margin-bottom: 1.25rem;
-        }
-
-        .roadmap-status.status-done {
-            background: var(--primary-light);
-            color: var(--primary);
-            border: 1px solid var(--primary-border);
-        }
-
-        .roadmap-status.status-active {
-            background: #e0e7ff;
-            color: var(--accent-indigo);
-            border: 1px solid #a5b4fc;
-        }
-
-        .roadmap-status.status-planned {
-            background: #f1f5f9;
-            color: var(--text-muted);
-            border: 1px solid #e2e8f0;
-        }
-
-        .roadmap-list {
-            list-style: none;
-            font-size: 0.88rem;
-            color: var(--text-muted);
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .roadmap-list li {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.5rem;
-        }
-
-        .roadmap-list li::before {
-            content: '•';
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        .roadmap-card.active .roadmap-list li::before {
-            color: var(--accent-indigo);
-        }
-
-        /* Background Parallax Mesh Lines */
-        .roadmap-bg-decor {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            opacity: 0.05;
-            background-image: radial-gradient(var(--text-main) 1px, transparent 1px);
-            background-size: 24px 24px;
-        }
-
-        /* ==========================================================================
-           SECTION 7: CTA + FOOTER
-           ========================================================================== */
-        .cta-section {
-            padding: 6rem 2rem;
-            background: var(--bg-main);
-        }
-
-        .cta-box {
-            max-width: 1100px;
-            margin: 0 auto;
-            background: linear-gradient(135deg, #00a86b 0%, #10b981 50%, #059669 100%);
-            border-radius: var(--radius-xl);
-            padding: 5rem 3rem;
-            text-align: center;
-            color: white;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 168, 107, 0.3);
-        }
-
-        /* Dynamic Conic Gradient Background Highlight */
-        .cta-glow-bg {
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(from 0deg, transparent 0deg, rgba(255, 255, 255, 0.15) 60deg, transparent 120deg);
-            animation: rotateConic 15s linear infinite;
-            pointer-events: none;
-        }
-
-        @keyframes rotateConic {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .cta-content {
-            position: relative;
-            z-index: 5;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        .cta-box h2 {
-            color: white;
-            font-size: clamp(2.2rem, 4vw, 3rem);
-            margin-bottom: 1.25rem;
-        }
-
-        .cta-box p {
-            font-size: 1.15rem;
-            opacity: 0.95;
-            margin-bottom: 2.5rem;
-        }
-
-        .cta-btn {
-            background: white;
-            color: var(--primary);
-            font-weight: 700;
-            padding: 1rem 2.25rem;
-            font-size: 1.05rem;
-            border-radius: var(--radius-md);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .cta-btn:hover {
-            background: #f8fafc;
-            color: var(--primary-hover);
-            transform: translateY(-3px);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
-        }
-
-        /* FOOTER */
-        footer {
-            background: #0f172a;
-            color: #94a3b8;
-            padding: 5rem 2rem 2rem;
-            border-top: 1px solid #1e293b;
-        }
-
-        .footer-container {
-            max-width: 1280px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 2fr repeat(3, 1fr);
-            gap: 4rem;
-            margin-bottom: 4rem;
-        }
-
-        .footer-brand {
-            display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-        }
-
-        .footer-logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-family: var(--font-heading);
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: white;
-            text-decoration: none;
-        }
-
-        .footer-desc {
-            font-size: 0.95rem;
-            line-height: 1.6;
-            max-width: 320px;
-        }
-
-        .footer-col h4 {
-            color: white;
-            font-family: var(--font-heading);
-            font-size: 1rem;
-            margin-bottom: 1.25rem;
-        }
-
-        .footer-links {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .footer-links a {
-            color: #94a3b8;
-            text-decoration: none;
-            font-size: 0.92rem;
-            transition: color 0.2s ease;
-        }
-
-        .footer-links a:hover {
-            color: var(--accent-teal);
-        }
-
-        .footer-bottom {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding-top: 2rem;
-            border-top: 1px solid #1e293b;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 0.88rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .server-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            color: #38bdf8;
-            background: rgba(56, 189, 248, 0.1);
-            padding: 0.3rem 0.75rem;
-            border-radius: 100px;
-            border: 1px solid rgba(56, 189, 248, 0.2);
-        }
-
-        /* RESPONSIVE DESIGN */
-        @media (max-width: 1024px) {
-            .footer-container {
-                grid-template-columns: 1fr 1fr;
-            }
-            .timeline-item, .timeline-item.right {
-                width: 100%;
-                padding-left: 60px;
-                padding-right: 0;
-                margin-left: 0;
-                justify-content: flex-start;
-            }
-            .timeline-center-line {
-                left: 20px;
-            }
-            .timeline-dot, .timeline-item.right .timeline-dot {
-                left: 8px;
-                right: auto;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            .mobile-toggle {
-                display: block;
-            }
-            .horizontal-scroll-wrapper {
-                height: auto;
-            }
-            .horizontal-sticky-container {
-                position: relative;
-                height: auto;
-            }
-            .horizontal-track {
-                flex-direction: column;
-                width: 100%;
-                padding: 0 1rem;
-            }
-            .feature-card {
-                width: 100%;
-            }
-            .footer-container {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verdis Chain — The World's First Green Blockchain</title>
+  <meta name="description" content="Verdis Chain is a Layer-1 blockchain built with Rust and Substrate. Native DPoS consensus, AMM DEX, EVM smart contracts, and on-chain carbon credit tracking. 100B supply, 143 EVM opcodes, 7 production pallets." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Verdis Chain — The World's First Green Blockchain" />
+  <meta property="og:description" content="Layer-1 blockchain with DPoS, AMM DEX, EVM, and carbon credits. Built in Rust + Substrate." />
+  <meta property="og:url" content="https://verdischain.com" />
+  <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --canvas: #b0b5b8;
+      --canvas-light: #f8fafc;
+      --hero-bg: #1a1a1a;
+      --hero-card: #2d2d2d;
+      --hero-card-dark: #202020;
+      --accent: #b4f849;
+      --accent-hover: #a3e041;
+      --accent-glow: rgba(180,248,73,0.3);
+      --accent-light: rgba(180,248,73,0.1);
+      --green-soft: #84fe87;
+      --green-deep: #00a86b;
+      --text-white: #ffffff;
+      --text-muted: #9ca3ad;
+      --text-dark: #0f172a;
+      --radius: 12px;
+      --radius-lg: 20px;
+      --radius-pill: 100px;
+      --transition: 250ms cubic-bezier(0.16,1,0.3,1);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Poppins', sans-serif; background: var(--canvas-light); color: var(--text-dark); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* ===== SCROLL PROGRESS ===== */
+    #scroll-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #b4f849, #84fe87, #00a86b); z-index: 10000; width: 0; transition: width 50ms; }
+
+    /* ===== CURSOR GLOW ===== */
+    #cursor-glow { position: fixed; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(180,248,73,0.06) 0%, transparent 70%); pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); opacity: 0; transition: opacity 300ms; }
+    body:hover #cursor-glow { opacity: 1; }
+
+    /* ===== HERO SECTION — Template Skeleton: Dark container, split layout ===== */
+    .hero-section { position: relative; background: var(--canvas); padding: 0 24px; overflow: hidden; }
+    .hero-container { max-width: 1280px; margin: 0 auto; background: var(--hero-bg); border-radius: 24px; overflow: hidden; position: relative; min-height: 640px; display: flex; }
+    .hero-container::before { content: ''; position: absolute; top: -50%; right: -20%; width: 600px; height: 600px; background: radial-gradient(circle, var(--accent-glow), transparent 60%); opacity: 0.15; animation: pulse-bg 4s ease-in-out infinite; }
+    @keyframes pulse-bg { 0%,100% { opacity: 0.1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(1.1); } }
+
+    /* ===== NAV (inside dark hero) ===== */
+    .hero-nav { position: absolute; top: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; padding: 24px 40px; }
+    .nav-brand { font-family: 'Poppins'; font-weight: 800; font-size: 22px; color: var(--text-white); display: flex; align-items: center; gap: 10px; }
+    .nav-brand-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px var(--accent-glow); animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot { 0%,100% { box-shadow: 0 0 16px var(--accent-glow); } 50% { box-shadow: 0 0 24px rgba(180,248,73,0.6); } }
+    .nav-links { display: flex; gap: 36px; }
+    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; transition: color 250ms; position: relative; }
+    .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: var(--accent); border-radius: 2px; transition: width 250ms; }
+    .nav-links a:hover { color: var(--text-white); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta { display: flex; gap: 12px; align-items: center; }
+    .btn-login { color: var(--text-muted); font-size: 14px; font-weight: 500; padding: 8px 16px; transition: color 250ms; }
+    .btn-login:hover { color: var(--text-white); }
+    .btn-signup { background: var(--accent); color: var(--hero-bg); font-size: 14px; font-weight: 600; padding: 10px 24px; border-radius: var(--radius-pill); border: none; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; }
+    .btn-signup::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transition: left 500ms; }
+    .btn-signup:hover::before { left: 100%; }
+    .btn-signup:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--accent-glow); }
+
+    /* ===== HERO LEFT — Text content ===== */
+    .hero-left { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 120px 60px 60px 60px; position: relative; z-index: 5; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--accent-light); border: 1px solid rgba(180,248,73,0.3); border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 24px; width: fit-content; opacity: 0; transform: translateY(20px); animation: slideUp 600ms 200ms forwards; }
+    .hero-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse-dot 2s infinite; }
+    .hero-title { font-size: 48px; font-weight: 800; line-height: 1.1; color: var(--text-white); margin-bottom: 24px; opacity: 0; transform: translateY(30px); animation: slideUp 800ms 400ms forwards; }
+    .hero-title .accent { color: var(--accent); }
+    .hero-title .gradient { background: linear-gradient(135deg, #b4f849, #84fe87, #00a86b); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-desc { font-size: 16px; color: var(--text-muted); line-height: 1.8; margin-bottom: 36px; max-width: 480px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 600ms forwards; }
+    .hero-actions { display: flex; gap: 16px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 800ms forwards; }
+    .btn-read-more { background: linear-gradient(135deg, #b4f849, #84fe87); color: var(--hero-bg); font-size: 15px; font-weight: 700; padding: 14px 32px; border-radius: var(--radius-pill); border: none; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-read-more::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transition: left 500ms; }
+    .btn-read-more:hover::before { left: 100%; }
+    .btn-read-more:hover { transform: translateY(-3px); box-shadow: 0 12px 32px var(--accent-glow); }
+    .btn-explore { background: transparent; color: var(--text-white); font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: var(--radius-pill); border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: var(--transition); }
+    .btn-explore:hover { border-color: var(--accent); background: var(--accent-light); }
+    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+    /* ===== HERO RIGHT — 3D Floating Visual ===== */
+    .hero-right { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; padding: 80px 40px; }
+    .hero-visual { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+    .hero-circle { position: absolute; width: 340px; height: 340px; border-radius: 50%; background: radial-gradient(circle, rgba(180,248,73,0.25), rgba(180,248,73,0.05) 60%, transparent); animation: pulse-circle 4s ease-in-out infinite; }
+    @keyframes pulse-circle { 0%,100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.08); opacity: 1; } }
+    #hero-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
+
+    /* Floating UI cards */
+    .float-card { position: absolute; background: var(--hero-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 16px 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); z-index: 3; backdrop-filter: blur(10px); }
+    .float-card-1 { top: 12%; right: 8%; animation: float-1 6s ease-in-out infinite; }
+    .float-card-2 { bottom: 18%; left: 8%; animation: float-2 7s ease-in-out infinite; }
+    .float-card-3 { top: 45%; right: 4%; animation: float-3 5s ease-in-out infinite; }
+    .float-card-4 { bottom: 8%; right: 20%; animation: float-4 8s ease-in-out infinite; }
+    @keyframes float-1 { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-12px) rotate(1deg); } }
+    @keyframes float-2 { 0%,100% { transform: translateY(0) rotate(2deg); } 50% { transform: translateY(10px) rotate(-1deg); } }
+    @keyframes float-3 { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
+    @keyframes float-4 { 0%,100% { transform: translateY(0) rotate(1deg); } 50% { transform: translateY(6px) rotate(-2deg); } }
+
+    .float-card-label { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-bottom: 6px; }
+    .float-card-value { font-size: 18px; font-weight: 700; color: var(--text-white); }
+    .float-card-value.green { color: var(--accent); }
+    .float-card-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+    .float-card-bar-fill { height: 100%; background: linear-gradient(90deg, #b4f849, #84fe87); border-radius: 2px; animation: bar-fill 2s ease-out; }
+    @keyframes bar-fill { from { width: 0; } }
+    .float-card-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 8px; }
+
+    /* Phone mockup */
+    .phone-mockup { position: absolute; width: 160px; height: 320px; background: var(--hero-card-dark); border: 3px solid rgba(255,255,255,0.15); border-radius: 24px; z-index: 3; padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: float-phone 6s ease-in-out infinite; }
+    @keyframes float-phone { 0%,100% { transform: translateY(0) rotate(3deg); } 50% { transform: translateY(-16px) rotate(1deg); } }
+    .phone-screen-label { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+    .phone-screen-value { font-size: 14px; font-weight: 700; color: var(--text-white); }
+    .phone-progress-ring { width: 56px; height: 56px; margin: 8px auto; position: relative; }
+    .phone-progress-ring svg { transform: rotate(-90deg); }
+    .phone-login-btn { background: var(--accent); color: var(--hero-bg); font-size: 12px; font-weight: 700; padding: 8px; border-radius: 8px; text-align: center; }
+
+    /* ===== SECTION REVEAL ===== */
+    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 700ms cubic-bezier(0.16,1,0.3,1), transform 700ms cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-stagger > * { opacity: 0; transform: translateY(40px); transition: opacity 600ms cubic-bezier(0.16,1,0.3,1), transform 600ms cubic-bezier(0.16,1,0.3,1); }
+    .reveal-stagger.visible > *:nth-child(1) { opacity:1; transform:translateY(0); transition-delay:0ms; }
+    .reveal-stagger.visible > *:nth-child(2) { opacity:1; transform:translateY(0); transition-delay:80ms; }
+    .reveal-stagger.visible > *:nth-child(3) { opacity:1; transform:translateY(0); transition-delay:160ms; }
+    .reveal-stagger.visible > *:nth-child(4) { opacity:1; transform:translateY(0); transition-delay:240ms; }
+    .reveal-stagger.visible > *:nth-child(5) { opacity:1; transform:translateY(0); transition-delay:320ms; }
+    .reveal-stagger.visible > *:nth-child(6) { opacity:1; transform:translateY(0); transition-delay:400ms; }
+
+    /* ===== STATS BAR (light section) ===== */
+    .stats-section { background: var(--canvas-light); padding: 80px 24px 40px; }
+    .stats-inner { max-width: 1200px; margin: 0 auto; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    .stat-card { background: var(--text-white); border: 1px solid #e2e8f0; border-radius: var(--radius); padding: 32px 24px; text-align: center; transition: var(--transition); position: relative; overflow: hidden; }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #b4f849, #00a86b); transform: scaleX(0); transition: transform 400ms; }
+    .stat-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-4px); }
+    .stat-card:hover::before { transform: scaleX(1); }
+    .stat-value { font-family: 'Poppins'; font-size: 40px; font-weight: 800; background: linear-gradient(135deg, #b4f849, #00a86b); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
+    .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* ===== FEATURES SECTION ===== */
+    .features-section { background: var(--canvas-light); padding: 60px 24px 80px; }
+    .features-inner { max-width: 1200px; margin: 0 auto; }
+    .section-header { text-align: center; margin-bottom: 56px; }
+    .section-label { font-size: 13px; font-weight: 600; color: #00a86b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: inline-block; padding: 4px 14px; background: rgba(0,168,107,0.08); border-radius: var(--radius-pill); }
+    .section-header h2 { font-size: 36px; font-weight: 800; color: var(--text-dark); margin-bottom: 16px; }
+    .section-header p { font-size: 17px; color: var(--text-muted); max-width: 600px; margin: 0 auto; }
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .feature-card { background: var(--text-white); border: 1px solid #e2e8f0; border-radius: var(--radius-lg); padding: 32px; transition: var(--transition); position: relative; overflow: hidden; }
+    .feature-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, #b4f849, #00a86b); transform: scaleY(0); transform-origin: top; transition: transform 400ms; }
+    .feature-card:hover { border-color: rgba(0,168,107,0.3); box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-4px); }
+    .feature-card:hover::before { transform: scaleY(1); }
+    .feature-icon { width: 52px; height: 52px; border-radius: 14px; background: rgba(0,168,107,0.08); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; transition: var(--transition); }
+    .feature-card:hover .feature-icon { transform: scale(1.1) rotate(-5deg); background: linear-gradient(135deg, #b4f849, #00a86b); }
+    .feature-card h3 { font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
+    .feature-card p { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+    .feature-tag { display: inline-block; margin-top: 16px; padding: 4px 12px; background: #f1f5f9; border-radius: 6px; font-family: 'JetBrains Mono'; font-size: 12px; color: var(--text-muted); }
+
+    /* ===== ARCHITECTURE SECTION (dark) ===== */
+    .arch-section { background: var(--hero-bg); padding: 80px 24px; position: relative; overflow: hidden; }
+    .arch-section::before { content: ''; position: absolute; top: 0; right: 0; width: 400px; height: 400px; background: radial-gradient(circle, var(--accent-glow), transparent 60%); opacity: 0.1; }
+    .arch-inner { max-width: 1200px; margin: 0 auto; position: relative; }
+    .arch-inner .section-header h2 { color: var(--text-white); }
+    .arch-inner .section-header p { color: var(--text-muted); }
+    .arch-inner .section-label { color: var(--accent); background: var(--accent-light); }
+    .arch-layers { display: flex; flex-direction: column; gap: 12px; }
+    .arch-layer { display: flex; align-items: center; gap: 20px; padding: 20px 24px; background: var(--hero-card); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius); transition: var(--transition); cursor: pointer; }
+    .arch-layer:hover { border-color: rgba(180,248,73,0.3); background: var(--hero-card-dark); transform: translateX(8px); }
+    .arch-layer-num { font-family: 'JetBrains Mono'; font-size: 13px; color: rgba(255,255,255,0.3); min-width: 32px; transition: color 250ms; }
+    .arch-layer:hover .arch-layer-num { color: var(--accent); }
+    .arch-layer-name { font-weight: 600; font-size: 16px; color: var(--text-white); min-width: 180px; }
+    .arch-layer-desc { font-size: 14px; color: var(--text-muted); flex: 1; }
+    .arch-layer-status { font-size: 12px; padding: 4px 10px; border-radius: var(--radius-pill); font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(180,248,73,0.15); color: var(--accent); }
+    .arch-layer-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse-dot 2s infinite; }
+
+    /* ===== CIRCLE COUNTERS SECTION ===== */
+    .circle-section { background: var(--canvas-light); padding: 80px 24px; }
+    .circle-inner { max-width: 1100px; margin: 0 auto; }
+    .circle-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; }
+    .circle-card { text-align: center; }
+    .circle-svg { width: 160px; height: 160px; margin: 0 auto 16px; position: relative; }
+    .circle-svg svg { transform: rotate(-90deg); }
+    .circle-bg { fill: none; stroke: #e2e8f0; stroke-width: 8; }
+    .circle-fill { fill: none; stroke: url(#green-grad); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 440; stroke-dashoffset: 440; transition: stroke-dashoffset 1500ms cubic-bezier(0.16,1,0.3,1); }
+    .circle-card.visible .circle-fill { stroke-dashoffset: var(--offset); }
+    .circle-count { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: 'Poppins'; font-size: 32px; font-weight: 800; color: var(--text-dark); }
+    .circle-label { font-size: 13px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* ===== ROADMAP SECTION ===== */
+    .roadmap-section { background: var(--canvas-light); padding: 60px 24px 80px; }
+    .roadmap-inner { max-width: 1100px; margin: 0 auto; }
+    .roadmap-track { position: relative; display: flex; justify-content: space-between; padding: 40px 0; }
+    .roadmap-track::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #00a86b 0%, #00a86b 40%, #6366f1 50%, #e2e8f0 60%); transform: scaleX(0); transform-origin: left; transition: transform 1500ms cubic-bezier(0.16,1,0.3,1); }
+    .roadmap-track.visible::before { transform: scaleX(1); }
+    .roadmap-milestone { text-align: center; position: relative; z-index: 2; flex: 1; }
+    .roadmap-dot { width: 16px; height: 16px; border-radius: 50%; margin: 0 auto 12px; border: 3px solid var(--canvas-light); position: relative; }
+    .roadmap-milestone.done .roadmap-dot { background: #00a86b; box-shadow: 0 0 0 4px rgba(0,168,107,0.15); }
+    .roadmap-milestone.active .roadmap-dot { background: #6366f1; box-shadow: 0 0 0 4px rgba(99,102,241,0.15); animation: pulse-ring 2s infinite; }
+    @keyframes pulse-ring { 0%,100% { box-shadow: 0 0 0 4px rgba(99,102,241,0.15); } 50% { box-shadow: 0 0 0 8px rgba(99,102,241,0.08); } }
+    .roadmap-milestone.planned .roadmap-dot { background: #cbd5e1; }
+    .roadmap-status { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .roadmap-milestone.done .roadmap-status { color: #00a86b; }
+    .roadmap-milestone.active .roadmap-status { color: #6366f1; }
+    .roadmap-milestone.planned .roadmap-status { color: #94a3b8; }
+    .roadmap-milestone h4 { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
+    .roadmap-milestone p { font-size: 12px; color: var(--text-muted); max-width: 180px; margin: 0 auto; }
+
+    /* ===== CTA SECTION (dark) ===== */
+    .cta-section { padding: 80px 24px; }
+    .cta-inner { max-width: 1100px; margin: 0 auto; }
+    .cta-card { background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border-radius: var(--radius-lg); padding: 64px 48px; text-align: center; position: relative; overflow: hidden; }
+    .cta-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, var(--accent-glow) 0%, transparent 50%); animation: rotate 20s linear infinite; opacity: 0.15; }
+    @keyframes rotate { to { transform: rotate(360deg); } }
+    .cta-card > * { position: relative; z-index: 1; }
+    .cta-card h2 { font-size: 32px; font-weight: 800; color: var(--text-white); margin-bottom: 16px; }
+    .cta-card p { font-size: 17px; color: var(--text-muted); max-width: 500px; margin: 0 auto 32px; }
+    .cta-card .btn-read-more { font-size: 16px; padding: 16px 40px; }
+
+    /* ===== FOOTER ===== */
+    .footer { background: var(--hero-bg); padding: 48px 24px 32px; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
+    .footer-brand h4 { font-size: 18px; font-weight: 800; color: var(--text-white); margin-bottom: 12px; }
+    .footer-brand p { font-size: 14px; color: var(--text-muted); max-width: 280px; }
+    .footer-col h5 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 16px; }
+    .footer-col a { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 10px; transition: var(--transition); }
+    .footer-col a:hover { color: var(--accent); transform: translateX(4px); }
+    .footer-bottom { max-width: 1200px; margin: 32px auto 0; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1024px) {
+      .features-grid { grid-template-columns: repeat(2,1fr); }
+      .circle-grid { grid-template-columns: repeat(2,1fr); }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+      .hero-title { font-size: 40px; }
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero-container { flex-direction: column; min-height: auto; }
+      .hero-left { padding: 100px 32px 40px; }
+      .hero-right { padding: 20px; min-height: 400px; }
+      .hero-title { font-size: 32px; }
+      .stats-grid { grid-template-columns: repeat(2,1fr); }
+      .features-grid { grid-template-columns: 1fr; }
+      .circle-grid { grid-template-columns: repeat(2,1fr); }
+      .arch-layer { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .arch-layer-name { min-width: auto; }
+      .roadmap-track { flex-direction: column; gap: 24px; }
+      .roadmap-track::before { display: none; }
+      .cta-card { padding: 40px 24px; }
+      .cta-card h2 { font-size: 24px; }
+      .footer-inner { grid-template-columns: 1fr; gap: 24px; }
+      .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+    }
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .circle-grid { grid-template-columns: 1fr; }
+      .hero-title { font-size: 26px; }
+      .hero-left { padding: 100px 24px 32px; }
+    }
+  </style>
 </head>
 <body>
+  <div id="cursor-glow"></div>
+  <div id="scroll-bar"></div>
 
-    <!-- 1. Cursor Glow Element -->
-    <div id="cursor-glow" aria-hidden="true"></div>
-
-    <!-- 2. Scroll Progress Bar -->
-    <div id="scroll-progress-container" aria-hidden="true">
-        <div id="scroll-progress"></div>
-    </div>
-
-    <!-- HEADER / NAVIGATION -->
-    <header id="site-header">
-        <div class="nav-container">
-            <a href="#" class="brand-logo" aria-label="Verdis Chain Homepage">
-                <div class="logo-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.4 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
-                        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
-                    </svg>
-                </div>
-                <span>Verdis</span>
-            </a>
-
-            <nav aria-label="Main Navigation">
-                <ul class="nav-links">
-                    <li><a href="#features" class="nav-link">Features</a></li>
-                    <li><a href="#architecture" class="nav-link">Architecture</a></li>
-                    <li><a href="#pallets" class="nav-link">Pallets</a></li>
-                    <li><a href="#metrics" class="nav-link">Metrics</a></li>
-                    <li><a href="#roadmap" class="nav-link">Roadmap</a></li>
-                </ul>
-            </nav>
-
-            <div class="nav-actions">
-                <a href="#cta" class="btn-shine btn-primary">
-                    <span>Open Explorer</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                </a>
-            </div>
+  <!-- ===== HERO — Template Skeleton: Dark container, split layout, 3D floating elements ===== -->
+  <section class="hero-section">
+    <div class="hero-container">
+      <!-- Nav inside hero -->
+      <nav class="hero-nav">
+        <div class="nav-brand"><span class="nav-brand-dot"></span>Verdis Chain</div>
+        <div class="nav-links">
+          <a href="#features">Features</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#stats">Stats</a>
+          <a href="#roadmap">Roadmap</a>
         </div>
-    </header>
-
-    <main>
-        <!-- ==========================================================================
-             SECTION 1: HERO (FULL-SCREEN, CINEMATIC)
-             ========================================================================== -->
-        <section class="hero-section" id="hero">
-            <!-- 9. Animated Canvas Particles -->
-            <canvas id="hero-canvas"></canvas>
-
-            <!-- 8. Floating Gradient Blobs -->
-            <div class="blob-container" aria-hidden="true">
-                <div class="blob blob-1"></div>
-                <div class="blob blob-2"></div>
-                <div class="blob blob-3"></div>
-            </div>
-
-            <div class="hero-content">
-                <!-- Stagger 1: Badge -->
-                <div class="hero-stagger-1">
-                    <div class="hero-badge">
-                        <span class="pulse-dot" aria-hidden="true"></span>
-                        <span>Mainnet Ready · Node Live</span>
-                    </div>
-                </div>
-
-                <!-- Stagger 2: H1 Title -->
-                <div class="hero-stagger-2">
-                    <h1 class="hero-title">
-                        The World's First <span class="gradient-text">Green Blockchain</span> Engineered in Rust
-                    </h1>
-                </div>
-
-                <!-- Stagger 3: Subtitle -->
-                <div class="hero-stagger-3">
-                    <p class="hero-subtitle">
-                        Ultra-fast, carbon-negative Layer-1 protocol powered by BABE & GRANDPA consensus. High throughput with zero compromise on decentralization.
-                    </p>
-                </div>
-
-                <!-- Stagger 4: CTAs -->
-                <div class="hero-stagger-4">
-                    <div class="hero-ctas">
-                        <a href="#cta" class="btn-shine btn-primary">
-                            <span>Open Explorer -></span>
-                        </a>
-                        <a href="#architecture" class="btn-shine btn-secondary">
-                            <span>View Architecture</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <a href="#features" class="scroll-indicator" aria-label="Scroll to features">
-                <span>Scroll to explore</span>
-                <svg class="scroll-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10l5 5 5-5"/></svg>
-            </a>
-        </section>
-
-        <!-- ==========================================================================
-             SECTION 2: HORIZONTAL SCROLL FEATURES
-             ========================================================================== -->
-        <section class="horizontal-scroll-wrapper" id="features">
-            <div class="horizontal-sticky-container">
-                <div class="section-header horizontal-header">
-                    <span class="section-tag">Core Capabilities</span>
-                    <h2 class="section-title">Everything you need to build on green infrastructure</h2>
-                    <p class="section-desc">Modular, high-throughput, carbon-negative blockchain primitives engineered in Rust.</p>
-                </div>
-
-                <div class="horizontal-track-container">
-                    <div class="horizontal-track" id="horizontalTrack">
-                        <!-- Card 1 -->
-                        <div class="feature-card hover-lift">
-                            <div>
-                                <div class="feature-icon-box">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                                </div>
-                                <h3>DPoS Consensus</h3>
-                                <p>BABE block production paired with GRANDPA deterministic finality. Energy consumption reduced by 99.99% compared to traditional PoW networks.</p>
-                            </div>
-                            <span class="tag-pill">BABE+GRANDPA</span>
-                        </div>
-
-                        <!-- Card 2 -->
-                        <div class="feature-card hover-lift">
-                            <div>
-                                <div class="feature-icon-box">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
-                                </div>
-                                <h3>AMM DEX</h3>
-                                <p>Native on-chain automated market maker supporting constant product liquidity pools, flash swaps, and zero-slippage eco token pairs.</p>
-                            </div>
-                            <span class="tag-pill">SWAP PROTOCOL</span>
-                        </div>
-
-                        <!-- Card 3 -->
-                        <div class="feature-card hover-lift">
-                            <div>
-                                <div class="feature-icon-box">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.4 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
-                                </div>
-                                <h3>Carbon Credit Tracking</h3>
-                                <p>Integrated pallet for minting, retiring, and auditing verified carbon credits with cryptographic proof of real-world green impact.</p>
-                            </div>
-                            <span class="tag-pill">LEAF VERIFIED</span>
-                        </div>
-
-                        <!-- Card 4 -->
-                        <div class="feature-card hover-lift">
-                            <div>
-                                <div class="feature-icon-box">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                                </div>
-                                <h3>EVM Smart Contracts</h3>
-                                <p>Full execution engine supporting 143 opcodes under Chain ID 909. Seamless deployment with standard Ethereum toolchains.</p>
-                            </div>
-                            <span class="tag-pill">143 OPCODES · CHAIN 909</span>
-                        </div>
-
-                        <!-- Card 5 -->
-                        <div class="feature-card hover-lift">
-                            <div>
-                                <div class="feature-icon-box">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                </div>
-                                <h3>Tokenomics & Vesting</h3>
-                                <p>Precision minting schedules with 100B max supply, 12B genesis allocation, and multi-signature linear cliff vesting schedules.</p>
-                            </div>
-                            <span class="tag-pill">100B SUPPLY · 12B ALLOC</span>
-                        </div>
-
-                        <!-- Card 6 -->
-                        <div class="feature-card hover-lift">
-                            <div>
-                                <div class="feature-icon-box">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/><line x1="9" y1="14" x2="9" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/><line x1="9" y1="18" x2="15" y2="18"/></svg>
-                                </div>
-                                <h3>Substrate + Rust Core</h3>
-                                <p>Built directly on Substrate and Rust for memory safety, concurrency, and forkless runtime upgrades.</p>
-                            </div>
-                            <span class="tag-pill">RUST ENGINE</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ==========================================================================
-             SECTION 3: VERTICAL TIMELINE (ARCHITECTURE LAYERS)
-             ========================================================================== -->
-        <section class="timeline-section" id="architecture">
-            <div class="section-header reveal">
-                <span class="section-tag">System Stack</span>
-                <h2 class="section-title">Seven layers, one chain</h2>
-                <p class="section-desc">A complete green layer-1 architecture engineered from state storage to smart contracts.</p>
-            </div>
-
-            <div class="timeline-container">
-                <!-- 14. Central Line with Fill Effect -->
-                <div class="timeline-center-line">
-                    <div class="timeline-line-fill" id="timelineLineFill"></div>
-                </div>
-
-                <!-- Layer 1 -->
-                <div class="timeline-item reveal">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-card hover-lift">
-                        <div class="timeline-header">
-                            <span class="timeline-number">01</span>
-                            <span class="status-badge"><span class="pulse-dot"></span> Live</span>
-                        </div>
-                        <h3>DPoS Consensus Layer</h3>
-                        <p>BABE block production and GRANDPA finality gadget guaranteeing deterministic 1-second block completion with validator rotation.</p>
-                    </div>
-                </div>
-
-                <!-- Layer 2 -->
-                <div class="timeline-item right reveal">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-card hover-lift">
-                        <div class="timeline-header">
-                            <span class="timeline-number">02</span>
-                            <span class="status-badge"><span class="pulse-dot"></span> Live</span>
-                        </div>
-                        <h3>AMM DEX Protocol Layer</h3>
-                        <p>Substrate-native automated market maker facilitating high-speed token exchange and liquidity provider fee distribution.</p>
-                    </div>
-                </div>
-
-                <!-- Layer 3 -->
-                <div class="timeline-item reveal">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-card hover-lift">
-                        <div class="timeline-header">
-                            <span class="timeline-number">03</span>
-                            <span class="status-badge"><span class="pulse-dot"></span> Live</span>
-                        </div>
-                        <h3>Eco Tracking Module</h3>
-                        <p>Real-time carbon offset validation engine interfacing with IoT green energy sensors and verified carbon registries.</p>
-                    </div>
-                </div>
-
-                <!-- Layer 4 -->
-                <div class="timeline-item right reveal">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-card hover-lift">
-                        <div class="timeline-header">
-                            <span class="timeline-number">04</span>
-                            <span class="status-badge"><span class="pulse-dot"></span> Live</span>
-                        </div>
-                        <h3>EVM Execution Subsystem</h3>
-                        <p>Chain ID 909 execution environment supporting 143 Ethereum opcodes, Solidity smart contracts, and Web3 RPC adapters.</p>
-                    </div>
-                </div>
-
-                <!-- Layer 5 -->
-                <div class="timeline-item reveal">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-card hover-lift">
-                        <div class="timeline-header">
-                            <span class="timeline-number">05</span>
-                            <span class="status-badge"><span class="pulse-dot"></span> Live</span>
-                        </div>
-                        <h3>Tokenomics Core</h3>
-                        <p>100B total supply token economy with 12B allocation, dynamic fee burning mechanism, and automated staking rewards.</p>
-                    </div>
-                </div>
-
-                <!-- Layer 6 -->
-                <div class="timeline-item right reveal">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-card hover-lift">
-                        <div class="timeline-header">
-                            <span class="timeline-number">06</span>
-                            <span class="status-badge"><span class="pulse-dot"></span> Live</span>
-                        </div>
-                        <h3>Vesting & Lockup Module</h3>
-                        <p>On-chain linear unlock schedules and programmatic treasury releases for long-term ecosystem sustainability.</p>
-                    </div>
-                </div>
-
-                <!-- Layer 7 -->
-                <div class="timeline-item reveal">
-                    <div class="timeline-dot"></div>
-                    <div class="timeline-card hover-lift">
-                        <div class="timeline-header">
-                            <span class="timeline-number">07</span>
-                            <span class="status-badge"><span class="pulse-dot"></span> Live</span>
-                        </div>
-                        <h3>Decentralized Storage Layer</h3>
-                        <p>High-density RocksDB state Trie storage with zero-knowledge state proof compression and instant snapshot creation.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ==========================================================================
-             SECTION 4: 3D TILT CARDS (PALLETS)
-             ========================================================================== -->
-        <section class="pallets-section" id="pallets">
-            <div class="section-header reveal">
-                <span class="section-tag">Rust Runtime</span>
-                <h2 class="section-title">Production-ready modules</h2>
-                <p class="section-desc">Thoroughly benchmarked and unit-tested Substrate pallets forming the core runtime engine.</p>
-            </div>
-
-            <!-- 6. 3D Perspective Tilt Grid -->
-            <div class="pallets-grid">
-                <!-- Pallet 1 -->
-                <div class="pallet-card" data-tilt>
-                    <div class="pallet-glare"></div>
-                    <div class="pallet-header">
-                        <span class="pallet-name">pallet-dpos</span>
-                        <span class="tests-badge">34 tests</span>
-                    </div>
-                    <p>Handles validator registration, election rounds, slashing conditions, and BABE/GRANDPA key rotation algorithms.</p>
-                    <div class="pallet-footer">
-                        <span>34 tests passing</span>
-                        <span>v1.2.0</span>
-                    </div>
-                </div>
-
-                <!-- Pallet 2 -->
-                <div class="pallet-card" data-tilt>
-                    <div class="pallet-glare"></div>
-                    <div class="pallet-header">
-                        <span class="pallet-name">pallet-amm-dex</span>
-                        <span class="tests-badge">25 tests</span>
-                    </div>
-                    <p>Substrate liquidity management, automated swap calculations, LP token issuance, and anti-frontrunning protection.</p>
-                    <div class="pallet-footer">
-                        <span>25 tests passing</span>
-                        <span>v1.4.1</span>
-                    </div>
-                </div>
-
-                <!-- Pallet 3 -->
-                <div class="pallet-card" data-tilt>
-                    <div class="pallet-glare"></div>
-                    <div class="pallet-header">
-                        <span class="pallet-name">pallet-eco</span>
-                        <span class="tests-badge">33 tests</span>
-                    </div>
-                    <p>Verifies renewable energy credits, issues verified eco-certificates, and manages carbon offset retirement ledger.</p>
-                    <div class="pallet-footer">
-                        <span>33 tests passing</span>
-                        <span>v2.0.0</span>
-                    </div>
-                </div>
-
-                <!-- Pallet 4 -->
-                <div class="pallet-card" data-tilt>
-                    <div class="pallet-glare"></div>
-                    <div class="pallet-header">
-                        <span class="pallet-name">pallet-evm</span>
-                        <span class="tests-badge">102 tests</span>
-                    </div>
-                    <p>Full Ethereum Virtual Machine interpreter, gas accounting, precompiled contracts, and Chain ID 909 state storage.</p>
-                    <div class="pallet-footer">
-                        <span>102 tests passing</span>
-                        <span>v3.1.0</span>
-                    </div>
-                </div>
-
-                <!-- Pallet 5 -->
-                <div class="pallet-card" data-tilt>
-                    <div class="pallet-glare"></div>
-                    <div class="pallet-header">
-                        <span class="pallet-name">pallet-tokenomics</span>
-                        <span class="tests-badge">23 tests</span>
-                    </div>
-                    <p>Manages 100B VRS total supply, dynamic transaction fee burns, staker yield distribution, and treasury inflation.</p>
-                    <div class="pallet-footer">
-                        <span>23 tests passing</span>
-                        <span>v1.0.5</span>
-                    </div>
-                </div>
-
-                <!-- Pallet 6 -->
-                <div class="pallet-card" data-tilt>
-                    <div class="pallet-glare"></div>
-                    <div class="pallet-header">
-                        <span class="pallet-name">pallet-vesting</span>
-                        <span class="tests-badge">10 tests</span>
-                    </div>
-                    <p>Time-locked token schedules, linear block-by-block unlocks, cliff periods, and multi-sig administrative controls.</p>
-                    <div class="pallet-footer">
-                        <span>10 tests passing</span>
-                        <span>v1.1.2</span>
-                    </div>
-                </div>
-
-                <!-- Pallet 7 -->
-                <div class="pallet-card" data-tilt>
-                    <div class="pallet-glare"></div>
-                    <div class="pallet-header">
-                        <span class="pallet-name">pallet-storage</span>
-                        <span class="tests-badge">9 tests</span>
-                    </div>
-                    <p>On-chain state pruning, cryptographic Merkle trie proof generator, and zero-knowledge state commitment verifier.</p>
-                    <div class="pallet-footer">
-                        <span>9 tests passing</span>
-                        <span>v1.0.0</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ==========================================================================
-             SECTION 5: CIRCLE COUNTERS (STATS)
-             ========================================================================== -->
-        <section class="stats-section" id="metrics">
-            <div class="section-header reveal">
-                <span class="section-tag">Verified Benchmarks</span>
-                <h2 class="section-title">Built for scale, ready for production</h2>
-                <p class="section-desc">Real-time network telemetry and verified test suite coverage across active testnets.</p>
-            </div>
-
-            <!-- SVG Gradient Definition -->
-            <svg style="width:0;height:0;position:absolute;" aria-hidden="true">
-                <defs>
-                    <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#00a86b"/>
-                        <stop offset="50%" stop-color="#10b981"/>
-                        <stop offset="100%" stop-color="#2dd4bf"/>
-                    </linearGradient>
-                </defs>
-            </svg>
-
-            <div class="stats-grid">
-                <!-- Stat 1 -->
-                <div class="stat-card reveal hover-lift">
-                    <div class="ring-container">
-                        <svg class="ring-svg" viewBox="0 0 160 160">
-                            <circle class="ring-bg" cx="80" cy="80" r="70"/>
-                            <circle class="ring-circle" cx="80" cy="80" r="70" data-percent="100"/>
-                        </svg>
-                        <div class="ring-content">
-                            <span class="counter" data-target="100" data-suffix="B">0</span>
-                        </div>
-                    </div>
-                    <div class="stat-label">Total Supply</div>
-                    <div class="stat-sub">Fixed Genesis VRS Allocation</div>
-                </div>
-
-                <!-- Stat 2 -->
-                <div class="stat-card reveal hover-lift" style="transition-delay: 0.1s;">
-                    <div class="ring-container">
-                        <svg class="ring-svg" viewBox="0 0 160 160">
-                            <circle class="ring-bg" cx="80" cy="80" r="70"/>
-                            <circle class="ring-circle" cx="80" cy="80" r="70" data-percent="100"/>
-                        </svg>
-                        <div class="ring-content">
-                            <span class="counter" data-target="143" data-suffix="">0</span>
-                        </div>
-                    </div>
-                    <div class="stat-label">EVM Opcodes</div>
-                    <div class="stat-sub">Chain ID 909 Bytecode Standard</div>
-                </div>
-
-                <!-- Stat 3 -->
-                <div class="stat-card reveal hover-lift" style="transition-delay: 0.2s;">
-                    <div class="ring-container">
-                        <svg class="ring-svg" viewBox="0 0 160 160">
-                            <circle class="ring-bg" cx="80" cy="80" r="70"/>
-                            <circle class="ring-circle" cx="80" cy="80" r="70" data-percent="100"/>
-                        </svg>
-                        <div class="ring-content">
-                            <span class="counter" data-target="260" data-suffix="">0</span>
-                        </div>
-                    </div>
-                    <div class="stat-label">Tests Passing</div>
-                    <div class="stat-sub">100% Runtime Code Coverage</div>
-                </div>
-
-                <!-- Stat 4 -->
-                <div class="stat-card reveal hover-lift" style="transition-delay: 0.3s;">
-                    <div class="ring-container">
-                        <svg class="ring-svg" viewBox="0 0 160 160">
-                            <circle class="ring-bg" cx="80" cy="80" r="70"/>
-                            <circle class="ring-circle" cx="80" cy="80" r="70" data-percent="100"/>
-                        </svg>
-                        <div class="ring-content">
-                            <span class="counter" data-target="7" data-suffix="">0</span>
-                        </div>
-                    </div>
-                    <div class="stat-label">Production Pallets</div>
-                    <div class="stat-sub">Modular Substrate Runtime</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ==========================================================================
-             SECTION 6: ROADMAP (PARALLAX DEPTH)
-             ========================================================================== -->
-        <section class="roadmap-section" id="roadmap">
-            <div class="roadmap-bg-decor" aria-hidden="true"></div>
-
-            <div class="roadmap-container">
-                <div class="section-header reveal">
-                    <span class="section-tag">Future Horizons</span>
-                    <h2 class="section-title">What's built and what's next</h2>
-                    <p class="section-desc">Our milestone progression towards a fully autonomous green decentralized economy.</p>
-                </div>
-
-                <!-- 15. Parallax Depth Grid -->
-                <div class="roadmap-grid">
-                    <!-- Milestone 1 -->
-                    <div class="roadmap-card done hover-lift" data-parallax-depth="0.08">
-                        <div>
-                            <div class="roadmap-phase">PHASE 01</div>
-                            <h3>Core Blockchain</h3>
-                            <div class="roadmap-status status-done">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                                <span>DONE</span>
-                            </div>
-                            <ul class="roadmap-list">
-                                <li>Phases 86-129 Completed</li>
-                                <li>BABE & GRANDPA Engines</li>
-                                <li>7 Core Rust Pallets Built</li>
-                                <li>260 Unit Tests Passing</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Milestone 2 -->
-                    <div class="roadmap-card done hover-lift" data-parallax-depth="-0.06">
-                        <div>
-                            <div class="roadmap-phase">PHASE 02</div>
-                            <h3>Verdiscan Explorer</h3>
-                            <div class="roadmap-status status-done">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                                <span>DONE</span>
-                            </div>
-                            <ul class="roadmap-list">
-                                <li>Real-time Block Scanner</li>
-                                <li>EVM Contract Verifier</li>
-                                <li>Carbon Credit Dashboard</li>
-                                <li>WebSocket Live Feeds</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Milestone 3 -->
-                    <div class="roadmap-card active hover-lift" data-parallax-depth="0.12">
-                        <div>
-                            <div class="roadmap-phase">PHASE 03</div>
-                            <h3>Premium Platform Launch</h3>
-                            <div class="roadmap-status status-active">
-                                <span class="pulse-dot"></span>
-                                <span>ACTIVE NOW</span>
-                            </div>
-                            <ul class="roadmap-list">
-                                <li>Public Testnet 2.0 Live</li>
-                                <li>Developer Portal & SDK</li>
-                                <li>AMM DEX Incentives</li>
-                                <li>Eco Oracle Integrations</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Milestone 4 -->
-                    <div class="roadmap-card planned hover-lift" data-parallax-depth="-0.04">
-                        <div>
-                            <div class="roadmap-phase">PHASE 04</div>
-                            <h3>Mainnet Deployment</h3>
-                            <div class="roadmap-status status-planned">
-                                <span>PLANNED</span>
-                            </div>
-                            <ul class="roadmap-list">
-                                <li>Genesis Block Minting</li>
-                                <li>Validator Staking Onboarding</li>
-                                <li>EVM Cross-Chain Bridge</li>
-                                <li>Governance DAO Activation</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Milestone 5 -->
-                    <div class="roadmap-card planned hover-lift" data-parallax-depth="0.07">
-                        <div>
-                            <div class="roadmap-phase">PHASE 05</div>
-                            <h3>Ecosystem Expansion</h3>
-                            <div class="roadmap-status status-planned">
-                                <span>PLANNED</span>
-                            </div>
-                            <ul class="roadmap-list">
-                                <li>Carbon Offset Derivatives</li>
-                                <li>Zero-Knowledge Rollups</li>
-                                <li>Enterprise IoT Sensors</li>
-                                <li>Global Green Grants</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ==========================================================================
-             SECTION 7: CTA + FOOTER
-             ========================================================================== -->
-        <section class="cta-section" id="cta">
-            <div class="cta-box reveal">
-                <div class="cta-glow-bg" aria-hidden="true"></div>
-                <div class="cta-content">
-                    <h2>Start building on green infrastructure</h2>
-                    <p>Deploy Solidity contracts under Chain 909, stake validator nodes, or launch eco-dApps on the world's cleanest blockchain.</p>
-                    <a href="#hero" class="btn-shine cta-btn">
-                        <span>Open Explorer -></span>
-                    </a>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- FOOTER -->
-    <footer>
-        <div class="footer-container">
-            <div class="footer-brand">
-                <a href="#" class="footer-logo">
-                    <div class="logo-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.4 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
-                    </div>
-                    <span>Verdis Chain</span>
-                </a>
-                <p class="footer-desc">
-                    The world's first green blockchain engineered in Rust. Carbon-negative, ultra-fast, and EVM compatible.
-                </p>
-            </div>
-
-            <div class="footer-col">
-                <h4>Platform</h4>
-                <ul class="footer-links">
-                    <li><a href="#hero">Overview</a></li>
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#architecture">Architecture</a></li>
-                    <li><a href="#metrics">Telemetry</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-col">
-                <h4>Developers</h4>
-                <ul class="footer-links">
-                    <li><a href="#pallets">Rust Pallets</a></li>
-                    <li><a href="#architecture">EVM Gateway</a></li>
-                    <li><a href="#metrics">Benchmarks</a></li>
-                    <li><a href="#roadmap">Roadmap</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-col">
-                <h4>Community</h4>
-                <ul class="footer-links">
-                    <li><a href="#">Discord Server</a></li>
-                    <li><a href="#">Telegram Group</a></li>
-                    <li><a href="#">Twitter / X</a></li>
-                    <li><a href="#">GitHub Repo</a></li>
-                </ul>
-            </div>
+        <div class="nav-cta">
+          <a href="#" class="btn-login">Log In</a>
+          <button class="btn-signup">Sign Up</button>
         </div>
+      </nav>
 
-        <div class="footer-bottom">
+      <!-- Left: Text content -->
+      <div class="hero-left">
+        <div class="hero-badge"><span class="hero-badge-dot"></span> Mainnet Ready · Node Live</div>
+        <h1 class="hero-title">
+          <span class="gradient">GREEN BLOCKCHAIN</span><br>
+          <span style="color:var(--text-white)">Engineered in Rust</span>
+        </h1>
+        <p class="hero-desc">Layer-1 blockchain built with Substrate. Native DPoS consensus, AMM DEX, EVM smart contracts with 143 opcodes, and on-chain carbon credit tracking — all powered by 7 production pallets.</p>
+        <div class="hero-actions">
+          <button class="btn-read-more" onclick="window.location.href='/explorer'">READ MORE →</button>
+          <button class="btn-explore" onclick="document.getElementById('features').scrollIntoView()">Explore</button>
+        </div>
+      </div>
+
+      <!-- Right: 3D Floating Visual with animated canvas -->
+      <div class="hero-right">
+        <div class="hero-visual">
+          <div class="hero-circle"></div>
+          <canvas id="hero-canvas"></canvas>
+
+          <!-- Floating cards -->
+          <div class="float-card float-card-1">
+            <div class="float-card-icon">⛓️</div>
+            <div class="float-card-label">Block Height</div>
+            <div class="float-card-value mono">#1,847,392</div>
+            <div class="float-card-bar"><div class="float-card-bar-fill" style="width:78%"></div></div>
+          </div>
+
+          <div class="float-card float-card-2">
+            <div class="float-card-icon">🌱</div>
+            <div class="float-card-label">Carbon Offset</div>
+            <div class="float-card-value green mono">12,847 tCO₂</div>
+            <div class="float-card-bar"><div class="float-card-bar-fill" style="width:92%"></div></div>
+          </div>
+
+          <div class="float-card float-card-3">
+            <div class="float-card-icon">⚡</div>
+            <div class="float-card-label">EVM Opcodes</div>
+            <div class="float-card-value mono">143</div>
+            <div class="float-card-bar"><div class="float-card-bar-fill" style="width:85%"></div></div>
+          </div>
+
+          <div class="float-card float-card-4">
+            <div class="float-card-icon">🔄</div>
+            <div class="float-card-label">DEX Volume</div>
+            <div class="float-card-value green mono">$2.4M</div>
+            <div class="float-card-bar"><div class="float-card-bar-fill" style="width:67%"></div></div>
+          </div>
+
+          <!-- Phone mockup -->
+          <div class="phone-mockup">
             <div>
-                © 2026 Verdis Chain Foundation. All rights reserved. Built with Rust & Substrate.
+              <div class="phone-screen-label">Validator Score</div>
+              <div class="phone-screen-value">Green: 94/100</div>
             </div>
-            <div class="server-status">
-                <span class="pulse-dot" style="background:#38bdf8;" aria-hidden="true"></span>
-                <span>Mainnet Node · Block #1,489,230 · Latency: 12ms</span>
+            <div class="phone-progress-ring">
+              <svg width="56" height="56">
+                <defs><linearGradient id="ring-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#b4f849"/><stop offset="100%" stop-color="#00a86b"/></linearGradient></defs>
+                <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
+                <circle cx="28" cy="28" r="24" fill="none" stroke="url(#ring-grad)" stroke-width="4" stroke-linecap="round" stroke-dasharray="150" stroke-dashoffset="9" transform="rotate(-90 28 28)"/>
+              </svg>
+              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Poppins';font-size:14px;font-weight:700;color:var(--accent)">94%</div>
             </div>
+            <div class="phone-screen-label">DPoS Active</div>
+            <div class="phone-screen-value" style="color:var(--accent)">✓ Verified</div>
+            <div class="phone-login-btn">View Explorer</div>
+          </div>
         </div>
-    </footer>
+      </div>
+    </div>
+  </section>
 
-    <!-- ==========================================================================
-       VANILLA JAVASCRIPT ANIMATION ENGINES
-       ========================================================================== -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+  <!-- ===== STATS BAR ===== -->
+  <section class="stats-section" id="stats">
+    <div class="stats-inner">
+      <div class="stats-grid reveal-stagger">
+        <div class="stat-card"><div class="stat-value mono" data-count="100" data-suffix="B">0</div><div class="stat-label">Total Token Supply</div></div>
+        <div class="stat-card"><div class="stat-value mono" data-count="143">0</div><div class="stat-label">EVM Opcodes</div></div>
+        <div class="stat-card"><div class="stat-value mono" data-count="260">0</div><div class="stat-label">Tests Passing</div></div>
+        <div class="stat-card"><div class="stat-value mono" data-count="7">0</div><div class="stat-label">Production Pallets</div></div>
+      </div>
+    </div>
+  </section>
 
-            /* ==========================================================================
-               1. CURSOR GLOW EFFECT ENGINE
-               ========================================================================== */
-            window.addEventListener('mousemove', (e) => {
-                document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
-                document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
-            });
+  <!-- ===== FEATURES ===== -->
+  <section class="features-section" id="features">
+    <div class="features-inner">
+      <div class="section-header reveal">
+        <div class="section-label">Platform Features</div>
+        <h2>Everything you need to build on green infrastructure</h2>
+        <p>From consensus to smart contracts to carbon tracking — Verdis Chain delivers a complete blockchain ecosystem.</p>
+      </div>
+      <div class="features-grid reveal-stagger">
+        <div class="feature-card"><div class="feature-icon">⛓️</div><h3>Native DPoS Consensus</h3><p>BABE block production + GRANDPA finality. Validators earn green scores based on energy efficiency and carbon offset commitments.</p><span class="feature-tag">BABE + GRANDPA</span></div>
+        <div class="feature-card"><div class="feature-icon">🔄</div><h3>AMM Decentralized Exchange</h3><p>Native Automated Market Maker built into the chain. Swap tokens, provide liquidity, earn fees without external contracts.</p><span class="feature-tag">Native AMM DEX</span></div>
+        <div class="feature-card"><div class="feature-icon">🌱</div><h3>Carbon Credit Tracking</h3><p>On-chain carbon credits, green validator scoring, reforestation logging. Every transaction contributes to environmental impact.</p><span class="feature-tag">Eco Pallet</span></div>
+        <div class="feature-card"><div class="feature-icon">⚡</div><h3>EVM Smart Contracts</h3><p>143 EVM opcodes with Cancun upgrades. Deploy Solidity contracts with Chain ID 909 and 24KB max code size.</p><span class="feature-tag">143 Opcodes · Chain 909</span></div>
+        <div class="feature-card"><div class="feature-icon">🛡️</div><h3>Tokenomics & Vesting</h3><p>100B total supply with 12B investor allocation enforced on-chain. Vesting schedules, transfer restrictions, mint/burn controls.</p><span class="feature-tag">100B Supply · 12B Vesting</span></div>
+        <div class="feature-card"><div class="feature-icon">🏗️</div><h3>Substrate + Rust Core</h3><p>Built from scratch in Rust using Substrate. WASM runtime, gRPC/JSON-RPC, benchmarked weight files for all pallets.</p><span class="feature-tag">Rust · Substrate · WASM</span></div>
+      </div>
+    </div>
+  </section>
 
-            /* ==========================================================================
-               2. SCROLL PROGRESS BAR ENGINE
-               ========================================================================== */
-            const scrollProgress = document.getElementById('scroll-progress');
-            window.addEventListener('scroll', () => {
-                const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-                const progress = (window.scrollY / totalHeight) * 100;
-                scrollProgress.style.width = `${Math.min(100, Math.max(0, progress))}%`;
-            });
+  <!-- ===== ARCHITECTURE (dark section) ===== -->
+  <section class="arch-section" id="architecture">
+    <div class="arch-inner">
+      <div class="section-header reveal">
+        <div class="section-label">Architecture</div>
+        <h2>Seven layers, one chain</h2>
+        <p>Each pallet is independently benchmarked with real weight files and full test coverage.</p>
+      </div>
+      <div class="arch-layers reveal-stagger">
+        <div class="arch-layer"><div class="arch-layer-num">01</div><div class="arch-layer-name">DPoS Consensus</div><div class="arch-layer-desc">BABE block production + GRANDPA finality, validator election, green scoring</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">02</div><div class="arch-layer-name">AMM DEX</div><div class="arch-layer-desc">Native swap, liquidity pools, fee distribution, slippage protection</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">03</div><div class="arch-layer-name">Eco Module</div><div class="arch-layer-desc">Carbon credits, reforestation logging, green validator scoring</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">04</div><div class="arch-layer-name">EVM</div><div class="arch-layer-desc">143 opcodes, Chain ID 909, 24KB code limit, Cancun upgrades</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">05</div><div class="arch-layer-name">Tokenomics</div><div class="arch-layer-desc">100B supply, 12B investor allocation, mint/burn, transfer restrictions</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">06</div><div class="arch-layer-name">Vesting</div><div class="arch-layer-desc">Schedule-based token release, cliff periods, linear vesting</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">07</div><div class="arch-layer-name">Storage</div><div class="arch-layer-desc">On-chain data storage, key-value pairs, IPFS integration ready</div><div class="arch-layer-status">Live</div></div>
+      </div>
+    </div>
+  </section>
 
-            /* ==========================================================================
-               9. CANVAS PARTICLE NETWORK IN HERO
-               ========================================================================== */
-            const canvas = document.getElementById('hero-canvas');
-            if (canvas) {
-                const ctx = canvas.getContext('2d');
-                let width = canvas.width = canvas.offsetWidth;
-                let height = canvas.height = canvas.offsetHeight;
+  <!-- ===== CIRCLE COUNTERS ===== -->
+  <section class="circle-section">
+    <div class="circle-inner">
+      <div class="section-header reveal">
+        <div class="section-label">Metrics</div>
+        <h2>Built for scale, ready for production</h2>
+      </div>
+      <div class="circle-grid reveal-stagger">
+        <div class="circle-card" style="--offset: 0">
+          <div class="circle-svg"><svg width="160" height="160"><defs><linearGradient id="green-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#b4f849"/><stop offset="100%" stop-color="#00a86b"/></linearGradient></defs><circle class="circle-bg" cx="80" cy="80" r="70"/><circle class="circle-fill" cx="80" cy="80" r="70"/></svg><div class="circle-count mono" data-count="100" data-suffix="B">0</div></div>
+          <div class="circle-label">Total Supply</div>
+        </div>
+        <div class="circle-card" style="--offset: 120">
+          <div class="circle-svg"><svg width="160" height="160"><circle class="circle-bg" cx="80" cy="80" r="70"/><circle class="circle-fill" cx="80" cy="80" r="70" style="stroke-dashoffset:120"/></svg><div class="circle-count mono" data-count="143">0</div></div>
+          <div class="circle-label">EVM Opcodes</div>
+        </div>
+        <div class="circle-card" style="--offset: 30">
+          <div class="circle-svg"><svg width="160" height="160"><circle class="circle-bg" cx="80" cy="80" r="70"/><circle class="circle-fill" cx="80" cy="80" r="70" style="stroke-dashoffset:30"/></svg><div class="circle-count mono" data-count="260">0</div></div>
+          <div class="circle-label">Tests Passing</div>
+        </div>
+        <div class="circle-card" style="--offset: 377">
+          <div class="circle-svg"><svg width="160" height="160"><circle class="circle-bg" cx="80" cy="80" r="70"/><circle class="circle-fill" cx="80" cy="80" r="70" style="stroke-dashoffset:377"/></svg><div class="circle-count mono" data-count="7">0</div></div>
+          <div class="circle-label">Production Pallets</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-                window.addEventListener('resize', () => {
-                    width = canvas.width = canvas.offsetWidth;
-                    height = canvas.height = canvas.offsetHeight;
-                });
+  <!-- ===== ROADMAP ===== -->
+  <section class="roadmap-section" id="roadmap">
+    <div class="roadmap-inner">
+      <div class="section-header reveal">
+        <div class="section-label">Roadmap</div>
+        <h2>What's built and what's next</h2>
+      </div>
+      <div class="roadmap-track reveal">
+        <div class="roadmap-milestone done"><div class="roadmap-dot"></div><div class="roadmap-status">✓ Completed</div><h4>Core Blockchain</h4><p>Phases 86-129: 7 pallets, 143 EVM opcodes, 260 tests</p></div>
+        <div class="roadmap-milestone done"><div class="roadmap-dot"></div><div class="roadmap-status">✓ Completed</div><h4>Verdiscan Explorer</h4><p>Real-time block explorer, validator cards, WebSocket feed</p></div>
+        <div class="roadmap-milestone active"><div class="roadmap-dot"></div><div class="roadmap-status">● In Progress</div><h4>Premium Launch</h4><p>SaaS interface, security audit, SDK release</p></div>
+        <div class="roadmap-milestone planned"><div class="roadmap-dot"></div><div class="roadmap-status">○ Planned</div><h4>Mainnet</h4><p>Genesis allocation, validator onboarding, public RPC</p></div>
+        <div class="roadmap-milestone planned"><div class="roadmap-dot"></div><div class="roadmap-status">○ Planned</div><h4>Ecosystem</h4><p>Mobile wallet, cross-chain bridge, DApp marketplace</p></div>
+      </div>
+    </div>
+  </section>
 
-                // Mouse repel state
-                let mouseX = -1000;
-                let mouseY = -1000;
-                canvas.addEventListener('mousemove', (e) => {
-                    const rect = canvas.getBoundingClientRect();
-                    mouseX = e.clientX - rect.left;
-                    mouseY = e.clientY - rect.top;
-                });
+  <!-- ===== CTA ===== -->
+  <section class="cta-section">
+    <div class="cta-inner">
+      <div class="cta-card reveal">
+        <h2>Start building on green infrastructure</h2>
+        <p>Deploy smart contracts, swap on the native DEX, and track carbon credits — all on one chain.</p>
+        <button class="btn-read-more" onclick="window.location.href='/explorer'">Open Explorer →</button>
+      </div>
+    </div>
+  </section>
 
-                canvas.addEventListener('mouseleave', () => {
-                    mouseX = -1000;
-                    mouseY = -1000;
-                });
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand"><h4>Verdis Chain</h4><p>The world's first green blockchain. Built in Rust + Substrate with DPoS, AMM DEX, EVM, and carbon credit tracking.</p></div>
+      <div class="footer-col"><h5>Platform</h5><a href="/explorer">Explorer</a><a href="/validators">Validators</a><a href="/dex">DEX</a><a href="/eco">Eco Metrics</a></div>
+      <div class="footer-col"><h5>Developers</h5><a href="#">Documentation</a><a href="#">RPC Endpoint</a><a href="#">GitHub</a><a href="#">Whitepaper</a></div>
+      <div class="footer-col"><h5>Community</h5><a href="#">Twitter</a><a href="#">Discord</a><a href="#">Telegram</a><a href="#">Blog</a></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 Verdis Chain · Powered by Protremix</span><span>verdischain.com · 91.98.160.145</span></div>
+  </footer>
 
-                // Generate 45 nodes
-                const nodeCount = 45;
-                const nodes = [];
-                for (let i = 0; i < nodeCount; i++) {
-                    nodes.push({
-                        x: Math.random() * width,
-                        y: Math.random() * height,
-                        vx: (Math.random() - 0.5) * 0.8,
-                        vy: (Math.random() - 0.5) * 0.8,
-                        radius: Math.random() * 2.5 + 1.5,
-                        pulse: Math.random() * Math.PI
-                    });
-                }
+  <script>
+    // ===== CURSOR GLOW =====
+    const glow = document.getElementById('cursor-glow');
+    document.addEventListener('mousemove', e => { glow.style.left = e.clientX + 'px'; glow.style.top = e.clientY + 'px'; });
 
-                function renderCanvas() {
-                    ctx.clearRect(0, 0, width, height);
+    // ===== SCROLL PROGRESS =====
+    const scrollBar = document.getElementById('scroll-bar');
+    window.addEventListener('scroll', () => {
+      const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+      scrollBar.style.width = pct + '%';
+    });
 
-                    // Update & draw nodes
-                    nodes.forEach((node, idx) => {
-                        // Movement
-                        node.x += node.vx;
-                        node.y += node.vy;
+    // ===== SCROLL REVEAL =====
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal, .reveal-stagger, .circle-card').forEach(el => observer.observe(el));
 
-                        // Bounce walls
-                        if (node.x < 0 || node.x > width) node.vx *= -1;
-                        if (node.y < 0 || node.y > height) node.vy *= -1;
+    // ===== ANIMATED COUNTERS =====
+    const counterObs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const el = e.target, target = parseInt(el.dataset.count), suffix = el.dataset.suffix || '';
+        let current = 0, step = target / 60;
+        const tick = () => { current += step; if (current >= target) { el.textContent = target + suffix; return; } el.textContent = Math.floor(current) + suffix; requestAnimationFrame(tick); };
+        tick(); counterObs.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('[data-count]').forEach(el => counterObs.observe(el));
 
-                        // Mouse repulsion force
-                        const dx = mouseX - node.x;
-                        const dy = mouseY - node.y;
-                        const dist = Math.sqrt(dx * dx + dy * dy);
-                        if (dist < 140) {
-                            const angle = Math.atan2(dy, dx);
-                            const force = (140 - dist) / 140;
-                            node.x -= Math.cos(angle) * force * 3;
-                            node.y -= Math.sin(angle) * force * 3;
-                        }
+    // ===== HERO CANVAS — Blockchain Network Animation =====
+    const canvas = document.getElementById('hero-canvas');
+    const ctx = canvas.getContext('2d');
+    let W, H, nodes = [], mouse = { x: -1000, y: -1000 };
 
-                        // Pulse radius
-                        node.pulse += 0.03;
-                        const currentRadius = node.radius + Math.sin(node.pulse) * 0.8;
+    function resize() { W = canvas.width = canvas.offsetWidth; H = canvas.height = canvas.offsetHeight; }
+    resize();
+    window.addEventListener('resize', resize);
 
-                        // Draw particle dot
-                        ctx.beginPath();
-                        ctx.arc(node.x, node.y, Math.max(0.5, currentRadius), 0, Math.PI * 2);
-                        ctx.fillStyle = 'rgba(0, 168, 107, 0.7)';
-                        ctx.fill();
+    for (let i = 0; i < 35; i++) {
+      nodes.push({ x: Math.random()*W, y: Math.random()*H, vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4, r: 2+Math.random()*3, pulse: Math.random()*Math.PI*2 });
+    }
 
-                        // Connect lines to nearby nodes
-                        for (let j = idx + 1; j < nodes.length; j++) {
-                            const other = nodes[j];
-                            const ldx = other.x - node.x;
-                            const ldy = other.y - node.y;
-                            const ldist = Math.sqrt(ldx * ldx + ldy * ldy);
+    canvas.addEventListener('mousemove', e => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left; mouse.y = e.clientY - rect.top;
+    });
 
-                            if (ldist < 130) {
-                                const opacity = (1 - ldist / 130) * 0.25;
-                                ctx.beginPath();
-                                ctx.moveTo(node.x, node.y);
-                                ctx.lineTo(other.x, other.y);
-                                ctx.strokeStyle = `rgba(0, 168, 107, ${opacity})`;
-                                ctx.lineWidth = 1;
-                                ctx.stroke();
-                            }
-                        }
-                    });
-
-                    requestAnimationFrame(renderCanvas);
-                }
-                renderCanvas();
-            }
-
-            /* ==========================================================================
-               7. HORIZONTAL SCROLL FEATURE SECTION ENGINE
-               ========================================================================== */
-            const horizontalWrapper = document.querySelector('.horizontal-scroll-wrapper');
-            const horizontalTrack = document.getElementById('horizontalTrack');
-
-            if (horizontalWrapper && horizontalTrack) {
-                window.addEventListener('scroll', () => {
-                    const rect = horizontalWrapper.getBoundingClientRect();
-                    const wrapperHeight = horizontalWrapper.offsetHeight;
-                    const windowHeight = window.innerHeight;
-
-                    // Calculate scroll progress through horizontal section [0 to 1]
-                    const scrollProgress = -rect.top / (wrapperHeight - windowHeight);
-                    const clampedProgress = Math.min(1, Math.max(0, scrollProgress));
-
-                    // Calculate total overflow width of cards
-                    const trackWidth = horizontalTrack.scrollWidth;
-                    const maxTranslate = trackWidth - window.innerWidth + 80;
-
-                    if (maxTranslate > 0) {
-                        const translateX = -clampedProgress * maxTranslate;
-                        horizontalTrack.style.transform = `translateX(${translateX}px)`;
-                    }
-                });
-            }
-
-            /* ==========================================================================
-               14. TIMELINE LINE FILL ENGINE
-               ========================================================================== */
-            const timelineSection = document.getElementById('architecture');
-            const timelineLineFill = document.getElementById('timelineLineFill');
-
-            if (timelineSection && timelineLineFill) {
-                window.addEventListener('scroll', () => {
-                    const rect = timelineSection.getBoundingClientRect();
-                    const windowHeight = window.innerHeight;
-                    const totalDist = rect.height;
-                    const currentDist = windowHeight - rect.top;
-
-                    let fillPercent = (currentDist / totalDist) * 100;
-                    fillPercent = Math.min(100, Math.max(0, fillPercent));
-                    timelineLineFill.style.height = `${fillPercent}%`;
-                });
-            }
-
-            /* ==========================================================================
-               6. 3D PERSPECTIVE TILT CARDS ENGINE
-               ========================================================================== */
-            const tiltCards = document.querySelectorAll('[data-tilt]');
-
-            tiltCards.forEach(card => {
-                const glare = card.querySelector('.pallet-glare');
-
-                card.addEventListener('mousemove', (e) => {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-
-                    const centerX = rect.width / 2;
-                    const centerY = rect.height / 2;
-
-                    const rotateX = ((y - centerY) / centerY) * -12; // Max 12 deg tilt
-                    const rotateY = ((x - centerX) / centerX) * 12;
-
-                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-
-                    if (glare) {
-                        glare.style.opacity = '1';
-                        glare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255, 255, 255, 0.5), transparent 70%)`;
-                    }
-                });
-
-                card.addEventListener('mouseleave', () => {
-                    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
-                    if (glare) {
-                        glare.style.opacity = '0';
-                    }
-                });
-            });
-
-            /* ==========================================================================
-               3. INTERSECTION OBSERVER SCROLL REVEALS & 4/5. COUNTERS & PROGRESS RINGS
-               ========================================================================== */
-            const revealElements = document.querySelectorAll('.reveal');
-
-            const observerOptions = {
-                threshold: 0.15,
-                rootMargin: '0px 0px -50px 0px'
-            };
-
-            const revealObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('active');
-
-                        // Trigger circle rings & counters inside stat cards if present
-                        if (entry.target.classList.contains('stat-card')) {
-                            animateStatCard(entry.target);
-                        }
-                    }
-                });
-            }, observerOptions);
-
-            revealElements.forEach(el => revealObserver.observe(el));
-
-            // Observe stat cards
-            document.querySelectorAll('.stat-card').forEach(card => revealObserver.observe(card));
-
-            function animateStatCard(card) {
-                if (card.dataset.animated) return;
-                card.dataset.animated = "true";
-
-                // Animate SVG Ring
-                const ringCircle = card.querySelector('.ring-circle');
-                if (ringCircle) {
-                    const percent = parseFloat(ringCircle.dataset.percent) || 100;
-                    const circumference = 440; // 2 * PI * 70
-                    const offset = circumference - (percent / 100) * circumference;
-                    ringCircle.style.strokeDashoffset = offset;
-                }
-
-                // Animate Number Counter
-                const counter = card.querySelector('.counter');
-                if (counter) {
-                    const target = parseInt(counter.dataset.target, 10);
-                    const suffix = counter.dataset.suffix || '';
-                    const duration = 2000; // ms
-                    const startTime = performance.now();
-
-                    function updateCounter(currentTime) {
-                        const elapsed = currentTime - startTime;
-                        const progress = Math.min(elapsed / duration, 1);
-                        // Ease out quad
-                        const easeProgress = 1 - (1 - progress) * (1 - progress);
-                        const currentVal = Math.floor(easeProgress * target);
-
-                        counter.textContent = currentVal + suffix;
-
-                        if (progress < 1) {
-                            requestAnimationFrame(updateCounter);
-                        } else {
-                            counter.textContent = target + suffix;
-                        }
-                    }
-                    requestAnimationFrame(updateCounter);
-                }
-            }
-
-            /* ==========================================================================
-               15. PARALLAX DEPTH ON ROADMAP ITEMS
-               ========================================================================== */
-            const roadmapSection = document.getElementById('roadmap');
-            const parallaxCards = document.querySelectorAll('[data-parallax-depth]');
-
-            if (roadmapSection && parallaxCards.length > 0) {
-                window.addEventListener('scroll', () => {
-                    const rect = roadmapSection.getBoundingClientRect();
-                    const windowHeight = window.innerHeight;
-
-                    if (rect.top < windowHeight && rect.bottom > 0) {
-                        const relativeScroll = windowHeight - rect.top;
-
-                        parallaxCards.forEach(card => {
-                            const depth = parseFloat(card.dataset.parallaxDepth) || 0.05;
-                            const translateY = (relativeScroll - windowHeight / 2) * depth;
-                            card.style.transform = `translateY(${translateY}px)`;
-                        });
-                    }
-                });
-            }
-        });
-    </script>
+    function animate() {
+      ctx.clearRect(0, 0, W, H);
+      nodes.forEach((n, i) => {
+        n.x += n.vx; n.y += n.vy; n.pulse += 0.03;
+        if (n.x < 0 || n.x > W) n.vx *= -1;
+        if (n.y < 0 || n.y > H) n.vy *= -1;
+        const dx = n.x - mouse.x, dy = n.y - mouse.y, dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 100) { n.x += dx/dist * 0.8; n.y += dy/dist * 0.8; }
+        const pulseSize = n.r + Math.sin(n.pulse) * 1.5;
+        ctx.beginPath(); ctx.arc(n.x, n.y, pulseSize, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(180,248,73,' + (0.3 + Math.sin(n.pulse)*0.2) + ')';
+        ctx.fill();
+      });
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i+1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y, dist = Math.sqrt(dx*dx+dy*dy);
+          if (dist < 130) {
+            const opacity = (1 - dist/130) * 0.12;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.strokeStyle = 'rgba(180,248,73,' + opacity + ')'; ctx.lineWidth = 1; ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
 </body>
 </html>
