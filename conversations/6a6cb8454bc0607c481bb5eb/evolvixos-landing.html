@@ -4,518 +4,2155 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EvolvixOS — The AI Engineering Operating System</title>
-  <meta name="description" content="EvolvixOS is the world's first AI Engineering Operating System. Five autonomous AI agents design, build, deploy, and secure your software 24/7. 16 core agents, 24 AI providers, plugin marketplace, and enterprise-grade infrastructure." />
+  <meta name="description" content="EvolvixOS is the world's first AI Engineering Operating System. Autonomous AI agents design, build, deploy, and secure your software 24/7." />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="EvolvixOS — The AI Engineering Operating System" />
   <meta property="og:description" content="Autonomous AI agents that design, build, deploy, and secure software 24/7. 34 containers, 615+ tests, plugin marketplace." />
   <meta property="og:url" content="https://evolvixos.com" />
+  
+  <!-- JSON-LD Structured Data for SoftwareApplication -->
   <script type="application/ld+json">
-  { "@context": "https://schema.org", "@type": "SoftwareApplication", "name": "EvolvixOS", "description": "The AI Engineering Operating System — autonomous AI agents that design, build, deploy, and secure software 24/7.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Web, Self-hosted", "creator": { "@type": "Organization", "name": "Protremix" }, "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } }
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "EvolvixOS",
+    "description": "The AI Engineering Operating System — autonomous AI agents that design, build, deploy, and secure software 24/7.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Web, Self-hosted, Docker",
+    "creator": {
+      "@type": "Organization",
+      "name": "EvolvixOS Inc."
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
   </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
   <style>
+    /* ===== DESIGN SYSTEM & CSS VARIABLES ===== */
     :root {
-      --bg: #f8fafc; --bg-subtle: #f1f5f9; --card: #ffffff; --text: #0f172a; --text-muted: #64748b; --text-light: #94a3b8;
-      --border: #e2e8f0; --primary: #6366f1; --primary-hover: #5457e6; --primary-light: #eef2ff; --primary-border: #c7d2fe;
-      --accent: #8b5cf6; --emerald: #10b981; --amber: #f59e0b; --rose: #f43f5e;
-      --radius: 12px; --radius-lg: 16px; --shadow-md: 0 4px 12px rgba(0,0,0,0.08); --shadow-lg: 0 8px 24px rgba(0,0,0,0.10);
+      --bg: #f8fafc;
+      --bg-subtle: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      --border: #e2e8f0;
+      
+      --primary: #6366f1;
+      --primary-hover: #5457e6;
+      --primary-light: #eef2ff;
+      --primary-border: #c7d2fe;
+      
+      --accent: #8b5cf6;
+      --accent-light: #a78bfa;
+      --emerald: #10b981;
+      --emerald-light: #ecfdf5;
+      --emerald-border: #a7f3d0;
+      
+      --rose: #f43f5e;
+      --rose-light: #fff1f2;
+      --rose-border: #fecdd3;
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.10);
+      --shadow-xl: 0 20px 40px rgba(99, 102, 241, 0.16);
+      
       --transition: 200ms ease-out;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
-    h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; letter-spacing: -0.02em; }
-    .mono { font-family: 'JetBrains Mono', monospace; }
-    a { color: var(--primary); text-decoration: none; transition: var(--transition); }
-    a:hover { color: var(--primary-hover); }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    h1, h2, h3, h4, h5 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
 
     /* ===== CURSOR GLOW ===== */
-    #cursor-glow { position: fixed; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%); pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: opacity 300ms; opacity: 0; mix-blend-mode: multiply; }
-    body:hover #cursor-glow { opacity: 1; }
-
-    /* ===== SCROLL PROGRESS ===== */
-    #scroll-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #a78bfa); z-index: 10000; width: 0; transition: width 50ms; }
-
-    /* ===== BLOB BG ===== */
-    .blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.35; animation: float 20s ease-in-out infinite; z-index: 0; }
-    .blob-1 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(99,102,241,0.3), transparent); top: -100px; right: -150px; }
-    .blob-2 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(139,92,246,0.2), transparent); bottom: 100px; left: -100px; animation-delay: 5s; }
-    .blob-3 { width: 350px; height: 350px; background: radial-gradient(circle, rgba(167,139,250,0.15), transparent); top: 300px; left: 40%; animation-delay: 10s; }
-    @keyframes float { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(30px,-30px) scale(1.1); } 66% { transform: translate(-20px,20px) scale(0.95); } }
-
-    /* ===== NAV ===== */
-    .nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.7); backdrop-filter: blur(24px) saturate(180%); border-bottom: 1px solid var(--border); transition: all 300ms; }
-    .nav.scrolled { box-shadow: 0 1px 12px rgba(0,0,0,0.06); }
-    .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; }
-    .nav-brand { display: flex; align-items: center; gap: 10px; font-family: 'Space Grotesk'; font-weight: 700; font-size: 20px; color: var(--text); }
-    .nav-brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 12px rgba(99,102,241,0.5); animation: pulse-dot 2s infinite; }
-    @keyframes pulse-dot { 0%,100% { box-shadow: 0 0 12px rgba(99,102,241,0.5); } 50% { box-shadow: 0 0 20px rgba(99,102,241,0.8); } }
-    .nav-links { display: flex; gap: 28px; }
-    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; position: relative; }
-    .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: var(--primary); border-radius: 2px; transition: width 250ms; }
-    .nav-links a:hover { color: var(--text); }
-    .nav-links a:hover::after { width: 100%; }
-    .nav-cta { display: flex; gap: 10px; align-items: center; }
-    .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; transition: all 200ms cubic-bezier(0.16,1,0.3,1); cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; position: relative; overflow: hidden; }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); transition: left 500ms; }
-    .btn-primary:hover::before { left: 100%; }
-    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99,102,241,0.3); }
-    .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { border-color: var(--primary-border); background: var(--primary-light); transform: translateY(-1px); }
-
-    /* ===== HERO ===== */
-    .hero-wrap { position: relative; overflow: hidden; }
-    .hero { position: relative; max-width: 1200px; margin: 0 auto; padding: 90px 24px 40px; text-align: center; z-index: 1; }
-    .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--primary-light); border: 1px solid var(--primary-border); border-radius: 100px; font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 28px; opacity: 0; transform: translateY(20px); animation: slideUp 600ms 100ms forwards; }
-    .hero-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); animation: pulse-dot 2s infinite; }
-    .hero h1 { font-size: 56px; line-height: 1.05; margin-bottom: 20px; max-width: 820px; margin-left: auto; margin-right: auto; opacity: 0; transform: translateY(30px); animation: slideUp 800ms 200ms forwards; }
-    .hero h1 span { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; position: relative; }
-    .hero p { font-size: 18px; color: var(--text-muted); max-width: 640px; margin: 0 auto 36px; line-height: 1.7; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 400ms forwards; }
-    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 600ms forwards; }
-    .hero-actions .btn { padding: 14px 28px; font-size: 15px; }
-    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
-
-    #hero-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-
-    .scroll-indicator { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: 0; animation: fadeIn 1000ms 1200ms forwards; }
-    .scroll-indicator span { font-size: 12px; color: var(--text-light); font-weight: 500; }
-    .scroll-indicator-line { width: 2px; height: 32px; background: linear-gradient(180deg, var(--primary), transparent); border-radius: 2px; animation: scrollDown 1.5s infinite; }
-    @keyframes fadeIn { to { opacity: 1; } }
-    @keyframes scrollDown { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
-
-    /* ===== STATS ===== */
-    .stats-bar { max-width: 1100px; margin: 40px auto; padding: 0 24px; position: relative; z-index: 1; }
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-    .stat-item { background: var(--card); padding: 36px 24px; text-align: center; transition: all 300ms; position: relative; }
-    .stat-item:hover { background: var(--primary-light); }
-    .stat-item::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #6366f1, #a78bfa); transform: scaleX(0); transition: transform 300ms; }
-    .stat-item:hover::before { transform: scaleX(1); }
-    .stat-value { font-family: 'Space Grotesk'; font-size: 40px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-    .stat-value.indigo { background: linear-gradient(135deg, #6366f1, #a78bfa); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-    .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
-
-    /* ===== REVEAL ===== */
-    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 700ms cubic-bezier(0.16,1,0.3,1), transform 700ms cubic-bezier(0.16,1,0.3,1); }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
-    .reveal-stagger > * { opacity: 0; transform: translateY(40px); transition: opacity 600ms cubic-bezier(0.16,1,0.3,1), transform 600ms cubic-bezier(0.16,1,0.3,1); }
-    .reveal-stagger.visible > *:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0ms; }
-    .reveal-stagger.visible > *:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 80ms; }
-    .reveal-stagger.visible > *:nth-child(3) { opacity: 1; transform: translateY(0); transition-delay: 160ms; }
-    .reveal-stagger.visible > *:nth-child(4) { opacity: 1; transform: translateY(0); transition-delay: 240ms; }
-    .reveal-stagger.visible > *:nth-child(5) { opacity: 1; transform: translateY(0); transition-delay: 320ms; }
-    .reveal-stagger.visible > *:nth-child(6) { opacity: 1; transform: translateY(0); transition-delay: 400ms; }
-    .reveal-stagger.visible > *:nth-child(7) { opacity: 1; transform: translateY(0); transition-delay: 480ms; }
-    .reveal-stagger.visible > *:nth-child(8) { opacity: 1; transform: translateY(0); transition-delay: 560ms; }
-    .reveal-stagger.visible > *:nth-child(9) { opacity: 1; transform: translateY(0); transition-delay: 640ms; }
-    .reveal-stagger.visible > *:nth-child(10) { opacity: 1; transform: translateY(0); transition-delay: 720ms; }
-    .reveal-stagger.visible > *:nth-child(11) { opacity: 1; transform: translateY(0); transition-delay: 800ms; }
-    .reveal-stagger.visible > *:nth-child(12) { opacity: 1; transform: translateY(0); transition-delay: 880ms; }
-
-    /* ===== SECTIONS ===== */
-    .section { max-width: 1200px; margin: 0 auto; padding: 80px 24px; position: relative; }
-    .section-header { text-align: center; margin-bottom: 56px; }
-    .section-label { font-size: 13px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: inline-block; padding: 4px 14px; background: var(--primary-light); border-radius: 100px; border: 1px solid var(--primary-border); }
-    .section-header h2 { font-size: 38px; margin-bottom: 16px; }
-    .section-header p { font-size: 17px; color: var(--text-muted); max-width: 600px; margin: 0 auto; }
-
-    /* ===== AGENTS ===== */
-    .agents-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-    .agent-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; transition: all 300ms cubic-bezier(0.16,1,0.3,1); position: relative; overflow: hidden; }
-    .agent-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #6366f1, #a78bfa); transform: scaleX(0); transform-origin: left; transition: transform 400ms; }
-    .agent-card:hover { border-color: var(--primary-border); box-shadow: var(--shadow-md); transform: translateY(-4px); }
-    .agent-card:hover::before { transform: scaleX(1); }
-    .agent-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 16px; transition: all 300ms; }
-    .agent-card:hover .agent-icon { transform: scale(1.15) rotate(-5deg); background: var(--primary); }
-    .agent-card h4 { font-size: 15px; margin-bottom: 6px; }
-    .agent-card p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
-    .agent-status { display: inline-block; margin-top: 12px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 100px; display: flex; align-items: center; gap: 6px; width: fit-content; }
-    .agent-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; animation: pulse-dot 2s infinite; }
-    .agent-status.live { background: #dcfce7; color: #16a34a; }
-    .agent-status.live::before { background: #16a34a; }
-    .agent-status.auto { background: #eef2ff; color: #6366f1; }
-    .agent-status.auto::before { background: #6366f1; }
-
-    /* ===== FEATURES ===== */
-    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-    .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; transition: all 300ms cubic-bezier(0.16,1,0.3,1); position: relative; overflow: hidden; }
-    .feature-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, #6366f1, #a78bfa); transform: scaleY(0); transform-origin: top; transition: transform 400ms; }
-    .feature-card:hover { border-color: var(--primary-border); box-shadow: var(--shadow-lg); transform: translateY(-4px); }
-    .feature-card:hover::before { transform: scaleY(1); }
-    .feature-icon { width: 52px; height: 52px; border-radius: 14px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; transition: all 300ms; }
-    .feature-card:hover .feature-icon { transform: scale(1.1) rotate(-5deg); background: var(--primary); }
-    .feature-card h3 { font-size: 18px; margin-bottom: 8px; }
-    .feature-card p { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
-    .feature-tag { display: inline-block; margin-top: 16px; padding: 4px 12px; background: var(--bg-subtle); border-radius: 6px; font-family: 'JetBrains Mono'; font-size: 12px; color: var(--text-muted); }
-
-    /* ===== INFRA ===== */
-    .infra-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .infra-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; display: flex; align-items: center; gap: 16px; transition: all 300ms; }
-    .infra-card:hover { border-color: var(--primary-border); box-shadow: var(--shadow-md); transform: translateY(-2px); }
-    .infra-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; transition: transform 300ms; }
-    .infra-card:hover .infra-icon { transform: scale(1.1); }
-    .infra-info h4 { font-size: 14px; margin-bottom: 2px; }
-    .infra-info p { font-size: 12px; color: var(--text-muted); }
-    .infra-badge { margin-left: auto; font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 600; color: var(--emerald); display: flex; align-items: center; gap: 6px; }
-    .infra-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--emerald); animation: pulse-dot 2s infinite; }
-
-    /* ===== PROVIDERS ===== */
-    .providers-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
-    .provider-pill { background: var(--card); border: 1px solid var(--border); border-radius: 100px; padding: 10px 20px; text-align: center; font-size: 13px; font-weight: 500; transition: all 300ms; cursor: default; }
-    .provider-pill:hover { border-color: var(--primary-border); background: var(--primary-light); transform: scale(1.05); }
-
-    /* ===== METRICS ===== */
-    .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-    .metric-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; transition: all 300ms; }
-    .metric-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); }
-    .metric-value { font-family: 'Space Grotesk'; font-size: 48px; font-weight: 700; margin-bottom: 8px; background: linear-gradient(135deg, #6366f1, #a78bfa); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-    .metric-label { font-size: 14px; color: var(--text-muted); }
-    .metric-bar { margin-top: 20px; height: 8px; background: var(--bg-subtle); border-radius: 100px; overflow: hidden; }
-    .metric-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a78bfa); border-radius: 100px; width: 0; transition: width 1500ms cubic-bezier(0.16,1,0.3,1); }
-    .metric-card.visible .metric-bar-fill { width: var(--fill); }
-
-    /* ===== ROADMAP ===== */
-    .roadmap { position: relative; padding-left: 32px; border-left: 2px solid var(--border); }
-    .roadmap-item { position: relative; margin-bottom: 40px; transition: all 300ms; }
-    .roadmap-item:hover { transform: translateX(8px); }
-    .roadmap-item::before { content: ''; position: absolute; left: -39px; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--border); border: 3px solid var(--bg); transition: all 300ms; }
-    .roadmap-item.done::before { background: var(--primary); box-shadow: 0 0 0 4px rgba(99,102,241,0.15); }
-    .roadmap-item.active::before { background: var(--accent); box-shadow: 0 0 0 4px rgba(139,92,246,0.15); animation: pulse-ring 2s infinite; }
-    @keyframes pulse-ring { 0%,100% { box-shadow: 0 0 0 4px rgba(139,92,246,0.15); } 50% { box-shadow: 0 0 0 8px rgba(139,92,246,0.08); } }
-    .roadmap-status { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-    .roadmap-status.done { color: var(--primary); }
-    .roadmap-status.active { color: var(--accent); }
-    .roadmap-status.planned { color: var(--text-light); }
-    .roadmap-item h4 { font-size: 16px; margin-bottom: 6px; }
-    .roadmap-item p { font-size: 14px; color: var(--text-muted); }
-
-    /* ===== CTA ===== */
-    .cta { max-width: 1100px; margin: 80px auto; padding: 0 24px; }
-    .cta-card { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%); border-radius: var(--radius-lg); padding: 64px 48px; text-align: center; color: #fff; position: relative; overflow: hidden; }
-    .cta-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%); animation: rotate 20s linear infinite; }
-    @keyframes rotate { to { transform: rotate(360deg); } }
-    .cta-card > * { position: relative; z-index: 1; }
-    .cta-card h2 { font-size: 32px; margin-bottom: 16px; color: #fff; }
-    .cta-card p { font-size: 17px; opacity: 0.9; max-width: 500px; margin: 0 auto 32px; }
-    .cta-card .btn { background: #fff; color: var(--primary); padding: 14px 32px; font-size: 15px; }
-    .cta-card .btn:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(0,0,0,0.2); }
-
-    /* ===== FOOTER ===== */
-    .footer { border-top: 1px solid var(--border); background: var(--card); padding: 48px 24px 32px; }
-    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
-    .footer-brand h4 { font-size: 18px; margin-bottom: 12px; }
-    .footer-brand p { font-size: 14px; color: var(--text-muted); max-width: 280px; }
-    .footer-col h5 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 16px; }
-    .footer-col a { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 10px; transition: all 200ms; }
-    .footer-col a:hover { color: var(--text); transform: translateX(4px); }
-    .footer-bottom { max-width: 1200px; margin: 32px auto 0; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); }
-
-    @media (max-width: 1024px) { .features-grid { grid-template-columns: repeat(2,1fr); } .agents-grid { grid-template-columns: repeat(2,1fr); } .infra-grid { grid-template-columns: repeat(2,1fr); } .providers-grid { grid-template-columns: repeat(4,1fr); } .footer-inner { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 768px) {
-      .nav-links { display: none; } .hero h1 { font-size: 36px; } .hero { padding: 48px 24px 32px; }
-      .stats-grid { grid-template-columns: repeat(2,1fr); } .features-grid { grid-template-columns: 1fr; } .agents-grid { grid-template-columns: 1fr; } .infra-grid { grid-template-columns: 1fr; }
-      .providers-grid { grid-template-columns: repeat(3,1fr); } .metrics-grid { grid-template-columns: 1fr; } .section { padding: 56px 24px; } .section-header h2 { font-size: 28px; }
-      .cta-card { padding: 40px 24px; } .cta-card h2 { font-size: 24px; } .footer-inner { grid-template-columns: 1fr; gap: 24px; } .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+    #cursor-glow {
+      position: fixed;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.05) 50%, transparent 70%);
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: opacity 300ms ease;
+      opacity: 0;
+      mix-blend-mode: multiply;
     }
-    @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr; } .providers-grid { grid-template-columns: repeat(2,1fr); } .hero h1 { font-size: 30px; } }
+
+    body:hover #cursor-glow {
+      opacity: 1;
+    }
+
+    /* ===== SCROLL PROGRESS BAR ===== */
+    #scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #10b981 100%);
+      z-index: 10000;
+      width: 0%;
+      transition: width 50ms ease-out;
+    }
+
+    /* ===== FLOATING GRADIENT BLOBS ===== */
+    .blob-bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.35;
+      animation: floatBlob 18s ease-in-out infinite alternate;
+    }
+
+    .blob-1 {
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, #6366f1 0%, transparent 70%);
+      top: -100px;
+      right: -100px;
+      animation-delay: 0s;
+    }
+
+    .blob-2 {
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, #8b5cf6 0%, transparent 70%);
+      top: 35%;
+      left: -150px;
+      animation-delay: -6s;
+    }
+
+    .blob-3 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, #a78bfa 0%, transparent 70%);
+      bottom: -100px;
+      right: 10%;
+      animation-delay: -12s;
+    }
+
+    @keyframes floatBlob {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(40px, -40px) scale(1.08); }
+      100% { transform: translate(-30px, 30px) scale(0.95); }
+    }
+
+    /* ===== NAVIGATION ===== */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid var(--border);
+      transition: all 300ms ease;
+    }
+
+    .nav-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .brand-logo-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 18px;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-link {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      position: relative;
+      padding: 4px 0;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--primary);
+      border-radius: 2px;
+      transition: width 250ms ease;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .nav-cta-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      min-height: 44px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+      transition: left 600ms ease;
+    }
+
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-secondary {
+      background: var(--card);
+      color: var(--text);
+      border-color: var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--primary-border);
+      background: var(--primary-light);
+      color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    /* ===== LAYOUT CONTAINERS ===== */
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section {
+      padding: 120px 0;
+      position: relative;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto 64px;
+    }
+
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: var(--primary-light);
+      border: 1px solid var(--primary-border);
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .section-title {
+      font-size: 40px;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    .section-subtitle {
+      font-size: 18px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 800ms cubic-bezier(0.16, 1, 0.3, 1), transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ===== SECTION 1: HERO ===== */
+    .hero-section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      padding: 140px 24px 80px;
+      overflow: hidden;
+    }
+
+    #neural-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      max-width: 880px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 18px;
+      background: var(--card);
+      border: 1px solid var(--primary-border);
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.12);
+      margin-bottom: 32px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: slideUp 700ms 100ms forwards cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 10px var(--emerald);
+      animation: pulseGreen 2s infinite;
+    }
+
+    @keyframes pulseGreen {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    .hero-title {
+      font-size: 64px;
+      line-height: 1.05;
+      margin-bottom: 24px;
+      letter-spacing: -0.03em;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: slideUp 800ms 250ms forwards cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 20px;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto 40px;
+      line-height: 1.6;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: slideUp 800ms 400ms forwards cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: slideUp 800ms 550ms forwards cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hero-actions .btn {
+      padding: 14px 32px;
+      font-size: 16px;
+      border-radius: var(--radius-md);
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      z-index: 2;
+      opacity: 0;
+      animation: fadeIn 1000ms 1000ms forwards;
+    }
+
+    .scroll-indicator span {
+      font-size: 12px;
+      color: var(--text-light);
+      font-weight: 500;
+      letter-spacing: 0.05em;
+    }
+
+    .scroll-mouse {
+      width: 20px;
+      height: 32px;
+      border: 2px solid var(--text-light);
+      border-radius: 12px;
+      position: relative;
+    }
+
+    .scroll-wheel {
+      width: 4px;
+      height: 6px;
+      background: var(--primary);
+      border-radius: 2px;
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: scrollAnim 1.8s infinite;
+    }
+
+    @keyframes scrollAnim {
+      0% { opacity: 1; transform: translate(-50%, 0); }
+      100% { opacity: 0; transform: translate(-50%, 12px); }
+    }
+
+    @keyframes slideUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    /* ===== SECTION 2: MAGNETIC AGENT GRID ===== */
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+
+    .agent-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+      transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms ease, border-color 300ms ease;
+      will-change: transform;
+    }
+
+    .agent-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .agent-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .agent-card:hover {
+      border-color: var(--primary-border);
+      box-shadow: var(--shadow-xl);
+    }
+
+    .agent-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .agent-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-auto {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--primary-border);
+    }
+
+    .badge-live {
+      background: var(--emerald-light);
+      color: var(--emerald);
+      border: 1px solid var(--emerald-border);
+    }
+
+    .badge-live .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--emerald);
+      animation: pulseGreen 1.5s infinite;
+    }
+
+    .agent-name {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .agent-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* ===== SECTION 3: SPLIT COMPARISON ===== */
+    .split-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      position: relative;
+    }
+
+    .split-divider-wrap {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    .split-divider-line {
+      width: 100%;
+      height: 0%;
+      background: linear-gradient(180deg, var(--rose) 0%, var(--primary) 50%, var(--emerald) 100%);
+      border-radius: 2px;
+      transition: height 1000ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .split-column {
+      border-radius: var(--radius-xl);
+      padding: 40px;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      transition: var(--transition);
+    }
+
+    .split-left {
+      background: #fff;
+      border: 1px solid var(--rose-border);
+    }
+
+    .split-right {
+      background: #fff;
+      border: 1px solid var(--emerald-border);
+    }
+
+    .split-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .split-header-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .split-left .split-header-icon {
+      background: var(--rose-light);
+      color: var(--rose);
+    }
+
+    .split-right .split-header-icon {
+      background: var(--emerald-light);
+      color: var(--emerald);
+    }
+
+    .split-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      list-style: none;
+    }
+
+    .split-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      opacity: 0;
+      transition: all 600ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .split-left .split-item {
+      transform: translateX(-30px);
+    }
+
+    .split-right .split-item {
+      transform: translateX(30px);
+    }
+
+    .split-container.active .split-item {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .split-item-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .split-left .split-item-icon {
+      background: var(--rose-light);
+      color: var(--rose);
+    }
+
+    .split-right .split-item-icon {
+      background: var(--emerald-light);
+      color: var(--emerald);
+    }
+
+    .split-item-text strong {
+      display: block;
+      font-size: 16px;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .split-item-text span {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ===== SECTION 4: 3D PERSPECTIVE WALL ===== */
+    .perspective-container {
+      perspective: 1200px;
+      transform-style: preserve-3d;
+    }
+
+    .perspective-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+
+    .perspective-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px 28px;
+      box-shadow: var(--shadow-md);
+      transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 400ms ease, border-color 400ms ease;
+      position: relative;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    .perspective-card:hover {
+      transform: rotateY(0deg) rotateX(0deg) translateZ(35px) scale(1.02) !important;
+      box-shadow: var(--shadow-xl);
+      border-color: var(--primary-border);
+      z-index: 10;
+    }
+
+    .feature-icon-wrapper {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+      border: 1px solid var(--primary-border);
+    }
+
+    .feature-title {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .feature-pill {
+      display: inline-block;
+      padding: 4px 12px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ===== SECTION 5: ANIMATED METRIC BARS ===== */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px;
+    }
+
+    .metric-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: var(--shadow-sm);
+      transition: transform 300ms ease, box-shadow 300ms ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .metric-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .metric-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 44px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .metric-target-pill {
+      padding: 4px 12px;
+      background: var(--emerald-light);
+      border: 1px solid var(--emerald-border);
+      color: var(--emerald);
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .metric-label {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .metric-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .metric-track {
+      width: 100%;
+      height: 10px;
+      background: var(--border);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .metric-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 50%, var(--emerald) 100%);
+      border-radius: 100px;
+      transition: width 1500ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ===== SECTION 6: FLOATING PROVIDERS + ROADMAP ===== */
+    .providers-cloud-wrapper {
+      margin-bottom: 80px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .providers-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .provider-pill {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 10px 22px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      box-shadow: var(--shadow-sm);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      animation: bobbing 3.5s ease-in-out infinite alternate;
+      transition: all 250ms ease;
+    }
+
+    .provider-pill:hover {
+      border-color: var(--primary-border);
+      background: var(--primary-light);
+      color: var(--primary);
+      transform: translateY(-6px) scale(1.05) !important;
+      box-shadow: var(--shadow-md);
+    }
+
+    @keyframes bobbing {
+      0% { transform: translateY(0px); }
+      100% { transform: translateY(-10px); }
+    }
+
+    .roadmap-wrapper {
+      position: relative;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px 0;
+    }
+
+    .roadmap-spine {
+      position: absolute;
+      left: 24px;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--emerald) 0%, var(--primary) 60%, var(--border) 100%);
+      border-radius: 2px;
+    }
+
+    .roadmap-list {
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+      position: relative;
+    }
+
+    .roadmap-item {
+      position: relative;
+      padding-left: 64px;
+      opacity: 0;
+      transform: translateX(30px);
+      transition: all 600ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .roadmap-item.active {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .roadmap-marker {
+      position: absolute;
+      left: 14px;
+      top: 4px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--card);
+      border: 3px solid var(--border);
+      z-index: 2;
+      transition: all 300ms ease;
+    }
+
+    .roadmap-item.done .roadmap-marker {
+      border-color: var(--emerald);
+      background: var(--emerald);
+      box-shadow: 0 0 12px var(--emerald);
+    }
+
+    .roadmap-item.current .roadmap-marker {
+      border-color: var(--primary);
+      background: var(--card);
+      box-shadow: 0 0 16px var(--primary);
+      animation: pulseMarker 2s infinite;
+    }
+
+    @keyframes pulseMarker {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+    }
+
+    .roadmap-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .roadmap-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .roadmap-title {
+      font-size: 18px;
+    }
+
+    .roadmap-badge {
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-done {
+      background: var(--emerald-light);
+      color: var(--emerald);
+      border: 1px solid var(--emerald-border);
+    }
+
+    .badge-active {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--primary-border);
+    }
+
+    .badge-planned {
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .roadmap-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ===== SECTION 7: CTA + FOOTER ===== */
+    .cta-banner {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #6366f1 100%);
+      border-radius: var(--radius-xl);
+      padding: 80px 40px;
+      text-align: center;
+      color: #ffffff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(79, 70, 229, 0.3);
+    }
+
+    .cta-banner::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+      animation: rotateGradient 20s linear infinite;
+    }
+
+    @keyframes rotateGradient {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .cta-content {
+      position: relative;
+      z-index: 2;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .cta-title {
+      font-size: 44px;
+      color: #ffffff;
+      margin-bottom: 20px;
+      line-height: 1.15;
+    }
+
+    .cta-desc {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 36px;
+    }
+
+    .cta-banner .btn-primary {
+      background: #ffffff;
+      color: var(--primary);
+      font-size: 16px;
+      padding: 14px 36px;
+      border-radius: var(--radius-md);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .cta-banner .btn-primary:hover {
+      background: #f8fafc;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .footer {
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      padding: 80px 0 40px;
+      margin-top: 100px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 60px;
+    }
+
+    .footer-brand-summary {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin: 16px 0 24px;
+      max-width: 320px;
+      line-height: 1.6;
+    }
+
+    .footer-col-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .footer-link {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .footer-link:hover {
+      color: var(--primary);
+    }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+      font-size: 14px;
+      color: var(--text-light);
+    }
+
+    .footer-bottom-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .agent-grid { grid-template-columns: repeat(2, 1fr); }
+      .perspective-grid { grid-template-columns: repeat(2, 1fr); }
+      .perspective-card { transform: none !important; }
+      .hero-title { font-size: 48px; }
+      .split-container { grid-template-columns: 1fr; gap: 32px; }
+      .split-divider-wrap { display: none; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero-title { font-size: 38px; }
+      .hero-subtitle { font-size: 16px; }
+      .metrics-grid { grid-template-columns: 1fr; }
+      .perspective-grid { grid-template-columns: 1fr; }
+      .agent-grid { grid-template-columns: 1fr; }
+      .cta-title { font-size: 32px; }
+      .cta-banner { padding: 48px 24px; }
+      .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+      .footer-bottom { flex-direction: column; gap: 16px; align-items: flex-start; }
+    }
   </style>
 </head>
 <body>
-  <div id="cursor-glow"></div>
-  <div id="scroll-bar"></div>
 
-  <header class="nav" id="nav">
-    <div class="nav-inner">
-      <a href="/" class="nav-brand"><span class="nav-brand-dot"></span>EvolvixOS</a>
-      <nav class="nav-links">
-        <a href="#agents">Agents</a><a href="#features">Features</a><a href="#infrastructure">Infrastructure</a><a href="#providers">Providers</a><a href="#roadmap">Roadmap</a>
+  <!-- Cursor Glow -->
+  <div id="cursor-glow" aria-hidden="true"></div>
+
+  <!-- Scroll Progress Bar -->
+  <div id="scroll-progress" aria-hidden="true"></div>
+
+  <!-- Floating Gradient Blobs -->
+  <div class="blob-bg" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- Navigation -->
+  <header class="nav">
+    <div class="nav-container">
+      <a href="#" class="nav-brand" aria-label="EvolvixOS Home">
+        <div class="brand-logo-icon">⚡</div>
+        <span>EvolvixOS</span>
+      </a>
+
+      <nav aria-label="Main Navigation">
+        <ul class="nav-links">
+          <li><a href="#agents" class="nav-link">Agents</a></li>
+          <li><a href="#comparison" class="nav-link">Comparison</a></li>
+          <li><a href="#features" class="nav-link">Features</a></li>
+          <li><a href="#metrics" class="nav-link">Metrics</a></li>
+          <li><a href="#roadmap" class="nav-link">Roadmap</a></li>
+        </ul>
       </nav>
-      <div class="nav-cta">
-        <a href="/marketplace" class="btn btn-secondary">Marketplace</a>
-        <a href="#" class="btn btn-primary">Get Started</a>
+
+      <div class="nav-cta-group">
+        <a href="#cta" class="btn btn-secondary">Sign In</a>
+        <a href="#cta" class="btn btn-primary">Get Started</a>
       </div>
     </div>
   </header>
 
   <main>
-    <div class="hero-wrap">
-      <div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div>
-      <canvas id="hero-canvas"></canvas>
-      <section class="hero">
-        <div class="hero-badge"><span class="hero-badge-dot"></span> 34 Containers Running · Production Live</div>
-        <h1>The <span>AI Engineering</span><br>Operating System</h1>
-        <p>EvolvixOS deploys autonomous AI agents that design, build, test, and secure your software 24/7. 16 core agents, 24 AI providers, a plugin marketplace, and enterprise-grade infrastructure — all in one platform.</p>
+    <!-- SECTION 1: HERO -->
+    <section class="hero-section" id="hero">
+      <canvas id="neural-canvas"></canvas>
+
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="status-dot"></span>
+          <span>34 Containers Running · Production Live</span>
+        </div>
+
+        <h1 class="hero-title">
+          The <span>AI Engineering</span> Operating System
+        </h1>
+
+        <p class="hero-subtitle">
+          Autonomous AI agents working 24/7 to design, build, deploy, and secure production software with zero downtime and verified reliability.
+        </p>
+
         <div class="hero-actions">
-          <a href="/agents" class="btn btn-primary">Explore Agents →</a>
+          <a href="#agents" class="btn btn-primary">
+            <span>Explore Agents</span>
+            <span>&rarr;</span>
+          </a>
           <a href="#features" class="btn btn-secondary">View Features</a>
         </div>
-      </section>
-      <div class="scroll-indicator"><span>Scroll</span><div class="scroll-indicator-line"></div></div>
-    </div>
+      </div>
 
-    <div class="stats-bar reveal">
-      <div class="stats-grid">
-        <div class="stat-item"><div class="stat-value indigo mono" data-count="34">0</div><div class="stat-label">Live Containers</div></div>
-        <div class="stat-item"><div class="stat-value mono" data-count="615" data-suffix="+">0</div><div class="stat-label">Tests Passing</div></div>
-        <div class="stat-item"><div class="stat-value mono" data-count="16">0</div><div class="stat-label">Core AI Agents</div></div>
-        <div class="stat-item"><div class="stat-value mono" data-count="24">0</div><div class="stat-label">AI Providers</div></div>
-      </div>
-    </div>
-
-    <section class="section" id="agents">
-      <div class="section-header reveal">
-        <div class="section-label">AI Agents</div>
-        <h2>Sixteen agents working around the clock</h2>
-        <p>Each agent specializes in a specific engineering task — from code review to security to deployment.</p>
-      </div>
-      <div class="agents-grid reveal-stagger">
-        <div class="agent-card"><div class="agent-icon">🤖</div><h4>Code Reviewer</h4><p>Automated code quality, style, and security review for every pull request.</p><span class="agent-status auto">Auto-Run</span></div>
-        <div class="agent-card"><div class="agent-icon">🏗️</div><h4>Architecture Reviewer</h4><p>Analyze system design, patterns, and structural decisions.</p><span class="agent-status auto">Auto-Run</span></div>
-        <div class="agent-card"><div class="agent-icon">🔒</div><h4>Security Auditor</h4><p>Continuous vulnerability scanning and penetration testing.</p><span class="agent-status auto">Auto-Run</span></div>
-        <div class="agent-card"><div class="agent-icon">🧪</div><h4>Test Generator</h4><p>Generate unit, integration, and end-to-end tests automatically.</p><span class="agent-status auto">Auto-Run</span></div>
-        <div class="agent-card"><div class="agent-icon">📝</div><h4>Documentation Writer</h4><p>Auto-generate API docs, runbooks, and architecture guides.</p><span class="agent-status auto">Auto-Run</span></div>
-        <div class="agent-card"><div class="agent-icon">🚀</div><h4>Deployment Manager</h4><p>Manage CI/CD pipelines, rollouts, and rollback strategies.</p><span class="agent-status live">Live</span></div>
-        <div class="agent-card"><div class="agent-icon">📊</div><h4>Performance Monitor</h4><p>Track metrics, set alerts, and optimize system performance.</p><span class="agent-status live">Live</span></div>
-        <div class="agent-card"><div class="agent-icon">🔍</div><h4>Sentiment Analyzer</h4><p>Analyze user feedback and team sentiment in real-time.</p><span class="agent-status live">Live</span></div>
-      </div>
-    </section>
-
-    <section class="section" id="features">
-      <div class="section-header reveal">
-        <div class="section-label">Platform Features</div>
-        <h2>Everything an engineering team needs</h2>
-        <p>From AI gateway to plugin marketplace to enterprise SSO — built for production.</p>
-      </div>
-      <div class="features-grid reveal-stagger">
-        <div class="feature-card"><div class="feature-icon">🧠</div><h3>AI Gateway</h3><p>Universal router for 24 AI providers with intelligent load balancing, caching, rate limiting, and circuit breakers. Routes by capability, cost, and latency.</p><span class="feature-tag">24 Providers · 10 LLM · 14 Specialized</span></div>
-        <div class="feature-card"><div class="feature-icon">🔌</div><h3>Plugin Marketplace</h3><p>12 pre-seeded plugins with verification pipeline, dependency management, versioning, paid plugins, and analytics. Publish, install, and review in one place.</p><span class="feature-tag">12 Plugins · 8-Step Verification</span></div>
-        <div class="feature-card"><div class="feature-icon">🎭</div><h3>Agent Orchestration</h3><p>DAG-based multi-agent workflows with 9 step types, retry logic, parallel execution, and 4 built-in templates including code-review pipeline.</p><span class="feature-tag">DAG · 9 Step Types · 4 Templates</span></div>
-        <div class="feature-card"><div class="feature-icon">🏢</div><h3>Enterprise & SSO</h3><p>SAML 2.0, OAuth2, multi-tenancy with organizations, GDPR compliance (data export, deletion, consent), audit logs, and API usage tracking.</p><span class="feature-tag">SAML · OAuth2 · GDPR · Multi-Tenant</span></div>
-        <div class="feature-card"><div class="feature-icon">🛡️</div><h3>RBAC & Security</h3><p>Granular role-based access control with 6 system roles, 33 permissions across 14 resources, custom roles, and allow/deny policies with conditions.</p><span class="feature-tag">6 Roles · 33 Permissions · 14 Resources</span></div>
-        <div class="feature-card"><div class="feature-icon">⌨️</div><h3>Developer SDK & CLI</h3><p>Python and TypeScript SDKs with async clients, plus a system-wide CLI with project scaffolding, contract management, and deployment.</p><span class="feature-tag">Python · TypeScript · CLI</span></div>
-      </div>
-    </section>
-
-    <section class="section" id="infrastructure">
-      <div class="section-header reveal">
-        <div class="section-label">Infrastructure</div>
-        <h2>Production-grade from day one</h2>
-        <p>34 containers running with PostgreSQL, Redis, WebSocket, and Nginx — all monitored and healthy.</p>
-      </div>
-      <div class="infra-grid reveal-stagger">
-        <div class="infra-card"><div class="infra-icon">🐘</div><div class="infra-info"><h4>PostgreSQL</h4><p>Primary data store</p></div><span class="infra-badge">Connected</span></div>
-        <div class="infra-card"><div class="infra-icon">⚡</div><div class="infra-info"><h4>Redis</h4><p>Cache & rate limiting</p></div><span class="infra-badge">Connected</span></div>
-        <div class="infra-card"><div class="infra-icon">🐳</div><div class="infra-info"><h4>Docker</h4><p>34 containers</p></div><span class="infra-badge">Running</span></div>
-        <div class="infra-card"><div class="infra-icon">🌐</div><div class="infra-info"><h4>Nginx</h4><p>Reverse proxy + TLS</p></div><span class="infra-badge">Active</span></div>
-        <div class="infra-card"><div class="infra-icon">📡</div><div class="infra-info"><h4>WebSocket</h4><p>Real-time communication</p></div><span class="infra-badge">Live</span></div>
-        <div class="infra-card"><div class="infra-icon">📬</div><div class="infra-info"><h4>Task Queue</h4><p>DLQ + retry + persistence</p></div><span class="infra-badge">Healthy</span></div>
-      </div>
-    </section>
-
-    <section class="section" id="providers">
-      <div class="section-header reveal">
-        <div class="section-label">AI Providers</div>
-        <h2>Twenty-four providers, one gateway</h2>
-        <p>Route to any AI model by capability, cost, or latency — with automatic fallback.</p>
-      </div>
-      <div class="providers-grid reveal-stagger">
-        <div class="provider-pill">OpenAI GPT-4o</div><div class="provider-pill">Anthropic Claude</div><div class="provider-pill">Sentiment Analyzer</div>
-        <div class="provider-pill">Code Reviewer</div><div class="provider-pill">Verdis Blockchain</div><div class="provider-pill">Redis Cache</div>
-        <div class="provider-pill">Prometheus</div><div class="provider-pill">Email Notifier</div><div class="provider-pill">Webhook Dispatcher</div>
-        <div class="provider-pill">File Storage</div><div class="provider-pill">ERC20 Token</div><div class="provider-pill">Carbon Credit</div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-header reveal">
-        <div class="section-label">Platform Metrics</div>
-        <h2>Real numbers, real production</h2>
-      </div>
-      <div class="metrics-grid reveal-stagger">
-        <div class="metric-card" style="--fill: 98%"><div class="metric-value mono" data-count="615" data-suffix="+">0</div><div class="metric-label">Tests passing across all 34 containers</div><div class="metric-bar"><div class="metric-bar-fill"></div></div></div>
-        <div class="metric-card" style="--fill: 85%"><div class="metric-value mono" data-count="47">0</div><div class="metric-label">Documented API endpoints across services</div><div class="metric-bar"><div class="metric-bar-fill"></div></div></div>
-        <div class="metric-card" style="--fill: 92%"><div class="metric-value mono" data-count="33">0</div><div class="metric-label">RBAC permissions across 14 resources</div><div class="metric-bar"><div class="metric-bar-fill"></div></div></div>
-      </div>
-    </section>
-
-    <section class="section" id="roadmap">
-      <div class="section-header reveal">
-        <div class="section-label">Roadmap</div>
-        <h2>What's built and what's next</h2>
-      </div>
-      <div class="arch-card reveal" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:48px;position:relative;overflow:hidden;">
-        <div class="roadmap">
-          <div class="roadmap-item done"><div class="roadmap-status done">✓ Completed</div><h4>Core Platform (Phases 88–126)</h4><p>AI Gateway, Agent Framework, Plugin Marketplace, Smart Contracts, Developer CLI, Orchestration, Enterprise SSO, RBAC, K8s hardening, security audit.</p></div>
-          <div class="roadmap-item done"><div class="roadmap-status done">✓ Completed</div><h4>Infrastructure Hardening</h4><p>34 containers, PostgreSQL persistence, Redis caching, WebSocket auth, DLQ with retry, K8s manifests, network policies, PDBs, notification channels.</p></div>
-          <div class="roadmap-item active"><div class="roadmap-status active">● In Progress</div><h4>Premium Platform Launch</h4><p>Light-mode SaaS interface, design studio agent, production hardening, load testing, developer documentation, SDK release.</p></div>
-          <div class="roadmap-item"><div class="roadmap-status planned">○ Planned</div><h4>Public API & Marketplace Launch</h4><p>Public API access, plugin marketplace monetization, community features, reputation system, developer tutorials.</p></div>
-          <div class="roadmap-item"><div class="roadmap-status planned">○ Planned</div><h4>Enterprise Expansion</h4><p>K8s deployment, auto-scaling, multi-region support, on-premise deployment, enterprise support tier.</p></div>
+      <div class="scroll-indicator" aria-hidden="true">
+        <span>SCROLL TO EXPLORE</span>
+        <div class="scroll-mouse">
+          <div class="scroll-wheel"></div>
         </div>
       </div>
     </section>
 
-    <section class="cta reveal">
-      <div class="cta-card">
-        <h2>Let AI engineering handle the heavy lifting</h2>
-        <p>Deploy autonomous agents that write, review, test, and secure your code — 24/7.</p>
-        <a href="/agents" class="btn">Explore Agents →</a>
+    <!-- SECTION 2: MAGNETIC AGENT GRID -->
+    <section class="section" id="agents">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-tag">Autonomous Specialists</div>
+          <h2 class="section-title">Sixteen agents working around the clock</h2>
+          <p class="section-subtitle">Specialized AI agents designed to seamlessly handle every step of your software engineering lifecycle.</p>
+        </div>
+
+        <div class="agent-grid" id="agent-grid">
+          <!-- Card 1 -->
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <div class="agent-icon-box">🤖</div>
+              <span class="badge-status badge-auto">Auto-Run</span>
+            </div>
+            <h3 class="agent-name">Code Reviewer</h3>
+            <p class="agent-desc">Analyzes pull requests, enforces architectural standards, and suggests optimal refactorings in real time.</p>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <div class="agent-icon-box">🏛️</div>
+              <span class="badge-status badge-auto">Auto-Run</span>
+            </div>
+            <h3 class="agent-name">Architecture Reviewer</h3>
+            <p class="agent-desc">Evaluates system topology, database schemas, and microservice boundaries for long-term scalability.</p>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <div class="agent-icon-box">🔒</div>
+              <span class="badge-status badge-auto">Auto-Run</span>
+            </div>
+            <h3 class="agent-name">Security Auditor</h3>
+            <p class="agent-desc">Scans for OWASP vulnerabilities, secret leaks, and dependency CVEs before code reaches staging.</p>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <div class="agent-icon-box">🧪</div>
+              <span class="badge-status badge-auto">Auto-Run</span>
+            </div>
+            <h3 class="agent-name">Test Generator</h3>
+            <p class="agent-desc">Generates comprehensive unit, integration, and EVM contract tests automatically with 98%+ coverage.</p>
+          </div>
+
+          <!-- Card 5 -->
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <div class="agent-icon-box">📝</div>
+              <span class="badge-status badge-auto">Auto-Run</span>
+            </div>
+            <h3 class="agent-name">Documentation Writer</h3>
+            <p class="agent-desc">Maintains live, synchronized documentation, OpenAPI specs, and system architecture diagrams.</p>
+          </div>
+
+          <!-- Card 6 -->
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <div class="agent-icon-box">🚀</div>
+              <span class="badge-status badge-live"><span class="live-dot"></span> Live</span>
+            </div>
+            <h3 class="agent-name">Deployment Manager</h3>
+            <p class="agent-desc">Orchestrates zero-downtime canary deployments, rollback triggers, and multi-cloud container scaling.</p>
+          </div>
+
+          <!-- Card 7 -->
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <div class="agent-icon-box">📊</div>
+              <span class="badge-status badge-live"><span class="live-dot"></span> Live</span>
+            </div>
+            <h3 class="agent-name">Performance Monitor</h3>
+            <p class="agent-desc">Tracks latency, memory consumption, query speeds, and API throughput across production nodes.</p>
+          </div>
+
+          <!-- Card 8 -->
+          <div class="agent-card">
+            <div class="agent-card-header">
+              <div class="agent-icon-box">🔍</div>
+              <span class="badge-status badge-live"><span class="live-dot"></span> Live</span>
+            </div>
+            <h3 class="agent-name">Sentiment Analyzer</h3>
+            <p class="agent-desc">Monitors user feedback, error logs, and issue reports to automatically prioritize engineering backlogs.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: SPLIT COMPARISON -->
+    <section class="section" id="comparison">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-tag">Transformation</div>
+          <h2 class="section-title">Stop firefighting. Start shipping.</h2>
+          <p class="section-subtitle">See how EvolvixOS elevates software development from reactive bug-chasing to proactive automated execution.</p>
+        </div>
+
+        <div class="split-container" id="split-container">
+          <div class="split-divider-wrap" aria-hidden="true">
+            <div class="split-divider-line" id="split-divider"></div>
+          </div>
+
+          <!-- Left Side: Without EvolvixOS -->
+          <div class="split-column split-left">
+            <div class="split-header">
+              <div class="split-header-icon">&times;</div>
+              <h3>Without EvolvixOS</h3>
+            </div>
+            <ul class="split-list">
+              <li class="split-item">
+                <div class="split-item-icon">&times;</div>
+                <div class="split-item-text">
+                  <strong>Manual code reviews</strong>
+                  <span>Engineering bottlenecks waiting days for senior developer PR reviews.</span>
+                </div>
+              </li>
+              <li class="split-item">
+                <div class="split-item-icon">&times;</div>
+                <div class="split-item-text">
+                  <strong>Reactive security fixes</strong>
+                  <span>Patching critical vulnerabilities only after production incidents or audits.</span>
+                </div>
+              </li>
+              <li class="split-item">
+                <div class="split-item-icon">&times;</div>
+                <div class="split-item-text">
+                  <strong>Tribal knowledge</strong>
+                  <span>Siloed domain expertise locked in individual developers' minds.</span>
+                </div>
+              </li>
+              <li class="split-item">
+                <div class="split-item-icon">&times;</div>
+                <div class="split-item-text">
+                  <strong>Deployment bottlenecks</strong>
+                  <span>Staging environment conflicts and stressful manual release cycles.</span>
+                </div>
+              </li>
+              <li class="split-item">
+                <div class="split-item-icon">&times;</div>
+                <div class="split-item-text">
+                  <strong>Documentation debt</strong>
+                  <span>Outdated README files, missing API documentation, and unmapped edge cases.</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Right Side: With EvolvixOS -->
+          <div class="split-column split-right">
+            <div class="split-header">
+              <div class="split-header-icon">&#10003;</div>
+              <h3>With EvolvixOS</h3>
+            </div>
+            <ul class="split-list">
+              <li class="split-item">
+                <div class="split-item-icon">&#10003;</div>
+                <div class="split-item-text">
+                  <strong>Automated code review</strong>
+                  <span>Instant AI analysis on every PR with automated standard enforcement.</span>
+                </div>
+              </li>
+              <li class="split-item">
+                <div class="split-item-icon">&#10003;</div>
+                <div class="split-item-text">
+                  <strong>Continuous security audits</strong>
+                  <span>Real-time scanning for zero-day vulnerabilities and secret leaks.</span>
+                </div>
+              </li>
+              <li class="split-item">
+                <div class="split-item-icon">&#10003;</div>
+                <div class="split-item-text">
+                  <strong>AI-powered knowledge base</strong>
+                  <span>Instant contextual answers for any codebase question or architectural decision.</span>
+                </div>
+              </li>
+              <li class="split-item">
+                <div class="split-item-icon">&#10003;</div>
+                <div class="split-item-text">
+                  <strong>Zero-downtime deploys</strong>
+                  <span>Automated canary releases with self-healing automatic rollbacks.</span>
+                </div>
+              </li>
+              <li class="split-item">
+                <div class="split-item-icon">&#10003;</div>
+                <div class="split-item-text">
+                  <strong>Self-updating docs</strong>
+                  <span>Auto-generated OpenAPI specs and live interactive architecture diagrams.</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: 3D PERSPECTIVE WALL -->
+    <section class="section" id="features">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-tag">Core Infrastructure</div>
+          <h2 class="section-title">Everything an engineering team needs</h2>
+          <p class="section-subtitle">Enterprise-grade capabilities engineered for high-throughput, mission-critical systems.</p>
+        </div>
+
+        <div class="perspective-container">
+          <div class="perspective-grid">
+            <!-- Card 1 -->
+            <div class="perspective-card" style="transform: rotateY(12deg) rotateX(2deg);">
+              <div class="feature-icon-wrapper">⚡</div>
+              <h3 class="feature-title">AI Gateway</h3>
+              <p class="feature-desc">Unified API proxy supporting 24 AI providers with automatic failover, rate limiting, and cost optimization.</p>
+              <span class="feature-pill">24 Providers</span>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="perspective-card" style="transform: rotateY(0deg) rotateX(2deg);">
+              <div class="feature-icon-wrapper">🔌</div>
+              <h3 class="feature-title">Plugin Marketplace</h3>
+              <p class="feature-desc">Extensible ecosystem with 12 core plugins passing rigorous 8-step security verification protocols.</p>
+              <span class="feature-pill">12 Plugins</span>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="perspective-card" style="transform: rotateY(-12deg) rotateX(2deg);">
+              <div class="feature-icon-wrapper">🔀</div>
+              <h3 class="feature-title">Agent Orchestration</h3>
+              <p class="feature-desc">Directed Acyclic Graph (DAG) pipeline engine supporting 9 distinct execution step types.</p>
+              <span class="feature-pill">DAG Engine</span>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="perspective-card" style="transform: rotateY(12deg) rotateX(-2deg);">
+              <div class="feature-icon-wrapper">🔑</div>
+              <h3 class="feature-title">Enterprise & SSO</h3>
+              <p class="feature-desc">Seamless integration via SAML 2.0, OAuth2, and complete GDPR compliance data isolation.</p>
+              <span class="feature-pill">SAML / OAuth2</span>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="perspective-card" style="transform: rotateY(0deg) rotateX(-2deg);">
+              <div class="feature-icon-wrapper">🛡️</div>
+              <h3 class="feature-title">RBAC & Security</h3>
+              <p class="feature-desc">Granular role-based access control with 6 default system roles and 33 fine-grained permissions.</p>
+              <span class="feature-pill">33 Permissions</span>
+            </div>
+
+            <!-- Card 6 -->
+            <div class="perspective-card" style="transform: rotateY(-12deg) rotateX(-2deg);">
+              <div class="feature-icon-wrapper">💻</div>
+              <h3 class="feature-title">Developer SDK & CLI</h3>
+              <p class="feature-desc">High-performance native SDKs and command-line interfaces for Python and TypeScript environments.</p>
+              <span class="feature-pill">Py & TS SDK</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: ANIMATED METRIC BARS -->
+    <section class="section" id="metrics">
+      <div class="container">
+        <div class="section-header reveal">
+          <div class="section-tag">Production Performance</div>
+          <h2 class="section-title">Real numbers, real production</h2>
+          <p class="section-subtitle">Real-time metrics verified across production deployments operating under active load.</p>
+        </div>
+
+        <div class="metrics-grid" id="metrics-grid">
+          <!-- Metric 1 -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-number" data-target="615">0</div>
+              <span class="metric-target-pill">98% Target</span>
+            </div>
+            <div class="metric-label">Automated Tests Executed</div>
+            <div class="metric-sub">Unit, integration, and EVM contract test suite passing count per commit.</div>
+            <div class="metric-track">
+              <div class="metric-fill" data-width="98%"></div>
+            </div>
+          </div>
+
+          <!-- Metric 2 -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-number" data-target="34">0</div>
+              <span class="metric-target-pill">85% Target</span>
+            </div>
+            <div class="metric-label">Live Production Containers</div>
+            <div class="metric-sub">Isolated Docker microservice containers active in high-availability clusters.</div>
+            <div class="metric-track">
+              <div class="metric-fill" data-width="85%"></div>
+            </div>
+          </div>
+
+          <!-- Metric 3 -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-number" data-target="47">0</div>
+              <span class="metric-target-pill">75% Target</span>
+            </div>
+            <div class="metric-label">REST & SSE API Endpoints</div>
+            <div class="metric-sub">High-speed endpoints serving agent tasks, telemetry, and live streaming logs.</div>
+            <div class="metric-track">
+              <div class="metric-fill" data-width="75%"></div>
+            </div>
+          </div>
+
+          <!-- Metric 4 -->
+          <div class="metric-card">
+            <div class="metric-header">
+              <div class="metric-number" data-target="33">0</div>
+              <span class="metric-target-pill">92% Target</span>
+            </div>
+            <div class="metric-label">RBAC System Permissions</div>
+            <div class="metric-sub">Granular security boundaries enforcing strict access control across all services.</div>
+            <div class="metric-track">
+              <div class="metric-fill" data-width="92%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: FLOATING PROVIDERS + ROADMAP -->
+    <section class="section" id="roadmap">
+      <div class="container">
+        <!-- Top Cloud: 24 Providers -->
+        <div class="providers-cloud-wrapper reveal">
+          <div class="section-header" style="margin-bottom: 32px;">
+            <div class="section-tag">Ecosystem</div>
+            <h2 class="section-title">24 AI providers, one gateway</h2>
+          </div>
+
+          <div class="providers-cloud">
+            <div class="provider-pill" style="animation-delay: 0s; animation-duration: 3.2s;"><span>🌐</span> OpenAI GPT-4o</div>
+            <div class="provider-pill" style="animation-delay: 0.3s; animation-duration: 3.8s;"><span>🧠</span> Anthropic Claude</div>
+            <div class="provider-pill" style="animation-delay: 0.6s; animation-duration: 2.9s;"><span>🔍</span> Sentiment Analyzer</div>
+            <div class="provider-pill" style="animation-delay: 0.9s; animation-duration: 3.5s;"><span>🤖</span> Code Reviewer</div>
+            <div class="provider-pill" style="animation-delay: 1.2s; animation-duration: 4.1s;"><span>⛓️</span> Verdis Blockchain</div>
+            <div class="provider-pill" style="animation-delay: 0.4s; animation-duration: 3.3s;"><span>⚡</span> Redis Cache</div>
+            <div class="provider-pill" style="animation-delay: 0.7s; animation-duration: 3.7s;"><span>📈</span> Prometheus</div>
+            <div class="provider-pill" style="animation-delay: 1.0s; animation-duration: 3.0s;"><span>✉️</span> Email Notifier</div>
+            <div class="provider-pill" style="animation-delay: 1.3s; animation-duration: 3.6s;"><span>🔔</span> Webhook Dispatcher</div>
+            <div class="provider-pill" style="animation-delay: 0.2s; animation-duration: 4.0s;"><span>📁</span> File Storage</div>
+            <div class="provider-pill" style="animation-delay: 0.8s; animation-duration: 3.1s;"><span>🪙</span> ERC20 Token</div>
+            <div class="provider-pill" style="animation-delay: 1.1s; animation-duration: 3.4s;"><span>🌱</span> Carbon Credit</div>
+          </div>
+        </div>
+
+        <!-- Bottom Timeline: Roadmap -->
+        <div class="section-header reveal" style="margin-top: 80px;">
+          <div class="section-tag">Evolution</div>
+          <h2 class="section-title">What's built and what's next</h2>
+        </div>
+
+        <div class="roadmap-wrapper">
+          <div class="roadmap-spine" aria-hidden="true"></div>
+          <div class="roadmap-list" id="roadmap-list">
+            
+            <!-- Milestone 1 -->
+            <div class="roadmap-item done">
+              <div class="roadmap-marker"></div>
+              <div class="roadmap-card">
+                <div class="roadmap-card-header">
+                  <h3 class="roadmap-title">1. Core Platform (Phases 88-126)</h3>
+                  <span class="roadmap-badge badge-done">DONE</span>
+                </div>
+                <p class="roadmap-desc">Built multi-agent core execution engine, DAG orchestrator, EVM contracts, and AI gateway architecture.</p>
+              </div>
+            </div>
+
+            <!-- Milestone 2 -->
+            <div class="roadmap-item done">
+              <div class="roadmap-marker"></div>
+              <div class="roadmap-card">
+                <div class="roadmap-card-header">
+                  <h3 class="roadmap-title">2. Infrastructure Hardening</h3>
+                  <span class="roadmap-badge badge-done">DONE</span>
+                </div>
+                <p class="roadmap-desc">Docker microservice containerization, Prometheus metrics integration, Redis queue scaling, and live log streaming.</p>
+              </div>
+            </div>
+
+            <!-- Milestone 3 -->
+            <div class="roadmap-item current">
+              <div class="roadmap-marker"></div>
+              <div class="roadmap-card">
+                <div class="roadmap-card-header">
+                  <h3 class="roadmap-title">3. Premium Platform Launch</h3>
+                  <span class="roadmap-badge badge-active">ACTIVE</span>
+                </div>
+                <p class="roadmap-desc">Public release of EvolvixOS web platform, interactive agent marketplace, and enterprise control plane.</p>
+              </div>
+            </div>
+
+            <!-- Milestone 4 -->
+            <div class="roadmap-item">
+              <div class="roadmap-marker"></div>
+              <div class="roadmap-card">
+                <div class="roadmap-card-header">
+                  <h3 class="roadmap-title">4. Public API & Marketplace</h3>
+                  <span class="roadmap-badge badge-planned">PLANNED</span>
+                </div>
+                <p class="roadmap-desc">Third-party developer plugin store, native SDK publications, and custom agent workflow triggers.</p>
+              </div>
+            </div>
+
+            <!-- Milestone 5 -->
+            <div class="roadmap-item">
+              <div class="roadmap-marker"></div>
+              <div class="roadmap-card">
+                <div class="roadmap-card-header">
+                  <h3 class="roadmap-title">5. Enterprise Expansion</h3>
+                  <span class="roadmap-badge badge-planned">PLANNED</span>
+                </div>
+                <p class="roadmap-desc">SOC2 Type II compliance certification, dedicated VPC deployments, and multi-cloud AI provider routing.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 7: CTA + FOOTER -->
+    <section class="section" id="cta">
+      <div class="container">
+        <div class="cta-banner reveal">
+          <div class="cta-content">
+            <h2 class="cta-title">Let AI engineering handle the heavy lifting</h2>
+            <p class="cta-desc">Join forward-thinking software teams automating code reviews, security audits, and deployments with EvolvixOS.</p>
+            <a href="#" class="btn btn-primary">
+              <span>Explore Agents</span>
+              <span>&rarr;</span>
+            </a>
+          </div>
+        </div>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <div class="footer-inner">
-      <div class="footer-brand"><h4>EvolvixOS</h4><p>The AI Engineering Operating System. Autonomous agents that design, build, deploy, and secure software 24/7. Built by Protremix.</p></div>
-      <div class="footer-col"><h5>Platform</h5><a href="/agents">Agents</a><a href="/ai-gateway">AI Gateway</a><a href="/marketplace">Marketplace</a><a href="/orchestration">Orchestration</a></div>
-      <div class="footer-col"><h5>Developers</h5><a href="/contracts">Smart Contracts</a><a href="/dev-support">Documentation</a><a href="#">SDK</a><a href="#">GitHub</a></div>
-      <div class="footer-col"><h5>Enterprise</h5><a href="/enterprise">SSO & SAML</a><a href="/rbac">RBAC</a><a href="/monitoring">Monitoring</a><a href="/infra">Infrastructure</a></div>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="#" class="nav-brand">
+            <div class="brand-logo-icon">⚡</div>
+            <span>EvolvixOS</span>
+          </a>
+          <p class="footer-brand-summary">
+            The AI Engineering Operating System. Designing, building, deploying, and securing software 24/7.
+          </p>
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--emerald); font-weight: 600;">
+            <span class="status-dot"></span> System Status: Operational
+          </div>
+        </div>
+
+        <div>
+          <h4 class="footer-col-title">Platform</h4>
+          <ul class="footer-links">
+            <li><a href="#agents" class="footer-link">Autonomous Agents</a></li>
+            <li><a href="#features" class="footer-link">AI Gateway</a></li>
+            <li><a href="#features" class="footer-link">Plugin Marketplace</a></li>
+            <li><a href="#features" class="footer-link">DAG Orchestrator</a></li>
+            <li><a href="#features" class="footer-link">Enterprise SSO</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-col-title">Developers</h4>
+          <ul class="footer-links">
+            <li><a href="#" class="footer-link">Documentation</a></li>
+            <li><a href="#" class="footer-link">Python SDK</a></li>
+            <li><a href="#" class="footer-link">TypeScript SDK</a></li>
+            <li><a href="#" class="footer-link">CLI Tooling</a></li>
+            <li><a href="#" class="footer-link">GitHub Repository</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-col-title">Enterprise</h4>
+          <ul class="footer-links">
+            <li><a href="#" class="footer-link">Security & Compliance</a></li>
+            <li><a href="#" class="footer-link">RBAC Policies</a></li>
+            <li><a href="#" class="footer-link">SLA Guarantees</a></li>
+            <li><a href="#" class="footer-link">Privacy Policy</a></li>
+            <li><a href="#" class="footer-link">Contact Sales</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 EvolvixOS Inc. All rights reserved.</div>
+        <div class="footer-bottom-links">
+          <a href="#" class="footer-link">Privacy Policy</a>
+          <a href="#" class="footer-link">Terms of Service</a>
+          <a href="#" class="footer-link">Security</a>
+        </div>
+      </div>
     </div>
-    <div class="footer-bottom"><span>© 2026 EvolvixOS · Powered by Protremix</span><span>evolvixos.com · 62.238.61.145</span></div>
   </footer>
 
+  <!-- ===== JAVASCRIPT ANIMATIONS ===== -->
   <script>
-    // ===== CURSOR GLOW =====
-    const glow = document.getElementById('cursor-glow');
-    document.addEventListener('mousemove', e => { glow.style.left = e.clientX + 'px'; glow.style.top = e.clientY + 'px'; });
+    document.addEventListener('DOMContentLoaded', () => {
 
-    // ===== SCROLL PROGRESS =====
-    const scrollBar = document.getElementById('scroll-bar');
-    const nav = document.getElementById('nav');
-    window.addEventListener('scroll', () => {
-      const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
-      scrollBar.style.width = pct + '%';
-      if (window.scrollY > 20) nav.classList.add('scrolled'); else nav.classList.remove('scrolled');
-    });
-
-    // ===== SCROLL REVEAL =====
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
-    }, { threshold: 0.15 });
-    document.querySelectorAll('.reveal, .reveal-stagger, .metric-card').forEach(el => observer.observe(el));
-
-    // ===== ANIMATED COUNTERS =====
-    const counterObs = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (!e.isIntersecting) return;
-        const el = e.target, target = parseInt(el.dataset.count), suffix = el.dataset.suffix || '';
-        let current = 0, step = target / 60;
-        const tick = () => { current += step; if (current >= target) { el.textContent = target + suffix; return; } el.textContent = Math.floor(current) + suffix; requestAnimationFrame(tick); };
-        tick(); counterObs.unobserve(el);
+      /* 1. CURSOR GLOW FOLLOW */
+      const cursorGlow = document.getElementById('cursor-glow');
+      window.addEventListener('mousemove', (e) => {
+        cursorGlow.style.left = e.clientX + 'px';
+        cursorGlow.style.top = e.clientY + 'px';
       });
-    }, { threshold: 0.5 });
-    document.querySelectorAll('[data-count]').forEach(el => counterObs.observe(el));
 
-    // ===== HERO CANVAS — Neural Network Animation =====
-    const canvas = document.getElementById('hero-canvas');
-    const ctx = canvas.getContext('2d');
-    let W, H, neurons = [], pulses = [], mouse = { x: -1000, y: -1000 };
+      /* 2. SCROLL PROGRESS BAR & SPLIT DIVIDER GROW */
+      const scrollProgress = document.getElementById('scroll-progress');
+      const splitDivider = document.getElementById('split-divider');
+      const splitContainer = document.getElementById('split-container');
 
-    function resize() { W = canvas.width = canvas.offsetWidth; H = canvas.height = canvas.offsetHeight; }
-    resize(); window.addEventListener('resize', resize);
+      window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const scrollPercent = (scrollTop / docHeight) * 100;
+        scrollProgress.style.width = scrollPercent + '%';
 
-    // Create neural network layers
-    const layers = [4, 6, 6, 4];
-    function buildNetwork() {
-      neurons = [];
-      const layerSpacing = W / (layers.length + 1);
-      layers.forEach((count, li) => {
-        const x = layerSpacing * (li + 1);
-        const neuronSpacing = H / (count + 1);
-        for (let i = 0; i < count; i++) {
-          neurons.push({
-            x: x + (Math.random()-0.5)*20, y: neuronSpacing * (i+1) + (Math.random()-0.5)*20,
-            layer: li, idx: i, activation: Math.random(), pulse: Math.random()*Math.PI*2,
-            vx: 0, vy: 0
-          });
+        // Split divider growth
+        if (splitContainer) {
+          const rect = splitContainer.getBoundingClientRect();
+          const windowHeight = window.innerHeight;
+          if (rect.top < windowHeight && rect.bottom > 0) {
+            const progress = Math.min(100, Math.max(0, ((windowHeight - rect.top) / (windowHeight + rect.height)) * 120));
+            splitDivider.style.height = progress + '%';
+          }
         }
       });
-    }
-    buildNetwork();
 
-    // Spawn signal pulses along connections
-    function spawnPulse() {
-      const fromLayer = Math.floor(Math.random() * (layers.length - 1));
-      const from = neurons.filter(n => n.layer === fromLayer);
-      const to = neurons.filter(n => n.layer === fromLayer + 1);
-      if (!from.length || !to.length) return;
-      const f = from[Math.floor(Math.random()*from.length)];
-      const t = to[Math.floor(Math.random()*to.length)];
-      pulses.push({ from: f, to: t, progress: 0, speed: 0.01 + Math.random()*0.015 });
-    }
-    setInterval(spawnPulse, 300);
+      /* 3. INTERSECTION OBSERVER FOR REVEAL ANIMATIONS */
+      const revealElements = document.querySelectorAll('.reveal, .split-container, .roadmap-item');
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+          }
+        });
+      }, { threshold: 0.15 });
 
-    canvas.addEventListener('mousemove', e => {
-      const rect = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - rect.left; mouse.y = e.clientY - rect.top;
-    });
+      revealElements.forEach(el => revealObserver.observe(el));
 
-    function animate() {
-      ctx.clearRect(0, 0, W, H);
+      /* 4. MAGNETIC AGENT CARDS */
+      const agentCards = document.querySelectorAll('.agent-card');
+      const agentGrid = document.getElementById('agent-grid');
 
-      // Draw connections
-      for (let li = 0; li < layers.length - 1; li++) {
-        const from = neurons.filter(n => n.layer === li);
-        const to = neurons.filter(n => n.layer === li + 1);
-        from.forEach(f => to.forEach(t => {
-          ctx.beginPath();
-          ctx.moveTo(f.x, f.y); ctx.lineTo(t.x, t.y);
-          ctx.strokeStyle = `rgba(99,102,241,0.08)`;
-          ctx.lineWidth = 1;
-          ctx.stroke();
-        }));
+      if (agentGrid) {
+        agentGrid.addEventListener('mousemove', (e) => {
+          agentCards.forEach(card => {
+            const rect = card.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const distX = e.clientX - centerX;
+            const distY = e.clientY - centerY;
+            const distance = Math.sqrt(distX * distX + distY * distY);
+
+            if (distance < 200) {
+              const pull = (1 - distance / 200) * 10;
+              const moveX = (distX / distance) * pull;
+              const moveY = (distY / distance) * pull;
+              card.style.transform = `translate3d(${moveX}px, ${moveY}px, 0)`;
+            } else {
+              card.style.transform = `translate3d(0, 0, 0)`;
+            }
+          });
+        });
+
+        agentGrid.addEventListener('mouseleave', () => {
+          agentCards.forEach(card => {
+            card.style.transform = `translate3d(0, 0, 0)`;
+          });
+        });
       }
 
-      // Draw + update pulses
-      pulses = pulses.filter(p => p.progress < 1);
-      pulses.forEach(p => {
-        p.progress += p.speed;
-        const x = p.from.x + (p.to.x - p.from.x) * p.progress;
-        const y = p.from.y + (p.to.y - p.from.y) * p.progress;
-        // Trail
-        const trailLen = 0.1;
-        const tx = p.from.x + (p.to.x - p.from.x) * Math.max(0, p.progress - trailLen);
-        const ty = p.from.y + (p.to.y - p.from.y) * Math.max(0, p.progress - trailLen);
-        const grad = ctx.createLinearGradient(tx, ty, x, y);
-        grad.addColorStop(0, 'rgba(99,102,241,0)');
-        grad.addColorStop(1, 'rgba(139,92,246,0.8)');
-        ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(x, y);
-        ctx.strokeStyle = grad; ctx.lineWidth = 2; ctx.stroke();
-        // Head dot
-        ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba(139,92,246,0.9)'; ctx.fill();
-        // Activate target neuron
-        if (p.progress > 0.95) p.to.activation = 1;
-      });
+      /* 5. ANIMATED METRIC BARS & COUNTERS */
+      const metricsGrid = document.getElementById('metrics-grid');
+      let metricsTriggered = false;
 
-      // Draw neurons
-      neurons.forEach(n => {
-        n.activation *= 0.97; n.pulse += 0.03;
-        const dx = n.x - mouse.x, dy = n.y - mouse.y, dist = Math.sqrt(dx*dx+dy*dy);
-        if (dist < 100) { n.vx += dx/dist * 0.3; n.vy += dy/dist * 0.3; }
-        n.x += n.vx; n.y += n.vy; n.vx *= 0.9; n.vy *= 0.9;
+      const metricsObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && !metricsTriggered) {
+            metricsTriggered = true;
+            
+            // Fill metric bars
+            const fills = document.querySelectorAll('.metric-fill');
+            fills.forEach(fill => {
+              const width = fill.getAttribute('data-width');
+              fill.style.width = width;
+            });
 
-        const baseR = 4;
-        const actR = baseR + n.activation * 4 + Math.sin(n.pulse) * 1;
-        // Glow
-        if (n.activation > 0.1) {
-          ctx.beginPath(); ctx.arc(n.x, n.y, actR * 3, 0, Math.PI*2);
-          ctx.fillStyle = `rgba(99,102,241,${n.activation * 0.15})`; ctx.fill();
+            // Animate counters
+            const numbers = document.querySelectorAll('.metric-number');
+            numbers.forEach(num => {
+              const target = parseInt(num.getAttribute('data-target'), 10);
+              let current = 0;
+              const increment = Math.ceil(target / 40);
+              const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                  num.textContent = target + (target === 615 ? '+' : '');
+                  clearInterval(timer);
+                } else {
+                  num.textContent = current;
+                }
+              }, 30);
+            });
+          }
+        });
+      }, { threshold: 0.2 });
+
+      if (metricsGrid) {
+        metricsObserver.observe(metricsGrid);
+      }
+
+      /* 6. NEURAL NETWORK CANVAS (4-Layer Topology: 4->6->6->4) */
+      const canvas = document.getElementById('neural-canvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = canvas.offsetWidth;
+        let height = canvas.height = canvas.offsetHeight;
+
+        window.addEventListener('resize', () => {
+          width = canvas.width = canvas.offsetWidth;
+          height = canvas.height = canvas.offsetHeight;
+          initNeuralNet();
+        });
+
+        let mouseX = -1000;
+        let mouseY = -1000;
+
+        window.addEventListener('mousemove', (e) => {
+          const rect = canvas.getBoundingClientRect();
+          mouseX = e.clientX - rect.left;
+          mouseY = e.clientY - rect.top;
+        });
+
+        const layerTopology = [4, 6, 6, 4];
+        let nodes = [];
+        let connections = [];
+        let pulses = [];
+
+        function initNeuralNet() {
+          nodes = [];
+          connections = [];
+          pulses = [];
+
+          const layerCount = layerTopology.length;
+          const paddingX = width * 0.15;
+          const availableWidth = width - paddingX * 2;
+
+          layerTopology.forEach((count, layerIndex) => {
+            const x = paddingX + (availableWidth / (layerCount - 1)) * layerIndex;
+            const paddingY = height * 0.2;
+            const availableHeight = height - paddingY * 2;
+
+            for (let i = 0; i < count; i++) {
+              const y = count === 1 ? height / 2 : paddingY + (availableHeight / (count - 1)) * i;
+              nodes.push({
+                x, y,
+                baseX: x, baseY: y,
+                layer: layerIndex,
+                index: i,
+                radius: 6,
+                glow: 0,
+                offsetX: 0,
+                offsetY: 0
+              });
+            }
+          });
+
+          for (let l = 0; l < layerCount - 1; l++) {
+            const currentLayerNodes = nodes.filter(n => n.layer === l);
+            const nextLayerNodes = nodes.filter(n => n.layer === l + 1);
+
+            currentLayerNodes.forEach(fromNode => {
+              nextLayerNodes.forEach(toNode => {
+                connections.push({ from: fromNode, to: toNode });
+              });
+            });
+          }
         }
-        // Core
-        ctx.beginPath(); ctx.arc(n.x, n.y, actR, 0, Math.PI*2);
-        ctx.fillStyle = `rgba(99,102,241,${0.3 + n.activation * 0.5})`;
-        ctx.fill();
-        ctx.beginPath(); ctx.arc(n.x, n.y, actR, 0, Math.PI*2);
-        ctx.strokeStyle = `rgba(139,92,246,${0.4 + n.activation * 0.4})`;
-        ctx.lineWidth = 1.5; ctx.stroke();
-      });
 
-      requestAnimationFrame(animate);
-    }
-    animate();
-    window.addEventListener('resize', () => { setTimeout(buildNetwork, 100); });
+        function spawnPulse() {
+          const inputNodes = nodes.filter(n => n.layer === 0);
+          const startNode = inputNodes[Math.floor(Math.random() * inputNodes.length)];
+          const possibleConnections = connections.filter(c => c.from === startNode);
+          if (possibleConnections.length > 0) {
+            const conn = possibleConnections[Math.floor(Math.random() * possibleConnections.length)];
+            pulses.push({
+              connection: conn,
+              progress: 0,
+              speed: 0.015 + Math.random() * 0.01
+            });
+          }
+        }
+
+        setInterval(spawnPulse, 400);
+        initNeuralNet();
+
+        function animateCanvas() {
+          ctx.clearRect(0, 0, width, height);
+
+          nodes.forEach(node => {
+            const dx = (node.baseX + node.offsetX) - mouseX;
+            const dy = (node.baseY + node.offsetY) - mouseY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 120) {
+              const force = (1 - dist / 120) * 20;
+              node.offsetX += (dx / dist) * force * 0.1;
+              node.offsetY += (dy / dist) * force * 0.1;
+            }
+
+            node.offsetX *= 0.92;
+            node.offsetY *= 0.92;
+
+            if (node.glow > 0) node.glow -= 0.03;
+          });
+
+          connections.forEach(conn => {
+            const fromX = conn.from.baseX + conn.from.offsetX;
+            const fromY = conn.from.baseY + conn.from.offsetY;
+            const toX = conn.to.baseX + conn.to.offsetX;
+            const toY = conn.to.baseY + conn.to.offsetY;
+
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.strokeStyle = 'rgba(99, 102, 241, 0.12)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+          });
+
+          for (let i = pulses.length - 1; i >= 0; i--) {
+            const p = pulses[i];
+            p.progress += p.speed;
+
+            if (p.progress >= 1.0) {
+              p.connection.to.glow = 1.0;
+
+              if (p.connection.to.layer < 3) {
+                const nextConn = connections.filter(c => c.from === p.connection.to);
+                if (nextConn.length > 0 && Math.random() > 0.3) {
+                  const conn = nextConn[Math.floor(Math.random() * nextConn.length)];
+                  pulses.push({
+                    connection: conn,
+                    progress: 0,
+                    speed: 0.015 + Math.random() * 0.01
+                  });
+                }
+              }
+
+              pulses.splice(i, 1);
+              continue;
+            }
+
+            const fromX = p.connection.from.baseX + p.connection.from.offsetX;
+            const fromY = p.connection.from.baseY + p.connection.from.offsetY;
+            const toX = p.connection.to.baseX + p.connection.to.offsetX;
+            const toY = p.connection.to.baseY + p.connection.to.offsetY;
+
+            const px = fromX + (toX - fromX) * p.progress;
+            const py = fromY + (toY - fromY) * p.progress;
+
+            ctx.beginPath();
+            ctx.arc(px, py, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#8b5cf6';
+            ctx.shadowColor = '#6366f1';
+            ctx.shadowBlur = 10;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          }
+
+          nodes.forEach(node => {
+            const nx = node.baseX + node.offsetX;
+            const ny = node.baseY + node.offsetY;
+
+            ctx.beginPath();
+            ctx.arc(nx, ny, node.radius + (node.glow * 3), 0, Math.PI * 2);
+            
+            if (node.glow > 0) {
+              ctx.fillStyle = `rgba(99, 102, 241, ${0.4 + node.glow * 0.6})`;
+              ctx.shadowColor = '#6366f1';
+              ctx.shadowBlur = 15 * node.glow;
+            } else {
+              ctx.fillStyle = '#c7d2fe';
+              ctx.shadowBlur = 0;
+            }
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.beginPath();
+            ctx.arc(nx, ny, 3, 0, Math.PI * 2);
+            ctx.fillStyle = node.glow > 0 ? '#ffffff' : '#6366f1';
+            ctx.fill();
+          });
+
+          requestAnimationFrame(animateCanvas);
+        }
+
+        animateCanvas();
+      }
+
+    });
   </script>
 </body>
 </html>
