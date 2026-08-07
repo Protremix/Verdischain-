@@ -96,12 +96,12 @@ footer a { color:var(--accent); text-decoration:none; }
 @media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:44px;padding:10px 16px}.card{padding:16px}h1{font-size:13px}}
 @media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:14px}.container{padding:20px}}
 
-.brand-logo-img { height: 40px; width: 40px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(202,255,51,0.5)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
-    .nav-brand:hover .brand-logo-img { filter: drop-shadow(0 0 20px rgba(202,255,51,0.8)); animation: logo-pulse 1.5s ease-in-out infinite; }
+
+    .nav-brand:hover 
     @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(202,255,51,0.4)); } 50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.7)); } }
-    .brand-text { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px; white-space: nowrap; margin-left: 4px; letter-spacing: -0.3px; text-decoration: none !important; background: linear-gradient(135deg, #ffffff 0%, #caff33 50%, #a8e607 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; transition: all 0.3s; }
-    .nav-brand:hover .brand-text { background: linear-gradient(135deg, #caff33 0%, #ffffff 50%, #caff33 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-@media(max-width:768px) { .brand-logo-img { height: 40px; } }
+    
+    .nav-brand:hover 
+@media(max-width:768px) {  }
 
 
 nav.std-nav { position:sticky; top:0; z-index:1000; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid rgba(255,255,255,0.08); padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
@@ -112,6 +112,10 @@ nav.std-nav .nav-status { display:flex; align-items:center; gap:8px; font-size:1
 nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px rgba(34,197,94,0.6); animation:std-nav-pulse 2s infinite; }
 @keyframes std-nav-pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
 @media(max-width:900px){ nav.std-nav .nav-links{ display:none; } }
+
+    .brand-logo-img { height: 44px; width: auto; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(202,255,51,0.4)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
+    .nav-brand:hover .brand-logo-img { filter: drop-shadow(0 0 20px rgba(202,255,51,0.7)); }
+    @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(202,255,51,0.35)); } 50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.6)); } }
 </style>
 <link rel="icon" type="image/png" href="/assets/favicon-32.png">
 <link rel="apple-touch-icon" href="/assets/favicon-180.png">
@@ -119,7 +123,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
 <body>
 
 <nav class="std-nav">
-  <a href="/" class="nav-brand"><img src="/assets/verdis-v-icon.png" alt="Verdis Chain" class="brand-logo-img"><span class="brand-text">Verdis Chain</span></a>
+  <a href="/" class="nav-brand"><img src="/assets/verdis-logo-full.png" alt="Verdis Chain" class="brand-logo-img"></a>
   <div class="nav-links">
     <a href="/">Home</a>
     <a href="/explorer/">Explorer</a>
