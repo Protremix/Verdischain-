@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowRight, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/Button'
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [searchParams] = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,23 +19,10 @@ export function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      const formData = new URLSearchParams()
-      formData.append('email', email)
-      formData.append('password', password)
-      const resp = await fetch('/api/v1/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formData.toString(),
-      })
-      const data = await resp.json()
-      if (!resp.ok) {
-        setError(data.detail || 'Login failed')
-      } else {
-        localStorage.setItem('evolvixos_token', data.access_token || data.token || '')
-        navigate('/app')
-      }
-    } catch {
-      setError('Network error. Please try again.')
+      await login(email, password)
+      navigate('/app')
+    } catch (err: any) {
+      setError(err.message || 'Login failed')
     } finally {
       setLoading(false)
     }
