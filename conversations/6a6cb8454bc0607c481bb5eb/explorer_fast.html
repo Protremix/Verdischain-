@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdiscan — Verdis Chain Explorer</title>
+<meta name="description" content="Verdiscan: Real-time blockchain explorer for Verdis Chain.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Verdiscan — Verdis Chain Explorer">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f5f9;--text:#0f172a;--accent:#caff33;--hero:#1a1a1a;--card:#fff;--border:#e2e8f0;--muted:#64748b}
+*{box-sizing:border-box}body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);margin:0}
+h1,h2,h3{font-family:Space Grotesk,sans-serif}.mono{font-family:JetBrains Mono,monospace}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px}
+.accent{color:var(--accent)}.pulse{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(202,255,51,.7)}70%{box-shadow:0 0 0 10px rgba(202,255,51,0)}100%{box-shadow:0 0 0 0 rgba(202,255,51,0)}}
+.tab-a{color:var(--text);border-bottom:2px solid var(--accent);font-weight:600}
+.tab-i{color:var(--muted);border-bottom:2px solid transparent}.tab-i:hover{color:var(--text)}
+.row:hover{background:#f8fafc;cursor:pointer}.stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px}
+.sv{font-family:JetBrains Mono,monospace;font-size:1.4rem;font-weight:600;color:var(--accent)}
+.sl{font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,.5);margin-top:3px}
+.sx{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.mc{background:var(--card);border-radius:16px;max-width:800px;width:100%;margin:40px 0;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.cp{cursor:pointer;opacity:.4}.cp:hover{opacity:1}
+.skel{background:#e2e8f0;border-radius:4px;animation:sk 1.2s infinite ease-in-out}
+@keyframes sk{0%{opacity:.4}50%{opacity:.8}100%{opacity:.4}}
+</style>
+</head>
+<body>
+<header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
+<div class="max-w-7xl mx-auto px-4 sm:px-6">
+<div class="flex items-center justify-between h-16 gap-4">
+<a href="/" class="flex items-center gap-2 shrink-0"><div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#1a1a1a"><span class="accent font-bold text-lg">V</span></div><span class="font-semibold text-base hidden sm:block" style="font-family:Space Grotesk">Verdiscan</span></a>
+<input id="search" type="text" placeholder="Search block #, hash, address..." class="flex-1 max-w-md px-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-slate-400 bg-slate-50" onkeydown="if(event.key==='Enter')search()">
+<div class="flex items-center gap-2 shrink-0"><div class="pulse"></div><span class="text-xs font-medium text-slate-600 hidden sm:block">Testnet Live</span></div>
+</div>
+<nav class="hidden md:flex gap-1">
+<button class="tab tab-a px-3 py-2 text-sm" data-t="overview" onclick="tab('overview')">Overview</button>
+<button class="tab tab-i px-3 py-2 text-sm" data-t="blocks" onclick="tab('blocks')">Blocks</button>
+<button class="tab tab-i px-3 py-2 text-sm" data-t="extrinsics" onclick="tab('extrinsics')">Extrinsics</button>
+<button class="tab tab-i px-3 py-2 text-sm" data-t="validators" onclick="tab('validators')">Validators</button>
+<button class="tab tab-i px-3 py-2 text-sm" data-t="dex" onclick="tab('dex')">DEX</button>
+<button class="tab tab-i px-3 py-2 text-sm" data-t="eco" onclick="tab('eco')">Eco</button>
+</nav>
+</div>
+</header>
+<div class="pt-6 pb-10" style="background:#1a1a1a;border-radius:0 0 24px 24px">
+<div class="max-w-7xl mx-auto px-4 sm:px-6">
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+<div class="stat"><div class="sv" id="sBH">—</div><div class="sl">Block Height</div></div>
+<div class="stat"><div class="sv" id="sFN">—</div><div class="sl">Finalized</div></div>
+<div class="stat"><div class="sv" id="sTPS">0.17</div><div class="sl">TPS</div></div>
+<div class="stat"><div class="sv" id="sVAL">—</div><div class="sl">Validators</div></div>
+<div class="stat"><div class="sv" id="sSUP">100B</div><div class="sl">VRDX Supply</div></div>
+<div class="stat"><div class="sv" id="sPEER">—</div><div class="sl">Peers</div></div>
+</div>
+</div>
+</div>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+<div id="t-overview">
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+<div class="lg:col-span-3"><div class="card p-4"><div class="flex justify-between mb-3"><h2 class="text-base font-semibold">Latest Blocks</h2><button class="text-xs accent font-medium" onclick="tab('blocks')">View all →</button></div><div class="sx"><table class="w-full text-sm"><thead><tr class="text-left text-xs text-slate-400 uppercase tracking-wider"><th class="pb-2 pr-3">Block</th><th class="pb-2 pr-3">Time</th><th class="pb-2 pr-3">Ext</th><th class="pb-2">Hash</th></tr></thead><tbody id="ovBlocks"><tr><td colspan="4" class="py-3"><div class="skel h-4 w-full"></div></td></tr><tr><td colspan="4" class="py-3"><div class="skel h-4 w-full"></div></td></tr><tr><td colspan="4" class="py-3"><div class="skel h-4 w-full"></div></td></tr></tbody></table></div></div></div>
+<div class="lg:col-span-2"><div class="card p-4 h-full"><div class="flex justify-between mb-3"><h2 class="text-base font-semibold">Latest Extrinsics</h2><button class="text-xs accent font-medium" onclick="tab('extrinsics')">View all →</button></div><div id="ovExt" class="space-y-2"><div class="skel h-8 w-full rounded"></div><div class="skel h-8 w-full rounded"></div><div class="skel h-8 w-full rounded"></div></div></div></div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+<div class="card p-4"><h2 class="text-base font-semibold mb-3">Eco Metrics</h2><div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="ovEco"></div></div>
+<div class="card p-4"><h2 class="text-base font-semibold mb-3">DEX Pools</h2><div id="ovDex" class="space-y-2"></div></div>
+</div>
+</div>
+<div id="t-blocks" class="hidden"><div class="card p-4"><div class="flex justify-between mb-4"><h2 class="text-lg font-semibold">Blocks</h2><div class="flex gap-2 items-center"><button id="bp" class="px-3 py-1.5 text-sm rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40" onclick="pg(-1)">← Prev</button><span id="pi" class="text-sm text-slate-500 px-2">Page 1</span><button id="bn" class="px-3 py-1.5 text-sm rounded-lg border border-slate-200 hover:bg-slate-50" onclick="pg(1)">Next →</button></div></div><div class="sx"><table class="w-full text-sm"><thead><tr class="text-left text-xs text-slate-400 uppercase tracking-wider border-b border-slate-100"><th class="pb-2 pr-4">Block</th><th class="pb-2 pr-4">Time</th><th class="pb-2 pr-4">Ext</th><th class="pb-2 pr-4">State Root</th><th class="pb-2">Hash</th></tr></thead><tbody id="blkT"></tbody></table></div></div></div>
+<div id="t-extrinsics" class="hidden"><div class="card p-4"><h2 class="text-lg font-semibold mb-4">Recent Extrinsics</h2><div class="sx"><table class="w-full text-sm"><thead><tr class="text-left text-xs text-slate-400 uppercase tracking-wider border-b border-slate-100"><th class="pb-2 pr-4">Hash</th><th class="pb-2 pr-4">Block</th><th class="pb-2 pr-4">Type</th><th class="pb-2">Bytes</th></tr></thead><tbody id="extT"></tbody></table></div></div></div>
+<div id="t-validators" class="hidden"><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="valG"></div></div>
+<div id="t-dex" class="hidden"><div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="dexG"></div></div>
+<div id="t-eco" class="hidden"><div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="ecoG"></div><div class="card p-4 mt-4"><h2 class="text-base font-semibold mb-3">Green Validator Program</h2><p class="text-sm text-slate-500">Verdis Chain rewards validators with high green scores for eco-friendly operations.</p><div class="mt-4 grid grid-cols-2 gap-3" id="ecoV"></div></div></div>
+</main>
+<footer class="border-t border-slate-200 mt-8 py-6"><div class="max-w-7xl mx-auto px-4 sm:px-6 flex justify-between items-center"><div class="flex items-center gap-2"><div class="w-6 h-6 rounded flex items-center justify-center" style="background:#1a1a1a"><span class="accent font-bold text-xs">V</span></div><span class="text-sm text-slate-500">Verdiscan · Verdis Chain · © 2026</span></div><div class="flex gap-4 text-sm"><a href="/" class="text-slate-500 hover:text-slate-700">Home</a><a href="/dex/" class="text-slate-500 hover:text-slate-700">DEX</a><a href="/wallet/" class="text-slate-500 hover:text-slate-700">Wallet</a><a href="/docs/" class="text-slate-500 hover:text-slate-700">Docs</a></div></div></footer>
+<script>
+// === ULTRA-FAST BATCH RPC ===
+async function batchRpc(calls){
+  const body=calls.map((c,i)=>({jsonrpc:"2.0",method:c[0],params:c[1]||[],id:i+1}));
+  try{
+    const r=await fetch("/rpc",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    const results=await r.json();
+    const map={};
+    if(Array.isArray(results)){results.forEach(d=>{if(d.id)map[d.id]=d.result})}
+    else{map[results.id]=results.result}
+    return map;
+  }catch(e){console.error("batch err:",e);return{}}
+}
+async function rpc(m,p=[]){const r=await batchRpc([[m,p]]);return r[1]||null}
+// Utils
+function sh(h){return h?h.slice(0,6)+"..."+h.slice(-4):"—"}
+function fh(h){return h?h.slice(0,10)+"..."+h.slice(-6):"—"}
+function hn(h){return parseInt(h,16)}
+function fv(r){const v=r/1e9;if(v>=1e9)return(v/1e9).toFixed(2)+"B";if(v>=1e6)return(v/1e6).toFixed(2)+"M";if(v>=1e3)return(v/1e3).toFixed(2)+"K";return v.toFixed(4)}
+function fn(n){if(n>=1e9)return(n/1e9).toFixed(2)+"B";if(n>=1e6)return(n/1e6).toFixed(2)+"M";if(n>=1e3)return(n/1e3).toFixed(2)+"K";return String(n)}
+function dt(b){return b?String.fromCharCode.apply(null,b):"???"}
+function bh(b){return"0x"+b.map(function(x){return x.toString(16).padStart(2,"0")}).join("")}
+function ta(s){if(s<60)return s+"s ago";if(s<3600)return Math.floor(s/60)+"m ago";return Math.floor(s/3600)+"h ago"}
+function cp(t){navigator.clipboard.writeText(t);toast("Copied!")}
+function toast(m){var d=document.createElement("div");d.className="fixed bottom-4 right-4 px-4 py-2 rounded-lg text-sm z-50";d.style.background="#1a1a1a";d.style.color="#fff";d.textContent=m;document.body.appendChild(d);setTimeout(function(){d.remove()},2000)}
+function cm(id){document.getElementById(id).classList.add("hidden")}
+function exType(b){if(!b||!b.length)return{signed:false,label:"Empty"};var f=b[0];if(f===4&&b.length>=2){if(b[1]===0)return{signed:false,label:"Timestamp.set"};return{signed:false,label:"Inherent"}}if(f&128){return{signed:true,label:"Signed Extrinsic"}}if(f===0&&b.length>=3)return{signed:false,label:"Mod "+b[1]+".call "+b[2]};return{signed:false,label:"0x"+f.toString(16)}}
+// State
+var cur=0,fin=0,page=0,bList=[],eList=[];var PER=15;
+// === CACHE: Load from localStorage for INSTANT render ===
+function loadCache(){try{var c=JSON.parse(localStorage.getItem("vdsc_cache")||"{}");if(c.cur){cur=c.cur;fin=c.fin;
+  document.getElementById("sBH").textContent="#"+c.cur;
+  document.getElementById("sFN").textContent="#"+c.fin;
+  document.getElementById("sVAL").textContent=c.val||"—";
+  document.getElementById("sPEER").textContent=c.peer||"—";
+  if(c.blocks){bList=c.blocks;renderBlocks(c.blocks);renderExt(c.blocks)}
+}}catch(e){}}
+function saveCache(d){try{localStorage.setItem("vdsc_cache",JSON.stringify({cur,fin,val:d.val,peer:d.peer,blocks:bList}))}catch(e){}}
+// === LOAD STATS — SINGLE BATCH CALL ===
+async function loadStats(){
+  var r=await batchRpc([
+    ["chain_getHeader",[]],["chain_getFinalizedHead",[]],["system_health",[]],
+    ["dpos_allValidators",[]],["dpos_currentEpoch",[]],
+    ["eco_getTotalCO2Offset",[]],["eco_getTotalTreesPlanted",[]],
+    ["eco_getCarbonCreditCount",[]],["eco_getGreenValidatorCount",[]],
+    ["eco_getTotalCreditsRetired",[]],["eco_getReforestProjectCount",[]],
+    ["amm_dex_getAllPools",[]]
+  ]);
+  if(r[1]){cur=hn(r[1].number);document.getElementById("sBH").textContent="#"+cur}
+  if(r[2]){fin=hn(r[2]);document.getElementById("sFN").textContent="#"+fin}
+  if(r[3])document.getElementById("sPEER").textContent=r[3].peers
+  if(r[4])document.getElementById("sVAL").textContent=r[4].length
+  var ecoData=[["CO2 Offset",fn(r[6]||0)+" kg"],["Trees",fn(r[7]||0)],["Credits",r[8]||0],["Green Vals",r[9]||0],["Retired",r[10]||0],["Reforest",r[11]||0]];
+  document.getElementById("ovEco").innerHTML=ecoData.map(function(e){return '<div class="p-3 rounded-lg bg-slate-50"><div class="text-lg font-semibold mono">'+e[1]+'</div><div class="text-xs text-slate-400 mt-1">'+e[0]+'</div></div>'}).join("");
+  var dexHtml="";
+  if(r[12]&&r[12].length){
+    dexHtml=r[12].slice(0,5).map(function(p){var a=dt(p.token_a),b=dt(p.token_b);return '<div class="flex justify-between p-2 rounded-lg hover:bg-slate-50 cursor-pointer" onclick="poolDetail('+p.id+')"><span class="text-sm font-medium">'+a+"/"+b+'</span><span class="mono text-xs text-slate-500">Pool #'+p.id+'</span></div>'}).join("");
+  }else{dexHtml='<div class="text-sm text-slate-400">No pools</div>'}
+  document.getElementById("ovDex").innerHTML=dexHtml;
+  return {val:r[4]?r[4].length:0,peer:r[3]?r[3].peers:0};
+}
+// === LOAD BLOCKS — batch hash + block calls ===
+async function loadBlocks(n){
+  n=n||10;
+  var hashCalls=[];
+  for(var i=0;i<n;i++){var num=cur-i;if(num<0)break;hashCalls.push(["chain_getBlockHash",[num]])}
+  var hashRes=await batchRpc(hashCalls);
+  var hashes=[];
+  for(var i=0;i<hashCalls.length;i++){if(hashRes[i+1])hashes.push({num:cur-i,hash:hashRes[i+1]})}
+  var blkCalls=hashes.map(function(h){return ["chain_getBlock",[h.hash]]});
+  var blkRes=await batchRpc(blkCalls);
+  var blocks=[];
+  hashes.forEach(function(h,idx){var b=blkRes[idx+1];if(b&&b.block){var hdr=b.block.header;blocks.push({number:h.num,hash:h.hash,parentHash:hdr.parentHash,stateRoot:hdr.stateRoot,extrinsicsRoot:hdr.extrinsicsRoot,extrinsics:b.block.extrinsics,digest:hdr.digest.logs})}});
+  bList=blocks;
+  return blocks;
+}
+// Render
+function renderBlocks(blks){
+  document.getElementById("ovBlocks").innerHTML=blks.slice(0,8).map(function(b){return '<tr class="row border-b border-slate-50" onclick="blkDetail('+b.number+')"><td class="py-2 pr-3"><span class="accent font-medium">#'+b.number+'</span></td><td class="py-2 pr-3 text-slate-500 text-xs">'+ta((cur-b.number)*6)+'</td><td class="py-2 pr-3 mono text-xs">'+b.extrinsics.length+'</td><td class="py-2 mono text-xs text-slate-500">'+sh(b.hash)+'</td></tr>'}).join("")||'<tr><td class="py-4 text-slate-400">Loading...</td></tr>';
+}
+function renderExt(blks){
+  var exts=[];
+  blks.forEach(function(b){b.extrinsics.forEach(function(e,i){exts.push({bn:b.number,bh:b.hash,i:i,hex:bh(e),type:exType(e),len:e.length})})});
+  eList=exts;
+  document.getElementById("ovExt").innerHTML=exts.slice(0,8).map(function(e){return '<div class="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-50 cursor-pointer" onclick="txDetail(\''+e.hex+'\','+e.bn+',\''+e.bh+'\')"><span class="text-xs px-2 py-0.5 rounded '+(e.type.signed?'bg-green-100 text-green-700':'bg-slate-100 text-slate-500')+'">'+(e.type.signed?'Signed':'Inh')+'</span><span class="text-xs mono truncate flex-1 text-slate-600">'+e.type.label+'</span><span class="text-xs accent">#'+e.bn+'</span></div>'}).join("")||'<div class="text-sm text-slate-400">No extrinsics</div>';
+}
+// === BLOCKS TAB ===
+async function loadBlocksTab(){page=0;await renderPage()}
+async function renderPage(){
+  var start=cur-(page*PER);
+  var hashCalls=[];for(var i=0;i<PER;i++){var n=start-i;if(n<0)break;hashCalls.push(["chain_getBlockHash",[n]])}
+  var hr=await batchRpc(hashCalls);
+  var hashes=[];for(var i=0;i<hashCalls.length;i++){if(hr[i+1])hashes.push({num:start-i,hash:hr[i+1]})}
+  var bc=hashes.map(function(h){return ["chain_getBlock",[h.hash]]});
+  var br=await batchRpc(bc);
+  var html=hashes.map(function(h,idx){var b=br[idx+1];if(!b||!b.block)return"";var hdr=b.block.header;return '<tr class="row border-b border-slate-50" onclick="blkDetail('+h.num+')"><td class="py-2.5 pr-4"><span class="accent font-medium">#'+h.num+'</span></td><td class="py-2.5 pr-4 text-xs text-slate-500">'+ta((cur-h.num)*6)+'</td><td class="py-2.5 pr-4 mono text-xs">'+b.block.extrinsics.length+'</td><td class="py-2.5 pr-4 mono text-xs text-slate-400">'+sh(hdr.stateRoot)+'</td><td class="py-2.5 mono text-xs text-slate-500">'+sh(h.hash)+'</td></tr>'}).join("");
+  document.getElementById("blkT").innerHTML=html||'<tr><td class="py-4 text-slate-400">No blocks</td></tr>';
+  document.getElementById("pi").textContent="Page "+(page+1);
+  document.getElementById("bp").disabled=page===0;
+  document.getElementById("bn").disabled=start-PER<0;
+}
+function pg(d){page=Math.max(0,page+d);renderPage()}
+// === BLOCK DETAIL ===
+function ensureModal(id,title){
+  if(document.getElementById(id))return;
+  var m=document.createElement("div");m.id=id;m.className="modal";
+  m.innerHTML='<div class="mc"><div class="flex justify-between items-center p-4 border-b border-slate-200"><h2 id="blkTitle" class="text-lg font-semibold">'+title+'</h2><button class="cp text-2xl" onclick="cm(\''+id+'\')">×</button></div><div id="blkBody" class="p-4"></div></div>';
+  m.addEventListener("click",function(e){if(e.target===m)cm(id)});
+  document.body.appendChild(m);
+}
+async function blkDetail(num){
+  ensureModal("blkModal","Block #"+num);
+  document.getElementById("blkTitle").textContent="Block #"+num;
+  document.getElementById("blkBody").innerHTML='<div class="text-slate-400">Loading...</div>';
+  document.getElementById("blkModal").classList.remove("hidden");
+  var hash=await rpc("chain_getBlockHash",[num]);
+  var blk=await rpc("chain_getBlock",[hash]);
+  if(!blk||!blk.block){document.getElementById("blkBody").innerHTML='<div class="text-red-500">Block not found</div>';return}
+  var h=blk.block.header,e=blk.block.extrinsics;
+  var html='<div class="space-y-3">';
+  html+='<div><div class="text-xs text-slate-400 mb-1">Block Number</div><div class="mono font-medium">'+num+'</div></div>';
+  html+='<div><div class="text-xs text-slate-400 mb-1">Hash</div><div class="mono text-xs break-all">'+hash+'</div></div>';
+  html+='<div><div class="text-xs text-slate-400 mb-1">Parent Hash</div><div class="mono text-xs break-all">'+h.parentHash+'</div></div>';
+  html+='<div><div class="text-xs text-slate-400 mb-1">State Root</div><div class="mono text-xs break-all">'+h.stateRoot+'</div></div>';
+  html+='<div><div class="text-xs text-slate-400 mb-1">Extrinsics Root</div><div class="mono text-xs break-all">'+h.extrinsicsRoot+'</div></div>';
+  html+='<div><div class="text-xs text-slate-400 mb-1">Extrinsics ('+e.length+')</div>';
+  if(e.length){html+='<div class="space-y-2">';
+  e.forEach(function(ex,i){var t=exType(ex);html+='<div class="p-3 rounded-lg bg-slate-50"><div class="flex justify-between"><span class="text-sm font-medium">'+t.label+'</span><span class="text-xs '+(t.signed?'text-green-600':'text-slate-500')+'">'+(t.signed?'Signed':'Inherent')+'</span></div><div class="mono text-xs text-slate-400 mt-1 break-all">'+bh(ex)+'</div></div>'});
+  html+='</div>'}else{html+='<div class="text-sm text-slate-400">No extrinsics</div>'}
+  html+='</div></div>';
+  document.getElementById("blkBody").innerHTML=html;
+}
+// === EXTRINSICS TAB ===
+async function loadExtTab(){
+  var blks=bList.length?bList:await loadBlocks(15);
+  var exts=[];
+  blks.forEach(function(b){b.extrinsics.forEach(function(e,i){exts.push({bn:b.number,bh:b.hash,i:i,hex:bh(e),type:exType(e),len:e.length})})});
+  eList=exts;
+  document.getElementById("extT").innerHTML=exts.map(function(e){return '<tr class="row border-b border-slate-50" onclick="txDetail(\''+e.hex+'\','+e.bn+',\''+e.bh+'\')"><td class="py-2.5 pr-4 mono text-xs">'+sh(e.hex)+'</td><td class="py-2.5 pr-4"><span class="accent font-medium">#'+e.bn+'</span></td><td class="py-2.5 pr-4 text-xs">'+e.type.label+'</td><td class="py-2.5 mono text-xs text-slate-500">'+e.len+'</td></tr>'}).join("")||'<tr><td colspan="4" class="py-4 text-slate-400">No extrinsics</td></tr>';
+}
+async function txDetail(hex,bn,bh){
+  ensureModal("blkModal","Transaction");
+  document.getElementById("blkTitle").textContent="Transaction Detail";
+  document.getElementById("blkBody").innerHTML='<div class="space-y-3"><div><div class="text-xs text-slate-400 mb-1">Hash</div><div class="mono text-xs break-all">'+hash+'</div></div><div><div class="text-xs text-slate-400 mb-1">Block</div><div class="mono">#'+bn+'</div></div><div><div class="text-xs text-slate-400 mb-1">Block Hash</div><div class="mono text-xs break-all">'+bh+'</div></div></div>';
+  document.getElementById("blkModal").classList.remove("hidden");
+}
+// === VALIDATORS TAB ===
+async function loadValTab(){
+  var vals=await rpc("dpos_allValidators",[]);
+  if(!vals||!vals.length){document.getElementById("valG").innerHTML='<div class="text-slate-400 col-span-3">No validators</div>';return}
+  document.getElementById("valG").innerHTML=vals.map(function(v,i){
+    var addr=v.account_id||v.accountId||v[0]||"—";
+    var gs=v.green_score||v.greenScore||"—";
+    var st=v.total_staked||v.totalStaked||v.staked||"—";
+    var sc=v.slashing_count||v.slashingCount||0;
+    return '<div class="card p-4"><div class="flex justify-between mb-2"><span class="font-medium">#'+(i+1)+'</span><span class="text-xs px-2 py-0.5 rounded '+(gs>=80?'bg-green-100 text-green-700':gs>=50?'bg-yellow-100 text-yellow-700':'bg-red-100 text-red-700')+'">GS: '+gs+'</span></div><div class="mono text-xs text-slate-500 mb-2 truncate">'+(typeof addr==='string'?addr:JSON.stringify(addr))+'</div><div class="flex justify-between text-xs"><span class="text-slate-400">Staked: '+st+'</span><span class="text-slate-400">Slashes: '+sc+'</span></div></div>'
+  }).join("");
+}
+// === DEX TAB ===
+async function loadDexTab(){
+  var pools=await rpc("amm_dex_getAllPools",[]);
+  if(!pools||!pools.length){document.getElementById("dexG").innerHTML='<div class="text-slate-400 col-span-2">No pools</div>';return}
+  document.getElementById("dexG").innerHTML=pools.map(function(p){
+    var a=dt(p.token_a),b=dt(p.token_b);
+    var ra=p.reserve_a||p.reserveA||0,rb=p.reserve_b||p.reserveB||0;
+    var lp=p.lp_tokens||p.lpTokens||0;
+    return '<div class="card p-4"><div class="flex justify-between mb-3"><span class="font-semibold text-lg">'+a+'/'+b+'</span><span class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-500">Pool #'+p.id+'</span></div><div class="grid grid-cols-2 gap-3 text-sm"><div><div class="text-xs text-slate-400">Reserve '+a+'</div><div class="mono">'+fn(ra)+'</div></div><div><div class="text-xs text-slate-400">Reserve '+b+'</div><div class="mono">'+fn(rb)+'</div></div><div><div class="text-xs text-slate-400">LP Tokens</div><div class="mono">'+fn(lp)+'</div></div><div><div class="text-xs text-slate-400">Fee Tier</div><div class="mono">'+(p.fee_tier||p.feeTier||0.3)+'%</div></div></div></div>'
+  }).join("");
+}
+function poolDetail(id){tab("dex")}
+// === ECO TAB ===
+async function loadEcoTab(){
+  var r=await batchRpc([["eco_getTotalCO2Offset",[]],["eco_getTotalTreesPlanted",[]],["eco_getCarbonCreditCount",[]],["eco_getGreenValidatorCount",[]],["eco_getTotalCreditsRetired",[]],["eco_getReforestProjectCount",[]]]);
+  var data=[["Total CO2 Offset",fn(r[1]||0)+" kg"],["Trees Planted",fn(r[2]||0)],["Carbon Credits",r[3]||0],["Green Validators",r[4]||0],["Credits Retired",r[5]||0],["Reforest Projects",r[6]||0]];
+  document.getElementById("ecoG").innerHTML=data.map(function(d){return '<div class="card p-4"><div class="text-2xl font-bold accent mono">'+d[1]+'</div><div class="text-xs text-slate-400 mt-1 uppercase tracking-wider">'+d[0]+'</div></div>'}).join("");
+  var vals=await rpc("dpos_allValidators",[]);
+  if(vals&&vals.length){
+    document.getElementById("ecoV").innerHTML=vals.slice(0,6).map(function(v,i){
+      var gs=v.green_score||v.greenScore||"—";
+      return '<div class="p-3 rounded-lg bg-slate-50"><div class="flex justify-between"><span class="text-sm font-medium">Validator #'+(i+1)+'</span><span class="text-sm '+(gs>=80?'text-green-600':'text-slate-500')+'">'+gs+'/100</span></div><div class="mt-2 h-2 rounded-full bg-slate-200"><div class="h-2 rounded-full" style="width:'+gs+'%;background:'+(gs>=80?'#22c55e':gs>=50?'#eab308':'#ef4444')+'"></div></div></div>'
+    }).join("");
+  }
+}
+// === SEARCH ===
+async function search(){
+  var q=document.getElementById("search").value.trim();
+  if(!q)return;
+  if(/^\d+$/.test(q)){blkDetail(parseInt(q));return}
+  if(/^0x[0-9a-fA-F]+$/.test(q)){
+    try{var b=await rpc("chain_getBlock",[q]);if(b&&b.block){blkDetail(hn(b.block.header.number));return}}catch(e){}
+    ensureModal("blkModal","Search Result");
+    document.getElementById("blkTitle").textContent="Search: "+q.slice(0,12)+"...";
+    document.getElementById("blkBody").innerHTML='<div class="mono text-xs break-all">'+q+'</div><div class="mt-3 text-sm text-slate-500">No matching block found. Address search not yet available on testnet.</div>';
+    document.getElementById("blkModal").classList.remove("hidden");
+  }
+}
+// === TAB SWITCH ===
+function tab(t){
+  ["overview","blocks","extrinsics","validators","dex","eco"].forEach(function(x){
+    document.getElementById("t-"+x).classList.add("hidden");
+  });
+  document.getElementById("t-"+t).classList.remove("hidden");
+  document.querySelectorAll(".tab").forEach(function(b){b.classList.remove("tab-a");b.classList.add("tab-i")});
+  document.querySelector('[data-t="'+t+'"]').classList.add("tab-a");
+  document.querySelector('[data-t="'+t+'"]').classList.remove("tab-i");
+  if(t==="blocks")loadBlocksTab();if(t==="extrinsics")loadExtTab();if(t==="validators")loadValTab();if(t==="dex")loadDexTab();if(t==="eco")loadEcoTab();
+}
+// === WEBSOCKET: Only update block height, fetch new block data every 30s ===
+var ws,wsTimer=0,lastFetch=0;
+function connectWS(){
+  try{ws=new WebSocket("wss://"+location.hostname+"/ws")}catch(e){return}
+  ws.onopen=function(){ws.send(JSON.stringify({jsonrpc:"2.0",method:"chain_subscribeNewHeads",params:[],id:1}))};
+  ws.onmessage=function(e){
+    try{
+      var m=JSON.parse(e.data);
+      if(m.params&&m.params.result){
+        var n=hn(m.params.result.number);
+        if(n>cur){
+          cur=n;
+          document.getElementById("sBH").textContent="#"+cur;
+          // Only re-fetch data every 30s (5 blocks), not every block
+          var now=Date.now();
+          if(now-lastFetch>30000){
+            lastFetch=now;
+            loadStats().then(loadOverview);
+          }
+        }
+      }
+    }catch(ex){}
+  };
+  ws.onclose=function(){setTimeout(connectWS,5000)};
+}
+// === LOAD OVERVIEW ===
+async function loadOverview(){
+  var b=await loadBlocks(10);
+  renderBlocks(b);
+  renderExt(b);
+}
+// === INIT: Load cache first, then fetch fresh data in parallel ===
+async function init(){
+  // 1. Load from cache for INSTANT display
+  loadCache();
+  // 2. Fetch fresh data in parallel (stats + blocks at same time)
+  var statsPromise=loadStats();
+  var blocksPromise=loadBlocks(10);
+  var [stats,blocks]=await Promise.all([statsPromise,blocksPromise]);
+  // 3. Render fresh data
+  renderBlocks(blocks);
+  renderExt(blocks);
+  saveCache(stats);
+  // 4. Connect WebSocket
+  connectWS();
+  lastFetch=Date.now();
+}
+init();
+</script>
+</body>
+</html>
