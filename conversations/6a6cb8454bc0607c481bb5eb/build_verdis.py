@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+content = """<!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
@@ -1553,7 +1553,7 @@
                             <span class="timeline-number">01</span>
                             <span class="status-badge"><span class="pulse-dot"></span> Live</span>
                         </div>
-                        <h3>DPoS Consensus Layer</h3>
+                        <h3>DPoS Consensus</h3>
                         <p>BABE block production and GRANDPA finality gadget guaranteeing deterministic 1-second block completion with validator rotation.</p>
                     </div>
                 </div>
@@ -1566,7 +1566,7 @@
                             <span class="timeline-number">02</span>
                             <span class="status-badge"><span class="pulse-dot"></span> Live</span>
                         </div>
-                        <h3>AMM DEX Protocol Layer</h3>
+                        <h3>AMM DEX</h3>
                         <p>Substrate-native automated market maker facilitating high-speed token exchange and liquidity provider fee distribution.</p>
                     </div>
                 </div>
@@ -1579,7 +1579,7 @@
                             <span class="timeline-number">03</span>
                             <span class="status-badge"><span class="pulse-dot"></span> Live</span>
                         </div>
-                        <h3>Eco Tracking Module</h3>
+                        <h3>Eco Module</h3>
                         <p>Real-time carbon offset validation engine interfacing with IoT green energy sensors and verified carbon registries.</p>
                     </div>
                 </div>
@@ -1592,7 +1592,7 @@
                             <span class="timeline-number">04</span>
                             <span class="status-badge"><span class="pulse-dot"></span> Live</span>
                         </div>
-                        <h3>EVM Execution Subsystem</h3>
+                        <h3>EVM Subsystem</h3>
                         <p>Chain ID 909 execution environment supporting 143 Ethereum opcodes, Solidity smart contracts, and Web3 RPC adapters.</p>
                     </div>
                 </div>
@@ -1606,7 +1606,7 @@
                             <span class="status-badge"><span class="pulse-dot"></span> Live</span>
                         </div>
                         <h3>Tokenomics Core</h3>
-                        <p>100B total supply token economy with 12B allocation, dynamic fee burning mechanism, and automated staking rewards.</p>
+                        <p>100B supply token economy with 12B allocation, dynamic fee burning mechanism, and automated staking rewards.</p>
                     </div>
                 </div>
 
@@ -1618,7 +1618,7 @@
                             <span class="timeline-number">06</span>
                             <span class="status-badge"><span class="pulse-dot"></span> Live</span>
                         </div>
-                        <h3>Vesting & Lockup Module</h3>
+                        <h3>Vesting Module</h3>
                         <p>On-chain linear unlock schedules and programmatic treasury releases for long-term ecosystem sustainability.</p>
                     </div>
                 </div>
@@ -1631,7 +1631,7 @@
                             <span class="timeline-number">07</span>
                             <span class="status-badge"><span class="pulse-dot"></span> Live</span>
                         </div>
-                        <h3>Decentralized Storage Layer</h3>
+                        <h3>Storage Layer</h3>
                         <p>High-density RocksDB state Trie storage with zero-knowledge state proof compression and instant snapshot creation.</p>
                     </div>
                 </div>
@@ -2313,3 +2313,7 @@
     </script>
 </body>
 </html>
+"""
+with open("verdis-landing.html", "w") as out:
+    out.write(content)
+print("Done!")
