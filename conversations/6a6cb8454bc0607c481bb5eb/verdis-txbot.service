@@ -1,0 +1,27 @@
+[Unit]
+Description=Verdis Chain Transaction Bot Service
+Documentation=https://verdischain.com
+After=network.target verdis.service
+Wants=verdis.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/app/conversations/6a6cb8454bc0607c481bb5eb
+ExecStart=/app/conversations/6a6cb8454bc0607c481bb5eb/txbot.sh
+Restart=always
+RestartSec=10
+KillMode=process
+StandardOutput=append:/var/log/verdis-txbot.log
+StandardError=append:/var/log/verdis-txbot.log
+SyslogIdentifier=verdis-txbot
+
+# Environment
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Security / Limits
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
