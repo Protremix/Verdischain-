@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+import os
+
+html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -1711,9 +1713,7 @@
       renderPoolsTable();
       updateSwapCalculation();
 
-      alert(`✅ Swap Executed Successfully!
-Swapped ${amountInVal} ${currentTokenIn} for ${amountOutVal.toFixed(4)} ${currentTokenOut}.
-Tx Hash: ${txHash}`);
+      alert(`✅ Swap Executed Successfully!\nSwapped ${amountInVal} ${currentTokenIn} for ${amountOutVal.toFixed(4)} ${currentTokenOut}.\nTx Hash: ${txHash}`);
     }
 
     // Token Modal Logic
@@ -1930,3 +1930,9 @@ Tx Hash: ${txHash}`);
   </script>
 </body>
 </html>
+"""
+
+with open("/app/conversations/6a6cb8454bc0607c481bb5eb/dex-functional.html", "w") as f:
+    f.write(html_content)
+
+print("Successfully wrote dex-functional.html! File size:", len(html_content))
