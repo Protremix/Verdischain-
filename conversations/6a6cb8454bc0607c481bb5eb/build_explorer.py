@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+import os
+
+html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -1333,7 +1335,7 @@
       const q = document.getElementById('searchInput').value.trim();
       if (!q) return;
 
-      if (/^\d+$/.test(q)) {
+      if (/^\\d+$/.test(q)) {
         openBlockModal(parseInt(q));
       } else if (q.startsWith('0x') && q.length === 66) {
         document.getElementById('modalTitle').textContent = 'Transaction / Hash Search';
@@ -1369,3 +1371,12 @@
   </script>
 </body>
 </html>
+"""
+
+# Write to verdiscan.html, verdis-explorer.html, and verdis-explorer-live.html
+files_to_update = ['verdiscan.html', 'verdis-explorer.html', 'verdis-explorer-live.html']
+
+for fname in files_to_update:
+    with open(fname, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+    print(f"Updated {fname} successfully ({len(html_content)} bytes)")
