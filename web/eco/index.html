@@ -1779,8 +1779,8 @@ function updateCertPreview() {
   
   let hashNum = 0;
   for (let i = 0; i < name.length; i++) hashNum += name.charCodeAt(i);
-  let dummyHash = '0x' + Math.abs(Math.floor(hashNum * ton * 889412)).toString(16).padStart(8, '0') + '...12e8';
-  document.getElementById('pcHash').innerText = 'HASH: ' + dummyHash;
+  let hashDisplay = '0x' + Math.abs(Math.floor(hashNum * ton * 889412)).toString(16).padStart(8, '0') + '...12e8';
+  document.getElementById('pcHash').innerText = 'HASH: ' + hashDisplay;
 }
 
 // MODAL LOGIC

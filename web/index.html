@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Verdis Chain — The World's First Green Blockchain | Layer-1 in Rust</title>
-  <meta name="description" content="Verdis Chain is a Layer-1 blockchain built with Rust and Substrate. Native DPoS consensus (BABE/GRANDPA), AMM DEX, 143-opcode EVM, on-chain carbon credits, 100B token supply. 7 production pallets, 260 tests, mainnet ready." />
+  <meta name="description" content="Verdis Chain is a Layer-1 blockchain built with Rust and Substrate. Native DPoS consensus (BABE/GRANDPA), AMM DEX, EVM, on-chain carbon credits, 100B token supply. production-grade pallets, mainnet ready." />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Verdis Chain — The World's First Green Blockchain" />
-  <meta property="og:description" content="Layer-1 blockchain in Rust + Substrate. DPoS, AMM DEX, EVM, carbon credits. 100B supply, 143 opcodes, 7 pallets." />
+  <meta property="og:description" content="Layer-1 blockchain in Rust + Substrate. DPoS, AMM DEX, EVM, carbon credits. 100B supply, EVM compatible, carbon credits." />
   <meta property="og:url" content="https://verdischain.com" />
   <meta property="og:image" content="https://verdischain.com/og-image.png" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -631,7 +631,7 @@ input:focus{outline:none;border-color:#caff33;box-shadow:0 0 0 3px rgba(202,255,
           <span class="gradient">GREEN BLOCKCHAIN</span><br>
           <span style="color:var(--text-white)">Engineered in Rust</span>
         </h1>
-        <p class="hero-desc">Layer-1 blockchain built with Substrate. Native DPoS consensus (BABE + GRANDPA), AMM DEX, EVM with 143 opcodes, and on-chain carbon credit tracking — all powered by 7 production pallets and 260 passing tests.</p>
+        <p class="hero-desc">Layer-1 blockchain built with Substrate. Native DPoS consensus, AMM DEX, EVM compatibility, and on-chain carbon credit tracking — powered by production-grade pallets in Rust.</p>
         <div class="hero-actions">
           <button class="btn-primary" onclick="window.location.href='/explorer'">Open Explorer →</button>
           <button class="btn-secondary" onclick="document.getElementById('features').scrollIntoView()">View Architecture</button>
@@ -861,7 +861,7 @@ input:focus{outline:none;border-color:#caff33;box-shadow:0 0 0 3px rgba(202,255,
         <div class="feature-card"><div class="feature-icon">🌱</div><h3>Carbon Credit Tracking</h3><p>On-chain carbon credits, green validator scoring, and reforestation logging. Every transaction contributes to measurable environmental impact.</p><span class="feature-tag">Eco Module</span></div>
         <div class="feature-card"><div class="feature-icon">⚡</div><h3>EVM Smart Contracts</h3><p>143 EVM opcodes with Cancun upgrades (TLOAD, TSTORE, MCOPY). Deploy Solidity contracts with Chain ID 909 and 24KB max code size.</p><span class="feature-tag">143 Opcodes · Chain 909</span></div>
         <div class="feature-card"><div class="feature-icon">🛡️</div><h3>Tokenomics & Vesting</h3><p>100B total supply with 12B investor allocation enforced on-chain. Vesting schedules with cliff periods, transfer restrictions, and mint/burn controls.</p><span class="feature-tag">100B Supply · 12B Vesting</span></div>
-        <div class="feature-card"><div class="feature-icon">🏗️</div><h3>Substrate + Rust Core</h3><p>Built from scratch in Rust using Substrate. WASM runtime, JSON-RPC + gRPC, benchmarked weight files for all 7 pallets. No shortcuts, no mocks.</p><span class="feature-tag">Rust · Substrate · WASM</span></div>
+        <div class="feature-card"><div class="feature-icon">🏗️</div><h3>Substrate + Rust Core</h3><p>Built from scratch in Rust using Substrate. WASM runtime, JSON-RPC + gRPC, benchmarked weight files for all 7 pallets. Production-ready.</p><span class="feature-tag">Rust · Substrate · WASM</span></div>
       </div>
     </div>
   </section>
@@ -915,17 +915,17 @@ input:focus{outline:none;border-color:#caff33;box-shadow:0 0 0 3px rgba(202,255,
     <div class="arch-inner">
       <div class="section-header reveal">
         <div class="section-label">Architecture</div>
-        <h2>Seven pallets, one chain</h2>
-        <p>Each pallet is independently benchmarked with real weight files and full test coverage.</p>
+        <h2>Seven pallets, one ecosystem</h2>
+        <p>Each pallet is independently benchmarked with real weight files.</p>
       </div>
       <div class="arch-layers reveal-stagger">
-        <div class="arch-layer"><div class="arch-layer-num">01</div><div class="arch-layer-name">DPoS Consensus</div><div class="arch-layer-desc">BABE block production + GRANDPA finality, validator election, green scoring</div><div class="arch-layer-tests">34 tests</div><div class="arch-layer-status">Live</div></div>
-        <div class="arch-layer"><div class="arch-layer-num">02</div><div class="arch-layer-name">AMM DEX</div><div class="arch-layer-desc">Native swap, liquidity pools, fee distribution, slippage protection</div><div class="arch-layer-tests">25 tests</div><div class="arch-layer-status">Live</div></div>
-        <div class="arch-layer"><div class="arch-layer-num">03</div><div class="arch-layer-name">Eco Module</div><div class="arch-layer-desc">Carbon credits, reforestation logging, green validator scoring</div><div class="arch-layer-tests">33 tests</div><div class="arch-layer-status">Live</div></div>
-        <div class="arch-layer"><div class="arch-layer-num">04</div><div class="arch-layer-name">EVM</div><div class="arch-layer-desc">143 opcodes, Chain ID 909, 24KB code limit, Cancun upgrades</div><div class="arch-layer-tests">102 tests</div><div class="arch-layer-status">Live</div></div>
-        <div class="arch-layer"><div class="arch-layer-num">05</div><div class="arch-layer-name">Tokenomics</div><div class="arch-layer-desc">100B supply, 12B investor allocation, mint/burn, transfer restrictions</div><div class="arch-layer-tests">23 tests</div><div class="arch-layer-status">Live</div></div>
-        <div class="arch-layer"><div class="arch-layer-num">06</div><div class="arch-layer-name">Vesting</div><div class="arch-layer-desc">Schedule-based token release, cliff periods, linear vesting</div><div class="arch-layer-tests">10 tests</div><div class="arch-layer-status">Live</div></div>
-        <div class="arch-layer"><div class="arch-layer-num">07</div><div class="arch-layer-name">Storage</div><div class="arch-layer-desc">On-chain data storage, key-value pairs, IPFS integration ready</div><div class="arch-layer-tests">9 tests</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">01</div><div class="arch-layer-name">DPoS Consensus</div><div class="arch-layer-desc">BABE block production + GRANDPA finality, validator election, green scoring</div><div class="arch-layer-tests">Live</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">02</div><div class="arch-layer-name">AMM DEX</div><div class="arch-layer-desc">Native swap, liquidity pools, fee distribution, slippage protection</div><div class="arch-layer-tests">Live</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">03</div><div class="arch-layer-name">Eco Module</div><div class="arch-layer-desc">Carbon credits, reforestation logging, green validator scoring</div><div class="arch-layer-tests">Live</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">04</div><div class="arch-layer-name">EVM</div><div class="arch-layer-desc">EVM compatible with Cancun upgrades</div><div class="arch-layer-tests">Live</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">05</div><div class="arch-layer-name">Tokenomics</div><div class="arch-layer-desc">100B supply, 12B investor allocation, mint/burn, transfer restrictions</div><div class="arch-layer-tests">Live</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">06</div><div class="arch-layer-name">Vesting</div><div class="arch-layer-desc">Schedule-based token release, cliff periods, linear vesting</div><div class="arch-layer-tests">Live</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">07</div><div class="arch-layer-name">Storage</div><div class="arch-layer-desc">On-chain data storage, key-value pairs, IPFS integration ready</div><div class="arch-layer-tests">Live</div><div class="arch-layer-status">Live</div></div>
       </div>
     </div>
   </section>
@@ -985,7 +985,7 @@ input:focus{outline:none;border-color:#caff33;box-shadow:0 0 0 3px rgba(202,255,
         <h2>What's built and what's next</h2>
       </div>
       <div class="roadmap-track reveal">
-        <div class="roadmap-milestone done"><div class="roadmap-dot"></div><div class="roadmap-status">✓ Completed</div><h4>Core Blockchain</h4><p>7 pallets, 143 EVM opcodes, 260 tests, benchmarked weights</p></div>
+        <div class="roadmap-milestone done"><div class="roadmap-dot"></div><div class="roadmap-status">✓ Completed</div><h4>Core Blockchain</h4><p>7 pallets, EVM compatible, benchmarked weights</p></div>
         <div class="roadmap-milestone done"><div class="roadmap-dot"></div><div class="roadmap-status">✓ Completed</div><h4>Verdiscan Explorer</h4><p>Real-time block explorer, validator cards, WebSocket feed</p></div>
         <div class="roadmap-milestone active"><div class="roadmap-dot"></div><div class="roadmap-status">● In Progress</div><h4>Premium Launch</h4><p>SaaS interface, security audit, SDK release, mobile wallet</p></div>
         <div class="roadmap-milestone planned"><div class="roadmap-dot"></div><div class="roadmap-status">○ Planned</div><h4>Mainnet</h4><p>Genesis allocation, validator onboarding, public RPC</p></div>
@@ -1048,7 +1048,7 @@ input:focus{outline:none;border-color:#caff33;box-shadow:0 0 0 3px rgba(202,255,
       <div class="footer-col"><h5>Developers</h5><a href="/docs/">Documentation</a><a href="#">RPC Endpoint</a><a href="https://github.com/Protremix/Verdischain-">GitHub</a><a href="#">Whitepaper</a></div>
       <div class="footer-col"><h5>Community</h5><a href="#">Twitter</a><a href="#">Discord</a><a href="#">Telegram</a><a href="#">Blog</a></div>
     </div>
-    <div class="footer-bottom"><span>© 2026 Verdis Chain · Powered by Protremix</span><span>verdischain.com · 91.98.160.145</span></div>
+    <div class="footer-bottom"><span>© 2026 Verdis Chain · Powered by Protremix</span><span>verdischain.com</span></div>
   </footer>
 
   <script>

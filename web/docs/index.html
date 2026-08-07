@@ -101,7 +101,7 @@ hr{border:none;border-top:1px solid #222;margin:32px 0}
 <li>**Node:** Substrate-based, 5 validators + 2 RPC nodes + 2 boot nodes</li>
 <li>**Web:** Nginx reverse proxy, 12 pages, WebSocket at `/ws`</li>
 <li>**Monitoring:** Prometheus + Grafana + Node Exporter</li>
-<li>**Security:** UFW firewall, Fail2Ban, SSH key-only, TLS 1.2/1.3</li>
+<li>**Security:** Firewall, intrusion detection, TLS 1.2/1.3</li>
 
 <hr>
 <h2 id="quick-start">Quick Start</h2>
@@ -112,7 +112,7 @@ hr{border:none;border-top:1px solid #222;margin:32px 0}
 <li>**DEX:** https://verdischain.com/dex/</li>
 <li>**Faucet:** https://verdischain.com/faucet/</li>
 <li>**Status:** https://verdischain.com/status/</li>
-<li>**Grafana:** https://verdischain.com/grafana/ (admin/verdis2026)</li>
+<li>**Grafana:** https://verdischain.com/grafana/ (contact admin)</li>
 
 <h3>Connect via polkadot.js</h3>
 <pre><code>
@@ -274,7 +274,7 @@ wss://verdischain.com/ws
 <h2 id="validator-guide">Validator Guide</h2>
 <h3>Current Validators</h3>
 <p>14 active DPoS validators running on the testnet. Each validator:</p>
-<li>Runs as a systemd service on 91.98.160.145</li>
+<li>Runs as a systemd service</li>
 <li>Produces blocks in round-robin order</li>
 <li>Earns VRDX rewards for block production</li>
 <li>Has a green energy score (0-100)</li>
@@ -298,7 +298,7 @@ cargo build --release
 ./target/release/verdis-node \
   --chain testnet \
   --validator \
-  --bootnodes /ip4/91.98.160.145/tcp/30333/p2p/12D3KooW... \
+  --bootnodes <your-bootnode-multiaddr> \
   --rpc-port 9948
 </code></pre>
 <hr>
@@ -334,8 +334,8 @@ const api = await ApiPromise.create({ provider: new WsProvider('wss://verdischai
 <hr>
 <h2 id="security">Security</h2>
 <h3>Server Hardening</h3>
-<li>SSH: Key-only authentication (password auth disabled)</li>
-<li>Fail2Ban: Active, monitoring SSH and nginx</li>
+<li>Authentication: Key-based only</li>
+<li>Intrusion detection: Active</li>
 <li>UFW Firewall: Only ports 22, 80, 443, 30333-30341 open</li>
 <li>TLS: 1.2/1.3 only, HSTS preload enabled</li>
 <li>SSL Certificate: Valid until November 2026</li>
@@ -349,7 +349,7 @@ const api = await ApiPromise.create({ provider: new WsProvider('wss://verdischai
 <li>`Content-Security-Policy: default-src 'self' ...`</li>
 
 <h3>Rate Limiting</h3>
-<p>5 nginx rate limit zones:</p>
+<p>Rate limiting zones:</p>
 <li>`rpc`: 10 req/s (RPC endpoint)</li>
 <li>`ws`: 20 connections/s (WebSocket)</li>
 <li>`api`: 20 req/s (API endpoints)</li>
@@ -366,13 +366,13 @@ const api = await ApiPromise.create({ provider: new WsProvider('wss://verdischai
 <hr>
 <h2 id="monitoring">Monitoring</h2>
 <h3>Prometheus</h3>
-<li>URL: http://localhost:9090 (internal only)</li>
+<li>URL: Internal metrics endpoint (not public)</li>
 <li>Scrape interval: 15s</li>
 <li>Targets: Node Exporter, Verdis RPC, Nginx</li>
 
 <h3>Grafana</h3>
 <li>URL: https://verdischain.com/grafana/</li>
-<li>Login: admin / verdis2026</li>
+<li>Login: configured at setup</li>
 <li>Datasource: Prometheus</li>
 <li>Dashboard: Verdis Chain Overview</li>
 
@@ -407,7 +407,7 @@ const api = await ApiPromise.create({ provider: new WsProvider('wss://verdischai
 <hr>
 <h2 id="deployment">Deployment</h2>
 <h3>Server</h3>
-<li>**IP:** 91.98.160.145</li>
+<li>**Access:** via verdischain.com</li>
 <li>**Domain:** verdischain.com</li>
 <li>**OS:** Ubuntu 26.04 LTS</li>
 <li>**CPU:** 8-core AMD EPYC</li>
@@ -430,16 +430,14 @@ verdis-rpc-filter.service — RPC filter proxy
 verdis-tx-bot.service     — Transaction bot
 verdis-transfer-bot.service — Transfer bot
 verdis-health-monitor.service — Health monitor
-nginx.service             — Web server
-prometheus.service        — Monitoring
 grafana-server.service    — Dashboards
 node-exporter.service     — System metrics
 </code></pre>
 <h3>Nginx Configuration</h3>
-<li>RPC proxy: `/rpc` → `localhost:9948`</li>
-<li>WebSocket: `/ws` → `localhost:9948` (upgrade)</li>
-<li>Grafana: `/grafana/` → `localhost:3001`</li>
-<li>Static pages: `/var/www/verdiscan/`</li>
+<li>RPC proxy: `/rpc` → `local node`</li>
+<li>WebSocket: `/ws` → `local node` (upgrade)</li>
+<li>Grafana: `/grafana/` → `local Grafana`</li>
+<li>Static pages served via nginx</li>
 <li>Rate limiting on 5 zones</li>
 <li>SSL termination with Let's Encrypt</li>
 
