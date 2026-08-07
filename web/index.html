@@ -564,7 +564,7 @@
     nav.std-nav .nav-links a:hover { color: var(--text-white); background: rgba(255,255,255,0.06); }
     nav.std-nav .nav-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); flex-shrink: 0; white-space: nowrap; }
     nav.std-nav .nav-status .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 8px #4ade80; }
-    @media(max-width:900px) { nav.std-nav .nav-links { display: none; } }
+    
 
     
      50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.7)); } }
@@ -591,6 +591,14 @@ input:focus{outline:none;border-color:#caff33;box-shadow:0 0 0 3px rgba(202,255,
     .brand-logo-img { height:64px; width: auto; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(202,255,51,0.4)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
     .brand-logo-img { filter: drop-shadow(0 0 20px rgba(202,255,51,0.7)); }
     @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(202,255,51,0.35)); } 50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.6)); } }
+
+/* Mobile hamburger menu */
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:40px;height:40px;background:transparent;border:none;cursor:pointer;padding:8px;z-index:1001}
+.nav-hamburger span{display:block;width:22px;height:2px;background:#caff33;border-radius:2px;transition:all 250ms cubic-bezier(0.16,1,0.3,1)}
+.nav-hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.nav-hamburger.active span:nth-child(2){opacity:0}
+.nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+@media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(10,10,10,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.08);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
 </style>
 <style id="nav-brand-no-underline-fix">a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration: none !important; }
 /* UX Enhancement Animations */
@@ -617,7 +625,7 @@ input:focus{outline:none;border-color:#caff33;box-shadow:0 0 0 3px rgba(202,255,
     <div class="hero-container">
       <nav class="std-nav">
   <a href="/" class="nav-brand"><img src="/assets/verdis-logo-white-v2.png" alt="Verdis Chain" class="brand-logo-img" style="height:64px;width:auto;display:block;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 0 12px rgba(202,255,51,0.4));"></a>
-  <div class="nav-links">
+  <button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links">
     <a href="/">Home</a>
     <a href="/explorer/">Explorer</a>
     <a href="/dex/">DEX</a>
@@ -1285,6 +1293,11 @@ window.addEventListener('scroll',function(){var s=window.scrollY/(document.body.
 <script>
 document.addEventListener('mousemove',function(e){var g=document.getElementById('cursor-glow');if(g){g.style.left=e.clientX+'px';g.style.top=e.clientY+'px';g.style.opacity='1'}});
 </script>
+
+<script>
+(function(){var h=document.getElementById('navHamburger'),l=document.querySelector('.nav-links');if(!h||!l)return;h.addEventListener('click',function(){h.classList.toggle('active');l.classList.toggle('open');});l.addEventListener('click',function(e){if(e.target.tagName==='A'){h.classList.remove('active');l.classList.remove('open');}});})();
+</script>
+
 </body>
 <script>
 (function(){
