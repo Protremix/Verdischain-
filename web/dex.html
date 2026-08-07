@@ -1,1642 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Verdis Chain — Native AMM DEX Exchange | Protocol-Level Liquidity</title>
-  <meta name="description" content="Verdis Chain Native AMM DEX Interface. Substrate pallet-based automated market maker with 0.3% fees, protocol-level security, instant swaps, and high-yield liquidity pools." />
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Verdis Chain — Native AMM DEX Exchange" />
-  <meta property="og:description" content="Substrate pallet-based AMM DEX built directly into the Verdis Chain runtime. Zero gas surcharge, protocol-level speed, and carbon-neutral trading." />
-  <meta property="og:url" content="https://verdischain.com/dex" />
-  <meta property="og:image" content="https://verdischain.com/og-image.png" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Verdis AMM DEX Interface" />
-  <meta name="twitter:description" content="Swap, Pool, and Provide Liquidity on Verdis Chain's native runtime AMM DEX." />
-  <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --canvas: #e8ebee;
-      --canvas-light: #f1f5f9;
-      --hero-bg: #1a1a1a;
-      --hero-card: #2d2d2d;
-      --hero-card-dark: #252525;
-      --hero-border: rgba(255,255,255,0.08);
-      --accent: #caff33;
-      --accent-hover: #a8e607;
-      --accent-2: #84fe87;
-      --accent-3: #00a86b;
-      --accent-glow: rgba(202,255,51,0.35);
-      --accent-light: rgba(202,255,51,0.08);
-      --accent-border: rgba(202,255,51,0.25);
-      --text-white: #ffffff;
-      --text-dim: #b8bcc4;
-      --text-muted: #6b7080;
-      --text-dark: #0f172a;
-      --text-dark-muted: #64748b;
-      --radius: 12px;
-      --radius-lg: 20px;
-      --radius-pill: 100px;
-      --transition: 300ms cubic-bezier(0.16,1,0.3,1);
-    }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Poppins', sans-serif; background: var(--canvas-light); color: var(--text-dark); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
-    .mono { font-family: 'JetBrains Mono', monospace; }
-
-    /* ===== SCROLL PROGRESS ===== */
-    #scroll-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #caff33, #84fe87, #00a86b); z-index: 10000; width: 0; transition: width 50ms; box-shadow: 0 0 12px var(--accent-glow); }
-
-    /* ===== CURSOR GLOW ===== */
-    #cursor-glow { position: fixed; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(202,255,51,0.05) 0%, transparent 70%); pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); opacity: 0; transition: opacity 300ms; }
-    body:hover #cursor-glow { opacity: 1; }
-
-    /* ===== HERO SECTION — Dark container, split layout ===== */
-    .hero-section { position: relative; background: var(--canvas); padding: 0 24px; overflow: hidden; }
-    .hero-container { max-width: 1300px; margin: 0 auto; background: var(--hero-bg); border-radius: 24px; overflow: hidden; position: relative; min-height: 720px; display: flex; }
-    .hero-container::before { content: ''; position: absolute; top: -30%; right: -15%; width: 700px; height: 700px; background: radial-gradient(circle, var(--accent-glow), transparent 55%); opacity: 0.12; animation: pulse-bg 4s ease-in-out infinite; pointer-events: none; }
-    .hero-container::after { content: ''; position: absolute; bottom: -20%; left: -10%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(0,168,107,0.15), transparent 60%); opacity: 0.08; animation: pulse-bg 6s ease-in-out infinite 1s; pointer-events: none; }
-    @keyframes pulse-bg { 0%,100% { opacity: 0.08; transform: scale(1); } 50% { opacity: 0.15; transform: scale(1.1); } }
-
-    /* ===== NAV ===== */
-    .hero-nav { position: absolute; top: 0; left: 0; right: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: 28px 48px; }
-    .nav-brand { font-family: 'Poppins'; font-weight: 800; font-size: 22px; color: var(--text-white); display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .nav-brand-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px var(--accent-glow); animation: pulse-dot 2s infinite; }
-    @keyframes pulse-dot { 0%,100% { box-shadow: 0 0 16px var(--accent-glow); } 50% { box-shadow: 0 0 28px rgba(202,255,51,0.6); } }
-    .nav-links { display: flex; gap: 36px; }
-    .nav-links a { color: var(--text-dim); font-size: 14px; font-weight: 500; transition: color 250ms; position: relative; text-decoration: none; }
-    .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: var(--accent); border-radius: 2px; transition: width 250ms; }
-    .nav-links a:hover { color: var(--text-white); }
-    .nav-links a:hover::after { width: 100%; }
-    .nav-cta { display: flex; gap: 12px; align-items: center; }
-    .btn-signup { background: var(--accent); color: var(--hero-bg); font-size: 14px; font-weight: 600; padding: 10px 24px; border-radius: var(--radius-pill); border: none; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; }
-    .btn-signup::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transition: left 500ms; }
-    .btn-signup:hover::before { left: 100%; }
-    .btn-signup:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--accent-glow); }
-
-    /* ===== HERO LEFT ===== */
-    .hero-left { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 120px 56px 60px 56px; position: relative; z-index: 5; }
-    .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--accent-light); border: 1px solid var(--accent-border); border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 28px; width: fit-content; opacity: 0; transform: translateY(20px); animation: slideUp 600ms 200ms forwards; }
-    .hero-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse-dot 2s infinite; }
-    .hero-title { font-size: 52px; font-weight: 900; line-height: 1.05; color: var(--text-white); margin-bottom: 24px; letter-spacing: -0.02em; opacity: 0; transform: translateY(30px); animation: slideUp 800ms 400ms forwards; }
-    .hero-title .gradient { background: linear-gradient(135deg, #caff33 0%, #a8e607 50%, #00a86b 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-    .hero-desc { font-size: 16px; color: var(--text-dim); line-height: 1.8; margin-bottom: 36px; max-width: 520px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 600ms forwards; }
-    .hero-actions { display: flex; gap: 16px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 800ms forwards; }
-    .btn-primary { background: linear-gradient(135deg, #caff33, #a8e607); color: var(--hero-bg); font-size: 15px; font-weight: 700; padding: 14px 32px; border-radius: var(--radius-pill); border: none; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
-    .btn-primary::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent); transition: left 500ms; }
-    .btn-primary:hover::before { left: 100%; }
-    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 32px var(--accent-glow); }
-    .btn-secondary { background: transparent; color: var(--text-white); font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: var(--radius-pill); border: 1px solid rgba(255,255,255,0.15); cursor: pointer; transition: var(--transition); text-decoration: none; }
-    .btn-secondary:hover { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
-    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
-
-    /* ===== HERO RIGHT — 3D Floating Cluster Visual ===== */
-    .hero-right {
-      flex: 1.15;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
-      min-height: 640px;
-    }
-    .hero-visual {
-      position: relative;
-      width: 100%;
-      max-width: 620px;
-      height: 580px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #hero-canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    /* Lime Green Circle Backdrop */
-    .hero-lime-circle {
-      position: absolute;
-      width: 420px;
-      height: 420px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #caff33 0%, #a8e607 65%, #88be00 100%);
-      box-shadow: 0 0 100px rgba(202, 255, 51, 0.45);
-      z-index: 1;
-    }
-
-    /* Glassmorphism Common Styles */
-    .dex-chart-card,
-    .calendar-widget,
-    .monitor-frame,
-    .mobile-phone-mockup,
-    .q-card,
-    .v-btn,
-    .float-tag {
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    }
-
-    /* Float Animations */
-    .float-anim-1 { animation: float1 5.5s ease-in-out infinite; }
-    .float-anim-2 { animation: float2 7s ease-in-out infinite; }
-    .float-anim-3 { animation: float3 6s ease-in-out infinite; }
-    .float-anim-4 { animation: float4 5s ease-in-out infinite; }
-    .float-anim-5 { animation: float5 6.5s ease-in-out infinite; }
-    .float-anim-6 { animation: float6 6s ease-in-out infinite; }
-
-    .float-tag-1 { animation: floatTag1 4s ease-in-out infinite; }
-    .float-tag-2 { animation: floatTag2 5s ease-in-out infinite; }
-    .float-tag-3 { animation: floatTag3 6s ease-in-out infinite; }
-    .float-tag-4 { animation: floatTag4 4.5s ease-in-out infinite; }
-
-    @keyframes float1 { 0%,100% { transform: translateY(0px) rotate(-1.5deg); } 50% { transform: translateY(-14px) rotate(1deg); } }
-    @keyframes float2 { 0%,100% { transform: translateY(0px) rotate(2deg); } 50% { transform: translateY(-12px) rotate(-1deg); } }
-    @keyframes float3 { 0%,100% { transform: translateY(0px) rotate(-1deg); } 50% { transform: translateY(-16px) rotate(1deg); } }
-    @keyframes float4 { 0%,100% { transform: translateY(0px) rotate(2deg) scale(1); } 50% { transform: translateY(-18px) rotate(-1deg) scale(1.02); } }
-    @keyframes float5 { 0%,100% { transform: translateY(0px) rotate(1deg); } 50% { transform: translateY(-10px) rotate(-1.5deg); } }
-    @keyframes float6 { 0%,100% { transform: translateY(0px) rotate(-1deg); } 50% { transform: translateY(-12px) rotate(1deg); } }
-
-    @keyframes floatTag1 { 0%,100% { transform: translate(0, 0) rotate(-3deg); } 50% { transform: translate(6px, -10px) rotate(2deg); } }
-    @keyframes floatTag2 { 0%,100% { transform: translate(0, 0) rotate(2deg); } 50% { transform: translate(-8px, 12px) rotate(-2deg); } }
-    @keyframes floatTag3 { 0%,100% { transform: translate(0, 0) rotate(-2deg); } 50% { transform: translate(8px, -8px) rotate(3deg); } }
-    @keyframes floatTag4 { 0%,100% { transform: translate(0, 0) rotate(3deg); } 50% { transform: translate(-6px, 10px) rotate(-2deg); } }
-
-    /* 1. Volume Chart Card (Top Left) */
-    .dex-chart-card {
-      position: absolute;
-      top: 2%;
-      left: 6%;
-      width: 185px;
-      background: rgba(45, 45, 45, 0.85);
-      border-radius: 18px;
-      padding: 14px 16px;
-      z-index: 9;
-    }
-    .dex-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-    .dex-play-icon { width: 22px; height: 22px; border-radius: 50%; background: #caff33; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(202,255,51,0.5); }
-    .dex-card-title { font-size: 11px; font-weight: 600; color: #ffffff; flex: 1; }
-    .dex-badge { font-size: 10px; font-weight: 700; color: #caff33; background: rgba(202,255,51,0.15); padding: 2px 6px; border-radius: 100px; }
-    .dex-val-row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 10px; }
-    .dex-value { font-size: 18px; font-weight: 800; color: #caff33; }
-    .dex-sub { font-size: 10px; color: #b8bcc4; }
-    .dex-bars { display: flex; align-items: flex-end; gap: 4px; height: 32px; }
-    .dex-bar { flex: 1; height: var(--h); background: linear-gradient(to top, #caff33, #a8e607); border-radius: 3px; }
-
-    /* 2. Calendar Widget - Volume History (Top Right) */
-    .calendar-widget {
-      position: absolute;
-      top: 4%;
-      right: 6%;
-      width: 190px;
-      background: rgba(45, 45, 45, 0.85);
-      border-radius: 18px;
-      padding: 14px;
-      z-index: 8;
-    }
-    .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-    .cal-title { font-size: 12px; font-weight: 700; color: #ffffff; }
-    .cal-badge { font-size: 10px; font-weight: 600; color: #caff33; background: rgba(202,255,51,0.15); padding: 2px 8px; border-radius: 100px; }
-    .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 9px; font-weight: 600; color: #b8bcc4; margin-bottom: 6px; }
-    .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 3px; font-size: 10px; color: #ffffff; }
-    .cal-days span { padding: 3px 0; border-radius: 6px; font-size: 10px; }
-    .cal-days span.muted { color: rgba(255,255,255,0.2); }
-    .cal-days span.active { background: #caff33; color: #1a1a1a; font-weight: 800; box-shadow: 0 0 8px rgba(202,255,51,0.6); }
-    .cal-footer { font-size: 10px; color: #b8bcc4; margin-top: 10px; display: flex; align-items: center; gap: 6px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px; }
-    .cal-footer-dot { width: 6px; height: 6px; border-radius: 50%; background: #caff33; }
-
-    /* 3. Central Monitor Frame — DEX Trading Interface (Center) */
-    .monitor-frame {
-      position: absolute;
-      top: 18%;
-      left: 18%;
-      width: 360px;
-      background: rgba(45, 45, 45, 0.90);
-      border-radius: 18px;
-      overflow: hidden;
-      z-index: 4;
-    }
-    .monitor-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(30, 30, 30, 0.7); border-bottom: 1px solid rgba(255,255,255,0.08); }
-    .win-controls { display: flex; gap: 6px; }
-    .win-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .win-dot.red { background: #ff5f56; }
-    .win-dot.yellow { background: #ffbd2e; }
-    .win-dot.green { background: #caff33; }
-    .monitor-title { font-size: 11px; color: #b8bcc4; font-weight: 600; display: flex; align-items: center; gap: 6px; }
-    .monitor-status { font-size: 10px; font-weight: 700; color: #caff33; display: flex; align-items: center; gap: 4px; }
-    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #caff33; box-shadow: 0 0 8px #caff33; }
-    .monitor-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
-    .monitor-pair { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
-    .pair-title { font-size: 13px; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 6px; }
-    .pair-badge { font-size: 9px; font-weight: 700; color: #1a1a1a; background: #caff33; padding: 2px 6px; border-radius: 4px; }
-    .pair-price { font-size: 13px; font-weight: 700; color: #caff33; }
-    .monitor-graph { width: 100%; height: 50px; background: rgba(20, 20, 20, 0.5); border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); padding: 4px; }
-    .swap-mini-form { background: rgba(20, 20, 20, 0.35); border-radius: 10px; padding: 10px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 8px; }
-    .mini-input-row { display: flex; justify-content: space-between; align-items: center; background: rgba(45,45,45,0.8); padding: 6px 10px; border-radius: 8px; }
-    .mini-label { font-size: 9px; color: #b8bcc4; font-weight: 600; }
-    .mini-val { font-size: 11px; font-weight: 700; color: #ffffff; }
-    .mini-swap-btn { background: linear-gradient(135deg, #caff33, #a8e607); color: #1a1a1a; border: none; padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; text-align: center; }
-
-    /* 4. Mobile DEX Phone Mockup (Center-Left) */
-    .mobile-phone-mockup {
-      position: absolute;
-      top: 18%;
-      left: 0%;
-      width: 195px;
-      background: rgba(35, 35, 35, 0.92);
-      border-radius: 30px;
-      padding: 12px;
-      z-index: 10;
-    }
-    .phone-notch { width: 60px; height: 12px; background: #1a1a1a; border-radius: 0 0 10px 10px; margin: -12px auto 8px auto; }
-    .phone-screen { display: flex; flex-direction: column; gap: 10px; }
-    .phone-status { display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #b8bcc4; font-weight: 600; padding: 0 4px; }
-    .phone-profile { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.04); padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); }
-    .profile-avatar { width: 28px; height: 28px; border-radius: 50%; background: rgba(202,255,51,0.15); border: 1px solid #caff33; display: flex; align-items: center; justify-content: center; }
-    .profile-info { flex: 1; }
-    .profile-name { font-size: 11px; font-weight: 700; color: #ffffff; line-height: 1.1; }
-    .profile-address { font-size: 9px; color: #b8bcc4; }
-    .phone-balance-card { background: linear-gradient(135deg, rgba(202,255,51,0.12), rgba(45,45,45,0.6)); padding: 10px; border-radius: 14px; border: 1px solid rgba(202,255,51,0.2); }
-    .p-bal-lbl { font-size: 9px; color: #b8bcc4; font-weight: 500; }
-    .p-bal-val { font-size: 17px; font-weight: 800; color: #caff33; margin: 2px 0; }
-    
-    /* Circular Progress Ring - Liquidity Provision 75% */
-    .phone-staking-ring {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 4px 0;
-    }
-    .ring-label {
-      position: absolute;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .ring-pct { font-size: 13px; font-weight: 800; color: #caff33; line-height: 1; }
-    .ring-txt { font-size: 7px; color: #b8bcc4; font-weight: 600; text-transform: uppercase; }
-
-    /* 5. DEX Stats Grid (Bottom Left) */
-    .stats-grid-4 {
-      position: absolute;
-      bottom: 2%;
-      left: 6%;
-      width: 220px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      z-index: 9;
-    }
-    .q-card {
-      background: rgba(45, 45, 45, 0.85);
-      border-radius: 14px;
-      padding: 10px 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .q-icon { width: 26px; height: 26px; border-radius: 8px; background: rgba(202,255,51,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .q-lbl { font-size: 9px; color: #b8bcc4; }
-    .q-val { font-size: 11px; font-weight: 700; color: #ffffff; }
-    .q-val.green { color: #caff33; }
-
-    /* 6. Vertical Action Stack — DEX Actions (Far Right) */
-    .vertical-action-stack {
-      position: absolute;
-      top: 24%;
-      right: 2%;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      z-index: 10;
-    }
-    .v-btn {
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
-      background: rgba(45, 45, 45, 0.85);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 250ms ease;
-      color: #caff33;
-      font-size: 10px;
-      font-weight: 700;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .v-btn:hover {
-      background: #caff33;
-      color: #1a1a1a;
-      transform: scale(1.1);
-      box-shadow: 0 0 20px rgba(202, 255, 51, 0.6);
-    }
-    .v-btn:hover svg { stroke: #1a1a1a; }
-
-    /* 7. Floating Tags */
-    .float-tag {
-      position: absolute;
-      padding: 5px 12px;
-      border-radius: 100px;
-      background: rgba(202, 255, 51, 0.15);
-      border: 1px solid rgba(202, 255, 51, 0.4);
-      color: #caff33;
-      font-size: 10px;
-      font-weight: 700;
-      z-index: 11;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    }
-    .tag-amm { top: 0%; right: 28%; }
-    .tag-fee { bottom: 10%; right: 18%; }
-    .tag-vol { top: 38%; left: -4%; }
-    .tag-pair { bottom: 2%; right: 38%; }
-
-    /* ===== STATS BAR ===== */
-    .stats-section { background: var(--canvas-light); padding: 80px 24px 40px; }
-    .stats-inner { max-width: 1200px; margin: 0 auto; }
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-    .stat-card { background: var(--text-white); border: 1px solid #e2e8f0; border-radius: var(--radius); padding: 32px 24px; text-align: center; transition: var(--transition); position: relative; overflow: hidden; }
-    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #caff33, #00a86b); transform: scaleX(0); transition: transform 400ms; }
-    .stat-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-4px); }
-    .stat-card:hover::before { transform: scaleX(1); }
-    .stat-value { font-family: 'Poppins'; font-size: 42px; font-weight: 800; background: linear-gradient(135deg, #caff33, #00a86b); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
-    .stat-label { font-size: 13px; color: var(--text-dark-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
-
-    /* ===== SECTION HEADERS ===== */
-    .section-header { text-align: center; margin-bottom: 48px; }
-    .section-label { font-size: 13px; font-weight: 600; color: #00a86b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: inline-block; padding: 4px 14px; background: rgba(0,168,107,0.08); border-radius: var(--radius-pill); }
-    .section-header h2 { font-size: 36px; font-weight: 800; color: var(--text-dark); margin-bottom: 16px; letter-spacing: -0.01em; }
-    .section-header p { font-size: 16px; color: var(--text-dark-muted); max-width: 640px; margin: 0 auto; line-height: 1.7; }
-
-    /* ===== BODY SECTIONS STYLING ===== */
-    .body-section { padding: 80px 24px; }
-    .body-section.alt-bg { background: #e2e8f0; }
-    .container { max-width: 1200px; margin: 0 auto; }
-
-    /* Swap Card Component */
-    .swap-container { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
-    .swap-card { background: var(--text-white); border-radius: var(--radius-lg); padding: 32px; border: 1px solid #cbd5e1; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-    .swap-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .swap-title { font-size: 20px; font-weight: 800; color: var(--text-dark); }
-    .swap-tabs { display: flex; gap: 8px; background: #f1f5f9; padding: 4px; border-radius: var(--radius-pill); }
-    .swap-tab { padding: 6px 16px; font-size: 13px; font-weight: 600; border-radius: var(--radius-pill); border: none; cursor: pointer; background: transparent; color: var(--text-dark-muted); transition: var(--transition); }
-    .swap-tab.active { background: #1a1a1a; color: #caff33; }
-
-    .input-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 12px; transition: border-color 200ms; }
-    .input-box:focus-within { border-color: #00a86b; box-shadow: 0 0 0 3px rgba(0,168,107,0.1); }
-    .input-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .input-label { font-size: 12px; font-weight: 600; color: var(--text-dark-muted); text-transform: uppercase; }
-    .input-balance { font-size: 12px; color: var(--text-dark-muted); }
-    .input-field-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-    .token-input { width: 100%; border: none; background: transparent; font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; color: var(--text-dark); outline: none; }
-    .token-select { display: flex; align-items: center; gap: 8px; background: #ffffff; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 100px; font-weight: 700; font-size: 14px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
-    .token-select img, .token-icon { width: 22px; height: 22px; border-radius: 50%; }
-
-    .swap-arrow-row { display: flex; justify-content: center; margin: -6px 0; position: relative; z-index: 2; }
-    .swap-arrow-btn { width: 40px; height: 40px; border-radius: 50%; background: #1a1a1a; border: 3px solid var(--text-white); color: #caff33; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 300ms ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-    .swap-arrow-btn:hover { transform: rotate(180deg) scale(1.1); }
-
-    .slippage-row { display: flex; justify-content: space-between; align-items: center; margin: 18px 0 24px; padding: 0 4px; }
-    .slippage-label { font-size: 13px; font-weight: 600; color: var(--text-dark-muted); }
-    .slippage-options { display: flex; gap: 6px; }
-    .slip-btn { padding: 4px 10px; font-size: 12px; font-weight: 700; border-radius: 6px; border: 1px solid #cbd5e1; background: #ffffff; cursor: pointer; transition: var(--transition); }
-    .slip-btn.active { background: #1a1a1a; color: #caff33; border-color: #1a1a1a; }
-
-    .route-info { background: #f1f5f9; border-radius: 14px; padding: 16px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px; border: 1px solid #e2e8f0; }
-    .route-item { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-dark-muted); }
-    .route-val { font-weight: 700; color: var(--text-dark); }
-    .route-val.green { color: #00a86b; }
-
-    .btn-action-swap { width: 100%; background: linear-gradient(135deg, #caff33, #a8e607); color: #1a1a1a; font-size: 16px; font-weight: 800; padding: 18px; border-radius: var(--radius-pill); border: none; cursor: pointer; transition: var(--transition); text-align: center; box-shadow: 0 6px 20px rgba(202,255,51,0.4); }
-    .btn-action-swap:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(202,255,51,0.6); }
-
-    /* Market Preview Card */
-    .market-card { background: #1a1a1a; border-radius: var(--radius-lg); padding: 32px; color: #ffffff; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-    .market-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .market-pair-title { font-size: 22px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-    .market-pair-badge { font-size: 11px; font-weight: 700; background: rgba(202,255,51,0.15); color: #caff33; padding: 4px 10px; border-radius: 100px; border: 1px solid rgba(202,255,51,0.3); }
-    .market-price-big { font-size: 32px; font-weight: 900; color: #caff33; margin-bottom: 4px; }
-    .market-change { font-size: 13px; font-weight: 700; color: #84fe87; display: flex; align-items: center; gap: 4px; }
-    .market-chart-container { width: 100%; height: 180px; margin: 20px 0; background: rgba(0,0,0,0.25); border-radius: 14px; padding: 16px; border: 1px solid rgba(255,255,255,0.05); }
-
-    .market-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .m-stat-box { background: rgba(255,255,255,0.04); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); }
-    .m-stat-lbl { font-size: 11px; color: #b8bcc4; margin-bottom: 2px; }
-    .m-stat-val { font-size: 15px; font-weight: 700; color: #ffffff; }
-
-    /* Liquidity Pools Table Section */
-    .pools-table-wrapper { background: var(--text-white); border-radius: var(--radius-lg); border: 1px solid #cbd5e1; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.04); }
-    .table-top-bar { padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
-    .table-search { padding: 10px 16px; border-radius: var(--radius-pill); border: 1px solid #cbd5e1; font-size: 14px; outline: none; width: 260px; font-family: 'Poppins', sans-serif; }
-    .table-search:focus { border-color: #00a86b; }
-    
-    .pools-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .pools-table th { padding: 16px 24px; font-size: 12px; font-weight: 700; color: var(--text-dark-muted); text-transform: uppercase; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
-    .pools-table td { padding: 20px 24px; font-size: 14px; border-bottom: 1px solid #f1f5f9; color: var(--text-dark); }
-    .pools-table tr:hover td { background: #f8fafc; }
-    .pool-pair-cell { display: flex; align-items: center; gap: 12px; font-weight: 700; }
-    .pair-icons { display: flex; align-items: center; margin-right: 4px; }
-    .pair-icon-circle { width: 28px; height: 28px; border-radius: 50%; background: #1a1a1a; color: #caff33; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; border: 2px solid #ffffff; }
-    .pair-icon-circle:nth-child(2) { margin-left: -10px; background: #00a86b; color: #ffffff; }
-    .apr-badge { display: inline-block; padding: 4px 10px; background: rgba(0,168,107,0.1); color: #00a86b; font-weight: 800; border-radius: var(--radius-pill); font-size: 13px; }
-    .btn-table-action { padding: 8px 18px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 700; border: 1px solid #cbd5e1; background: #ffffff; color: var(--text-dark); cursor: pointer; transition: var(--transition); }
-    .btn-table-action:hover { background: #1a1a1a; color: #caff33; border-color: #1a1a1a; }
-
-    /* How AMM Works Section */
-    .amm-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
-    .amm-card { background: var(--text-white); border-radius: var(--radius-lg); padding: 32px; border: 1px solid #e2e8f0; position: relative; overflow: hidden; transition: var(--transition); }
-    .amm-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.06); border-color: rgba(0,168,107,0.3); }
-    .amm-icon { width: 48px; height: 48px; border-radius: 12px; background: rgba(0,168,107,0.1); color: #00a86b; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 20px; font-weight: 800; }
-    .amm-card h3 { font-size: 20px; font-weight: 800; color: var(--text-dark); margin-bottom: 10px; }
-    .amm-card p { font-size: 14px; color: var(--text-dark-muted); line-height: 1.7; margin-bottom: 16px; }
-
-    /* Simulator Box */
-    .calc-box { background: #1a1a1a; border-radius: 16px; padding: 24px; color: #ffffff; margin-top: 16px; border: 1px solid rgba(255,255,255,0.08); }
-    .calc-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .slider-input { width: 100%; accent-color: #caff33; margin: 10px 0; }
-
-    /* Analytics Charts Section */
-    .analytics-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
-    .analytics-card { background: var(--text-white); border-radius: var(--radius-lg); padding: 28px; border: 1px solid #cbd5e1; box-shadow: 0 6px 20px rgba(0,0,0,0.03); }
-    .analytics-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .analytics-title { font-size: 18px; font-weight: 800; color: var(--text-dark); }
-    .time-selector { display: flex; gap: 4px; background: #f1f5f9; padding: 3px; border-radius: 8px; }
-    .time-btn { padding: 4px 10px; font-size: 11px; font-weight: 700; border: none; border-radius: 6px; background: transparent; color: var(--text-dark-muted); cursor: pointer; }
-    .time-btn.active { background: #1a1a1a; color: #caff33; }
-
-    /* Add Liquidity Form */
-    .add-liq-wrapper { max-width: 680px; margin: 0 auto; background: var(--text-white); border-radius: var(--radius-lg); padding: 36px; border: 1px solid #cbd5e1; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-    .add-liq-metrics { background: #f8fafc; border-radius: 14px; padding: 20px; margin: 24px 0; border: 1px solid #e2e8f0; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .metric-box { display: flex; flex-direction: column; gap: 4px; }
-    .metric-lbl { font-size: 12px; color: var(--text-dark-muted); font-weight: 600; }
-    .metric-val { font-size: 18px; font-weight: 800; color: var(--text-dark); }
-    .metric-val.green { color: #00a86b; }
-
-    /* Fee Structure Section */
-    .fee-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px; }
-    .fee-card { background: #1a1a1a; border-radius: var(--radius-lg); padding: 36px; color: #ffffff; border: 1px solid rgba(255,255,255,0.08); position: relative; }
-    .fee-percent { font-size: 48px; font-weight: 900; color: #caff33; line-height: 1; margin-bottom: 12px; }
-    .fee-card h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
-    .fee-card p { font-size: 14px; color: #b8bcc4; line-height: 1.7; }
-
-    .comp-table { width: 100%; border-collapse: collapse; background: var(--text-white); border-radius: var(--radius-lg); overflow: hidden; border: 1px solid #cbd5e1; box-shadow: 0 6px 20px rgba(0,0,0,0.03); }
-    .comp-table th { padding: 16px 20px; font-size: 13px; font-weight: 800; text-align: center; background: #f8fafc; border-bottom: 1px solid #e2e8f0; color: var(--text-dark); }
-    .comp-table td { padding: 16px 20px; font-size: 13px; text-align: center; border-bottom: 1px solid #f1f5f9; color: var(--text-dark); }
-    .comp-table tr.highlight td { background: rgba(202,255,51,0.08); font-weight: 700; }
-
-    /* ===== CTA & FOOTER ===== */
-    .cta-section { background: var(--canvas); padding: 80px 24px; }
-    .cta-inner { max-width: 1200px; margin: 0 auto; }
-    .cta-card { background: var(--hero-bg); border-radius: var(--radius-lg); padding: 60px 40px; text-align: center; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); }
-    .cta-card h2 { font-size: 36px; font-weight: 800; color: var(--text-white); margin-bottom: 16px; }
-    .cta-card p { font-size: 16px; color: var(--text-dim); max-width: 600px; margin: 0 auto 32px; }
-
-    .footer { background: #141414; color: var(--text-dim); padding: 60px 24px 30px; border-top: 1px solid rgba(255,255,255,0.08); }
-    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 40px; margin-bottom: 40px; }
-    .footer-brand h4 { font-size: 20px; font-weight: 800; color: var(--text-white); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-    .footer-brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
-    .footer-brand p { font-size: 13px; color: var(--text-muted); line-height: 1.7; max-width: 320px; }
-    .footer-col h5 { font-size: 14px; font-weight: 700; color: var(--text-white); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em; }
-    .footer-col a { display: block; font-size: 13px; color: var(--text-dim); text-decoration: none; margin-bottom: 10px; transition: color 200ms; }
-    .footer-col a:hover { color: var(--accent); }
-    .footer-bottom { max-width: 1200px; margin: 0 auto; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); }
-
-    /* REVEAL ANIMATIONS */
-    .reveal { opacity: 0; transform: translateY(30px); transition: transform 800ms cubic-bezier(0.16,1,0.3,1), opacity 800ms; }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
-
-    /* RESPONSIVE */
-    @media (max-width: 1024px) {
-      .hero-container { flex-direction: column; }
-      .hero-left { padding: 100px 32px 40px; }
-      .hero-right { padding: 20px; min-height: 500px; overflow: hidden; }
-      .hero-visual { transform: scale(0.75); transform-origin: center center; }
-      .swap-container, .amm-grid, .analytics-grid, .fee-grid { grid-template-columns: 1fr; }
-      .footer-inner { grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width: 640px) {
-      .hero-title { font-size: 36px; }
-      .hero-nav { padding: 20px; }
-      .nav-links { display: none; }
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .footer-inner { grid-template-columns: 1fr; }
-      .hero-visual { transform: scale(0.55); }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verdis Chain — DEX | AMM Swap & Liquidity</title>
+<meta name="description" content="Decentralized exchange for VRDX tokens. AMM swap, liquidity pools, and yield farming." />
+<link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{--hero-bg:#1a1a1a;--accent:#caff33;--accent-glow:rgba(202,255,51,0.35);--accent-light:rgba(202,255,51,0.08);--accent-border:rgba(202,255,51,0.25);--text-white:#fff;--text-dim:#b8bcc4;--text-muted:#6b7080;--radius:12px;--radius-lg:20px;--radius-pill:100px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Poppins',sans-serif;background:#f1f5f9;color:#0f172a;overflow-x:hidden}
+.mono{font-family:'JetBrains Mono',monospace}
+.nav{position:sticky;top:0;z-index:100;background:rgba(26,26,26,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08)}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:16px 24px}
+.nav-brand{font-weight:800;font-size:20px;color:#fff;display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent-glow);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 12px var(--accent-glow)}50%{box-shadow:0 0 24px rgba(202,255,51,0.6)}}
+.nav-links{display:flex;gap:28px}
+.nav-links a{color:var(--text-dim);font-size:14px;font-weight:500;text-decoration:none;transition:color 250ms}
+.nav-links a:hover{color:var(--accent)}
+.nav-links a.active{color:var(--accent)}
+.wrap{max-width:1000px;margin:0 auto;padding:32px 24px}
+.hero{background:var(--hero-bg);border-radius:24px;padding:48px;text-align:center;position:relative;overflow:hidden;margin-bottom:32px}
+.hero::before{content:'';position:absolute;top:-30%;right:-10%;width:400px;height:400px;background:radial-gradient(circle,var(--accent-glow),transparent 55%);opacity:0.12;animation:pb 4s ease-in-out infinite}
+@keyframes pb{0%,100%{opacity:0.08;transform:scale(1)}50%{opacity:0.15;transform:scale(1.1)}}
+.hero h1{font-size:42px;font-weight:900;color:#fff;margin-bottom:12px;position:relative;z-index:2}
+.hero h1 .grad{background:linear-gradient(135deg,#caff33 0%,#a8e607 50%,#00a86b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--text-dim);font-size:16px;position:relative;z-index:2}
+.hero .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:var(--accent-light);border:1px solid var(--accent-border);border-radius:100px;font-size:13px;font-weight:600;color:var(--accent);margin-bottom:24px;position:relative;z-index:2}
+.hero .badge-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+.dex-grid{display:grid;grid-template-columns:2fr 1fr;gap:24px}
+.swap-card{background:#fff;border-radius:var(--radius-lg);padding:28px;border:1px solid #e2e8f0}
+.swap-card h2{font-size:20px;font-weight:700;margin-bottom:20px}
+.swap-tabs{display:flex;gap:4px;background:#f1f5f9;border-radius:var(--radius);padding:4px;margin-bottom:20px}
+.swap-tab{flex:1;padding:10px;text-align:center;font-size:14px;font-weight:600;color:#64748b;border-radius:8px;cursor:pointer;transition:all 250ms}
+.swap-tab.active{background:#fff;color:var(--accent);box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+.swap-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:var(--radius);padding:20px;margin-bottom:12px}
+.swap-label{display:flex;justify-content:space-between;margin-bottom:8px}
+.swap-label .l{font-size:13px;font-weight:600;color:#64748b}
+.swap-label .b{font-size:13px;color:#64748b}
+.swap-input-row{display:flex;gap:12px;align-items:center}
+.swap-input{flex:1;border:none;background:transparent;font-size:32px;font-weight:700;font-family:'JetBrains Mono',monospace;outline:none;width:100%}
+.token-select{background:#fff;border:1px solid #d1d5db;border-radius:100px;padding:8px 16px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+.swap-arrow{text-align:center;margin:4px 0;color:#94a3b8;font-size:24px;cursor:pointer}
+.swap-arrow:hover{color:var(--accent)}
+.swap-info{background:#f8fafc;border-radius:var(--radius);padding:12px 16px;margin-top:12px}
+.swap-info-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
+.swap-info-row .l{color:#64748b}
+.swap-info-row .v{font-weight:600;color:#0f172a}
+.btn-swap{width:100%;background:linear-gradient(135deg,#caff33,#a8e607);color:#1a1a1a;font-size:16px;font-weight:700;padding:16px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:all 300ms;margin-top:16px}
+.btn-swap:hover{transform:translateY(-1px);box-shadow:0 8px 24px var(--accent-glow)}
+.btn-swap:disabled{opacity:0.5;cursor:not-allowed}
+.side-card{background:#fff;border-radius:var(--radius-lg);padding:24px;border:1px solid #e2e8f0}
+.side-card h3{font-size:16px;font-weight:700;margin-bottom:16px}
+.pool-item{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#f8fafc;border-radius:var(--radius);margin-bottom:8px;transition:all 250ms}
+.pool-item:hover{border:1px solid var(--accent-border)}
+.pool-pair{display:flex;align-items:center;gap:8px}
+.pool-pair .tokens{font-weight:700;font-size:14px}
+.pool-info{text-align:right}
+.pool-info .liq{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600}
+.pool-info .apr{font-size:11px;color:#059669;font-weight:600}
+.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9}
+.stat-row:last-child{border:none}
+.stat-row .l{font-size:13px;color:#64748b}
+.stat-row .v{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600}
+.toast{position:fixed;bottom:24px;right:24px;z-index:300;padding:16px 24px;border-radius:var(--radius);font-size:14px;font-weight:600;transform:translateX(400px);transition:transform 300ms;max-width:400px}
+.toast.show{transform:translateX(0)}
+.toast.success{background:#059669;color:#fff}
+.toast.error{background:#ef4444;color:#fff}
+.toast.info{background:#00a86b;color:#fff}
+@media(max-width:768px){.dex-grid{grid-template-columns:1fr}.hero h1{font-size:32px}}
+</style>
 </head>
 <body>
-  <div id="cursor-glow"></div>
-  <div id="scroll-bar"></div>
+<nav class="nav"><div class="nav-inner">
+<a class="nav-brand" href="/"><span class="nav-dot"></span>Verdis Chain</a>
+<div class="nav-links"><a href="/">Home</a><a href="/explorer">Explorer</a><a href="/dex" class="active">DEX</a><a href="/wallet">Wallet</a><a href="/faucet">Faucet</a><a href="/docs">Docs</a></div>
+</div></nav>
 
-  <!-- ===== HERO — Dark container, split layout ===== -->
-  <section class="hero-section">
-    <div class="hero-container">
-      <nav class="hero-nav">
-        <a href="index.html" class="nav-brand"><span class="nav-brand-dot"></span>Verdis Chain</a>
-        <div class="nav-links">
-          <a href="#swap">Swap</a>
-          <a href="#pools">Pools</a>
-          <a href="#how-it-works">Liquidity</a>
-          <a href="#analytics">Analytics</a>
-          <a href="docs.html">Docs</a>
-        </div>
-        <div class="nav-cta">
-          <button class="btn-signup" onclick="alert('Connecting to Verdis Chain Wallet...')">Connect Wallet</button>
-        </div>
-      </nav>
+<div class="toast" id="toast"></div>
 
-      <div class="hero-left">
-        <div class="hero-badge"><span class="hero-badge-dot"></span> Native AMM DEX · 24h Volume $2.4M · 12 Pairs</div>
-        <h1 class="hero-title">
-          <span class="gradient">AMM DEX</span><br>
-          <span style="color:var(--text-white)">EXCHANGE</span>
-        </h1>
-        <p class="hero-desc">Native Automated Market Maker (AMM) decentralized exchange built directly into the Verdis Chain runtime. No external contracts — the DEX pallet handles swaps, liquidity pools, and fee distribution at the protocol level.</p>
-        <div class="hero-actions">
-          <a href="#swap" class="btn-primary">Open Swap →</a>
-          <a href="#pools" class="btn-secondary">View Pools</a>
-        </div>
-      </div>
+<div class="wrap">
+<div class="hero">
+<div class="badge"><span class="badge-dot"></span>AMM DEX · Block #<span id="block-num">—</span> · 7 Pools</div>
+<h1>VRDX <span class="grad">Swap</span></h1>
+<p>Automated Market Maker · Low Fees · On-Chain Liquidity</p>
+</div>
 
-      <div class="hero-right">
-        <div class="hero-visual">
-          <!-- Lime Green Circle Backdrop -->
-          <div class="hero-lime-circle"></div>
+<div class="dex-grid">
+<div>
+<div class="swap-card">
+<div class="swap-tabs">
+<div class="swap-tab active">Swap</div>
+<div class="swap-tab">Liquidity</div>
+</div>
+<div class="swap-box">
+<div class="swap-label"><span class="l">From</span><span class="b">Balance: <span id="from-bal">0.00</span></span></div>
+<div class="swap-input-row">
+<input class="swap-input" id="from-amount" type="number" placeholder="0.00" value="1" oninput="calcOutput()" />
+<button class="token-select" id="from-token">VRDX 🟢</button>
+</div>
+</div>
+<div class="swap-arrow" onclick="swapTokens()">⇅</div>
+<div class="swap-box">
+<div class="swap-label"><span class="l">To (estimated)</span><span class="b">Balance: <span id="to-bal">0.00</span></span></div>
+<div class="swap-input-row">
+<input class="swap-input" id="to-amount" type="number" placeholder="0.00" readonly />
+<button class="token-select" id="to-token">USDC 💵</button>
+</div>
+</div>
+<div class="swap-info">
+<div class="swap-info-row"><span class="l">Rate</span><span class="v" id="rate">1 VRDX = — USDC</span></div>
+<div class="swap-info-row"><span class="l">Price Impact</span><span class="v" id="impact">0.00%</span></div>
+<div class="swap-info-row"><span class="l">Fee</span><="v">0.30%</span></div>
+<div class="swap-info-row"><span class="l">Min Received</span><span class="v" id="min-recv">— USDC</span></div>
+</div>
+<button class="btn-swap" id="swap-btn" onclick="executeSwap()">Connect Wallet to Swap</button>
+</div>
+</div>
 
-          <!-- Canvas Network Particles -->
-          <canvas id="hero-canvas"></canvas>
+<div>
+<div class="side-card">
+<h3>📊 Pool Stats</h3>
+<div class="stat-row"><span class="l">Total Liquidity</span><span class="v" id="total-liq">$—</span></div>
+<div class="stat-row"><span class="l">24h Volume</span><span class="v" id="vol-24h">$—</span></div>
+<div class="stat-row"><span class="l">Total Pools</span><span class="v" id="pool-count">7</span></div>
+<div class="stat-row"><span class="l">Avg APR</span><span class="v" id="avg-apr">18.5%</span></div>
+</div>
+<div class="side-card">
+<h3>🏊 Active Pools</h3>
+<div id="pools-list">
+<div class="pool-item"><div class="pool-pair"><span class="tokens">VRDX/USDC</span></div><div class="pool-info"><div class="liq">$1.2M</div><div class="apr">22.5% APR</div></div></div>
+<div class="pool-item"><div class="pool-pair"><span class="tokens">VRDX/DOT</span></div><div class="pool-info"><div class="liq">$850K</div><div class="apr">15.2% APR</div></div></div>
+<div class="pool-item"><div class="pool-pair"><span class="tokens">VRDX/USDT</span></div><div class="pool-info"><div class="liq">$600K</div><div class="apr">12.8% APR</div></div></div>
+<div class="pool-item"><div class="pool-pair"><span class="tokens">VRDX/ETH</span></div><div class="pool-info"><div class="liq">$420K</div><div class="apr">19.1% APR</div></div></div>
+<div class="pool-item"><div class="pool-pair"><span class="tokens">ecoVRDX/VRDX</span></div><div class="pool-info"><div class="liq">$180K</div><div class="apr">25.0% APR</div></div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
 
-          <!-- 1. Volume Chart Card (Top-Left) -->
-          <div class="dex-chart-card float-anim-1">
-            <div class="dex-card-header">
-              <div class="dex-play-icon">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="#1a1a1a"><path d="M8 5v14l11-7z"/></svg>
-              </div>
-              <span class="dex-card-title">24h Volume</span>
-              <span class="dex-badge">+22.4%</span>
-            </div>
-            <div class="dex-val-row">
-              <span class="dex-value mono">$2.40M</span>
-              <span class="dex-sub">24h Vol</span>
-            </div>
-            <div class="dex-bars">
-              <div class="dex-bar" style="--h: 45%"></div>
-              <div class="dex-bar" style="--h: 60%"></div>
-              <div class="dex-bar" style="--h: 80%"></div>
-              <div class="dex-bar" style="--h: 65%"></div>
-              <div class="dex-bar" style="--h: 90%"></div>
-              <div class="dex-bar" style="--h: 75%"></div>
-              <div class="dex-bar" style="--h: 100%"></div>
-            </div>
-          </div>
+<script type="module">
+import { ApiPromise, WsProvider } from 'https://esm.sh/@polkadot/api@11.0.2';
 
-          <!-- 2. Calendar Widget - Volume History (Top-Right) -->
-          <div class="calendar-widget float-anim-2">
-            <div class="cal-header">
-              <span class="cal-title">August 2026</span>
-              <span class="cal-badge">Volume</span>
-            </div>
-            <div class="cal-weekdays">
-              <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
-            </div>
-            <div class="cal-days">
-              <span class="muted">28</span><span class="muted">29</span><span class="muted">30</span><span class="muted">31</span>
-              <span>1</span><span>2</span><span class="active">3</span><span>4</span><span>5</span>
-              <span>6</span><span class="active">7</span><span>8</span><span>9</span><span>10</span>
-              <span>11</span><span class="active">12</span><span>13</span><span>14</span><span>15</span>
-              <span>16</span><span>17</span><span class="active">18</span><span>19</span><span>20</span>
-              <span>21</span><span class="active">22</span><span>23</span><span>24</span><span>25</span>
-              <span>26</span><span class="active">27</span><span>28</span><span class="active">29</span><span>30</span>
-            </div>
-            <div class="cal-footer">
-              <span class="cal-footer-dot"></span> Peak Vol: $3.1M (Aug 18)
-            </div>
-          </div>
+const RPC_URL = window.location.protocol === 'https:' 
+  ? 'wss://' + window.location.host + '/ws' 
+  : 'ws://' + window.location.host + ':9948';
 
-          <!-- 3. Central Monitor Frame — DEX Trading Interface (Center) -->
-          <div class="monitor-frame float-anim-3">
-            <div class="monitor-header">
-              <div class="win-controls">
-                <div class="win-dot red"></div>
-                <div class="win-dot yellow"></div>
-                <div class="win-dot green"></div>
-              </div>
-              <span class="monitor-title">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#caff33" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                VRDX / USDT · Pallet AMM
-              </span>
-              <span class="monitor-status"><span class="status-dot"></span> Live</span>
-            </div>
-            <div class="monitor-body">
-              <div class="monitor-pair">
-                <div class="pair-title">
-                  VRDX / USDT <span class="pair-badge">0.3%</span>
-                </div>
-                <div class="pair-price mono">$1.4200 <span style="font-size:10px; color:#84fe87;">+4.8%</span></div>
-              </div>
-              
-              <div class="monitor-graph">
-                <svg width="100%" height="100%" viewBox="0 0 300 45" preserveAspectRatio="none">
-                  <defs>
-                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stop-color="#caff33" stop-opacity="0.4"/>
-                      <stop offset="100%" stop-color="#caff33" stop-opacity="0.0"/>
-                    </linearGradient>
-                  </defs>
-                  <path d="M0 35 Q 40 38, 70 20 T 140 25 T 210 10 T 300 5 L 300 45 L 0 45 Z" fill="url(#chartGrad)"/>
-                  <path d="M0 35 Q 40 38, 70 20 T 140 25 T 210 10 T 300 5" fill="none" stroke="#caff33" stroke-width="2"/>
-                </svg>
-              </div>
+let api = null;
+window.showToast = function(msg, type='info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast ' + type, 3000);
+};
 
-              <div class="swap-mini-form">
-                <div class="mini-input-row">
-                  <span class="mini-label">Pay: 1,000 VRDX</span>
-                  <span class="mini-val mono">$1,420.00</span>
-                </div>
-                <div class="mini-input-row">
-                  <span class="mini-label">Receive: 1,415.74 USDT</span>
-                  <span class="mini-val mono">Slippage &lt; 0.05%</span>
-                </div>
-                <div class="mini-swap-btn">EXECUTE PALLET SWAP</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 4. Mobile DEX Phone Mockup (Center-Left) -->
-          <div class="mobile-phone-mockup float-anim-4">
-            <div class="phone-notch"></div>
-            <div class="phone-screen">
-              <div class="phone-status">
-                <span>9:41</span>
-                <span class="mono">VERDIS DEX</span>
-              </div>
-              <div class="phone-profile">
-                <div class="profile-avatar">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
-                </div>
-                <div class="profile-info">
-                  <div class="profile-name">Portfolio</div>
-                  <div class="profile-address mono">0x7a3...e91f</div>
-                </div>
-              </div>
-              <div class="phone-balance-card">
-                <div class="p-bal-lbl">Total Value Locked</div>
-                <div class="p-bal-val mono">$14,820.50</div>
-                <div class="p-bal-sub">+12.4% 24h Yield</div>
-              </div>
-              <div class="phone-staking-ring">
-                <svg width="68" height="68" viewBox="0 0 80 80">
-                  <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="6"/>
-                  <circle cx="40" cy="40" r="32" fill="none" stroke="#caff33" stroke-width="6" stroke-dasharray="201" stroke-dashoffset="50" stroke-linecap="round"/>
-                </svg>
-                <div class="ring-label">
-                  <span class="ring-pct mono">75%</span>
-                  <span class="ring-txt">LP Provision</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 5. DEX Quick Stats Grid (Bottom-Left) -->
-          <div class="stats-grid-4 float-anim-5">
-            <div class="q-card">
-              <div class="q-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><path d="M5 92h3v12H5zm5-6h3v18h-3zm5-8h3v26h-3zm5-5h3v31h-3z"/></svg>
-              </div>
-              <div>
-                <div class="q-lbl">24h Volume</div>
-                <div class="q-val mono green">$2.4M</div>
-              </div>
-            </div>
-            <div class="q-card">
-              <div class="q-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-              </div>
-              <div>
-                <div class="q-lbl">Total TVL</div>
-                <div class="q-val mono">$18.7M</div>
-              </div>
-            </div>
-            <div class="q-card">
-              <div class="q-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
-              </div>
-              <div>
-                <div class="q-lbl">Pairs</div>
-                <div class="q-val mono">12 Active</div>
-              </div>
-            </div>
-            <div class="q-card">
-              <div class="q-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><path d="M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
-              </div>
-              <div>
-                <div class="q-lbl">Fee Tier</div>
-                <div class="q-val mono green">0.3%</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 6. Vertical Action Buttons Stack (Far Right) -->
-          <div class="vertical-action-stack float-anim-6">
-            <a href="#swap" class="v-btn" title="Swap">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3l4 4-4 4"/><path d="M20 7H4"/><path d="M8 21l-4-4 4-4"/><path d="M4 17h16"/></svg>
-              Swap
-            </a>
-            <a href="#pools" class="v-btn" title="Pool">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-              Pool
-            </a>
-            <a href="#add-liquidity" class="v-btn" title="Add">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Add
-            </a>
-            <a href="#add-liquidity" class="v-btn" title="Remove">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Rem
-            </a>
-          </div>
-
-          <!-- 7. Small Floating Tags -->
-          <div class="float-tag tag-amm float-tag-1">⚡ AMM</div>
-          <div class="float-tag tag-fee float-tag-2">📊 0.3% Fee</div>
-          <div class="float-tag tag-vol float-tag-3">💎 $2.4M</div>
-          <div class="float-tag tag-pair float-tag-4">🔥 VRDX/USDT</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== STATS BAR ===== -->
-  <section class="stats-section">
-    <div class="stats-inner">
-      <div class="stats-grid reveal">
-        <div class="stat-card"><div class="stat-value mono" data-count="18" data-suffix=".7M">$0</div><div class="stat-label">Total Value Locked</div></div>
-        <div class="stat-card"><div class="stat-value mono" data-count="2" data-suffix=".4M">$0</div><div class="stat-label">24h Trading Volume</div></div>
-        <div class="stat-card"><div class="stat-value mono" data-count="12">0</div><div class="stat-label">Active Liquidity Pools</div></div>
-        <div class="stat-card"><div class="stat-value mono" data-count="100" data-suffix="%">0</div><div class="stat-label">Substrate Runtime Speed</div></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== SECTION 1: SWAP INTERFACE ===== -->
-  <section class="body-section" id="swap">
-    <div class="container">
-      <div class="section-header reveal">
-        <div class="section-label">Automated Market Maker</div>
-        <h2>Instant Token Swaps</h2>
-        <p>Swap tokens seamlessly directly through the Verdis Chain runtime DEX pallet. Low fees, instant execution, and zero reentrancy risks.</p>
-      </div>
-
-      <div class="swap-container reveal">
-        <!-- Swap Interactive Card -->
-        <div class="swap-card">
-          <div class="swap-header">
-            <span class="swap-title">Swap Tokens</span>
-            <div class="swap-tabs">
-              <button class="swap-tab active">Swap</button>
-              <button class="swap-tab" onclick="alert('Cross-Chain Bridge is active on Verdis Bridge pallet')">Bridge</button>
-            </div>
-          </div>
-
-          <!-- Pay Token -->
-          <div class="input-box">
-            <div class="input-row">
-              <span class="input-label">You Pay</span>
-              <span class="input-balance">Balance: <span class="mono" id="pay-bal">12,500.00</span> VRDX</span>
-            </div>
-            <div class="input-field-row">
-              <input type="text" class="token-input" id="pay-amount" value="1000" oninput="calculateSwap()" />
-              <div class="token-select" id="pay-select">
-                <span class="pair-icon-circle">V</span>
-                <span id="pay-symbol">VRDX</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Swap Direction Button -->
-          <div class="swap-arrow-row">
-            <button class="swap-arrow-btn" onclick="flipTokens()" title="Flip Pair">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
-            </button>
-          </div>
-
-          <!-- Receive Token -->
-          <div class="input-box">
-            <div class="input-row">
-              <span class="input-label">You Receive (Estimated)</span>
-              <span class="input-balance">Balance: <span class="mono" id="receive-bal">4,250.00</span> USDT</span>
-            </div>
-            <div class="input-field-row">
-              <input type="text" class="token-input" id="receive-amount" value="1415.74" readonly />
-              <div class="token-select" id="receive-select">
-                <span class="pair-icon-circle" style="background:#00a86b; color:#fff;">U</span>
-                <span id="receive-symbol">USDT</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Slippage Selector -->
-          <div class="slippage-row">
-            <span class="slippage-label">Slippage Tolerance</span>
-            <div class="slippage-options">
-              <button class="slip-btn" onclick="setSlippage(0.1, this)">0.1%</button>
-              <button class="slip-btn active" onclick="setSlippage(0.5, this)">0.5%</button>
-              <button class="slip-btn" onclick="setSlippage(1.0, this)">1.0%</button>
-            </div>
-          </div>
-
-          <!-- Route & Fee Details -->
-          <div class="route-info">
-            <div class="route-item">
-              <span>Exchange Rate</span>
-              <span class="route-val mono" id="rate-display">1 VRDX = 1.4200 USDT</span>
-            </div>
-            <div class="route-item">
-              <span>Minimum Received</span>
-              <span class="route-val mono" id="min-received">1,408.66 USDT</span>
-            </div>
-            <div class="route-item">
-              <span>Price Impact</span>
-              <span class="route-val green mono">&lt; 0.05%</span>
-            </div>
-            <div class="route-item">
-              <span>Protocol Swap Fee (0.3%)</span>
-              <span class="route-val mono" id="fee-amount">3.00 VRDX ($4.26)</span>
-            </div>
-            <div class="route-item">
-              <span>Execution Layer</span>
-              <span class="route-val green mono">Runtime Pallet (Sub-second)</span>
-            </div>
-          </div>
-
-          <button class="btn-action-swap" onclick="executeMockSwap()">Swap Tokens Now</button>
-        </div>
-
-        <!-- Market Preview & Pair Details -->
-        <div class="market-card">
-          <div class="market-header">
-            <div class="market-pair-title">
-              <span id="market-pair-label">VRDX / USDT</span>
-              <span class="market-pair-badge">Pool ID #1</span>
-            </div>
-            <span class="market-pair-badge" style="background:rgba(255,255,255,0.08); color:#ffffff;">0.3% Fee Tier</span>
-          </div>
-
-          <div>
-            <div class="market-price-big mono" id="market-price-big">$1.4200</div>
-            <div class="market-change mono">▲ +4.8% ($0.065) 24h</div>
-          </div>
-
-          <div class="market-chart-container">
-            <svg width="100%" height="100%" viewBox="0 0 400 120" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="marketGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#caff33" stop-opacity="0.3"/>
-                  <stop offset="100%" stop-color="#caff33" stop-opacity="0"/>
-                </linearGradient>
-              </defs>
-              <path d="M0 90 Q 50 85, 100 50 T 200 60 T 300 30 T 400 15 L 400 120 L 0 120 Z" fill="url(#marketGrad)"/>
-              <path d="M0 90 Q 50 85, 100 50 T 200 60 T 300 30 T 400 15" fill="none" stroke="#caff33" stroke-width="3"/>
-            </svg>
-          </div>
-
-          <div class="market-stats-grid">
-            <div class="m-stat-box">
-              <div class="m-stat-lbl">24h Pool Volume</div>
-              <div class="m-stat-val mono">$1,250,400</div>
-            </div>
-            <div class="m-stat-box">
-              <div class="m-stat-lbl">Total Pool TVL</div>
-              <div class="m-stat-val mono">$8,420,000</div>
-            </div>
-            <div class="m-stat-box">
-              <div class="m-stat-lbl">7D High</div>
-              <div class="m-stat-val mono">$1.4850</div>
-            </div>
-            <div class="m-stat-box">
-              <div class="m-stat-lbl">7D Low</div>
-              <div class="m-stat-val mono">$1.3120</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== SECTION 2: LIQUIDITY POOLS ===== -->
-  <section class="body-section alt-bg" id="pools">
-    <div class="container">
-      <div class="section-header reveal">
-        <div class="section-label">Active Markets</div>
-        <h2>Verdis Liquidity Pools</h2>
-        <p>Deposit token pairs into protocol pools to earn 0.25% of all swap transactions. Automated yield compounded directly into pool reserves.</p>
-      </div>
-
-      <div class="pools-table-wrapper reveal">
-        <div class="table-top-bar">
-          <div style="font-weight:800; font-size:18px;">All Active Pools (5)</div>
-          <input type="text" class="table-search" placeholder="Search pair or token..." onkeyup="filterPools(this.value)" />
-        </div>
-
-        <table class="pools-table" id="pools-table">
-          <thead>
-            <tr>
-              <th>Pair</th>
-              <th>TVL</th>
-              <th>24h Volume</th>
-              <th>Fee Tier</th>
-              <th>Est. APR</th>
-              <th>Your Position</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <div class="pool-pair-cell">
-                  <div class="pair-icons">
-                    <span class="pair-icon-circle">V</span>
-                    <span class="pair-icon-circle">U</span>
-                  </div>
-                  <div>
-                    <div>VRDX / USDT</div>
-                    <div style="font-size:11px; color:var(--text-dark-muted); font-weight:normal;">Verdis / Tether</div>
-                  </div>
-                </div>
-              </td>
-              <td class="mono font-bold">$8,420,000</td>
-              <td class="mono">$1,250,000</td>
-              <td class="mono">0.30%</td>
-              <td><span class="apr-badge mono">28.4% APR</span></td>
-              <td class="mono">1,250.00 LP ($3,550)</td>
-              <td><button class="btn-table-action" onclick="openDepositModal('VRDX / USDT')">Deposit</button></td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="pool-pair-cell">
-                  <div class="pair-icons">
-                    <span class="pair-icon-circle">V</span>
-                    <span class="pair-icon-circle" style="background:#627eea; color:#fff;">E</span>
-                  </div>
-                  <div>
-                    <div>VRDX / ETH</div>
-                    <div style="font-size:11px; color:var(--text-dark-muted); font-weight:normal;">Verdis / Ethereum</div>
-                  </div>
-                </div>
-              </td>
-              <td class="mono font-bold">$4,850,000</td>
-              <td class="mono">$620,000</td>
-              <td class="mono">0.30%</td>
-              <td><span class="apr-badge mono">24.1% APR</span></td>
-              <td class="mono">0.00 LP ($0)</td>
-              <td><button class="btn-table-action" onclick="openDepositModal('VRDX / ETH')">Deposit</button></td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="pool-pair-cell">
-                  <div class="pair-icons">
-                    <span class="pair-icon-circle">V</span>
-                    <span class="pair-icon-circle" style="background:#00a86b; color:#fff;">C</span>
-                  </div>
-                  <div>
-                    <div>VRDX / cVRDX</div>
-                    <div style="font-size:11px; color:var(--text-dark-muted); font-weight:normal;">Verdis / Carbon-Credit VRDX</div>
-                  </div>
-                </div>
-              </td>
-              <td class="mono font-bold">$3,100,000</td>
-              <td class="mono">$310,000</td>
-              <td class="mono">0.10%</td>
-              <td><span class="apr-badge mono">18.5% APR</span></td>
-              <td class="mono">450.00 LP ($900)</td>
-              <td><button class="btn-table-action" onclick="openDepositModal('VRDX / cVRDX')">Deposit</button></td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="pool-pair-cell">
-                  <div class="pair-icons">
-                    <span class="pair-icon-circle">V</span>
-                    <span class="pair-icon-circle" style="background:#f7931a; color:#fff;">B</span>
-                  </div>
-                  <div>
-                    <div>VRDX / BTC</div>
-                    <div style="font-size:11px; color:var(--text-dark-muted); font-weight:normal;">Verdis / Wrapped Bitcoin</div>
-                  </div>
-                </div>
-              </td>
-              <td class="mono font-bold">$1,550,000</td>
-              <td class="mono">$180,000</td>
-              <td class="mono">0.30%</td>
-              <td><span class="apr-badge mono">32.8% APR</span></td>
-              <td class="mono">0.00 LP ($0)</td>
-              <td><button class="btn-table-action" onclick="openDepositModal('VRDX / BTC')">Deposit</button></td>
-            </tr>
-
-            <tr>
-              <td>
-                <div class="pool-pair-cell">
-                  <div class="pair-icons">
-                    <span class="pair-icon-circle" style="background:#00a86b; color:#fff;">U</span>
-                    <span class="pair-icon-circle" style="background:#2775ca; color:#fff;">C</span>
-                  </div>
-                  <div>
-                    <div>USDT / USDC</div>
-                    <div style="font-size:11px; color:var(--text-dark-muted); font-weight:normal;">Tether / USD Coin</div>
-                  </div>
-                </div>
-              </td>
-              <td class="mono font-bold">$780,000</td>
-              <td class="mono">$95,000</td>
-              <td class="mono">0.05%</td>
-              <td><span class="apr-badge mono">8.2% APR</span></td>
-              <td class="mono">0.00 LP ($0)</td>
-              <td><button class="btn-table-action" onclick="openDepositModal('USDT / USDC')">Deposit</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== SECTION 3: HOW AMM WORKS ===== -->
-  <section class="body-section" id="how-it-works">
-    <div class="container">
-      <div class="section-header reveal">
-        <div class="section-label">Substrate Pallet Protocol</div>
-        <h2>How Verdis AMM Works</h2>
-        <p>Built as a core Substrate runtime pallet in Rust (`pallet-amm`), eliminating contract deployment costs and securing liquidity at the protocol consensus layer.</p>
-      </div>
-
-      <div class="amm-grid reveal">
-        <div class="amm-card">
-          <div class="amm-icon">k</div>
-          <h3>Constant Product Invariant</h3>
-          <p>The DEX enforces the constant product formula <strong>x * y = k</strong>. When token A is swapped for token B, the product of liquidity reserves remains constant, automatically determining output prices based on supply and demand.</p>
-          
-          <div class="calc-box">
-            <div class="calc-row">
-              <span style="font-size:12px; color:#b8bcc4;">Interactive Invariant Calculator</span>
-              <span class="mono" style="color:#caff33; font-weight:700;">x * y = k</span>
-            </div>
-            <div style="margin: 10px 0;">
-              <label style="font-size:11px; color:#b8bcc4;">Reserve Token X (VRDX): <span class="mono" id="calc-x">5,000,000</span></label>
-              <input type="range" class="slider-input" min="1000000" max="10000000" value="5000000" oninput="updateInvariant(this.value)" />
-            </div>
-            <div class="calc-row">
-              <span style="font-size:12px; color:#b8bcc4;">Reserve Token Y (USDT):</span>
-              <span class="mono" id="calc-y" style="font-weight:700;">7,100,000</span>
-            </div>
-            <div class="calc-row" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-              <span style="font-size:12px; color:#b8bcc4;">Constant k:</span>
-              <span class="mono green" id="calc-k" style="font-weight:800;">35,500,000,000,000</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="amm-card">
-          <div class="amm-icon">⚡</div>
-          <h3>Protocol-Level Execution</h3>
-          <p>Unlike EVM smart contracts that require virtual machine bytecode interpretation and gas meter checks, Verdis AMM executes natively inside Substrate runtime WebAssembly at 1,000+ TPS.</p>
-          <ul style="padding-left:20px; font-size:14px; color:var(--text-dark-muted); line-height:1.9;">
-            <li>Zero EVM gas surcharges — only base runtime weight fee</li>
-            <li>Immune to EVM reentrancy or flash-loan exploit vectors</li>
-            <li>Direct integration with Substrate Balance and Carbon Pallets</li>
-            <li>Atomic multi-swap routing across all native trading pairs</li>
-          </ul>
-        </div>
-
-        <div class="amm-card">
-          <div class="amm-icon">💎</div>
-          <h3>LP Tokens & Fee Rewards</h3>
-          <p>When you supply liquidity, the protocol mints fungible LP tokens representing your proportional share of the pool. LP tokens accumulate 0.25% trading fees automatically as pool reserves grow.</p>
-          <div style="background:#f1f5f9; padding:16px; border-radius:12px; font-size:13px; color:var(--text-dark-muted);">
-            <strong>Fee Breakdown:</strong> 0.25% auto-compounded to LPs + 0.05% routed to Verdis Carbon Credit Treasury for net-zero sustainability.
-          </div>
-        </div>
-
-        <div class="amm-card">
-          <div class="amm-icon">🛡️</div>
-          <h3>Impermanent Loss Protection</h3>
-          <p>Verdis Chain incorporates dynamic fee scaling and carbon credit yield subsidies to mitigate impermanent loss for long-term liquidity providers during high price volatility events.</p>
-          <div style="background:#f1f5f9; padding:16px; border-radius:12px; font-size:13px; color:var(--text-dark-muted);">
-            <strong>Eco Incentive:</strong> LPs providing liquidity for green tokens (`VRDX/cVRDX`) earn extra carbon credit staking rewards up to 18.5% APR.
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== SECTION 4: POOL ANALYTICS ===== -->
-  <section class="body-section alt-bg" id="analytics">
-    <div class="container">
-      <div class="section-header reveal">
-        <div class="section-label">Protocol Insights</div>
-        <h2>Pool Analytics & Trends</h2>
-        <p>Monitor real-time protocol growth, liquidity trends, and top trading pairs across the Verdis DEX network.</p>
-      </div>
-
-      <div class="analytics-grid reveal">
-        <!-- TVL Chart -->
-        <div class="analytics-card">
-          <div class="analytics-header">
-            <div class="analytics-title">Total Value Locked (TVL) Growth</div>
-            <div class="time-selector">
-              <button class="time-btn">24H</button>
-              <button class="time-btn">7D</button>
-              <button class="time-btn active">30D</button>
-              <button class="time-btn">ALL</button>
-            </div>
-          </div>
-          <div style="font-size:28px; font-weight:800; color:var(--text-dark); margin-bottom:4px;" class="mono">$18,700,000</div>
-          <div style="font-size:13px; color:#00a86b; font-weight:700; margin-bottom:20px;" class="mono">▲ +34.2% over past 30 days</div>
-          
-          <div style="height:220px; width:100%;">
-            <svg width="100%" height="100%" viewBox="0 0 500 180" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="tvlGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#00a86b" stop-opacity="0.3"/>
-                  <stop offset="100%" stop-color="#00a86b" stop-opacity="0.0"/>
-                </linearGradient>
-              </defs>
-              <path d="M0 150 Q 100 130, 200 110 T 350 60 T 500 20 L 500 180 L 0 180 Z" fill="url(#tvlGrad)"/>
-              <path d="M0 150 Q 100 130, 200 110 T 350 60 T 500 20" fill="none" stroke="#00a86b" stroke-width="3"/>
-            </svg>
-          </div>
-        </div>
-
-        <!-- Volume Distribution -->
-        <div class="analytics-card">
-          <div class="analytics-header">
-            <div class="analytics-title">Top Pairs Volume</div>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:18px; margin-top:10px;">
-            <div>
-              <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; margin-bottom:6px;">
-                <span>VRDX / USDT</span>
-                <span class="mono">52.1% ($1.25M)</span>
-              </div>
-              <div style="height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden;">
-                <div style="width:52.1%; height:100%; background:linear-gradient(90deg, #caff33, #00a86b); border-radius:4px;"></div>
-              </div>
-            </div>
-
-            <div>
-              <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; margin-bottom:6px;">
-                <span>VRDX / ETH</span>
-                <span class="mono">25.8% ($620K)</span>
-              </div>
-              <div style="height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden;">
-                <div style="width:25.8%; height:100%; background:#627eea; border-radius:4px;"></div>
-              </div>
-            </div>
-
-            <div>
-              <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; margin-bottom:6px;">
-                <span>VRDX / cVRDX</span>
-                <span class="mono">12.9% ($310K)</span>
-              </div>
-              <div style="height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden;">
-                <div style="width:12.9%; height:100%; background:#00a86b; border-radius:4px;"></div>
-              </div>
-            </div>
-
-            <div>
-              <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; margin-bottom:6px;">
-                <span>VRDX / BTC</span>
-                <span class="mono">7.5% ($180K)</span>
-              </div>
-              <div style="height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden;">
-                <div style="width:7.5%; height:100%; background:#f7931a; border-radius:4px;"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== SECTION 5: ADD LIQUIDITY ===== -->
-  <section class="body-section" id="add-liquidity">
-    <div class="container">
-      <div class="section-header reveal">
-        <div class="section-label">Yield Generation</div>
-        <h2>Add Liquidity</h2>
-        <p>Deposit equal values of two tokens into a pool to receive LP tokens and earn protocol swap fees.</p>
-      </div>
-
-      <div class="add-liq-wrapper reveal">
-        <div style="margin-bottom:20px;">
-          <label style="font-size:12px; font-weight:700; color:var(--text-dark-muted); text-transform:uppercase;">Select Trading Pair</label>
-          <select style="width:100%; padding:14px; border-radius:12px; border:1px solid #cbd5e1; font-weight:700; font-size:15px; margin-top:6px; outline:none;" id="pool-pair-select" onchange="updateLiquidityPair(this.value)">
-            <option value="VRDX/USDT">VRDX / USDT (0.3% Fee · 28.4% APR)</option>
-            <option value="VRDX/ETH">VRDX / ETH (0.3% Fee · 24.1% APR)</option>
-            <option value="VRDX/cVRDX">VRDX / cVRDX (0.1% Fee · 18.5% APR)</option>
-            <option value="VRDX/BTC">VRDX / BTC (0.3% Fee · 32.8% APR)</option>
-          </select>
-        </div>
-
-        <div class="input-box">
-          <div class="input-row">
-            <span class="input-label" id="token-a-lbl">Deposit VRDX</span>
-            <span class="input-balance">Balance: 12,500.00 VRDX</span>
-          </div>
-          <div class="input-field-row">
-            <input type="text" class="token-input" id="liq-amount-a" value="1000" oninput="calcLiquidityB(this.value)" />
-            <span class="token-select" id="token-a-badge">VRDX</span>
-          </div>
-        </div>
-
-        <div style="text-align:center; font-size:18px; color:var(--text-dark-muted); margin:4px 0;">+</div>
-
-        <div class="input-box">
-          <div class="input-row">
-            <span class="input-label" id="token-b-lbl">Deposit USDT</span>
-            <span class="input-balance">Balance: 4,250.00 USDT</span>
-          </div>
-          <div class="input-field-row">
-            <input type="text" class="token-input" id="liq-amount-b" value="1420.00" readonly />
-            <span class="token-select" id="token-b-badge">USDT</span>
-          </div>
-        </div>
-
-        <div class="add-liq-metrics">
-          <div class="metric-box">
-            <span class="metric-lbl">Share of Pool</span>
-            <span class="metric-val mono" id="liq-pool-share">0.084%</span>
-          </div>
-          <div class="metric-box">
-            <span class="metric-lbl">Estimated Daily Yield</span>
-            <span class="metric-val green mono" id="liq-daily-yield">$2.84 / day</span>
-          </div>
-          <div class="metric-box">
-            <span class="metric-lbl">Expected LP Tokens</span>
-            <span class="metric-val mono" id="liq-lp-receive">1,191.64 LP</span>
-          </div>
-          <div class="metric-box">
-            <span class="metric-lbl">Pool APR</span>
-            <span class="metric-val green mono" id="liq-apr">28.4% APR</span>
-          </div>
-        </div>
-
-        <button class="btn-action-swap" onclick="supplyLiquidity()">Supply Liquidity & Earn Fees</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== SECTION 6: FEE STRUCTURE ===== -->
-  <section class="body-section alt-bg" id="fee-structure">
-    <div class="container">
-      <div class="section-header reveal">
-        <div class="section-label">Economics & Security</div>
-        <h2>Transparent Fee Structure</h2>
-        <p>Every swap executed on the Verdis DEX incurs a flat 0.30% fee split between liquidity providers and protocol sustainability.</p>
-      </div>
-
-      <div class="fee-grid reveal">
-        <div class="fee-card">
-          <div class="fee-percent mono">0.25%</div>
-          <h3>Liquidity Provider Reward</h3>
-          <p>Directly added back into the liquidity pool reserves on every trade, automatically compounding the redemption value of all LP token holders without requiring manual claiming transactions.</p>
-        </div>
-
-        <div class="fee-card">
-          <div class="fee-percent mono" style="color:#00a86b;">0.05%</div>
-          <h3>Verdis Carbon & Eco Treasury</h3>
-          <p>Allocated directly to the protocol carbon credit fund. Subsidizes green validator node operations, purchasing on-chain carbon offsets to maintain 100% net-zero chain status.</p>
-        </div>
-      </div>
-
-      <!-- DEX Comparison Table -->
-      <div style="background:var(--text-white); border-radius:var(--radius-lg); padding:32px; border:1px solid #cbd5e1;" class="reveal">
-        <h3 style="font-size:20px; font-weight:800; margin-bottom:20px; color:var(--text-dark);">DEX Architecture Comparison</h3>
-        <table class="comp-table">
-          <thead>
-            <tr>
-              <th>Feature</th>
-              <th>Verdis Pallet AMM</th>
-              <th>Uniswap v2 (EVM)</th>
-              <th>PancakeSwap (BSC)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="highlight">
-              <td><strong>Execution Layer</strong></td>
-              <td>Substrate Native Pallet (WASM)</td>
-              <td>EVM Smart Contract</td>
-              <td>EVM Smart Contract</td>
-            </tr>
-            <tr>
-              <td><strong>Average Block Finality</strong></td>
-              <td class="mono">&lt; 1.0s (GRANDPA)</td>
-              <td class="mono">12.0s</td>
-              <td class="mono">3.0s</td>
-            </tr>
-            <tr class="highlight">
-              <td><strong>Contract Vulnerability Risk</strong></td>
-              <td>Zero (Runtime Compiled)</td>
-              <td>Medium (Bytecode Risk)</td>
-              <td>Medium (Bytecode Risk)</td>
-            </tr>
-            <tr>
-              <td><strong>Carbon Offset Integration</strong></td>
-              <td>100% Native Protocol Subsidized</td>
-              <td>None</td>
-              <td>None</td>
-            </tr>
-            <tr class="highlight">
-              <td><strong>Network Gas Surcharge</strong></td>
-              <td>Base Runtime Weight Only</td>
-              <td>High Gas Fee</td>
-              <td>Moderate Gas Fee</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== CTA ===== -->
-  <section class="cta-section">
-    <div class="cta-inner">
-      <div class="cta-card reveal">
-        <h2>Start Trading on Verdis AMM</h2>
-        <p>Swap tokens, supply liquidity, and earn carbon-neutral yield directly on Verdis Chain's native runtime DEX.</p>
-        <div style="display:flex; gap:16px; justify-content:center;">
-          <a href="#swap" class="btn-primary">Open Swap →</a>
-          <a href="docs.html" class="btn-secondary">Read DEX Docs</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== FOOTER ===== -->
-  <footer class="footer">
-    <div class="footer-inner">
-      <div class="footer-brand">
-        <h4><span class="footer-brand-dot"></span>Verdis Chain</h4>
-        <p>The world's first green blockchain. Built in Rust + Substrate with DPoS, AMM DEX, EVM, and carbon credit tracking.</p>
-      </div>
-      <div class="footer-col">
-        <h5>Ecosystem</h5>
-        <a href="index.html">Landing Page</a>
-        <a href="explorer.html">Explorer</a>
-        <a href="validators.html">Validators</a>
-        <a href="dex.html">DEX Exchange</a>
-        <a href="eco.html">Eco Metrics</a>
-      </div>
-      <div class="footer-col">
-        <h5>Developers</h5>
-        <a href="docs.html">Documentation</a>
-        <a href="whitepaper.html">Whitepaper</a>
-        <a href="https://github.com/Protremix/Verdischain-">GitHub Repo</a>
-      </div>
-      <div class="footer-col">
-        <h5>Community</h5>
-        <a href="#">Twitter / X</a>
-        <a href="#">Discord</a>
-        <a href="#">Telegram</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>© 2026 Verdis Chain · Powered by Protremix</span>
-      <span>verdischain.com · Native AMM DEX</span>
-    </div>
-  </footer>
-
-  <script>
-    // ===== CURSOR GLOW =====
-    const glow = document.getElementById('cursor-glow');
-    document.addEventListener('mousemove', e => { 
-      glow.style.left = e.clientX + 'px'; 
-      glow.style.top = e.clientY + 'px'; 
+// Fetch block number via HTTP RPC
+(async () => {
+  try {
+    const resp = await fetch('/rpc', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({jsonrpc:'2.0',method:'chain_getHeader',params:[],id:1})
     });
-
-    // ===== SCROLL PROGRESS =====
-    const scrollBar = document.getElementById('scroll-bar');
-    window.addEventListener('scroll', () => {
-      const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
-      scrollBar.style.width = pct + '%';
-    });
-
-    // ===== SCROLL REVEAL =====
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-    }, { threshold: 0.15 });
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-    // ===== ANIMATED COUNTERS =====
-    const counterObs = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (!e.isIntersecting) return;
-        const el = e.target, target = parseFloat(el.dataset.count), suffix = el.dataset.suffix || '';
-        let current = 0, step = target / 50;
-        const tick = () => { 
-          current += step; 
-          if (current >= target) { 
-            el.textContent = (target % 1 === 0 ? target : target.toFixed(1)) + suffix; 
-            return; 
-          } 
-          el.textContent = (current % 1 === 0 ? Math.floor(current) : current.toFixed(1)) + suffix; 
-          requestAnimationFrame(tick); 
-        };
-        tick(); 
-        counterObs.unobserve(el);
-      });
-    }, { threshold: 0.5 });
-    document.querySelectorAll('[data-count]').forEach(el => counterObs.observe(el));
-
-    // ===== HERO CANVAS =====
-    const canvas = document.getElementById('hero-canvas');
-    const ctx = canvas.getContext('2d');
-    let W, H, nodes = [], mouse = { x: -1000, y: -1000 };
-
-    function resize() { 
-      W = canvas.width = canvas.offsetWidth; 
-      H = canvas.height = canvas.offsetHeight; 
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.result?.number) document.getElementById('block-num').textContent = parseInt(data.result.number, 16);
     }
-    resize();
-    window.addEventListener('resize', resize);
+  } catch(e) { console.log('RPC deferred'); }
+})();
 
-    for (let i = 0; i < 35; i++) {
-      nodes.push({
-        x: Math.random()*W, y: Math.random()*H,
-        vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4,
-        r: 2+Math.random()*3, pulse: Math.random()*Math.PI*2,
-        isHub: i < 5
-      });
-    }
+// Simple AMM rate calculation (x*y=k)
+window.calcOutput = function() {
+  const input = parseFloat(document.getElementById('from-amount').value) || 0;
+  // Simulated pool: 1 VRDX = 0.25 USDC (pool ratio)
+  const rate = 0.25;
+  const output = input * rate * (1 - 0.003); // 0.3% fee
+  document.getElementById('to-amount').value = output.toFixed(6);
+  document.getElementById('rate').textContent = '1 VRDX = ' + rate + ' USDC';
+  document.getElementById('impact').textContent = '0.10%';
+  document.getElementById('min-recv').textContent = (output * 0.995).toFixed(6) + ' USDC';
+};
 
-    canvas.addEventListener('mousemove', e => {
-      const rect = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - rect.left; mouse.y = e.clientY - rect.top;
-    });
+window.swapTokens = function() {
+  const fromT = document.getElementById('from-token').textContent;
+  const toT = document.getElementById('to-token').textContent;
+  document.getElementById('from-token').textContent = toT;
+  document.getElementById('to-token').textContent = fromT;
+  calcOutput();
+};
 
-    function animate() {
-      ctx.clearRect(0, 0, W, H);
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i+1; j < nodes.length; j++) {
-          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y, dist = Math.sqrt(dx*dx+dy*dy);
-          if (dist < 120) {
-            const opacity = (1 - dist/120) * 0.12;
-            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y);
-            ctx.strokeStyle = 'rgba(202,255,51,' + opacity + ')'; ctx.lineWidth = 1; ctx.stroke();
-          }
-        }
-      }
-      nodes.forEach((n) => {
-        n.x += n.vx; n.y += n.vy; n.pulse += 0.03;
-        if (n.x < 0 || n.x > W) n.vx *= -1;
-        if (n.y < 0 || n.y > H) n.vy *= -1;
-        const pulseSize = n.r + Math.sin(n.pulse) * 1.2;
-        ctx.beginPath(); ctx.arc(n.x, n.y, pulseSize, 0, Math.PI*2);
-        ctx.fillStyle = n.isHub ? 'rgba(202,255,51,0.6)' : 'rgba(202,255,51,0.25)';
-        ctx.fill();
-      });
-      requestAnimationFrame(animate);
-    }
-    animate();
+window.executeSwap = function() {
+  showToast('Connect your wallet first to execute swaps', 'info');
+};
 
-    // ===== SWAP INTERFACE JS =====
-    let currentRate = 1.42;
-    let isFlipped = false;
-    let currentSlippage = 0.5;
-
-    function calculateSwap() {
-      const payVal = parseFloat(document.getElementById('pay-amount').value) || 0;
-      const receiveInput = document.getElementById('receive-amount');
-      const rateDisplay = document.getElementById('rate-display');
-      const minReceived = document.getElementById('min-received');
-      const feeAmount = document.getElementById('fee-amount');
-
-      if (!isFlipped) {
-        const received = payVal * currentRate;
-        receiveInput.value = received.toFixed(2);
-        rateDisplay.textContent = `1 VRDX = ${currentRate.toFixed(4)} USDT`;
-        const minVal = received * (1 - currentSlippage / 100);
-        minReceived.textContent = `${minVal.toFixed(2)} USDT`;
-        feeAmount.textContent = `${(payVal * 0.003).toFixed(2)} VRDX ($${(payVal * 0.003 * currentRate).toFixed(2)})`;
-      } else {
-        const received = payVal / currentRate;
-        receiveInput.value = received.toFixed(4);
-        rateDisplay.textContent = `1 USDT = ${(1 / currentRate).toFixed(4)} VRDX`;
-        const minVal = received * (1 - currentSlippage / 100);
-        minReceived.textContent = `${minVal.toFixed(4)} VRDX`;
-        feeAmount.textContent = `${(payVal * 0.003).toFixed(2)} USDT ($${(payVal * 0.003).toFixed(2)})`;
-      }
-    }
-
-    function flipTokens() {
-      isFlipped = !isFlipped;
-      const paySymbol = document.getElementById('pay-symbol');
-      const receiveSymbol = document.getElementById('receive-symbol');
-      const payBal = document.getElementById('pay-bal');
-      const receiveBal = document.getElementById('receive-bal');
-
-      if (isFlipped) {
-        paySymbol.textContent = 'USDT';
-        receiveSymbol.textContent = 'VRDX';
-        payBal.textContent = '4,250.00';
-        receiveBal.textContent = '12,500.00';
-        document.getElementById('pay-amount').value = '1420';
-      } else {
-        paySymbol.textContent = 'VRDX';
-        receiveSymbol.textContent = 'USDT';
-        payBal.textContent = '12,500.00';
-        receiveBal.textContent = '4,250.00';
-        document.getElementById('pay-amount').value = '1000';
-      }
-      calculateSwap();
-    }
-
-    function setSlippage(val, btn) {
-      currentSlippage = val;
-      document.querySelectorAll('.slip-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      calculateSwap();
-    }
-
-    function executeMockSwap() {
-      const payAmount = document.getElementById('pay-amount').value;
-      const paySym = document.getElementById('pay-symbol').textContent;
-      const recAmount = document.getElementById('receive-amount').value;
-      const recSym = document.getElementById('receive-symbol').textContent;
-      
-      alert(`[Verdis Chain DEX Pallet]\n\nSwap Transaction Submitted!\nExtrinsic Hash: 0x8f2a...910d\nSwapped: ${payAmount} ${paySym} ➔ ${recAmount} ${recSym}\nExecution Time: 0.28s\nStatus: Finalized (Block #1,847,393)`);
-    }
-
-    // ===== AMM CONSTANT PRODUCT SIMULATOR =====
-    function updateInvariant(valX) {
-      const x = parseFloat(valX);
-      const k = 35500000000000;
-      const y = k / x;
-      document.getElementById('calc-x').textContent = Math.round(x).toLocaleString();
-      document.getElementById('calc-y').textContent = Math.round(y).toLocaleString();
-      document.getElementById('calc-k').textContent = k.toLocaleString();
-    }
-
-    // ===== LIQUIDITY FORM JS =====
-    function calcLiquidityB(valA) {
-      const a = parseFloat(valA) || 0;
-      const b = a * 1.42;
-      document.getElementById('liq-amount-b').value = b.toFixed(2);
-      
-      const poolShare = (a / 1250000) * 100;
-      document.getElementById('liq-pool-share').textContent = poolShare.toFixed(3) + '%';
-      
-      const dailyYield = (a * 1.42) * (0.284 / 365);
-      document.getElementById('liq-daily-yield').textContent = '$' + dailyYield.toFixed(2) + ' / day';
-      
-      const lp = a * 1.1916;
-      document.getElementById('liq-lp-receive').textContent = lp.toFixed(2) + ' LP';
-    }
-
-    function updateLiquidityPair(pair) {
-      const parts = pair.split('/');
-      document.getElementById('token-a-badge').textContent = parts[0];
-      document.getElementById('token-b-badge').textContent = parts[1];
-      document.getElementById('token-a-lbl').textContent = 'Deposit ' + parts[0];
-      document.getElementById('token-b-lbl').textContent = 'Deposit ' + parts[1];
-      calcLiquidityB(document.getElementById('liq-amount-a').value);
-    }
-
-    function supplyLiquidity() {
-      const pair = document.getElementById('pool-pair-select').value;
-      const amtA = document.getElementById('liq-amount-a').value;
-      const amtB = document.getElementById('liq-amount-b').value;
-      alert(`[Verdis DEX Pallet]\n\nLiquidity Deposit Confirmed!\nPool: ${pair}\nDeposited: ${amtA} and ${amtB}\nLP Tokens Minted to Wallet.\nEst. APR: 28.4%`);
-    }
-
-    function openDepositModal(pair) {
-      document.getElementById('pool-pair-select').value = pair.replace(' ', '');
-      updateLiquidityPair(pair.replace(' ', ''));
-      document.getElementById('add-liquidity').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function filterPools(query) {
-      const term = query.toLowerCase();
-      const rows = document.querySelectorAll('#pools-table tbody tr');
-      rows.forEach(r => {
-        const text = r.textContent.toLowerCase();
-        r.style.display = text.includes(term) ? '' : 'none';
-      });
-    }
-  </script>
+calcOutput();
+</script>
 </body>
 </html>

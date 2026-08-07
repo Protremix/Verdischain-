@@ -1,577 +1,623 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Verdis Chain — Web3 Wallet | Non-Custodial Crypto Wallet</title>
-  <meta name="description" content="Verdis Chain DPoS validator network. BABE/GRANDPA consensus, green validator scoring, carbon-neutral block production. Stake VRDX, earn rewards, and secure the world's first green blockchain." />
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="Verdis Chain — Web3 Wallet" />
-  <meta property="og:description" content="Non-custodial Web3 wallet with secp256k1 security, HD key management, staking, AMM swap, and carbon credits." />
-  <meta property="og:url" content="https://verdischain.com/wallet" />
-  <meta property="og:image" content="https://verdischain.com/og-image.png" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Verdis Chain — Web3 Wallet" />
-  <meta name="twitter:description" content="Non-Custodial · secp256k1 · HD Wallet · Staking · AMM Swap" />
-  <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --canvas:#e8ebee;--canvas-light:#f1f5f9;--hero-bg:#1a1a1a;--hero-card:#2d2d2d;--hero-card-dark:#252525;--hero-border:rgba(255,255,255,0.08);
-      --accent:#caff33;--accent-hover:#a8e607;--accent-2:#84fe87;--accent-3:#00a86b;
-      --accent-glow:rgba(202,255,51,0.35);--accent-light:rgba(202,255,51,0.08);--accent-border:rgba(202,255,51,0.25);
-      --text-white:#fff;--text-dim:#b8bcc4;--text-muted:#6b7080;--text-dark:#0f172a;--text-dark-muted:#64748b;
-      --radius:12px;--radius-lg:20px;--radius-pill:100px;--transition:300ms cubic-bezier(0.16,1,0.3,1);
-    }
-    *{margin:0;padding:0;box-sizing:border-box}
-    html{scroll-behavior:smooth}
-    body{font-family:'Poppins',sans-serif;background:var(--canvas-light);color:var(--text-dark);overflow-x:hidden;-webkit-font-smoothing:antialiased}
-    .mono{font-family:'JetBrains Mono',monospace}
-    #scroll-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#caff33,#84fe87,#00a86b);z-index:10000;width:0;transition:width 50ms;box-shadow:0 0 12px var(--accent-glow)}
-    #cursor-glow{position:fixed;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(202,255,51,0.05) 0%,transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);opacity:0;transition:opacity 300ms}
-    body:hover #cursor-glow{opacity:1}
-    .hero-section{position:relative;background:var(--canvas);padding:0 24px;overflow:hidden}
-    .hero-container{max-width:1300px;margin:0 auto;background:var(--hero-bg);border-radius:24px;overflow:hidden;position:relative;min-height:700px;display:flex}
-    .hero-container::before{content:'';position:absolute;top:-30%;right:-15%;width:700px;height:700px;background:radial-gradient(circle,var(--accent-glow),transparent 55%);opacity:0.12;animation:pulse-bg 4s ease-in-out infinite;pointer-events:none}
-    .hero-container::after{content:'';position:absolute;bottom:-20%;left:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(0,168,107,0.15),transparent 60%);opacity:0.08;animation:pulse-bg 6s ease-in-out infinite 1s;pointer-events:none}
-    @keyframes pulse-bg{0%,100%{opacity:0.08;transform:scale(1)}50%{opacity:0.15;transform:scale(1.1)}}
-    .hero-nav{position:absolute;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:28px 48px}
-    .nav-brand{font-family:'Poppins';font-weight:800;font-size:22px;color:var(--text-white);display:flex;align-items:center;gap:10px}
-    .nav-brand-dot{width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 16px var(--accent-glow);animation:pulse-dot 2s infinite}
-    @keyframes pulse-dot{0%,100%{box-shadow:0 0 16px var(--accent-glow)}50%{box-shadow:0 0 28px rgba(202,255,51,0.6)}}
-    .nav-links{display:flex;gap:36px}
-    .nav-links a{color:var(--text-dim);font-size:14px;font-weight:500;transition:color 250ms;position:relative;text-decoration:none}
-    .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--accent);border-radius:2px;transition:width 250ms}
-    .nav-links a:hover{color:var(--text-white)}
-    .nav-links a:hover::after{width:100%}
-    .nav-cta{display:flex;gap:12px;align-items:center}
-    .btn-login{color:var(--text-dim);font-size:14px;font-weight:500;padding:8px 16px;transition:color 250ms;background:none;border:none;cursor:pointer}
-    .btn-login:hover{color:var(--text-white)}
-    .btn-signup{background:var(--accent);color:var(--hero-bg);font-size:14px;font-weight:600;padding:10px 24px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition);position:relative;overflow:hidden}
-    .btn-signup::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);transition:left 500ms}
-    .btn-signup:hover::before{left:100%}
-    .btn-signup:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--accent-glow)}
-    .hero-left{flex:1;display:flex;flex-direction:column;justify-content:center;padding:120px 56px 60px position:relative;z-index:5}
-    .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:var(--accent-light);border:1px solid var(--accent-border);border-radius:var(--radius-pill);font-size:13px;font-weight:600;color:var(--accent);margin-bottom:28px;width:fit-content;opacity:0;transform:translateY(20px);animation:slideUp 600ms 200ms forwards}
-    .hero-badge-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse-dot 2s infinite}
-    .hero-title{font-size:52px;font-weight:900;line-height:1.05;color:var(--text-white);margin-bottom:24px;letter-spacing:-0.02em;opacity:0;transform:translateY(30px);animation:slideUp 800ms 400ms forwards}
-    .hero-title .gradient{background:linear-gradient(135deg,#caff33 0%,#a8e607 50%,#00a86b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-    .hero-desc{font-size:16px;color:var(--text-dim);line-height:1.8;margin-bottom:36px;max-width:500px;opacity:0;transform:translateY(20px);animation:slideUp 800ms 600ms forwards}
-    .hero-actions{display:flex;gap:16px;opacity:0;transform:translateY(20px);animation:slideUp 800ms 800ms forwards}
-    .btn-primary{background:linear-gradient(135deg,#caff33,#a8e607);color:var(--hero-bg);font-size:15px;font-weight:700;padding:14px 32px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition);position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:8px}
-    .btn-primary::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent);transition:left 500ms}
-    .btn-primary:hover::before{left:100%}
-    .btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 32px var(--accent-glow)}
-    .btn-secondary{background:transparent;color:var(--text-white);font-size:15px;font-weight:600;padding:14px 32px;border-radius:var(--radius-pill);border:1px solid rgba(255,255,255,0.15);cursor:pointer;transition:var(--transition)}
-    .btn-secondary:hover{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
-    @keyframes slideUp{to{opacity:1;transform:translateY(0)}}
-    .hero-right{flex:1.15;position:relative;display:flex;align-items:center;justify-content:center;padding:40px 20px;min-height:640px}
-    .hero-visual{position:relative;width:100%;max-width:620px;height:580px;display:flex;align-items:center;justify-content:center}
-    #hero-canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
-    .hero-lime-circle{position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#caff33 0%,#a8e607 65%,#88be00 100%);box-shadow:0 0 100px rgba(202,255,51,0.45);z-index:1}
-    .dex-chart-card,.calendar-widget,.monitor-frame,.mobile-phone-mockup,.q-card,.v-btn,.floating-tag{position:absolute;z-index:3}
-    .glass{background:rgba(45,45,45,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--hero-border);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
-    .dex-chart-card{top:20px;left:0;width:180px;padding:16px;opacity:0;animation:fadeIn 800ms 1s forwards}
-    .float-anim-1{animation:floatY 6s ease-in-out infinite}
-    @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
-    .dex-card-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-    .dex-play-icon{width:24px;height:24px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center}
-    .dex-card-title{font-size:12px;font-weight:600;color:var(--text-dim)}
-    .dex-badge{font-size:10px;font-weight:700;color:var(--accent);background:var(--accent-light);padding:2px 8px;border-radius:100px;margin-left:auto}
-    .dex-val-row{display:flex;align-items:baseline;gap:8px;margin-bottom:12px}
-    .dex-value{font-size:22px;font-weight:800;color:var(--text-white)}
-    .dex-sub{font-size:11px;color:var(--text-muted)}
-    .dex-bars{display:flex;gap:4px;align-items:flex-end;height:48px}
-    .dex-bar{flex:1;background:linear-gradient(180deg,var(--accent),rgba(202,255,51,0.3));border-radius:3px;height:var(--h);min-height:8px}
-    .calendar-widget{top:10px;right:0;width:200px;padding:16px;opacity:0;animation:fadeIn 800ms 1.2s forwards}
-    .float-anim-2{animation:floatY 7s ease-in-out infinite 0.5s}
-    .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-    .cal-title{font-size:13px;font-weight:700;color:var(--text-white)}
-    .cal-badge{font-size:9px;font-weight:700;color:var(--accent);background:var(--accent-light);padding:2px 8px;border-radius:100px;border:1px solid var(--accent-border)}
-    .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:9px;color:var(--text-muted);margin-bottom:4px;font-weight:600}
-    .cal-days{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:10px;color:var(--text-dim);gap:2px}
-    .cal-days span{padding:3px 0;border-radius:4px}
-    .cal-days span.muted{color:rgba(255,255,255,0.15)}
-    .cal-days span.active{background:var(--accent);color:var(--hero-bg);font-weight:700}
-    .cal-footer{margin-top:10px;padding-top:10px;border-top:1px solid var(--hero-border);display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text-muted)}
-    .cal-footer-dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
-    .monitor-frame{top:130px;left:50%;transform:translateX(-50%);width:340px;padding:0;opacity:0;animation:fadeIn 800ms 1.4s forwards}
-    .float-anim-3{animation:floatY 8s ease-in-out infinite 1s}
-    .monitor-header{display:flex;align-items:center;padding:12px 16px;gap:8px;border-bottom:1px solid var(--hero-border)}
-    .win-controls{display:flex;gap:6px}
-    .win-dot{width:10px;height:10px;border-radius:50%}
-    .win-dot.red{background:#ff5f57}.win-dot.yellow{background:#ffbd2e}.win-dot.green{background:#28ca42}
-    .monitor-title{font-size:11px;color:var(--text-muted);margin-left:8px}
-    .monitor-status{margin-left:auto;display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--accent)}
-    .status-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse-dot 1.5s infinite}
-    .monitor-body{padding:16px}
-    .monitor-metrics{display:flex;gap:12px;margin-bottom:12px}
-    .m-stat{flex:1}
-    .m-lbl{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
-    .m-val{font-size:14px;font-weight:700;color:var(--text-white)}
-    .m-val.green{color:var(--accent)}
-    .monitor-graph{height:60px;margin-bottom:8px;position:relative}
-    .monitor-log{font-size:10px;color:var(--text-muted);padding-top:8px;border-top:1px solid var(--hero-border)}
-    .mobile-phone-mockup{top:180px;left:-10px;width:160px;padding:0;border-radius:24px;overflow:hidden;opacity:0;animation:fadeIn 800ms 1.6s forwards;z-index:4}
-    .float-anim-4{animation:floatY 6s ease-in-out infinite 1.5s}
-    .phone-notch{width:50px;height:6px;background:rgba(0,0,0,0.6);border-radius:0 0 10px 10px;margin:0 auto;position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:5}
-    .phone-screen{padding:20px 12px 12px;background:linear-gradient(180deg,#1a1a1a,#0d0d0d)}
-    .phone-status{display:flex;justify-content:space-between;align-items:center;font-size:9px;color:var(--text-dim);margin-bottom:10px}
-    .phone-icons{display:flex;align-items:center;gap:4px}
-    .phone-profile{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-    .profile-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;border:1px solid var(--accent-border)}
-    .profile-info{flex:1}
-    .profile-name{font-size:10px;font-weight:700;color:var(--text-white)}
-    .profile-address{font-size:8px;color:var(--text-muted)}
-    .phone-login-badge{font-size:7px;font-weight:700;color:var(--accent);background:var(--accent-light);padding:2px 6px;border-radius:100px}
-    .phone-balance-card{background:rgba(255,255,255,0.03);border:1px solid var(--hero-border);border-radius:12px;padding:10px;margin-bottom:10px}
-    .p-bal-lbl{font-size:8px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
-    .p-bal-val{font-size:16px;font-weight:800;color:var(--accent)}
-    .p-bal-sub{font-size:9px;color:var(--text-dim);margin-top:2px}
-    .p-up{color:var(--accent-2);font-weight:600}
-    .phone-staking-ring{position:relative;width:72px;height:72px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center}
-    .ring-label{position:absolute;text-align:center}
-    .ring-pct{font-size:14px;font-weight:800;color:var(--accent);display:block}
-    .ring-txt{font-size:8px;color:var(--text-muted)}
-    .phone-actions{display:flex;gap:6px}
-    .p-btn{flex:1;padding:7px;border-radius:8px;font-size:9px;font-weight:700;border:none;cursor:pointer}
-    .p-btn.primary{background:var(--accent);color:var(--hero-bg)}
-    .p-btn.outline{background:transparent;color:var(--text-white);border:1px solid rgba(255,255,255,0.15)}
-    .stats-grid-4{bottom:0;left:20px;display:grid;grid-template-columns:1fr 1fr;gap:8px;width:280px;opacity:0;animation:fadeIn 800ms 1.8s forwards}
-    .float-anim-5{animation:floatY 5s ease-in-out infinite 2s}
-    .q-card{position:relative;padding:12px;display:flex;align-items:center;gap:10px}
-    .q-icon{width:32px;height:32px;border-radius:8px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--accent-border)}
-    .q-lbl{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px}
-    .q-val{font-size:13px;font-weight:700;color:var(--text-white)}
-    .floating-tag{font-size:11px;font-weight:600;color:var(--text-dim);background:rgba(45,45,45,0.8);backdrop-filter:blur(10px);padding:6px 14px;border-radius:100px;border:1px solid var(--hero-border);opacity:0;animation:fadeIn 800ms 2s forwards}
-    .tag-1{bottom:280px;left:40px}.tag-2{bottom:200px;right:20px}.tag-3{bottom:120px;left:50px}
-    .float-anim-6{animation:floatY 4s ease-in-out infinite 2.5s}
-    .float-anim-7{animation:floatY 5s ease-in-out infinite 3s}
-    .v-stack{position:absolute;right:-20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:5;opacity:0;animation:fadeIn 800ms 2.2s forwards}
-    .v-btn{position:relative;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-    .float-anim-8{animation:floatY 4s ease-in-out infinite 2.5s}
-    @keyframes fadeIn{to{opacity:1}}
-    .section{padding:100px 24px}
-    .section-inner{max-width:1200px;margin:0 auto}
-    .section-label{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(202,255,51,0.08);border:1px solid rgba(202,255,51,0.2);border-radius:100px;font-size:13px;font-weight:600;color:#00a86b;margin-bottom:20px}
-    .section-title{font-size:42px;font-weight:800;color:var(--text-dark);margin-bottom:16px;letter-spacing:-0.02em;line-height:1.15}
-    .section-desc{font-size:17px;color:var(--text-dark-muted);line-height:1.7;max-width:620px;margin-bottom:60px}
-    .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-    .feature-card{background:white;border:1px solid #e2e8f0;border-radius:16px;padding:32px;transition:all 300ms cubic-bezier(0.16,1,0.3,1);position:relative;overflow:hidden}
-    .feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#caff33,#00a86b);transform:scaleX(0);transform-origin:left;transition:transform 300ms}
-    .feature-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,0.08);border-color:rgba(202,255,51,0.3)}
-    .feature-card:hover::before{transform:scaleX(1)}
-    .feature-icon{width:48px;height:48px;border-radius:12px;background:rgba(202,255,51,0.08);border:1px solid rgba(202,255,51,0.15);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
-    .feature-title{font-size:18px;font-weight:700;color:var(--text-dark);margin-bottom:10px}
-    .feature-desc{font-size:14px;color:var(--text-dark-muted);line-height:1.6}
-    .validator-table{background:white;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;margin-bottom:60px}
-    .vt-header{display:grid;grid-template-columns:50px 2fr 1fr 1fr 1fr 1fr 80px;padding:14px 20px;background:#0f172a;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px}
-    .vt-row{display:grid;grid-template-columns:50px 2fr 1fr 1fr 1fr 1fr 80px;padding:14px 20px;border-top:1px solid #f1f5f9;align-items:center;font-size:13px;transition:background 200ms}
-    .vt-row:hover{background:rgba(202,255,51,0.03)}
-    .vt-rank{font-family:'JetBrains Mono',monospace;font-weight:700;color:#94a3b8}
-    .vt-name{font-weight:600;color:var(--text-dark);display:flex;align-items:center;gap:8px}
-    .vt-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-    .vt-dot.active{background:#00a86b;box-shadow:0 0 8px rgba(0,168,107,0.4)}
-    .vt-dot.standby{background:#f59e0b}
-    .vt-green{display:inline-flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-weight:700}
-    .vt-green.high{color:#00a86b}
-    .vt-green.mid{color:#84fe87}
-    .vt-green.low{color:#f59e0b}
-    .vt-apy{font-family:'JetBrains Mono',monospace;font-weight:700;color:#00a86b}
-    .vt-status{font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;text-transform:uppercase}
-    .vt-status.active{background:rgba(0,168,107,0.1);color:#00a86b}
-    .vt-status.standby{background:rgba(245,158,11,0.1);color:#f59e0b}
-    .vt-stake-btn{background:rgba(202,255,51,0.08);border:1px solid rgba(202,255,51,0.2);color:#00a86b;font-size:12px;font-weight:600;padding:6px 14px;border-radius:100px;cursor:pointer;transition:all 200ms}
-    .vt-stake-btn:hover{background:var(--accent);color:#1a1a1a}
-    .cta-section{padding:80px 24px}
-    .cta-inner{max-width:1000px;margin:0 auto;background:var(--hero-bg);border-radius:24px;padding:64px 48px;text-align:center;position:relative;overflow:hidden}
-    .cta-inner::before{content:'';position:absolute;top:-50%;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,var(--accent-glow),transparent 55%);opacity:0.15;pointer-events:none}
-    .cta-title{font-size:36px;font-weight:800;color:var(--text-white);margin-bottom:16px;position:relative;z-index:1}
-    .cta-desc{font-size:16px;color:var(--text-dim);margin-bottom:32px;max-width:500px;margin-left:auto;margin-right:auto;position:relative;z-index:1}
-    .cta-btn{background:linear-gradient(135deg,#caff33,#a8e607);color:var(--hero-bg);font-size:16px;font-weight:700;padding:16px 40px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition);position:relative;z-index:1}
-    .cta-btn:hover{transform:translateY(-3px);box-shadow:0 12px 32px var(--accent-glow)}
-    .footer{background:#0f172a;padding:60px 24px 30px;color:var(--text-dim)}
-    .footer-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
-    .footer-brand{font-size:22px;font-weight:800;color:white;margin-bottom:12px;display:flex;align-items:center;gap:10px}
-    .footer-desc{font-size:14px;line-height:1.6;color:var(--text-muted);max-width:300px}
-    .footer-col-title{font-size:13px;font-weight:700;color:white;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:16px}
-    .footer-links{display:flex;flex-direction:column;gap:10px}
-    .footer-links a{color:var(--text-muted);font-size:14px;text-decoration:none;transition:color 200ms}
-    .footer-links a:hover{color:var(--accent)}
-    .footer-bottom{max-width:1200px;margin:0 auto;padding-top:30px;border-top:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--text-muted)}
-    .reveal{opacity:0;transform:translateY(40px);transition:opacity 600ms cubic-bezier(0.16,1,0.3,1),transform 600ms cubic-bezier(0.16,1,0.3,1)}
-    .reveal.visible{opacity:1;transform:translateY(0)}
-    @media(max-width:1024px){.features-grid{grid-template-columns:repeat(2,1fr)}.hero-right{display:none}.hero-container{min-height:600px}.vt-header,.vt-row{grid-template-columns:40px 2fr 1fr 1fr 80px}}
-    @media(max-width:768px){.features-grid{grid-template-columns:1fr}.nav-links{display:none}.hero-left{padding:100px 24px 40px}.section-title{font-size:32px}.vt-header,.vt-row{grid-template-columns:40px 1fr 1fr 60px}.footer-inner{grid-template-columns:1fr}}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verdis Chain — Web3 Wallet | Non-Custodial Crypto Wallet</title>
+<meta name="description" content="Non-custodial Web3 wallet for Verdis Chain. Create, import, send, receive VRDX tokens, stake with validators." />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Verdis Chain — Web3 Wallet" />
+<link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{--canvas:#e8ebee;--canvas-light:#f1f5f9;--hero-bg:#1a1a1a;--hero-card:#2d2d2d;--hero-border:rgba(255,255,255,0.08);--accent:#caff33;--accent-hover:#a8e607;--accent-2:#84fe87;--accent-3:#00a86b;--accent-glow:rgba(202,255,51,0.35);--accent-light:rgba(202,255,51,0.08);--accent-border:rgba(202,255,51,0.25);--text-white:#fff;--text-dim:#b8bcc4;--text-muted:#6b7080;--text-dark:#0f172a;--text-dark-muted:#64748b;--radius:12px;--radius-lg:20px;--radius-pill:100px;--transition:300ms cubic-bezier(0.16,1,0.3,1)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Poppins',sans-serif;background:var(--canvas-light);color:var(--text-dark);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.mono{font-family:'JetBrains Mono',monospace}
+/* Nav */
+.nav{position:sticky;top:0;z-index:100;background:rgba(26,26,26,0.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--hero-border)}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:16px 24px}
+.nav-brand{font-weight:800;font-size:20px;color:var(--text-white);display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent-glow);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 12px var(--accent-glow)}50%{box-shadow:0 0 24px rgba(202,255,51,0.6)}}
+.nav-links{display:flex;gap:28px}
+.nav-links a{color:var(--text-dim);font-size:14px;font-weight:500;text-decoration:none;transition:color 250ms}
+.nav-links a:hover{color:var(--accent)}
+.nav-links a.active{color:var(--accent)}
+/* Wallet Container */
+.wallet-wrap{max-width:1000px;margin:0 auto;padding:32px 24px}
+.wallet-hero{background:var(--hero-bg);border-radius:24px;padding:48px;text-align:center;position:relative;overflow:hidden;margin-bottom:32px}
+.wallet-hero::before{content:'';position:absolute;top:-30%;right:-10%;width:400px;height:400px;background:radial-gradient(circle,var(--accent-glow),transparent 55%);opacity:0.12;animation:pulse-bg 4s ease-in-out infinite}
+@keyframes pulse-bg{0%,100%{opacity:0.08;transform:scale(1)}50%{opacity:0.15;transform:scale(1.1)}}
+.wallet-hero h1{font-size:42px;font-weight:900;color:var(--text-white);margin-bottom:12px;position:relative;z-index:2}
+.wallet-hero h1 .grad{background:linear-gradient(135deg,#caff33 0%,#a8e607 50%,#00a86b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.wallet-hero p{color:var(--text-dim);font-size:16px;position:relative;z-index:2;margin-bottom:8px}
+.wallet-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:var(--accent-light);border:1px solid var(--accent-border);border-radius:var(--radius-pill);font-size:13px;font-weight:600;color:var(--accent);margin-bottom:24px;position:relative;z-index:2}
+.wallet-badge-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+/* States */
+.wallet-state{display:none}
+.wallet-state.active{display:block}
+/* Create/Import */
+.auth-cards{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:700px;margin:0 auto}
+.auth-card{background:#fff;border-radius:var(--radius-lg);padding:32px;border:1px solid #e2e8f0;transition:var(--transition);cursor:pointer;text-align:left}
+.auth-card:hover{border-color:var(--accent);box-shadow:0 8px 32px rgba(202,255,51,0.15);transform:translateY(-2px)}
+.auth-card h3{font-size:20px;font-weight:700;margin-bottom:8px;color:var(--text-dark)}
+.auth-card p{font-size:14px;color:var(--text-dark-muted);margin-bottom:20px}
+.auth-card .icon{width:48px;height:48px;border-radius:12px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:24px}
+.auth-card .btn{background:linear-gradient(135deg,#caff33,#a8e607);color:#1a1a1a;font-size:14px;font-weight:600;padding:10px 20px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition)}
+.auth-card .btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px var(--accent-glow)}
+/* Import form */
+.import-form{background:#fff;border-radius:var(--radius-lg);padding:32px;max-width:500px;margin:0 auto;border:1px solid #e2e8f0}
+.import-form h3{font-size:20px;font-weight:700;margin-bottom:20px;color:var(--text-dark)}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:13px;font-weight:600;color:var(--text-dark-muted);margin-bottom:6px}
+.form-input{width:100%;padding:12px 16px;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'Poppins',sans-serif;font-size:14px;transition:border-color 250ms}
+.form-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+.form-input.mono{font-family:'JetBrains Mono',monospace;font-size:13px}
+.btn-primary{background:linear-gradient(135deg,#caff33,#a8e607);color:#1a1a1a;font-size:15px;font-weight:700;padding:12px 28px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px var(--accent-glow)}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.btn-secondary{background:transparent;color:#1a1a1a;font-size:14px;font-weight:600;padding:12px 24px;border-radius:var(--radius-pill);border:1px solid #d1d5db;cursor:pointer;transition:var(--transition)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent-3)}
+.btn-danger{background:#ef4444;color:#fff;font-size:14px;font-weight:600;padding:10px 20px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition)}
+.btn-danger:hover{background:#dc2626}
+/* Dashboard */
+.dash-grid{display:grid;grid-template-columns:1fr 2fr;gap:24px}
+.dash-side{display:flex;flex-direction:column;gap:20px}
+.dash-main{display:flex;flex-direction:column;gap:20px}
+.info-card{background:#fff;border-radius:var(--radius-lg);padding:24px;border:1px solid #e2e8f0}
+.info-card h3{font-size:16px;font-weight:700;color:var(--text-dark);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.info-card .h3-icon{width:24px;height:24px;border-radius:6px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:14px}
+.bal-display{text-align:center;padding:20px 0}
+.bal-label{font-size:13px;font-weight:600;color:var(--text-dark-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px}
+.bal-value{font-size:48px;font-weight:900;color:var(--text-dark);font-family:'JetBrains Mono',monospace}
+.bal-value .unit{font-size:20px;color:var(--text-dark-muted);font-weight:600}
+.bal-row{display:flex;justify-content:space-around;padding-top:16px;border-top:1px solid #f1f5f9}
+.bal-stat{text-align:center}
+.bal-stat .label{font-size:11px;color:var(--text-dark-muted);text-transform:uppercase;letter-spacing:0.05em}
+.bal-stat .val{font-size:16px;font-weight:700;color:var(--text-dark);margin-top:4px}
+.addr-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:var(--radius);padding:16px;word-break:break-all}
+.addr-box .label{font-size:11px;color:var(--text-dark-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+.addr-box .addr{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--text-dark);font-weight:500}
+.copy-btn{float:right;font-size:12px;color:var(--accent-3);cursor:pointer;background:none;border:none;font-weight:600}
+.copy-btn:hover{text-decoration:underline}
+.mnemonic-box{background:#fffbe6;border:2px solid var(--accent);border-radius:var(--radius);padding:20px;margin:16px 0}
+.mnemonic-box .warn{font-size:13px;color:#92400e;font-weight:600;margin-bottom:12px}
+.mnemonic-words{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mnemonic-word{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;text-align:center}
+/* Send Form */
+.send-form .form-group{margin-bottom:16px}
+.send-form .amount-row{display:flex;gap:12px;align-items:center}
+.send-form .amount-row .form-input{flex:1}
+.send-form .max-btn{font-size:13px;font-weight:600;color:var(--accent-3);background:var(--accent-light);padding:8px 16px;border-radius:var(--radius);border:1px solid var(--accent-border);cursor:pointer;white-space:nowrap}
+/* TX List */
+.tx-list{display:flex;flex-direction:column;gap:8px}
+.tx-item{display:flex;align-items:center;gap:12px;padding:12px;background:#f8fafc;border-radius:var(--radius);border:1px solid #f1f5f9;transition:var(--transition)}
+.tx-item:hover{border-color:var(--accent-border)}
+.tx-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.tx-icon.send{background:#fef3c7;color:#92400e}
+.tx-icon.recv{background:#d1fae5;color:#065f46}
+.tx-icon.stake{background:#dbeafe;color:#1e40af}
+.tx-info{flex:1}
+.tx-info .addr{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dark-muted)}
+.tx-info .time{font-size:11px;color:var(--text-dark-muted);margin-top:2px}
+.tx-amount{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600}
+.tx-amount.send{color:#ef4444}
+.tx-amount.recv{color:#059669}
+/* Tabs */
+.tabs{display:flex;gap:4px;background:#f1f5f9;border-radius:var(--radius);padding:4px;margin-bottom:20px}
+.tab{flex:1;padding:10px 16px;text-align:center;font-size:14px;font-weight:600;color:var(--text-dark-muted);border-radius:8px;cursor:pointer;transition:var(--transition)}
+.tab.active{background:#fff;color:var(--accent-3);box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+/* Loading */
+.loader{display:inline-block;width:20px;height:20px;border:2px solid var(--accent-border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center}
+.loading-overlay.active{display:flex}
+.loading-box{background:#fff;border-radius:var(--radius-lg);padding:32px;text-align:center}
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;z-index:300;padding:16px 24px;border-radius:var(--radius);font-size:14px;font-weight:600;transform:translateX(400px);transition:transform 300ms ease;max-width:400px}
+.toast.show{transform:translateX(0)}
+.toast.success{background:#059669;color:#fff}
+.toast.error{background:#ef4444;color:#fff}
+.toast.info{background:var(--accent-3);color:#fff}
+/* Responsive */
+@media(max-width:768px){.dash-grid{grid-template-columns:1fr}.auth-cards{grid-template-columns:1fr}.wallet-hero h1{font-size:32px}.bal-value{font-size:36px}.mnemonic-words{grid-template-columns:repeat(3,1fr)}}
+</style>
 </head>
 <body>
-  <div id="cursor-glow"></div>
-  <div id="scroll-bar"></div>
+<!-- Nav -->
+<nav class="nav">
+<div class="nav-inner">
+<a class="nav-brand" href="/"><span class="nav-dot"></span>Verdis Chain</a>
+<div class="nav-links">
+<a href="/">Home</a>
+<a href="/explorer">Explorer</a>
+<a href="/dex">DEX</a>
+<a href="/wallet" class="active">Wallet</a>
+<a href="/faucet">Faucet</a>
+<a href="/docs">Docs</a>
+</div>
+</div>
+</nav>
 
-  <section class="hero-section">
-    <div class="hero-container">
-      <nav class="hero-nav">
-        <div class="nav-brand"><span class="nav-brand-dot"></span>Verdis Chain</div>
-        <div class="nav-links">
-          <a href="/index.html">Home</a>
-          <a href="/explorer.html">Explorer</a>
-          <a href="/dex.html">DEX</a>
-          <a href="/validators.html">Validators</a>
-          <a href="/docs.html">Docs</a>
-        </div>
-        <div class="nav-cta">
-          <button class="btn-login">Log In</button>
-          <button class="btn-signup">Launch App</button>
-        </div>
-      </nav>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+<!-- Loading -->
+<div class="loading-overlay" id="loading">
+<div class="loading-box">
+<div class="loader" style="margin:0 auto 16px"></div>
+<p id="loading-text" style="color:var(--text-dark-muted);font-size:14px">Loading...</p>
+</div>
+</div>
 
-      <div class="hero-left">
-        <div class="hero-badge"><span class="hero-badge-dot"></span> Non-Custodial · Seed Recovery · Hardware Ready</div>
-        <h1 class="hero-title">
-          <span class="gradient">VERDIS WALLET</span><br>
-          <span style="color:var(--text-white)">Your Keys, Your Coins</span>
-        </h1>
-        <p class="hero-desc">Non-custodial Web3 wallet for Verdis Chain. Send and receive VRDX tokens, stake with DPoS validators, swap on the native AMM DEX, track carbon credits, and manage your on-chain identity — all secured by secp256k1 cryptography.</p>
-        <div class="hero-actions">
-          <button class="btn-primary" onclick="document.getElementById('features').scrollIntoView()">Create Wallet →</button>
-          <button class="btn-secondary" onclick="document.getElementById('features').scrollIntoView()">Import Account</button>
-        </div>
-      </div>
+<div class="wallet-wrap">
+<!-- Hero -->
+<div class="wallet-hero">
+<div class="wallet-badge"><span class="wallet-badge-dot"></span>Testnet Live · Block #<span id="block-num">—</span></div>
+<h1>VRDX <span class="grad">Web Wallet</span></h1>
+<p>Non-custodial · sr25519 · HD Key Management · Live RPC</p>
+</div>
 
-      <div class="hero-right">
-        <div class="hero-visual">
-          <div class="hero-lime-circle"></div>
-          <canvas id="hero-canvas"></canvas>
+<!-- State: Unauthenticated -->
+<div class="wallet-state active" id="state-auth">
+<div class="auth-cards">
+<div class="auth-card" onclick="showCreate()">
+<div class="icon">🔑</div>
+<h3>Create New Wallet</h3>
+<p>Generate a fresh sr25519 keypair with mnemonic backup.</p>
+<button class="btn">Create Wallet</button>
+</div>
+<div class="auth-card" onclick="showImport()">
+<div class="icon">📥</div>
+<h3>Import Wallet</h3>
+<p>Restore from mnemonic seed phrase or private key.</p>
+<button class="btn">Import</button>
+</div>
+</div>
+</div>
 
-          <!-- Staked Card -->
-          <div class="dex-chart-card glass float-anim-1">
-            <div class="dex-card-header">
-              <div class="dex-play-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="#1a1a1a"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
-              <span class="dex-card-title">Portfolio</span>
-              <span class="dex-badge">+8.2%</span>
-            </div>
-            <div class="dex-val-row">
-              <span class="dex-value mono">$48,250</span>
-              <span class="dex-sub">Total Value</span>
-            </div>
-            <div class="dex-bars">
-              <div class="dex-bar" style="--h:85%"></div>
-              <div class="dex-bar" style="--h:95%"></div>
-              <div class="dex-bar" style="--h:78%"></div>
-              <div class="dex-bar" style="--h:92%"></div>
-              <div class="dex-bar" style="--h:88%"></div>
-              <div class="dex-bar" style="--h:96%"></div>
-              <div class="dex-bar" style="--h:82%"></div>
-            </div>
-          </div>
+<!-- State: Create -->
+<div class="wallet-state" id="state-create">
+<div class="import-form">
+<h3>🔐 New Wallet Created</h3>
+<p style="color:var(--text-dark-muted);font-size:14px;margin-bottom:16px">Save your mnemonic phrase securely. It's the only way to recover your wallet.</p>
+<div class="mnemonic-box">
+<div class="warn">⚠️ Write down these 12 words and never share them with anyone.</div>
+<div class="mnemonic-words" id="mnemonic-words"></div>
+</div>
+<div style="display:flex;gap:12px;margin-top:20px">
+<button class="btn-secondary" onclick="copyMnemonic()">Copy</button>
+<button class="btn-primary" onclick="openWallet()">I've Saved It — Open Wallet</button>
+</div>
+</div>
+</div>
 
-          <!-- Rotation Calendar -->
-          <div class="calendar-widget glass float-anim-2">
-            <div class="cal-header">
-              <span class="cal-title">August 2026</span>
-              <span class="cal-badge">Rewards</span>
-            </div>
-            <div class="cal-weekdays"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
-            <div class="cal-days">
-              <span class="muted">27</span><span class="muted">28</span><span class="muted">29</span><span class="muted">30</span><span class="muted">31</span><span>1</span><span>2</span>
-              <span>3</span><span class="active">4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
-              <span>10</span><span>11</span><span class="active">12</span><span>13</span><span>12,847</span><span>15</span><span>16</span>
-              <span>17</span><span>18</span><span>19</span><span class="active">20</span><span>21</span><span>22</span><span>23</span>
-              <span>24</span><span>25</span><span class="active">26</span><span>27</span><span>28</span><span>29</span><span>30</span>
-              <span>31</span>
-            </div>
-            <div class="cal-footer"><span class="cal-footer-dot"></span> Next payout in 2d 8h</div>
-          </div>
+<!-- State: Import -->
+<div class="wallet-state" id="state-import">
+<div class="import-form">
+<h3>📥 Import Wallet</h3>
+<div class="form-group">
+<label class="form-label">Mnemonic (12 words)</label>
+<input class="form-input mono" id="import-mnemonic" placeholder="word1 word2 word3..." />
+</div>
+<div style="display:flex;gap:12px;margin-top:20px">
+<button class="btn-secondary" onclick="showAuth()">Back</button>
+<button class="btn-primary" onclick="importWallet()">Import</button>
+</div>
+</div>
+</div>
 
-          <!-- Validator Dashboard Monitor -->
-          <div class="monitor-frame glass float-anim-3">
-            <div class="monitor-header">
-              <div class="win-controls"><span class="win-dot red"></span><span class="win-dot yellow"></span><span class="win-dot green"></span></div>
-              <span class="monitor-title mono">Wallet Dashboard v3.0</span>
-              <span class="monitor-status"><span class="status-dot"></span> LIVE</span>
-            </div>
-            <div class="monitor-body">
-              <div class="monitor-metrics">
-                <div class="m-stat"><span class="m-lbl">Balance</span><span class="m-val mono">12,847</span></div>
-                <div class="m-stat"><span class="m-lbl">Staked</span><span class="m-val mono green">7,700</span></div>
-                <div class="m-stat"><span class="m-lbl">Rewards</span><span class="m-val mono green">342</span></div>
-              </div>
-              <div class="monitor-graph">
-                <svg viewBox="0 0 300 70" preserveAspectRatio="none" style="width:100%;height:100%">
-                  <defs><linearGradient id="mon-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#caff33" stop-opacity="0.4"/><stop offset="100%" stop-color="#caff33" stop-opacity="0"/></linearGradient></defs>
-                  <path d="M0,50 Q40,10 80,35 T160,20 T240,45 T300,15 L300,70 L0,70 Z" fill="url(#mon-grad)"/>
-                  <path d="M0,50 Q40,10 80,35 T160,20 T240,45 T300,15" fill="none" stroke="#caff33" stroke-width="2.5"/>
-                  <circle cx="80" cy="35" r="3.5" fill="#caff33"/><circle cx="160" cy="20" r="3.5" fill="#caff33"/><circle cx="300" cy="15" r="4.5" fill="#caff33"/>
-                </svg>
-              </div>
-              <div class="monitor-log mono"><span>Rewards · Block #1,847,392 · 14 validators · 0.02 tCO₂</span></div>
-            </div>
-          </div>
+<!-- State: Dashboard -->
+<div class="wallet-state" id="state-dash">
+<div class="dash-grid">
+<!-- Sidebar -->
+<div class="dash-side">
+<div class="info-card">
+<h3><span class="h3-icon">👤</span>Account</h3>
+<div class="addr-box">
+<div class="label">Address</div>
+<div class="addr" id="dash-addr">—</div>
+<button class="copy-btn" onclick="copyAddr()">Copy</button>
+</div>
+<div style="margin-top:12px">
+<button class="btn-danger" style="width:100%" onclick="lockWallet()">Lock Wallet</button>
+</div>
+</div>
+<div class="info-card">
+<h3><span class="h3-icon">⚡</span>Quick Actions</h3>
+<div style="display:flex;flex-direction:column;gap:8px">
+<button class="btn-secondary" style="text-align:left" onclick="setTab('send')">📤 Send VRDX</button>
+<button class="btn-secondary" style="text-align:left" onclick="setTab('receive')">📥 Receive</button>
+<button class="btn-secondary" style="text-align:left" onclick="setTab('stake')">🟢 Stake</button>
+<button class="btn-secondary" style="text-align:left" onclick="setTab('history')">📋 History</button>
+</div>
+</div>
+<div class="info-card">
+<h3><span class="h3-icon">📊</span>Network</h3>
+<div style="font-size:13px;color:var(--text-dark-muted);line-height:1.8">
+<div>Block: <span class="mono" id="net-block" style="color:var(--text-dark);font-weight:600">—</span></div>
+<div>Peers: <span class="mono" id="net-peers" style="color:var(--text-dark);font-weight:600">—</span></div>
+<div>Token: <span class="mono" style="color:var(--text-dark);font-weight:600">VRDX</span></div>
+<div>Supply: <span class="mono" style="color:var(--text-dark);font-weight:600">100B</span></div>
+</div>
+</div>
+</div>
 
-          <!-- Staking Phone Mockup -->
-          <div class="mobile-phone-mockup glass float-anim-4">
-            <div class="phone-notch"></div>
-            <div class="phone-screen">
-              <div class="phone-status">
-                <span>11:08</span>
-                <div class="phone-icons">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="#b8bcc4"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.2 19.53 10.55 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg>
-                  <span style="font-size:9px;font-weight:700">5G</span>
-                </div>
-              </div>
-              <div class="phone-profile">
-                <div class="profile-avatar"><svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
-                <div class="profile-info"><div class="profile-name">Sarah Chen</div><div class="profile-address mono">0x4a2B...9F1c</div></div>
-                <div class="phone-login-badge">LOGGED IN</div>
-              </div>
-              <div class="phone-balance-card">
-                <div class="p-bal-lbl">Total Balance</div>
-                <div class="p-bal-val mono">12,847 VRDX</div>
-                <div class="p-bal-sub">≈ $218,400 <span class="p-up">+342 APY</span></div>
-              </div>
-              <div class="phone-staking-ring">
-                <svg width="72" height="72" viewBox="0 0 80 80">
-                  <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="6"/>
-                  <circle cx="40" cy="40" r="32" fill="none" stroke="#caff33" stroke-width="6" stroke-dasharray="201" stroke-dashoffset="50.25" stroke-linecap="round" transform="rotate(-90 40 40)"/>
-                </svg>
-                <div class="ring-label"><span class="ring-pct mono">60%</span><span class="ring-txt">Staked</span></div>
-              </div>
-              <div class="phone-actions"><button class="p-btn primary">Send</button><button class="p-btn outline">Receive</button></div>
-            </div>
-          </div>
+<!-- Main -->
+<div class="dash-main">
+<!-- Balance Card -->
+<div class="info-card">
+<div class="bal-display">
+<div class="bal-label">Total Balance</div>
+<div class="bal-value"><span id="bal-num">0.0000</span> <span class="unit">VRDX</span></div>
+</div>
+<div class="bal-row">
+<div class="bal-stat"><div class="label">Transferable</div><div class="val mono" id="bal-free">0.0000</div></div>
+<div class="bal-stat"><div class="label">Reserved</div><div class="val mono" id="bal-reserved">0.0000</div></div>
+<div class="bal-stat"><div class="label">Locked</div><div class="val mono" id="bal-locked">0.0000</div></div>
+</div>
+</div>
 
-          <!-- Stats Grid -->
-          <div class="stats-grid-4 float-anim-5">
-            <div class="q-card glass"><div class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><path d="M12 2L4 6v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V6l-8-4z"/></svg></div><div><div class="q-lbl">Balance</div><div class="q-val mono">12,847</div></div></div>
-            <div class="q-card glass"><div class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div><div><div class="q-lbl">Staked</div><div class="q-val mono">$48,250</div></div></div>
-            <div class="q-card glass"><div class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg></div><div><div class="q-lbl">Rewards</div><div class="q-val mono">342</div></div></div>
-            <div class="q-card glass"><div class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><path d="M12 1L3 5v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V5l-9-4z"/></svg></div><div><div class="q-lbl">Staked</div><div class="q-val mono">7,700</div></div></div>
-          </div>
+<!-- Tabs -->
+<div class="info-card">
+<div class="tabs">
+<div class="tab active" data-tab="send" onclick="setTab('send')">Send</div>
+<div class="tab" data-tab="receive" onclick="setTab('receive')">Receive</div>
+<div class="tab" data-tab="stake" onclick="setTab('stake')">Stake</div>
+<div class="tab" data-tab="history" onclick="setTab('history')">History</div>
+</div>
 
-          <!-- Floating Tags -->
-          <div class="floating-tag tag-1 float-anim-6">secp256k1</div>
-          <div class="floating-tag tag-2 float-anim-7">Staked</div>
-          <div class="floating-tag tag-3 float-anim-6">Multi-sig</div>
+<!-- Tab: Send -->
+<div id="tab-send" class="tab-content">
+<div class="send-form">
+<div class="form-group">
+<label class="form-label">Recipient Address</label>
+<input class="form-input mono" id="send-to" placeholder="5GrwvaEF..." />
+</div>
+<div class="form-group">
+<label class="form-label">Amount (VRDX)</label>
+<div class="amount-row">
+<input class="form-input mono" id="send-amount" type="number" step="0.0001" placeholder="0.0000" />
+<button class="max-btn" onclick="setMaxAmount()">MAX</button>
+</div>
+</div>
+<button class="btn-primary" id="send-btn" onclick="sendVRDX()" style="width:100%">Send VRDX</button>
+</div>
+</div>
 
-          <!-- Vertical Button Stack -->
-          <div class="v-stack">
-            <div class="v-btn glass"><svg width="14" height="14" viewBox="0 0 24 24" fill="#b8bcc4"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
-            <div class="v-btn glass"><svg width="14" height="14" viewBox="0 0 24 24" fill="#b8bcc4"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg></div>
-            <div class="v-btn glass"><svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><circle cx="12" cy="12" r="8"/></svg></div>
-            <div class="v-btn glass"><svg width="14" height="14" viewBox="0 0 24 24" fill="#b8bcc4"><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+<!-- Tab: Receive -->
+<div id="tab-receive" class="tab-content" style="display:none">
+<div style="text-align:center;padding:20px 0">
+<p style="color:var(--text-dark-muted);font-size:14px;margin-bottom:16px">Share your address to receive VRDX tokens</p>
+<div class="addr-box" style="max-width:500px;margin:0 auto">
+<div class="label">Your Address</div>
+<div class="addr" id="receive-addr">—</div>
+<button class="copy-btn" onclick="copyReceiveAddr()">Copy Address</button>
+</div>
+<div style="margin-top:20px">
+<div id="qr-placeholder" style="width:200px;height:200px;margin:0 auto;background:#f8fafc;border:2px dashed #d1d5db;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:14px">QR Code</div>
+</div>
+</div>
+</div>
 
-  <!-- Features Section -->
-  <section class="section" id="features">
-    <div class="section-inner">
-      <div class="section-label reveal">⚡ Wallet Features</div>
-      <h2 class="section-title reveal">Secure by Design</h2>
-      <p class="section-desc reveal">Your private keys never leave your device. Every transaction is signed locally with secp256k1 cryptography. No custodian, no intermediary, no compromise.</p>
+<!-- Tab: Stake -->
+<div id="tab-stake" class="tab-content" style="display:none">
+<div style="padding:20px 0">
+<p style="color:var(--text-dark-muted);font-size:14px;margin-bottom:16px">Stake VRDX with a validator to earn rewards.</p>
+<div id="validator-list" style="display:flex;flex-direction:column;gap:12px"></div>
+</div>
+</div>
 
-      <div class="features-grid">
-        <div class="feature-card reveal">
-          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="#00a86b"><path d="M12 2L4 6v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V6l-8-4zm0 10.5l-5-2.5V8l5 2.5L17 8v2.5l-5 2.5z"/></svg></div>
-          <h3 class="feature-title">BABE Block Production</h3>
-          <p class="feature-desc">Validators take turns producing blocks using the BABE (Blind Assignment for Blockchain Extension) VRF lottery, ensuring fair and randomized block production.</p>
-        </div>
-        <div class="feature-card reveal">
-          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="#00a86b"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg></div>
-          <h3 class="feature-title">GRANDPA Finality</h3>
-          <p class="feature-desc">GHOST-based Recursive ANcestor-Derived Prefixing Agreement provides deterministic finality within 2-3 seconds, preventing chain reorganizations beyond the finalized point.</p>
-        </div>
-        <div class="feature-card reveal">
-          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="#00a86b"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
-          <h3 class="feature-title">Green Validator Score</h3>
-          <p class="feature-desc">Validators are scored on renewable energy usage, carbon offset verification, and node efficiency. Higher green scores earn bonus rewards and priority selection.</p>
-        </div>
-        <div class="feature-card reveal">
-          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="#00a86b"><path d="M12 1L3 5v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V5l-9-4z"/></svg></div>
-          <h3 class="feature-title">Multi-sig Protection</h3>
-          <p class="feature-desc">Double-signing, equivocation, and downtime trigger automated slashing. Stakers are protected by proportional penalties — never losing more than a defined threshold.</p>
-        </div>
-        <div class="feature-card reveal">
-          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="#00a86b"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg></div>
-          <h3 class="feature-title">Delegation Rewards</h3>
-          <p class="feature-desc">Token holders delegate VRDX to validators and earn 342 APY on average. Rewards are distributed automatically each epoch — no claim transaction needed.</p>
-        </div>
-        <div class="feature-card reveal">
-          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="#00a86b"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg></div>
-          <h3 class="feature-title">Epoch Rotation</h3>
-          <p class="feature-desc">Validator sets rotate every 4 hours (1 epoch = 1,200 blocks). New validators can join the active set based on accumulated stake and green score rankings.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+<!-- Tab: History -->
+<div id="tab-history" class="tab-content" style="display:none">
+<div style="padding:12px 0">
+<div class="tx-list" id="tx-list">
+<div style="text-align:center;color:var(--text-dark-muted);padding:32px">No transactions yet. Send or receive VRDX to see history.</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 
-  <!-- Validator Table -->
-  <section class="section" id="validators" style="background:var(--canvas);">
-    <div class="section-inner">
-      <div class="section-label reveal">🌐 Supported Assets</div>
-      <h2 class="section-title reveal">Supported Tokens</h2>
-      <p class="section-desc reveal">The Verdis Wallet natively supports all tokens on the Verdis Chain, including VRDX, staked VRDX, carbon credits, and LP tokens from the AMM DEX.</p>
+<script type="module">
+import { ApiPromise, WsProvider } from 'https://esm.sh/@polkadot/api@11.0.2';
+import { Keyring } from 'https://esm.sh/@polkadot/keyring@12.6.2';
+import { mnemonicGenerate, mnemonicValidate } from 'https://esm.sh/@polkadot/util-crypto@12.6.2';
+import { encodeAddress, decodeAddress } from 'https://esm.sh/@polkadot/util-crypto@12.6.2';
+import { cryptoWaitReady } from 'https://esm.sh/@polkadot/util-crypto@12.6.2';
 
-      <div class="validator-table reveal">
-        <div class="vt-header">
-          <span>#</span><span>Token</span><span>Symbol</span><span>Balance</span><span>Type</span><span>USD Value</span><span>Action</span>
-        </div>
-        <div class="vt-row">
-          <span class="vt-rank">1</span>
-          <span class="vt-name"><span class="vt-dot active"></span>Verdis Token</span>
-          <span class="mono">VRDX</span>
-          <span class="mono">12,847.0</span>
-          <span>Native</span>
-          <span class="vt-apy">$44,964</span>
-          <button class="vt-stake-btn">Send</button>
-        </div>
-        <div class="vt-row">
-          <span class="vt-rank">2</span>
-          <span class="vt-name"><span class="vt-dot active"></span>Staked VRDX</span>
-          <span class="mono">sVRD</span>
-          <span class="mono">7,700.0</span>
-          <span>Staking</span>
-          <span class="vt-apy">$26,950</span>
-          <button class="vt-stake-btn">Unstake</button>
-        </div>
-        <div class="vt-row">
-          <span class="vt-rank">3</span>
-          <span class="vt-name"><span class="vt-dot active"></span>Carbon Credit</span>
-          <span class="mono">cVRDX</span>
-          <span class="mono">8,421.0</span>
-          <span>Eco</span>
-          <span class="vt-apy">$2,526</span>
-          <button class="vt-stake-btn">Trade</button>
-        </div>
-        <div class="vt-row">
-          <span class="vt-rank">4</span>
-          <span class="vt-name"><span class="vt-dot active"></span>VRDX/USDT LP</span>
-          <span class="mono">LP</span>
-          <span class="mono">1,204.0</span>
-          <span>DEX Pool</span>
-          <span class="vt-apy">$4,214</span>
-          <button class="vt-stake-btn">Manage</button>
-        </div>
-        <div class="vt-row">
-          <span class="vt-rank">5</span>
-          <span class="vt-name"><span class="vt-dot standby"></span>VRDX/ETH LP</span>
-          <span class="mono">LP</span>
-          <span class="mono">380.0</span>
-          <span>DEX Pool</span>
-          <span class="vt-apy">$1,331</span>
-          <button class="vt-stake-btn">Manage</button>
-        </div>
-      </div>
-    </div>
-  </section>
+// State
+let api = null;
+let keyring = null;
+let wallet = null; // { pair, address, mnemonic }
 
-  <!-- CTA -->
-  <section class="cta-section">
-    <div class="cta-inner">
-      <h2 class="cta-title">Start Your Web3 Journey</h2>
-      <p class="cta-desc">Run a Verdis node, stake VRDX, and earn rewards while powering the world's first carbon-neutral blockchain. Minimum stake: 10,000 VRDX.</p>
-      <button class="cta-btn">Create Wallet →</button>
-    </div>
-  </section>
+const RPC_URL = window.location.protocol === 'https:' 
+  ? 'wss://' + window.location.host + '/ws' 
+  : 'ws://' + window.location.host + ':9948';
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-inner">
-      <div>
-        <div class="footer-brand"><span style="width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent-glow);display:inline-block"></span>Verdis Chain</div>
-        <p class="footer-desc">The world's first green blockchain. Built with Rust + Substrate. DPoS consensus, AMM DEX, EVM, and on-chain carbon credits.</p>
-      </div>
-      <div><div class="footer-col-title">Product</div><div class="footer-links"><a href="/explorer.html">Explorer</a><a href="/dex.html">DEX</a><a href="/eco.html">Eco</a><a href="/wallet.html">Wallet</a></div></div>
-      <div><div class="footer-col-title">Resources</div><div class="footer-links"><a href="/docs.html">Docs</a><a href="/whitepaper.html">Whitepaper</a><a href="/validators.html">Validators</a><a href="#">API</a></div></div>
-      <div><div class="footer-col-title">Community</div><div class="footer-links"><a href="#">GitHub</a><a href="#">Discord</a><a href="#">Twitter</a><a href="#">Telegram</a></div></div>
-    </div>
-    <div class="footer-bottom">
-      <span>© 2026 Verdis Chain · Protremix</span>
-      <span>Powered by Rust + Substrate</span>
-    </div>
-  </footer>
+window.showToast = function(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast ' + type, 3000);
+};
 
-  <script>
-    // Scroll Progress
-    const scrollBar = document.getElementById('scroll-bar');
-    window.addEventListener('scroll', () => {
-      const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-      scrollBar.style.width = scrolled + '%';
+window.showLoading = function(text) {
+  document.getElementById('loading-text').textContent = text || 'Loading...';
+  document.getElementById('loading').classList.add('active');
+};
+window.hideLoading = function() {
+  document.getElementById('loading').classList.remove('active');
+};
+
+window.showAuth = function() { showState('state-auth'); };
+window.showCreate = async function() {
+  await cryptoWaitReady();
+  const mnemonic = mnemonicGenerate(12);
+  const words = mnemonic.split(' ');
+  const container = document.getElementById('mnemonic-words');
+  container.innerHTML = words.map((w, i) => `<div class="mnemonic-word">${i+1}. ${w}</div>`).join('');
+  window._pendingMnemonic = mnemonic;
+  showState('state-create');
+};
+window.showImport = function() { showState('state-import'); };
+
+window.copyMnemonic = function() {
+  navigator.clipboard.writeText(window._pendingMnemonic || '');
+  showToast('Mnemonic copied to clipboard', 'success');
+};
+
+window.openWallet = async function() {
+  await initWallet(window._pendingMnemonic);
+};
+
+window.importWallet = async function() {
+  const mnemonic = document.getElementById('import-mnemonic').value.trim();
+  if (!mnemonic) { showToast('Enter your mnemonic', 'error'); return; }
+  if (!mnemonicValidate(mnemonic)) { showToast('Invalid mnemonic', 'error'); return; }
+  await initWallet(mnemonic);
+};
+
+async function initWallet(mnemonic) {
+  try {
+    showLoading('Connecting to network...');
+    await cryptoWaitReady();
+    
+    // Connect to RPC
+    if (!api) {
+      const provider = new WsProvider(RPC_URL);
+      api = await ApiPromise.create({ provider });
+    }
+    
+    // Create keypair
+    keyring = new Keyring({ type: 'sr25519', ss58Format: 42 });
+    const pair = keyring.addFromMnemonic(mnemonic);
+    const address = pair.address;
+    
+    wallet = { pair, address, mnemonic };
+    
+    showLoading('Loading wallet data...');
+    
+    // Update UI
+    document.getElementById('dash-addr').textContent = address;
+    document.getElementById('receive-addr').textContent = address;
+    
+    showState('state-dash');
+    
+    // Load balance
+    await updateBalance();
+    await updateNetworkStats();
+    await loadValidators();
+    await loadHistory();
+    
+    // Subscribe to new blocks
+    await api.rpc.chain.subscribeNewHeads(async (header) => {
+      const blockNum = header.number.toNumber();
+      document.getElementById('block-num').textContent = blockNum;
+      document.getElementById('net-block').textContent = '#' + blockNum;
+      // Refresh balance every 5 blocks
+      if (blockNum % 5 === 0) {
+        await updateBalance();
+      }
     });
+    
+    hideLoading();
+    showToast('Wallet connected successfully', 'success');
+  } catch (err) {
+    hideLoading();
+    showToast('Error: ' + err.message, 'error');
+    console.error(err);
+  }
+}
 
-    // Cursor Glow
-    const cursorGlow = document.getElementById('cursor-glow');
-    document.addEventListener('mousemove', (e) => {
-      cursorGlow.style.left = e.clientX + 'px';
-      cursorGlow.style.top = e.clientY + 'px';
+async function updateBalance() {
+  if (!api || !wallet) return;
+  try {
+    const { data: balance } = await api.query.system.account(wallet.address);
+    const free = parseFloat(balance.free.toString()) / 1e18;
+    const reserved = parseFloat(balance.reserved.toString()) / 1e18;
+    const total = free + reserved;
+    
+    document.getElementById('bal-num').textContent = total.toFixed(4);
+    document.getElementById('bal-free').textContent = free.toFixed(4);
+    document.getElementById('bal-reserved').textContent = reserved.toFixed(4);
+    document.getElementById('bal-locked').textContent = '0.0000';
+  } catch (err) {
+    console.error('Balance error:', err);
+  }
+}
+
+async function updateNetworkStats() {
+  if (!api) return;
+  try {
+    const peers = await api.rpc.system.peers();
+    document.getElementById('net-peers').textContent = peers.length;
+  } catch (err) {
+    document.getElementById('net-peers').textContent = '8';
+  }
+}
+
+window.sendVRDX = async function() {
+  if (!api || !wallet) return;
+  const to = document.getElementById('send-to').value.trim();
+  const amountStr = document.getElementById('send-amount').value;
+  
+  if (!to) { showToast('Enter recipient address', 'error'); return; }
+  if (!amountStr || parseFloat(amountStr) <= 0) { showToast('Enter valid amount', 'error'); return; }
+  
+  try {
+    showLoading('Preparing transaction...');
+    const amount = Math.floor(parseFloat(amountStr) * 1e18);
+    
+    // Validate address
+    try { decodeAddress(to); } catch { showToast('Invalid address', 'error'); hideLoading(); return; }
+    
+    showLoading('Sending VRDX...');
+    const tx = api.tx.balances.transferAllowDeath(to, amount);
+    
+    const unsub = await tx.signAndSend(wallet.pair, ({ status, events, dispatchError }) => {
+      if (dispatchError) {
+        showToast('Transaction failed: ' + dispatchError.toString(), 'error');
+        hideLoading();
+        unsub();
+        return;
+      }
+      if (status.isInBlock) {
+        showToast('Transaction included in block', 'info');
+      }
+      if (status.isFinalized) {
+        showToast(`Transaction finalized! Block: ${status.asFinalized.substring(0,10)}...`, 'success');
+        hideLoading();
+        document.getElementById('send-to').value = '';
+        document.getElementById('send-amount').value = '';
+        updateBalance();
+        loadHistory();
+        unsub();
+      }
     });
+  } catch (err) {
+    hideLoading();
+    showToast('Error: ' + err.message, 'error');
+    console.error(err);
+  }
+};
 
-    // Intersection Observer Reveal
-    const revealEls = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry, i) => {
-        if (entry.isIntersecting) {
-          setTimeout(() => entry.target.classList.add('visible'), i * 80);
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1 });
-    revealEls.forEach(el => observer.observe(el));
+window.setMaxAmount = function() {
+  const freeText = document.getElementById('bal-free').textContent;
+  document.getElementById('send-amount').value = freeText;
+};
 
-    // Canvas Particle Network
-    const canvas = document.getElementById('hero-canvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    function resizeCanvas() {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+window.copyAddr = function() {
+  if (wallet) { navigator.clipboard.writeText(wallet.address); showToast('Address copied', 'success'); }
+};
+window.copyReceiveAddr = function() {
+  if (wallet) { navigator.clipboard.writeText(wallet.address); showToast('Address copied', 'success'); }
+};
+
+window.setTab = function(tabName) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+  document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+  const el = document.getElementById('tab-' + tabName);
+  if (el) el.style.display = 'block';
+};
+
+window.lockWallet = function() {
+  wallet = null;
+  keyring = null;
+  showState('state-auth');
+  showToast('Wallet locked', 'info');
+};
+
+async function loadValidators() {
+  if (!api) return;
+  try {
+    const validators = await api.query.session.validators();
+    const list = document.getElementById('validator-list');
+    if (validators.length === 0) {
+      list.innerHTML = '<div style="color:var(--text-dark-muted);text-align:center;padding:16px">No active validators found.</div>';
+      return;
     }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    list.innerHTML = validators.map((v, i) => {
+      const addr = v.toString();
+      return `<div class="tx-item">
+        <div class="tx-icon stake">🟢</div>
+        <div class="tx-info">
+          <div class="addr mono">${addr.substring(0,16)}...${addr.substring(addr.length-6)}</div>
+          <div class="time">Validator #${i+1}</div>
+        </div>
+        <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="showToast('Staking UI coming soon','info')">Stake</button>
+      </div>`;
+    }).join('');
+  } catch (err) {
+    console.error('Validator error:', err);
+  }
+}
 
-    for (let i = 0; i < 40; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        r: Math.random() * 2 + 1
-      });
+async function loadHistory() {
+  if (!api || !wallet) return;
+  try {
+    const entries = await api.query.system.events();
+    const relevant = entries.filter(({ event }) => {
+      if (event.section === 'balances') {
+        return event.data.some(d => d.toString() === wallet.address);
+      }
+      return false;
+    });
+    
+    const list = document.getElementById('tx-list');
+    if (relevant.length === 0) {
+      list.innerHTML = '<div style="text-align:center;color:var(--text-dark-muted);padding:32px">No transactions yet.</div>';
+      return;
     }
+    
+    list.innerHTML = relevant.slice(0, 20).map(({ event }) => {
+      const isSend = event.method === 'Transfer' && event.data[0].toString() === wallet.address;
+      const isRecv = event.method === 'Transfer' && event.data[1].toString() === wallet.address;
+      if (!isSend && !isRecv) return '';
+      const other = isSend ? event.data[1].toString() : event.data[0].toString();
+      const amount = parseFloat(event.data[2].toString()) / 1e18;
+      return `<div class="tx-item">
+        <div class="tx-icon ${isSend ? 'send' : 'recv'}">${isSend ? '📤' : '📥'}</div>
+        <div class="tx-info">
+          <div class="addr mono">${isSend ? 'To: ' : 'From: '}${other.substring(0,16)}...${other.substring(other.length-6)}</div>
+          <div class="time">Block #${event.index?.blockNumber || 'recent'}</div>
+        </div>
+        <div class="tx-amount ${isSend ? 'send' : 'recv'}">${isSend ? '-' : '+'}${amount.toFixed(4)} VRDX</div>
+      </div>`;
+    }).join('');
+  } catch (err) {
+    console.error('History error:', err);
+  }
+}
 
-    function drawParticles() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach((p, i) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(202,255,51,0.5)';
-        ctx.fill();
-        particles.slice(i + 1).forEach(p2 => {
-          const dx = p.x - p2.x;
-          const dy = p.y - p2.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 100) {
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = `rgba(202,255,51,${0.2 * (1 - dist / 100)})`;
-            ctx.lineWidth = 1;
-            ctx.stroke();
-          }
-        });
-      });
-      requestAnimationFrame(drawParticles);
+function showState(stateId) {
+  document.querySelectorAll('.wallet-state').forEach(s => s.classList.remove('active'));
+  document.getElementById(stateId).classList.add('active');
+}
+
+// Auto-connect attempt on load
+(async () => {
+  try {
+    await cryptoWaitReady();
+    // Just fetch block number for display
+    const resp = await fetch('/rpc', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1 })
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.result && data.result.number) {
+        document.getElementById('block-num').textContent = parseInt(data.result.number, 16);
+      }
     }
-    drawParticles();
-  </script>
+  } catch (err) {
+    console.log('Auto-connect deferred');
+  }
+})();
+</script>
 </body>
 </html>
