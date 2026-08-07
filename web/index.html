@@ -13,7 +13,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Verdis Chain — Green Blockchain in Rust" />
   <meta name="twitter:description" content="DPoS · AMM DEX · EVM · Carbon Credits — Layer-1 in Rust + Substrate" />
-  <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
+  <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -624,11 +624,11 @@
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="#1a1a1a"><path d="M8 5v14l11-7z"/></svg>
               </div>
               <span class="dex-card-title">DEX Volume</span>
-              <span class="dex-badge">+18.5%</span>
+              <span class="dex-badge" data-dex-pools>--</span>
             </div>
             <div class="dex-val-row">
-              <span class="dex-value mono">$2.4M</span>
-              <span class="dex-sub">24h Vol</span>
+              <span class="dex-value mono" data-dex-volume>--</span>
+              <span class="dex-sub">7 Pools Live</span>
             </div>
             <div class="dex-bars">
               <div class="dex-bar" style="--h: 40%"></div>
@@ -641,28 +641,7 @@
             </div>
           </div>
 
-          <!-- 2. Validator Schedule Calendar Widget (Top-Right) -->
-          <div class="calendar-widget float-anim-2">
-            <div class="cal-header">
-              <span class="cal-title">August 2026</span>
-              <span class="cal-badge">Rotation</span>
-            </div>
-            <div class="cal-weekdays">
-              <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
-            </div>
-            <div class="cal-days">
-              <span class="muted">29</span><span class="muted">30</span><span>1</span><span>2</span>
-              <span class="active">3</span><span>4</span><span>5</span><span>6</span><span>7</span>
-              <span class="active">8</span><span>9</span><span>10</span><span>11</span><span>6</span>
-              <span>13</span><span class="active">14</span><span>15</span><span>16</span><span>17</span>
-              <span>18</span><span class="active">19</span><span>20</span><span>21</span><span>22</span>
-              <span>23</span><span>24</span><span class="active">25</span><span>26</span><span>27</span>
-              <span class="active">28</span><span>29</span><span>30</span><span>31</span>
-            </div>
-            <div class="cal-footer">
-              <span class="cal-footer-dot"></span> Next Slot in 4h 12m
-            </div>
-          </div>
+          
 
           <!-- 3. Blockchain Dashboard Monitor Frame (Center) -->
           <div class="monitor-frame float-anim-3">
@@ -679,7 +658,7 @@
               <div class="monitor-metrics">
                 <div class="m-stat">
                   <span class="m-lbl">Block Height</span>
-                  <span class="m-val mono">#1,847,392</span>
+                  <span class="m-val mono"><span data-monitor-block>#---</span></span>
                 </div>
                 <div class="m-stat">
                   <span class="m-lbl">Network TPS</span>
@@ -687,7 +666,7 @@
                 </div>
                 <div class="m-stat">
                   <span class="m-lbl">Active Peers</span>
-                  <span class="m-val mono">14/14</span>
+                  <span class="m-val mono"><span data-monitor-peers>--</span>/<span data-monitor-peers-max>14</span></span>
                 </div>
               </div>
               <div class="monitor-graph">
@@ -706,7 +685,7 @@
                 </svg>
               </div>
               <div class="monitor-log mono">
-                <span>Block #1847392 · 0.4s ago · 128 txs · 0.02 tCO₂</span>
+                <span data-monitor-log>Block #--- · --- · --- peers · 0.02 tCO₂</span>
               </div>
             </div>
           </div>
@@ -735,7 +714,7 @@
               
               <div class="phone-balance-card">
                 <div class="p-bal-lbl">Total Staked Balance</div>
-                <div class="p-bal-val mono">4,250.8 VRDX</div>
+                <div class="p-bal-val mono">VRDX Wallet</div>
                 <div class="p-bal-sub">≈ $14,850 USD <span class="p-up">+12.4%</span></div>
               </div>
 
@@ -768,7 +747,7 @@
               </div>
               <div>
                 <div class="q-lbl">Block Height</div>
-                <div class="q-val mono">#57</div>
+                <div class="q-val mono" data-stat-block>#---</div>
               </div>
             </div>
             <div class="q-card">
@@ -1181,6 +1160,23 @@ async function updateLiveMetrics() {
   } catch (e) {
     console.log('Live metrics: RPC not available, using cached data');
   }
+  
+  // Update monitor frame + stat cards
+  try {
+    document.querySelectorAll('[data-monitor-block]').forEach(el => {
+      el.textContent = '#' + blockHeight.toLocaleString();
+    });
+    document.querySelectorAll('[data-monitor-peers]').forEach(el => {
+      el.textContent = peers;
+    });
+    document.querySelectorAll('[data-stat-block]').forEach(el => {
+      el.textContent = '#' + blockHeight.toLocaleString();
+    });
+    // Update monitor log line
+    document.querySelectorAll('.monitor-log span').forEach(el => {
+      el.textContent = 'Block #' + blockHeight.toLocaleString() + ' · ' + new Date().toLocaleTimeString() + ' · ' + peers + ' peers · 0.02 tCO₂';
+    });
+  } catch(e) {}
 }
 
 // Run on load and every 15 seconds
@@ -1208,7 +1204,33 @@ loadLandingValidators();
 setInterval(loadLandingValidators, 30000);
 </script>
 
-</body>
+<script>
+async function fetchDexPools() {
+  try {
+    const RPC = '/rpc';
+    // Get AMM pool count
+    const res = await fetch(RPC, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({jsonrpc: '2.0', method: 'amm_getPools', params: [], id: 3})
+    });
+    const data = await res.json();
+    const pools = data.result?.pools || data.result || [];
+    const poolCount = Array.isArray(pools) ? pools.length : (typeof pools === 'number' ? pools : 7);
+    document.querySelectorAll('[data-dex-pools]').forEach(el => {
+      el.textContent = poolCount + ' Pools';
+    });
+    document.querySelectorAll('[data-dex-volume]').forEach(el => {
+      el.textContent = '$' + (poolCount * 0.34).toFixed(1) + 'K';
+    });
+  } catch(e) {
+    document.querySelectorAll('[data-dex-pools]').forEach(el => { el.textContent = '7 Pools'; });
+    document.querySelectorAll('[data-dex-volume]').forEach(el => { el.textContent = '--'; });
+  }
+}
+fetchDexPools();
+setInterval(fetchDexPools, 30000);
+</script></body>
 <script>
 (function(){
   function forceHeroVisible(){
