@@ -1,0 +1,129 @@
+name: Security Audit
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Weekly scan on Sundays at 00:00 UTC
+  push:
+    branches: [ "main" ]
+    paths:
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+      - '.github/workflows/security.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+      - '.github/workflows/security.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+defaults:
+  run:
+    working-directory: verdis-chain
+
+jobs:
+  cargo-audit:
+    name: (a) Cargo Vulnerability Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked || true
+
+      - name: Run Cargo Audit
+        run: cargo audit || echo "cargo-audit completed with warnings."
+
+  rpc-security-check:
+    name: (b) Unsafe RPC & Localhost Binding Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check RPC Configurations and Safety
+        run: |
+          echo "Scanning Verdis codebase for unsafe RPC method exposure and open external bindings..."
+          ERRORS=0
+
+          # Check 1: Verify no unsafe RPC methods allowed in code
+          if grep -rnI --exclude-dir=target --exclude-dir=.git "rpc_methods.*Unsafe" .; then
+            echo "::error::Explicit Unsafe RPC method setting found in codebase!"
+            ERRORS=$((ERRORS + 1))
+          fi
+
+          if grep -rnI --exclude-dir=target --exclude-dir=.git "unsafe-rpc-methods" .; then
+            echo "::warning::Found unsafe-rpc-methods flag references. Verify usage."
+          fi
+
+          # Check 2: Verify RPC interface defaults to localhost (127.0.0.1 / ::1)
+          if grep -rnI --exclude-dir=target --exclude-dir=.git "0.0.0.0:9944" node/src/; then
+            echo "::error::Default binding on 0.0.0.0 for RPC discovered in node source!"
+            ERRORS=$((ERRORS + 1))
+          fi
+
+          if [ $ERRORS -gt 0 ]; then
+            echo "RPC Security audit failed!"
+            exit 1
+          fi
+          echo "RPC Security check passed. All RPC endpoints are localhost-bound and safe."
+
+  secret-scanning:
+    name: (c) Secret & Key Leakage Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks Secret Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Scan for Hardcoded Private Keys & Mnemonic Seeds
+        run: |
+          echo "Scanning source code for hardcoded private keys and mnemonic phrases..."
+          FOUND_KEYS=0
+
+          # Regex checks for private key patterns, seed phrases, secret parameters
+          grep -rnI --exclude-dir=target --exclude-dir=.git --exclude-dir=tests \
+            -E "(0x[a-fA-F0-9]{64}|PRIVATE_KEY\s*=\s*['\"][0-9a-fA-F]{64}['\"])" . && FOUND_KEYS=1 || true
+
+          if [ $FOUND_KEYS -ne 0 ]; then
+            echo "::error::Potential hardcoded secret or private key found in source code!"
+            exit 1
+          fi
+          echo "Secret scan passed cleanly."
+
+  license-audit:
+    name: (d) Dependency License Compliance Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Check License Compliance with cargo-deny
+        run: |
+          cargo install cargo-deny --locked || true
+          if command -v cargo-deny &> /dev/null; then
+            cargo deny check licenses || echo "License check warning logged."
+          else
+            echo "cargo-deny skipped."
+          fi

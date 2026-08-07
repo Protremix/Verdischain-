@@ -1,0 +1,14 @@
+[Unit]
+Description=Verdiscan REST API v1.0
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/opt/verdis-api/venv/bin/uvicorn verdiscan_api:app --host 0.0.0.0 --port 4400 --log-level info
+WorkingDirectory=/opt/verdis-api
+Restart=on-failure
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

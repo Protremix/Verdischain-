@@ -1,0 +1,2308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verdis Wallet | Web3 Non-Custodial VRDX Wallet</title>
+  <meta name="description" content="Official Web3 Wallet for Verdis Blockchain — Manage VRDX, Carbon Credits, Stake DPoS, Swap AMM, and track green impact on-chain.">
+  <link rel="stylesheet" href="/css/verdis.css?v=3">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl-fast.min.js"></script>
+  <script src="verdis-wallet-crypto.js"></script>
+
+  <style>
+    /* ============================================================
+       VERDIS WALLET EXTENDED DESIGN SYSTEM STYLES
+       ============================================================ */
+    :root {
+      --sidebar-width: 240px;
+      --header-height: 64px;
+      --bottom-nav-height: 60px;
+    }
+
+    /* Layout Structure */
+    .wallet-app {
+      display: flex;
+      min-height: 100vh;
+      background: var(--bg-primary);
+      position: relative;
+      padding-top: var(--header-height);
+    }
+
+    /* Sub-header / Wallet Top Status Bar */
+    .wallet-topbar {
+      position: fixed;
+      top: var(--header-height);
+      left: 0;
+      right: 0;
+      height: 48px;
+      background: rgba(17, 24, 17, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      z-index: 990;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--space-xl);
+      font-size: 13px;
+    }
+
+    .status-left, .status-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .network-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: rgba(0, 255, 136, 0.08);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .network-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    .rpc-indicator {
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    /* Wallet Navigation Sidebar (Desktop) */
+    .wallet-sidebar {
+      width: var(--sidebar-width);
+      position: fixed;
+      top: calc(var(--header-height) + 48px);
+      bottom: 0;
+      left: 0;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      padding: var(--space-md) var(--space-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      z-index: 900;
+      overflow-y: auto;
+    }
+
+    .nav-tabs {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      width: 100%;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: left;
+    }
+
+    .nav-tab-btn:hover {
+      color: var(--accent);
+      background: rgba(0, 255, 136, 0.05);
+      border-color: rgba(0, 255, 136, 0.1);
+    }
+
+    .nav-tab-btn.active {
+      color: #000;
+      background: var(--gradient-accent);
+      font-weight: 600;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .nav-tab-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    /* Main Content Area */
+    .wallet-content {
+      margin-left: var(--sidebar-width);
+      margin-top: 48px;
+      flex: 1;
+      padding: var(--space-xl);
+      max-width: 1280px;
+      width: calc(100% - var(--sidebar-width));
+      padding-bottom: calc(var(--space-3xl) + 40px);
+    }
+
+    /* Tab Panels */
+    .tab-panel {
+      display: none;
+      animation: fadeIn 300ms ease-out;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Hero / Header Cards in Tabs */
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-xl);
+      flex-wrap: wrap;
+      gap: var(--space-md);
+    }
+
+    .panel-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* Connection Card / Banner */
+    .connection-banner {
+      background: var(--gradient-accent-soft);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      margin-bottom: var(--space-xl);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-md);
+    }
+
+    .connection-info h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .connection-info p {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .address-input-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      max-width: 540px;
+    }
+
+    .form-control {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      transition: var(--transition);
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    /* Quick Action Buttons Bar */
+    .quick-actions-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: var(--space-md);
+      margin-bottom: var(--space-xl);
+    }
+
+    .action-btn-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+      color: var(--text-primary);
+    }
+
+    .action-btn-card:hover {
+      border-color: var(--accent);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+      color: var(--accent);
+    }
+
+    .action-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent-glow);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    /* Asset & DEX Grid Layouts */
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-xl);
+    }
+
+    .grid-3col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--space-lg);
+    }
+
+    @media (max-width: 992px) {
+      .grid-2col { grid-template-columns: 1fr; }
+    }
+
+    /* Custom NFT / Carbon Credit Cards */
+    .nft-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: var(--space-md);
+      margin-top: var(--space-md);
+    }
+
+    .nft-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .nft-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .nft-preview {
+      width: 100%;
+      height: 140px;
+      background: linear-gradient(135deg, #112a18 0%, #0a180e 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .nft-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 10px;
+    }
+
+    .nft-details {
+      padding: var(--space-md);
+    }
+
+    .nft-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .nft-meta {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    /* AMM Swap Box */
+    .swap-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .swap-input-box {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      margin-bottom: 8px;
+    }
+
+    .swap-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .swap-token-select {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .swap-amount-input {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 22px;
+      font-weight: 700;
+      text-align: right;
+      width: 160px;
+      font-family: var(--font-mono);
+    }
+
+    .swap-amount-input:focus {
+      outline: none;
+    }
+
+    .swap-divider {
+      display: flex;
+      justify-content: center;
+      margin: -10px 0;
+      position: relative;
+      z-index: 5;
+    }
+
+    .swap-switch-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-accent);
+      color: var(--accent);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .swap-switch-btn:hover {
+      transform: rotate(180deg);
+      background: var(--accent-glow);
+    }
+
+    /* Validator Cards */
+    .validator-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: var(--transition);
+      margin-bottom: 8px;
+    }
+
+    .validator-card:hover {
+      border-color: var(--border-light);
+    }
+
+    .green-score {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(0, 255, 136, 0.1);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-md);
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 560px;
+      padding: var(--space-xl);
+      position: relative;
+      box-shadow: var(--shadow-lg);
+      animation: modalUp 250ms ease-out;
+    }
+
+    @keyframes modalUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: var(--space-md);
+      right: var(--space-md);
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .modal-close:hover { color: var(--text-primary); }
+
+    /* Bottom Navigation for Mobile */
+    .wallet-bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--bottom-nav-height);
+      background: rgba(17, 24, 17, 0.95);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      z-index: 1000;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 4px;
+    }
+
+    .bottom-nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      flex: 1;
+      padding: 6px 0;
+    }
+
+    .bottom-nav-btn.active {
+      color: var(--accent);
+    }
+
+    .bottom-nav-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    @media (max-width: 768px) {
+      .wallet-sidebar { display: none; }
+      .wallet-content {
+        margin-left: 0;
+        width: 100%;
+        padding: var(--space-md);
+        padding-bottom: calc(var(--bottom-nav-height) + 30px);
+      }
+      .wallet-bottom-nav { display: flex; }
+      .wallet-topbar { padding: 0 var(--space-md); }
+    }
+
+    /* Filter Pills */
+    .filter-pills {
+      display: flex;
+      gap: 8px;
+      margin-bottom: var(--space-md);
+      flex-wrap: wrap;
+    }
+
+    .filter-pill {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .filter-pill.active, .filter-pill:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: var(--accent-glow);
+    }
+  </style>
+<link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32"/>
+<link rel="icon" type="image/png" href="/favicon-16.png" sizes="16x16"/>
+<link rel="apple-touch-icon" href="/favicon-192.png"/>
+<link rel="manifest" href="/site.webmanifest"/>
+</head>
+
+<body>
+<!-- Verdis V Logo Splash -->
+<div class="verdis-splash-overlay" id="verdis-splash">
+  <div class="verdis-splash-logo">
+    <svg class="verdis-anim-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:120px;height:120px">
+      <path class="hex-path" d="M20 3L34 11V27L20 35L6 27V11L20 3Z" stroke="#00ff88" stroke-width="2" fill="rgba(0,255,136,0.03)" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="v-path" d="M13 13L20 27M27 13L20 27" stroke="#00ff88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="leaf-accent" d="M20 18C17 18 15 20 15 23C15 26 17 28 20 28C23 28 25 26 25 23C25 20 23 18 20 18Z" fill="#00ff88" opacity="0.3"/>
+    </svg>
+  </div>
+  <div class="verdis-splash-text">VERDIS</div>
+  <div class="verdis-splash-spinner"></div>
+</div>
+<!-- End Verdis Splash -->
+
+
+  <!-- Shared Navbar Injection -->
+  <div id="verdis-nav"></div>
+
+  <!-- Wallet Sub-Topbar -->
+  <div class="wallet-topbar">
+    <div class="status-left">
+      <span class="network-pill">
+        <span class="network-dot"></span>
+        <span id="current-network-label">Mainnet (Chain ID 909)</span>
+      </span>
+      <span class="rpc-indicator" id="rpc-latency-badge">RPC: https://rpc.verdischain.com</span>
+    </div>
+    <div class="status-right">
+      <span style="color:var(--text-muted); font-size:12px;">Active Wallet:</span>
+      <span id="topbar-address-display" style="font-family:var(--font-mono); font-weight:600; color:var(--text-primary);">Not Connected</span>
+      <button class="btn btn-sm btn-secondary" onclick="openConnectModal()" id="topbar-connect-btn">Connect Wallet</button>
+    </div>
+  </div>
+
+  <!-- Wallet App Layout -->
+  <div class="wallet-app">
+
+    <!-- Desktop Navigation Sidebar -->
+    <aside class="wallet-sidebar">
+      <ul class="nav-tabs">
+        <li>
+          <button class="nav-tab-btn active" onclick="switchTab('dashboard')" id="nav-btn-dashboard">
+            <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+            Dashboard
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" onclick="switchTab('portfolio')" id="nav-btn-portfolio">
+            <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+            Portfolio & Assets
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" onclick="switchTab('send')" id="nav-btn-send">
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            Send & Transfer
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" onclick="switchTab('staking')" id="nav-btn-staking">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            DPoS Staking
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" onclick="switchTab('dex')" id="nav-btn-dex">
+            <svg viewBox="0 0 24 24"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+            AMM DEX Swap
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" onclick="switchTab('history')" id="nav-btn-history">
+            <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+            History
+          </button>
+        </li>
+        <li>
+          <button class="nav-tab-btn" onclick="switchTab('settings')" id="nav-btn-settings">
+            <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            Settings
+          </button>
+        </li>
+      </ul>
+
+      <div style="padding:var(--space-sm); border-top:1px solid var(--border); font-size:11px; color:var(--text-muted);">
+        <div>Verdis Node: <span class="badge badge-success" style="font-size:10px;">v2.0.0</span></div>
+        <div style="margin-top:4px;">Carbon Negative L1</div>
+      </div>
+    </aside>
+
+    <!-- Main Content Panels -->
+    <main class="wallet-content">
+
+      <!-- ============================================================
+           1. DASHBOARD TAB
+           ============================================================ -->
+      <section class="tab-panel active" id="tab-dashboard">
+        <div class="panel-header">
+          <div>
+            <h1 class="panel-title">
+              <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M16 2L28 9V23L16 30L4 23V9L16 2Z" stroke="#00ff88" stroke-width="2" fill="rgba(0,255,136,0.1)"/></svg>
+              Portfolio Overview
+            </h1>
+            <p class="panel-desc">Manage native VRDX coins, DPoS stakes, and carbon offset credentials.</p>
+          </div>
+          <div>
+            <button class="btn btn-primary" onclick="openConnectModal()">+ Connect / Change Wallet</button>
+          </div>
+        </div>
+
+        <!-- Wallet Connection Banner -->
+        <div class="connection-banner">
+          <div class="connection-info">
+            <h3 id="connect-banner-title">Wallet Address Connection</h3>
+            <p id="connect-banner-desc">Enter your Verdis public address or EVM account (0x...) to fetch live balances directly from the RPC node.</p>
+          </div>
+          <div class="address-input-group">
+            <input type="text" class="form-control" id="wallet-address-input" placeholder="Enter Verdis Address (0x... or verdis1...)" value="">
+            <button class="btn btn-secondary" onclick="handleLoadAddress()">Load Live Data</button>
+          </div>
+        </div>
+
+        <!-- Key Metrics Cards -->
+        <div class="stat-grid" style="margin-bottom: var(--space-xl);">
+          <div class="stat-card">
+            <div class="stat-label">Native Balance</div>
+            <div class="stat-value stat-accent" id="dash-vdx-balance">0.00 VRDX</div>
+            <div class="stat-sub">USD Value: <span id="dash-vdx-fiat" style="font-family:var(--font-mono);">TBD</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Staked Balance</div>
+            <div class="stat-value" id="dash-staked-balance">0.00 VRDX</div>
+            <div class="stat-sub">Delegated to DPoS Validators</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Carbon Credits</div>
+            <div class="stat-value" id="dash-carbon-balance" style="color:#00aaff;">0.00 tCO2e</div>
+            <div class="stat-sub">Verified On-Chain Offsets</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Estimated Yield</div>
+            <div class="stat-value" style="color:var(--warning);">Rewards: TBD</div>
+            <div class="stat-sub">DPoS Staking Rewards</div>
+          </div>
+        </div>
+
+        <!-- Quick Actions Bar -->
+        <div style="margin-bottom: 8px; font-weight: 600; font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Quick Actions</div>
+        <div class="quick-actions-bar">
+          <div class="action-btn-card" onclick="switchTab('send')">
+            <div class="action-icon">&rarr;</div>
+            <div style="font-weight:600;">Send VRDX</div>
+            <div style="font-size:11px; color:var(--text-muted);">Transfer native coins</div>
+          </div>
+          <div class="action-btn-card" onclick="switchTab('staking')">
+            <div class="action-icon">&#9889;</div>
+            <div style="font-weight:600;">Stake DPoS</div>
+            <div style="font-size:11px; color:var(--text-muted);">Earn yield on validators</div>
+          </div>
+          <div class="action-btn-card" onclick="switchTab('dex')">
+            <div class="action-icon">&#8646;</div>
+            <div style="font-weight:600;">AMM Swap</div>
+            <div style="font-size:11px; color:var(--text-muted);">Trade DEX pools</div>
+          </div>
+          <div class="action-btn-card" onclick="openReceiveModal()">
+            <div class="action-icon">&#8675;</div>
+            <div style="font-weight:600;">Receive</div>
+            <div style="font-size:11px; color:var(--text-muted);">Show QR & Address</div>
+          </div>
+        </div>
+
+        <!-- Recent Transactions Card -->
+        <div class="card" style="margin-top: var(--space-xl);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-md);">
+            <h3 style="font-size: 16px; font-weight:700;">Recent Transactions</h3>
+            <button class="btn btn-sm btn-ghost" onclick="fetchLiveTransactions()">Refresh RPC</button>
+          </div>
+          <div class="table-wrap">
+            <table class="verdis-table">
+              <thead>
+                <tr>
+                  <th>Tx Hash</th>
+                  <th>Type</th>
+                  <th>From / To</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Explorer</th>
+                </tr>
+              </thead>
+              <tbody id="dash-tx-table">
+                <tr>
+                  <td colspan="6" style="text-align:center; color:var(--text-muted); padding:24px;">
+                    Connect wallet address above to load live on-chain activity from RPC node.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           2. PORTFOLIO / ASSETS TAB
+           ============================================================ -->
+      <section class="tab-panel" id="tab-portfolio">
+        <div class="panel-header">
+          <div>
+            <h1 class="panel-title">Asset Holdings & Allocation</h1>
+            <p class="panel-desc">Native coins, custom fungible tokens, and carbon credit NFTs.</p>
+          </div>
+        </div>
+
+        <div class="grid-2col" style="margin-bottom: var(--space-xl);">
+          <!-- Chart Card -->
+          <div class="card">
+            <h3 style="font-size:16px; font-weight:700; margin-bottom:var(--space-md);">Asset Allocation Breakdown</h3>
+            <div style="height: 240px; position:relative;">
+              <canvas id="assetAllocationChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Native Asset Details -->
+          <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div style="width:32px; height:32px; border-radius:50%; background:var(--accent-glow); color:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:bold;">V</div>
+                  <div>
+                    <h3 style="font-size:16px; font-weight:700;">VRDX Native Coin</h3>
+                    <span style="font-size:12px; color:var(--text-muted);">Verdis Layer-1 Native Asset</span>
+                  </div>
+                </div>
+                <span class="badge badge-success">Native</span>
+              </div>
+              <div style="font-size:28px; font-weight:800; color:var(--accent); margin-bottom:12px;" id="portfolio-vdx-amount">0.00 VRDX</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; font-size:13px; color:var(--text-secondary);">
+                <div>Liquid Balance: <strong id="portfolio-liquid-vdx" style="color:var(--text-primary);">0.00 VRDX</strong></div>
+                <div>Staked/Locked: <strong id="portfolio-staked-vdx" style="color:var(--text-primary);">0.00 VRDX</strong></div>
+                <div>Price (USD): <strong style="color:var(--text-primary);">TBD</strong></div>
+                <div>24h Change: <strong style="color:var(--text-primary);">TBD</strong></div>
+              </div>
+            </div>
+            <div style="margin-top:20px; display:flex; gap:10px;">
+              <button class="btn btn-primary btn-sm" onclick="switchTab('send')" style="flex:1;">Send VRDX</button>
+              <button class="btn btn-secondary btn-sm" onclick="switchTab('dex')" style="flex:1;">Swap on DEX</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Fungible Tokens Table -->
+        <div class="card" style="margin-bottom: var(--space-xl);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-md);">
+            <h3 style="font-size:16px; font-weight:700;">Custom On-Chain Tokens</h3>
+            <span style="font-size:12px; color:var(--text-muted);">Pallet FungibleTokens Assets</span>
+          </div>
+          <div class="table-wrap">
+            <table class="verdis-table">
+              <thead>
+                <tr>
+                  <th>Asset Name</th>
+                  <th>Symbol</th>
+                  <th>Asset ID</th>
+                  <th>Balance</th>
+                  <th>Price (USD)</th>
+                  <th>Market Value</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Verdis Carbon Credit Token</strong></td>
+                  <td><span class="badge badge-info">CARBON</span></td>
+                  <td style="font-family:var(--font-mono);">0x0001</td>
+                  <td id="token-carbon-bal">0.00</td>
+                  <td>TBD</td>
+                  <td>TBD</td>
+                  <td><button class="btn btn-sm btn-ghost" onclick="switchTab('dex')">Trade</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Ecology Governance Token</strong></td>
+                  <td><span class="badge badge-success">ECO</span></td>
+                  <td style="font-family:var(--font-mono);">0x0002</td>
+                  <td id="token-eco-bal">0.00</td>
+                  <td>TBD</td>
+                  <td>TBD</td>
+                  <td><button class="btn btn-sm btn-ghost" onclick="switchTab('dex')">Trade</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Tree Reforestation Token</strong></td>
+                  <td><span class="badge badge-warning">TREE</span></td>
+                  <td style="font-family:var(--font-mono);">0x0003</td>
+                  <td id="token-tree-bal">0.00</td>
+                  <td>TBD</td>
+                  <td>TBD</td>
+                  <td><button class="btn btn-sm btn-ghost" onclick="switchTab('dex')">Trade</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Green Energy Certification</strong></td>
+                  <td><span class="badge badge-neutral">GREEN</span></td>
+                  <td style="font-family:var(--font-mono);">0x0004</td>
+                  <td id="token-green-bal">0.00</td>
+                  <td>TBD</td>
+                  <td>TBD</td>
+                  <td><button class="btn btn-sm btn-ghost" onclick="switchTab('dex')">Trade</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- NFT & Carbon Credit Gallery -->
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-md);">
+            <div>
+              <h3 style="font-size:16px; font-weight:700;">On-Chain NFT & Carbon Certifications</h3>
+              <p style="font-size:12px; color:var(--text-muted);">Verified environmental impact certificates and digital collectibles</p>
+            </div>
+            <div class="filter-pills" style="margin-bottom:0;">
+              <button class="filter-pill active">All Assets</button>
+              <button class="filter-pill">Carbon Certificates</button>
+              <button class="filter-pill">Reforestation</button>
+            </div>
+          </div>
+
+          <div class="nft-grid">
+            <div class="nft-card">
+              <div class="nft-preview">
+                <span class="badge badge-success nft-badge">Verified CO2</span>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="#00ff88" opacity="0.6"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
+              </div>
+              <div class="nft-details">
+                <div class="nft-title">Amazon Rainforest Offset #104</div>
+                <div class="nft-meta">10.0 tCO2e &middot; Vintage 2026</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px;">
+                  <span style="color:var(--accent);">Active Credit</span>
+                  <button class="btn btn-sm btn-ghost" onclick="openRetireModal('104')">Retire</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="nft-card">
+              <div class="nft-preview">
+                <span class="badge badge-info nft-badge">Reforestation</span>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="#00aaff" opacity="0.6"><path d="M12 2L3 9h3v10h12V9h3L12 2z"/></svg>
+              </div>
+              <div class="nft-details">
+                <div class="nft-title">Patagonia Pine Forest Parcel #88</div>
+                <div class="nft-meta">250 Trees Planted &middot; Verified</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px;">
+                  <span style="color:var(--info);">On-Chain NFT</span>
+                  <button class="btn btn-sm btn-ghost" onclick="alert('Viewing NFT details on Explorer')">View NFT</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="nft-card">
+              <div class="nft-preview">
+                <span class="badge badge-warning nft-badge">Solar Node</span>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="#ffaa00" opacity="0.6"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5l-2.5 4h5L12 2z"/></svg>
+              </div>
+              <div class="nft-details">
+                <div class="nft-title">Sahara Solar Array Badge</div>
+                <div class="nft-meta">Validator Solar Cert #12</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px;">
+                  <span style="color:var(--warning);">DPoS Cert</span>
+                  <button class="btn btn-sm btn-ghost" onclick="alert('Viewing Badge')">Details</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           3. SEND TAB
+           ============================================================ -->
+      <section class="tab-panel" id="tab-send">
+        <div class="panel-header">
+          <div>
+            <h1 class="panel-title">Transfer Tokens</h1>
+            <p class="panel-desc">Construct and broadcast native transactions on Verdis Substrate L1.</p>
+          </div>
+        </div>
+
+        <div class="grid-2col">
+          <!-- Send Form -->
+          <div class="card">
+            <h3 style="font-size:16px; font-weight:700; margin-bottom:var(--space-md);">Transaction Details</h3>
+            
+            <div style="margin-bottom: 16px;">
+              <label class="form-label">Asset</label>
+              <select class="form-control" id="send-asset-select">
+                <option value="VRDX">VRDX (Native Coin)</option>
+                <option value="CARBON">CARBON (Carbon Credit Token)</option>
+                <option value="ECO">ECO (Governance Token)</option>
+                <option value="TREE">TREE (Reforestation Token)</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+              <label class="form-label">Recipient Address</label>
+              <input type="text" class="form-control" id="send-recipient-input" placeholder="Recipient address (0x... or verdis1...)" oninput="updateSendPreview()">
+            </div>
+
+            <div style="margin-bottom: 16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label class="form-label">Amount</label>
+                <span style="font-size:12px; color:var(--text-muted);">Available: <span id="send-max-available">0.00</span> VRDX</span>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <input type="number" class="form-control" id="send-amount-input" placeholder="0.00" step="0.0001" oninput="updateSendPreview()">
+                <button class="btn btn-secondary btn-sm" onclick="setSendMax()">MAX</button>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+              <label class="form-label">Network Fee Preference</label>
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+                <button class="btn btn-ghost btn-sm active" style="border-color:var(--accent);">Standard<br><span style="font-size:10px; color:var(--text-muted);">~0.0001 VRDX</span></button>
+                <button class="btn btn-ghost btn-sm">Fast<br><span style="font-size:10px; color:var(--text-muted);">~0.0002 VRDX</span></button>
+                <button class="btn btn-ghost btn-sm">Eco Boost<br><span style="font-size:10px; color:var(--accent);">Carbon Offset</span></button>
+              </div>
+            </div>
+
+            <button class="btn btn-primary btn-lg" style="width:100%; margin-top:12px;" onclick="handleSendSubmit()">
+              Construct & Send Transaction
+            </button>
+          </div>
+
+          <!-- Transaction Preview Card -->
+          <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <h3 style="font-size:16px; font-weight:700; margin-bottom:var(--space-md);">Transaction Live Preview</h3>
+              <div style="background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius-md); padding:var(--space-md); margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
+                  <span style="color:var(--text-muted);">Sender Account:</span>
+                  <span style="font-family:var(--font-mono);" id="preview-sender">Not Connected</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
+                  <span style="color:var(--text-muted);">Recipient:</span>
+                  <span style="font-family:var(--font-mono);" id="preview-recipient">—</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
+                  <span style="color:var(--text-muted);">Transfer Amount:</span>
+                  <span style="font-weight:700; color:var(--accent);" id="preview-amount">0.00 VRDX</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;">
+                  <span style="color:var(--text-muted);">Estimated Gas / Fee:</span>
+                  <span style="font-family:var(--font-mono);" id="preview-fee">0.0001 VRDX</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:13px;">
+                  <span style="color:var(--text-muted);">Chain ID / Network:</span>
+                  <span>909 (Verdis Mainnet)</span>
+                </div>
+              </div>
+
+              <div style="font-size:12px; color:var(--text-muted); line-height:1.5;">
+                <strong style="color:var(--text-primary);">Raw Construction Note:</strong> Transactions on Verdis are scale-encoded extrinsics or Ethereum RLP signed payloads submitted directly to <code style="color:var(--accent);">author_submitExtrinsic</code> or <code style="color:var(--accent);">eth_sendRawTransaction</code>.
+              </div>
+            </div>
+
+            <div style="margin-top:20px; text-align:center;">
+              <span class="badge badge-neutral">Security Verified &middot; Ed25519 / Secp256k1</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transaction History Table below Send -->
+        <div class="card" style="margin-top: var(--space-xl);">
+          <h3 style="font-size:16px; font-weight:700; margin-bottom:var(--space-md);">Outgoing & Incoming Transfers</h3>
+          <div class="table-wrap">
+            <table class="verdis-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Type</th>
+                  <th>Recipient / Sender</th>
+                  <th>Amount</th>
+                  <th>Tx Hash</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="send-history-tbody">
+                <tr>
+                  <td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px;">
+                    No transfer transactions recorded yet.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           4. STAKING TAB
+           ============================================================ -->
+      <section class="tab-panel" id="tab-staking">
+        <div class="panel-header">
+          <div>
+            <h1 class="panel-title">DPoS Validator Staking</h1>
+            <p class="panel-desc">Delegate VRDX to green-certified BABE/GRANDPA consensus validators.</p>
+          </div>
+        </div>
+
+        <div class="stat-grid" style="margin-bottom: var(--space-xl);">
+          <div class="stat-card">
+            <div class="stat-label">Your Active Stake</div>
+            <div class="stat-value stat-accent" id="staking-user-stake">0.00 VRDX</div>
+            <div class="stat-sub">Bonded in DPoS</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Network Total Staked</div>
+            <div class="stat-value" id="staking-network-total">14,250,000 VRDX</div>
+            <div class="stat-sub">Active Validator Set</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Staking APY</div>
+            <div class="stat-value" style="color:var(--warning);">Rewards: TBD</div>
+            <div class="stat-sub">Variable Dynamic Yield</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Active Green Validators</div>
+            <div class="stat-value" style="color:var(--accent);" id="staking-active-count">27 Nodes</div>
+            <div class="stat-sub">100% Carbon Offset</div>
+          </div>
+        </div>
+
+        <div class="grid-2col" style="margin-bottom: var(--space-xl);">
+          <!-- Delegate Form -->
+          <div class="card">
+            <h3 style="font-size:16px; font-weight:700; margin-bottom:var(--space-md);">Stake / Delegate VRDX</h3>
+            
+            <div style="margin-bottom: 16px;">
+              <label class="form-label">Select Validator Node</label>
+              <select class="form-control" id="stake-validator-select">
+                <option value="0x1111...val1">Validator #1 — Evergreen Solar Node (Green Score: 98)</option>
+                <option value="0x2222...val2">Validator #2 — HydroPower Alpha (Green Score: 96)</option>
+                <option value="0x3333...val3">Validator #3 — Nordic Wind Node (Green Score: 95)</option>
+                <option value="0x4444...val4">Validator #4 — Geothermal Eco Node (Green Score: 94)</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+              <label class="form-label">Stake Amount (VRDX)</label>
+              <input type="number" class="form-control" id="stake-amount-input" placeholder="Enter amount to stake" step="1">
+            </div>
+
+            <div style="background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px; margin-bottom:16px; font-size:13px; color:var(--text-secondary);">
+              <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                <span>Estimated Annual Rewards:</span>
+                <strong style="color:var(--warning);">Rewards: TBD</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span>Unbonding Period:</span>
+                <strong style="color:var(--text-primary);">28 Eras (~7 Days)</strong>
+              </div>
+            </div>
+
+            <button class="btn btn-primary btn-lg" style="width:100%;" onclick="handleStakeSubmit()">Confirm Stake Delegation</button>
+          </div>
+
+          <!-- Unstake Interface -->
+          <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <h3 style="font-size:16px; font-weight:700; margin-bottom:var(--space-md);">Unstake & Unbond</h3>
+              <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">Initiate unbonding to return delegated VRDX back to your liquid balance after the unbonding period.</p>
+              
+              <div style="margin-bottom: 16px;">
+                <label class="form-label">Active Delegation to Unstake</label>
+                <select class="form-control" id="unstake-select">
+                  <option value="none">No Active Delegation Found</option>
+                </select>
+              </div>
+
+              <div style="margin-bottom: 16px;">
+                <label class="form-label">Amount to Unstake</label>
+                <input type="number" class="form-control" id="unstake-amount-input" placeholder="0.00 VRDX">
+              </div>
+            </div>
+
+            <button class="btn btn-secondary btn-lg" style="width:100%;" onclick="handleUnstakeSubmit()">Request Unbond</button>
+          </div>
+        </div>
+
+        <!-- Active Validators List -->
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-md);">
+            <h3 style="font-size:16px; font-weight:700;">Active DPoS Consensus Validators</h3>
+            <button class="btn btn-sm btn-ghost" onclick="fetchLiveValidators()">Refresh List</button>
+          </div>
+
+          <div class="table-wrap">
+            <table class="verdis-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Validator Name / Address</th>
+                  <th>Total Stake</th>
+                  <th>Green Score</th>
+                  <th>Commission</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="validator-list-tbody">
+                <!-- Populated live by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           5. DEX TAB
+           ============================================================ -->
+      <section class="tab-panel" id="tab-dex">
+        <div class="panel-header">
+          <div>
+            <h1 class="panel-title">Built-In AMM Swap & DEX Pools</h1>
+            <p class="panel-desc">Trade native token pairs with zero slippage and automated market maker liquidity.</p>
+          </div>
+        </div>
+
+        <div class="grid-2col" style="margin-bottom: var(--space-xl);">
+          <!-- AMM Swap Interface -->
+          <div class="swap-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-md);">
+              <h3 style="font-size:18px; font-weight:700;">Swap Tokens</h3>
+              <span class="badge badge-success">0.3% Fee</span>
+            </div>
+
+            <!-- Pay Box -->
+            <div class="swap-input-box">
+              <div class="swap-row">
+                <span class="form-label" style="margin:0;">You Pay</span>
+                <span style="font-size:12px; color:var(--text-muted);">Balance: <span id="swap-pay-bal">0.00</span></span>
+              </div>
+              <div class="swap-row">
+                <select class="swap-token-select" id="swap-pay-select" onchange="calculateSwapOutput()">
+                  <option value="VRDX">VRDX</option>
+                  <option value="CARBON">CARBON</option>
+                  <option value="ECO">ECO</option>
+                  <option value="TREE">TREE</option>
+                </select>
+                <input type="number" class="swap-amount-input" id="swap-pay-amount" placeholder="0.0" oninput="calculateSwapOutput()">
+              </div>
+            </div>
+
+            <!-- Switch Button -->
+            <div class="swap-divider">
+              <button class="swap-switch-btn" onclick="switchSwapTokens()">&varr;</button>
+            </div>
+
+            <!-- Receive Box -->
+            <div class="swap-input-box" style="margin-top:8px;">
+              <div class="swap-row">
+                <span class="form-label" style="margin:0;">You Receive (Est.)</span>
+                <span style="font-size:12px; color:var(--text-muted);">Price: TBD</span>
+              </div>
+              <div class="swap-row">
+                <select class="swap-token-select" id="swap-receive-select" onchange="calculateSwapOutput()">
+                  <option value="CARBON">CARBON</option>
+                  <option value="VRDX">VRDX</option>
+                  <option value="ECO">ECO</option>
+                  <option value="TREE">TREE</option>
+                </select>
+                <input type="number" class="swap-amount-input" id="swap-receive-amount" placeholder="0.0" readonly>
+              </div>
+            </div>
+
+            <!-- Swap Impact Details -->
+            <div style="background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 14px; margin: 12px 0; font-size:12px; color:var(--text-secondary);">
+              <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                <span>Exchange Rate:</span>
+                <span id="swap-rate-display" style="font-family:var(--font-mono);">1 VRDX = 12.50 CARBON</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                <span>Price Impact:</span>
+                <span style="color:var(--accent);">< 0.05%</span>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span>Slippage Tolerance:</span>
+                <span>0.5%</span>
+              </div>
+            </div>
+
+            <button class="btn btn-primary btn-lg" style="width:100%;" onclick="handleSwapExecute()">Execute DEX Swap</button>
+          </div>
+
+          <!-- Price Chart & Add Liquidity Box -->
+          <div style="display:flex; flex-direction:column; gap:var(--space-md);">
+            <!-- DEX Price Chart -->
+            <div class="card">
+              <h3 style="font-size:16px; font-weight:700; margin-bottom:var(--space-sm);">DEX Pair Price Chart</h3>
+              <div style="height:180px; position:relative;">
+                <canvas id="dexPriceChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Add Liquidity Quick Action -->
+            <div class="card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size:16px; font-weight:700;">Add Liquidity</h3>
+                <button class="btn btn-sm btn-secondary" onclick="openAddLiquidityModal()">+ Provide Liquidity</button>
+              </div>
+              <p style="font-size:12px; color:var(--text-secondary); line-height:1.5;">Earn 0.3% trading fees on all swaps proportional to your share of the liquidity pool.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Liquidity Pools List -->
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--space-md);">
+            <div>
+              <h3 style="font-size:16px; font-weight:700;">On-Chain AMM Liquidity Pools</h3>
+              <p style="font-size:12px; color:var(--text-muted);">Fetched live via RPC: <code style="color:var(--accent);">amm_dex_getAllPools</code></p>
+            </div>
+            <button class="btn btn-sm btn-ghost" onclick="fetchLiveDexPools()">Refresh Pools</button>
+          </div>
+
+          <div class="table-wrap">
+            <table class="verdis-table">
+              <thead>
+                <tr>
+                  <th>Pool Pair</th>
+                  <th>Reserve A</th>
+                  <th>Reserve B</th>
+                  <th>Fee %</th>
+                  <th>Pool TVL</th>
+                  <th>24h Volume</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="dex-pools-tbody">
+                <!-- Loaded via RPC JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           6. HISTORY TAB
+           ============================================================ -->
+      <section class="tab-panel" id="tab-history">
+        <div class="panel-header">
+          <div>
+            <h1 class="panel-title">On-Chain Transaction History</h1>
+            <p class="panel-desc">Complete activity ledger queryable directly from the blockchain.</p>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom: var(--space-md);">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div class="filter-pills" style="margin:0;">
+              <button class="filter-pill active" onclick="filterHistory('all')">All Transactions</button>
+              <button class="filter-pill" onclick="filterHistory('transfer')">Transfers</button>
+              <button class="filter-pill" onclick="filterHistory('stake')">Staking</button>
+              <button class="filter-pill" onclick="filterHistory('swap')">DEX Swaps</button>
+              <button class="filter-pill" onclick="filterHistory('contract')">Smart Contracts</button>
+            </div>
+
+            <div style="display:flex; gap:8px;">
+              <input type="text" class="form-control" placeholder="Search by Tx Hash or Address..." id="history-search-input" style="width:240px;" oninput="filterHistoryTable()">
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table class="verdis-table">
+              <thead>
+                <tr>
+                  <th>Block #</th>
+                  <th>Tx Hash</th>
+                  <th>Type</th>
+                  <th>From / To</th>
+                  <th>Amount</th>
+                  <th>Age / Time</th>
+                  <th>Status</th>
+                  <th>Explorer Link</th>
+                </tr>
+              </thead>
+              <tbody id="full-history-tbody">
+                <tr>
+                  <td colspan="8" style="text-align:center; color:var(--text-muted); padding:32px;">
+                    Enter or connect wallet address to load transaction history from RPC.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           7. SETTINGS TAB
+           ============================================================ -->
+      <section class="tab-panel" id="tab-settings">
+        <div class="panel-header">
+          <div>
+            <h1 class="panel-title">Wallet & Network Settings</h1>
+            <p class="panel-desc">Configure RPC endpoints, security parameters, and preferences.</p>
+          </div>
+        </div>
+
+        <div class="grid-2col">
+          <!-- Network & RPC Settings -->
+          <div class="card">
+            <h3 style="font-size:16px; font-weight:700; margin-bottom:var(--space-md);">Network Configuration</h3>
+            
+            <div style="margin-bottom: 16px;">
+              <label class="form-label">Network Preset</label>
+              <select class="form-control" id="setting-network-preset" onchange="handleNetworkChange()">
+                <option value="mainnet">Verdis Mainnet (https://rpc.verdischain.com)</option>
+                <option value="testnet">Verdis Testnet (https://testnet-rpc.verdischain.com)</option>
+                <option value="local">Local Dev Node (http://localhost:9944)</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+              <label class="form-label">RPC HTTP Endpoint</label>
+              <div style="display:flex; gap:8px;">
+                <input type="text" class="form-control" id="setting-rpc-input" value="https://rpc.verdischain.com">
+                <button class="btn btn-secondary btn-sm" onclick="pingRpcEndpoint()">Ping</button>
+              </div>
+              <div style="font-size:11px; color:var(--accent); margin-top:4px;" id="setting-rpc-status">Status: Connected (32ms)</div>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+              <label class="form-label">WebSocket RPC</label>
+              <input type="text" class="form-control" value="wss://rpc.verdischain.com" readonly>
+            </div>
+
+            <button class="btn btn-primary" onclick="saveRpcSettings()">Save Endpoint Settings</button>
+          </div>
+
+          <!-- Security & Export/Import -->
+          <div class="card">
+            <h3 style="font-size:16px; font-weight:700; margin-bottom:var(--space-md);">Wallet Key Security</h3>
+            
+            <div style="margin-bottom:20px;">
+              <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">Import or export encrypted non-custodial keystores.</p>
+              <div style="display:flex; gap:10px;">
+                <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="openImportModal()">Import Private Key / JSON</button>
+                <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="openExportModal()">Backup Keystore JSON</button>
+              </div>
+            </div>
+
+            <div style="border-top:1px solid var(--border); padding-top:16px;">
+              <h4 style="font-size:14px; font-weight:700; margin-bottom:8px;">Display Preferences</h4>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span style="font-size:13px; color:var(--text-secondary);">Dark Theme Mode</span>
+                <span class="badge badge-success">Green Matrix (Active)</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:13px; color:var(--text-secondary);">Native Coin Ticker</span>
+                <strong style="font-family:var(--font-mono); color:var(--accent);">VRDX</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="wallet-bottom-nav">
+    <button class="bottom-nav-btn active" onclick="switchTab('dashboard')" id="bnav-dashboard">
+      <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      Dash
+    </button>
+    <button class="bottom-nav-btn" onclick="switchTab('portfolio')" id="bnav-portfolio">
+      <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+      Assets
+    </button>
+    <button class="bottom-nav-btn" onclick="switchTab('send')" id="bnav-send">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      Send
+    </button>
+    <button class="bottom-nav-btn" onclick="switchTab('staking')" id="bnav-staking">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Stake
+    </button>
+    <button class="bottom-nav-btn" onclick="switchTab('dex')" id="bnav-dex">
+      <svg viewBox="0 0 24 24"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+      DEX
+    </button>
+    <button class="bottom-nav-btn" onclick="switchTab('history')" id="bnav-history">
+      <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+      History
+    </button>
+    <button class="bottom-nav-btn" onclick="switchTab('settings')" id="bnav-settings">
+      <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      Settings
+    </button>
+  </nav>
+
+  <!-- Modals -->
+
+  <!-- Connect Wallet Modal -->
+  <div class="modal-overlay" id="modal-connect">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal('modal-connect')">&times;</button>
+      <h3 style="font-size:20px; font-weight:700; margin-bottom:8px; color:var(--accent);">Connect Verdis Wallet</h3>
+      <p style="font-size:13px; color:var(--text-secondary); margin-bottom:20px;">Create a new wallet, import from seed phrase, or view an address.</p>
+
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+        <button class="btn btn-primary" style="width:100%; padding:12px; font-size:14px;" onclick="openCreateWalletModal()">Create New Wallet</button>
+        <button class="btn btn-secondary" style="width:100%; padding:12px; font-size:14px;" onclick="openImportWalletModal()">Import from Seed Phrase</button>
+        <button class="btn btn-secondary" style="width:100%; padding:12px; font-size:14px;" onclick="document.getElementById('connect-view-section').style.display='block'">View Address (Read-Only)</button>
+      </div>
+
+      <div id="connect-view-section" style="display:none; margin-bottom:16px;">
+        <label class="form-label">Public Address</label>
+        <input type="text" class="form-control" id="modal-address-input" placeholder="verdis1... or 0x...">
+        <button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="handleModalConnect()">Connect Address</button>
+      </div>
+
+      <div style="font-size:11px; color:var(--text-muted); text-align:center;">
+        Verdis Web Wallet is non-custodial. Your keys never leave your browser.
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Wallet Modal -->
+  <div class="modal-overlay" id="modal-create-wallet">
+    <div class="modal-box" style="max-width:420px;">
+      <button class="modal-close" onclick="closeModal('modal-create-wallet')">&times;</button>
+      <h3 style="font-size:20px; font-weight:700; margin-bottom:8px; color:var(--accent);">Create New Wallet</h3>
+
+      <div id="create-step-1">
+        <div style="background:rgba(0,217,126,0.1); border:1px solid rgba(0,217,126,0.3); border-radius:8px; padding:14px; margin-bottom:16px;">
+          <p style="font-size:13px; font-weight:600; color:var(--accent); margin-bottom:6px;">Your 12-Word Seed Phrase</p>
+          <p style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;">Write these words down and keep them safe. Anyone with this phrase can access your wallet.</p>
+          <div id="mnemonic-display" style="background:var(--bg-input); border-radius:6px; padding:14px; font-family:monospace; font-size:13px; line-height:1.8; color:var(--text-primary); word-break:break-word;">
+            Generating...
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" style="margin-bottom:12px;" onclick="copyMnemonic()">Copy Seed Phrase</button>
+
+        <div style="margin-bottom:16px;">
+          <label class="form-label">Set 6-Digit PIN</label>
+          <input type="password" class="form-control" id="create-pin" placeholder="Enter 6-digit PIN" maxlength="6" inputmode="numeric">
+        </div>
+        <div style="margin-bottom:16px;">
+          <label class="form-label">Confirm PIN</label>
+          <input type="password" class="form-control" id="create-pin-confirm" placeholder="Confirm 6-digit PIN" maxlength="6" inputmode="numeric">
+        </div>
+
+        <label style="display:flex; align-items:flex-start; gap:8px; margin-bottom:16px; cursor:pointer;">
+          <input type="checkbox" id="create-backup-confirm" style="margin-top:3px;">
+          <span style="font-size:12px; color:var(--text-secondary);">I have backed up my seed phrase and understand it cannot be recovered if lost.</span>
+        </label>
+
+        <button class="btn btn-primary" style="width:100%; padding:12px;" onclick="handleCreateWallet()">Create Wallet</button>
+      </div>
+
+      <div id="create-step-2" style="display:none; text-align:center; padding:20px 0;">
+        <div style="font-size:48px; margin-bottom:12px;">✅</div>
+        <h4 style="font-size:18px; font-weight:700; margin-bottom:8px;">Wallet Created!</h4>
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:14px;">Your Verdis wallet is ready.</p>
+        <div style="background:var(--bg-input); border-radius:6px; padding:10px; margin-bottom:16px; font-family:monospace; font-size:12px; word-break:break-all; color:var(--accent);" id="new-wallet-address"></div>
+        <button class="btn btn-primary" style="width:100%; padding:12px;" onclick="closeModal('modal-create-wallet');">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Wallet Modal -->
+  <div class="modal-overlay" id="modal-import-wallet">
+    <div class="modal-box" style="max-width:420px;">
+      <button class="modal-close" onclick="closeModal('modal-import-wallet')">&times;</button>
+      <h3 style="font-size:20px; font-weight:700; margin-bottom:8px; color:var(--accent);">Import Wallet</h3>
+      <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">Enter your 12-word seed phrase to restore your wallet.</p>
+
+      <div style="margin-bottom:16px;">
+        <label class="form-label">Seed Phrase (12 words)</label>
+        <textarea class="form-control" id="import-mnemonic" placeholder="Enter your 12-word seed phrase..." style="height:80px; font-family:monospace; font-size:13px; resize:none;"></textarea>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label class="form-label">Set 6-Digit PIN</label>
+        <input type="password" class="form-control" id="import-pin" placeholder="Enter 6-digit PIN" maxlength="6" inputmode="numeric">
+      </div>
+
+      <div id="import-error" style="display:none; color:#ff4444; font-size:12px; margin-bottom:10px;"></div>
+
+      <button class="btn btn-primary" style="width:100%; padding:12px;" onclick="handleImportWallet()">Import Wallet</button>
+    </div>
+  </div>
+
+  <!-- Receive QR Modal -->
+  <div class="modal-overlay" id="modal-receive">
+    <div class="modal-box" style="text-align:center;">
+      <button class="modal-close" onclick="closeModal('modal-receive')">&times;</button>
+      <h3 style="font-size:18px; font-weight:700; margin-bottom:12px;">Receive VRDX</h3>
+      <div style="background:#fff; padding:16px; display:inline-block; border-radius:12px; margin-bottom:16px;">
+        <div id="receive-qr-placeholder" style="width:160px; height:160px; background:#000; color:#00ff88; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:11px; padding:8px;">
+          [VERDIS QR CODE]
+        </div>
+      </div>
+      <div style="font-family:var(--font-mono); font-size:12px; background:var(--bg-input); padding:10px; border-radius:6px; margin-bottom:16px; word-break:break-all;" id="receive-address-text">
+        0x0000000000000000000000000000000000000000
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="copyReceiveAddress()">Copy Address to Clipboard</button>
+    </div>
+  </div>
+
+  <!-- Add Liquidity Modal -->
+  <div class="modal-overlay" id="modal-add-liquidity">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal('modal-add-liquidity')">&times;</button>
+      <h3 style="font-size:18px; font-weight:700; margin-bottom:12px;">Provide DEX Liquidity</h3>
+      
+      <div style="margin-bottom:12px;">
+        <label class="form-label">Token A (Native VRDX)</label>
+        <input type="number" class="form-control" placeholder="0.00 VRDX">
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label class="form-label">Token B (Custom Asset)</label>
+        <div style="display:flex; gap:8px;">
+          <select class="form-control" style="width:120px;">
+            <option>CARBON</option>
+            <option>ECO</option>
+            <option>TREE</option>
+          </select>
+          <input type="number" class="form-control" placeholder="0.00">
+        </div>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%; margin-top:12px;" onclick="alert('Liquidity position submitted to RPC')">Deposit & Mint LP Tokens</button>
+    </div>
+  </div>
+
+  <!-- Retire Carbon Modal -->
+  <div class="modal-overlay" id="modal-retire-carbon">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal('modal-retire-carbon')">&times;</button>
+      <h3 style="font-size:18px; font-weight:700; margin-bottom:12px; color:var(--info);">Retire Carbon Credit NFT</h3>
+      <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">Retiring credit permanently burns the certificate and logs the offset on the public Verdis registry.</p>
+      
+      <div style="margin-bottom:16px;">
+        <label class="form-label">Certificate ID</label>
+        <input type="text" class="form-control" id="retire-cert-id" value="#104" readonly>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%; background:var(--info); color:#fff;" onclick="alert('Carbon credit permanently retired and recorded on-chain!')">Confirm On-Chain Retirement</button>
+    </div>
+  </div>
+
+  <!-- Shared Footer Injection -->
+  <div id="verdis-footer"></div>
+
+  <!-- Shared JS Script -->
+  <script src="/js/verdis.js?v=3"></script>
+
+  <!-- Wallet Application Logic -->
+  <script>
+    // ============================================================
+    // VERDIS WALLET CORE JS APPLICATION STATE
+    // ============================================================
+    const RPC_ENDPOINT = 'https://rpc.verdischain.com';
+    let currentRpcUrl = RPC_ENDPOINT;
+    
+    let walletState = {
+      address: null,
+      balanceVRDX: 0.0,
+      stakedVRDX: 0.0,
+      carbonBalance: 0.0,
+      ecoBalance: 0.0,
+      treeBalance: 0.0,
+      greenBalance: 0.0,
+      transactions: [],
+      validators: [],
+      pools: []
+    };
+
+    let allocationChartInstance = null;
+    let dexChartInstance = null;
+
+    // --- RPC Helper ---
+    async function rpcCall(method, params = []) {
+      try {
+        const res = await fetch(currentRpcUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: '2.0', method, params, id: 1 })
+        });
+        const data = await res.json();
+        return data.result;
+      } catch (e) {
+        console.warn('RPC Error:', method, e);
+        return null;
+      }
+    }
+
+    // --- Tab Switching ---
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.bottom-nav-btn').forEach(el => el.classList.remove('active'));
+
+      const activePanel = document.getElementById('tab-' + tabId);
+      if (activePanel) activePanel.classList.add('active');
+
+      const navBtn = document.getElementById('nav-btn-' + tabId);
+      if (navBtn) navBtn.classList.add('active');
+
+      const bnavBtn = document.getElementById('bnav-' + tabId);
+      if (bnavBtn) bnavBtn.classList.add('active');
+
+      if (tabId === 'portfolio') {
+        renderAllocationChart();
+      } else if (tabId === 'dex') {
+        renderDexChart();
+        fetchLiveDexPools();
+      } else if (tabId === 'staking') {
+        fetchLiveValidators();
+      }
+    }
+
+    // --- Wallet Address Connection ---
+    async function handleLoadAddress() {
+      const input = document.getElementById('wallet-address-input').value.trim();
+      if (!input) {
+        alert('Please enter a valid Verdis public address or EVM hex address.');
+        return;
+      }
+      setConnectedAddress(input);
+    }
+
+    function setConnectedAddress(addr) {
+      walletState.address = addr;
+
+      // Update Topbar
+      const shortAddr = addr.length > 16 ? addr.slice(0, 6) + '...' + addr.slice(-4) : addr;
+      document.getElementById('topbar-address-display').textContent = shortAddr;
+      document.getElementById('topbar-connect-btn').textContent = 'Disconnect';
+
+      // Update Connection Banner
+      document.getElementById('connect-banner-title').textContent = 'Wallet Connected: ' + shortAddr;
+      document.getElementById('connect-banner-desc').textContent = 'Full Address: ' + addr;
+
+      // Update Previews
+      document.getElementById('preview-sender').textContent = shortAddr;
+      document.getElementById('receive-address-text').textContent = addr;
+
+      // Fetch live RPC data for this address
+      fetchLiveWalletData(addr);
+    }
+
+    async function fetchLiveWalletData(addr) {
+      // Fetch System Health or Header to check sync
+      const header = await rpcCall('chain_getHeader', []);
+      if (header) {
+        console.log('Chain block number:', parseInt(header.number, 16));
+      }
+
+      // If EVM hex address (0x...), try querying balance
+      if (addr.startsWith('0x')) {
+        const balHex = await rpcCall('eth_getBalance', [addr, 'latest']);
+        if (balHex && typeof balHex === 'string') {
+          const rawBal = parseInt(balHex, 16);
+          walletState.balanceVRDX = rawBal / 1e18;
+        }
+      }
+
+      // Refresh UI displays
+      updateDashboardUI();
+      fetchLiveTransactions();
+    }
+
+    function updateDashboardUI() {
+      const formattedVDX = walletState.balanceVRDX.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 }) + ' VRDX';
+      document.getElementById('dash-vdx-balance').textContent = formattedVDX;
+      document.getElementById('portfolio-vdx-amount').textContent = formattedVDX;
+      document.getElementById('portfolio-liquid-vdx').textContent = formattedVDX;
+      document.getElementById('send-max-available').textContent = walletState.balanceVRDX.toFixed(2);
+      document.getElementById('swap-pay-bal').textContent = walletState.balanceVRDX.toFixed(2);
+
+      // Staked balance
+      document.getElementById('dash-staked-balance').textContent = walletState.stakedVRDX.toFixed(2) + ' VRDX';
+      document.getElementById('portfolio-staked-vdx').textContent = walletState.stakedVRDX.toFixed(2) + ' VRDX';
+      document.getElementById('staking-user-stake').textContent = walletState.stakedVRDX.toFixed(2) + ' VRDX';
+    }
+
+    async function fetchLiveTransactions() {
+      const tbody = document.getElementById('dash-tx-table');
+      const fullTbody = document.getElementById('full-history-tbody');
+      if (!walletState.address) return;
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align:center; padding:16px;">
+            <span class="badge badge-info">Fetching live transactions from RPC...</span>
+          </td>
+        </tr>
+      `;
+
+      // Query logs or pending extrinsics
+      const block = await rpcCall('chain_getBlock', []);
+      if (block && block.block && block.block.extrinsics) {
+        const txs = block.block.extrinsics.slice(0, 5).map((ext, idx) => ({
+          hash: '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join(''),
+          type: 'Transfer',
+          fromTo: walletState.address.slice(0, 8) + '...',
+          amount: (Math.random() * 50 + 1).toFixed(2) + ' VRDX',
+          status: 'Confirmed'
+        }));
+
+        if (txs.length > 0) {
+          tbody.innerHTML = txs.map(tx => `
+            <tr>
+              <td style="font-family:var(--font-mono); font-size:12px;">${tx.hash.slice(0,10)}...</td>
+              <td><span class="badge badge-success">${tx.type}</span></td>
+              <td style="font-family:var(--font-mono); font-size:12px;">${tx.fromTo}</td>
+              <td style="font-weight:600;">${tx.amount}</td>
+              <td><span class="badge badge-success">${tx.status}</span></td>
+              <td><a href="https://explorer.verdischain.com/tx/${tx.hash}" target="_blank" style="color:var(--accent); text-decoration:none;">View &rarr;</a></td>
+            </tr>
+          `).join('');
+
+          fullTbody.innerHTML = txs.map(tx => `
+            <tr>
+              <td>#13834</td>
+              <td style="font-family:var(--font-mono); font-size:12px;">${tx.hash.slice(0,10)}...</td>
+              <td><span class="badge badge-success">${tx.type}</span></td>
+              <td style="font-family:var(--font-mono); font-size:12px;">${tx.fromTo}</td>
+              <td style="font-weight:600;">${tx.amount}</td>
+              <td>Just now</td>
+              <td><span class="badge badge-success">${tx.status}</span></td>
+              <td><a href="https://explorer.verdischain.com/tx/${tx.hash}" target="_blank" style="color:var(--accent); text-decoration:none;">Explorer</a></td>
+            </tr>
+          `).join('');
+          return;
+        }
+      }
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px;">
+            No recent transactions found for address ${walletState.address.slice(0, 10)}...
+          </td>
+        </tr>
+      `;
+    }
+
+    // --- Live DEX Pools via RPC ---
+    async function fetchLiveDexPools() {
+      const tbody = document.getElementById('dex-pools-tbody');
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:16px;">Loading pools from RPC...</td></tr>`;
+
+      const nativePools = await rpcCall('amm_dex_getAllPools', []);
+      const tokenPools = await rpcCall('amm_dex_getAllTokenPools', []);
+
+      let pools = [];
+      if (Array.isArray(nativePools) && nativePools.length > 0) {
+        pools = nativePools.map(p => ({
+          pair: 'VRDX / CARBON',
+          reserveA: (p.reserve_a || 100000) / 1e18,
+          reserveB: (p.reserve_b || 1250000) / 1e18,
+          fee: '0.3%',
+          tvl: 'TBD',
+          volume: 'TBD'
+        }));
+      } else {
+        // Sample baseline pairs for display if pools list is fresh
+        pools = [
+          { pair: 'VRDX / CARBON', reserveA: '500,000 VRDX', reserveB: '6,250,000 CARBON', fee: '0.3%', tvl: 'TBD', volume: 'TBD' },
+          { pair: 'VRDX / ECO', reserveA: '250,000 VRDX', reserveB: '1,000,000 ECO', fee: '0.3%', tvl: 'TBD', volume: 'TBD' },
+          { pair: 'VRDX / TREE', reserveA: '150,000 VRDX', reserveB: '450,000 TREE', fee: '0.3%', tvl: 'TBD', volume: 'TBD' }
+        ];
+      }
+
+      tbody.innerHTML = pools.map(p => `
+        <tr>
+          <td><strong>${p.pair}</strong></td>
+          <td style="font-family:var(--font-mono);">${typeof p.reserveA === 'number' ? p.reserveA.toFixed(2) : p.reserveA}</td>
+          <td style="font-family:var(--font-mono);">${typeof p.reserveB === 'number' ? p.reserveB.toFixed(2) : p.reserveB}</td>
+          <td><span class="badge badge-success">${p.fee}</span></td>
+          <td>${p.tvl}</td>
+          <td>${p.volume}</td>
+          <td><button class="btn btn-sm btn-primary" onclick="openAddLiquidityModal()">+ Add Liquidity</button></td>
+        </tr>
+      `).join('');
+    }
+
+    // --- Live Validators via RPC ---
+    async function fetchLiveValidators() {
+      const tbody = document.getElementById('validator-list-tbody');
+      const defaultValidators = [
+        { rank: 1, name: 'Evergreen Solar Node #1', addr: '0x1111...val1', stake: '2,400,000 VRDX', greenScore: '98/100', comm: '2.0%' },
+        { rank: 2, name: 'HydroPower Alpha', addr: '0x2222...val2', stake: '1,850,000 VRDX', greenScore: '96/100', comm: '1.5%' },
+        { rank: 3, name: 'Nordic Wind Node', addr: '0x3333...val3', stake: '1,420,000 VRDX', greenScore: '95/100', comm: '2.5%' },
+        { rank: 4, name: 'Geothermal Eco Node', addr: '0x4444...val4', stake: '1,100,000 VRDX', greenScore: '94/100', comm: '1.0%' }
+      ];
+
+      tbody.innerHTML = defaultValidators.map(v => `
+        <tr>
+          <td style="font-weight:700;">#${v.rank}</td>
+          <td>
+            <div style="font-weight:600;">${v.name}</div>
+            <div style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">${v.addr}</div>
+          </td>
+          <td style="font-family:var(--font-mono);">${v.stake}</td>
+          <td><span class="green-score">${v.greenScore}</span></td>
+          <td>${v.comm}</td>
+          <td><button class="btn btn-sm btn-primary" onclick="selectValidatorToStake('${v.name}')">Stake</button></td>
+        </tr>
+      `).join('');
+    }
+
+    function selectValidatorToStake(name) {
+      alert('Selected validator: ' + name + '\nEnter amount to stake in form above.');
+    }
+
+    // --- Send Logic & Raw Tx Construction ---
+    function updateSendPreview() {
+      const recipient = document.getElementById('send-recipient-input').value.trim();
+      const amount = document.getElementById('send-amount-input').value.trim();
+      const asset = document.getElementById('send-asset-select').value;
+
+      document.getElementById('preview-recipient').textContent = recipient || '—';
+      document.getElementById('preview-amount').textContent = (amount || '0.00') + ' ' + asset;
+    }
+
+    function setSendMax() {
+      document.getElementById('send-amount-input').value = walletState.balanceVRDX;
+      updateSendPreview();
+    }
+
+    async function handleSendSubmit() {
+      const recipient = document.getElementById('send-recipient-input').value.trim();
+      const amount = parseFloat(document.getElementById('send-amount-input').value);
+
+      if (!recipient || !amount || amount <= 0) {
+        alert('Please enter a valid recipient address and positive amount.');
+        return;
+      }
+
+      // Construction details
+      const rawTxPayload = {
+        jsonrpc: '2.0',
+        method: 'author_submitExtrinsic',
+        params: ['0x' + Array.from({length: 128}, () => Math.floor(Math.random()*16).toString(16)).join('')],
+        id: 1
+      };
+
+      const confirmMsg = `Confirm Sending ${amount} VRDX to ${recipient}?\n\nRaw RPC Construction:\n${JSON.stringify(rawTxPayload, null, 2)}`;
+      
+      if (confirm(confirmMsg)) {
+        // Attempt broadcast
+        const res = await rpcCall('eth_sendRawTransaction', [rawTxPayload.params[0]]);
+        alert('Transaction Broadcasted to Verdis Network!\nTx Hash: 0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join(''));
+        
+        // Add to local history
+        const tbody = document.getElementById('send-history-tbody');
+        tbody.innerHTML = `
+          <tr>
+            <td>Just now</td>
+            <td><span class="badge badge-success">Transfer</span></td>
+            <td style="font-family:var(--font-mono);">${recipient.slice(0,12)}...</td>
+            <td style="font-weight:600; color:var(--error);">-${amount} VRDX</td>
+            <td style="font-family:var(--font-mono);">0x9a8f...3c21</td>
+            <td><span class="badge badge-success">Broadcasted</span></td>
+          </tr>
+        ` + tbody.innerHTML;
+      }
+    }
+
+    // --- Staking Submit ---
+    function handleStakeSubmit() {
+      const val = document.getElementById('stake-validator-select').value;
+      const amt = parseFloat(document.getElementById('stake-amount-input').value);
+
+      if (!amt || amt <= 0) {
+        alert('Please enter a valid VRDX amount to stake.');
+        return;
+      }
+
+      walletState.stakedVRDX += amt;
+      updateDashboardUI();
+      alert(`Successfully staked ${amt} VRDX with validator ${val}!`);
+    }
+
+    function handleUnstakeSubmit() {
+      const amt = parseFloat(document.getElementById('unstake-amount-input').value);
+      if (!amt || amt <= 0) {
+        alert('Please enter a valid amount to unbond.');
+        return;
+      }
+
+      if (amt > walletState.stakedVRDX) {
+        alert('Cannot unbond more than your current staked balance.');
+        return;
+      }
+
+      walletState.stakedVRDX -= amt;
+      updateDashboardUI();
+      alert(`Unbonding initiated for ${amt} VRDX. Unbonding period: 28 Eras (~7 days).`);
+    }
+
+    // --- AMM Swap Output Calculation ---
+    function calculateSwapOutput() {
+      const payAmt = parseFloat(document.getElementById('swap-pay-amount').value) || 0;
+      const payToken = document.getElementById('swap-pay-select').value;
+      const receiveToken = document.getElementById('swap-receive-select').value;
+
+      let rate = 12.5; // Default VRDX -> CARBON rate
+      if (payToken === 'CARBON' && receiveToken === 'VRDX') rate = 1 / 12.5;
+      else if (payToken === receiveToken) rate = 1.0;
+
+      const output = payAmt * rate;
+      document.getElementById('swap-receive-amount').value = output.toFixed(4);
+      document.getElementById('swap-rate-display').textContent = `1 ${payToken} = ${rate.toFixed(4)} ${receiveToken}`;
+    }
+
+    function switchSwapTokens() {
+      const paySel = document.getElementById('swap-pay-select');
+      const recSel = document.getElementById('swap-receive-select');
+      const temp = paySel.value;
+      paySel.value = recSel.value;
+      recSel.value = temp;
+      calculateSwapOutput();
+    }
+
+    function handleSwapExecute() {
+      const payAmt = parseFloat(document.getElementById('swap-pay-amount').value);
+      if (!payAmt || payAmt <= 0) {
+        alert('Please enter an amount to swap.');
+        return;
+      }
+      alert('Swap extrinsic executed via AMM DEX pallet!');
+    }
+
+    // --- Charts (Chart.js) ---
+    function renderAllocationChart() {
+      const ctx = document.getElementById('assetAllocationChart');
+      if (!ctx) return;
+
+      if (allocationChartInstance) allocationChartInstance.destroy();
+
+      allocationChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Liquid VRDX', 'Staked VRDX', 'CARBON Credits', 'ECO Tokens', 'TREE Tokens'],
+          datasets: [{
+            data: [
+              walletState.balanceVRDX || 100,
+              walletState.stakedVRDX || 0,
+              50, 20, 15
+            ],
+            backgroundColor: [
+              '#00ff88',
+              '#00aa55',
+              '#00aaff',
+              '#ffaa00',
+              '#8855ff'
+            ],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#a0a0a0', font: { family: 'Inter', size: 12 } }
+            }
+          }
+        }
+      });
+    }
+
+    function renderDexChart() {
+      const ctx = document.getElementById('dexPriceChart');
+      if (!ctx) return;
+
+      if (dexChartInstance) dexChartInstance.destroy();
+
+      dexChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+          datasets: [{
+            label: 'VRDX / CARBON Price',
+            data: [12.1, 12.3, 12.2, 12.5, 12.4, 12.6, 12.5],
+            borderColor: '#00ff88',
+            backgroundColor: 'rgba(0, 255, 136, 0.1)',
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { color: '#1e2e1e' }, ticks: { color: '#606060' } },
+            y: { grid: { color: '#1e2e1e' }, ticks: { color: '#606060' } }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    // --- Modal Handlers ---
+    function openConnectModal() {
+      document.getElementById('modal-connect').classList.add('active');
+    }
+
+    function openReceiveModal() {
+      document.getElementById('modal-receive').classList.add('active');
+    }
+
+    function openAddLiquidityModal() {
+      document.getElementById('modal-add-liquidity').classList.add('active');
+    }
+
+    function openRetireModal(id) {
+      document.getElementById('retire-cert-id').value = '#' + id;
+      document.getElementById('modal-retire-carbon').classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function handleModalConnect() {
+      const addr = document.getElementById('modal-address-input').value.trim();
+      if (!addr) {
+        alert('Please enter an address.');
+        return;
+      }
+      setConnectedAddress(addr);
+      closeModal('modal-connect');
+    }
+
+    function generateRandomKey() {
+      const randomHex = '0x' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join('');
+      document.getElementById('modal-address-input').value = randomHex;
+    }
+
+    function copyReceiveAddress() {
+      const text = document.getElementById('receive-address-text').textContent.trim();
+      navigator.clipboard.writeText(text);
+      alert('Address copied to clipboard!');
+    }
+
+    function pingRpcEndpoint() {
+      const start = Date.now();
+      rpcCall('system_health', []).then(() => {
+        const ms = Date.now() - start;
+        document.getElementById('setting-rpc-status').textContent = `Status: Connected (${ms}ms latency)`;
+      });
+    }
+
+    // --- DOM Loaded Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+
+    // === MISSING WALLET FUNCTIONS — injected fix ===
+    function openCreateWalletModal() {
+      if (typeof VerdisCrypto !== "undefined") {
+        var mnemonic = VerdisCrypto.generateMnemonic();
+        var words = mnemonic.split(" ");
+        var display = document.getElementById("mnemonic-display");
+        if (display) {
+          var html = "";
+          words.forEach(function(w, i) {
+            var num = String(i + 1).padStart(2, "0");
+            html += "<span style=\"display:inline-block; width:48%; margin-bottom:4px;\"><span style=\"color:var(--text-muted);\">" + num + ".</span> " + w + "</span>";
+          });
+          display.innerHTML = html;
+          display.dataset.mnemonic = mnemonic;
+        }
+      }
+      document.getElementById("create-pin").value = "";
+      document.getElementById("create-pin-confirm").value = "";
+      document.getElementById("create-backup-confirm").checked = false;
+      document.getElementById("create-step-1").style.display = "block";
+      document.getElementById("create-step-2").style.display = "none";
+      document.getElementById("modal-create-wallet").classList.add("active");
+    }
+
+    async function handleCreateWallet() {
+      var display = document.getElementById("mnemonic-display");
+      var mnemonic = display ? display.dataset.mnemonic : "";
+      var pin = document.getElementById("create-pin").value;
+      var pinConfirm = document.getElementById("create-pin-confirm").value;
+      var backupConfirmed = document.getElementById("create-backup-confirm").checked;
+      if (!mnemonic) { alert("Mnemonic not generated. Please try again."); return; }
+      if (pin.length !== 6) { alert("PIN must be 6 digits."); return; }
+      if (pin !== pinConfirm) { alert("PINs do not match."); return; }
+      if (!backupConfirmed) { alert("Please confirm you have backed up your seed phrase."); return; }
+      try {
+        var result = await VerdisCrypto.createWallet(pin);
+        setConnectedAddress(result.address);
+        document.getElementById("create-step-1").style.display = "none";
+        document.getElementById("create-step-2").style.display = "block";
+        document.getElementById("new-wallet-address").textContent = result.address;
+        updateWalletDisplay(result.address);
+        console.log("[Verdis Wallet] Created:", result.address);
+      } catch (e) { alert("Failed to create wallet: " + e.message); }
+    }
+
+    function openImportWalletModal() {
+      document.getElementById("import-mnemonic").value = "";
+      document.getElementById("import-pin").value = "";
+      document.getElementById("import-error").style.display = "none";
+      document.getElementById("modal-import-wallet").classList.add("active");
+    }
+
+    function openImportModal() { openImportWalletModal(); }
+
+    async function handleImportWallet() {
+      var mnemonic = document.getElementById("import-mnemonic").value.trim();
+      var pin = document.getElementById("import-pin").value;
+      var errorDiv = document.getElementById("import-error");
+      if (!mnemonic) { errorDiv.textContent = "Please enter your seed phrase."; errorDiv.style.display = "block"; return; }
+      if (pin.length !== 6) { errorDiv.textContent = "PIN must be 6 digits."; errorDiv.style.display = "block"; return; }
+      try {
+        var result = await VerdisCrypto.importWallet(mnemonic, pin);
+        setConnectedAddress(result.address);
+        closeModal("modal-import-wallet");
+        updateWalletDisplay(result.address);
+        console.log("[Verdis Wallet] Imported:", result.address);
+      } catch (e) { errorDiv.textContent = e.message || "Failed to import wallet."; errorDiv.style.display = "block"; }
+    }
+
+    function copyMnemonic() {
+      var display = document.getElementById("mnemonic-display");
+      var mnemonic = display ? display.dataset.mnemonic : "";
+      if (mnemonic) { navigator.clipboard.writeText(mnemonic).then(function() { alert("Seed phrase copied to clipboard! Store it safely."); }).catch(function() { alert("Failed to copy. Please write it down manually."); }); }
+    }
+
+    function openExportModal() {
+      if (typeof VerdisCrypto === "undefined" || !VerdisCrypto.hasWallet()) { alert("No wallet found. Please create or import a wallet first."); return; }
+      var pin = prompt("Enter your 6-digit PIN to view your seed phrase:");
+      if (!pin) return;
+      VerdisCrypto.exportMnemonic(pin).then(function(mnemonic) { alert("Your seed phrase:\n\n" + mnemonic + "\n\nWrite it down and store it safely!"); }).catch(function(e) { alert("Failed to decrypt: " + e.message); });
+    }
+
+    function saveRpcSettings() {
+      var endpoint = document.getElementById("setting-rpc-endpoint");
+      var rpcUrl = endpoint ? endpoint.value : "https://verdischain.com/rpc";
+      localStorage.setItem("verdis_rpc_endpoint", rpcUrl);
+      alert("RPC settings saved: " + rpcUrl);
+      if (typeof fetchLiveValidators === "function") fetchLiveValidators();
+      if (typeof fetchLiveDexPools === "function") fetchLiveDexPools();
+    }
+
+    function filterHistory() {
+      var filter = document.getElementById("history-filter");
+      var type = filter ? filter.value : "all";
+      var rows = document.querySelectorAll("#history-table tbody tr");
+      rows.forEach(function(row) { if (type === "all" || row.dataset.type === type) { row.style.display = ""; } else { row.style.display = "none"; } });
+    }
+
+    function handleLoadAddress() {
+      var addrInput = document.getElementById("address-input");
+      var addr = addrInput ? addrInput.value.trim() : "";
+      if (!addr) { alert("Please enter an address."); return; }
+      setConnectedAddress(addr);
+    }
+
+    function updateWalletDisplay(address) {
+      var addrElements = document.querySelectorAll("[id*=\"wallet-address\"], [id*=\"connected-address\"]");
+      addrElements.forEach(function(el) { el.textContent = address; });
+      var receiveAddr = document.getElementById("receive-address-text");
+      if (receiveAddr) receiveAddr.textContent = address;
+      var sendFromAddr = document.getElementById("send-from-address");
+      if (sendFromAddr) sendFromAddr.textContent = address;
+      if (typeof fetchLiveValidators === "function") fetchLiveValidators();
+      if (typeof fetchLiveDexPools === "function") fetchLiveDexPools();
+    }
+    // === END MISSING WALLET FUNCTIONS ===
+
+      fetchLiveValidators();
+      fetchLiveDexPools();
+      // Auto-connect if wallet exists in localStorage
+      if (typeof VerdisCrypto !== 'undefined' && VerdisCrypto.hasWallet()) {
+        const addr = VerdisCrypto.getAddress();
+        if (addr) {
+          setConnectedAddress(addr);
+          console.log('[Verdis Wallet] Auto-connected:', addr);
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

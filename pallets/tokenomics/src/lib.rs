@@ -8,9 +8,6 @@
 //! - Presale price tracking ($0.0005/VRDX)
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#[cfg(feature = "runtime-benchmarks")]
-pub mod benchmarking;
-
 
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{
@@ -27,6 +24,9 @@ use sp_runtime::traits::{AccountIdConversion, Saturating};
 use sp_std::prelude::*;
 
 pub use pallet::*;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -85,11 +85,65 @@ pub mod pallet {
     #[pallet::getter(fn consent_given)]
     pub type ConsentGiven<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, bool>;
 
+    // === Priority Fee Storage (Solana Priority Fees) ===
+    #[pallet::storage]
+    #[pallet::getter(fn priority_fee)]
+    pub type PriorityFees<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, u32, ValueQuery>;
+
+    // === Token-2022: Transfer Fee ===
+    #[pallet::storage]
+    #[pallet::getter(fn transfer_fee_bps)]
+    pub type TransferFeeBps<T: Config> = StorageValue<_, u32, ValueQuery>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn green_treasury_collected)]
+    pub type GreenTreasuryCollected<T: Config> = StorageValue<_, BalanceOf<T>, ValueQuery>;
+
+    // === Token-2022: Confidential Transfers ===
+    #[pallet::storage]
+    #[pallet::getter(fn confidential_accounts)]
+    pub type ConfidentialAccounts<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, bool, ValueQuery>;
+
+    // === Token-2022: Permanent Delegate ===
+    #[pallet::storage]
+    #[pallet::getter(fn permanent_delegate)]
+    pub type PermanentDelegate<T: Config> = StorageValue<_, Option<T::AccountId>, ValueQuery>;
+
+    // === Token-2022: Token Metadata ===
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Default)]
+    pub struct TokenMetadata {
+        pub name: BoundedVec<u8, ConstU32<64>>,
+        pub symbol: BoundedVec<u8, ConstU32<16>>,
+        pub description: BoundedVec<u8, ConstU32<256>>,
+        pub image_uri: BoundedVec<u8, ConstU32<128>>,
+    }
+
+    #[pallet::storage]
+    #[pallet::getter(fn token_metadata)]
+    pub type TokenMetadataStorage<T: Config> = StorageValue<_, TokenMetadata, ValueQuery>;
+
+    // === Token-2022: Freeze Authority ===
+    #[pallet::storage]
+    #[pallet::getter(fn frozen_accounts)]
+    pub type FrozenAccounts<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, bool, ValueQuery>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn freeze_authority)]
+    pub type FreezeAuthority<T: Config> = StorageValue<_, Option<T::AccountId>, ValueQuery>;
+
     // === Events ===
 
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
+        PriorityFeeSet { account: T::AccountId, fee_multiplier: u32 },
+        TransferFeeUpdated { new_bps: u32 },
+        ConfidentialTransferToggled { account: T::AccountId, enabled: bool },
+        PermanentDelegateSet { delegate: T::AccountId },
+        TokenMetadataUpdated { name: Vec<u8>, symbol: Vec<u8> },
+        AccountFrozen { account: T::AccountId },
+        AccountUnfrozen { account: T::AccountId },
+        EcoFeeCollected { amount: BalanceOf<T> },
         ConsentGiven {
             who: T::AccountId,
         },
@@ -111,6 +165,11 @@ pub mod pallet {
 
     #[pallet::error]
     pub enum Error<T> {
+        MaxPriorityFeeExceeded,
+        AccountFrozen,
+        NotFreezeAuthority,
+        NotPermanentDelegate,
+        MetadataTooLong,
         ConsentRequired,
         InsufficientFunds,
         MaxInvestorAllocationReached,
@@ -123,6 +182,15 @@ pub mod pallet {
 
     #[pallet::config]
     pub trait Config: frame_system::Config {
+        /// Maximum priority fee multiplier
+        #[pallet::constant]
+        type MaxPriorityFeeMultiplier: Get<u32>;
+        /// Default transfer fee percentage (basis points, e.g., 50 = 0.5%)
+        #[pallet::constant]
+        type DefaultTransferFeeBps: Get<u32>;
+        /// Green treasury account for eco fees
+        #[pallet::constant]
+        type GreenTreasury: Get<Self::AccountId>;
         type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
         type Currency: ReservableCurrency<Self::AccountId>;
         #[pallet::constant]
@@ -302,12 +370,126 @@ pub mod pallet {
         }
     }
 }
-#[cfg(test)]
-mod tests;
 
-impl WeightInfo for () {
-    fn give_consent() -> Weight { Weight::zero() }
-    fn purchase() -> Weight { Weight::zero() }
-    fn update_presale_price() -> Weight { Weight::zero() }
-    fn release_distribution() -> Weight { Weight::zero() }
+
+pub struct TestGreenTreasury;
+impl Get<sp_runtime::AccountId32> for TestGreenTreasury {
+    fn get() -> sp_runtime::AccountId32 {
+        sp_runtime::AccountId32::from([0xff; 32])
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use frame_support::{
+        assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types,
+        traits::{ConstU128, ConstU32},
+    };
+    use sp_io::TestExternalities;
+    use sp_keyring::Sr25519Keyring;
+    use sp_runtime::{traits::IdentityLookup, BuildStorage};
+
+    type Block = frame_system::mocking::MockBlock<Test>;
+
+    construct_runtime!(
+        pub enum Test { System: frame_system, Balances: pallet_balances, Tokenomics: crate }
+    );
+
+    #[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
+    impl frame_system::Config for Test {
+        type AccountId = sp_core::crypto::AccountId32;
+        type Lookup = IdentityLookup<Self::AccountId>;
+        type Block = Block;
+        type AccountData = pallet_balances::AccountData<u128>;
+    }
+
+    impl pallet_balances::Config for Test {
+        type MaxLocks = ConstU32<50>;
+        type MaxReserves = ConstU32<50>;
+        type ReserveIdentifier = [u8; 8];
+        type Balance = u128;
+        type RuntimeEvent = RuntimeEvent;
+        type DustRemoval = ();
+        type ExistentialDeposit = ConstU128<1>;
+        type AccountStore = System;
+        type WeightInfo = ();
+        type FreezeIdentifier = ();
+        type MaxFreezes = ConstU32<0>;
+        type RuntimeHoldReason = ();
+        type RuntimeFreezeReason = ();
+        type DoneSlashHandler = ();
+    }
+
+    parameter_types! {
+        pub const TokPalletId: PalletId = PalletId(*b"v/toknms");
+        pub const TotalSupply: u128 = 100_000_000_000_000_000_000;
+        pub const InvestorAllocation: u128 = 12_000_000_000_000_000_000;
+    }
+
+    impl Config for Test {
+    type MaxPriorityFeeMultiplier = ConstU32<1000>;
+    type DefaultTransferFeeBps = ConstU32<50>;
+    type GreenTreasury = TestGreenTreasury;
+        type RuntimeEvent = RuntimeEvent;
+        type Currency = Balances;
+        type TotalSupply = TotalSupply;
+        type InvestorAllocation = InvestorAllocation;
+        type PalletId = TokPalletId;
+        type WeightInfo = SubstrateWeight<Test>;
+    }
+
+    pub fn new_test_ext() -> TestExternalities {
+        let mut t = frame_system::GenesisConfig::<Test>::default()
+            .build_storage()
+            .unwrap();
+        pallet_balances::GenesisConfig::<Test> {
+            balances: vec![
+                (Sr25519Keyring::Alice.to_account_id(), 1_000_000_000),
+                (Sr25519Keyring::Bob.to_account_id(), 500_000),
+            ],
+            ..Default::default()
+        }
+        .assimilate_storage(&mut t)
+        .unwrap();
+        let mut ext = TestExternalities::new(t);
+        ext.execute_with(|| System::set_block_number(1));
+        ext
+    }
+
+    #[test]
+    fn test_genesis_state() {
+        new_test_ext().execute_with(|| {
+            assert_eq!(TotalSupply::get(), 100_000_000_000_000_000_000u128);
+            assert_eq!(InvestorAllocation::get(), 12_000_000_000_000_000_000u128);
+        });
+    }
+
+    #[test]
+    fn test_give_consent() {
+        new_test_ext().execute_with(|| {
+            assert_ok!(Tokenomics::give_consent(RuntimeOrigin::signed(
+                Sr25519Keyring::Alice.to_account_id()
+            )));
+        });
+    }
+
+    #[test]
+    fn test_update_presale_price() {
+        new_test_ext().execute_with(|| {
+            assert_ok!(Tokenomics::update_presale_price(RuntimeOrigin::root(), 500));
+        });
+    }
+
+    #[test]
+    fn test_update_presale_price_non_root() {
+        new_test_ext().execute_with(|| {
+            assert_noop!(
+                Tokenomics::update_presale_price(
+                    RuntimeOrigin::signed(Sr25519Keyring::Alice.to_account_id()),
+                    500
+                ),
+                sp_runtime::DispatchError::BadOrigin
+            );
+        });
+    }
 }

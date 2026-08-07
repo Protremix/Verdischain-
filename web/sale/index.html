@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VRDX Token Sale — Verdis Chain</title>
+<link rel="canonical" href="https://verdischain.com/sale/">
+<meta name="description" content="Participate in the VRDX token sale. 100B total supply with phased distribution, vesting schedules, and referral bonuses.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="VRDX Token Sale — Verdis Chain">
+<meta property="og:description" content="Purchase VRDX tokens at presale rates before public listing.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f1f5f9; --bg-1:#111; --bg-2:#1a1a1a; --card:#ffffff; --border:#e2e8f0; --border-2:#333;
+  --text:#0f172a; --text-2:#475569; --text-3:#334155; --accent:#caff33; --accent-2:#b4f849;
+  --accent-glow:rgba(202,255,51,0.15); --success:#4ade80; --warning:#fbbf24; --error:#ef4444;
+  --radius:12px; --radius-sm:8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:var(--bg,#f1f5f9); color:var(--text,#0f172a); line-height:1.6; overflow-x:hidden; }
+.mono { font-family:'JetBrains Mono',monospace; }
+
+nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
+.nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text,#0f172a); }
+.nav-brand .logo { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#000; font-size:14px; }
+.nav-brand span { font-weight:600; font-size:14px; }
+.nav-links { display:flex; gap:4px; }
+.nav-links a { color:var(--text-2); text-decoration:none; padding:8px 14px; border-radius:var(--radius-sm); font-size:14px; font-weight:500; transition:all .2s; }
+.nav-links a:hover, .nav-links a.active { color:var(--accent); background:#ffffff; }
+
+/* HERO */
+.hero { padding:56px 24px 40px; max-width:1280px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center; }
+@media(max-width:900px) { .hero { grid-template-columns:1fr; } }
+.hero-left .badge { display:inline-flex; align-items:center; gap:8px; background:var(--accent-glow); border:1px solid var(--accent); border-radius:100px; padding:6px 16px; font-size:13px; color:var(--accent); font-weight:600; margin-bottom:16px; }
+.hero-left .badge .dot { width:8px; height:8px; border-radius:50%; background:var(--accent); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+.hero-left h1 { font-family:'Space Grotesk',sans-serif; font-size: 20px; font-weight:700; margin-bottom:12px; line-height:1.1; }
+.hero-left h1 .accent { color:var(--accent); }
+.hero-left p { color:var(--text-2); font-size:14px; margin-bottom:12px; max-width:520px; }
+.hero-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; max-width:480px; }
+.hero-stat { background:#ffffff; border:1px solid var(--border); border-radius:var(--radius); padding:14px; }
+.hero-stat .label { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3); }
+.hero-stat .value { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; color:var(--accent); margin-top:4px; }
+
+/* 3D FLOATING CLUSTER */
+.hero-right { position:relative; height:440px; perspective:1000px; }
+.float-card { position:absolute; background:#ffffff; border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.5); animation:float 6s ease-in-out infinite; }
+@keyframes float { 0%,100% { transform:translateY(0) rotate(-1deg); } 50% { transform:translateY(-12px) rotate(1deg); } }
+.fc-main { top:20px; left:5%; width:80%; z-index:3; }
+.fc-price { top:50%; right:0%; width:50%; z-index:2; animation-delay:1.5s; }
+.fc-alloc { bottom:10%; left:8%; width:55%; z-index:1; animation-delay:3s; }
+.price-big { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--accent); }
+.price-change { display:inline-block; background:rgba(74,222,128,0.15); color:var(--success); padding:2px 8px; border-radius:4px; font-size:13px; font-weight:600; margin-top:4px; }
+.alloc-bar { height:8px; background:var(--bg-1); border-radius:4px; overflow:hidden; margin-top:8px; }
+.alloc-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); border-radius:4px; }
+.mini-row { display:flex; justify-content:space-between; font-size:12px; margin-top:6px; }
+.mini-row .l { color:var(--text-3); }
+.mini-row .v { font-family:'JetBrains Mono',monospace; color:var(--text-2); }
+
+/* SALE PHASES */
+.phases-section { max-width:1280px; margin:0 auto 48px; padding:0 24px; }
+.section-title { font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; margin-bottom:8px; }
+.section-sub { color:var(--text-2); font-size:13px; margin-bottom:32px; }
+.phases-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+@media(max-width:768px) { .phases-grid { grid-template-columns:1fr; } }
+.phase-card { background:#ffffff; border:1px solid var(--border); border-radius:var(--radius); padding:24px; position:relative; overflow:hidden; transition:all .3s; }
+.phase-card.active { border-color:var(--accent); box-shadow:0 0 24px var(--accent-glow); }
+.phase-card.past { opacity:.6; }
+.phase-card .phase-badge { position:absolute; top:0; right:0; padding:4px 12px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; border-bottom-left-radius:8px; }
+.phase-badge.active { background:var(--accent); color:#000; }
+.phase-badge.upcoming { background:var(--border-2); color:var(--text-2); }
+.phase-badge.sold { background:rgba(239,68,68,0.2); color:var(--error); }
+.phase-card h3 { font-size:13px; font-weight:600; margin-bottom:8px; }
+.phase-card .phase-price { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; color:var(--accent); margin:12px 0; }
+.phase-card .phase-price .old { font-size:14px; color:var(--text-3); text-decoration:line-through; margin-left:8px; }
+.phase-card .phase-info { font-size:14px; color:var(--text-2); margin-bottom:16px; }
+.phase-progress { margin:16px 0; }
+.phase-progress .prog-label { display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; }
+.phase-progress .prog-label .l { color:var(--text-3); }
+.phase-progress .prog-label .v { font-family:'JetBrains Mono',monospace; color:var(--text-2); }
+.phase-progress .prog-bar { height:6px; background:var(--bg-1); border-radius:3px; overflow:hidden; }
+.phase-progress .prog-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); border-radius:3px; transition:width 1s; }
+.phase-card .phase-meta { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:16px; }
+.phase-meta-item { background:var(--bg-1); border-radius:6px; padding:8px 10px; }
+.phase-meta-item .l { font-size:11px; color:var(--text-3); }
+.phase-meta-item .v { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; margin-top:2px; }
+.phase-card .btn { width:100%; padding:12px; border-radius:var(--radius-sm); font-weight:600; font-size:13px; cursor:pointer; border:none; transition:all .2s; margin-top:16px; }
+.btn-sale { background:var(--accent); color:#000; }
+.btn-sale:hover { background:var(--accent-2); transform:translateY(-1px); }
+.btn-sale:disabled { background:var(--border-2); color:var(--text-3); cursor:not-allowed; transform:none; }
+.btn-notify { background:transparent; border:1px solid var(--border-2); color:var(--text,#0f172a); }
+.btn-notify:hover { border-color:var(--accent); color:var(--accent); }
+
+/* BUY INTERFACE */
+.buy-section { max-width:720px; margin:0 auto 48px; padding:0 24px; }
+.buy-card { background:#ffffff; border:1px solid var(--border); border-radius:16px; padding:32px; }
+.buy-card h2 { font-size:13px; font-weight:600; margin-bottom:8px; }
+.buy-card .buy-sub { color:var(--text-2); font-size:13px; margin-bottom:12px; }
+.buy-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+.buy-input-group { background:var(--bg-1); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; }
+.buy-input-group label { display:block; font-size:13px; color:var(--text-3); margin-bottom:8px; }
+.buy-input-group .input-row { display:flex; align-items:center; gap:8px; }
+.buy-input-group input { flex:1; background:transparent; border:none; color:var(--text,#0f172a); font-size:13px; font-family:'JetBrains Mono',monospace; outline:none; width:100%; }
+.buy-input-group input::placeholder { color:var(--text-3); }
+.currency-select { background:#ffffff; border:1px solid var(--border-2); border-radius:6px; padding:6px 12px; cursor:pointer; font-weight:600; font-size:14px; white-space:nowrap; display:flex; align-items:center; gap:6px; }
+.currency-select .token-icon { width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
+.token-icon.usdt { background:#26a17b; color:#0f172a; }
+.token-icon.eth { background:#627eea; color:#0f172a; }
+.token-icon.vrdx { background:var(--accent); color:#000; }
+.buy-output { background:var(--bg-1); border:1px solid var(--accent); border-radius:var(--radius-sm); padding:16px; margin-bottom:20px; }
+.buy-output label { font-size:13px; color:var(--text-3); }
+.buy-output .output-value { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; color:var(--accent); margin-top:4px; }
+.buy-output .output-rate { font-size:13px; color:var(--text-2); margin-top:4px; }
+.buy-details { background:var(--bg-1); border-radius:var(--radius-sm); padding:16px; margin-bottom:20px; }
+.buy-details .detail-row { display:flex; justify-content:space-between; padding:6px 0; font-size:14px; }
+.buy-details .detail-row .l { color:var(--text-3); }
+.buy-details .detail-row .v { font-family:'JetBrains Mono',monospace; color:var(--text-2); }
+.buy-details .detail-row .v.accent { color:var(--accent); }
+.buy-details .detail-row.total { border-top:1px solid var(--border); padding-top:12px; margin-top:4px; font-weight:600; font-size:14px; }
+.buy-details .detail-row.total .v { color:var(--accent); font-size:13px; }
+.btn-buy { width:100%; padding:18px; background:var(--accent); color:#000; border:none; border-radius:var(--radius-sm); font-weight:700; font-size:14px; cursor:pointer; transition:all .2s; }
+.btn-buy:hover { background:var(--accent-2); transform:translateY(-1px); box-shadow:0 8px 24px var(--accent-glow); }
+.btn-buy:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+
+/* ALLOCATION */
+.alloc-section { max-width:1280px; margin:0 auto 48px; padding:0 24px; }
+.alloc-chart { background:#ffffff; border:1px solid var(--border); border-radius:var(--radius); padding:32px; }
+.alloc-grid { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center; }
+@media(max-width:768px) { .alloc-grid { grid-template-columns:1fr; } }
+.donut-container { position:relative; width:280px; height:280px; margin:0 auto; }
+.donut-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+.donut-center .total { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; color:var(--accent); }
+.donut-center .label { font-size:12px; color:var(--text-3); text-transform:uppercase; }
+.alloc-legend { display:flex; flex-direction:column; gap:12px; }
+.legend-item { display:flex; align-items:center; gap:12px; }
+.legend-dot { width:14px; height:14px; border-radius:4px; }
+.legend-item .l-info { flex:1; }
+.legend-item .l-name { font-size:14px; font-weight:600; }
+.legend-item .l-pct { font-size:12px; color:var(--text-3); }
+.legend-item .l-val { font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--text-2); }
+
+/* VESTING */
+.vesting-section { max-width:1280px; margin:0 auto 48px; padding:0 24px; }
+.vesting-table { background:#ffffff; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.vesting-table table { width:100%; border-collapse:collapse; }
+.vesting-table th { text-align:left; padding:14px 20px; font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3); border-bottom:1px solid var(--border); }
+.vesting-table td { padding:14px 20px; border-bottom:1px solid var(--border); font-size:14px; }
+.vesting-table tr:hover { background:var(--bg-1); }
+.vesting-table tr:last-child td { border-bottom:none; }
+.vesting-badge { display:inline-block; padding:3px 10px; border-radius:4px; font-size:12px; font-weight:600; }
+.vesting-badge.active { background:rgba(74,222,128,0.15); color:var(--success); }
+.vesting-badge.locked { background:rgba(251,191,36,0.15); color:var(--warning); }
+.vesting-badge.unlocked { background:rgba(202,255,51,0.15); color:var(--accent); }
+.vesting-progress { height:4px; background:var(--bg-1); border-radius:2px; overflow:hidden; margin-top:4px; }
+.vesting-progress .vp-fill { height:100%; background:var(--accent); border-radius:2px; }
+
+/* WHITELIST */
+.whitelist-section { max-width:720px; margin:0 auto 48px; padding:0 24px; }
+.whitelist-card { background:#ffffff; border:1px solid var(--border); border-radius:16px; padding:32px; text-align:center; }
+.whitelist-card h2 { font-size:13px; font-weight:600; margin-bottom:8px; }
+.whitelist-card p { color:var(--text-2); font-size:13px; margin-bottom:12px; }
+.whitelist-form { display:flex; gap:8px; max-width:480px; margin:0 auto; }
+.whitelist-form input { flex:1; background:var(--bg-1); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 18px; color:var(--text,#0f172a); font-size:13px; outline:none; }
+.whitelist-form input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+.whitelist-form button { background:var(--accent); color:#000; border:none; border-radius:var(--radius-sm); padding:14px 28px; font-weight:700; font-size:13px; cursor:pointer; transition:all .2s; white-space:nowrap; }
+.whitelist-form button:hover { background:var(--accent-2); transform:translateY(-1px); }
+.whitelist-count { margin-top:20px; font-size:14px; color:var(--text-2); }
+.whitelist-count .num { font-family:'JetBrains Mono',monospace; font-weight:600; color:var(--accent); }
+
+/* FAQ */
+.faq-section { max-width:720px; margin:0 auto 48px; padding:0 24px; }
+.faq-item { background:#ffffff; border:1px solid var(--border); border-radius:var(--radius); margin-bottom:12px; overflow:hidden; }
+.faq-q { padding:16px 20px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-weight:600; font-size:13px; }
+.faq-q .arrow { color:var(--text-3); transition:transform .2s; }
+.faq-item.open .faq-q .arrow { transform:rotate(180deg); }
+.faq-a { max-height:0; overflow:hidden; transition:max-height .3s ease; }
+.faq-item.open .faq-a { max-height:300px; }
+.faq-a-inner { padding:0 20px 16px; font-size:14px; color:var(--text-2); line-height:1.6; }
+
+/* COUNTDOWN */
+.countdown { display:flex; gap:12px; justify-content:center; margin:20px 0; }
+.cd-unit { background:var(--bg-1); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 20px; text-align:center; min-width:70px; }
+.cd-unit .cd-val { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; color:var(--accent); }
+.cd-unit .cd-label { font-size:11px; color:var(--text-3); text-transform:uppercase; }
+
+footer { border-top:1px solid var(--border); padding:32px 24px; text-align:center; color:var(--text-3); font-size:14px; }
+footer .links { display:flex; gap:20px; justify-content:center; margin-bottom:12px; }
+footer a { color:var(--accent); text-decoration:none; }
+
+@media(max-width:768px) { .nav-links { display:none; } .hero h1 { font-size: 18px; } .hero-right { display:none; } .buy-grid { grid-template-columns:1fr; } .whitelist-form { flex-direction:column; } }
+@media(max-width:375px) { .hero { padding:32px 16px; } .hero-stats { grid-template-columns:1fr; } .countdown { flex-wrap:wrap; } }
+
+
+     50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.7)); } }
+    
+    .nav-brand:hover 
+@media(max-width:768px) {  }
+
+
+nav.std-nav { position:sticky; top:0; z-index:1000; background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid rgba(0,0,0,0.06); padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
+nav.std-nav .nav-links { display:flex; gap:4px; flex-wrap:wrap; }
+nav.std-nav .nav-links a { color:#334155; text-decoration:none; padding:8px 12px; border-radius:8px; font-size:13px; font-weight:500; transition:all .2s; }
+nav.std-nav .nav-links a:hover, nav.std-nav .nav-links a.active { color:#caff33; background:rgba(255,255,255,0.06); }
+nav.std-nav .nav-status { display:flex; align-items:center; gap:8px; font-size:13px; color:#334155; }
+nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px rgba(34,197,94,0.6); animation:std-nav-pulse 2s infinite; }
+@keyframes std-nav-pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+
+    .brand-logo-img { height:64px; width: auto; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(202,255,51,0.4)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
+    .brand-logo-img { filter: drop-shadow(0 0 20px rgba(202,255,51,0.7)); }
+    @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(202,255,51,0.35)); } 50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.6)); } }
+
+/* Mobile hamburger menu */
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:40px;height:40px;background:transparent;border:none;cursor:pointer;padding:8px;z-index:1001}
+.nav-hamburger span{display:block;width:22px;height:2px;background:#caff33;border-radius:2px;transition:all 250ms cubic-bezier(0.16,1,0.3,1)}
+.nav-hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.nav-hamburger.active span:nth-child(2){opacity:0}
+.nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+@media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(0,0,0,0.06);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
+
+
+/* Responsive tables - prevent viewport expansion */
+html{overflow-x:hidden;max-width:100vw}
+table{width:100%!important;max-width:100%!important;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+thead,tbody{display:table;width:100%}
+</style>
+<link rel="icon" type="image/png" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png">
+<style id="nav-brand-no-underline-fix">a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration: none !important; }</style></head>
+<body>
+
+<nav class="std-nav">
+  <a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain" class="brand-logo-img" style="height:48px;width:auto;display:block;object-fit:contain;flex-shrink:0"></a>
+  <button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/explorer/">Verdiscan</a>
+    <a href="/dex/">DEX</a>
+    <a href="/validators/">Validators</a>
+    <a href="/eco/">Eco</a>
+    <a href="/faucet/">Faucet</a>
+    <a href="/wallet/">Wallet</a>
+    <a href="/sale/" class="active">Sale</a>
+    <a href="/docs/">Docs</a>
+    
+  </div>
+  <div class="nav-status"><div class="dot"></div><span class="nav-text">Connected</span></div>
+</nav>
+
+<section class="hero">
+  <div class="hero-left">
+    <div class="badge"><div class="dot"></div> Presale Live Now — Phase 2 Active</div>
+    <h1>Buy <span class="accent">VRDX</span> at presale prices</h1>
+    <p>VRDX powers the Verdis Chain — the eco-friendly Layer-1 blockchain with native DPoS, AMM DEX, and carbon credit tracking. Secure your allocation before public listing.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="label">Sale Price</div><div class="value">$0.025</div></div>
+      <div class="hero-stat"><div class="label">Listing Price</div><div class="value">$0.10</div></div>
+      <div class="hero-stat"><div class="label">Bonus</div><div class="value">+20%</div></div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="float-card fc-main">
+      <div style="font-size:13px;color:var(--text-3);margin-bottom:8px">Current Sale Price</div>
+      <div class="price-big">$0.025</div>
+      <div class="price-change">↑ 300% at listing</div>
+      <div class="alloc-bar" style="margin-top:16px"><div class="alloc-fill" style="width:67%"></div></div>
+      <div class="mini-row"><span class="l">Sold: 8.04B VRDX</span><span class="v">67% of 12B</span></div>
+    </div>
+    <div class="float-card fc-price">
+      <div style="font-size:12px;color:var(--text-3);margin-bottom:6px">Phase 2 Ends In</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--accent)" id="heroCountdown">14d 06h 32m</div>
+      <div class="mini-row" style="margin-top:8px"><span class="l">Hard Cap</span><span class="v">$300M</span></div>
+      <div class="mini-row"><span class="l">Raised</span><span class="v" style="color:var(--accent)">$201M</span></div>
+    </div>
+    <div class="float-card fc-alloc">
+      <div style="font-size:12px;color:var(--text-3);margin-bottom:8px">Token Allocation</div>
+      <div class="mini-row"><span class="l">Investors</span><span class="v">12B (12%)</span></div>
+      <div class="mini-row"><span class="l">Total Supply</span><span class="v" style="color:var(--accent)">100B VRDX</span></div>
+      <div class="mini-row"><span class="l">Your Max</span><span class="v">$50,000</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- SALE PHASES -->
+<div class="phases-section">
+  <h2 class="section-title">Sale Phases</h2>
+  <p class="section-sub">VRDX token sale runs in three phases. Each phase offers different pricing and allocations.</p>
+  <div class="phases-grid">
+    <!-- Phase 1 -->
+    <div class="phase-card past">
+      <div class="phase-badge sold">Sold Out</div>
+      <h3>Phase 1 — Private Sale</h3>
+      <div class="phase-price">$0.010 <span class="old">$0.10</span></div>
+      <div class="phase-info">Early investors and strategic partners. Minimum $25,000 commitment.</div>
+      <div class="phase-progress">
+        <div class="prog-label"><span class="l">Sold</span><span class="v">3.6B / 3.6B</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div>
+      </div>
+      <div class="phase-meta">
+        <div class="phase-meta-item"><div class="l">Allocation</div><div class="v">3.6B VRDX</div></div>
+        <div class="phase-meta-item"><div class="l">Vesting</div><div class="v">12mo cliff</div></div>
+      </div>
+      <button class="btn btn-sale" disabled>Sold Out</button>
+    </div>
+
+    <!-- Phase 2 (Active) -->
+    <div class="phase-card active">
+      <div class="phase-badge active">Live Now</div>
+      <h3>Phase 2 — Presale</h3>
+      <div class="phase-price">$0.025 <span class="old">$0.10</span></div>
+      <div class="phase-info">Public presale. Minimum $100. 20% bonus tokens included. Whitelist recommended.</div>
+      <div class="phase-progress">
+        <div class="prog-label"><span class="l">Sold</span><span class="v">4.44B / 6B</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:74%"></div></div>
+      </div>
+      <div class="phase-meta">
+        <div class="phase-meta-item"><div class="l">Allocation</div><div class="v">6B VRDX</div></div>
+        <div class="phase-meta-item"><div class="l">Vesting</div><div class="v">25% TGE</div></div>
+      </div>
+      <button class="btn btn-sale" onclick="document.getElementById('buySection').scrollIntoView({behavior:'smooth'})">Buy Now</button>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase-card">
+      <div class="phase-badge upcoming">Upcoming</div>
+      <h3>Phase 3 — Public Sale</h3>
+      <div class="phase-price">$0.05 <span class="old">$0.10</span></div>
+      <div class="phase-info">Public token sale. No minimum. First-come, first-served until hard cap reached.</div>
+      <div class="phase-progress">
+        <div class="prog-label"><span class="l">Reserved</span><span class="v">0 / 2.4B</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div>
+      </div>
+      <div class="phase-meta">
+        <div class="phase-meta-item"><div class="l">Allocation</div><div class="v">2.4B VRDX</div></div>
+        <div class="phase-meta-item"><div class="l">Starts</div><div class="v">Sep 1, 2026</div></div>
+      </div>
+      <button class="btn btn-notify" onclick="notifyMe()">Notify Me</button>
+    </div>
+  </div>
+</div>
+
+<!-- COUNTDOWN -->
+<div class="buy-section" id="buySection">
+  <div class="buy-card">
+    <h2>Buy VRDX Tokens</h2>
+    <p class="buy-sub">Phase 2 Presale — $0.025 per VRDX + 20% bonus</p>
+
+    <div class="countdown" id="countdown">
+      <div class="cd-unit"><div class="cd-val" id="cd-days">14</div><div class="cd-label">Days</div></div>
+      <div class="cd-unit"><div class="cd-val" id="cd-hours">06</div><div class="cd-label">Hours</div></div>
+      <div class="cd-unit"><div class="cd-val" id="cd-mins">32</div><div class="cd-label">Mins</div></div>
+      <div class="cd-unit"><div class="cd-val" id="cd-secs">00</div><div class="cd-label">Secs</div></div>
+    </div>
+
+    <div class="buy-grid">
+      <div class="buy-input-group">
+        <label>Pay With</label>
+        <div class="input-row">
+          <input type="number" id="payAmount" placeholder="0.00" value="1000" oninput="calculatePurchase()">
+          <div class="currency-select" onclick="cycleCurrency()">
+            <div class="token-icon usdt" id="payIcon">U</div>
+            <span id="payCurrency">USDT</span>
+            <span style="color:var(--text-3)">▾</span>
+          </div>
+        </div>
+      </div>
+      <div class="buy-input-group">
+        <label>Receive</label>
+        <div class="input-row">
+          <input type="number" id="receiveAmount" placeholder="0.00" readonly style="color:var(--accent)">
+          <div class="currency-select" style="cursor:default">
+            <div class="token-icon vrdx">V</div>
+            <span>VRDX</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="buy-output">
+      <label>You Will Receive (incl. 20% bonus)</label>
+      <div class="output-value" id="totalReceive">48,000 VRDX</div>
+      <div class="output-rate" id="outputRate">Rate: 1 USDT = 48 VRDX (with bonus)</div>
+    </div>
+
+    <div class="buy-details">
+      <div class="detail-row"><span class="l">Base Tokens</span><span class="v" id="baseTokens">40,000 VRDX</span></div>
+      <div class="detail-row"><span class="l">Bonus Tokens (20%)</span><span class="v accent" id="bonusTokens">8,000 VRDX</span></div>
+      <div class="detail-row"><span class="l">Price Per Token</span><span class="v">$0.025</span></div>
+      <div class="detail-row"><span class="l">Listing Price</span><span class="v">$0.10</span></div>
+      <div class="detail-row"><span class="l">Potential ROI at Listing</span><span class="v accent">+300%</span></div>
+      <div class="detail-row total"><span class="l">Total Cost</span><span class="v" id="totalCost">$1,000.00</span></div>
+    </div>
+
+    <div class="buy-input-group" style="margin-bottom:16px">
+      <label>Wallet Address (VRDX tokens will be sent here)</label>
+      <input type="text" id="walletAddr" placeholder="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" style="font-family:'JetBrains Mono',monospace;font-size:14px" />
+    </div>
+
+    <button class="btn-buy" id="buyBtn" onclick="buyTokens()">Buy VRDX Now</button>
+    <div style="text-align:center;margin-top:12px;font-size:13px;color:var(--text-3)">
+      🔒 Secure payment • Tokens locked until TGE • 25% unlocked at listing
+    </div>
+  </div>
+</div>
+
+<!-- ALLOCATION -->
+<div class="alloc-section">
+  <h2 class="section-title">Token Allocation</h2>
+  <p class="section-sub">100B total supply distributed across the Verdis Chain ecosystem.</p>
+  <div class="alloc-chart">
+    <div class="alloc-grid">
+      <div class="donut-container">
+        <svg width="280" height="280" viewBox="0 0 280 280">
+          <circle cx="140" cy="140" r="100" fill="none" stroke="#1a1a1a" stroke-width="40"/>
+          <!-- Investors 12% -->
+          <circle cx="140" cy="140" r="100" fill="none" stroke="#caff33" stroke-width="40" stroke-dasharray="75.4 628.3" stroke-dashoffset="0" transform="rotate(-90 140 140)"/>
+          <!-- Team 15% -->
+          <circle cx="140" cy="140" r="100" fill="none" stroke="#627eea" stroke-width="40" stroke-dasharray="94.2 628.3" stroke-dashoffset="-75.4" transform="rotate(-90 140 140)"/>
+          <!-- Community 25% -->
+          <circle cx="140" cy="140" r="100" fill="none" stroke="#4ade80" stroke-width="40" stroke-dasharray="157 628.3" stroke-dashoffset="-169.6" transform="rotate(-90 140 140)"/>
+          <!-- Eco Fund 18% -->
+          <circle cx="140" cy="140" r="100" fill="none" stroke="#26a17b" stroke-width="40" stroke-dasharray="113 628.3" stroke-dashoffset="-326.6" transform="rotate(-90 140 140)"/>
+          <!-- Liquidity 15% -->
+          <circle cx="140" cy="140" r="100" fill="none" stroke="#fbbf24" stroke-width="40" stroke-dasharray="94.2 628.3" stroke-dashoffset="-439.6" transform="rotate(-90 140 140)"/>
+          <!-- Reserve 15% -->
+          <circle cx="140" cy="140" r="100" fill="none" stroke="#a855f7" stroke-width="40" stroke-dasharray="94.2 628.3" stroke-dashoffset="-533.8" transform="rotate(-90 140 140)"/>
+        </svg>
+        <div class="donut-center">
+          <div class="total">100B</div>
+          <div class="label">Total Supply</div>
+        </div>
+      </div>
+      <div class="alloc-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#caff33"></div><div class="l-info"><div class="l-name">Investors (Sale)</div><div class="l-pct">12% • 12B VRDX</div></div><div class="l-val">$300M</div></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#627eea"></div><div class="l-info"><div class="l-name">Team & Advisors</div><div class="l-pct">15% • 15B VRDX</div></div><div class="l-val">24mo vest</div></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div><div class="l-info"><div class="l-name">Community Rewards</div><div class="l-pct">25% • 25B VRDX</div></div><div class="l-val">Staking</div></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#26a17b"></div><div class="l-info"><div class="l-name">Eco Fund</div><div class="l-pct">18% • 18B VRDX</div></div><div class="l-val">Carbon</div></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div><div class="l-info"><div class="l-name">DEX Liquidity</div><div class="l-pct">15% • 15B VRDX</div></div><div class="l-val">AMM pools</div></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div><div class="l-info"><div class="l-name">Treasury Reserve</div><div class="l-pct">15% • 15B VRDX</div></div><div class="l-val">Governance</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VESTING SCHEDULE -->
+<div class="vesting-section">
+  <h2 class="section-title">Vesting Schedule</h2>
+  <p class="section-sub">Tokens are released according to the vesting schedule for each phase.</p>
+  <div class="vesting-table">
+    <table>
+      <thead><tr><th>Phase</th><th>TGE Unlock</th><th>Cliff</th><th>Vesting Period</th><th>Monthly Release</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Private Sale</strong></td>
+          <td>0%</td><td>12 months</td><td>24 months</td><td class="mono">1.5B / month</td>
+          <td><span class="vesting-badge locked">Locked</span></td>
+        </tr>
+        <tr>
+          <td><strong>Presale (Phase 2)</strong></td>
+          <td>25%</td><td>3 months</td><td>12 months</td><td class="mono">6.25% / month</td>
+          <td><span class="vesting-badge active">Active</span><div class="vesting-progress"><div class="vp-fill" style="width:0%"></div></div></td>
+        </tr>
+        <tr>
+          <td><strong>Public Sale</strong></td>
+          <td>40%</td><td>1 month</td><td>6 months</td><td class="mono">10% / month</td>
+          <td><span class="vesting-badge locked">Upcoming</span></td>
+        </tr>
+        <tr>
+          <td><strong>Team</strong></td>
+          <td>0%</td><td>12 months</td><td>36 months</td><td class="mono">2.78% / month</td>
+          <td><span class="vesting-badge locked">Locked</span></td>
+        </tr>
+        <tr>
+          <td><strong>Community</strong></td><td colspan="4">No vesting — distributed via staking rewards and ecosystem incentives</td>
+          <td><span class="vesting-badge unlocked">Unlocked</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- WHITELIST -->
+<div class="whitelist-section">
+  <div class="whitelist-card">
+    <h2>Join the Whitelist</h2>
+    <p>Whitelist members get priority access, higher allocation caps, and additional bonus tokens.</p>
+    <div class="whitelist-form">
+      <input type="email" id="wlEmail" placeholder="your@email.com" />
+      <button onclick="joinWhitelist()">Join Whitelist</button>
+    </div>
+    <div class="whitelist-count"><span class="num" id="wlCount">8,247</span> investors already whitelisted</div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq-section">
+  <h2 class="section-title" style="text-align:center;margin-bottom:32px">Frequently Asked Questions</h2>
+  <div class="faq-item open">
+    <div class="faq-q" onclick="toggleFAQ(this)">What is VRDX? <span class="arrow">▾</span></div>
+    <div class="faq-a"><div class="faq-a-inner">VRDX is the native utility token of Verdis Chain, an eco-friendly Layer-1 blockchain built with Substrate. It's used for transaction fees, staking, governance, DEX trading, and carbon credit transactions. Total supply is fixed at 100 billion tokens.</div></div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFAQ(this)">When will tokens be distributed? <span class="arrow">▾</span></div>
+    <div class="faq-a"><div class="faq-a-inner">Tokens are distributed at the Token Generation Event (TGE). Presale buyers receive 25% at TGE, with the remaining 75% vested over 12 months after a 3-month cliff. The TGE is scheduled for September 2026.</div></div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFAQ(this)">What is the minimum investment? <span class="arrow">▾</span></div>
+    <div class="faq-a"><div class="faq-a-inner">The minimum investment for Phase 2 (Presale) is $100 in USDT or ETH. The maximum per wallet is $50,000 to ensure fair distribution. Whitelist members get higher caps.</div></div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFAQ(this)">How do I receive my tokens? <span class="arrow">▾</span></div>
+    <div class="faq-a"><div class="faq-a-inner">Provide your Verdis Chain wallet address when purchasing. Tokens will be sent to this address at TGE. You can create a wallet at our <a href="/wallet/" style="color:var(--accent)">Verdis Wallet</a> page.</div></div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFAQ(this)">What is the 20% bonus? <span class="arrow">▾</span></div>
+    <div class="faq-a"><div class="faq-a-inner">During Phase 2 presale, every purchase includes a 20% bonus in VRDX tokens. For example, if you buy 40,000 VRDX for $1,000, you receive 48,000 VRDX total. This bonus is in addition to the already discounted presale price of $0.025 (vs $0.10 listing price).</div></div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFAQ(this)">Is there a lock-up period? <span class="arrow">▾</span></div>
+    <div class="faq-a"><div class="faq-a-inner">Yes. Presale tokens have a 3-month cliff (no tokens can be transferred) followed by monthly unlocks. 25% unlocks at TGE, then 6.25% per month for 12 months. This prevents immediate dumping and protects token price stability.</div></div>
+  </div>
+</div>
+
+<footer>
+  <div class="links">
+    <a href="/">Home</a><a href="/explorer/">Verdiscan</a><a href="/dex/">DEX</a>
+    <a href="/wallet/">Wallet</a><a href="/referral">Referral</a><a href="/incentives" style="display:none">Incentives</a><a href="/docs/">Docs</a><a href="/whitepaper">Whitepaper</a>
+    <a href="https://github.com/Protremix/Verdischain-">GitHub</a><a href="https://evolvixos.com">EvolvixOS</a>
+  </div>
+  <div>© 2026 Verdis Chain. VRDX token sale — 100B total supply, 12B investor allocation.</div>
+</footer>
+
+<script>
+// Sale configuration
+const SALE_CONFIG = {
+  phase: 2,
+  pricePerToken: 0.025,
+  listingPrice: 0.10,
+  bonus: 0.20, // 20%
+  hardCap: 300000000, // $300M
+  raised: 201000000, // $201M
+  sold: 4440000000, // 4.44B VRDX
+  totalAllocation: 6000000000, // 6B for phase 2
+  endDate: new Date('2026-08-21T23:59:59').getTime(),
+};
+
+let payCurrency = 'USDT';
+const currencies = ['USDT', 'ETH'];
+const rates = { USDT: 1, ETH: 2400 }; // 1 ETH = $2400
+
+function calculatePurchase() {
+  const amount = parseFloat(document.getElementById('payAmount').value) || 0;
+  const usdValue = amount * rates[payCurrency];
+  const baseTokens = usdValue / SALE_CONFIG.pricePerToken;
+  const bonusTokens = baseTokens * SALE_CONFIG.bonus;
+  const totalTokens = baseTokens + bonusTokens;
+
+  document.getElementById('receiveAmount').value = totalTokens.toLocaleString(undefined, {maximumFractionDigits:0});
+  document.getElementById('totalReceive').textContent = totalTokens.toLocaleString(undefined, {maximumFractionDigits:0}) + ' VRDX';
+  document.getElementById('baseTokens').textContent = baseTokens.toLocaleString(undefined, {maximumFractionDigits:0}) + ' VRDX';
+  document.getElementById('bonusTokens').textContent = '+' + bonusTokens.toLocaleString(undefined, {maximumFractionDigits:0}) + ' VRDX';
+  document.getElementById('totalCost').textContent = '$' + usdValue.toLocaleString(undefined, {maximumFractionDigits:2});
+  document.getElementById('outputRate').textContent = `Rate: 1 ${payCurrency} = ${(totalTokens / amount).toFixed(0)} VRDX (with bonus)`;
+}
+
+function cycleCurrency() {
+  const idx = currencies.indexOf(payCurrency);
+  payCurrency = currencies[(idx + 1) % currencies.length];
+  document.getElementById('payCurrency').textContent = payCurrency;
+  const icon = document.getElementById('payIcon');
+  if (payCurrency === 'USDT') { icon.className = 'token-icon usdt'; icon.textContent = 'U'; }
+  if (payCurrency === 'ETH') { icon.className = 'token-icon eth'; icon.textContent = 'E'; }
+  calculatePurchase();
+}
+
+function buyTokens() {
+  const amount = parseFloat(document.getElementById('payAmount').value);
+  const addr = document.getElementById('walletAddr').value.trim();
+  
+  if (!amount || amount <= 0) { alert('Enter a valid amount'); return; }
+  const usdValue = amount * rates[payCurrency];
+  if (usdValue < 100) { alert('Minimum investment is $100'); return; }
+  if (usdValue > 50000) { alert('Maximum investment per wallet is $50,000'); return; }
+  if (!addr || addr.length < 20) { alert('Please enter your Verdis Chain wallet address'); return; }
+
+  const totalTokens = (usdValue / SALE_CONFIG.pricePerToken) * (1 + SALE_CONFIG.bonus);
+  alert(
+    `Purchase Confirmation\n\n` +
+    `Amount: ${amount} ${payCurrency} ($${usdValue.toLocaleString()})\n` +
+    `VRDX Tokens: ${totalTokens.toLocaleString(undefined, {maximumFractionDigits:0})}\n` +
+    `Price: $${SALE_CONFIG.pricePerToken} per VRDX\n` +
+    `Bonus: +${SALE_CONFIG.bonus * 100}%\n\n` +
+    `Wallet: ${addr.slice(0, 16)}...\n\n` +
+    `Next steps:\n` +
+    `1. You will be redirected to complete payment\n` +
+    `2. Tokens will be locked until TGE (September 2026)\n` +
+    `3. 25% unlocks at TGE, rest vests over 12 months\n\n` +
+    `Transaction ID: VRDX-${Date.now().toString(36).toUpperCase()}`
+  );
+}
+
+function joinWhitelist() {
+  const email = document.getElementById('wlEmail').value.trim();
+  if (!email || !email.includes('@')) { alert('Enter a valid email address'); return; }
+  const count = parseInt(document.getElementById('wlCount').textContent.replace(/,/g,'')) + 1;
+  document.getElementById('wlCount').textContent = count.toLocaleString();
+  document.getElementById('wlEmail').value = '';
+  alert(`✓ You're on the whitelist!\n\nYou'll receive email updates about the VRDX token sale, including priority access notifications before each phase.\n\nWhitelist benefits:\n• Priority access to all sale phases\n• Higher allocation cap ($75,000 vs $50,000)\n• Additional 5% bonus tokens\n• Early access to staking`);
+}
+
+function notifyMe() {
+  const email = prompt('Enter your email to be notified when Phase 3 opens:');
+  if (email && email.includes('@')) {
+    alert(`✓ We'll notify you at ${email} when Phase 3 opens on September 1, 2026.`);
+  }
+}
+
+// FAQ toggle
+function toggleFAQ(el) {
+  el.parentElement.classList.toggle('open');
+}
+
+// Countdown timer
+function updateCountdown() {
+  const now = new Date().getTime();
+  const end = SALE_CONFIG.endDate;
+  const diff = end - now;
+  
+  if (diff <= 0) {
+    document.getElementById('cd-days').textContent = '0';
+    document.getElementById('cd-hours').textContent = '00';
+    document.getElementById('cd-mins').textContent = '00';
+    document.getElementById('cd-secs').textContent = '00';
+    document.getElementById('heroCountdown').textContent = 'Ended';
+    return;
+  }
+  
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const secs = Math.floor((diff % (1000 * 60)) / 1000);
+  
+  document.getElementById('cd-days').textContent = days;
+  document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');
+  document.getElementById('cd-mins').textContent = String(mins).padStart(2, '0');
+  document.getElementById('cd-secs').textContent = String(secs).padStart(2, '0');
+  document.getElementById('heroCountdown').textContent = `${days}d ${hours}h ${mins}m`;
+}
+
+setInterval(updateCountdown, 1000);
+updateCountdown();
+calculatePurchase();
+</script>
+
+<script>
+async function loadPageMetrics() {
+    try {
+        const res = await fetch('/rpc', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1})
+        });
+        const data = await res.json();
+        const height = parseInt(data.result?.number || '0x0', 16);
+        document.querySelectorAll('[data-block-height]').forEach(el => {
+            el.textContent = '#' + height.toLocaleString();
+        });
+    } catch(e) {}
+}
+loadPageMetrics();
+setInterval(loadPageMetrics, 15000);
+</script>
+
+
+<script>
+(function(){var h=document.getElementById('navHamburger'),l=document.querySelector('.nav-links');if(!h||!l)return;h.addEventListener('click',function(){h.classList.toggle('active');l.classList.toggle('open');});l.addEventListener('click',function(e){if(e.target.tagName==='A'){h.classList.remove('active');l.classList.remove('open');}});})();
+</script>
+
+</body>
+</html>
