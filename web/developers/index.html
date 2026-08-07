@@ -3,8 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verdis Developer Portal | Build on the Carbon-Negative Substrate Layer-1</title>
-  <meta name="description" content="Official Verdis Developer Portal. Complete documentation, RPC reference, WASM smart contracts, SDKs, CLI reference, tutorials, and code examples for building on VRDX.">
+  <title>Verdis Chain — Developer Portal</title>
+<link rel="canonical" href="https://verdischain.com/developers/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Verdis Chain — Developer Portal">
+<meta property="og:description" content="Developer portal for Verdis Chain. SDKs, APIs, smart contracts, and tools for building on the green DPoS blockchain.">
+<meta property="og:url" content="https://verdischain.com/developers/">
+<meta property="og:image" content="https://verdischain.com/assets/verdis-logo-white-v2.png">
+  <meta name="description" content="Developer portal for Verdis Chain. SDKs, APIs, smart contracts, and tools for building on the green DPoS blockchain.">
   
   <!-- Verdis Shared CSS Design System -->
   <link rel="stylesheet" href="/css/verdis.css?v=3">
@@ -748,6 +754,12 @@
 /* Mobile responsiveness */
 @media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:64px;padding:10px 16px}.card{padding:16px}h1{font-size:13px}}
 @media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:14px}.container{padding:20px}}
+
+
+/* Responsive tables - prevent viewport expansion */
+html{overflow-x:hidden;max-width:100vw}
+table{width:100%!important;max-width:100%!important;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+thead,tbody{display:table;width:100%}
 </style>
 <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32"/>
 <link rel="icon" type="image/png" href="/favicon-16.png" sizes="16x16"/>
@@ -1122,7 +1134,7 @@ curl -X POST https://rpc.verdischain.com/faucet \
                 go get github.com/verdischain/verdis-go
               </div>
             </div>
-            <a href="TBD" class="btn btn-secondary btn-sm disabled" style="width:100%; text-align:center; opacity:0.6;"><i class="fa-solid fa-clock"></i> Download TBD</a>
+            <a href="/download/" class="btn btn-secondary btn-sm disabled" style="width:100%; text-align:center; opacity:0.6;"><i class="fa-solid fa-clock"></i> Download TBD</a>
           </div>
 
           <!-- iOS Swift SDK -->
@@ -1139,7 +1151,7 @@ curl -X POST https://rpc.verdischain.com/faucet \
                 Swift Package: VerdisSDK
               </div>
             </div>
-            <a href="TBD" class="btn btn-secondary btn-sm disabled" style="width:100%; text-align:center; opacity:0.6;"><i class="fa-solid fa-clock"></i> Download TBD</a>
+            <a href="/download/" class="btn btn-secondary btn-sm disabled" style="width:100%; text-align:center; opacity:0.6;"><i class="fa-solid fa-clock"></i> Download TBD</a>
           </div>
 
           <!-- Android SDK -->
@@ -1156,7 +1168,7 @@ curl -X POST https://rpc.verdischain.com/faucet \
                 implementation 'com.verdis:sdk:1.0.0'
               </div>
             </div>
-            <a href="TBD" class="btn btn-secondary btn-sm disabled" style="width:100%; text-align:center; opacity:0.6;"><i class="fa-solid fa-clock"></i> Download TBD</a>
+            <a href="/download/" class="btn btn-secondary btn-sm disabled" style="width:100%; text-align:center; opacity:0.6;"><i class="fa-solid fa-clock"></i> Download TBD</a>
           </div>
         </div>
       </section>

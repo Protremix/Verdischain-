@@ -3,8 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verdis Faucet — Free Testnet VRDX</title>
-<meta name="description" content="Get free VRDX testnet tokens. 1,000 VRDX per request, 24h cooldown.">
+<title>Verdis Faucet — Free Testnet VRDX Tokens</title>
+<link rel="canonical" href="https://verdischain.com/faucet/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Verdis Faucet — Free Testnet VRDX Tokens">
+<meta property="og:description" content="Get free VRDX testnet tokens from the Verdis Chain faucet. Request tokens with cooldown protection for development and testing.">
+<meta property="og:url" content="https://verdischain.com/faucet/">
+<meta property="og:image" content="https://verdischain.com/assets/verdis-logo-white-v2.png">
+<meta name="description" content="Get free VRDX testnet tokens from the Verdis Chain faucet. Request tokens with cooldown protection for development and testing.">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root { --bg:#0a0a0a; --bg-1:#111; --card:#141414; --border:#222; --border-2:#333; --text:#e8e8e8; --text-2:#888; --text-3:#555; --accent:#caff33; --accent-2:#b4f849; --accent-glow:rgba(202,255,51,0.15); --success:#4ade80; --warning:#fbbf24; --error:#ef4444; --radius:12px; --radius-sm:8px; }
@@ -123,6 +129,12 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
 .nav-hamburger.active span:nth-child(2){opacity:0}
 .nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
 @media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(10,10,10,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.08);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
+
+
+/* Responsive tables - prevent viewport expansion */
+html{overflow-x:hidden;max-width:100vw}
+table{width:100%!important;max-width:100%!important;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+thead,tbody{display:table;width:100%}
 </style>
 <link rel="icon" type="image/png" href="/assets/favicon-32.png">
 <link rel="apple-touch-icon" href="/assets/favicon-180.png">
@@ -458,8 +470,7 @@ async function fetchLiveFaucetStats() {
         if (todayEl) todayEl.textContent = faucetStats.todayRequests || 95;
         
     } catch(e) {
-        console.log('Live stats fetch failed, using defaults');
-    }
+        }
 }
 fetchLiveFaucetStats();
 setInterval(fetchLiveFaucetStats, 30000);
@@ -479,7 +490,7 @@ async function fetchFaucetStats() {
     document.querySelectorAll('#faucet-today, #faucet-today2').forEach(el => {
       el.textContent = (data.todayRequests || 0).toLocaleString();
     });
-  } catch(e) { console.log('Faucet stats not available'); }
+  } catch(e) { }
 }
 fetchFaucetStats();
 setInterval(fetchFaucetStats, 30000);

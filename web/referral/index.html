@@ -4,7 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VRDX Referral Program — Earn VRDX</title>
-<meta name="description" content="Earn VRDX tokens by referring friends to the Verdis Chain token sale. 3-tier commission system, real-time tracking.">
+<link rel="canonical" href="https://verdischain.com/referral/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="VRDX Referral Program — Earn VRDX">
+<meta property="og:description" content="Earn VRDX tokens through the Verdis Chain referral program. 3-tier commission system with 10%/5%/2.5% rewards.">
+<meta property="og:url" content="https://verdischain.com/referral/">
+<meta property="og:image" content="https://verdischain.com/assets/verdis-logo-white-v2.png">
+<meta name="description" content="Earn VRDX tokens through the Verdis Chain referral program. 3-tier commission system with 10%/5%/2.5% rewards.">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0a0a;--bg-1:#111;--bg-2:#1a1a1a;--card:#141414;--border:#222;--border-2:#333;--text:#e8e8e8;--text-2:#888;--text-3:#555;--accent:#caff33;--accent-2:#b4f849;--accent-glow:rgba(202,255,51,0.15);--success:#4ade80;--warning:#fbbf24;--error:#ef4444;--radius:12px;--radius-sm:8px}
@@ -12,7 +18,7 @@
 nav{position:sticky;top:0;z-index:100;background:rgba(10,10,10,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;height:76px;display:flex;align-items:center;justify-content:space-between}
 .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}.nav-brand .logo{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;font-size:14px}.nav-brand span{font-weight:600;font-size:14px}
 .nav-links{display:flex;gap:4px}.nav-links a{color:var(--text-2);text-decoration:none;padding:8px 14px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;transition:all .2s}.nav-links a:hover,.nav-links a.active{color:var(--accent);background:var(--card)}
-.hero{padding:56px 24px 40px;max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.hero{padding:56px 16px 40px;max-width:100%;overflow-x:hidden;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
 @media(max-width:900px){.hero{grid-template-columns:1fr}}
 .hero-left .badge{display:inline-flex;align-items:center;gap:8px;background:var(--accent-glow);border:1px solid var(--accent);border-radius:100px;padding:6px 16px;font-size:13px;color:var(--accent);font-weight:600;margin-bottom:16px}
 .hero-left .badge .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
@@ -28,7 +34,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,10,10,0.85);backdrop-fi
 .price-big{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent)}
 .mini-row{display:flex;justify-content:space-between;font-size:12px;margin-top:6px}.mini-row .l{color:var(--text-3)}.mini-row .v{font-family:'JetBrains Mono',monospace;color:var(--text-2)}
 .bar-chart{display:flex;align-items:flex-end;gap:3px;height:60px;margin-top:12px}.bar-chart .bar{flex:1;background:linear-gradient(180deg,var(--accent),var(--accent-2));border-radius:2px 2px 0 0;opacity:.7}
-.section{max-width:1280px;margin:0 auto 48px;padding:0 24px}
+.section{max-width:100%;margin:0 auto 48px;padding:0 24px}
 .section-title{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;margin-bottom:8px}.section-sub{color:var(--text-2);font-size:13px;margin-bottom:32px}
 .dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
 @media(max-width:768px){.dash-grid{grid-template-columns:1fr 1fr}}
@@ -116,6 +122,12 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
 .nav-hamburger.active span:nth-child(2){opacity:0}
 .nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
 @media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(10,10,10,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.08);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
+
+
+/* Responsive tables - prevent viewport expansion */
+html{overflow-x:hidden;max-width:100vw}
+table{width:100%!important;max-width:100%!important;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+thead,tbody{display:table;width:100%}
 </style>
 <link rel="icon" type="image/png" href="/assets/favicon-32.png">
 <link rel="apple-touch-icon" href="/assets/favicon-180.png">

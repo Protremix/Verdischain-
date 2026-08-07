@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Verdiscan — Verdis Chain Blockchain Explorer. Real-time blocks, transactions, validators, DEX pools, and eco metrics.">
+<meta name="description" content="Real-time blockchain explorer for Verdis Chain. View blocks, transactions, validators, DEX pools, and eco-metrics on the green DPoS blockchain.">
 <meta property="og:title" content="Verdiscan — Verdis Chain Explorer">
 <meta property="og:description" content="Real-time blockchain explorer for Verdis Chain with DPoS validators, AMM DEX, and eco metrics.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://verdischain.com/explorer/">
 <title>Verdiscan — Verdis Chain Explorer</title>
+<link rel="canonical" href="https://verdischain.com/explorer/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -145,6 +146,12 @@ a:hover { text-decoration:underline; }
 .nav-hamburger.active span:nth-child(2){opacity:0}
 .nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
 @media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(10,10,10,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.08);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
+
+
+/* Responsive tables - prevent viewport expansion */
+html{overflow-x:hidden;max-width:100vw}
+table{width:100%!important;max-width:100%!important;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+thead,tbody{display:table;width:100%}
 </style>
 </head>
 <body>
@@ -301,7 +308,7 @@ async function rpc(method, params=[]) {
     });
     const d = await r.json();
     return d.result;
-  } catch(e) { console.log('RPC error:', method, e.message); return null; }
+  } catch(e) { return null; }
 }
 
 function timeAgo(ts) {
@@ -528,7 +535,7 @@ async function searchExplorer() {
 function connectWS() {
   try {
     ws = new WebSocket(WS_URL);
-    ws.onopen = () => { console.log('WebSocket connected'); };
+    ws.onopen = () => { };
     ws.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data);
@@ -541,7 +548,7 @@ function connectWS() {
     };
     ws.onclose = () => { setTimeout(connectWS, 5000); };
     ws.onerror = () => { ws.close(); };
-  } catch(e) { console.log('WS unavailable, using polling'); }
+  } catch(e) { }
 }
 
 // === Init ===

@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Verdis Chain — The World's First Green Blockchain | Layer-1 in Rust</title>
-  <meta name="description" content="Verdis Chain is a Layer-1 blockchain built with Rust and Substrate. Native DPoS consensus (BABE/GRANDPA), AMM DEX, EVM, on-chain carbon credits, 100B token supply. production-grade pallets, mainnet ready." />
+  <title>Verdis Chain — The World's First Green Blockchain</title>
+<link rel="canonical" href="https://verdischain.com/">
+  <meta name="description" content="Verdis Chain is a Layer-1 blockchain in Rust with native DPoS consensus, AMM DEX, carbon credit tracking, and green validator scoring." />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Verdis Chain — The World's First Green Blockchain" />
   <meta property="og:description" content="Layer-1 blockchain in Rust + Substrate. DPoS, AMM DEX, EVM, carbon credits. 100B supply, EVM compatible, carbon credits." />
@@ -44,7 +45,7 @@
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     html { scroll-behavior: smooth; }
-    body { font-family: 'Poppins', sans-serif; background: var(--canvas-light); color: var(--text-dark); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+    body { overflow-x:hidden; font-family: 'Poppins', sans-serif; background: var(--canvas-light); color: var(--text-dark); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
     .mono { font-family: 'JetBrains Mono', monospace; }
 
     /* ===== SCROLL PROGRESS ===== */
@@ -1203,8 +1204,7 @@ async function updateLiveMetrics() {
     }
     
   } catch (e) {
-    console.log('Live metrics: RPC not available, using cached data');
-  }
+    }
   
   // Update monitor frame + stat cards
   try {
