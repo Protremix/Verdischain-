@@ -961,12 +961,12 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
     <div class="stats-grid">
       <div class="stat-card">
         <div class="label">Total CO2 Offset</div>
-        <div class="value accent">0 t</div>
+        <div class="value accent" data-eco-co2>0 t</div>
         <div class="sub">Verified Metric Tons <span class="badge-static">Demo Data</span></div>
       </div>
       <div class="stat-card">
         <div class="label">Trees Planted</div>
-        <div class="value">0</div>
+        <div class="value" data-eco-trees>0</div>
         <div class="sub">Telemetry Logged <span class="badge-static">Demo Data</span></div>
       </div>
       <div class="stat-card">
@@ -1048,7 +1048,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
             <div class="chart-title">Cumulative CO2 Offset Over Time</div>
             <div class="chart-sub">Measured in Metric Tons (2025 – 2026)</div>
           </div>
-          <div class="chart-val">0 t</div>
+          <div class="chart-val" data-eco-co2>0 t</div>
         </div>
         <div style="height: 180px; width: 100%; margin-bottom: 12px;">
           <svg viewBox="0 0 500 180" style="width: 100%; height: 100%;">
@@ -1817,5 +1817,93 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<script>
+// Eco pallet storage keys (xxhash64 computed)
+const ECO_PALLET_KEY = '0x2680888a0748104b';  // twox64("Eco")
+const STORAGE_KEYS = {
+  co2: '0x2680888a0748104b2a2a6d2225476c87',    // TotalCO2Offset
+  trees: '0x2680888a0748104ba708c311d6f4910e',   // TotalTreesPlanted
+  retired: '0x2680888a0748104bcf008879e83944d7' // TotalCreditsRetired
+};
+
+async function fetchEcoStats() {
+  const RPC = '/rpc';
+  try {
+    // Fetch all 3 storage values in parallel
+    const [co2Res, treesRes, retiredRes] = await Promise.all([
+      fetch(RPC, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'state_getStorage',params:[STORAGE_KEYS.co2],id:1})}),
+      fetch(RPC, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'state_getStorage',params:[STORAGE_KEYS.trees],id:2})}),
+      fetch(RPC, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'state_getStorage',params:[STORAGE_KEYS.retired],id:3})}),
+    ]);
+
+    const co2Data = await co2Res.json();
+    const treesData = await treesRes.json();
+    const retiredData = await retiredRes.json();
+
+    // Decode SCALE-encoded values
+    function decodeU64(hex) {
+      if (!hex || hex === '0x' || hex.length < 18) return 0;
+      // u64 little-endian from hex
+      let val = 0;
+      const bytes = hex.slice(2, 18);
+      for (let i = 6; i >= 0; i--) {
+        val = val * 256 + parseInt(bytes.slice(i*2, i*2+2), 16);
+      }
+      return val;
+    }
+    function decodeU32(hex) {
+      if (!hex || hex === '0x' || hex.length < 10) return 0;
+      let val = 0;
+      const bytes = hex.slice(2, 10);
+      for (let i = 3; i >= 0; i--) {
+        val = val * 256 + parseInt(bytes.slice(i*2, i*2+2), 16);
+      }
+      return val;
+    }
+
+    const co2 = decodeU64(co2Data.result);
+    const trees = decodeU32(treesData.result);
+    const retired = decodeU64(retiredData.result);
+
+    // Update all eco stat displays
+    document.querySelectorAll('[data-eco-co2]').forEach(el => el.textContent = co2.toLocaleString() + ' t');
+    document.querySelectorAll('[data-eco-trees]').forEach(el => el.textContent = trees.toLocaleString());
+    document.querySelectorAll('[data-eco-retired]').forEach(el => el.textContent = retired.toLocaleString());
+
+    // Update any value.accent elements that show CO2
+    document.querySelectorAll('.value.accent').forEach(el => {
+      if (el.textContent.includes(' t') || el.textContent === '0 t') {
+        el.textContent = co2.toLocaleString() + ' t';
+      }
+    });
+
+    // Update tree count
+    document.querySelectorAll('.value').forEach(el => {
+      if (el.textContent === '0' && el.nextElementSibling && el.nextElementSibling.textContent.toLowerCase().includes('tree')) {
+        el.textContent = trees.toLocaleString();
+      }
+    });
+
+    console.log('Eco stats loaded: CO2=' + co2 + ' Trees=' + trees + ' Retired=' + retired);
+  } catch(e) {
+    console.log('Eco stats not available:', e.message);
+  }
+}
+
+// Also fetch block height for eco page
+async function fetchBlockHeight() {
+  try {
+    const r = await fetch('/rpc', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'chain_getHeader',params:[],id:1})});
+    const d = await r.json();
+    const h = parseInt(d.result.number, 16);
+    document.querySelectorAll('[data-block-height]').forEach(el => el.textContent = '#' + h.toLocaleString());
+  } catch(e) {}
+}
+
+fetchEcoStats();
+fetchBlockHeight();
+setInterval(fetchEcoStats, 30000);
+setInterval(fetchBlockHeight, 15000);
+</script>
 </body>
 </html>
