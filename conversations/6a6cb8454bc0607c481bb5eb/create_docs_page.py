@@ -1,0 +1,858 @@
+import os
+
+html_content = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verdis Chain — Developer Documentation v2.0</title>
+  <meta name="description" content="Official documentation for Verdis Chain. Build green decentralized applications with Rust, Substrate, EVM smart contracts, and carbon credit APIs." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Verdis Chain — Developer Documentation v2.0" />
+  <meta property="og:description" content="Build on Verdis Chain with Rust + Substrate. 7 production pallets, 143 EVM opcodes, native DEX, and carbon credit APIs." />
+  <meta property="og:url" content="https://verdischain.com/docs" />
+  <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --canvas: #b0b5b8;
+      --canvas-light: #f8fafc;
+      --hero-bg: #1a1a1a;
+      --hero-card: #2d2d2d;
+      --hero-card-dark: #202020;
+      --accent: #b4f849;
+      --accent-hover: #a3e041;
+      --accent-glow: rgba(180,248,73,0.3);
+      --accent-light: rgba(180,248,73,0.1);
+      --green-soft: #84fe87;
+      --green-deep: #00a86b;
+      --text-white: #ffffff;
+      --text-muted: #9ca3ad;
+      --text-dark: #0f172a;
+      --radius: 12px;
+      --radius-lg: 20px;
+      --radius-pill: 100px;
+      --transition: 250ms cubic-bezier(0.16,1,0.3,1);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Poppins', sans-serif; background: var(--canvas-light); color: var(--text-dark); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* ===== SCROLL PROGRESS ===== */
+    #scroll-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #b4f849, #84fe87, #00a86b); z-index: 10000; width: 0; transition: width 50ms; }
+
+    /* ===== CURSOR GLOW ===== */
+    #cursor-glow { position: fixed; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(180,248,73,0.06) 0%, transparent 70%); pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); opacity: 0; transition: opacity 300ms; }
+    body:hover #cursor-glow { opacity: 1; }
+
+    /* ===== HERO SECTION — Dark container on light canvas ===== */
+    .hero-section { position: relative; background: var(--canvas); padding: 0 24px 24px; overflow: hidden; }
+    .hero-container { max-width: 1280px; margin: 0 auto; background: var(--hero-bg); border-radius: 24px; overflow: hidden; position: relative; min-height: 680px; display: flex; box-shadow: 0 20px 50px rgba(0,0,0,0.15); }
+    .hero-container::before { content: ''; position: absolute; top: -50%; right: -20%; width: 600px; height: 600px; background: radial-gradient(circle, var(--accent-glow), transparent 60%); opacity: 0.15; animation: pulse-bg 4s ease-in-out infinite; }
+    @keyframes pulse-bg { 0%,100% { opacity: 0.1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(1.1); } }
+
+    /* ===== NAV (inside dark hero) ===== */
+    .hero-nav { position: absolute; top: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; padding: 24px 40px; }
+    .nav-brand { font-family: 'Poppins'; font-weight: 800; font-size: 22px; color: var(--text-white); display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-brand-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px var(--accent-glow); animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot { 0%,100% { box-shadow: 0 0 16px var(--accent-glow); } 50% { box-shadow: 0 0 24px rgba(180,248,73,0.6); } }
+    .nav-links { display: flex; gap: 36px; }
+    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; text-decoration: none; transition: color 250ms; position: relative; }
+    .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: var(--accent); border-radius: 2px; transition: width 250ms; }
+    .nav-links a:hover { color: var(--text-white); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta { display: flex; gap: 12px; align-items: center; }
+    .btn-login { color: var(--text-muted); font-size: 14px; font-weight: 500; text-decoration: none; padding: 8px 16px; transition: color 250ms; }
+    .btn-login:hover { color: var(--text-white); }
+    .btn-signup { background: var(--accent); color: var(--hero-bg); font-size: 14px; font-weight: 600; padding: 10px 24px; border-radius: var(--radius-pill); border: none; cursor: pointer; transition: var(--transition); text-decoration: none; position: relative; overflow: hidden; display: inline-block; }
+    .btn-signup::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transition: left 500ms; }
+    .btn-signup:hover::before { left: 100%; }
+    .btn-signup:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--accent-glow); }
+
+    /* ===== HERO LEFT — Text & Search ===== */
+    .hero-left { flex: 1.1; display: flex; flex-direction: column; justify-content: center; padding: 120px 50px 60px 60px; position: relative; z-index: 5; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--accent-light); border: 1px solid rgba(180,248,73,0.3); border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 24px; width: fit-content; opacity: 0; transform: translateY(20px); animation: slideUp 600ms 200ms forwards; }
+    .hero-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse-dot 2s infinite; }
+    .hero-title { font-size: 52px; font-weight: 900; line-height: 1.05; color: var(--text-white); margin-bottom: 20px; letter-spacing: -1px; opacity: 0; transform: translateY(30px); animation: slideUp 800ms 400ms forwards; }
+    .hero-title .gradient { background: linear-gradient(135deg, #b4f849 0%, #84fe87 50%, #ffffff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-desc { font-size: 15px; color: var(--text-muted); line-height: 1.7; margin-bottom: 30px; max-width: 520px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 600ms forwards; }
+    
+    /* Search Bar Pill */
+    .search-wrapper { position: relative; max-width: 480px; margin-bottom: 28px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 700ms forwards; }
+    .search-input { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); padding: 14px 22px 14px 50px; border-radius: var(--radius-pill); font-family: 'Poppins', sans-serif; font-size: 14px; color: var(--text-white); outline: none; transition: var(--transition); backdrop-filter: blur(10px); }
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.09); box-shadow: 0 0 20px var(--accent-glow); }
+    .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; pointer-events: none; transition: color 250ms; }
+    .search-input:focus + .search-icon { color: var(--accent); }
+    .search-kbd { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 2px 8px; font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; pointer-events: none; }
+
+    .hero-actions { display: flex; gap: 16px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 800ms forwards; }
+    .btn-read-more { background: linear-gradient(135deg, #b4f849, #84fe87); color: var(--hero-bg); font-size: 15px; font-weight: 700; padding: 14px 32px; border-radius: var(--radius-pill); border: none; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+    .btn-read-more::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transition: left 500ms; }
+    .btn-read-more:hover::before { left: 100%; }
+    .btn-read-more:hover { transform: translateY(-3px); box-shadow: 0 12px 32px var(--accent-glow); }
+    .btn-explore { background: transparent; color: var(--text-white); font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: var(--radius-pill); border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: var(--transition); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-explore:hover { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+    /* ===== HERO RIGHT — Terminal Code Editor Mockup ===== */
+    .hero-right { flex: 0.9; position: relative; display: flex; align-items: center; justify-content: center; padding: 100px 40px 60px 20px; }
+    #hero-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+    .editor-mockup { position: relative; z-index: 3; width: 100%; max-width: 520px; background: #111827; border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.5); transform: perspective(1000px) rotateY(-4deg) rotateX(2deg); transition: transform 0.5s ease; }
+    .editor-mockup:hover { transform: perspective(1000px) rotateY(0deg) rotateX(0deg); }
+    
+    .editor-topbar { background: #1f2937; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .topbar-dots { display: flex; gap: 8px; }
+    .dot-red { width: 11px; height: 11px; border-radius: 50%; background: #ff5f56; }
+    .dot-yellow { width: 11px; height: 11px; border-radius: 50%; background: #ffbd2e; }
+    .dot-green { width: 11px; height: 11px; border-radius: 50%; background: #27c93f; }
+    .editor-filename { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .editor-filename::before { content: '🦀'; font-size: 12px; }
+
+    .editor-code { padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.6; color: #e2e8f0; overflow-x: auto; background: #0f172a; }
+    .kw { color: #b4f849; font-weight: 600; } /* Rust keyword */
+    .cm { color: #64748b; font-style: italic; } /* Comment */
+    .str { color: #84fe87; } /* String */
+    .fn { color: #f8fafc; font-weight: 600; } /* Function */
+    .ty { color: #38bdf8; } /* Type */
+    .attr { color: #fbbf24; } /* Attribute */
+
+    /* Floating UI cards over editor */
+    .float-card { position: absolute; background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(180,248,73,0.3); border-radius: 14px; padding: 12px 18px; box-shadow: 0 12px 35px rgba(0,0,0,0.4); z-index: 5; backdrop-filter: blur(12px); display: flex; align-items: center; gap: 12px; }
+    .float-card-1 { top: 12%; right: -15px; animation: float-1 6s ease-in-out infinite; }
+    .float-card-2 { bottom: 18%; left: -25px; animation: float-2 7s ease-in-out infinite; }
+    .float-card-3 { top: 58%; right: -20px; animation: float-3 5s ease-in-out infinite; }
+    @keyframes float-1 { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-10px) rotate(1deg); } }
+    @keyframes float-2 { 0%,100% { transform: translateY(0) rotate(2deg); } 50% { transform: translateY(8px) rotate(-1deg); } }
+    @keyframes float-3 { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-6px) rotate(2deg); } }
+
+    .card-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--accent-light); border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--accent); }
+    .card-val { font-size: 15px; font-weight: 700; color: var(--text-white); }
+    .card-lbl { font-size: 11px; color: var(--text-muted); }
+
+    /* ===== LIGHT SECTIONS COMMON ===== */
+    .section-light { padding: 90px 24px; background: var(--canvas-light); position: relative; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    .section-header { text-align: center; margin-bottom: 60px; }
+    .section-label { display: inline-block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--green-deep); background: rgba(0,168,107,0.08); padding: 6px 16px; border-radius: var(--radius-pill); margin-bottom: 12px; }
+    .section-header h2 { font-size: 38px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px; }
+    .section-header p { font-size: 16px; color: #64748b; margin-top: 10px; max-width: 600px; margin-left: auto; margin-right: auto; }
+
+    /* ===== QUICK START SECTION ===== */
+    .quickstart-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .quickstart-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius-lg); padding: 32px 28px; transition: var(--transition); position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: space-between; }
+    .quickstart-card:hover { transform: translateY(-6px); box-shadow: 0 16px 36px rgba(0,0,0,0.08); border-color: var(--accent); }
+    .step-num { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--green-deep); background: rgba(0,168,107,0.1); width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+    .quickstart-card h3 { font-size: 20px; font-weight: 700; color: var(--text-dark); margin-bottom: 10px; }
+    .quickstart-card p { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 20px; flex-grow: 1; }
+    
+    .cmd-box { background: var(--hero-bg); border-radius: 10px; padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent); display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.08); overflow-x: auto; }
+    .cmd-text { white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+    .btn-copy { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 4px; transition: color 200ms; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-left: 8px; flex-shrink: 0; }
+    .btn-copy:hover { color: var(--accent); }
+
+    /* ===== PALLET DOCUMENTATION SECTION ===== */
+    .pallets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .pallet-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius-lg); padding: 28px; transition: var(--transition); box-shadow: 0 4px 20px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: space-between; }
+    .pallet-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 16px 32px rgba(0,0,0,0.06); }
+    .pallet-tag { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; color: var(--text-dark); background: #f1f5f9; padding: 6px 12px; border-radius: 8px; width: fit-content; margin-bottom: 14px; border: 1px solid #e2e8f0; }
+    .pallet-desc { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 24px; }
+    .pallet-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #f1f5f9; padding-top: 16px; margin-top: auto; }
+    .test-badge { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: var(--green-deep); background: rgba(0,168,107,0.1); padding: 4px 10px; border-radius: var(--radius-pill); }
+    .source-link { font-size: 13px; font-weight: 600; color: var(--text-dark); text-decoration: none; transition: color 200ms; display: inline-flex; align-items: center; gap: 4px; }
+    .source-link:hover { color: var(--green-deep); }
+
+    /* ===== RPC ENDPOINTS (DARK SECTION) ===== */
+    .section-dark { padding: 90px 24px; background: var(--hero-bg); color: var(--text-white); position: relative; }
+    .section-dark .section-label { color: var(--accent); background: var(--accent-light); }
+    .section-dark .section-header h2 { color: var(--text-white); }
+    .section-dark .section-header p { color: var(--text-muted); }
+
+    .arch-container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+    .arch-layer { background: var(--hero-card); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px 28px; display: flex; align-items: center; justify-content: space-between; transition: var(--transition); }
+    .arch-layer:hover { border-color: var(--accent); background: #333333; transform: translateX(6px); }
+    .rpc-name { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; color: var(--accent); min-width: 260px; }
+    .rpc-desc { font-size: 14px; color: var(--text-muted); flex-grow: 1; padding: 0 20px; }
+    .rpc-badge { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: var(--hero-bg); background: var(--accent); padding: 4px 12px; border-radius: var(--radius-pill); flex-shrink: 0; }
+
+    /* ===== CODE EXAMPLES SECTION ===== */
+    .code-comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+    .code-box { background: #111827; border: 1px solid #1f2937; border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
+    .code-box-header { background: #1f2937; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .code-box-title { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text-white); display: flex; align-items: center; gap: 8px; }
+    .code-box-body { padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.65; color: #e2e8f0; overflow-x: auto; max-height: 420px; }
+
+    /* ===== CTA SECTION ===== */
+    .cta-section { padding: 60px 24px 90px; background: var(--canvas); }
+    .cta-inner { max-width: 1280px; margin: 0 auto; }
+    .cta-card { background: var(--hero-bg); border-radius: 24px; padding: 60px 40px; text-align: center; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+    .cta-card::before { content: ''; position: absolute; top: -50%; left: 50%; transform: translateX(-50%); width: 500px; height: 500px; background: radial-gradient(circle, var(--accent-glow), transparent 70%); opacity: 0.2; }
+    .cta-card h2 { font-size: 36px; font-weight: 800; color: var(--text-white); margin-bottom: 16px; position: relative; z-index: 2; }
+    .cta-card p { font-size: 16px; color: var(--text-muted); max-width: 580px; margin: 0 auto 32px; position: relative; z-index: 2; }
+    .cta-actions { display: flex; gap: 16px; justify-content: center; position: relative; z-index: 2; }
+
+    /* ===== FOOTER ===== */
+    .footer { background: #111111; color: var(--text-white); padding: 60px 24px 30px; border-top: 1px solid rgba(255,255,255,0.05); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+    .footer-brand h4 { font-size: 20px; font-weight: 800; color: var(--text-white); margin-bottom: 12px; }
+    .footer-brand p { font-size: 13px; color: var(--text-muted); line-height: 1.7; max-width: 320px; }
+    .footer-col h5 { font-size: 14px; font-weight: 700; color: var(--text-white); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+    .footer-col a { display: block; color: var(--text-muted); font-size: 13px; text-decoration: none; margin-bottom: 10px; transition: color 200ms; }
+    .footer-col a:hover { color: var(--accent); }
+    .footer-bottom { max-width: 1200px; margin: 0 auto; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); }
+
+    /* ===== SECTION REVEAL ===== */
+    .reveal { opacity: 0; transform: translateY(30px); transition: opacity 800ms cubic-bezier(0.16,1,0.3,1), transform 800ms cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ===== RESPONSIVE AT 375px, 768px, 1024px, 1280px ===== */
+    @media (max-width: 1280px) {
+      .hero-container { max-width: 100%; }
+      .container { max-width: 100%; }
+    }
+    @media (max-width: 1024px) {
+      .pallets-grid { grid-template-columns: repeat(2,1fr); }
+      .quickstart-grid { grid-template-columns: repeat(2,1fr); }
+      .code-comparison-grid { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+      .hero-title { font-size: 42px; }
+      .hero-right { padding: 40px 20px; }
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero-container { flex-direction: column; min-height: auto; }
+      .hero-left { padding: 100px 28px 40px; }
+      .hero-right { padding: 20px; width: 100%; }
+      .editor-mockup { transform: none !important; max-width: 100%; }
+      .float-card { display: none; }
+      .hero-title { font-size: 34px; }
+      .quickstart-grid { grid-template-columns: 1fr; }
+      .pallets-grid { grid-template-columns: 1fr; }
+      .arch-layer { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .rpc-name { min-width: auto; }
+      .rpc-desc { padding: 0; }
+      .cta-card { padding: 40px 20px; }
+      .cta-card h2 { font-size: 26px; }
+      .cta-actions { flex-direction: column; gap: 12px; }
+      .footer-inner { grid-template-columns: 1fr; gap: 24px; }
+      .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+    }
+    @media (max-width: 375px) {
+      .hero-title { font-size: 28px; }
+      .hero-left { padding: 90px 18px 30px; }
+      .hero-badge { font-size: 11px; }
+      .btn-read-more, .btn-explore { padding: 12px 20px; font-size: 13px; width: 100%; justify-content: center; }
+      .hero-actions { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div id="cursor-glow"></div>
+  <div id="scroll-bar"></div>
+
+  <!-- ===== HERO SECTION ===== -->
+  <section class="hero-section">
+    <div class="hero-container">
+      
+      <!-- NAV -->
+      <nav class="hero-nav">
+        <a href="/" class="nav-brand">
+          <div class="nav-brand-dot"></div>
+          Verdis Chain
+        </a>
+        <div class="nav-links">
+          <a href="#quickstart">Quick Start</a>
+          <a href="#pallets">Pallets</a>
+          <a href="#rpc">RPC Methods</a>
+          <a href="#code-examples">Code Examples</a>
+        </div>
+        <div class="nav-cta">
+          <a href="#" class="btn-login">Sign In</a>
+          <a href="#" class="btn-signup">Sign Up</a>
+        </div>
+      </nav>
+
+      <!-- SPLIT HERO LEFT -->
+      <div class="hero-left">
+        <div class="hero-badge">
+          <div class="hero-badge-dot"></div>
+          Developer Documentation v2.0
+        </div>
+        <h1 class="hero-title">
+          DEVELOPER<br>
+          <span class="gradient">DOCS</span>
+        </h1>
+        <p class="hero-desc">
+          Build on Verdis Chain with Rust + Substrate. 7 production pallets, 143 EVM opcodes, native DEX, and carbon credit APIs.
+        </p>
+
+        <!-- Search Bar -->
+        <div class="search-wrapper">
+          <input type="text" id="doc-search" class="search-input" placeholder="Search documentation, pallets, RPC methods..." autocomplete="off" />
+          <span class="search-icon">🔍</span>
+          <span class="search-kbd">⌘K</span>
+        </div>
+
+        <!-- CTA Buttons -->
+        <div class="hero-actions">
+          <a href="#quickstart" class="btn-read-more">Getting Started →</a>
+          <a href="#rpc" class="btn-explore">API Reference</a>
+        </div>
+      </div>
+
+      <!-- SPLIT HERO RIGHT — Terminal Code Editor Mockup -->
+      <div class="hero-right">
+        <canvas id="hero-canvas"></canvas>
+
+        <div class="editor-mockup">
+          <div class="editor-topbar">
+            <div class="topbar-dots">
+              <div class="dot-red"></div>
+              <div class="dot-yellow"></div>
+              <div class="dot-green"></div>
+            </div>
+            <div class="editor-filename">runtime.rs</div>
+            <button class="btn-copy" onclick="copySnippet('runtime-code', this)" title="Copy Code">📋</button>
+          </div>
+          <div class="editor-code" id="runtime-code">
+<span class="cm">// runtime.rs - Verdis Substrate Runtime v2.0</span>
+<span class="attr">#[frame_support::pallet]</span>
+<span class="kw">pub mod</span> <span class="fn">pallet</span> {
+    <span class="kw">use</span> frame_support::pallet_prelude::*;
+
+    <span class="attr">#[pallet::config]</span>
+    <span class="kw">pub trait</span> <span class="ty">Config</span>: frame_system::<span class="ty">Config</span> {
+        <span class="kw">type</span> <span class="ty">RuntimeEvent</span>: From&lt;Event&lt;<span class="kw">Self</span>&gt;&gt;;
+    }
+
+    <span class="attr">#[pallet::storage]</span>
+    <span class="kw">pub type</span> <span class="ty">CarbonCredits</span>&lt;T: <span class="ty">Config</span>&gt; = StorageMap&lt;
+        _, Blake2_128Concat, T::<span class="ty">AccountId</span>, u128, ValueQuery
+    &gt;;
+
+    <span class="attr">#[pallet::call]</span>
+    <span class="kw">impl</span>&lt;T: <span class="ty">Config</span>&gt; Pallet&lt;T&gt; {
+        <span class="attr">#[pallet::weight(10_000)]</span>
+        <span class="kw">pub fn</span> <span class="fn">mint_credit</span>(origin: <span class="ty">OriginFor</span>&lt;T&gt;, amt: u128) -&gt; <span class="ty">DispatchResult</span> {
+            <span class="kw">let</span> sender = ensure_signed(origin)?;
+            CarbonCredits::&lt;T&gt;::mutate(&sender, |v| *v += amt);
+            <span class="kw">Ok</span>(())
+        }
+    }
+}</div>
+        </div>
+
+        <!-- Floating UI Cards -->
+        <div class="float-card float-card-1">
+          <div class="card-icon">🧪</div>
+          <div>
+            <div class="card-val">260 passing</div>
+            <div class="card-lbl">Tests Status</div>
+          </div>
+        </div>
+
+        <div class="float-card float-card-2">
+          <div class="card-icon">⚡</div>
+          <div>
+            <div class="card-val">✓ Success</div>
+            <div class="card-lbl">Cargo Build</div>
+          </div>
+        </div>
+
+        <div class="float-card float-card-3">
+          <div class="card-icon">📦</div>
+          <div>
+            <div class="card-val">7 live</div>
+            <div class="card-lbl">Pallets</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== QUICK START (LIGHT SECTION) ===== -->
+  <section class="section-light" id="quickstart">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-label">Getting Started</span>
+        <h2>Quick Start Guide</h2>
+        <p>Get up and running with a local Verdis node and deploy your first smart contract in under 3 minutes.</p>
+      </div>
+
+      <div class="quickstart-grid reveal">
+        
+        <!-- Step 1 -->
+        <div class="quickstart-card" data-searchable="install node cargo build verdis git clone">
+          <div>
+            <div class="step-num">01</div>
+            <h3>Install Node</h3>
+            <p>Clone the official Verdis Chain repository and compile the native Rust Substrate binary using Cargo.</p>
+          </div>
+          <div class="cmd-box">
+            <span class="cmd-text">git clone https://github.com/verdis-chain/node.git && cargo build --release</span>
+            <button class="btn-copy" onclick="copyText('git clone https://github.com/verdis-chain/node.git && cargo build --release', this)">📋</button>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="quickstart-card" data-searchable="run dev chain local node devnet rpc port 9944">
+          <div>
+            <div class="step-num">02</div>
+            <h3>Run Dev Chain</h3>
+            <p>Launch a local single-node development blockchain with instant block production and pre-funded accounts.</p>
+          </div>
+          <div class="cmd-box">
+            <span class="cmd-text">./target/release/verdis-node --dev --tmp --rpc-port 9944</span>
+            <button class="btn-copy" onclick="copyText('./target/release/verdis-node --dev --tmp --rpc-port 9944', this)">📋</button>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="quickstart-card" data-searchable="deploy contract sdk cli verdis-cli devnet npm">
+          <div>
+            <div class="step-num">03</div>
+            <h3>Deploy Contract</h3>
+            <p>Install the Verdis JavaScript SDK or CLI to deploy Rust pallets and EVM smart contracts seamlessly.</p>
+          </div>
+          <div class="cmd-box">
+            <span class="cmd-text">npm install @verdis/sdk && verdis-cli deploy --network devnet</span>
+            <button class="btn-copy" onclick="copyText('npm install @verdis/sdk && verdis-cli deploy --network devnet', this)">📋</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PALLET DOCUMENTATION (LIGHT SECTION) ===== -->
+  <section class="section-light" id="pallets" style="background: #ffffff;">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-label">Substrate Runtime</span>
+        <h2>Pallet Documentation</h2>
+        <p>Explore the 7 core production pallets powering native transfers, DPoS consensus, EVM execution, and carbon offset tracking.</p>
+      </div>
+
+      <div class="pallets-grid reveal">
+        
+        <!-- Pallet 1 -->
+        <div class="pallet-card" data-searchable="pallet-balances token transfer balance vesting locks supply mint">
+          <div>
+            <div class="pallet-tag">pallet-balances</div>
+            <p class="pallet-desc">Native VRS token management, account balances, transfers, existential deposits, vesting locks, and supply minting rules.</p>
+          </div>
+          <div class="pallet-footer">
+            <span class="test-badge">48 tests passing</span>
+            <a href="#" class="source-link">View Source →</a>
+          </div>
+        </div>
+
+        <!-- Pallet 2 -->
+        <div class="pallet-card" data-searchable="pallet-babe dpos consensus block production vrf epoch validator">
+          <div>
+            <div class="pallet-tag">pallet-babe</div>
+            <p class="pallet-desc">Delegated Proof-of-Stake (DPoS) consensus block production engine using VRF randomness and epoch validator transitions.</p>
+          </div>
+          <div class="pallet-footer">
+            <span class="test-badge">32 tests passing</span>
+            <a href="#" class="source-link">View Source →</a>
+          </div>
+        </div>
+
+        <!-- Pallet 3 -->
+        <div class="pallet-card" data-searchable="pallet-amm dex liquidity pool swap routing constant product">
+          <div>
+            <div class="pallet-tag">pallet-amm</div>
+            <p class="pallet-desc">Constant product automated market maker (AMM) DEX with liquidity provision, automated swap routing, and fee distribution.</p>
+          </div>
+          <div class="pallet-footer">
+            <span class="test-badge">42 tests passing</span>
+            <a href="#" class="source-link">View Source →</a>
+          </div>
+        </div>
+
+        <!-- Pallet 4 -->
+        <div class="pallet-card" data-searchable="pallet-evm ethereum opcodes smart contracts gas execution 143">
+          <div>
+            <div class="pallet-tag">pallet-evm</div>
+            <p class="pallet-desc">Full Ethereum Virtual Machine runtime support with 143 EVM opcodes, bytecode execution, gas metering, and contract state storage.</p>
+          </div>
+          <div class="pallet-footer">
+            <span class="test-badge">56 tests passing</span>
+            <a href="#" class="source-link">View Source →</a>
+          </div>
+        </div>
+
+        <!-- Pallet 5 -->
+        <div class="pallet-card" data-searchable="pallet-carbon carbon credits green offset verification eco metadata retirement">
+          <div>
+            <div class="pallet-tag">pallet-carbon</div>
+            <p class="pallet-desc">On-chain carbon credit issuance, verified offset retirement tracking, environmental registry integration, and eco metadata.</p>
+          </div>
+          <div class="pallet-footer">
+            <span class="test-badge">38 tests passing</span>
+            <a href="#" class="source-link">View Source →</a>
+          </div>
+        </div>
+
+        <!-- Pallet 6 -->
+        <div class="pallet-card" data-searchable="pallet-vesting schedule release cliff linear token allocation">
+          <div>
+            <div class="pallet-tag">pallet-vesting</div>
+            <p class="pallet-desc">Schedule-based token release schedules, cliff period calculations, linear vesting tranches, and locked balance enforcement.</p>
+          </div>
+          <div class="pallet-footer">
+            <span class="test-badge">22 tests passing</span>
+            <a href="#" class="source-link">View Source →</a>
+          </div>
+        </div>
+
+        <!-- Pallet 7 -->
+        <div class="pallet-card" data-searchable="pallet-storage key value ipfs state storage data indexing">
+          <div>
+            <div class="pallet-tag">pallet-storage</div>
+            <p class="pallet-desc">Distributed on-chain key-value data storage, trie state indexing, and seamless bridge interface for IPFS file storage.</p>
+          </div>
+          <div class="pallet-footer">
+            <span class="test-badge">22 tests passing</span>
+            <a href="#" class="source-link">View Source →</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== RPC ENDPOINTS (DARK SECTION) ===== -->
+  <section class="section-dark" id="rpc">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-label">API & JSON-RPC</span>
+        <h2>RPC Endpoints</h2>
+        <p>Interact directly with Verdis nodes using standard JSON-RPC HTTP or WebSocket endpoints.</p>
+      </div>
+
+      <div class="arch-container reveal">
+        
+        <!-- RPC 1 -->
+        <div class="arch-layer" data-searchable="verdis_chainHeader chain header block number parent hash state root">
+          <div class="rpc-name">verdis_chainHeader</div>
+          <div class="rpc-desc">Fetch latest block header, block number, parent hash, and cryptographic state root.</div>
+          <div class="rpc-badge">Available</div>
+        </div>
+
+        <!-- RPC 2 -->
+        <div class="arch-layer" data-searchable="verdis_submitExtrinsic submit extrinsic transaction contract payload">
+          <div class="rpc-name">verdis_submitExtrinsic</div>
+          <div class="rpc-desc">Submit a signed extrinsic transaction or smart contract deployment payload to the mempool.</div>
+          <div class="rpc-badge">Available</div>
+        </div>
+
+        <!-- RPC 3 -->
+        <div class="arch-layer" data-searchable="verdis_getAccountBalance account balance native VRS staked rewards locks">
+          <div class="rpc-name">verdis_getAccountBalance</div>
+          <div class="rpc-desc">Query native VRS balance, staked validator amount, pending rewards, and active vesting locks.</div>
+          <div class="rpc-badge">Available</div>
+        </div>
+
+        <!-- RPC 4 -->
+        <div class="arch-layer" data-searchable="verdis_getCarbonCredits carbon credits offset serial issuer eco">
+          <div class="rpc-name">verdis_getCarbonCredits</div>
+          <div class="rpc-desc">Query verified carbon credit balances, serial numbers, retirement history, and issuer metadata.</div>
+          <div class="rpc-badge">Available</div>
+        </div>
+
+        <!-- RPC 5 -->
+        <div class="arch-layer" data-searchable="verdis_evmCall evm call read-only view state smart contract">
+          <div class="rpc-name">verdis_evmCall</div>
+          <div class="rpc-desc">Execute EVM read-only calls and smart contract view functions without state mutation or gas fees.</div>
+          <div class="rpc-badge">Available</div>
+        </div>
+
+        <!-- RPC 6 -->
+        <div class="arch-layer" data-searchable="verdis_getLiquidityPool liquidity pool reserves swap fees lp token amm">
+          <div class="rpc-name">verdis_getLiquidityPool</div>
+          <div class="rpc-desc">Retrieve AMM pool reserves, swap fee tiers, estimated slippage, and LP token totals.</div>
+          <div class="rpc-badge">Available</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CODE EXAMPLES SECTION ===== -->
+  <section class="section-light" id="code-examples">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-label">Developer Examples</span>
+        <h2>Rust Pallet vs. Solidity Contract</h2>
+        <p>Compare native Substrate Rust pallet implementation with standard EVM Solidity smart contract deployment.</p>
+      </div>
+
+      <div class="code-comparison-grid reveal">
+        
+        <!-- Left: Rust Pallet Example -->
+        <div class="code-box">
+          <div class="code-box-header">
+            <div class="code-box-title">
+              <span>🦀</span> carbon_pallet.rs (Substrate Rust)
+            </div>
+            <button class="btn-copy" onclick="copySnippet('rust-code-example', this)">📋 Copy</button>
+          </div>
+          <div class="code-box-body" id="rust-code-example">
+<span class="cm">// carbon_pallet.rs - Substrate Rust Pallet</span>
+<span class="attr">#[frame_support::pallet]</span>
+<span class="kw">pub mod</span> <span class="fn">pallet</span> {
+    <span class="kw">use</span> frame_support::pallet_prelude::*;
+
+    <span class="attr">#[pallet::storage]</span>
+    <span class="kw">pub type</span> <span class="ty">RetiredCredits</span>&lt;T: <span class="ty">Config</span>&gt; = StorageMap&lt;
+        _, Blake2_128Concat, T::<span class="ty">AccountId</span>, u128, ValueQuery
+    &gt;;
+
+    <span class="attr">#[pallet::call]</span>
+    <span class="kw">impl</span>&lt;T: <span class="ty">Config</span>&gt; Pallet&lt;T&gt; {
+        <span class="attr">#[pallet::weight(10_000)]</span>
+        <span class="kw">pub fn</span> <span class="fn">retire_credits</span>(
+            origin: <span class="ty">OriginFor</span>&lt;T&gt;, 
+            amount: u128
+        ) -&gt; <span class="ty">DispatchResult</span> {
+            <span class="kw">let</span> who = ensure_signed(origin)?;
+            RetiredCredits::&lt;T&gt;::mutate(&who, |v| *v += amount);
+            Self::deposit_event(Event::CreditsRetired(who, amount));
+            <span class="kw">Ok</span>(())
+        }
+    }
+}</div>
+        </div>
+
+        <!-- Right: Solidity Contract Example -->
+        <div class="code-box">
+          <div class="code-box-header">
+            <div class="code-box-title">
+              <span>💎</span> GreenCarbon.sol (EVM Solidity)
+            </div>
+            <button class="btn-copy" onclick="copySnippet('sol-code-example', this)">📋 Copy</button>
+          </div>
+          <div class="code-box-body" id="sol-code-example">
+<span class="cm">// SPDX-License-Identifier: MIT</span>
+<span class="kw">pragma solidity</span> ^0.8.20;
+
+<span class="kw">import</span> <span class="str">"@openzeppelin/contracts/token/ERC20/ERC20.sol"</span>;
+
+<span class="kw">contract</span> <span class="ty">GreenCarbon</span> <span class="kw">is</span> ERC20 {
+    <span class="ty">mapping</span>(<span class="ty">address</span> =&gt; <span class="ty">uint256</span>) <span class="kw">public</span> retiredCredits;
+
+    <span class="kw">event</span> <span class="fn">CreditsRetired</span>(<span class="ty">address</span> <span class="kw">indexed</span> account, <span class="ty">uint256</span> amount);
+
+    <span class="kw">constructor</span>() ERC20(<span class="str">"Verdis Offset"</span>, <span class="str">"VCO"</span>) {
+        _mint(msg.sender, 1_000_000 * 10**18);
+    }
+
+    <span class="kw">function</span> <span class="fn">retire</span>(<span class="ty">uint256</span> amount) <span class="kw">external</span> {
+        _burn(msg.sender, amount);
+        retiredCredits[msg.sender] += amount;
+        <span class="kw">emit</span> <span class="fn">CreditsRetired</span>(msg.sender, amount);
+    }
+}</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CTA SECTION (DARK) ===== -->
+  <section class="cta-section">
+    <div class="cta-inner">
+      <div class="cta-card reveal">
+        <h2>Start building today</h2>
+        <p>Join the next generation of eco-friendly Web3 applications. Explore our open-source codebases or spin up a local node in seconds.</p>
+        <div class="cta-actions">
+          <a href="#quickstart" class="btn-read-more">Getting Started →</a>
+          <a href="https://github.com/verdis-chain" target="_blank" class="btn-explore">View on GitHub →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <h4>Verdis Chain</h4>
+        <p>The world's first green blockchain. Built in Rust + Substrate with DPoS, AMM DEX, EVM, and carbon credit tracking.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Platform</h5>
+        <a href="/explorer">Explorer</a>
+        <a href="/validators">Validators</a>
+        <a href="/dex">DEX</a>
+        <a href="/eco">Eco Metrics</a>
+      </div>
+      <div class="footer-col">
+        <h5>Developers</h5>
+        <a href="#">Documentation</a>
+        <a href="#rpc">RPC Endpoints</a>
+        <a href="https://github.com/verdis-chain" target="_blank">GitHub</a>
+        <a href="#">Whitepaper</a>
+      </div>
+      <div class="footer-col">
+        <h5>Community</h5>
+        <a href="#">Twitter</a>
+        <a href="#">Discord</a>
+        <a href="#">Telegram</a>
+        <a href="#">Blog</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Verdis Chain · Powered by Protremix</span>
+      <span>verdischain.com · 91.98.160.145</span>
+    </div>
+  </footer>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script>
+    // ===== CURSOR GLOW =====
+    const glow = document.getElementById('cursor-glow');
+    document.addEventListener('mousemove', e => {
+      glow.style.left = e.clientX + 'px';
+      glow.style.top = e.clientY + 'px';
+    });
+
+    // ===== SCROLL PROGRESS =====
+    const scrollBar = document.getElementById('scroll-bar');
+    window.addEventListener('scroll', () => {
+      const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+      scrollBar.style.width = pct + '%';
+    });
+
+    // ===== SCROLL REVEAL =====
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) e.target.classList.add('visible');
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // ===== HERO CANVAS ANIMATION =====
+    const canvas = document.getElementById('hero-canvas');
+    const ctx = canvas.getContext('2d');
+    let W, H, nodes = [];
+
+    function resize() {
+      W = canvas.width = canvas.offsetWidth;
+      H = canvas.height = canvas.offsetHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    for (let i = 0; i < 28; i++) {
+      nodes.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        r: 2 + Math.random() * 2.5,
+        pulse: Math.random() * Math.PI * 2
+      });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, W, H);
+      nodes.forEach((n) => {
+        n.x += n.vx;
+        n.y += n.vy;
+        n.pulse += 0.03;
+        if (n.x < 0 || n.x > W) n.vx *= -1;
+        if (n.y < 0 || n.y > H) n.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.r + Math.sin(n.pulse) * 1.2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(180,248,73,' + (0.35 + Math.sin(n.pulse) * 0.25) + ')';
+        ctx.fill();
+      });
+
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 110) {
+            const opacity = (1 - dist / 110) * 0.15;
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.strokeStyle = 'rgba(180,248,73,' + opacity + ')';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // ===== COPY TO CLIPBOARD FUNCTIONS =====
+    function copySnippet(elementId, btnEl) {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const text = el.innerText || el.textContent;
+      copyText(text, btnEl);
+    }
+
+    function copyText(text, btnEl) {
+      navigator.clipboard.writeText(text).then(() => {
+        const orig = btnEl.innerHTML;
+        btnEl.innerHTML = '✓ Copied!';
+        btnEl.style.color = '#b4f849';
+        setTimeout(() => {
+          btnEl.innerHTML = orig;
+          btnEl.style.color = '';
+        }, 2000);
+      }).catch(() => {
+        alert('Failed to copy');
+      });
+    }
+
+    // ===== SEARCH BAR INTERACTIVE FILTERING =====
+    const searchInput = document.getElementById('doc-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        const items = document.querySelectorAll('[data-searchable]');
+        
+        items.forEach(item => {
+          const content = (item.getAttribute('data-searchable') + ' ' + item.innerText).toLowerCase();
+          if (query === '' || content.includes(query)) {
+            item.style.display = '';
+            item.style.opacity = '1';
+          } else {
+            item.style.opacity = '0.2';
+          }
+        });
+      });
+
+      // Keyboard Shortcut Cmd+K / Ctrl+K
+      document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+          e.preventDefault();
+          searchInput.focus();
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+"""
+
+with open("verdis-docs.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print(f"Written verdis-docs.html successfully. Size: {len(html_content)} bytes")

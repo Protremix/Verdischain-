@@ -3,126 +3,141 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Verdis Chain — The World's First Green Blockchain</title>
-  <meta name="description" content="Verdis Chain is a Layer-1 blockchain built with Rust and Substrate. Native DPoS consensus, AMM DEX, EVM smart contracts, and on-chain carbon credit tracking. 100B supply, 143 EVM opcodes, 7 production pallets." />
+  <title>Verdis Chain — The World's First Green Blockchain | Layer-1 in Rust</title>
+  <meta name="description" content="Verdis Chain is a Layer-1 blockchain built with Rust and Substrate. Native DPoS consensus (BABE/GRANDPA), AMM DEX, 143-opcode EVM, on-chain carbon credits, 100B token supply. 7 production pallets, 260 tests, mainnet ready." />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Verdis Chain — The World's First Green Blockchain" />
-  <meta property="og:description" content="Layer-1 blockchain with DPoS, AMM DEX, EVM, and carbon credits. Built in Rust + Substrate." />
+  <meta property="og:description" content="Layer-1 blockchain in Rust + Substrate. DPoS, AMM DEX, EVM, carbon credits. 100B supply, 143 opcodes, 7 pallets." />
   <meta property="og:url" content="https://verdischain.com" />
+  <meta property="og:image" content="https://verdischain.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Verdis Chain — Green Blockchain in Rust" />
+  <meta name="twitter:description" content="DPoS · AMM DEX · EVM · Carbon Credits — Layer-1 in Rust + Substrate" />
   <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --canvas: #b0b5b8;
-      --canvas-light: #f8fafc;
-      --hero-bg: #1a1a1a;
-      --hero-card: #2d2d2d;
-      --hero-card-dark: #202020;
+      --canvas: #e8ebee;
+      --canvas-light: #f1f5f9;
+      --hero-bg: #0f0f0f;
+      --hero-card: #1e1e1e;
+      --hero-card-dark: #181818;
+      --hero-border: rgba(255,255,255,0.08);
       --accent: #b4f849;
       --accent-hover: #a3e041;
-      --accent-glow: rgba(180,248,73,0.3);
-      --accent-light: rgba(180,248,73,0.1);
-      --green-soft: #84fe87;
-      --green-deep: #00a86b;
+      --accent-2: #84fe87;
+      --accent-3: #00a86b;
+      --accent-glow: rgba(180,248,73,0.35);
+      --accent-light: rgba(180,248,73,0.08);
+      --accent-border: rgba(180,248,73,0.25);
       --text-white: #ffffff;
-      --text-muted: #9ca3ad;
+      --text-dim: #b8bcc4;
+      --text-muted: #6b7080;
       --text-dark: #0f172a;
+      --text-dark-muted: #64748b;
       --radius: 12px;
       --radius-lg: 20px;
       --radius-pill: 100px;
-      --transition: 250ms cubic-bezier(0.16,1,0.3,1);
+      --transition: 300ms cubic-bezier(0.16,1,0.3,1);
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin:0; padding:0; box-sizing:border-box; }
     html { scroll-behavior: smooth; }
     body { font-family: 'Poppins', sans-serif; background: var(--canvas-light); color: var(--text-dark); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
     .mono { font-family: 'JetBrains Mono', monospace; }
 
     /* ===== SCROLL PROGRESS ===== */
-    #scroll-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #b4f849, #84fe87, #00a86b); z-index: 10000; width: 0; transition: width 50ms; }
+    #scroll-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #b4f849, #84fe87, #00a86b); z-index: 10000; width: 0; transition: width 50ms; box-shadow: 0 0 12px var(--accent-glow); }
 
     /* ===== CURSOR GLOW ===== */
-    #cursor-glow { position: fixed; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(180,248,73,0.06) 0%, transparent 70%); pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); opacity: 0; transition: opacity 300ms; }
+    #cursor-glow { position: fixed; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(180,248,73,0.05) 0%, transparent 70%); pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); opacity: 0; transition: opacity 300ms; }
     body:hover #cursor-glow { opacity: 1; }
 
-    /* ===== HERO SECTION — Template Skeleton: Dark container, split layout ===== */
+    /* ===== HERO SECTION — Dark container, split layout ===== */
     .hero-section { position: relative; background: var(--canvas); padding: 0 24px; overflow: hidden; }
-    .hero-container { max-width: 1280px; margin: 0 auto; background: var(--hero-bg); border-radius: 24px; overflow: hidden; position: relative; min-height: 640px; display: flex; }
-    .hero-container::before { content: ''; position: absolute; top: -50%; right: -20%; width: 600px; height: 600px; background: radial-gradient(circle, var(--accent-glow), transparent 60%); opacity: 0.15; animation: pulse-bg 4s ease-in-out infinite; }
-    @keyframes pulse-bg { 0%,100% { opacity: 0.1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(1.1); } }
+    .hero-container { max-width: 1300px; margin: 0 auto; background: var(--hero-bg); border-radius: 24px; overflow: hidden; position: relative; min-height: 680px; display: flex; }
+    .hero-container::before { content: ''; position: absolute; top: -30%; right: -15%; width: 700px; height: 700px; background: radial-gradient(circle, var(--accent-glow), transparent 55%); opacity: 0.12; animation: pulse-bg 4s ease-in-out infinite; pointer-events: none; }
+    .hero-container::after { content: ''; position: absolute; bottom: -20%; left: -10%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(0,168,107,0.15), transparent 60%); opacity: 0.08; animation: pulse-bg 6s ease-in-out infinite 1s; pointer-events: none; }
+    @keyframes pulse-bg { 0%,100% { opacity: 0.08; transform: scale(1); } 50% { opacity: 0.15; transform: scale(1.1); } }
 
-    /* ===== NAV (inside dark hero) ===== */
-    .hero-nav { position: absolute; top: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; padding: 24px 40px; }
+    /* ===== NAV ===== */
+    .hero-nav { position: absolute; top: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; padding: 28px 48px; }
     .nav-brand { font-family: 'Poppins'; font-weight: 800; font-size: 22px; color: var(--text-white); display: flex; align-items: center; gap: 10px; }
     .nav-brand-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px var(--accent-glow); animation: pulse-dot 2s infinite; }
-    @keyframes pulse-dot { 0%,100% { box-shadow: 0 0 16px var(--accent-glow); } 50% { box-shadow: 0 0 24px rgba(180,248,73,0.6); } }
+    @keyframes pulse-dot { 0%,100% { box-shadow: 0 0 16px var(--accent-glow); } 50% { box-shadow: 0 0 28px rgba(180,248,73,0.6); } }
     .nav-links { display: flex; gap: 36px; }
-    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; transition: color 250ms; position: relative; }
+    .nav-links a { color: var(--text-dim); font-size: 14px; font-weight: 500; transition: color 250ms; position: relative; text-decoration: none; }
     .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: var(--accent); border-radius: 2px; transition: width 250ms; }
     .nav-links a:hover { color: var(--text-white); }
     .nav-links a:hover::after { width: 100%; }
     .nav-cta { display: flex; gap: 12px; align-items: center; }
-    .btn-login { color: var(--text-muted); font-size: 14px; font-weight: 500; padding: 8px 16px; transition: color 250ms; }
+    .btn-login { color: var(--text-dim); font-size: 14px; font-weight: 500; padding: 8px 16px; transition: color 250ms; background: none; border: none; cursor: pointer; }
     .btn-login:hover { color: var(--text-white); }
     .btn-signup { background: var(--accent); color: var(--hero-bg); font-size: 14px; font-weight: 600; padding: 10px 24px; border-radius: var(--radius-pill); border: none; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; }
     .btn-signup::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transition: left 500ms; }
     .btn-signup:hover::before { left: 100%; }
     .btn-signup:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--accent-glow); }
 
-    /* ===== HERO LEFT — Text content ===== */
-    .hero-left { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 120px 60px 60px 60px; position: relative; z-index: 5; }
-    .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--accent-light); border: 1px solid rgba(180,248,73,0.3); border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 24px; width: fit-content; opacity: 0; transform: translateY(20px); animation: slideUp 600ms 200ms forwards; }
+    /* ===== HERO LEFT ===== */
+    .hero-left { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 120px 56px 60px 56px; position: relative; z-index: 5; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--accent-light); border: 1px solid var(--accent-border); border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 28px; width: fit-content; opacity: 0; transform: translateY(20px); animation: slideUp 600ms 200ms forwards; }
     .hero-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse-dot 2s infinite; }
-    .hero-title { font-size: 48px; font-weight: 800; line-height: 1.1; color: var(--text-white); margin-bottom: 24px; opacity: 0; transform: translateY(30px); animation: slideUp 800ms 400ms forwards; }
-    .hero-title .accent { color: var(--accent); }
-    .hero-title .gradient { background: linear-gradient(135deg, #b4f849, #84fe87, #00a86b); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-    .hero-desc { font-size: 16px; color: var(--text-muted); line-height: 1.8; margin-bottom: 36px; max-width: 480px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 600ms forwards; }
+    .hero-title { font-size: 52px; font-weight: 900; line-height: 1.05; color: var(--text-white); margin-bottom: 24px; letter-spacing: -0.02em; opacity: 0; transform: translateY(30px); animation: slideUp 800ms 400ms forwards; }
+    .hero-title .gradient { background: linear-gradient(135deg, #b4f849 0%, #84fe87 50%, #00a86b 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-desc { font-size: 16px; color: var(--text-dim); line-height: 1.8; margin-bottom: 36px; max-width: 500px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 600ms forwards; }
     .hero-actions { display: flex; gap: 16px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 800ms forwards; }
-    .btn-read-more { background: linear-gradient(135deg, #b4f849, #84fe87); color: var(--hero-bg); font-size: 15px; font-weight: 700; padding: 14px 32px; border-radius: var(--radius-pill); border: none; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 8px; }
-    .btn-read-more::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transition: left 500ms; }
-    .btn-read-more:hover::before { left: 100%; }
-    .btn-read-more:hover { transform: translateY(-3px); box-shadow: 0 12px 32px var(--accent-glow); }
-    .btn-explore { background: transparent; color: var(--text-white); font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: var(--radius-pill); border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: var(--transition); }
-    .btn-explore:hover { border-color: var(--accent); background: var(--accent-light); }
+    .btn-primary { background: linear-gradient(135deg, #b4f849, #84fe87); color: var(--hero-bg); font-size: 15px; font-weight: 700; padding: 14px 32px; border-radius: var(--radius-pill); border: none; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent); transition: left 500ms; }
+    .btn-primary:hover::before { left: 100%; }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 32px var(--accent-glow); }
+    .btn-secondary { background: transparent; color: var(--text-white); font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: var(--radius-pill); border: 1px solid rgba(255,255,255,0.15); cursor: pointer; transition: var(--transition); }
+    .btn-secondary:hover { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
     @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
 
-    /* ===== HERO RIGHT — 3D Floating Visual ===== */
+    /* ===== HERO RIGHT — Blockchain Visual ===== */
     .hero-right { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; padding: 80px 40px; }
     .hero-visual { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-    .hero-circle { position: absolute; width: 340px; height: 340px; border-radius: 50%; background: radial-gradient(circle, rgba(180,248,73,0.25), rgba(180,248,73,0.05) 60%, transparent); animation: pulse-circle 4s ease-in-out infinite; }
+    .hero-circle { position: absolute; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(circle, rgba(180,248,73,0.2), rgba(180,248,73,0.04) 60%, transparent); animation: pulse-circle 4s ease-in-out infinite; }
     @keyframes pulse-circle { 0%,100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.08); opacity: 1; } }
     #hero-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
 
-    /* Floating UI cards */
-    .float-card { position: absolute; background: var(--hero-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 16px 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); z-index: 3; backdrop-filter: blur(10px); }
-    .float-card-1 { top: 12%; right: 8%; animation: float-1 6s ease-in-out infinite; }
-    .float-card-2 { bottom: 18%; left: 8%; animation: float-2 7s ease-in-out infinite; }
-    .float-card-3 { top: 45%; right: 4%; animation: float-3 5s ease-in-out infinite; }
-    .float-card-4 { bottom: 8%; right: 20%; animation: float-4 8s ease-in-out infinite; }
+    /* Blockchain wallet mockup */
+    .wallet-mockup { position: absolute; width: 200px; background: var(--hero-card); border: 1px solid var(--hero-border); border-radius: 20px; z-index: 3; padding: 20px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: float-wallet 6s ease-in-out infinite; }
+    @keyframes float-wallet { 0%,100% { transform: translateY(0) rotate(2deg); } 50% { transform: translateY(-16px) rotate(-1deg); } }
+    .wallet-header { display: flex; align-items: center; justify-content: space-between; }
+    .wallet-brand { font-size: 13px; font-weight: 700; color: var(--text-white); display: flex; align-items: center; gap: 6px; }
+    .wallet-brand-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+    .wallet-balance-label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+    .wallet-balance { font-family: 'JetBrains Mono'; font-size: 24px; font-weight: 700; color: var(--accent); }
+    .wallet-balance-usd { font-size: 13px; color: var(--text-muted); margin-top: -4px; }
+    .wallet-actions { display: flex; gap: 8px; }
+    .wallet-btn { flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+    .wallet-btn-send { background: var(--accent); color: var(--hero-bg); }
+    .wallet-btn-receive { background: rgba(255,255,255,0.06); color: var(--text-dim); }
+    .wallet-tx { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--hero-border); }
+    .wallet-tx-label { font-size: 11px; color: var(--text-muted); }
+    .wallet-tx-value { font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 600; color: var(--accent); }
+
+    /* Floating cards */
+    .float-card { position: absolute; background: var(--hero-card); border: 1px solid var(--hero-border); border-radius: 14px; padding: 14px 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); z-index: 3; backdrop-filter: blur(10px); }
+    .float-card-1 { top: 8%; right: 6%; animation: float-1 6s ease-in-out infinite; }
+    .float-card-2 { bottom: 14%; left: 4%; animation: float-2 7s ease-in-out infinite; }
+    .float-card-3 { top: 40%; right: 2%; animation: float-3 5s ease-in-out infinite; }
+    .float-card-4 { bottom: 4%; right: 22%; animation: float-4 8s ease-in-out infinite; }
     @keyframes float-1 { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-12px) rotate(1deg); } }
     @keyframes float-2 { 0%,100% { transform: translateY(0) rotate(2deg); } 50% { transform: translateY(10px) rotate(-1deg); } }
     @keyframes float-3 { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
     @keyframes float-4 { 0%,100% { transform: translateY(0) rotate(1deg); } 50% { transform: translateY(6px) rotate(-2deg); } }
+    .fc-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 8px; }
+    .fc-label { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
+    .fc-value { font-size: 17px; font-weight: 700; color: var(--text-white); }
+    .fc-value.green { color: var(--accent); }
+    .fc-bar { width: 100%; height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+    .fc-bar-fill { height: 100%; background: linear-gradient(90deg, #b4f849, #84fe87); border-radius: 2px; animation: bar-grow 2s ease-out; }
+    @keyframes bar-grow { from { width: 0; } }
 
-    .float-card-label { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-bottom: 6px; }
-    .float-card-value { font-size: 18px; font-weight: 700; color: var(--text-white); }
-    .float-card-value.green { color: var(--accent); }
-    .float-card-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 8px; overflow: hidden; }
-    .float-card-bar-fill { height: 100%; background: linear-gradient(90deg, #b4f849, #84fe87); border-radius: 2px; animation: bar-fill 2s ease-out; }
-    @keyframes bar-fill { from { width: 0; } }
-    .float-card-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 8px; }
-
-    /* Phone mockup */
-    .phone-mockup { position: absolute; width: 160px; height: 320px; background: var(--hero-card-dark); border: 3px solid rgba(255,255,255,0.15); border-radius: 24px; z-index: 3; padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: float-phone 6s ease-in-out infinite; }
-    @keyframes float-phone { 0%,100% { transform: translateY(0) rotate(3deg); } 50% { transform: translateY(-16px) rotate(1deg); } }
-    .phone-screen-label { font-size: 10px; color: var(--text-muted); font-weight: 500; }
-    .phone-screen-value { font-size: 14px; font-weight: 700; color: var(--text-white); }
-    .phone-progress-ring { width: 56px; height: 56px; margin: 8px auto; position: relative; }
-    .phone-progress-ring svg { transform: rotate(-90deg); }
-    .phone-login-btn { background: var(--accent); color: var(--hero-bg); font-size: 12px; font-weight: 700; padding: 8px; border-radius: 8px; text-align: center; }
-
-    /* ===== SECTION REVEAL ===== */
+    /* ===== SCROLL REVEAL ===== */
     .reveal { opacity: 0; transform: translateY(40px); transition: opacity 700ms cubic-bezier(0.16,1,0.3,1), transform 700ms cubic-bezier(0.16,1,0.3,1); }
     .reveal.visible { opacity: 1; transform: translateY(0); }
     .reveal-stagger > * { opacity: 0; transform: translateY(40px); transition: opacity 600ms cubic-bezier(0.16,1,0.3,1), transform 600ms cubic-bezier(0.16,1,0.3,1); }
@@ -132,26 +147,29 @@
     .reveal-stagger.visible > *:nth-child(4) { opacity:1; transform:translateY(0); transition-delay:240ms; }
     .reveal-stagger.visible > *:nth-child(5) { opacity:1; transform:translateY(0); transition-delay:320ms; }
     .reveal-stagger.visible > *:nth-child(6) { opacity:1; transform:translateY(0); transition-delay:400ms; }
+    .reveal-stagger.visible > *:nth-child(7) { opacity:1; transform:translateY(0); transition-delay:480ms; }
 
-    /* ===== STATS BAR (light section) ===== */
+    /* ===== STATS BAR ===== */
     .stats-section { background: var(--canvas-light); padding: 80px 24px 40px; }
     .stats-inner { max-width: 1200px; margin: 0 auto; }
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
     .stat-card { background: var(--text-white); border: 1px solid #e2e8f0; border-radius: var(--radius); padding: 32px 24px; text-align: center; transition: var(--transition); position: relative; overflow: hidden; }
     .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #b4f849, #00a86b); transform: scaleX(0); transition: transform 400ms; }
     .stat-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-4px); }
     .stat-card:hover::before { transform: scaleX(1); }
-    .stat-value { font-family: 'Poppins'; font-size: 40px; font-weight: 800; background: linear-gradient(135deg, #b4f849, #00a86b); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
-    .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-value { font-family: 'Poppins'; font-size: 42px; font-weight: 800; background: linear-gradient(135deg, #b4f849, #00a86b); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
+    .stat-label { font-size: 13px; color: var(--text-dark-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
 
-    /* ===== FEATURES SECTION ===== */
-    .features-section { background: var(--canvas-light); padding: 60px 24px 80px; }
-    .features-inner { max-width: 1200px; margin: 0 auto; }
+    /* ===== SECTION HEADERS ===== */
     .section-header { text-align: center; margin-bottom: 56px; }
     .section-label { font-size: 13px; font-weight: 600; color: #00a86b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: inline-block; padding: 4px 14px; background: rgba(0,168,107,0.08); border-radius: var(--radius-pill); }
-    .section-header h2 { font-size: 36px; font-weight: 800; color: var(--text-dark); margin-bottom: 16px; }
-    .section-header p { font-size: 17px; color: var(--text-muted); max-width: 600px; margin: 0 auto; }
-    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .section-header h2 { font-size: 36px; font-weight: 800; color: var(--text-dark); margin-bottom: 16px; letter-spacing: -0.01em; }
+    .section-header p { font-size: 17px; color: var(--text-dark-muted); max-width: 600px; margin: 0 auto; }
+
+    /* ===== FEATURES ===== */
+    .features-section { background: var(--canvas-light); padding: 60px 24px 80px; }
+    .features-inner { max-width: 1200px; margin: 0 auto; }
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
     .feature-card { background: var(--text-white); border: 1px solid #e2e8f0; border-radius: var(--radius-lg); padding: 32px; transition: var(--transition); position: relative; overflow: hidden; }
     .feature-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, #b4f849, #00a86b); transform: scaleY(0); transform-origin: top; transition: transform 400ms; }
     .feature-card:hover { border-color: rgba(0,168,107,0.3); box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-4px); }
@@ -159,28 +177,71 @@
     .feature-icon { width: 52px; height: 52px; border-radius: 14px; background: rgba(0,168,107,0.08); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; transition: var(--transition); }
     .feature-card:hover .feature-icon { transform: scale(1.1) rotate(-5deg); background: linear-gradient(135deg, #b4f849, #00a86b); }
     .feature-card h3 { font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
-    .feature-card p { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
-    .feature-tag { display: inline-block; margin-top: 16px; padding: 4px 12px; background: #f1f5f9; border-radius: 6px; font-family: 'JetBrains Mono'; font-size: 12px; color: var(--text-muted); }
+    .feature-card p { font-size: 14px; color: var(--text-dark-muted); line-height: 1.7; }
+    .feature-tag { display: inline-block; margin-top: 16px; padding: 4px 12px; background: #f1f5f9; border-radius: 6px; font-family: 'JetBrains Mono'; font-size: 12px; color: var(--text-dark-muted); }
 
-    /* ===== ARCHITECTURE SECTION (dark) ===== */
-    .arch-section { background: var(--hero-bg); padding: 80px 24px; position: relative; overflow: hidden; }
-    .arch-section::before { content: ''; position: absolute; top: 0; right: 0; width: 400px; height: 400px; background: radial-gradient(circle, var(--accent-glow), transparent 60%); opacity: 0.1; }
+    /* ===== TOKENOMICS (dark) ===== */
+    .tokenomics-section { background: var(--hero-bg); padding: 80px 24px; position: relative; overflow: hidden; }
+    .tokenomics-section::before { content: ''; position: absolute; top: 20%; right: -10%; width: 400px; height: 400px; background: radial-gradient(circle, var(--accent-glow), transparent 60%); opacity: 0.08; }
+    .tokenomics-inner { max-width: 1100px; margin: 0 auto; position: relative; }
+    .tokenomics-inner .section-header h2 { color: var(--text-white); }
+    .tokenomics-inner .section-header p { color: var(--text-dim); }
+    .tokenomics-inner .section-label { color: var(--accent); background: var(--accent-light); }
+    .tokenomics-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+    .donut-container { position: relative; width: 280px; height: 280px; margin: 0 auto; }
+    .donut-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .donut-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 28; }
+    .donut-seg { fill: none; stroke-width: 28; stroke-linecap: butt; transition: stroke-dashoffset 1500ms cubic-bezier(0.16,1,0.3,1); }
+    .donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
+    .donut-center-value { font-family: 'Poppins'; font-size: 36px; font-weight: 800; color: var(--text-white); }
+    .donut-center-label { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .tokenomics-legend { display: flex; flex-direction: column; gap: 14px; }
+    .token-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: var(--hero-card); border: 1px solid var(--hero-border); border-radius: 12px; transition: var(--transition); }
+    .token-item:hover { border-color: var(--accent-border); transform: translateX(6px); }
+    .token-dot { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+    .token-info { flex: 1; }
+    .token-info-name { font-size: 14px; font-weight: 600; color: var(--text-white); }
+    .token-info-desc { font-size: 12px; color: var(--text-muted); }
+    .token-amount { font-family: 'JetBrains Mono'; font-size: 16px; font-weight: 700; color: var(--accent); }
+
+    /* ===== ARCHITECTURE (dark) ===== */
+    .arch-section { background: var(--hero-bg); padding: 60px 24px 80px; position: relative; overflow: hidden; border-top: 1px solid var(--hero-border); }
     .arch-inner { max-width: 1200px; margin: 0 auto; position: relative; }
     .arch-inner .section-header h2 { color: var(--text-white); }
-    .arch-inner .section-header p { color: var(--text-muted); }
+    .arch-inner .section-header p { color: var(--text-dim); }
     .arch-inner .section-label { color: var(--accent); background: var(--accent-light); }
-    .arch-layers { display: flex; flex-direction: column; gap: 12px; }
-    .arch-layer { display: flex; align-items: center; gap: 20px; padding: 20px 24px; background: var(--hero-card); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius); transition: var(--transition); cursor: pointer; }
-    .arch-layer:hover { border-color: rgba(180,248,73,0.3); background: var(--hero-card-dark); transform: translateX(8px); }
-    .arch-layer-num { font-family: 'JetBrains Mono'; font-size: 13px; color: rgba(255,255,255,0.3); min-width: 32px; transition: color 250ms; }
+    .arch-layers { display: flex; flex-direction: column; gap: 10px; }
+    .arch-layer { display: flex; align-items: center; gap: 20px; padding: 18px 24px; background: var(--hero-card); border: 1px solid var(--hero-border); border-radius: var(--radius); transition: var(--transition); cursor: pointer; }
+    .arch-layer:hover { border-color: var(--accent-border); background: var(--hero-card-dark); transform: translateX(8px); }
+    .arch-layer-num { font-family: 'JetBrains Mono'; font-size: 13px; color: rgba(255,255,255,0.25); min-width: 32px; transition: color 250ms; }
     .arch-layer:hover .arch-layer-num { color: var(--accent); }
     .arch-layer-name { font-weight: 600; font-size: 16px; color: var(--text-white); min-width: 180px; }
     .arch-layer-desc { font-size: 14px; color: var(--text-muted); flex: 1; }
-    .arch-layer-status { font-size: 12px; padding: 4px 10px; border-radius: var(--radius-pill); font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(180,248,73,0.15); color: var(--accent); }
+    .arch-layer-tests { font-family: 'JetBrains Mono'; font-size: 13px; color: var(--accent); margin-right: 16px; }
+    .arch-layer-status { font-size: 12px; padding: 4px 10px; border-radius: var(--radius-pill); font-weight: 600; display: flex; align-items: center; gap: 6px; background: var(--accent-light); color: var(--accent); }
     .arch-layer-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse-dot 2s infinite; }
 
-    /* ===== CIRCLE COUNTERS SECTION ===== */
-    .circle-section { background: var(--canvas-light); padding: 80px 24px; }
+    /* ===== VALIDATORS (light) ===== */
+    .validators-section { background: var(--canvas-light); padding: 80px 24px; }
+    .validators-inner { max-width: 1200px; margin: 0 auto; }
+    .validators-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .validator-card { background: var(--text-white); border: 1px solid #e2e8f0; border-radius: var(--radius-lg); padding: 24px; transition: var(--transition); }
+    .validator-card:hover { border-color: rgba(0,168,107,0.3); box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-4px); }
+    .validator-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .validator-name { font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 600; color: var(--text-dark); }
+    .validator-rank { font-size: 12px; padding: 4px 10px; background: #f1f5f9; border-radius: 6px; color: var(--text-dark-muted); font-weight: 600; }
+    .validator-score-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .validator-score-label { font-size: 13px; color: var(--text-dark-muted); }
+    .validator-score-value { font-family: 'JetBrains Mono'; font-size: 15px; font-weight: 700; color: #00a86b; }
+    .validator-bar { width: 100%; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; margin-bottom: 16px; }
+    .validator-bar-fill { height: 100%; background: linear-gradient(90deg, #b4f849, #00a86b); border-radius: 3px; transition: width 1000ms cubic-bezier(0.16,1,0.3,1); }
+    .validator-stats { display: flex; gap: 20px; font-size: 13px; color: var(--text-dark-muted); }
+    .validator-stats span { display: flex; align-items: center; gap: 4px; }
+    .validator-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #00a86b; margin-top: 12px; }
+    .validator-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #00a86b; }
+
+    /* ===== CIRCLE COUNTERS ===== */
+    .circle-section { background: var(--canvas-light); padding: 60px 24px 80px; }
     .circle-inner { max-width: 1100px; margin: 0 auto; }
     .circle-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; }
     .circle-card { text-align: center; }
@@ -190,9 +251,9 @@
     .circle-fill { fill: none; stroke: url(#green-grad); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 440; stroke-dashoffset: 440; transition: stroke-dashoffset 1500ms cubic-bezier(0.16,1,0.3,1); }
     .circle-card.visible .circle-fill { stroke-dashoffset: var(--offset); }
     .circle-count { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: 'Poppins'; font-size: 32px; font-weight: 800; color: var(--text-dark); }
-    .circle-label { font-size: 13px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+    .circle-label { font-size: 13px; color: var(--text-dark-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
 
-    /* ===== ROADMAP SECTION ===== */
+    /* ===== ROADMAP ===== */
     .roadmap-section { background: var(--canvas-light); padding: 60px 24px 80px; }
     .roadmap-inner { max-width: 1100px; margin: 0 auto; }
     .roadmap-track { position: relative; display: flex; justify-content: space-between; padding: 40px 0; }
@@ -209,35 +270,38 @@
     .roadmap-milestone.active .roadmap-status { color: #6366f1; }
     .roadmap-milestone.planned .roadmap-status { color: #94a3b8; }
     .roadmap-milestone h4 { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
-    .roadmap-milestone p { font-size: 12px; color: var(--text-muted); max-width: 180px; margin: 0 auto; }
+    .roadmap-milestone p { font-size: 12px; color: var(--text-dark-muted); max-width: 180px; margin: 0 auto; }
 
-    /* ===== CTA SECTION (dark) ===== */
-    .cta-section { padding: 80px 24px; }
+    /* ===== CTA ===== */
+    .cta-section { padding: 60px 24px 80px; }
     .cta-inner { max-width: 1100px; margin: 0 auto; }
-    .cta-card { background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border-radius: var(--radius-lg); padding: 64px 48px; text-align: center; position: relative; overflow: hidden; }
-    .cta-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, var(--accent-glow) 0%, transparent 50%); animation: rotate 20s linear infinite; opacity: 0.15; }
+    .cta-card { background: linear-gradient(135deg, #0f0f0f 0%, #1e1e1e 100%); border-radius: var(--radius-lg); padding: 64px 48px; text-align: center; position: relative; overflow: hidden; }
+    .cta-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, var(--accent-glow) 0%, transparent 50%); animation: rotate 20s linear infinite; opacity: 0.12; }
     @keyframes rotate { to { transform: rotate(360deg); } }
     .cta-card > * { position: relative; z-index: 1; }
     .cta-card h2 { font-size: 32px; font-weight: 800; color: var(--text-white); margin-bottom: 16px; }
-    .cta-card p { font-size: 17px; color: var(--text-muted); max-width: 500px; margin: 0 auto 32px; }
-    .cta-card .btn-read-more { font-size: 16px; padding: 16px 40px; }
+    .cta-card p { font-size: 17px; color: var(--text-dim); max-width: 500px; margin: 0 auto 32px; }
+    .cta-card .btn-primary { font-size: 16px; padding: 16px 40px; }
 
     /* ===== FOOTER ===== */
     .footer { background: var(--hero-bg); padding: 48px 24px 32px; }
     .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
-    .footer-brand h4 { font-size: 18px; font-weight: 800; color: var(--text-white); margin-bottom: 12px; }
+    .footer-brand h4 { font-size: 18px; font-weight: 800; color: var(--text-white); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .footer-brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
     .footer-brand p { font-size: 14px; color: var(--text-muted); max-width: 280px; }
     .footer-col h5 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 16px; }
-    .footer-col a { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 10px; transition: var(--transition); }
+    .footer-col a { display: block; font-size: 14px; color: var(--text-dim); margin-bottom: 10px; transition: var(--transition); text-decoration: none; }
     .footer-col a:hover { color: var(--accent); transform: translateX(4px); }
-    .footer-bottom { max-width: 1200px; margin: 32px auto 0; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); }
+    .footer-bottom { max-width: 1200px; margin: 32px auto 0; padding-top: 24px; border-top: 1px solid var(--hero-border); display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); }
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 1024px) {
       .features-grid { grid-template-columns: repeat(2,1fr); }
+      .validators-grid { grid-template-columns: repeat(2,1fr); }
       .circle-grid { grid-template-columns: repeat(2,1fr); }
+      .tokenomics-layout { grid-template-columns: 1fr; gap: 32px; }
       .footer-inner { grid-template-columns: 1fr 1fr; }
-      .hero-title { font-size: 40px; }
+      .hero-title { font-size: 42px; }
     }
     @media (max-width: 768px) {
       .nav-links { display: none; }
@@ -247,6 +311,7 @@
       .hero-title { font-size: 32px; }
       .stats-grid { grid-template-columns: repeat(2,1fr); }
       .features-grid { grid-template-columns: 1fr; }
+      .validators-grid { grid-template-columns: 1fr; }
       .circle-grid { grid-template-columns: repeat(2,1fr); }
       .arch-layer { flex-direction: column; align-items: flex-start; gap: 8px; }
       .arch-layer-name { min-width: auto; }
@@ -269,90 +334,94 @@
   <div id="cursor-glow"></div>
   <div id="scroll-bar"></div>
 
-  <!-- ===== HERO — Template Skeleton: Dark container, split layout, 3D floating elements ===== -->
+  <!-- ===== HERO — Dark container, split layout ===== -->
   <section class="hero-section">
     <div class="hero-container">
-      <!-- Nav inside hero -->
       <nav class="hero-nav">
         <div class="nav-brand"><span class="nav-brand-dot"></span>Verdis Chain</div>
         <div class="nav-links">
           <a href="#features">Features</a>
+          <a href="#tokenomics">Tokenomics</a>
           <a href="#architecture">Architecture</a>
-          <a href="#stats">Stats</a>
+          <a href="#validators">Validators</a>
           <a href="#roadmap">Roadmap</a>
         </div>
         <div class="nav-cta">
-          <a href="#" class="btn-login">Log In</a>
-          <button class="btn-signup">Sign Up</button>
+          <button class="btn-login">Log In</button>
+          <button class="btn-signup">Launch App</button>
         </div>
       </nav>
 
-      <!-- Left: Text content -->
       <div class="hero-left">
-        <div class="hero-badge"><span class="hero-badge-dot"></span> Mainnet Ready · Node Live</div>
+        <div class="hero-badge"><span class="hero-badge-dot"></span> Mainnet Ready · Node Live · 14 Peers</div>
         <h1 class="hero-title">
           <span class="gradient">GREEN BLOCKCHAIN</span><br>
           <span style="color:var(--text-white)">Engineered in Rust</span>
         </h1>
-        <p class="hero-desc">Layer-1 blockchain built with Substrate. Native DPoS consensus, AMM DEX, EVM smart contracts with 143 opcodes, and on-chain carbon credit tracking — all powered by 7 production pallets.</p>
+        <p class="hero-desc">Layer-1 blockchain built with Substrate. Native DPoS consensus (BABE + GRANDPA), AMM DEX, EVM with 143 opcodes, and on-chain carbon credit tracking — all powered by 7 production pallets and 260 passing tests.</p>
         <div class="hero-actions">
-          <button class="btn-read-more" onclick="window.location.href='/explorer'">READ MORE →</button>
-          <button class="btn-explore" onclick="document.getElementById('features').scrollIntoView()">Explore</button>
+          <button class="btn-primary" onclick="window.location.href='/explorer'">Open Explorer →</button>
+          <button class="btn-secondary" onclick="document.getElementById('features').scrollIntoView()">View Architecture</button>
         </div>
       </div>
 
-      <!-- Right: 3D Floating Visual with animated canvas -->
       <div class="hero-right">
         <div class="hero-visual">
           <div class="hero-circle"></div>
           <canvas id="hero-canvas"></canvas>
 
+          <!-- Blockchain wallet mockup -->
+          <div class="wallet-mockup">
+            <div class="wallet-header">
+              <div class="wallet-brand"><span class="wallet-brand-dot"></span>VRD Wallet</div>
+              <div style="font-size:11px;color:var(--text-muted)">v2.0</div>
+            </div>
+            <div>
+              <div class="wallet-balance-label">Total Balance</div>
+              <div class="wallet-balance">12,847.5 VRD</div>
+              <div class="wallet-balance-usd">≈ $4,521.20 USD</div>
+            </div>
+            <div class="wallet-actions">
+              <div class="wallet-btn wallet-btn-send">Send</div>
+              <div class="wallet-btn wallet-btn-receive">Receive</div>
+            </div>
+            <div class="wallet-tx">
+              <div class="wallet-tx-label">Staking Reward</div>
+              <div class="wallet-tx-value">+24.5 VRD</div>
+            </div>
+            <div class="wallet-tx">
+              <div class="wallet-tx-label">Carbon Credit</div>
+              <div class="wallet-tx-value">+1.2 tCO₂</div>
+            </div>
+          </div>
+
           <!-- Floating cards -->
           <div class="float-card float-card-1">
-            <div class="float-card-icon">⛓️</div>
-            <div class="float-card-label">Block Height</div>
-            <div class="float-card-value mono">#1,847,392</div>
-            <div class="float-card-bar"><div class="float-card-bar-fill" style="width:78%"></div></div>
+            <div class="fc-icon">⛓️</div>
+            <div class="fc-label">Block Height</div>
+            <div class="fc-value mono">#1,847,392</div>
+            <div class="fc-bar"><div class="fc-bar-fill" style="width:78%"></div></div>
           </div>
 
           <div class="float-card float-card-2">
-            <div class="float-card-icon">🌱</div>
-            <div class="float-card-label">Carbon Offset</div>
-            <div class="float-card-value green mono">12,847 tCO₂</div>
-            <div class="float-card-bar"><div class="float-card-bar-fill" style="width:92%"></div></div>
+            <div class="fc-icon">🌱</div>
+            <div class="fc-label">Carbon Offset</div>
+            <div class="fc-value green mono">12,847 tCO₂</div>
+            <div class="fc-bar"><div class="fc-bar-fill" style="width:92%"></div></div>
           </div>
 
           <div class="float-card float-card-3">
-            <div class="float-card-icon">⚡</div>
-            <div class="float-card-label">EVM Opcodes</div>
-            <div class="float-card-value mono">143</div>
-            <div class="float-card-bar"><div class="float-card-bar-fill" style="width:85%"></div></div>
+            <div class="fc-icon">⚡</div>
+            <div class="fc-label">EVM Opcodes</div>
+            <div class="fc-value mono">143 / 144</div>
+            <div class="fc-bar"><div class="fc-bar-fill" style="width:99%"></div></div>
           </div>
 
           <div class="float-card float-card-4">
-            <div class="float-card-icon">🔄</div>
-            <div class="float-card-label">DEX Volume</div>
-            <div class="float-card-value green mono">$2.4M</div>
-            <div class="float-card-bar"><div class="float-card-bar-fill" style="width:67%"></div></div>
-          </div>
-
-          <!-- Phone mockup -->
-          <div class="phone-mockup">
-            <div>
-              <div class="phone-screen-label">Validator Score</div>
-              <div class="phone-screen-value">Green: 94/100</div>
-            </div>
-            <div class="phone-progress-ring">
-              <svg width="56" height="56">
-                <defs><linearGradient id="ring-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#b4f849"/><stop offset="100%" stop-color="#00a86b"/></linearGradient></defs>
-                <circle cx="28" cy="28" r="24" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
-                <circle cx="28" cy="28" r="24" fill="none" stroke="url(#ring-grad)" stroke-width="4" stroke-linecap="round" stroke-dasharray="150" stroke-dashoffset="9" transform="rotate(-90 28 28)"/>
-              </svg>
-              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Poppins';font-size:14px;font-weight:700;color:var(--accent)">94%</div>
-            </div>
-            <div class="phone-screen-label">DPoS Active</div>
-            <div class="phone-screen-value" style="color:var(--accent)">✓ Verified</div>
-            <div class="phone-login-btn">View Explorer</div>
+            <div class="fc-icon">🔄</div>
+            <div class="fc-label">DEX 24h Volume</div>
+            <div class="fc-value green mono">$2.4M</div>
+            <div class="fc-bar"><div class="fc-bar-fill" style="width:67%"></div></div>
           </div>
         </div>
       </div>
@@ -360,7 +429,7 @@
   </section>
 
   <!-- ===== STATS BAR ===== -->
-  <section class="stats-section" id="stats">
+  <section class="stats-section">
     <div class="stats-inner">
       <div class="stats-grid reveal-stagger">
         <div class="stat-card"><div class="stat-value mono" data-count="100" data-suffix="B">0</div><div class="stat-label">Total Token Supply</div></div>
@@ -377,35 +446,98 @@
       <div class="section-header reveal">
         <div class="section-label">Platform Features</div>
         <h2>Everything you need to build on green infrastructure</h2>
-        <p>From consensus to smart contracts to carbon tracking — Verdis Chain delivers a complete blockchain ecosystem.</p>
+        <p>From consensus to smart contracts to carbon tracking — Verdis Chain delivers a complete blockchain ecosystem built in Rust.</p>
       </div>
       <div class="features-grid reveal-stagger">
-        <div class="feature-card"><div class="feature-icon">⛓️</div><h3>Native DPoS Consensus</h3><p>BABE block production + GRANDPA finality. Validators earn green scores based on energy efficiency and carbon offset commitments.</p><span class="feature-tag">BABE + GRANDPA</span></div>
-        <div class="feature-card"><div class="feature-icon">🔄</div><h3>AMM Decentralized Exchange</h3><p>Native Automated Market Maker built into the chain. Swap tokens, provide liquidity, earn fees without external contracts.</p><span class="feature-tag">Native AMM DEX</span></div>
-        <div class="feature-card"><div class="feature-icon">🌱</div><h3>Carbon Credit Tracking</h3><p>On-chain carbon credits, green validator scoring, reforestation logging. Every transaction contributes to environmental impact.</p><span class="feature-tag">Eco Pallet</span></div>
-        <div class="feature-card"><div class="feature-icon">⚡</div><h3>EVM Smart Contracts</h3><p>143 EVM opcodes with Cancun upgrades. Deploy Solidity contracts with Chain ID 909 and 24KB max code size.</p><span class="feature-tag">143 Opcodes · Chain 909</span></div>
-        <div class="feature-card"><div class="feature-icon">🛡️</div><h3>Tokenomics & Vesting</h3><p>100B total supply with 12B investor allocation enforced on-chain. Vesting schedules, transfer restrictions, mint/burn controls.</p><span class="feature-tag">100B Supply · 12B Vesting</span></div>
-        <div class="feature-card"><div class="feature-icon">🏗️</div><h3>Substrate + Rust Core</h3><p>Built from scratch in Rust using Substrate. WASM runtime, gRPC/JSON-RPC, benchmarked weight files for all pallets.</p><span class="feature-tag">Rust · Substrate · WASM</span></div>
+        <div class="feature-card"><div class="feature-icon">⛓️</div><h3>Native DPoS Consensus</h3><p>BABE block production + GRANDPA finality. Validators earn green scores based on energy efficiency and carbon offset commitments. 21 active validators.</p><span class="feature-tag">BABE + GRANDPA</span></div>
+        <div class="feature-card"><div class="feature-icon">🔄</div><h3>AMM Decentralized Exchange</h3><p>Native Automated Market Maker built directly into the chain. Swap tokens, provide liquidity, and earn fees — no external contracts needed.</p><span class="feature-tag">Native AMM DEX</span></div>
+        <div class="feature-card"><div class="feature-icon">🌱</div><h3>Carbon Credit Tracking</h3><p>On-chain carbon credits, green validator scoring, and reforestation logging. Every transaction contributes to measurable environmental impact.</p><span class="feature-tag">Eco Module</span></div>
+        <div class="feature-card"><div class="feature-icon">⚡</div><h3>EVM Smart Contracts</h3><p>143 EVM opcodes with Cancun upgrades (TLOAD, TSTORE, MCOPY). Deploy Solidity contracts with Chain ID 909 and 24KB max code size.</p><span class="feature-tag">143 Opcodes · Chain 909</span></div>
+        <div class="feature-card"><div class="feature-icon">🛡️</div><h3>Tokenomics & Vesting</h3><p>100B total supply with 12B investor allocation enforced on-chain. Vesting schedules with cliff periods, transfer restrictions, and mint/burn controls.</p><span class="feature-tag">100B Supply · 12B Vesting</span></div>
+        <div class="feature-card"><div class="feature-icon">🏗️</div><h3>Substrate + Rust Core</h3><p>Built from scratch in Rust using Substrate. WASM runtime, JSON-RPC + gRPC, benchmarked weight files for all 7 pallets. No shortcuts, no mocks.</p><span class="feature-tag">Rust · Substrate · WASM</span></div>
       </div>
     </div>
   </section>
 
-  <!-- ===== ARCHITECTURE (dark section) ===== -->
+  <!-- ===== TOKENOMICS (dark) — NEW SECTION ===== -->
+  <section class="tokenomics-section" id="tokenomics">
+    <div class="tokenomics-inner">
+      <div class="section-header reveal">
+        <div class="section-label">Tokenomics</div>
+        <h2>100B Supply, Fairly Distributed</h2>
+        <p>Every token allocation is enforced on-chain through the Tokenomics pallet with immutable vesting schedules.</p>
+      </div>
+      <div class="tokenomics-layout reveal">
+        <!-- Donut chart -->
+        <div class="donut-container">
+          <svg class="donut-svg" viewBox="0 0 200 200">
+            <defs>
+              <linearGradient id="donut-grad-1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#b4f849"/><stop offset="100%" stop-color="#00a86b"/></linearGradient>
+            </defs>
+            <circle class="donut-bg" cx="100" cy="100" r="80"/>
+            <!-- Community: 40% = 100.5 of 251.3 circumference -->
+            <circle class="donut-seg" cx="100" cy="100" r="80" stroke="#b4f849" stroke-dasharray="100.5 150.8" stroke-dashoffset="0"/>
+            <!-- Investors: 12% = 30.2 -->
+            <circle class="donut-seg" cx="100" cy="100" r="80" stroke="#00a86b" stroke-dasharray="30.2 221.1" stroke-dashoffset="-100.5"/>
+            <!-- Validators: 20% = 50.3 -->
+            <circle class="donut-seg" cx="100" cy="100" r="80" stroke="#84fe87" stroke-dasharray="50.3 201" stroke-dashoffset="-130.7"/>
+            <!-- Team: 15% = 37.7 -->
+            <circle class="donut-seg" cx="100" cy="100" r="80" stroke="#5ba832" stroke-dasharray="37.7 213.6" stroke-dashoffset="-181"/>
+            <!-- Eco Fund: 13% = 32.7 -->
+            <circle class="donut-seg" cx="100" cy="100" r="80" stroke="#2d6b1a" stroke-dasharray="32.7 218.6" stroke-dashoffset="-218.7"/>
+          </svg>
+          <div class="donut-center">
+            <div class="donut-center-value mono">100B</div>
+            <div class="donut-center-label">VRD Total</div>
+          </div>
+        </div>
+        <!-- Legend -->
+        <div class="tokenomics-legend reveal-stagger">
+          <div class="token-item"><div class="token-dot" style="background:#b4f849"></div><div class="token-info"><div class="token-info-name">Community & Ecosystem</div><div class="token-info-desc">Public distribution, grants, incentives</div></div><div class="token-amount">40B VRD</div></div>
+          <div class="token-item"><div class="token-dot" style="background:#00a86b"></div><div class="token-info"><div class="token-info-name">Investor Allocation</div><div class="token-info-desc">12B with vesting schedules & cliff</div></div><div class="token-amount">12B VRD</div></div>
+          <div class="token-item"><div class="token-dot" style="background:#84fe87"></div><div class="token-info"><div class="token-info-name">Validator Rewards</div><div class="token-info-desc">Staking, block production rewards</div></div><div class="token-amount">20B VRD</div></div>
+          <div class="token-item"><div class="token-dot" style="background:#5ba832"></div><div class="token-info"><div class="token-info-name">Team & Advisors</div><div class="token-info-desc">4-year vesting, 1-year cliff</div></div><div class="token-amount">15B VRD</div></div>
+          <div class="token-item"><div class="token-dot" style="background:#2d6b1a"></div><div class="token-info"><div class="token-info-name">Eco Fund</div><div class="token-info-desc">Carbon credits, reforestation, green tech</div></div><div class="token-amount">13B VRD</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ARCHITECTURE (dark) ===== -->
   <section class="arch-section" id="architecture">
     <div class="arch-inner">
       <div class="section-header reveal">
         <div class="section-label">Architecture</div>
-        <h2>Seven layers, one chain</h2>
+        <h2>Seven pallets, one chain</h2>
         <p>Each pallet is independently benchmarked with real weight files and full test coverage.</p>
       </div>
       <div class="arch-layers reveal-stagger">
-        <div class="arch-layer"><div class="arch-layer-num">01</div><div class="arch-layer-name">DPoS Consensus</div><div class="arch-layer-desc">BABE block production + GRANDPA finality, validator election, green scoring</div><div class="arch-layer-status">Live</div></div>
-        <div class="arch-layer"><div class="arch-layer-num">02</div><div class="arch-layer-name">AMM DEX</div><div class="arch-layer-desc">Native swap, liquidity pools, fee distribution, slippage protection</div><div class="arch-layer-status">Live</div></div>
-        <div class="arch-layer"><div class="arch-layer-num">03</div><div class="arch-layer-name">Eco Module</div><div class="arch-layer-desc">Carbon credits, reforestation logging, green validator scoring</div><div class="arch-layer-status">Live</div></div>
-        <div class="arch-layer"><div class="arch-layer-num">04</div><div class="arch-layer-name">EVM</div><div class="arch-layer-desc">143 opcodes, Chain ID 909, 24KB code limit, Cancun upgrades</div><div class="arch-layer-status">Live</div></div>
-        <div class="arch-layer"><div class="arch-layer-num">05</div><div class="arch-layer-name">Tokenomics</div><div class="arch-layer-desc">100B supply, 12B investor allocation, mint/burn, transfer restrictions</div><div class="arch-layer-status">Live</div></div>
-        <div class="arch-layer"><div class="arch-layer-num">06</div><div class="arch-layer-name">Vesting</div><div class="arch-layer-desc">Schedule-based token release, cliff periods, linear vesting</div><div class="arch-layer-status">Live</div></div>
-        <div class="arch-layer"><div class="arch-layer-num">07</div><div class="arch-layer-name">Storage</div><div class="arch-layer-desc">On-chain data storage, key-value pairs, IPFS integration ready</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">01</div><div class="arch-layer-name">DPoS Consensus</div><div class="arch-layer-desc">BABE block production + GRANDPA finality, validator election, green scoring</div><div class="arch-layer-tests">34 tests</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">02</div><div class="arch-layer-name">AMM DEX</div><div class="arch-layer-desc">Native swap, liquidity pools, fee distribution, slippage protection</div><div class="arch-layer-tests">25 tests</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">03</div><div class="arch-layer-name">Eco Module</div><div class="arch-layer-desc">Carbon credits, reforestation logging, green validator scoring</div><div class="arch-layer-tests">33 tests</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">04</div><div class="arch-layer-name">EVM</div><div class="arch-layer-desc">143 opcodes, Chain ID 909, 24KB code limit, Cancun upgrades</div><div class="arch-layer-tests">102 tests</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">05</div><div class="arch-layer-name">Tokenomics</div><div class="arch-layer-desc">100B supply, 12B investor allocation, mint/burn, transfer restrictions</div><div class="arch-layer-tests">23 tests</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">06</div><div class="arch-layer-name">Vesting</div><div class="arch-layer-desc">Schedule-based token release, cliff periods, linear vesting</div><div class="arch-layer-tests">10 tests</div><div class="arch-layer-status">Live</div></div>
+        <div class="arch-layer"><div class="arch-layer-num">07</div><div class="arch-layer-name">Storage</div><div class="arch-layer-desc">On-chain data storage, key-value pairs, IPFS integration ready</div><div class="arch-layer-tests">9 tests</div><div class="arch-layer-status">Live</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== VALIDATORS (light) — NEW SECTION ===== -->
+  <section class="validators-section" id="validators">
+    <div class="validators-inner">
+      <div class="section-header reveal">
+        <div class="section-label">Green Validators</div>
+        <h2>Top validators by green score</h2>
+        <p>Validators are ranked by their green score — a measure of energy efficiency, carbon offset, and uptime.</p>
+      </div>
+      <div class="validators-grid reveal-stagger">
+        <div class="validator-card"><div class="validator-header"><div class="validator-name">0x4f2a...8b9c</div><div class="validator-rank">#1</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">98/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:98%"></div></div><div class="validator-stats"><span>📦 12,847 blocks</span><span>⏱ 99.8% uptime</span></div><div class="validator-status">Active · Elected</div></div>
+        <div class="validator-card"><div class="validator-header"><div class="validator-name">0x7a1b...3e4f</div><div class="validator-rank">#2</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">96/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:96%"></div></div><div class="validator-stats"><span>📦 11,203 blocks</span><span>⏱ 99.5% uptime</span></div><div class="validator-status">Active · Elected</div></div>
+        <div class="validator-card"><div class="validator-header"><div class="validator-name">0x9c3d...1a2b</div><div class="validator-rank">#3</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">94/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:94%"></div></div><div class="validator-stats"><span>📦 10,891 blocks</span><span>⏱ 99.2% uptime</span></div><div class="validator-status">Active · Elected</div></div>
+        <div class="validator-card"><div class="validator-header"><div class="validator-name">0x2e5f...7c8d</div><div class="validator-rank">#4</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">91/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:91%"></div></div><div class="validator-stats"><span>📦 9,447 blocks</span><span>⏱ 98.9% uptime</span></div><div class="validator-status">Active · Elected</div></div>
+        <div class="validator-card"><div class="validator-header"><div class="validator-name">0x8b1c...5d6e</div><div class="validator-rank">#5</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">89/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:89%"></div></div><div class="validator-stats"><span>📦 8,712 blocks</span><span>⏱ 98.5% uptime</span></div><div class="validator-status">Active · Elected</div></div>
+        <div class="validator-card"><div class="validator-header"><div class="validator-name">0x6d9e...2f3a</div><div class="validator-rank">#6</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">87/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:87%"></div></div><div class="validator-stats"><span>📦 7,895 blocks</span><span>⏱ 97.8% uptime</span></div><div class="validator-status">Active · Elected</div></div>
       </div>
     </div>
   </section>
@@ -414,7 +546,7 @@
   <section class="circle-section">
     <div class="circle-inner">
       <div class="section-header reveal">
-        <div class="section-label">Metrics</div>
+        <div class="section-label">On-Chain Metrics</div>
         <h2>Built for scale, ready for production</h2>
       </div>
       <div class="circle-grid reveal-stagger">
@@ -422,8 +554,8 @@
           <div class="circle-svg"><svg width="160" height="160"><defs><linearGradient id="green-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#b4f849"/><stop offset="100%" stop-color="#00a86b"/></linearGradient></defs><circle class="circle-bg" cx="80" cy="80" r="70"/><circle class="circle-fill" cx="80" cy="80" r="70"/></svg><div class="circle-count mono" data-count="100" data-suffix="B">0</div></div>
           <div class="circle-label">Total Supply</div>
         </div>
-        <div class="circle-card" style="--offset: 120">
-          <div class="circle-svg"><svg width="160" height="160"><circle class="circle-bg" cx="80" cy="80" r="70"/><circle class="circle-fill" cx="80" cy="80" r="70" style="stroke-dashoffset:120"/></svg><div class="circle-count mono" data-count="143">0</div></div>
+        <div class="circle-card" style="--offset: 6">
+          <div class="circle-svg"><svg width="160" height="160"><circle class="circle-bg" cx="80" cy="80" r="70"/><circle class="circle-fill" cx="80" cy="80" r="70" style="stroke-dashoffset:6"/></svg><div class="circle-count mono" data-count="143">0</div></div>
           <div class="circle-label">EVM Opcodes</div>
         </div>
         <div class="circle-card" style="--offset: 30">
@@ -446,11 +578,11 @@
         <h2>What's built and what's next</h2>
       </div>
       <div class="roadmap-track reveal">
-        <div class="roadmap-milestone done"><div class="roadmap-dot"></div><div class="roadmap-status">✓ Completed</div><h4>Core Blockchain</h4><p>Phases 86-129: 7 pallets, 143 EVM opcodes, 260 tests</p></div>
+        <div class="roadmap-milestone done"><div class="roadmap-dot"></div><div class="roadmap-status">✓ Completed</div><h4>Core Blockchain</h4><p>7 pallets, 143 EVM opcodes, 260 tests, benchmarked weights</p></div>
         <div class="roadmap-milestone done"><div class="roadmap-dot"></div><div class="roadmap-status">✓ Completed</div><h4>Verdiscan Explorer</h4><p>Real-time block explorer, validator cards, WebSocket feed</p></div>
-        <div class="roadmap-milestone active"><div class="roadmap-dot"></div><div class="roadmap-status">● In Progress</div><h4>Premium Launch</h4><p>SaaS interface, security audit, SDK release</p></div>
+        <div class="roadmap-milestone active"><div class="roadmap-dot"></div><div class="roadmap-status">● In Progress</div><h4>Premium Launch</h4><p>SaaS interface, security audit, SDK release, mobile wallet</p></div>
         <div class="roadmap-milestone planned"><div class="roadmap-dot"></div><div class="roadmap-status">○ Planned</div><h4>Mainnet</h4><p>Genesis allocation, validator onboarding, public RPC</p></div>
-        <div class="roadmap-milestone planned"><div class="roadmap-dot"></div><div class="roadmap-status">○ Planned</div><h4>Ecosystem</h4><p>Mobile wallet, cross-chain bridge, DApp marketplace</p></div>
+        <div class="roadmap-milestone planned"><div class="roadmap-dot"></div><div class="roadmap-status">○ Planned</div><h4>Ecosystem</h4><p>Cross-chain bridge, DApp marketplace, carbon credit exchange</p></div>
       </div>
     </div>
   </section>
@@ -460,8 +592,8 @@
     <div class="cta-inner">
       <div class="cta-card reveal">
         <h2>Start building on green infrastructure</h2>
-        <p>Deploy smart contracts, swap on the native DEX, and track carbon credits — all on one chain.</p>
-        <button class="btn-read-more" onclick="window.location.href='/explorer'">Open Explorer →</button>
+        <p>Deploy smart contracts, swap on the native DEX, stake with green validators, and track carbon credits — all on one chain.</p>
+        <button class="btn-primary" onclick="window.location.href='/explorer'">Open Explorer →</button>
       </div>
     </div>
   </section>
@@ -469,9 +601,9 @@
   <!-- ===== FOOTER ===== -->
   <footer class="footer">
     <div class="footer-inner">
-      <div class="footer-brand"><h4>Verdis Chain</h4><p>The world's first green blockchain. Built in Rust + Substrate with DPoS, AMM DEX, EVM, and carbon credit tracking.</p></div>
+      <div class="footer-brand"><h4><span class="footer-brand-dot"></span>Verdis Chain</h4><p>The world's first green blockchain. Built in Rust + Substrate with DPoS, AMM DEX, EVM, and carbon credit tracking.</p></div>
       <div class="footer-col"><h5>Platform</h5><a href="/explorer">Explorer</a><a href="/validators">Validators</a><a href="/dex">DEX</a><a href="/eco">Eco Metrics</a></div>
-      <div class="footer-col"><h5>Developers</h5><a href="#">Documentation</a><a href="#">RPC Endpoint</a><a href="#">GitHub</a><a href="#">Whitepaper</a></div>
+      <div class="footer-col"><h5>Developers</h5><a href="/docs">Documentation</a><a href="#">RPC Endpoint</a><a href="https://github.com/Protremix/Verdischain-">GitHub</a><a href="#">Whitepaper</a></div>
       <div class="footer-col"><h5>Community</h5><a href="#">Twitter</a><a href="#">Discord</a><a href="#">Telegram</a><a href="#">Blog</a></div>
     </div>
     <div class="footer-bottom"><span>© 2026 Verdis Chain · Powered by Protremix</span><span>verdischain.com · 91.98.160.145</span></div>
@@ -507,7 +639,7 @@
     }, { threshold: 0.5 });
     document.querySelectorAll('[data-count]').forEach(el => counterObs.observe(el));
 
-    // ===== HERO CANVAS — Blockchain Network Animation =====
+    // ===== HERO CANVAS — Blockchain Network =====
     const canvas = document.getElementById('hero-canvas');
     const ctx = canvas.getContext('2d');
     let W, H, nodes = [], mouse = { x: -1000, y: -1000 };
@@ -516,8 +648,14 @@
     resize();
     window.addEventListener('resize', resize);
 
-    for (let i = 0; i < 35; i++) {
-      nodes.push({ x: Math.random()*W, y: Math.random()*H, vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4, r: 2+Math.random()*3, pulse: Math.random()*Math.PI*2 });
+    // Create blockchain nodes (representing validators/blocks)
+    for (let i = 0; i < 40; i++) {
+      nodes.push({
+        x: Math.random()*W, y: Math.random()*H,
+        vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4,
+        r: 2+Math.random()*3, pulse: Math.random()*Math.PI*2,
+        isValidator: i < 7 // first 7 are "validators" (larger)
+      });
     }
 
     canvas.addEventListener('mousemove', e => {
@@ -527,17 +665,8 @@
 
     function animate() {
       ctx.clearRect(0, 0, W, H);
-      nodes.forEach((n, i) => {
-        n.x += n.vx; n.y += n.vy; n.pulse += 0.03;
-        if (n.x < 0 || n.x > W) n.vx *= -1;
-        if (n.y < 0 || n.y > H) n.vy *= -1;
-        const dx = n.x - mouse.x, dy = n.y - mouse.y, dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist < 100) { n.x += dx/dist * 0.8; n.y += dy/dist * 0.8; }
-        const pulseSize = n.r + Math.sin(n.pulse) * 1.5;
-        ctx.beginPath(); ctx.arc(n.x, n.y, pulseSize, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba(180,248,73,' + (0.3 + Math.sin(n.pulse)*0.2) + ')';
-        ctx.fill();
-      });
+
+      // Draw connections
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i+1; j < nodes.length; j++) {
           const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y, dist = Math.sqrt(dx*dx+dy*dy);
@@ -548,6 +677,26 @@
           }
         }
       }
+
+      // Draw nodes
+      nodes.forEach((n, i) => {
+        n.x += n.vx; n.y += n.vy; n.pulse += 0.03;
+        if (n.x < 0 || n.x > W) n.vx *= -1;
+        if (n.y < 0 || n.y > H) n.vy *= -1;
+        const dx = n.x - mouse.x, dy = n.y - mouse.y, dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 100) { n.x += dx/dist * 0.8; n.y += dy/dist * 0.8; }
+        const pulseSize = n.r + Math.sin(n.pulse) * 1.5;
+        ctx.beginPath(); ctx.arc(n.x, n.y, pulseSize, 0, Math.PI*2);
+        if (n.isValidator) {
+          ctx.fillStyle = 'rgba(180,248,73,' + (0.5 + Math.sin(n.pulse)*0.2) + ')';
+          ctx.shadowBlur = 12; ctx.shadowColor = 'rgba(180,248,73,0.5)';
+        } else {
+          ctx.fillStyle = 'rgba(180,248,73,' + (0.3 + Math.sin(n.pulse)*0.15) + ')';
+          ctx.shadowBlur = 0;
+        }
+        ctx.fill(); ctx.shadowBlur = 0;
+      });
+
       requestAnimationFrame(animate);
     }
     animate();
