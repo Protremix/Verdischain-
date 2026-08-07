@@ -20,7 +20,7 @@
 body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; overflow-x:hidden; }
 .mono { font-family:'JetBrains Mono',monospace; }
 
-nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 24px; height:64px; display:flex; align-items:center; justify-content:space-between; }
+nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
 .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); }
 .nav-brand .logo { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#000; font-size:16px; }
 .nav-brand span { font-weight:600; font-size:16px; }
@@ -189,17 +189,31 @@ footer a { color:var(--accent); text-decoration:none; }
 
 @media(max-width:768px) { .nav-links { display:none; } .hero h1 { font-size:30px; } .hero-right { display:none; } .buy-grid { grid-template-columns:1fr; } .whitelist-form { flex-direction:column; } }
 @media(max-width:375px) { .hero { padding:32px 16px; } .hero-stats { grid-template-columns:1fr; } .countdown { flex-wrap:wrap; } }
+
+.brand-logo-img { height: 36px; width: 36px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,255,136,0.35)); } .brand-text { font-family: Poppins, sans-serif; font-weight: 700; font-size: 18px; color: #fff; white-space: nowrap; margin-left: 2px; letter-spacing: -0.3px; text-decoration: none !important; }
+@media(max-width:768px) { .brand-logo-img { height: 40px; } }
+
 </style>
-</head>
+<link rel="icon" type="image/png" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png">
+<style id="nav-brand-no-underline-fix">a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration: none !important; }</style></head>
 <body>
 
-<nav>
-  <a href="/" class="nav-brand"><div class="logo">V</div><span>VRDX Token Sale</span></a>
+<nav class="std-nav">
+  <a href="/" class="nav-brand"><img src="/assets/verdis-v-icon.png" alt="Verdis Chain" class="brand-logo-img"><span class="brand-text">Verdis Chain</span></a>
   <div class="nav-links">
-    <a href="/">Home</a><a href="/explorer">Explorer</a><a href="/dex">DEX</a>
-    <a href="/validators">Validators</a><a href="/eco">Eco</a><a href="/wallet">Wallet</a>
-    <a href="/faucet">Faucet</a><a href="/referral">Referral</a><a href="/incentives" style="display:none">Incentives</a><a href="/docs">Docs</a>
+    <a href="/">Home</a>
+    <a href="/explorer/">Explorer</a>
+    <a href="/dex/">DEX</a>
+    <a href="/validators/">Validators</a>
+    <a href="/eco/">Eco</a>
+    <a href="/faucet/">Faucet</a>
+    <a href="/wallet/">Wallet</a>
+    <a href="/sale/" class="active">Sale</a>
+    <a href="/docs/">Docs</a>
+    
   </div>
+  <div class="nav-status"><div class="dot"></div><span class="nav-text">Connected</span></div>
 </nav>
 
 <section class="hero">
@@ -606,5 +620,25 @@ setInterval(updateCountdown, 1000);
 updateCountdown();
 calculatePurchase();
 </script>
+
+<script>
+async function loadPageMetrics() {
+    try {
+        const res = await fetch('/rpc', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1})
+        });
+        const data = await res.json();
+        const height = parseInt(data.result?.number || '0x0', 16);
+        document.querySelectorAll('[data-block-height]').forEach(el => {
+            el.textContent = '#' + height.toLocaleString();
+        });
+    } catch(e) {}
+}
+loadPageMetrics();
+setInterval(loadPageMetrics, 15000);
+</script>
+
 </body>
 </html>

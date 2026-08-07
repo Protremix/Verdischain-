@@ -63,7 +63,7 @@
 
     /* ===== NAV ===== */
     .hero-nav { position: absolute; top: 0; left: 0; right: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: 28px 48px; }
-    .nav-brand { font-family: 'Poppins'; font-weight: 800; font-size: 22px; color: var(--text-white); display: flex; align-items: center; gap: 10px; }
+    .nav-brand { font-family: 'Poppins'; font-weight: 800; font-size: 22px; color: var(--text-white); display: flex; align-items: center; gap: 10px; text-decoration: none !important; -webkit-tap-highlight-color: transparent; transition: opacity 0.2s; } .nav-brand:hover { opacity: 0.88; } .nav-brand:visited { color: var(--text-white); }
     .nav-brand-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px var(--accent-glow); animation: pulse-dot 2s infinite; }
     @keyframes pulse-dot { 0%,100% { box-shadow: 0 0 16px var(--accent-glow); } 50% { box-shadow: 0 0 28px rgba(202,255,51,0.6); } }
     .nav-links { display: flex; gap: 36px; }
@@ -94,6 +94,9 @@
     .btn-secondary { background: transparent; color: var(--text-white); font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: var(--radius-pill); border: 1px solid rgba(255,255,255,0.15); cursor: pointer; transition: var(--transition); }
     .btn-secondary:hover { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
     @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+    @media (prefers-reduced-motion: reduce) {
+      .hero-badge, .hero-title, .hero-desc, .hero-actions { animation: none !important; opacity: 1 !important; transform: none !important; }
+    }
 
     /* ===== HERO RIGHT — 3D Floating Cluster Visual ===== */
     .hero-right {
@@ -548,8 +551,26 @@
       .circle-grid { grid-template-columns: 1fr; }
       .hero-actions { flex-direction: column; }
     }
-  </style>
-</head>
+  
+/* Mobile responsiveness */
+@media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:44px;padding:10px 16px}.card{padding:16px}h1{font-size:22px}}
+@media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:16px}.container{padding:20px}}
+
+
+    nav.std-nav { position: relative; z-index: 20; background: rgba(10,10,10,0.6); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 20px; height: 72px; gap: 12px; display: flex; align-items: center; justify-content: space-between; border-radius: 24px 24px 0 0; }
+    nav.std-nav .nav-brand { display: flex; align-items: center; }
+    nav.std-nav .nav-links { display: flex; gap: 0; flex-wrap: nowrap; flex: 1; justify-content: center; }
+    nav.std-nav .nav-links a { color: var(--text-dim); text-decoration: none; padding: 8px 9px; border-radius: 8px; font-size: 12px; font-weight: 500; transition: all .2s; white-space: nowrap; }
+    nav.std-nav .nav-links a:hover { color: var(--text-white); background: rgba(255,255,255,0.06); }
+    nav.std-nav .nav-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); flex-shrink: 0; white-space: nowrap; }
+    nav.std-nav .nav-status .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+    @media(max-width:900px) { nav.std-nav .nav-links { display: none; } }
+
+    .brand-logo-img { height: 36px; width: 36px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,255,136,0.35)); } .brand-text { font-family: Poppins, sans-serif; font-weight: 700; font-size: 18px; color: #fff; white-space: nowrap; margin-left: 2px; letter-spacing: -0.3px; text-decoration: none !important; }
+@media(max-width:768px) { .brand-logo-img { height: 40px; } }
+
+</style>
+<style id="nav-brand-no-underline-fix">a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration: none !important; }</style></head>
 <body>
   <div id="cursor-glow"></div>
   <div id="scroll-bar"></div>
@@ -557,25 +578,25 @@
   <!-- ===== HERO — Dark container, split layout ===== -->
   <section class="hero-section">
     <div class="hero-container">
-      <nav class="hero-nav">
-        <div class="nav-brand"><span class="nav-brand-dot"></span>Verdis Chain</div>
-        <div class="nav-links">
-          <a href="#features">Features</a>
-          <a href="#tokenomics">Tokenomics</a>
-          <a href="#architecture">Architecture</a>
-          <a href="#validators">Validators</a>
-          <a href="#roadmap">Roadmap</a>
-        </div>
-        <div class="nav-cta">
-          <button class="btn-login">Log In</button>
-          <button class="btn-signup">Buy VRDX</button>
-        <button class="btn-primary" style="margin-left:8px;background:transparent;border:1px solid var(--accent);color:var(--accent)" onclick="window.location.href=/sale">Token Sale</button>
-        <button class="btn-primary" style="display:none"</button>
-        </div>
-      </nav>
+      <nav class="std-nav">
+  <a href="/" class="nav-brand"><img src="/assets/verdis-v-icon.png" alt="Verdis Chain" class="brand-logo-img"><span class="brand-text">Verdis Chain</span></a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/explorer/">Explorer</a>
+    <a href="/dex/">DEX</a>
+    <a href="/validators/">Validators</a>
+    <a href="/eco/">Eco</a>
+    <a href="/faucet/">Faucet</a>
+    <a href="/wallet/">Wallet</a>
+    <a href="/sale/">Sale</a>
+    <a href="/docs/">Docs</a>
+    
+  </div>
+  <div class="nav-status"><div class="dot"></div><span class="nav-text">Connected</span></div>
+</nav>
 
       <div class="hero-left">
-        <div class="hero-badge"><span class="hero-badge-dot"></span> Testnet Live · Block <span data-block-height>##</span> · Node Live · 14 Peers</div>
+        <div class="hero-badge"><span class="hero-badge-dot"></span> Testnet Live · Block <span data-block-height>##</span> · Node Live · <span data-peers>8</span> Active</div>
         <h1 class="hero-title">
           <span class="gradient">GREEN BLOCKCHAIN</span><br>
           <span style="color:var(--text-white)">Engineered in Rust</span>
@@ -632,7 +653,7 @@
             <div class="cal-days">
               <span class="muted">29</span><span class="muted">30</span><span>1</span><span>2</span>
               <span class="active">3</span><span>4</span><span>5</span><span>6</span><span>7</span>
-              <span class="active">8</span><span>9</span><span>10</span><span>11</span><span>12</span>
+              <span class="active">8</span><span>9</span><span>10</span><span>11</span><span>6</span>
               <span>13</span><span class="active">14</span><span>15</span><span>16</span><span>17</span>
               <span>18</span><span class="active">19</span><span>20</span><span>21</span><span>22</span>
               <span>23</span><span>24</span><span class="active">25</span><span>26</span><span>27</span>
@@ -662,7 +683,7 @@
                 </div>
                 <div class="m-stat">
                   <span class="m-lbl">Network TPS</span>
-                  <span class="m-val mono green">2,450</span>
+                  <span class="m-val mono green">2.4</span>
                 </div>
                 <div class="m-stat">
                   <span class="m-lbl">Active Peers</span>
@@ -747,7 +768,7 @@
               </div>
               <div>
                 <div class="q-lbl">Block Height</div>
-                <div class="q-val mono">#1.8M</div>
+                <div class="q-val mono">#57</div>
               </div>
             </div>
             <div class="q-card">
@@ -756,7 +777,7 @@
               </div>
               <div>
                 <div class="q-lbl">Speed</div>
-                <div class="q-val mono green">2.4k TPS</div>
+                <div class="q-val mono green">6s blocks</div>
               </div>
             </div>
             <div class="q-card">
@@ -765,7 +786,7 @@
               </div>
               <div>
                 <div class="q-lbl">Peers</div>
-                <div class="q-val mono">14 Active</div>
+                <div class="q-val mono">8 Peers</div>
               </div>
             </div>
             <div class="q-card">
@@ -1142,7 +1163,7 @@ async function updateLiveMetrics() {
       el.textContent = '#' + blockHeight.toLocaleString();
     });
     document.querySelectorAll('[data-peers]').forEach(el => {
-      el.textContent = peers + ' Active';
+      el.textContent = peers + ' Peers';
     });
     document.querySelectorAll('[data-network-status]').forEach(el => {
       el.textContent = blockHeight > 0 ? 'Live' : 'Syncing';
@@ -1167,5 +1188,41 @@ updateLiveMetrics();
 setInterval(updateLiveMetrics, 15000);
 </script>
 
+
+<script>
+async function loadLandingValidators() {
+    try {
+        const res = await fetch('/rpc', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({jsonrpc: '2.0', method: 'dpos_activeValidators', params: [], id: 10})
+        });
+        const data = await res.json();
+        const count = (data.result || []).length;
+        document.querySelectorAll('[data-validators]').forEach(el => {
+            el.textContent = count;
+        });
+    } catch(e) {}
+}
+loadLandingValidators();
+setInterval(loadLandingValidators, 30000);
+</script>
+
 </body>
+<script>
+(function(){
+  function forceHeroVisible(){
+    document.querySelectorAll('.hero-badge,.hero-title,.hero-desc,.hero-actions').forEach(function(el){
+      var op = parseFloat(window.getComputedStyle(el).opacity);
+      if (isNaN(op) || op < 0.5) {
+        el.style.setProperty('opacity','1','important');
+        el.style.setProperty('transform','none','important');
+      }
+    });
+  }
+  if (document.readyState === 'complete') { setTimeout(forceHeroVisible, 1000); }
+  else { window.addEventListener('load', function(){ setTimeout(forceHeroVisible, 1000); }); }
+  setTimeout(forceHeroVisible, 2500);
+})();
+</script>
 </html>
