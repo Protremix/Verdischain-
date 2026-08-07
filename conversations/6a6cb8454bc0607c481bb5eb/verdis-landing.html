@@ -9,9 +9,10 @@
   <meta property="og:title" content="Verdis Chain — The World's First Green Blockchain" />
   <meta property="og:description" content="Layer-1 blockchain with DPoS, AMM DEX, EVM, and carbon credits. Built in Rust + Substrate." />
   <meta property="og:url" content="https://verdischain.com" />
+  <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #f8fafc;
@@ -21,7 +22,6 @@
       --text-muted: #64748b;
       --text-light: #94a3b8;
       --border: #e2e8f0;
-      --border-hover: #cbd5e1;
       --primary: #00a86b;
       --primary-hover: #009460;
       --primary-light: #ecfdf5;
@@ -32,103 +32,165 @@
       --rose: #f43f5e;
       --radius: 12px;
       --radius-lg: 16px;
-      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
       --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
       --shadow-lg: 0 8px 24px rgba(0,0,0,0.10);
       --transition: 200ms ease-out;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
     h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; letter-spacing: -0.02em; }
     .mono { font-family: 'JetBrains Mono', monospace; }
     a { color: var(--primary); text-decoration: none; transition: var(--transition); }
     a:hover { color: var(--primary-hover); }
 
-    /* NAV */
-    .nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
-    .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; }
+    /* ===== CURSOR GLOW ===== */
+    #cursor-glow { position: fixed; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(0,168,107,0.08) 0%, transparent 70%); pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); transition: opacity 300ms; opacity: 0; mix-blend-mode: multiply; }
+    body:hover #cursor-glow { opacity: 1; }
+
+    /* ===== SCROLL PROGRESS ===== */
+    #scroll-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #00a86b, #10b981, #2dd4bf); z-index: 10000; width: 0; transition: width 50ms; }
+
+    /* ===== BLOB BG ===== */
+    .blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: float 20s ease-in-out infinite; z-index: 0; }
+    .blob-1 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(0,168,107,0.25), transparent); top: -100px; right: -150px; animation-delay: 0s; }
+    .blob-2 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(45,212,191,0.2), transparent); bottom: 100px; left: -100px; animation-delay: 5s; }
+    .blob-3 { width: 350px; height: 350px; background: radial-gradient(circle, rgba(16,185,129,0.15), transparent); top: 300px; left: 40%; animation-delay: 10s; }
+    @keyframes float { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(30px,-30px) scale(1.1); } 66% { transform: translate(-20px,20px) scale(0.95); } }
+
+    /* ===== NAV ===== */
+    .nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.7); backdrop-filter: blur(24px) saturate(180%); border-bottom: 1px solid var(--border); transition: all 300ms; }
+    .nav.scrolled { box-shadow: 0 1px 12px rgba(0,0,0,0.06); }
+    .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; }
     .nav-brand { display: flex; align-items: center; gap: 10px; font-family: 'Space Grotesk'; font-weight: 700; font-size: 20px; color: var(--text); }
-    .nav-brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 12px rgba(0,168,107,0.4); }
-    .nav-links { display: flex; gap: 32px; }
-    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; }
+    .nav-brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 12px rgba(0,168,107,0.5); animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot { 0%,100% { box-shadow: 0 0 12px rgba(0,168,107,0.5); } 50% { box-shadow: 0 0 20px rgba(0,168,107,0.8); } }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; position: relative; }
+    .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: var(--primary); border-radius: 2px; transition: width 250ms ease-out; }
     .nav-links a:hover { color: var(--text); }
-    .nav-cta { display: flex; gap: 12px; align-items: center; }
-    .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; transition: var(--transition); cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta { display: flex; gap: 10px; align-items: center; }
+    .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; transition: all 200ms cubic-bezier(0.16,1,0.3,1); cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; position: relative; overflow: hidden; }
     .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .btn-primary::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); transition: left 500ms; }
+    .btn-primary:hover::before { left: 100%; }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,168,107,0.3); }
     .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { border-color: var(--border-hover); background: var(--bg-subtle); }
+    .btn-secondary:hover { border-color: var(--primary-border); background: var(--primary-light); transform: translateY(-1px); }
 
-    /* HERO */
-    .hero { max-width: 1200px; margin: 0 auto; padding: 80px 24px 40px; text-align: center; }
-    .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--primary-light); border: 1px solid var(--primary-border); border-radius: 100px; font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 24px; }
-    .hero-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
-    .hero h1 { font-size: 52px; line-height: 1.1; margin-bottom: 20px; max-width: 800px; margin-left: auto; margin-right: auto; }
-    .hero h1 span { color: var(--primary); }
-    .hero p { font-size: 18px; color: var(--text-muted); max-width: 640px; margin: 0 auto 32px; line-height: 1.7; }
-    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    /* ===== HERO ===== */
+    .hero-wrap { position: relative; overflow: hidden; }
+    .hero { position: relative; max-width: 1200px; margin: 0 auto; padding: 90px 24px 40px; text-align: center; z-index: 1; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--primary-light); border: 1px solid var(--primary-border); border-radius: 100px; font-size: 13px; font-weight: 600; color: var(--primary); margin-bottom: 28px; opacity: 0; transform: translateY(20px); animation: slideUp 600ms 100ms forwards; }
+    .hero-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); animation: pulse-dot 2s infinite; }
+    .hero h1 { font-size: 56px; line-height: 1.05; margin-bottom: 20px; max-width: 820px; margin-left: auto; margin-right: auto; opacity: 0; transform: translateY(30px); animation: slideUp 800ms 200ms forwards; }
+    .hero h1 span { background: linear-gradient(135deg, #00a86b 0%, #10b981 50%, #2dd4bf 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; position: relative; }
+    .hero h1 span::after { content: ''; position: absolute; bottom: 4px; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #00a86b, #2dd4bf); border-radius: 2px; opacity: 0.3; }
+    .hero p { font-size: 18px; color: var(--text-muted); max-width: 640px; margin: 0 auto 36px; line-height: 1.7; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 400ms forwards; }
+    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 600ms forwards; }
     .hero-actions .btn { padding: 14px 28px; font-size: 15px; }
+    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
 
-    /* STATS BAR */
-    .stats-bar { max-width: 1100px; margin: 48px auto; padding: 0 24px; }
+    /* ===== HERO CANVAS ===== */
+    #hero-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+
+    /* ===== HERO SCROLL INDICATOR ===== */
+    .scroll-indicator { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: 0; animation: fadeIn 1000ms 1200ms forwards; }
+    .scroll-indicator span { font-size: 12px; color: var(--text-light); font-weight: 500; }
+    .scroll-indicator-line { width: 2px; height: 32px; background: linear-gradient(180deg, var(--primary), transparent); border-radius: 2px; animation: scrollDown 1.5s infinite; }
+    @keyframes fadeIn { to { opacity: 1; } }
+    @keyframes scrollDown { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
+
+    /* ===== STATS BAR ===== */
+    .stats-bar { max-width: 1100px; margin: 40px auto; padding: 0 24px; position: relative; z-index: 1; }
     .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-    .stat-item { background: var(--card); padding: 32px 24px; text-align: center; }
-    .stat-value { font-family: 'Space Grotesk'; font-size: 36px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-    .stat-value.green { color: var(--primary); }
+    .stat-item { background: var(--card); padding: 36px 24px; text-align: center; transition: all 300ms; position: relative; }
+    .stat-item:hover { background: var(--primary-light); }
+    .stat-item::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, #00a86b, #2dd4bf); transform: scaleX(0); transition: transform 300ms; }
+    .stat-item:hover::before { transform: scaleX(1); }
+    .stat-value { font-family: 'Space Grotesk'; font-size: 40px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .stat-value.green { background: linear-gradient(135deg, #00a86b, #2dd4bf); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
     .stat-label { font-size: 13px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
 
-    /* SECTIONS */
-    .section { max-width: 1200px; margin: 0 auto; padding: 80px 24px; }
+    /* ===== REVEAL ===== */
+    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 700ms cubic-bezier(0.16,1,0.3,1), transform 700ms cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-stagger > * { opacity: 0; transform: translateY(40px); transition: opacity 600ms cubic-bezier(0.16,1,0.3,1), transform 600ms cubic-bezier(0.16,1,0.3,1); }
+    .reveal-stagger.visible > *:nth-child(1) { opacity: 1; transform: translateY(0); transition-delay: 0ms; }
+    .reveal-stagger.visible > *:nth-child(2) { opacity: 1; transform: translateY(0); transition-delay: 100ms; }
+    .reveal-stagger.visible > *:nth-child(3) { opacity: 1; transform: translateY(0); transition-delay: 200ms; }
+    .reveal-stagger.visible > *:nth-child(4) { opacity: 1; transform: translateY(0); transition-delay: 300ms; }
+    .reveal-stagger.visible > *:nth-child(5) { opacity: 1; transform: translateY(0); transition-delay: 400ms; }
+    .reveal-stagger.visible > *:nth-child(6) { opacity: 1; transform: translateY(0); transition-delay: 500ms; }
+    .reveal-stagger.visible > *:nth-child(7) { opacity: 1; transform: translateY(0); transition-delay: 600ms; }
+    .reveal-stagger.visible > *:nth-child(8) { opacity: 1; transform: translateY(0); transition-delay: 700ms; }
+
+    /* ===== SECTIONS ===== */
+    .section { max-width: 1200px; margin: 0 auto; padding: 80px 24px; position: relative; }
     .section-header { text-align: center; margin-bottom: 56px; }
-    .section-label { font-size: 13px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
-    .section-header h2 { font-size: 36px; margin-bottom: 16px; }
+    .section-label { font-size: 13px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: inline-block; padding: 4px 14px; background: var(--primary-light); border-radius: 100px; border: 1px solid var(--primary-border); }
+    .section-header h2 { font-size: 38px; margin-bottom: 16px; }
     .section-header p { font-size: 17px; color: var(--text-muted); max-width: 600px; margin: 0 auto; }
 
-    /* FEATURES */
+    /* ===== FEATURES ===== */
     .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-    .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; transition: var(--transition); }
-    .feature-card:hover { border-color: var(--primary-border); box-shadow: var(--shadow-lg); transform: translateY(-2px); }
-    .feature-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 20px; }
+    .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; transition: all 300ms cubic-bezier(0.16,1,0.3,1); position: relative; overflow: hidden; }
+    .feature-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, #00a86b, #2dd4bf); transform: scaleY(0); transform-origin: top; transition: transform 400ms ease-out; }
+    .feature-card:hover { border-color: var(--primary-border); box-shadow: var(--shadow-lg); transform: translateY(-4px); }
+    .feature-card:hover::before { transform: scaleY(1); }
+    .feature-icon { width: 52px; height: 52px; border-radius: 14px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; transition: all 300ms; }
+    .feature-card:hover .feature-icon { transform: scale(1.1) rotate(-5deg); background: var(--primary); }
     .feature-card h3 { font-size: 18px; margin-bottom: 8px; }
     .feature-card p { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
     .feature-tag { display: inline-block; margin-top: 16px; padding: 4px 12px; background: var(--bg-subtle); border-radius: 6px; font-family: 'JetBrains Mono'; font-size: 12px; color: var(--text-muted); }
 
-    /* ARCHITECTURE */
-    .arch-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 48px; }
-    .arch-layers { display: flex; flex-direction: column; gap: 12px; }
-    .arch-layer { display: flex; align-items: center; gap: 20px; padding: 20px 24px; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius); transition: var(--transition); }
-    .arch-layer:hover { border-color: var(--primary-border); background: var(--primary-light); }
-    .arch-layer-num { font-family: 'JetBrains Mono'; font-size: 13px; color: var(--text-light); min-width: 32px; }
-    .arch-layer-name { font-weight: 600; font-size: 16px; min-width: 200px; }
+    /* ===== ARCHITECTURE ===== */
+    .arch-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 48px; position: relative; overflow: hidden; }
+    .arch-card::before { content: ''; position: absolute; top: 0; right: 0; width: 200px; height: 200px; background: radial-gradient(circle, rgba(0,168,107,0.05), transparent 70%); }
+    .arch-layers { display: flex; flex-direction: column; gap: 12px; position: relative; }
+    .arch-layer { display: flex; align-items: center; gap: 20px; padding: 20px 24px; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius); transition: all 300ms; cursor: pointer; }
+    .arch-layer:hover { border-color: var(--primary-border); background: var(--primary-light); transform: translateX(8px); }
+    .arch-layer-num { font-family: 'JetBrains Mono'; font-size: 13px; color: var(--text-light); min-width: 32px; transition: color 300ms; }
+    .arch-layer:hover .arch-layer-num { color: var(--primary); }
+    .arch-layer-name { font-weight: 600; font-size: 16px; min-width: 180px; }
     .arch-layer-desc { font-size: 14px; color: var(--text-muted); flex: 1; }
-    .arch-layer-status { font-size: 12px; padding: 4px 10px; border-radius: 100px; font-weight: 600; }
+    .arch-layer-status { font-size: 12px; padding: 4px 10px; border-radius: 100px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .arch-layer-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; animation: pulse-dot 2s infinite; }
     .status-live { background: #dcfce7; color: #16a34a; }
+    .status-live::before { background: #16a34a; }
     .status-active { background: #dbeafe; color: #2563eb; }
+    .status-active::before { background: #2563eb; }
 
-    /* PALLET TABLE */
+    /* ===== PALLET TABLE ===== */
     .pallet-table { width: 100%; border-collapse: collapse; }
     .pallet-table th { text-align: left; padding: 16px 20px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
-    .pallet-table td { padding: 16px 20px; font-size: 14px; border-bottom: 1px solid var(--border); }
-    .pallet-table tr:hover td { background: var(--bg-subtle); }
+    .pallet-table td { padding: 16px 20px; font-size: 14px; border-bottom: 1px solid var(--border); transition: background 200ms; }
+    .pallet-table tr:hover td { background: var(--primary-light); }
     .pallet-table tr:last-child td { border-bottom: none; }
     .pallet-name { font-family: 'JetBrains Mono'; font-weight: 600; color: var(--primary); }
     .pallet-tests { font-family: 'JetBrains Mono'; color: var(--text-muted); }
 
-    /* ECO */
+    /* ===== ECO ===== */
     .eco-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-    .eco-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-align: center; transition: var(--transition); }
-    .eco-card:hover { box-shadow: var(--shadow-md); }
-    .eco-icon { font-size: 32px; margin-bottom: 12px; }
+    .eco-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-align: center; transition: all 300ms; position: relative; overflow: hidden; }
+    .eco-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 0; background: linear-gradient(180deg, transparent, var(--primary-light)); transition: height 400ms; }
+    .eco-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+    .eco-card:hover::after { height: 100%; }
+    .eco-card > * { position: relative; z-index: 1; }
+    .eco-icon { font-size: 32px; margin-bottom: 12px; transition: transform 300ms; }
+    .eco-card:hover .eco-icon { transform: scale(1.2); }
     .eco-value { font-family: 'Space Grotesk'; font-size: 28px; font-weight: 700; color: var(--primary); }
     .eco-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
 
-    /* ROADMAP */
+    /* ===== ROADMAP ===== */
     .roadmap { position: relative; padding-left: 32px; border-left: 2px solid var(--border); }
-    .roadmap-item { position: relative; margin-bottom: 40px; }
-    .roadmap-item::before { content: ''; position: absolute; left: -39px; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--border); border: 3px solid var(--bg); }
-    .roadmap-item.done::before { background: var(--primary); }
-    .roadmap-item.active::before { background: var(--indigo); box-shadow: 0 0 0 4px rgba(99,102,241,0.15); }
+    .roadmap-item { position: relative; margin-bottom: 40px; transition: all 300ms; }
+    .roadmap-item:hover { transform: translateX(8px); }
+    .roadmap-item::before { content: ''; position: absolute; left: -39px; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--border); border: 3px solid var(--bg); transition: all 300ms; }
+    .roadmap-item.done::before { background: var(--primary); box-shadow: 0 0 0 4px rgba(0,168,107,0.15); }
+    .roadmap-item.active::before { background: var(--indigo); box-shadow: 0 0 0 4px rgba(99,102,241,0.15); animation: pulse-ring 2s infinite; }
+    @keyframes pulse-ring { 0%,100% { box-shadow: 0 0 0 4px rgba(99,102,241,0.15); } 50% { box-shadow: 0 0 0 8px rgba(99,102,241,0.08); } }
     .roadmap-status { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
     .roadmap-status.done { color: var(--primary); }
     .roadmap-status.active { color: var(--indigo); }
@@ -136,61 +198,47 @@
     .roadmap-item h4 { font-size: 16px; margin-bottom: 6px; }
     .roadmap-item p { font-size: 14px; color: var(--text-muted); }
 
-    /* CTA */
+    /* ===== CTA ===== */
     .cta { max-width: 1100px; margin: 80px auto; padding: 0 24px; }
-    .cta-card { background: linear-gradient(135deg, #00a86b 0%, #10b981 100%); border-radius: var(--radius-lg); padding: 64px 48px; text-align: center; color: #fff; }
+    .cta-card { background: linear-gradient(135deg, #00a86b 0%, #10b981 50%, #2dd4bf 100%); border-radius: var(--radius-lg); padding: 64px 48px; text-align: center; color: #fff; position: relative; overflow: hidden; }
+    .cta-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%); animation: rotate 20s linear infinite; }
+    @keyframes rotate { to { transform: rotate(360deg); } }
+    .cta-card > * { position: relative; z-index: 1; }
     .cta-card h2 { font-size: 32px; margin-bottom: 16px; color: #fff; }
     .cta-card p { font-size: 17px; opacity: 0.9; max-width: 500px; margin: 0 auto 32px; }
     .cta-card .btn { background: #fff; color: var(--primary); padding: 14px 32px; font-size: 15px; }
-    .cta-card .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+    .cta-card .btn:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(0,0,0,0.2); }
 
-    /* FOOTER */
+    /* ===== FOOTER ===== */
     .footer { border-top: 1px solid var(--border); background: var(--card); padding: 48px 24px 32px; }
     .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
     .footer-brand h4 { font-size: 18px; margin-bottom: 12px; }
     .footer-brand p { font-size: 14px; color: var(--text-muted); max-width: 280px; }
     .footer-col h5 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 16px; }
-    .footer-col a { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 10px; }
-    .footer-col a:hover { color: var(--text); }
+    .footer-col a { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 10px; transition: all 200ms; }
+    .footer-col a:hover { color: var(--text); transform: translateX(4px); }
     .footer-bottom { max-width: 1200px; margin: 32px auto 0; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); }
 
-    /* RESPONSIVE */
-    @media (max-width: 1024px) {
-      .features-grid { grid-template-columns: repeat(2, 1fr); }
-      .eco-grid { grid-template-columns: repeat(2, 1fr); }
-      .footer-inner { grid-template-columns: 1fr 1fr; }
-    }
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1024px) { .features-grid { grid-template-columns: repeat(2,1fr); } .eco-grid { grid-template-columns: repeat(2,1fr); } .footer-inner { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 768px) {
-      .nav-links { display: none; }
-      .hero h1 { font-size: 36px; }
-      .hero { padding: 48px 24px 32px; }
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .features-grid { grid-template-columns: 1fr; }
-      .eco-grid { grid-template-columns: repeat(2, 1fr); }
-      .section { padding: 56px 24px; }
-      .section-header h2 { font-size: 28px; }
-      .arch-card { padding: 24px; }
-      .arch-layer { flex-direction: column; align-items: flex-start; gap: 8px; }
-      .arch-layer-name { min-width: auto; }
-      .cta-card { padding: 40px 24px; }
-      .cta-card h2 { font-size: 24px; }
-      .footer-inner { grid-template-columns: 1fr; gap: 24px; }
+      .nav-links { display: none; } .hero h1 { font-size: 36px; } .hero { padding: 48px 24px 32px; }
+      .stats-grid { grid-template-columns: repeat(2,1fr); } .features-grid { grid-template-columns: 1fr; } .eco-grid { grid-template-columns: repeat(2,1fr); }
+      .section { padding: 56px 24px; } .section-header h2 { font-size: 28px; } .arch-card { padding: 24px; }
+      .arch-layer { flex-direction: column; align-items: flex-start; gap: 8px; } .arch-layer-name { min-width: auto; }
+      .cta-card { padding: 40px 24px; } .cta-card h2 { font-size: 24px; } .footer-inner { grid-template-columns: 1fr; gap: 24px; }
       .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
     }
-    @media (max-width: 480px) {
-      .stats-grid { grid-template-columns: 1fr; }
-      .eco-grid { grid-template-columns: 1fr; }
-      .hero h1 { font-size: 30px; }
-    }
+    @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr; } .eco-grid { grid-template-columns: 1fr; } .hero h1 { font-size: 30px; } }
   </style>
 </head>
 <body>
-  <header class="nav">
+  <div id="cursor-glow"></div>
+  <div id="scroll-bar"></div>
+
+  <header class="nav" id="nav">
     <div class="nav-inner">
-      <a href="/" class="nav-brand">
-        <span class="nav-brand-dot"></span>
-        Verdis Chain
-      </a>
+      <a href="/" class="nav-brand"><span class="nav-brand-dot"></span>Verdis Chain</a>
       <nav class="nav-links">
         <a href="#features">Features</a>
         <a href="#architecture">Architecture</a>
@@ -206,204 +254,89 @@
   </header>
 
   <main>
-    <!-- HERO -->
-    <section class="hero">
-      <div class="hero-badge">
-        <span class="hero-badge-dot"></span>
-        Mainnet Ready · Node Live
-      </div>
-      <h1>The World's First <span>Green Blockchain</span><br>Engineered in Rust</h1>
-      <p>Verdis Chain is a Layer-1 blockchain built with Substrate, featuring native DPoS consensus, an AMM-based decentralized exchange, EVM smart contracts, and on-chain carbon credit tracking — all powered by 143 EVM opcodes across 7 production pallets.</p>
-      <div class="hero-actions">
-        <a href="/explorer" class="btn btn-primary">Open Explorer →</a>
-        <a href="#architecture" class="btn btn-secondary">View Architecture</a>
-      </div>
-    </section>
+    <!-- HERO with animated canvas -->
+    <div class="hero-wrap">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+      <canvas id="hero-canvas"></canvas>
+      <section class="hero">
+        <div class="hero-badge"><span class="hero-badge-dot"></span> Mainnet Ready · Node Live</div>
+        <h1>The World's First <span>Green Blockchain</span><br>Engineered in Rust</h1>
+        <p>Verdis Chain is a Layer-1 blockchain built with Substrate, featuring native DPoS consensus, an AMM-based decentralized exchange, EVM smart contracts, and on-chain carbon credit tracking — all powered by 143 EVM opcodes across 7 production pallets.</p>
+        <div class="hero-actions">
+          <a href="/explorer" class="btn btn-primary">Open Explorer →</a>
+          <a href="#architecture" class="btn btn-secondary">View Architecture</a>
+        </div>
+      </section>
+      <div class="scroll-indicator"><span>Scroll</span><div class="scroll-indicator-line"></div></div>
+    </div>
 
-    <!-- STATS BAR -->
-    <div class="stats-bar">
+    <!-- STATS with animated counters -->
+    <div class="stats-bar reveal">
       <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-value green mono">100B</div>
-          <div class="stat-label">Total Token Supply</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value mono">143</div>
-          <div class="stat-label">EVM Opcodes</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value mono">260</div>
-          <div class="stat-label">Tests Passing</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value mono">7</div>
-          <div class="stat-label">Production Pallets</div>
-        </div>
+        <div class="stat-item"><div class="stat-value green mono" data-count="100" data-suffix="B">0</div><div class="stat-label">Total Token Supply</div></div>
+        <div class="stat-item"><div class="stat-value mono" data-count="143">0</div><div class="stat-label">EVM Opcodes</div></div>
+        <div class="stat-item"><div class="stat-value mono" data-count="260">0</div><div class="stat-label">Tests Passing</div></div>
+        <div class="stat-item"><div class="stat-value mono" data-count="7">0</div><div class="stat-label">Production Pallets</div></div>
       </div>
     </div>
 
     <!-- FEATURES -->
     <section class="section" id="features">
-      <div class="section-header">
+      <div class="section-header reveal">
         <div class="section-label">Platform Features</div>
         <h2>Everything you need to build on green infrastructure</h2>
         <p>From consensus to smart contracts to carbon tracking — Verdis Chain delivers a complete blockchain ecosystem.</p>
       </div>
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">⛓️</div>
-          <h3>Native DPoS Consensus</h3>
-          <p>Delegated Proof of Stake with BABE block production and GRANDPA finality. Validators earn green scores based on energy efficiency and carbon offset commitments.</p>
-          <span class="feature-tag">BABE + GRANDPA</span>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🔄</div>
-          <h3>AMM Decentralized Exchange</h3>
-          <p>Native Automated Market Maker built directly into the chain. Swap tokens, provide liquidity, and earn fees without external smart contracts.</p>
-          <span class="feature-tag">Native AMM DEX</span>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🌱</div>
-          <h3>Carbon Credit Tracking</h3>
-          <p>On-chain carbon credits, green validator scoring, and reforestation logging. Every transaction contributes to a verifiable environmental impact record.</p>
-          <span class="feature-tag">Eco Pallet</span>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">⚡</div>
-          <h3>EVM Smart Contracts</h3>
-          <p>143 EVM opcodes including Cancun upgrades (TLOAD, TSTORE, MCOPY). Deploy Solidity contracts with Chain ID 909 and 24KB max code size.</p>
-          <span class="feature-tag">143 Opcodes · Chain 909</span>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🛡️</div>
-          <h3>Tokenomics & Vesting</h3>
-          <p>100B total supply with 12B investor allocation enforced on-chain. Vesting schedules, transfer restrictions, and mint/burn controls built into the protocol.</p>
-          <span class="feature-tag">100B Supply · 12B Vesting</span>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🏗️</div>
-          <h3>Substrate + Rust Core</h3>
-          <p>Built from scratch in Rust using the Substrate framework. WASM runtime, gRPC/JSON-RPC support, and benchmarked weight files for all pallets.</p>
-          <span class="feature-tag">Rust · Substrate · WASM</span>
-        </div>
+      <div class="features-grid reveal-stagger">
+        <div class="feature-card"><div class="feature-icon">⛓️</div><h3>Native DPoS Consensus</h3><p>Delegated Proof of Stake with BABE block production and GRANDPA finality. Validators earn green scores based on energy efficiency and carbon offset commitments.</p><span class="feature-tag">BABE + GRANDPA</span></div>
+        <div class="feature-card"><div class="feature-icon">🔄</div><h3>AMM Decentralized Exchange</h3><p>Native Automated Market Maker built directly into the chain. Swap tokens, provide liquidity, and earn fees without external smart contracts.</p><span class="feature-tag">Native AMM DEX</span></div>
+        <div class="feature-card"><div class="feature-icon">🌱</div><h3>Carbon Credit Tracking</h3><p>On-chain carbon credits, green validator scoring, and reforestation logging. Every transaction contributes to a verifiable environmental impact record.</p><span class="feature-tag">Eco Pallet</span></div>
+        <div class="feature-card"><div class="feature-icon">⚡</div><h3>EVM Smart Contracts</h3><p>143 EVM opcodes including Cancun upgrades (TLOAD, TSTORE, MCOPY). Deploy Solidity contracts with Chain ID 909 and 24KB max code size.</p><span class="feature-tag">143 Opcodes · Chain 909</span></div>
+        <div class="feature-card"><div class="feature-icon">🛡️</div><h3>Tokenomics & Vesting</h3><p>100B total supply with 12B investor allocation enforced on-chain. Vesting schedules, transfer restrictions, and mint/burn controls built into the protocol.</p><span class="feature-tag">100B Supply · 12B Vesting</span></div>
+        <div class="feature-card"><div class="feature-icon">🏗️</div><h3>Substrate + Rust Core</h3><p>Built from scratch in Rust using the Substrate framework. WASM runtime, gRPC/JSON-RPC support, and benchmarked weight files for all pallets.</p><span class="feature-tag">Rust · Substrate · WASM</span></div>
       </div>
     </section>
 
     <!-- ARCHITECTURE -->
     <section class="section" id="architecture">
-      <div class="section-header">
+      <div class="section-header reveal">
         <div class="section-label">Architecture</div>
         <h2>Seven layers, one chain</h2>
         <p>Each pallet is independently benchmarked with real weight files and full test coverage.</p>
       </div>
-      <div class="arch-card">
+      <div class="arch-card reveal">
         <div class="arch-layers">
-          <div class="arch-layer">
-            <div class="arch-layer-num">01</div>
-            <div class="arch-layer-name">DPoS Consensus</div>
-            <div class="arch-layer-desc">BABE block production + GRANDPA finality, validator election, green scoring</div>
-            <div class="arch-layer-status status-live">Live</div>
-          </div>
-          <div class="arch-layer">
-            <div class="arch-layer-num">02</div>
-            <div class="arch-layer-name">AMM DEX</div>
-            <div class="arch-layer-desc">Native swap, liquidity pools, fee distribution, slippage protection</div>
-            <div class="arch-layer-status status-live">Live</div>
-          </div>
-          <div class="arch-layer">
-            <div class="arch-layer-num">03</div>
-            <div class="arch-layer-name">Eco Module</div>
-            <div class="arch-layer-desc">Carbon credits, reforestation logging, green validator scoring, eco projects</div>
-            <div class="arch-layer-status status-live">Live</div>
-          </div>
-          <div class="arch-layer">
-            <div class="arch-layer-num">04</div>
-            <div class="arch-layer-name">EVM</div>
-            <div class="arch-layer-desc">143 opcodes, Chain ID 909, 24KB code limit, Cancun upgrades</div>
-            <div class="arch-layer-status status-live">Live</div>
-          </div>
-          <div class="arch-layer">
-            <div class="arch-layer-num">05</div>
-            <div class="arch-layer-name">Tokenomics</div>
-            <div class="arch-layer-desc">100B supply, 12B investor allocation, mint/burn, transfer restrictions</div>
-            <div class="arch-layer-status status-live">Live</div>
-          </div>
-          <div class="arch-layer">
-            <div class="arch-layer-num">06</div>
-            <div class="arch-layer-name">Vesting</div>
-            <div class="arch-layer-desc">Schedule-based token release, cliff periods, linear vesting</div>
-            <div class="arch-layer-status status-live">Live</div>
-          </div>
-          <div class="arch-layer">
-            <div class="arch-layer-num">07</div>
-            <div class="arch-layer-name">Storage</div>
-            <div class="arch-layer-desc">On-chain data storage, key-value pairs, IPFS integration ready</div>
-            <div class="arch-layer-status status-live">Live</div>
-          </div>
+          <div class="arch-layer"><div class="arch-layer-num">01</div><div class="arch-layer-name">DPoS Consensus</div><div class="arch-layer-desc">BABE block production + GRANDPA finality, validator election, green scoring</div><div class="arch-layer-status status-live">Live</div></div>
+          <div class="arch-layer"><div class="arch-layer-num">02</div><div class="arch-layer-name">AMM DEX</div><div class="arch-layer-desc">Native swap, liquidity pools, fee distribution, slippage protection</div><div class="arch-layer-status status-live">Live</div></div>
+          <div class="arch-layer"><div class="arch-layer-num">03</div><div class="arch-layer-name">Eco Module</div><div class="arch-layer-desc">Carbon credits, reforestation logging, green validator scoring, eco projects</div><div class="arch-layer-status status-live">Live</div></div>
+          <div class="arch-layer"><div class="arch-layer-num">04</div><div class="arch-layer-name">EVM</div><div class="arch-layer-desc">143 opcodes, Chain ID 909, 24KB code limit, Cancun upgrades</div><div class="arch-layer-status status-live">Live</div></div>
+          <div class="arch-layer"><div class="arch-layer-num">05</div><div class="arch-layer-name">Tokenomics</div><div class="arch-layer-desc">100B supply, 12B investor allocation, mint/burn, transfer restrictions</div><div class="arch-layer-status status-live">Live</div></div>
+          <div class="arch-layer"><div class="arch-layer-num">06</div><div class="arch-layer-name">Vesting</div><div class="arch-layer-desc">Schedule-based token release, cliff periods, linear vesting</div><div class="arch-layer-status status-live">Live</div></div>
+          <div class="arch-layer"><div class="arch-layer-num">07</div><div class="arch-layer-name">Storage</div><div class="arch-layer-desc">On-chain data storage, key-value pairs, IPFS integration ready</div><div class="arch-layer-status status-live">Live</div></div>
         </div>
       </div>
     </section>
 
-    <!-- PALLETS TABLE -->
+    <!-- PALLETS -->
     <section class="section" id="pallets">
-      <div class="section-header">
+      <div class="section-header reveal">
         <div class="section-label">Pallets</div>
         <h2>Production-ready modules</h2>
         <p>260 tests passing across 7 pallets with real benchmark weight files.</p>
       </div>
-      <div class="arch-card" style="padding:0;overflow:hidden;">
+      <div class="arch-card reveal" style="padding:0;overflow:hidden;">
         <table class="pallet-table">
-          <thead>
-            <tr>
-              <th>Pallet</th>
-              <th>Description</th>
-              <th>Tests</th>
-              <th>Status</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Pallet</th><th>Description</th><th>Tests</th><th>Status</th></tr></thead>
           <tbody>
-            <tr>
-              <td class="pallet-name">pallet-dpos</td>
-              <td>DPoS consensus, validator election, green scoring</td>
-              <td class="pallet-tests">34 tests</td>
-              <td><span class="arch-layer-status status-live">Live</span></td>
-            </tr>
-            <tr>
-              <td class="pallet-name">pallet-amm-dex</td>
-              <td>AMM swap, liquidity pools, fee distribution</td>
-              <td class="pallet-tests">25 tests</td>
-              <td><span class="arch-layer-status status-live">Live</span></td>
-            </tr>
-            <tr>
-              <td class="pallet-name">pallet-eco</td>
-              <td>Carbon credits, reforestation, green scores</td>
-              <td class="pallet-tests">33 tests</td>
-              <td><span class="arch-layer-status status-live">Live</span></td>
-            </tr>
-            <tr>
-              <td class="pallet-name">pallet-evm</td>
-              <td>EVM, 143 opcodes, Chain ID 909</td>
-              <td class="pallet-tests">102 tests</td>
-              <td><span class="arch-layer-status status-live">Live</span></td>
-            </tr>
-            <tr>
-              <td class="pallet-name">pallet-tokenomics</td>
-              <td>100B supply, mint/burn, transfer rules</td>
-              <td class="pallet-tests">23 tests</td>
-              <td><span class="arch-layer-status status-live">Live</span></td>
-            </tr>
-            <tr>
-              <td class="pallet-name">pallet-vesting</td>
-              <td>Schedule-based token release</td>
-              <td class="pallet-tests">10 tests</td>
-              <td><span class="arch-layer-status status-live">Live</span></td>
-            </tr>
-            <tr>
-              <td class="pallet-name">pallet-storage</td>
-              <td>On-chain key-value storage</td>
-              <td class="pallet-tests">9 tests</td>
-              <td><span class="arch-layer-status status-live">Live</span></td>
-            </tr>
+            <tr><td class="pallet-name">pallet-dpos</td><td>DPoS consensus, validator election, green scoring</td><td class="pallet-tests">34 tests</td><td><span class="arch-layer-status status-live">Live</span></td></tr>
+            <tr><td class="pallet-name">pallet-amm-dex</td><td>AMM swap, liquidity pools, fee distribution</td><td class="pallet-tests">25 tests</td><td><span class="arch-layer-status status-live">Live</span></td></tr>
+            <tr><td class="pallet-name">pallet-eco</td><td>Carbon credits, reforestation, green scores</td><td class="pallet-tests">33 tests</td><td><span class="arch-layer-status status-live">Live</span></td></tr>
+            <tr><td class="pallet-name">pallet-evm</td><td>EVM, 143 opcodes, Chain ID 909</td><td class="pallet-tests">102 tests</td><td><span class="arch-layer-status status-live">Live</span></td></tr>
+            <tr><td class="pallet-name">pallet-tokenomics</td><td>100B supply, mint/burn, transfer rules</td><td class="pallet-tests">23 tests</td><td><span class="arch-layer-status status-live">Live</span></td></tr>
+            <tr><td class="pallet-name">pallet-vesting</td><td>Schedule-based token release</td><td class="pallet-tests">10 tests</td><td><span class="arch-layer-status status-live">Live</span></td></tr>
+            <tr><td class="pallet-name">pallet-storage</td><td>On-chain key-value storage</td><td class="pallet-tests">9 tests</td><td><span class="arch-layer-status status-live">Live</span></td></tr>
           </tbody>
         </table>
       </div>
@@ -411,74 +344,38 @@
 
     <!-- ECO -->
     <section class="section" id="eco">
-      <div class="section-header">
+      <div class="section-header reveal">
         <div class="section-label">Environmental Impact</div>
         <h2>Green by design, not by offset</h2>
         <p>Carbon tracking is built into the chain itself — not bolted on as an afterthought.</p>
       </div>
-      <div class="eco-grid">
-        <div class="eco-card">
-          <div class="eco-icon">🌿</div>
-          <div class="eco-value mono">On-Chain</div>
-          <div class="eco-label">Carbon Credits</div>
-        </div>
-        <div class="eco-card">
-          <div class="eco-icon">🌳</div>
-          <div class="eco-value mono">Logged</div>
-          <div class="eco-label">Reforestation</div>
-        </div>
-        <div class="eco-card">
-          <div class="eco-icon">📊</div>
-          <div class="eco-value mono">Scored</div>
-          <div class="eco-label">Green Validators</div>
-        </div>
-        <div class="eco-card">
-          <div class="eco-icon">🌍</div>
-          <div class="eco-value mono">Native</div>
-          <div class="eco-label">Eco Protocol</div>
-        </div>
+      <div class="eco-grid reveal-stagger">
+        <div class="eco-card"><div class="eco-icon">🌿</div><div class="eco-value mono">On-Chain</div><div class="eco-label">Carbon Credits</div></div>
+        <div class="eco-card"><div class="eco-icon">🌳</div><div class="eco-value mono">Logged</div><div class="eco-label">Reforestation</div></div>
+        <div class="eco-card"><div class="eco-icon">📊</div><div class="eco-value mono">Scored</div><div class="eco-label">Green Validators</div></div>
+        <div class="eco-card"><div class="eco-icon">🌍</div><div class="eco-value mono">Native</div><div class="eco-label">Eco Protocol</div></div>
       </div>
     </section>
 
     <!-- ROADMAP -->
     <section class="section" id="roadmap">
-      <div class="section-header">
+      <div class="section-header reveal">
         <div class="section-label">Roadmap</div>
         <h2>What's built and what's next</h2>
       </div>
-      <div class="arch-card">
+      <div class="arch-card reveal">
         <div class="roadmap">
-          <div class="roadmap-item done">
-            <div class="roadmap-status done">✓ Completed</div>
-            <h4>Core Blockchain (Phases 86–129)</h4>
-            <p>Substrate node, BABE/GRANDPA consensus, 7 pallets, 143 EVM opcodes, 260 tests, WASM runtime, benchmarking.</p>
-          </div>
-          <div class="roadmap-item done">
-            <div class="roadmap-status done">✓ Completed</div>
-            <h4>Verdiscan Explorer</h4>
-            <p>Real-time block explorer, validator cards, AMM pool browser, eco metrics, WebSocket feed.</p>
-          </div>
-          <div class="roadmap-item active">
-            <div class="roadmap-status active">● In Progress</div>
-            <h4>Premium Platform Launch</h4>
-            <p>Light-mode SaaS interface, production hardening, load testing, security audit, SDK release.</p>
-          </div>
-          <div class="roadmap-item">
-            <div class="roadmap-status planned">○ Planned</div>
-            <h4>Mainnet Deployment</h4>
-            <p>Genesis allocation, validator onboarding, public RPC, bridge integration, token listing.</p>
-          </div>
-          <div class="roadmap-item">
-            <div class="roadmap-status planned">○ Planned</div>
-            <h4>Ecosystem Expansion</h4>
-            <p>Mobile wallet, developer SDK, cross-chain bridge, DApp marketplace, governance portal.</p>
-          </div>
+          <div class="roadmap-item done"><div class="roadmap-status done">✓ Completed</div><h4>Core Blockchain (Phases 86–129)</h4><p>Substrate node, BABE/GRANDPA consensus, 7 pallets, 143 EVM opcodes, 260 tests, WASM runtime, benchmarking.</p></div>
+          <div class="roadmap-item done"><div class="roadmap-status done">✓ Completed</div><h4>Verdiscan Explorer</h4><p>Real-time block explorer, validator cards, AMM pool browser, eco metrics, WebSocket feed.</p></div>
+          <div class="roadmap-item active"><div class="roadmap-status active">● In Progress</div><h4>Premium Platform Launch</h4><p>Light-mode SaaS interface, production hardening, load testing, security audit, SDK release.</p></div>
+          <div class="roadmap-item"><div class="roadmap-status planned">○ Planned</div><h4>Mainnet Deployment</h4><p>Genesis allocation, validator onboarding, public RPC, bridge integration, token listing.</p></div>
+          <div class="roadmap-item"><div class="roadmap-status planned">○ Planned</div><h4>Ecosystem Expansion</h4><p>Mobile wallet, developer SDK, cross-chain bridge, DApp marketplace, governance portal.</p></div>
         </div>
       </div>
     </section>
 
     <!-- CTA -->
-    <section class="cta">
+    <section class="cta reveal">
       <div class="cta-card">
         <h2>Start building on green infrastructure</h2>
         <p>Deploy smart contracts, swap on the native DEX, and track carbon credits — all on one chain.</p>
@@ -489,36 +386,110 @@
 
   <footer class="footer">
     <div class="footer-inner">
-      <div class="footer-brand">
-        <h4>Verdis Chain</h4>
-        <p>The world's first green blockchain. Built in Rust + Substrate with DPoS consensus, AMM DEX, EVM, and carbon credit tracking.</p>
-      </div>
-      <div class="footer-col">
-        <h5>Platform</h5>
-        <a href="/explorer">Explorer</a>
-        <a href="/validators">Validators</a>
-        <a href="/dex">DEX</a>
-        <a href="/eco">Eco Metrics</a>
-      </div>
-      <div class="footer-col">
-        <h5>Developers</h5>
-        <a href="#">Documentation</a>
-        <a href="#">RPC Endpoint</a>
-        <a href="#">GitHub</a>
-        <a href="#">Whitepaper</a>
-      </div>
-      <div class="footer-col">
-        <h5>Community</h5>
-        <a href="#">Twitter</a>
-        <a href="#">Discord</a>
-        <a href="#">Telegram</a>
-        <a href="#">Blog</a>
-      </div>
+      <div class="footer-brand"><h4>Verdis Chain</h4><p>The world's first green blockchain. Built in Rust + Substrate with DPoS consensus, AMM DEX, EVM, and carbon credit tracking.</p></div>
+      <div class="footer-col"><h5>Platform</h5><a href="/explorer">Explorer</a><a href="/validators">Validators</a><a href="/dex">DEX</a><a href="/eco">Eco Metrics</a></div>
+      <div class="footer-col"><h5>Developers</h5><a href="#">Documentation</a><a href="#">RPC Endpoint</a><a href="#">GitHub</a><a href="#">Whitepaper</a></div>
+      <div class="footer-col"><h5>Community</h5><a href="#">Twitter</a><a href="#">Discord</a><a href="#">Telegram</a><a href="#">Blog</a></div>
     </div>
-    <div class="footer-bottom">
-      <span>© 2026 Verdis Chain · Powered by Protremix</span>
-      <span>verdischain.com · 91.98.160.145</span>
-    </div>
+    <div class="footer-bottom"><span>© 2026 Verdis Chain · Powered by Protremix</span><span>verdischain.com · 91.98.160.145</span></div>
   </footer>
+
+  <script>
+    // ===== CURSOR GLOW =====
+    const glow = document.getElementById('cursor-glow');
+    document.addEventListener('mousemove', e => { glow.style.left = e.clientX + 'px'; glow.style.top = e.clientY + 'px'; });
+
+    // ===== SCROLL PROGRESS =====
+    const scrollBar = document.getElementById('scroll-bar');
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+      scrollBar.style.width = pct + '%';
+      if (window.scrollY > 20) nav.classList.add('scrolled'); else nav.classList.remove('scrolled');
+    });
+
+    // ===== SCROLL REVEAL =====
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => observer.observe(el));
+
+    // ===== ANIMATED COUNTERS =====
+    const counterObs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const el = e.target, target = parseInt(el.dataset.count), suffix = el.dataset.suffix || '';
+        let current = 0, step = target / 60;
+        const tick = () => {
+          current += step;
+          if (current >= target) { el.textContent = target + suffix; return; }
+          el.textContent = Math.floor(current) + suffix;
+          requestAnimationFrame(tick);
+        };
+        tick();
+        counterObs.unobserve(el);
+      });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('[data-count]').forEach(el => counterObs.observe(el));
+
+    // ===== HERO CANVAS — Blockchain Network Animation =====
+    const canvas = document.getElementById('hero-canvas');
+    const ctx = canvas.getContext('2d');
+    let W, H, nodes = [], mouse = { x: -1000, y: -1000 };
+
+    function resize() { W = canvas.width = canvas.offsetWidth; H = canvas.height = canvas.offsetHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Create network nodes
+    for (let i = 0; i < 40; i++) {
+      nodes.push({ x: Math.random()*W, y: Math.random()*H, vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3, r: 2+Math.random()*3, pulse: Math.random()*Math.PI*2 });
+    }
+
+    canvas.addEventListener('mousemove', e => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left; mouse.y = e.clientY - rect.top;
+    });
+
+    function animate() {
+      ctx.clearRect(0, 0, W, H);
+
+      // Update + draw nodes
+      nodes.forEach((n, i) => {
+        n.x += n.vx; n.y += n.vy; n.pulse += 0.02;
+        if (n.x < 0 || n.x > W) n.vx *= -1;
+        if (n.y < 0 || n.y > H) n.vy *= -1;
+
+        // Mouse repel
+        const dx = n.x - mouse.x, dy = n.y - mouse.y, dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 120) { n.x += dx/dist * 0.5; n.y += dy/dist * 0.5; }
+
+        const pulseSize = n.r + Math.sin(n.pulse) * 1.5;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, pulseSize, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(0,168,107,${0.3 + Math.sin(n.pulse)*0.2})`;
+        ctx.fill();
+      });
+
+      // Draw connections
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i+1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y, dist = Math.sqrt(dx*dx+dy*dy);
+          if (dist < 140) {
+            const opacity = (1 - dist/140) * 0.15;
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.strokeStyle = `rgba(0,168,107,${opacity})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
 </body>
 </html>
