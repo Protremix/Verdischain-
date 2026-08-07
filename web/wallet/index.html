@@ -157,13 +157,10 @@ body:hover #cursor-glow{opacity:1}
 @media(max-width:768px){.dash-grid{grid-template-columns:1fr}.auth-cards{grid-template-columns:1fr}.wallet-hero h1{font-size:13px}.bal-value{font-size:14px}.mnemonic-words{grid-template-columns:repeat(3,1fr)}.nav-links{gap:12px}.nav-links a{font-size:11px}}
 
     
-    .nav-brand:hover 
-    @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(202,255,51,0.4)); } 50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.7)); } }
+     50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.7)); } }
     
-    .nav-brand:hover 
-
     .brand-logo-img { height: 44px; width: auto; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(202,255,51,0.4)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
-    .nav-brand:hover .brand-logo-img { filter: drop-shadow(0 0 20px rgba(202,255,51,0.7)); }
+    .brand-logo-img { filter: drop-shadow(0 0 20px rgba(202,255,51,0.7)); }
     @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(202,255,51,0.35)); } 50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.6)); } }
 </style>
 </head>
@@ -171,7 +168,7 @@ body:hover #cursor-glow{opacity:1}
 <div id="scroll-bar"></div>
 <div id="cursor-glow"></div>
 
-<nav class="nav"><a href="/" class="nav-brand"><img src="/assets/verdis-logo-full.png" alt="Verdis Chain" class="brand-logo-img"></a><div class="nav-links"><a href="/">Home</a><a href="/explorer/">Explorer</a><a href="/dex/">DEX</a><a href="/validators/">Validators</a><a href="/eco/">Eco</a><a href="/faucet/">Faucet</a><a href="/wallet/">Wallet</a><a href="/sale/">Sale</a><a href="/docs/">Docs</a></div><div class="nav-status"><div class="dot"></div><span>Connected</span></div></nav>
+<nav class="nav"><a href="/" class="nav-brand"><img src="/assets/verdis-logo-full.png" alt="Verdis Chain" class="brand-logo-img" style="height:44px;width:auto;display:block;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 0 12px rgba(202,255,51,0.4));"></a><div class="nav-links"><a href="/">Home</a><a href="/explorer/">Explorer</a><a href="/dex/">DEX</a><a href="/validators/">Validators</a><a href="/eco/">Eco</a><a href="/faucet/">Faucet</a><a href="/wallet/">Wallet</a><a href="/sale/">Sale</a><a href="/docs/">Docs</a></div><div class="nav-status"><div class="dot"></div><span>Connected</span></div></nav>
 
 <div class="toast" id="toast"></div>
 <div class="loading-overlay" id="loading"><div class="loading-box">
