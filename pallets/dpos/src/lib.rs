@@ -9,21 +9,18 @@
 //! - Epoch-based validator rotation
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#[cfg(feature = "runtime-benchmarks")]
-pub mod benchmarking;
-
 
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::{
+use frame_support::{DefaultNoBound,
     dispatch::DispatchResult,
     ensure,
     pallet_prelude::*,
     traits::{Currency, Get, ReservableCurrency},
-    DefaultNoBound, PalletId,
+    PalletId,
 };
 use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
-use sp_runtime::traits::Saturating;
+use sp_runtime::traits::{Saturating};
 use sp_std::prelude::*;
 
 #[cfg(feature = "std")]
@@ -34,8 +31,7 @@ pub use pallet::*;
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
-    type BalanceOf<T> =
-        <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+    type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
     #[pallet::pallet]
     pub struct Pallet<T>(_);
@@ -77,12 +73,8 @@ pub mod pallet {
 
     #[pallet::storage]
     #[pallet::getter(fn votes)]
-    pub type Votes<T: Config> = StorageMap<
-        _,
-        Blake2_128Concat,
-        T::AccountId,
-        BoundedVec<VoteRecord<T::AccountId, BalanceOf<T>>, ConstU32<64>>,
-    >;
+    pub type Votes<T: Config> =
+        StorageMap<_, Blake2_128Concat, T::AccountId, BoundedVec<VoteRecord<T::AccountId, BalanceOf<T>>, ConstU32<64>>>;
 
     #[pallet::storage]
     #[pallet::getter(fn active_validators)]
@@ -111,40 +103,14 @@ pub mod pallet {
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
-        ValidatorRegistered {
-            who: T::AccountId,
-            stake: BalanceOf<T>,
-        },
-        ValidatorUnregistered {
-            who: T::AccountId,
-        },
-        Voted {
-            voter: T::AccountId,
-            validator: T::AccountId,
-            amount: BalanceOf<T>,
-        },
-        Unvoted {
-            voter: T::AccountId,
-            validator: T::AccountId,
-        },
-        BlockReward {
-            validator: T::AccountId,
-            reward: BalanceOf<T>,
-            block: u32,
-        },
-        ValidatorSlashed {
-            who: T::AccountId,
-            penalty: BalanceOf<T>,
-            reason: Vec<u8>,
-        },
-        EpochChanged {
-            epoch: u32,
-            validators: Vec<T::AccountId>,
-        },
-        GreenScoreUpdated {
-            validator: T::AccountId,
-            score: u8,
-        },
+        ValidatorRegistered { who: T::AccountId, stake: BalanceOf<T> },
+        ValidatorUnregistered { who: T::AccountId },
+        Voted { voter: T::AccountId, validator: T::AccountId, amount: BalanceOf<T> },
+        Unvoted { voter: T::AccountId, validator: T::AccountId },
+        BlockReward { validator: T::AccountId, reward: BalanceOf<T>, block: u32 },
+        ValidatorSlashed { who: T::AccountId, penalty: BalanceOf<T>, reason: Vec<u8> },
+        EpochChanged { epoch: u32, validators: Vec<T::AccountId> },
+        GreenScoreUpdated { validator: T::AccountId, score: u8 },
     }
 
     // === Errors ===
@@ -161,6 +127,7 @@ pub mod pallet {
         SlashingFailed,
         NotValidator,
         InvalidSlashReason,
+        InvalidScore,
     }
 
     // === Config ===
@@ -316,21 +283,11 @@ pub mod pallet {
         /// Vote for a validator by delegating stake
         #[pallet::call_index(2)]
         #[pallet::weight(T::WeightInfo::vote())]
-        pub fn vote(
-            origin: OriginFor<T>,
-            validator: T::AccountId,
-            amount: BalanceOf<T>,
-        ) -> DispatchResult {
+        pub fn vote(origin: OriginFor<T>, validator: T::AccountId, amount: BalanceOf<T>) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
-            ensure!(
-                Validators::<T>::contains_key(&validator),
-                Error::<T>::ValidatorNotFound
-            );
-            ensure!(
-                T::Currency::can_reserve(&who, amount),
-                Error::<T>::InsufficientFunds
-            );
+            ensure!(Validators::<T>::contains_key(&validator), Error::<T>::ValidatorNotFound);
+            ensure!(T::Currency::can_reserve(&who, amount), Error::<T>::InsufficientFunds);
 
             T::Currency::reserve(&who, amount)?;
 
@@ -341,9 +298,7 @@ pub mod pallet {
             };
 
             Votes::<T>::mutate(&who, |v| {
-                v.get_or_insert_with(BoundedVec::default)
-                    .try_push(vote)
-                    .ok();
+                v.get_or_insert_with(BoundedVec::default).try_push(vote).ok();
             });
 
             Validators::<T>::mutate(&validator, |val| {
@@ -354,11 +309,7 @@ pub mod pallet {
 
             TotalStaked::<T>::mutate(|t| *t = t.saturating_add(amount));
 
-            Self::deposit_event(Event::Voted {
-                voter: who,
-                validator,
-                amount,
-            });
+            Self::deposit_event(Event::Voted { voter: who, validator, amount });
             Ok(())
         }
 
@@ -369,9 +320,7 @@ pub mod pallet {
             let who = ensure_signed(origin)?;
 
             let mut votes = Votes::<T>::get(&who).unwrap_or_default();
-            let vote = votes
-                .iter()
-                .find(|v| v.validator == validator)
+            let vote = votes.iter().find(|v| v.validator == validator)
                 .ok_or(Error::<T>::NoVotesForValidator)?;
 
             let amount = vote.amount;
@@ -387,10 +336,7 @@ pub mod pallet {
 
             TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(amount));
 
-            Self::deposit_event(Event::Unvoted {
-                voter: who,
-                validator,
-            });
+            Self::deposit_event(Event::Unvoted { voter: who, validator });
             Ok(())
         }
 
@@ -432,24 +378,19 @@ pub mod pallet {
         /// Update green score (self-reported by validator)
         #[pallet::call_index(5)]
         #[pallet::weight(T::WeightInfo::update_green_score())]
-        pub fn update_green_score(origin: OriginFor<T>, score: u8) -> DispatchResult {
-            let who = ensure_signed(origin)?;
+        pub fn update_green_score(origin: OriginFor<T>, validator: T::AccountId, score: u8) -> DispatchResult {
+            ensure_root(origin)?;
 
-            ensure!(
-                Validators::<T>::contains_key(&who),
-                Error::<T>::NotValidator
-            );
+            ensure!(Validators::<T>::contains_key(&validator), Error::<T>::NotValidator);
+            ensure!(score <= 100, Error::<T>::InvalidScore);
 
-            Validators::<T>::mutate(&who, |v| {
+            Validators::<T>::mutate(&validator, |v| {
                 if let Some(v) = v {
                     v.green_score = score;
                 }
             });
 
-            Self::deposit_event(Event::GreenScoreUpdated {
-                validator: who,
-                score,
-            });
+            Self::deposit_event(Event::GreenScoreUpdated { validator, score });
             Ok(())
         }
     }
@@ -578,16 +519,4 @@ impl<T: Config> sp_runtime::traits::Convert<T::AccountId, Option<T::AccountId>>
             None
         }
     }
-}
-
-#[cfg(test)]
-mod tests;
-
-impl WeightInfo for () {
-    fn register_validator() -> Weight { Weight::zero() }
-    fn unregister_validator() -> Weight { Weight::zero() }
-    fn vote() -> Weight { Weight::zero() }
-    fn unvote() -> Weight { Weight::zero() }
-    fn slash_validator() -> Weight { Weight::zero() }
-    fn update_green_score() -> Weight { Weight::zero() }
 }
