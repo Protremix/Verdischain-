@@ -96,12 +96,18 @@ body:hover #cursor-glow{opacity:1}
 .toast.error{background:#ef4444;color:#fff}
 .toast.info{background:#00a86b;color:#fff}
 @media(max-width:768px){.dex-grid{grid-template-columns:1fr}.hero h1{font-size:13px}.swap-input{font-size:13px}.nav-links{gap:12px}.nav-links a{font-size:11px}}
+
+    .brand-logo-img { height: 40px; width: 40px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(202,255,51,0.5)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
+    .nav-brand:hover .brand-logo-img { filter: drop-shadow(0 0 20px rgba(202,255,51,0.8)); }
+    @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(202,255,51,0.4)); } 50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.7)); } }
+    .brand-text { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 14px; white-space: nowrap; margin-left: 4px; letter-spacing: -0.3px; text-decoration: none !important; background: linear-gradient(135deg, #ffffff 0%, #caff33 50%, #a8e607 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; transition: all 0.3s; }
+    .nav-brand:hover .brand-text { background: linear-gradient(135deg, #caff33 0%, #ffffff 50%, #caff33 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 </style>
 </head>
 <body>
 <div id="scroll-bar"></div>
 <div id="cursor-glow"></div>
-<nav class="nav"><a href="/" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:#fff;font-weight:600;font-size:14px"><img src="/assets/verdis-v-icon.png" alt="Verdis" style="width:24px;height:24px"><span>Verdis Chain</span></a><div class="nav-links"><a href="/">Home</a><a href="/explorer/">Explorer</a><a href="/dex/">DEX</a><a href="/validators/">Validators</a><a href="/eco/">Eco</a><a href="/faucet/">Faucet</a><a href="/wallet/">Wallet</a><a href="/sale/">Sale</a><a href="/docs/">Docs</a></div><div class="nav-status"><div class="dot"></div><span>Connected</span></div></nav>
+<nav class="nav"><a href="/" class="nav-brand"><img src="/assets/verdis-v-icon.png" alt="Verdis Chain" class="brand-logo-img"><span class="brand-text">Verdis Chain</span></a><div class="nav-links"><a href="/">Home</a><a href="/explorer/">Explorer</a><a href="/dex/">DEX</a><a href="/validators/">Validators</a><a href="/eco/">Eco</a><a href="/faucet/">Faucet</a><a href="/wallet/">Wallet</a><a href="/sale/">Sale</a><a href="/docs/">Docs</a></div><div class="nav-status"><div class="dot"></div><span>Connected</span></div></nav>
 <div class="toast" id="toast"></div>
 <div class="wrap">
 <div class="hero">
