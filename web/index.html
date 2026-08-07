@@ -247,7 +247,7 @@
     .monitor-graph { width: 100%; height: 60px; background: rgba(20, 20, 20, 0.4); border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
     .monitor-log { font-size: 10px; color: #b8bcc4; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 6px; border-left: 2px solid #caff33; }
 
-    /* 4. VRD Wallet Mobile Phone Mockup (Center-Left) */
+    /* 4. VRDX Wallet Mobile Phone Mockup (Center-Left) */
     .mobile-phone-mockup {
       position: absolute;
       top: 18%;
@@ -568,12 +568,14 @@
         </div>
         <div class="nav-cta">
           <button class="btn-login">Log In</button>
-          <button class="btn-signup">Launch App</button>
+          <button class="btn-signup">Buy VRDX</button>
+        <button class="btn-primary" style="margin-left:8px;background:transparent;border:1px solid var(--accent);color:var(--accent)" onclick="window.location.href=/sale">Token Sale</button>
+        <button class="btn-primary" style="display:none"</button>
         </div>
       </nav>
 
       <div class="hero-left">
-        <div class="hero-badge"><span class="hero-badge-dot"></span> Mainnet Ready · Node Live · 14 Peers</div>
+        <div class="hero-badge"><span class="hero-badge-dot"></span> Testnet Live · Block <span data-block-height>##</span> · Node Live · 14 Peers</div>
         <h1 class="hero-title">
           <span class="gradient">GREEN BLOCKCHAIN</span><br>
           <span style="color:var(--text-white)">Engineered in Rust</span>
@@ -604,7 +606,7 @@
               <span class="dex-badge">+18.5%</span>
             </div>
             <div class="dex-val-row">
-              <span class="dex-value mono">$2.84M</span>
+              <span class="dex-value mono">$2.4M</span>
               <span class="dex-sub">24h Vol</span>
             </div>
             <div class="dex-bars">
@@ -621,7 +623,7 @@
           <!-- 2. Validator Schedule Calendar Widget (Top-Right) -->
           <div class="calendar-widget float-anim-2">
             <div class="cal-header">
-              <span class="cal-title">July 2026</span>
+              <span class="cal-title">August 2026</span>
               <span class="cal-badge">Rotation</span>
             </div>
             <div class="cal-weekdays">
@@ -688,7 +690,7 @@
             </div>
           </div>
 
-          <!-- 4. VRD Wallet Mobile Phone Mockup (Center-Left) -->
+          <!-- 4. VRDX Wallet Mobile Phone Mockup (Center-Left) -->
           <div class="mobile-phone-mockup float-anim-4">
             <div class="phone-notch"></div>
             <div class="phone-screen">
@@ -712,7 +714,7 @@
               
               <div class="phone-balance-card">
                 <div class="p-bal-lbl">Total Staked Balance</div>
-                <div class="p-bal-val mono">4,250.8 VRD</div>
+                <div class="p-bal-val mono">4,250.8 VRDX</div>
                 <div class="p-bal-sub">≈ $14,850 USD <span class="p-up">+12.4%</span></div>
               </div>
 
@@ -782,7 +784,7 @@
             <button class="v-btn" title="User Profile">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#caff33" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </button>
-            <button class="v-btn" title="Send VRD">
+            <button class="v-btn" title="Send VRDX">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#caff33" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
             </button>
             <button class="v-btn" title="Swap Tokens">
@@ -796,7 +798,7 @@
           <!-- 7. Small Floating Tags -->
           <div class="float-tag tag-staking float-tag-1">⚡ Staking</div>
           <div class="float-tag tag-swap float-tag-2">🔄 Swap</div>
-          <div class="float-tag tag-vrd float-tag-3">🔑 VRD</div>
+          <div class="float-tag tag-vrd float-tag-3">🔑 VRDX</div>
           <div class="float-tag tag-carbon float-tag-4">🌱 Carbon</div>
         </div>
       </div>
@@ -863,16 +865,16 @@
           </svg>
           <div class="donut-center">
             <div class="donut-center-value mono">100B</div>
-            <div class="donut-center-label">VRD Total</div>
+            <div class="donut-center-label">VRDX Total</div>
           </div>
         </div>
         <!-- Legend -->
         <div class="tokenomics-legend reveal-stagger">
-          <div class="token-item"><div class="token-dot" style="background:#caff33"></div><div class="token-info"><div class="token-info-name">Community & Ecosystem</div><div class="token-info-desc">Public distribution, grants, incentives</div></div><div class="token-amount">40B VRD</div></div>
-          <div class="token-item"><div class="token-dot" style="background:#00a86b"></div><div class="token-info"><div class="token-info-name">Investor Allocation</div><div class="token-info-desc">12B with vesting schedules & cliff</div></div><div class="token-amount">12B VRD</div></div>
-          <div class="token-item"><div class="token-dot" style="background:#84fe87"></div><div class="token-info"><div class="token-info-name">Validator Rewards</div><div class="token-info-desc">Staking, block production rewards</div></div><div class="token-amount">20B VRD</div></div>
-          <div class="token-item"><div class="token-dot" style="background:#5ba832"></div><div class="token-info"><div class="token-info-name">Team & Advisors</div><div class="token-info-desc">4-year vesting, 1-year cliff</div></div><div class="token-amount">15B VRD</div></div>
-          <div class="token-item"><div class="token-dot" style="background:#2d6b1a"></div><div class="token-info"><div class="token-info-name">Eco Fund</div><div class="token-info-desc">Carbon credits, reforestation, green tech</div></div><div class="token-amount">13B VRD</div></div>
+          <div class="token-item"><div class="token-dot" style="background:#caff33"></div><div class="token-info"><div class="token-info-name">Community & Ecosystem</div><div class="token-info-desc">Public distribution, grants, incentives</div></div><div class="token-amount">40B VRDX</div></div>
+          <div class="token-item"><div class="token-dot" style="background:#00a86b"></div><div class="token-info"><div class="token-info-name">Investor Allocation</div><div class="token-info-desc">12B with vesting schedules & cliff</div></div><div class="token-amount">12B VRDX</div></div>
+          <div class="token-item"><div class="token-dot" style="background:#84fe87"></div><div class="token-info"><div class="token-info-name">Validator Rewards</div><div class="token-info-desc">Staking, block production rewards</div></div><div class="token-amount">20B VRDX</div></div>
+          <div class="token-item"><div class="token-dot" style="background:#5ba832"></div><div class="token-info"><div class="token-info-name">Team & Advisors</div><div class="token-info-desc">4-year vesting, 1-year cliff</div></div><div class="token-amount">15B VRDX</div></div>
+          <div class="token-item"><div class="token-dot" style="background:#2d6b1a"></div><div class="token-info"><div class="token-info-name">Eco Fund</div><div class="token-info-desc">Carbon credits, reforestation, green tech</div></div><div class="token-amount">13B VRDX</div></div>
         </div>
       </div>
     </div>
@@ -974,10 +976,45 @@
   </section>
 
   <!-- ===== FOOTER ===== -->
-  <footer class="footer">
+  
+<!-- ECOSYSTEM SECTION -->
+<section style="max-width:1280px;margin:0 auto 64px;padding:0 24px">
+  <div style="text-align:center;margin-bottom:48px">
+    <div style="display:inline-block;padding:6px 16px;background:rgba(99,102,241,0.1);border:1px solid #6366f1;border-radius:100px;font-size:13px;color:#818cf8;font-weight:600;margin-bottom:16px">One Ecosystem</div>
+    <h2 style="font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;margin-bottom:12px;color:#fff">Powered by <span style="color:#818cf8">EvolvixOS</span></h2>
+    <p style="color:#888;font-size:17px;max-width:640px;margin:0 auto">Verdis Chain is the blockchain layer of the EvolvixOS ecosystem — an AI Engineering Operating System that builds, deploys, and secures software autonomously.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:960px;margin:0 auto">
+    <div style="background:#141414;border:1px solid #222;border-radius:16px;padding:32px">
+      <div style="font-size:32px;margin-bottom:12px">⛓️</div>
+      <h3 style="font-size:20px;font-weight:600;margin-bottom:8px;color:#fff">Verdis Chain</h3>
+      <p style="color:#888;font-size:14px;margin-bottom:16px">Eco-friendly Layer-1 blockchain with DPoS consensus, AMM DEX, EVM, and carbon credits. The trust and value layer.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span style="background:#111;padding:4px 12px;border-radius:6px;font-size:12px;color:#caff33">Rust + Substrate</span>
+        <span style="background:#111;padding:4px 12px;border-radius:6px;font-size:12px;color:#caff33">DPoS</span>
+        <span style="background:#111;padding:4px 12px;border-radius:6px;font-size:12px;color:#caff33">AMM DEX</span>
+      </div>
+    </div>
+    <div style="background:#141414;border:1px solid #222;border-radius:16px;padding:32px">
+      <div style="font-size:32px;margin-bottom:12px">🧠</div>
+      <h3 style="font-size:20px;font-weight:600;margin-bottom:8px;color:#fff">EvolvixOS</h3>
+      <p style="color:#888;font-size:14px;margin-bottom:16px">AI Engineering OS with 5 autonomous agents that design, build, deploy, and secure software 24/7. The intelligence layer.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span style="background:#111;padding:4px 12px;border-radius:6px;font-size:12px;color:#818cf8">GPT-4o Powered</span>
+        <span style="background:#111;padding:4px 12px;border-radius:6px;font-size:12px;color:#818cf8">5 AI Agents</span>
+        <span style="background:#111;padding:4px 12px;border-radius:6px;font-size:12px;color:#818cf8">Auto-Deploy</span>
+      </div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:32px">
+    <a href="https://evolvixos.com" target="_blank" style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:8px;font-weight:600;text-decoration:none;font-size:15px">Explore EvolvixOS →</a>
+  </div>
+</section>
+
+<footer class="footer">
     <div class="footer-inner">
       <div class="footer-brand"><h4><span class="footer-brand-dot"></span>Verdis Chain</h4><p>The world's first green blockchain. Built in Rust + Substrate with DPoS, AMM DEX, EVM, and carbon credit tracking.</p></div>
-      <div class="footer-col"><h5>Platform</h5><a href="/explorer">Explorer</a><a href="/validators">Validators</a><a href="/dex">DEX</a><a href="/eco">Eco Metrics</a></div>
+      <div class="footer-col"><h5>Platform</h5><a href="/explorer">Explorer</a><a href="/validators">Validators</a><a href="/dex">DEX</a><a href="/sale">Token Sale</a><a href="/eco">Eco Metrics</a></div>
       <div class="footer-col"><h5>Developers</h5><a href="/docs">Documentation</a><a href="#">RPC Endpoint</a><a href="https://github.com/Protremix/Verdischain-">GitHub</a><a href="#">Whitepaper</a></div>
       <div class="footer-col"><h5>Community</h5><a href="#">Twitter</a><a href="#">Discord</a><a href="#">Telegram</a><a href="#">Blog</a></div>
     </div>
@@ -1076,5 +1113,59 @@
     }
     animate();
   </script>
+
+<script>
+// LIVE BLOCKCHAIN METRICS
+async function updateLiveMetrics() {
+  const RPC = '/rpc';
+  try {
+    // Get block height
+    const blockRes = await fetch(RPC, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1})
+    });
+    const blockData = await blockRes.json();
+    const blockHeight = parseInt(blockData.result?.number || '0x0', 16);
+    
+    // Get peer count
+    const healthRes = await fetch(RPC, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({jsonrpc: '2.0', method: 'system_health', params: [], id: 2})
+    });
+    const healthData = await healthRes.json();
+    const peers = healthData.result?.peers || 0;
+    
+    // Update any element with data-block-height
+    document.querySelectorAll('[data-block-height]').forEach(el => {
+      el.textContent = '#' + blockHeight.toLocaleString();
+    });
+    document.querySelectorAll('[data-peers]').forEach(el => {
+      el.textContent = peers + ' Active';
+    });
+    document.querySelectorAll('[data-network-status]').forEach(el => {
+      el.textContent = blockHeight > 0 ? 'Live' : 'Syncing';
+    });
+    
+    // Update hero badge if present
+    const badge = document.querySelector('.hero-badge, [class*="badge"]');
+    if (badge && blockHeight > 0) {
+      const statusText = badge.textContent;
+      if (statusText.includes('#')) {
+        badge.textContent = statusText.replace(/#\d+/, '#' + blockHeight);
+      }
+    }
+    
+  } catch (e) {
+    console.log('Live metrics: RPC not available, using cached data');
+  }
+}
+
+// Run on load and every 15 seconds
+updateLiveMetrics();
+setInterval(updateLiveMetrics, 15000);
+</script>
+
 </body>
 </html>

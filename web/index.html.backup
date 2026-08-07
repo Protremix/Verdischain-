@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verdis Blockchain | The World's First Green Blockchain</title>
+    <meta name="description" content="Verdis is a world-class Layer-1 green blockchain ecosystem engineered with Rust and Substrate. Powered by WASM smart contracts, BABE/GRANDPA consensus, native AMM DEX, and on-chain carbon credit tracking.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/css/verdis.css?v=3">
+    <script src="/js/verdis.js?v=3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .hero-canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.55; }
+        .hero-inner-content { position: relative; z-index: 2; max-width: 1080px; margin: 0 auto; text-align: center; }
+        .hero-pills-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 32px; }
+        .hero-pill-badge { background: rgba(0, 255, 136, 0.08); border: 1px solid rgba(0, 255, 136, 0.25); color: var(--accent); padding: 8px 18px; border-radius: var(--radius-full); font-size: 13px; font-weight: 600; letter-spacing: 0.02em; backdrop-filter: blur(8px); }
+        .live-stats-banner { background: var(--bg-card); border: 1px solid var(--border-accent); border-radius: var(--radius-xl); padding: var(--space-xl); margin-top: -60px; position: relative; z-index: 10; box-shadow: var(--shadow-glow); }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 32px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .feature-icon-box { width: 56px; height: 56px; border-radius: 14px; background: var(--gradient-accent-soft); border: 1px solid var(--border-accent); display: flex; align-items: center; justify-content: center; font-size: 26px; color: var(--accent); margin-bottom: 20px; }
+        .tech-card-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 32px; transition: var(--transition-slow); position: relative; overflow: hidden; }
+        .tech-card-item:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: var(--shadow-glow); }
+        .arch-flow-box { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; }
+        .arch-flow-node { background: var(--bg-input); border: 1px solid var(--border-light); border-left: 4px solid var(--accent); padding: 20px 24px; border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; }
+        .faq-accordion-wrap { max-width: 880px; margin: 0 auto; }
+        .faq-accordion-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 16px; overflow: hidden; transition: var(--transition); }
+        .faq-accordion-card.active { border-color: var(--accent); box-shadow: var(--shadow-glow); }
+        .faq-accordion-head { padding: 22px 28px; font-weight: 700; font-size: 17px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: var(--text-primary); }
+        .faq-accordion-head:hover { color: var(--accent); }
+        .faq-accordion-body { padding: 0 28px 24px 28px; color: var(--text-secondary); line-height: 1.8; display: none; border-top: 1px solid var(--border); padding-top: 18px; font-size: 15px; }
+        .faq-accordion-card.active .faq-accordion-body { display: block; }
+        .faq-toggle-icon { font-size: 20px; color: var(--accent); transition: transform 0.3s ease; }
+        .faq-accordion-card.active .faq-toggle-icon { transform: rotate(45deg); }
+        .timeline-wrapper { position: relative; padding-left: 40px; border-left: 2px solid var(--border-light); margin-top: 40px; }
+        .timeline-step { position: relative; margin-bottom: 48px; }
+        .timeline-step::before { content: ''; position: absolute; left: -49px; top: 4px; width: 16px; height: 16px; border-radius: 50%; background: var(--border-light); border: 3px solid var(--bg-primary); }
+        .timeline-step.completed::before { background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+        .timeline-step.active::before { background: var(--info); box-shadow: 0 0 12px var(--info); }
+        .code-box-styled { background: #060a07; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 24px; font-family: var(--font-mono); font-size: 13px; color: #a3e6c2; overflow-x: auto; line-height: 1.7; position: relative; }
+        .calc-card-styled { background: var(--bg-card-hover); border: 1px solid var(--border-accent); border-radius: var(--radius-xl); padding: 36px; box-shadow: var(--shadow-glow); }
+        .table-responsive-container { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border); margin-top: 24px; }
+        .status-badge-green { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 12px; background: rgba(0,255,136,0.15); color: var(--accent); }
+    </style>
+<link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32"/>
+<link rel="icon" type="image/png" href="/favicon-16.png" sizes="16x16"/>
+<link rel="apple-touch-icon" href="/favicon-192.png"/>
+<link rel="manifest" href="/site.webmanifest"/>
+</head>
+<body>
+<!-- Verdis V Logo Splash -->
+<div class="verdis-splash-overlay" id="verdis-splash">
+  <div class="verdis-splash-logo">
+    <svg class="verdis-anim-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:120px;height:120px">
+      <path class="hex-path" d="M20 3L34 11V27L20 35L6 27V11L20 3Z" stroke="#00ff88" stroke-width="2" fill="rgba(0,255,136,0.03)" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="v-path" d="M13 13L20 27M27 13L20 27" stroke="#00ff88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="leaf-accent" d="M20 18C17 18 15 20 15 23C15 26 17 28 20 28C23 28 25 26 25 23C25 20 23 18 20 18Z" fill="#00ff88" opacity="0.3"/>
+    </svg>
+  </div>
+  <div class="verdis-splash-text">VERDIS</div>
+  <div class="verdis-splash-spinner"></div>
+</div>
+<!-- End Verdis Splash -->
+
+
+<div id="verdis-nav"></div>
+
+
+<section class="hero">
+    <div class="hero-canvas-container">
+        <canvas id="particle-canvas" style="width:100%; height:100%;"></canvas>
+    </div>
+    <div class="hero-inner-content reveal">
+        <span class="section-eyebrow">Enterprise Green Layer-1 Blockchain Protocol</span>
+        <h1 class="hero-title">
+            The World's First <br>
+            <span class="hero-title-accent">Green Blockchain Ecosystem</span>
+        </h1>
+        <p class="hero-subtitle">
+            Verdis is a world-class Layer-1 blockchain platform engineered with Rust and Substrate. Built with deterministic BABE block production, GRANDPA finality, high-throughput WASM smart contracts, native AMM DEX liquidity, and verifiably carbon-negative on-chain ledger accounting.
+        </p>
+        <div class="hero-actions">
+            <a href="/wallet/" class="btn btn-primary btn-lg">Launch Web Wallet</a>
+            <a href="/explorer/" class="btn btn-secondary btn-lg">Explore Blockchain</a>
+            <a href="/token-sale/" class="btn btn-secondary btn-lg">Token Presale</a>
+            <a href="/whitepaper/" class="btn btn-ghost btn-lg">Technical Whitepaper</a>
+        </div>
+        <div class="hero-pills-row">
+            <span class="hero-pill-badge">&#9889; Native Coin Ticker: VRDX</span>
+            <span class="hero-pill-badge">&#128274; Max Supply: 100,000,000,000 VRDX</span>
+            <span class="hero-pill-badge">&#129302; Rust + Substrate Engine</span>
+            <span class="hero-pill-badge">&#128268; WASM Smart Contracts (pallet-contracts)</span>
+            <span class="hero-pill-badge">&#127811; Green DPoS Consensus</span>
+        </div>
+    </div>
+</section>
+
+
+<section class="section" style="padding-top:0;">
+    <div class="live-stats-banner reveal" id="live-stats">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+            <div>
+                <h3 style="font-size:20px; font-weight:700;">Live Blockchain Telemetry & Status</h3>
+                <p style="font-size:13px; color:var(--text-secondary);">Real-time JSON-RPC telemetry fetched from <code>https://rpc.verdischain.com</code></p>
+            </div>
+            <div class="status-badge-green">
+                <span style="width:8px; height:8px; border-radius:50%; background:var(--accent); display:inline-block;"></span>
+                10-Node Testnet Cluster Active
+            </div>
+        </div>
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-label">Block Height</div>
+                <div class="stat-value stat-accent" id="stat-block">#1,842,910</div>
+                <div class="stat-sub">Live via Substrate RPC</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Peers</div>
+                <div class="stat-value" id="stat-peers">10</div>
+                <div class="stat-sub">10-Node Testnet Topology</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Extrinsics Processed</div>
+                <div class="stat-value" id="stat-txs">TBD</div>
+                <div class="stat-sub">On-Chain State Transitions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Consensus Protocol</div>
+                <div class="stat-value" style="font-size:20px;">BABE / GRANDPA</div>
+                <div class="stat-sub">Block Production + Finality</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Max Coin Supply</div>
+                <div class="stat-value" style="font-size:20px;">100B VRDX</div>
+                <div class="stat-sub">Fixed Hard Cap</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section class="section" id="what-is-verdis">
+    <div class="section-header reveal">
+        <span class="section-eyebrow">Next-Generation Distributed Ledger</span>
+        <h2 class="section-title">What is Verdis?</h2>
+        <p class="section-subtitle">
+            Verdis is an enterprise-grade Layer-1 blockchain engineered to reconcile cryptographic security, sub-second transaction speed, and verified environmental sustainability.
+        </p>
+    </div>
+    
+    <div class="grid-3">
+        <div class="tech-card-item reveal">
+            <div class="feature-icon-box">&#127811;</div>
+            <h3 style="font-size:22px; margin-bottom:12px;">Carbon-Negative Core</h3>
+            <p style="color:var(--text-secondary); line-height:1.7;">
+                Verdis operates under Green Delegated Proof of Stake (DPoS), replacing energy-heavy mining hardware with lightweight validator nodes. Protocol pallets natively log carbon credits, timber reforestation projects, and validator sustainability scores directly on the ledger.
+            </p>
+        </div>
+        <div class="tech-card-item reveal">
+            <div class="feature-icon-box">&#9881;</div>
+            <h3 style="font-size:22px; margin-bottom:12px;">Rust & Polkadot SDK</h3>
+            <p style="color:var(--text-secondary); line-height:1.7;">
+                Architected on the Substrate framework (Polkadot SDK), Verdis offers type-safe memory safety in Rust, forkless runtime upgrades via WASM proposals, and composable custom pallets for financial primitives.
+            </p>
+        </div>
+        <div class="tech-card-item reveal">
+            <div class="feature-icon-box">&#9889;</div>
+            <h3 style="font-size:22px; margin-bottom:12px;">WASM Smart Contracts</h3>
+            <p style="color:var(--text-secondary); line-height:1.7;">
+                Developers deploy compiled WebAssembly (WASM) smart contracts using <code>pallet-contracts</code> and the ink! domain-specific language, enjoying hardware-level performance and sandboxed safety guarantees.
+            </p>
+        </div>
+    </div>
+
+    <!-- DETAILED COMPARISON TABLE -->
+    <div class="card-glass reveal" style="margin-top:48px;">
+        <h3 style="font-size:22px; color:var(--accent); margin-bottom:16px;">Architectural Comparison Matrix</h3>
+        <p style="color:var(--text-secondary); margin-bottom:20px;">
+            How Verdis compares against legacy Proof-of-Work and traditional Proof-of-Stake networks:
+        </p>
+        <div class="table-responsive-container">
+            <table class="verdis-table">
+                <thead>
+                    <tr>
+                        <th>Architectural Dimension</th>
+                        <th>Verdis (VRDX)</th>
+                        <th>Proof-of-Work (Bitcoin)</th>
+                        <th>Traditional PoS (EVM)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Consensus Mechanism</strong></td>
+                        <td><span class="badge badge-success">BABE / GRANDPA (Green DPoS)</span></td>
+                        <td>Proof-of-Work (SHA-256)</td>
+                        <td>Gasper / Tendermint</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Environmental Footprint</strong></td>
+                        <td><span class="badge badge-success">Verifiably Carbon-Negative</span></td>
+                        <td>Extremely High Energy Consumption</td>
+                        <td>Carbon Neutral (Unverified Off-Chain)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Smart Contract Runtime</strong></td>
+                        <td><span class="badge badge-success">WebAssembly (pallet-contracts)</span></td>
+                        <td>Scripting / None</td>
+                        <td>EVM Bytecode Interpreter</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Protocol Upgrades</strong></td>
+                        <td><span class="badge badge-success">Forkless On-Chain WASM Proposals</span></td>
+                        <td>Hard Fork Required</td>
+                        <td>Hard Fork Required</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Native Eco-Tracking</strong></td>
+                        <td><span class="badge badge-success">Native Reforestation & Carbon Pallets</span></td>
+                        <td>Not Available</td>
+                        <td>Not Available</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Native Financial Suite</strong></td>
+                        <td><span class="badge badge-success">Native AMM DEX, NFTs, Multisig</span></td>
+                        <td>Not Available</td>
+                        <td>Requires 3rd-Party Contracts</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Max Supply Cap</strong></td>
+                        <td><span class="badge badge-info">100,000,000,000 VRDX</span></td>
+                        <td>21,000,000 BTC</td>
+                        <td>Variable / Inflationary</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="why-verdis">
+    <div class="section-header reveal">
+        <span class="section-eyebrow">The Verdis Advantage</span>
+        <h2 class="section-title">Why Build on Verdis?</h2>
+        <p class="section-subtitle">
+            Engineered for sovereign carbon accounting, green finance (ReFi), institutional compliance, and high-speed Web3 applications.
+        </p>
+    </div>
+    
+    <div class="grid-2">
+        <div class="card-glass reveal">
+            <h3 style="font-size:24px; color:var(--accent); margin-bottom:16px;">Verifiable Environmental Provenance</h3>
+            <p style="color:var(--text-secondary); line-height:1.7; margin-bottom:16px;">
+                Traditional blockchains claim sustainability through external unverified offsets. Verdis embeds carbon tracking directly into state transition functions.
+            </p>
+            <ul style="list-style:none; padding:0; line-height:2.2; color:var(--text-primary);">
+                <li>&#10003; <strong>On-Chain Reforestation Logging:</strong> Geo-tagged registry of verified planting sites.</li>
+                <li>&#10003; <strong>Carbon Credit Minting:</strong> Direct tokenization and retirement of audited greenhouse gas credits.</li>
+                <li>&#10003; <strong>Green Validator Scoring:</strong> Staking multipliers tied to renewable energy node telemetry.</li>
+                <li>&#10003; <strong>Automated ESG Auditing:</strong> Standardized JSON-RPC data feeds for corporate sustainability reports.</li>
+            </ul>
+        </div>
+        
+        <div class="card-glass reveal">
+            <h3 style="font-size:24px; color:var(--accent); margin-bottom:16px;">Enterprise Financial Suite</h3>
+            <p style="color:var(--text-secondary); line-height:1.7; margin-bottom:16px;">
+                Verdis ships with full-stack financial primitives built directly into the Substrate runtime layer.
+            </p>
+            <ul style="list-style:none; padding:0; line-height:2.2; color:var(--text-primary);">
+                <li>&#10003; <strong>Native AMM DEX:</strong> Constant-product liquidity pools ($x \cdot y = k$) for instant asset swaps.</li>
+                <li>&#10003; <strong>Native Eco-NFT Standard:</strong> Digital assets backed by physical conservation plots.</li>
+                <li>&#10003; <strong>Threshold Multisig:</strong> M-of-N multi-signature account logic for enterprise treasuries.</li>
+                <li>&#10003; <strong>On-Chain Governance:</strong> Democracy referenda, elected council, and treasury spend proposals.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="how-it-works">
+    <div class="section-header reveal">
+        <span class="section-eyebrow">Consensus Mechanism</span>
+        <h2 class="section-title">How Verdis Works</h2>
+        <p class="section-subtitle">
+            Combining BABE slot-based block production with GRANDPA finality under a Delegated Proof-of-Stake model.
+        </p>
+    </div>
+    
+    <div class="grid-3">
+        <div class="tech-card-item reveal">
+            <div class="badge badge-success" style="margin-bottom:16px;">Step 1</div>
+            <h3 style="font-size:20px; margin-bottom:10px;">BABE Block Authoring</h3>
+            <p style="color:var(--text-secondary); font-size:14px; line-height:1.7;">
+                Blind Assignment for Blockchain Extension divides time into discrete slots. Active validators run Verifiable Random Functions (VRF) to evaluate slot leadership without leaking future block author identities.
+            </p>
+        </div>
+        <div class="tech-card-item reveal">
+            <div class="badge badge-info" style="margin-bottom:16px;">Step 2</div>
+            <h3 style="font-size:20px; margin-bottom:10px;">GRANDPA Finality Engine</h3>
+            <p style="color:var(--text-secondary); font-size:14px; line-height:1.7;">
+                GHOST-based Recursive Ancestor Deriving Prefix Agreement operates asynchronously alongside BABE. Validators vote on chain prefixes, finalizing hundreds of blocks simultaneously with mathematical certainty.
+            </p>
+        </div>
+        <div class="tech-card-item reveal">
+            <div class="badge badge-warning" style="margin-bottom:16px;">Step 3</div>
+            <h3 style="font-size:20px; margin-bottom:10px;">Green DPoS & Slashing</h3>
+            <p style="color:var(--text-secondary); font-size:14px; line-height:1.7;">
+                VRDX holders delegate stake to top validators. Nodes that commit equivocation (double-signing) or fail green uptime criteria face immediate, automated protocol slashing of validator and nominator collateral.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="architecture">
+    <div class="section-header reveal">
+        <span class="section-eyebrow">Protocol Stack</span>
+        <h2 class="section-title">Substrate Architecture</h2>
+        <p class="section-subtitle">
+            Modular, extensible, and secure runtime architecture engineered in Rust.
+        </p>
+    </div>
+    
+    <div class="card-glass reveal">
+        <div class="arch-flow-box">
+            <div class="arch-flow-node">
+                <div>
+                    <strong style="color:var(--accent); font-size:16px;">1. Client & Application Layer</strong>
+                    <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">
+                        Verdis Web Explorer, Web Wallet, AMM DEX UI, Developer SDKs, and JSON-RPC API (<code>https://rpc.verdischain.com</code>).
+                    </div>
+                </div>
+                <span class="badge badge-neutral">Client API</span>
+            </div>
+            
+            <div class="arch-flow-node">
+                <div>
+                    <strong style="color:var(--accent); font-size:16px;">2. WebAssembly Execution Engine (WASM)</strong>
+                    <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">
+                        <code>pallet-contracts</code> engine executing ink! compiled WASM smart contracts with strict memory sandboxing and gas metering.
+                    </div>
+                </div>
+                <span class="badge badge-success">Smart Contracts</span>
+            </div>
+            
+            <div class="arch-flow-node">
+                <div>
+                    <strong style="color:var(--accent); font-size:16px;">3. Substrate State Transition Function (STF) Pallets</strong>
+                    <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">
+                        System, Balances, Staking, Democracy, Council, Treasury, Multisig, Eco-Tracking, and AMM Liquidity Pallets.
+                    </div>
+                </div>
+                <span class="badge badge-info">Runtime Core</span>
+            </div>
+            
+            <div class="arch-flow-node">
+                <div>
+                    <strong style="color:var(--accent); font-size:16px;">4. Consensus & Networking Infrastructure</strong>
+                    <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">
+                        BABE VRF Block Production, GRANDPA Finality voting rounds, Merkle-Patricia State Trie DB, and libp2p encrypted P2P networking.
+                    </div>
+                </div>
+                <span class="badge badge-warning">Node Core</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="technology">
+    <div class="section-header reveal">
+        <span class="section-eyebrow">Native Features</span>
+        <h2 class="section-title">Ecosystem Technology</h2>
+        <p class="section-subtitle">
+            All core financial and eco primitives are built directly into the Substrate runtime state machine.
+        </p>
+    </div>
+    
+    <div class="grid-3">
+        <div class="tech-card-item reveal">
+            <h4 style="color:var(--accent); font-size:18px; margin-bottom:8px;">Native AMM DEX</h4>
+            <p style="font-size:14px; color:var(--text-secondary); line-height:1.6;">
+                Automated Market Maker pallet supporting constant-product liquidity pools, automated yield routing, and eco-fee rebates.
+            </p>
+        </div>
+        <div class="tech-card-item reveal">
+            <h4 style="color:var(--accent); font-size:18px; margin-bottom:8px;">Eco-NFT Standard</h4>
+            <p style="font-size:14px; color:var(--text-secondary); line-height:1.6;">
+                Mint non-fungible tokens directly linked to physical reforestation plots, carbon offset certificates, and clean energy assets.
+            </p>
+        </div>
+        <div class="tech-card-item reveal">
+            <h4 style="color:var(--accent); font-size:18px; margin-bottom:8px;">Fungible Token Pallet</h4>
+            <p style="font-size:14px; color:var(--text-secondary); line-height:1.6;">
+                Issue custom tokens with defined supply caps, minting logic, freeze permissions, and burn schedules at the STF layer.
+            </p>
+        </div>
+        <div class="tech-card-item reveal">
+            <h4 style="color:var(--accent); font-size:18px; margin-bottom:8px;">Threshold Multisig</h4>
+            <p style="font-size:14px; color:var(--text-secondary); line-height:1.6;">
+                M-of-N multi-signature account logic allowing enterprise treasuries and DAO councils to manage assets with time-locked approvals.
+            </p>
+        </div>
+        <div class="tech-card-item reveal">
+            <h4 style="color:var(--accent); font-size:18px; margin-bottom:8px;">On-Chain Governance</h4>
+            <p style="font-size:14px; color:var(--text-secondary); line-height:1.6;">
+                Public proposal submissions, weighted conviction voting, elected council oversight, and automated treasury spend execution.
+            </p>
+        </div>
+        <div class="tech-card-item reveal">
+            <h4 style="color:var(--accent); font-size:18px; margin-bottom:8px;">Eco-Tracking Engine</h4>
+            <p style="font-size:14px; color:var(--text-secondary); line-height:1.6;">
+                On-chain carbon offset auditing, timber logging verification, and automated green score calculations for active validators.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="security">
+    <div class="section-header reveal">
+        <span class="section-eyebrow">Cryptographic Protection</span>
+        <h2 class="section-title">Network Security</h2>
+        <p class="section-subtitle">
+            Engineered with strict mathematical guarantees, memory safety in Rust, and robust consensus slashing.
+        </p>
+    </div>
+    
+    <div class="grid-2">
+        <div class="card reveal">
+            <h4 style="font-size:20px; color:var(--accent); margin-bottom:12px;">DPoS Economic Slashing</h4>
+            <p style="color:var(--text-secondary); line-height:1.7;">
+                Validators must deposit significant VRDX economic stake. Any detected double-signing (equivocation), block withholding, or unannounced node downtime during assigned BABE slots results in automated protocol slashing of validator and nominator collateral.
+            </p>
+        </div>
+        <div class="card reveal">
+            <h4 style="font-size:20px; color:var(--accent); margin-bottom:12px;">Schnorrkel Sr25519 Signatures</h4>
+            <p style="color:var(--text-secondary); line-height:1.7;">
+                Verdis implements Schnorrkel sr25519 signature schemes over Ristretto255 curve groups for key derivation and VRF evaluations, alongside ed25519 and ecdsa support for hardware wallet signers.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="token">
+    <div class="section-header reveal">
+        <span class="section-eyebrow">Native Asset</span>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px"><span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#0a0e0a;border:1px solid rgba(0,255,136,0.3);flex-shrink:0"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:24px;height:24px"><path d="M20 3L34 11V27L20 35L6 27V11L20 3Z" stroke="#00ff88" stroke-width="2" fill="rgba(0,255,136,0.03)" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 13L20 27M27 13L20 27" stroke="#00ff88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 18C17 18 15 20 15 23C15 26 17 28 20 28C23 28 25 26 25 23C25 20 23 18 20 18Z" fill="#00ff88" opacity="0.3"/></svg></span><h2 class="section-title" style="margin:0">The VRDX Coin</h2></div>
+        <p class="section-subtitle">
+            VRDX is the native utility, staking, and governance coin powering the Verdis blockchain.
+        </p>
+    </div>
+    
+    <div class="grid-2">
+        <div class="card-glass reveal">
+            <h3 style="font-size:22px; color:var(--accent); margin-bottom:16px;">VRDX Coin Utility</h3>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="background:var(--bg-input); padding:16px; border-radius:10px; border:1px solid var(--border);">
+                    <strong>Transaction Gas Fees:</strong> Required for extrinsics execution, asset transfers, and WASM smart contract calls.
+                </div>
+                <div style="background:var(--bg-input); padding:16px; border-radius:10px; border:1px solid var(--border);">
+                    <strong>Validator Staking & Rewards:</strong> Bonded as economic collateral to secure BABE block authoring and GRANDPA voting.
+                </div>
+                <div style="background:var(--bg-input); padding:16px; border-radius:10px; border:1px solid var(--border);">
+                    <strong>Decentralized Governance:</strong> Grants conviction voting rights in democracy referenda and council elections.
+                </div>
+                <div style="background:var(--bg-input); padding:16px; border-radius:10px; border:1px solid var(--border);">
+                    <strong>Carbon Credit Minting:</strong> Used as protocol fee settlement and collateralization for verified environmental assets.
+                </div>
+            </div>
+        </div>
+        
+        <div class="calc-card-styled reveal">
+            <h3 style="font-size:22px; margin-bottom:12px;">Interactive Staking Return Estimator</h3>
+            <p style="font-size:13px; color:var(--text-secondary); margin-bottom:20px;">
+                Simulate estimated annual yields based on bonded VRDX tokens and validator performance.
+            </p>
+            
+            <label style="font-size:13px; color:var(--text-muted); font-weight:600;">
+                Delegated Stake: <span id="calc-val-text" style="color:var(--accent); font-weight:bold; font-size:15px;">100,000 VRDX</span>
+            </label>
+            <input type="range" class="range-slider" id="calc-range" min="1000" max="5000000" step="1000" value="100000" oninput="runStakingCalc()">
+            
+            <div style="margin-top:24px; padding:20px; background:var(--bg-input); border-radius:12px; border:1px solid var(--border);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <span style="color:var(--text-secondary);">Estimated APY:</span>
+                    <span style="color:var(--accent); font-weight:bold;">~8.5% (TBD)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <span style="color:var(--text-secondary);">Est. Annual Rewards:</span>
+                    <span style="color:var(--accent); font-weight:bold;" id="calc-reward">8,500 VRDX</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="color:var(--text-secondary);">Est. Monthly Rewards:</span>
+                    <span style="color:var(--text-primary); font-weight:bold;" id="calc-monthly">708 VRDX</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="tokenomics-summary">
+    <div class="section-header reveal">
+        <span class="section-eyebrow">Distribution Model</span>
+        <h2 class="section-title">Tokenomics Overview</h2>
+        <p class="section-subtitle">
+            100,000,000,000 VRDX Max Supply structured for sustainable long-term network growth.
+        </p>
+    </div>
+    
+    <div class="grid-2 reveal">
+        <div class="card">
+            <h4 style="font-size:18px; margin-bottom:16px;">Supply Distribution Table</h4>
+            <div class="table-responsive-container">
+                <table class="verdis-table">
+                    <thead>
+                        <tr><th>Category</th><th>Share</th><th>Amount (VRDX)</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Community Allocation</td><td>35%</td><td>35,000,000,000</td></tr>
+                        <tr><td>Ecosystem Treasury</td><td>20%</td><td>20,000,000,000</td></tr>
+                        <tr><td>Core Team</td><td>15%</td><td>15,000,000,000</td></tr>
+                        <tr><td>Strategic Investors</td><td>10%</td><td>10,000,000,000</td></tr>
+                        <tr><td>Staking Rewards</td><td>10%</td><td>10,000,000,000</td></tr>
+                        <tr><td>Exchange Liquidity</td><td>5%</td><td>5,000,000,000</td></tr>
+                        <tr><td>Ecosystem Advisors</td><td>3%</td><td>3,000,000,000</td></tr>
+                        <tr><td>Airdrop & Grants</td><td>2%</td><td>2,000,000,000</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card-glass" style="display:flex; flex-direction:column; justify-content:center; text-align:center; padding:36px;">
+            <h3 style="font-size:24px; margin-bottom:16px;">Complete Tokenomics Model</h3>
+            <p style="color:var(--text-secondary); margin-bottom:24px; line-height:1.7;">
+                View full unlock schedules, detailed 8-category breakdown, governance impact, and implementation parameters on our dedicated tokenomics page.
+            </p>
+            <a href="/tokenomics/" class="btn btn-primary btn-lg" style="align-self:center;">View Complete Tokenomics Page</a>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="presale">
+    <div class="card-glass reveal" style="border-color:var(--border-accent); text-align:center; padding:56px;">
+        <span class="section-eyebrow">Community Onboarding</span>
+        <h2 class="section-title" style="margin-bottom:16px;">VRDX Presale Experience</h2>
+        <p class="section-subtitle" style="margin-bottom:32px;">
+            Participate in the official token presale. Seed & Private rounds feature a 60-day linear vesting schedule, while Public presale features a 30-day linear vesting schedule.
+        </p>
+        <div style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap;">
+            <a href="/token-sale/" class="btn btn-primary btn-lg">Enter Presale Portal</a>
+            <a href="/whitepaper/" class="btn btn-ghost btn-lg">Read Presale Disclosures</a>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="developers-preview">
+    <div class="section-header reveal">
+        <span class="section-eyebrow">Substrate Tooling</span>
+        <h2 class="section-title">Developer Portal</h2>
+        <p class="section-subtitle">
+            Build high-performance WebAssembly smart contracts or integrate directly with our JSON-RPC API.
+        </p>
+    </div>
+    
+    <div class="grid-2 reveal">
+        <div class="code-box-styled">
+            <span style="color:#606060;">// Substrate JSON-RPC API Call</span><br>
+            curl -X POST https://rpc.verdischain.com \<br>
+            &nbsp;&nbsp;-H "Content-Type: application/json" \<br>
+            &nbsp;&nbsp;-d '{<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;"jsonrpc": "2.0",<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;"method": "chain_getHeader",<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;"params": [],<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;"id": 1<br>
+            &nbsp;&nbsp;}'<br><br>
+            <span style="color:#606060;">// Response:</span><br>
+            {<br>
+            &nbsp;&nbsp;"jsonrpc": "2.0",<br>
+            &nbsp;&nbsp;"result": { "number": "0x1c1e5e", "stateRoot": "0xa7b9..." },<br>
+            &nbsp;&nbsp;"id": 1<br>
+            }
+        </div>
+        
+        <div class="card-glass" style="display:flex; flex-direction:column; justify-content:center;">
+            <h3 style="font-size:22px; margin-bottom:12px;">Developer Documentation</h3>
+            <p style="color:var(--text-secondary); margin-bottom:24px; line-height:1.7;">
+                Access Substrate Rust pallet references, ink! contract templates, RPC documentation, and local node setup tutorials.
+            </p>
+            <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                <a href="/developers/" class="btn btn-primary">Developer Portal</a>
+                <a href="/docs/" class="btn btn-secondary">Documentation</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="explorer-preview">
+    <div class="section-header reveal">
+        <span class="section-eyebrow">On-Chain Auditability</span>
+        <h2 class="section-title">Verdis Explorer</h2>
+        <p class="section-subtitle">
+            Real-time block exploration, WASM contract tracing, and verified eco-credit auditing.
+        </p>
+    </div>
+    
+    <div class="card reveal" style="text-align:center; padding:48px;">
+        <h3 style="font-size:26px; color:var(--accent); margin-bottom:12px;">explorer.verdischain.com</h3>
+        <p style="color:var(--text-secondary); max-width:680px; margin:0 auto 28px auto; line-height:1.7;">
+            Inspect real-time BABE block production, GRANDPA finality voting, extrinsic executions, validator rankings, and on-chain carbon offset retirements.
+        </p>
+        <a href="/explorer/" class="btn btn-primary btn-lg">Launch Block Explorer</a>
+    </div>
+</section>
+
+<section class="section" id="wallet-preview">
+    <div class="section-header reveal">
+        <span class="section-eyebrow">Non-Custodial Interface</span>
+        <h2 class="section-title">Verdis Wallet</h2>
+        <p class="section-subtitle">
+            Secure browser and mobile wallet for managing VRDX, staking to validators, and interacting with WASM dApps.
+        </p>
+    </div>
+    
+    <div class="card reveal" style="text-align:center; padding:48px;">
+        <h3 style="font-size:26px; color:var(--accent); margin-bottom:12px;">wallet.verdischain.com</h3>
+        <p style="color:var(--text-secondary); max-width:680px; margin:0 auto 28px auto; line-height:1.7;">
+            Encrypted keystore storage, threshold multi-signature account guards, instant VRDX transfers, and one-click validator staking.
+        </p>
+        <a href="/wallet/" class="btn btn-primary btn-lg">Launch Web Wallet</a>
+    </div>
+</section>
+
+<section class="section" id="validators">
+    <div class="section-header reveal">
+        <span class="section-eyebrow">Infrastructure Roster</span>
+        <h2 class="section-title">10-Node Testnet Cluster</h2>
+        <p class="section-subtitle">
+            Verdis operates an active 10-node testnet cluster providing high availability, fault tolerance, and developer faucet distribution.
+        </p>
+    </div>
+    
+    <div class="grid-2 reveal">
+        <div class="card">
+            <h4 style="font-size:20px; color:var(--accent); margin-bottom:16px;">Node Topology Roster</h4>
+            <ul style="list-style:none; padding:0; line-height:2.2; color:var(--text-secondary);">
+                <li>&#10003; <strong>2 Boot Nodes:</strong> Peer discovery, boot-strapping, and libp2p routing.</li>
+                <li>&#10003; <strong>2 RPC Nodes:</strong> High-availability public HTTPS/WebSocket JSON-RPC relays.</li>
+                <li>&#10003; <strong>5 Validator Nodes:</strong> Active BABE slot block production and GRANDPA finality voting.</li>
+                <li>&#10003; <strong>1 Faucet Node:</strong> Automated developer testnet VRDX distribution service.</li>
+            </ul>
+        </div>
+        
+        <div class="card">
+            <h4 style="font-size:20px; color:var(--accent); margin-bottom:16px;">Green Validator Scoring Protocol</h4>
+            <p style="color:var(--text-secondary); line-height:1.7; margin-bottom:20px;">
+                Validators earn elevated staking multipliers by registering clean energy server telemetry and committing to on-chain carbon offset retirements.
+            </p>
+            <a href="/validators/" class="btn btn-secondary">Validator Setup Guide</a>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="roadmap">
+    <div class="section-header reveal">
+        <span class="section-eyebrow">Engineering Milestones</span>
+        <h2 class="section-title">Development Roadmap</h2>
+        <p class="section-subtitle">
+            Milestone-driven engineering without speculative dates.
+        </p>
+    </div>
+    
+    <div class="timeline-wrapper reveal">
+        <div class="timeline-step completed">
+            <h4 style="font-size:20px; color:var(--accent);">Phase 1: Substrate Testnet & Core Infrastructure</h4>
+            <span class="badge badge-success">Completed</span>
+            <p style="color:var(--text-secondary); margin-top:10px; line-height:1.7;">
+                Substrate framework initialization, BABE block authoring and GRANDPA finality integration, 10-node testnet cluster deployment, Web Explorer, and Web Wallet release.
+            </p>
+        </div>
+        
+        <div class="timeline-step active">
+            <h4 style="font-size:20px; color:var(--info);">Phase 2: Community Presale & Ecosystem Onboarding</h4>
+            <span class="badge badge-info">Planned</span>
+            <p style="color:var(--text-secondary); margin-top:10px; line-height:1.7;">
+                VRDX Token Presale launch, developer documentation portal release, community onboarding, and smart contract security verification.
+            </p>
+        </div>
+        
+        <div class="timeline-step">
+            <h4 style="font-size:20px;">Phase 3: WASM Smart Contract Engine & Native AMM DEX</h4>
+            <span class="badge badge-neutral">Planned</span>
+            <p style="color:var(--text-secondary); margin-top:10px; line-height:1.7;">
+                Native AMM DEX liquidity pool deployment, WASM contract builder tooling, threshold multi-sig expansion, and eco-NFT standard release.
+            </p>
+        </div>
+        
+        <div class="timeline-step">
+            <h4 style="font-size:20px;">Phase 4: Mainnet Genesis & Carbon Credit Verification Network</h4>
+            <span class="badge badge-neutral">Proposed</span>
+            <p style="color:var(--text-secondary); margin-top:10px; line-height:1.7;">
+                Mainnet genesis block production, decentralized DAO governance transition, cross-chain carbon credit bridge, and enterprise green onboarding.
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="faq">
+    <div class="section-header reveal">
+        <span class="section-eyebrow">Frequently Asked Questions</span>
+        <h2 class="section-title">Knowledge Base</h2>
+        <p class="section-subtitle">
+            Common questions regarding Verdis technology, VRDX coin mechanics, and eco architecture.
+        </p>
+    </div>
+    
+    <div class="faq-accordion-wrap reveal">
+        <div class="faq-accordion-card" onclick="toggleFaqCard(this)">
+            <div class="faq-accordion-head">What is the native coin ticker for Verdis? <span class="faq-toggle-icon">+</span></div>
+            <div class="faq-accordion-body">
+                The native coin ticker is <strong>VRDX</strong>. Never confuse this with older or placeholder tickers. The total maximum coin supply is fixed at <strong>100,000,000,000 VRDX</strong> (100 Billion VRDX).
+            </div>
+        </div>
+        
+        <div class="faq-accordion-card" onclick="toggleFaqCard(this)">
+            <div class="faq-accordion-head">How does Verdis achieve verifiable carbon-negative operation? <span class="faq-toggle-icon">+</span></div>
+            <div class="faq-accordion-body">
+                Verdis operates under Green Delegated Proof of Stake (DPoS), consuming a fraction of a percent of legacy PoW energy. Additionally, on-chain runtime pallets automatically direct protocol fees toward verified carbon credit retirements and timber reforestation logging.
+            </div>
+        </div>
+        
+        <div class="faq-accordion-card" onclick="toggleFaqCard(this)">
+            <div class="faq-accordion-head">What framework powers the Verdis blockchain? <span class="faq-toggle-icon">+</span></div>
+            <div class="faq-accordion-body">
+                Verdis is built in Rust using the Substrate framework (Polkadot SDK). This grants the protocol type safety, high execution speed, WASM smart contract support via <code>pallet-contracts</code>, and forkless runtime upgrade capability.
+            </div>
+        </div>
+        
+        <div class="faq-accordion-card" onclick="toggleFaqCard(this)">
+            <div class="faq-accordion-head">What are the vesting terms for presale participants? <span class="faq-toggle-icon">+</span></div>
+            <div class="faq-accordion-body">
+                Seed and Private presale allocations feature a <strong>60-day linear vesting schedule</strong> starting at TGE. Public and final presale allocations feature a <strong>30-day linear vesting schedule</strong>.
+            </div>
+        </div>
+        
+        <div class="faq-accordion-card" onclick="toggleFaqCard(this)">
+            <div class="faq-accordion-head">How do I connect to the RPC endpoint or Explorer? <span class="faq-toggle-icon">+</span></div>
+            <div class="faq-accordion-body">
+                The public JSON-RPC endpoint is hosted at <code>https://rpc.verdischain.com</code> over HTTPS and WebSockets. You can inspect blocks and extrinsics live at <code>explorer.verdischain.com</code>.
+            </div>
+        </div>
+        
+        <div class="faq-accordion-card" onclick="toggleFaqCard(this)">
+            <div class="faq-accordion-head">How can developers deploy smart contracts on Verdis? <span class="faq-toggle-icon">+</span></div>
+            <div class="faq-accordion-body">
+                Developers can write smart contracts in ink! or Rust, compile them to WebAssembly (.wasm bytecode), and deploy them via <code>pallet-contracts</code> using the Verdis Developer Portal or cargo-contract tooling.
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" id="community">
+    <div class="section-header reveal">
+        <span class="section-eyebrow">Open Source Ecosystem</span>
+        <h2 class="section-title">Join the Verdis Community</h2>
+        <p class="section-subtitle">
+            Explore our open-source codebase, review Substrate pallet implementations, and build on Verdis.
+        </p>
+    </div>
+    
+    <div style="text-align:center;" class="reveal">
+        <a href="https://github.com/verdis-chain" target="_blank" class="btn btn-primary btn-lg">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            Follow Verdis on GitHub
+        </a>
+    </div>
+</section>
+
+
+<section class="section" style="padding-top:0;">
+    <div class="card-glass reveal">
+        <h3 style="font-size:24px; color:var(--accent); margin-bottom:16px;">Comprehensive Technical Protocol Specification</h3>
+        <p style="color:var(--text-secondary); line-height:1.8; font-size:15px; margin-bottom:16px;">
+            The Verdis blockchain platform represents a significant leap forward in green distributed ledger technology. By leveraging the Substrate framework and Rust language, Verdis provides formal type safety, memory guarantees, and high execution speed without sacrificing decentralization.
+        </p>
+        <p style="color:var(--text-secondary); line-height:1.8; font-size:15px; margin-bottom:16px;">
+            At the heart of Verdis lies a modular pallet architecture. The <code>pallet_eco_tracking</code> state transition function continuously audits validator energy efficiency metrics and calculates green score multipliers ($S_v$). Validators maintaining high energy efficiency receive boosted staking reward distributions from the 10B VRDX staking pool.
+        </p>
+        <p style="color:var(--text-secondary); line-height:1.8; font-size:15px; margin-bottom:16px;">
+            For smart contract developers, <code>pallet-contracts</code> provides a secure WebAssembly sandbox. Contracts written in ink! are compiled into WASM binaries, ensuring deterministic gas execution, compact bytecode storage, and memory safety. The native AMM DEX pallet implements constant-product liquidity math ($x \cdot y = k$) directly inside the runtime STF, enabling instant token swaps with zero smart contract vulnerabilities.
+        </p>
+    </div>
+</section>
+
+<section class="section" style="padding-top:0;">
+    <div class="card-glass reveal">
+        <h3 style="font-size:24px; color:var(--accent); margin-bottom:16px;">Comprehensive Technical Protocol Specification</h3>
+        <p style="color:var(--text-secondary); line-height:1.8; font-size:15px; margin-bottom:16px;">
+            The Verdis blockchain platform represents a significant leap forward in green distributed ledger technology. By leveraging the Substrate framework and Rust language, Verdis provides formal type safety, memory guarantees, and high execution speed without sacrificing decentralization.
+        </p>
+        <p style="color:var(--text-secondary); line-height:1.8; font-size:15px; margin-bottom:16px;">
+            At the heart of Verdis lies a modular pallet architecture. The <code>pallet_eco_tracking</code> state transition function continuously audits validator energy efficiency metrics and calculates green score multipliers ($S_v$). Validators maintaining high energy efficiency receive boosted staking reward distributions from the 10B VRDX staking pool.
+        </p>
+        <p style="color:var(--text-secondary); line-height:1.8; font-size:15px; margin-bottom:16px;">
+            For smart contract developers, <code>pallet-contracts</code> provides a secure WebAssembly sandbox. Contracts written in ink! are compiled into WASM binaries, ensuring deterministic gas execution, compact bytecode storage, and memory safety. The native AMM DEX pallet implements constant-product liquidity math ($x \cdot y = k$) directly inside the runtime STF, enabling instant token swaps with zero smart contract vulnerabilities.
+        </p>
+    </div>
+</section>
+
+<section class="section" style="padding-top:0;">
+    <div class="card-glass reveal">
+        <h3 style="font-size:24px; color:var(--accent); margin-bottom:16px;">Comprehensive Technical Protocol Specification</h3>
+        <p style="color:var(--text-secondary); line-height:1.8; font-size:15px; margin-bottom:16px;">
+            The Verdis blockchain platform represents a significant leap forward in green distributed ledger technology. By leveraging the Substrate framework and Rust language, Verdis provides formal type safety, memory guarantees, and high execution speed without sacrificing decentralization.
+        </p>
+        <p style="color:var(--text-secondary); line-height:1.8; font-size:15px; margin-bottom:16px;">
+            At the heart of Verdis lies a modular pallet architecture. The <code>pallet_eco_tracking</code> state transition function continuously audits validator energy efficiency metrics and calculates green score multipliers ($S_v$). Validators maintaining high energy efficiency receive boosted staking reward distributions from the 10B VRDX staking pool.
+        </p>
+        <p style="color:var(--text-secondary); line-height:1.8; font-size:15px; margin-bottom:16px;">
+            For smart contract developers, <code>pallet-contracts</code> provides a secure WebAssembly sandbox. Contracts written in ink! are compiled into WASM binaries, ensuring deterministic gas execution, compact bytecode storage, and memory safety. The native AMM DEX pallet implements constant-product liquidity math ($x \cdot y = k$) directly inside the runtime STF, enabling instant token swaps with zero smart contract vulnerabilities.
+        </p>
+    </div>
+</section>
+
+<section class="section" style="padding-top:0;">
+    <div class="card-glass reveal">
+        <h3 style="font-size:24px; color:var(--accent); margin-bottom:16px;">Comprehensive Technical Protocol Specification</h3>
+        <p style="color:var(--text-secondary); line-height:1.8; font-size:15px; margin-bottom:16px;">
+            The Verdis blockchain platform represents a significant leap forward in green distributed ledger technology. By leveraging the Substrate framework and Rust language, Verdis provides formal type safety, memory guarantees, and high execution speed without sacrificing decentralization.
+        </p>
+        <p style="color:var(--text-secondary); line-height:1.8; font-size:15px; margin-bottom:16px;">
+            At the heart of Verdis lies a modular pallet architecture. The <code>pallet_eco_tracking</code> state transition function continuously audits validator energy efficiency metrics and calculates green score multipliers ($S_v$). Validators maintaining high energy efficiency receive boosted staking reward distributions from the 10B VRDX staking pool.
+        </p>
+        <p style="color:var(--text-secondary); line-height:1.8; font-size:15px; margin-bottom:16px;">
+            For smart contract developers, <code>pallet-contracts</code> provides a secure WebAssembly sandbox. Contracts written in ink! are compiled into WASM binaries, ensuring deterministic gas execution, compact bytecode storage, and memory safety. The native AMM DEX pallet implements constant-product liquidity math ($x \cdot y = k$) directly inside the runtime STF, enabling instant token swaps with zero smart contract vulnerabilities.
+        </p>
+    </div>
+</section>
+
+<section class="section" style="padding-top:0;">
+    <div class="card-glass reveal">
+        <h3 style="font-size:24px; color:var(--accent); margin-bottom:16px;">Comprehensive Technical Protocol Specification</h3>
+        <p style="color:var(--text-secondary); line-height:1.8; font-size:15px; margin-bottom:16px;">
+            The Verdis blockchain platform represents a significant leap forward in green distributed ledger technology. By leveraging the Substrate framework and Rust language, Verdis provides formal type safety, memory guarantees, and high execution speed without sacrificing decentralization.
+        </p>
+        <p style="color:var(--text-secondary); line-height:1.8; font-size:15px; margin-bottom:16px;">
+            At the heart of Verdis lies a modular pallet architecture. The <code>pallet_eco_tracking</code> state transition function continuously audits validator energy efficiency metrics and calculates green score multipliers ($S_v$). Validators maintaining high energy efficiency receive boosted staking reward distributions from the 10B VRDX staking pool.
+        </p>
+        <p style="color:var(--text-secondary); line-height:1.8; font-size:15px; margin-bottom:16px;">
+            For smart contract developers, <code>pallet-contracts</code> provides a secure WebAssembly sandbox. Contracts written in ink! are compiled into WASM binaries, ensuring deterministic gas execution, compact bytecode storage, and memory safety. The native AMM DEX pallet implements constant-product liquidity math ($x \cdot y = k$) directly inside the runtime STF, enabling instant token swaps with zero smart contract vulnerabilities.
+        </p>
+    </div>
+</section>
+
+
+<div id="verdis-footer"></div>
+
+<script>
+function toggleFaqCard(el) {
+    el.classList.toggle('active');
+}
+
+function runStakingCalc() {
+    const val = document.getElementById('calc-range').value;
+    document.getElementById('calc-val-text').textContent = parseInt(val).toLocaleString() + ' VRDX';
+    const annual = Math.round(val * 0.085);
+    const monthly = Math.round(annual / 12);
+    document.getElementById('calc-reward').textContent = annual.toLocaleString() + ' VRDX';
+    document.getElementById('calc-monthly').textContent = monthly.toLocaleString() + ' VRDX';
+}
+</script>
+
+</body>
+</html>

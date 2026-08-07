@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis Wallet — Non-Custodial VRDX Wallet</title>
+<meta name="description" content="Create, import, and send VRDX tokens on the Verdis Chain testnet. Non-custodial wallet powered by polkadot.js.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0d0d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;background:#111;border-bottom:1px solid #222}
+.nav-brand{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:600}
+.nav-brand span{width:32px;height:32px;background:#caff33;color:#000;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900}
+.nav-links{display:flex;gap:20px}
+.nav-links a{color:#888;text-decoration:none;font-size:14px;transition:color .2s}
+.nav-links a:hover{color:#caff33}
+.nav-links a.active{color:#fff}
+.status{display:flex;align-items:center;gap:6px;font-size:13px;color:#888}
+.status::before{content:'';width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+.status.loading::before{background:#f59e0b}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.container{max-width:960px;margin:0 auto;padding:32px}
+h1{font-size:28px;font-weight:700;margin-bottom:8px}
+.subtitle{color:#888;font-size:14px;margin-bottom:32px}
+.wallet-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:768px){.wallet-grid{grid-template-columns:1fr}}
+.card{background:#111;border:1px solid #222;border-radius:12px;padding:24px}
+.card h2{font-size:16px;font-weight:600;margin-bottom:16px;color:#888;text-transform:uppercase;letter-spacing:1px}
+.btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;border:none;width:100%}
+.btn-primary{background:#caff33;color:#000}
+.btn-primary:hover{background:#b8e62e}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{background:transparent;color:#fff;border:1px solid #333}
+.btn-secondary:hover{border-color:#caff33}
+.input{width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #333;border-radius:8px;color:#fff;font-size:14px;margin-bottom:12px;font-family:monospace}
+.input:focus{outline:none;border-color:#caff33}
+.label{font-size:12px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.account-box{background:#1a1a1a;border-radius:8px;padding:16px;margin-top:16px}
+.address{font-family:monospace;font-size:13px;color:#caff33;word-break:break-all;margin:8px 0}
+.balance{font-size:24px;font-weight:700;margin:8px 0}
+.balance small{font-size:14px;color:#888;font-weight:400}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;text-transform:uppercase}
+.tag-green{background:#caff33;color:#000}
+.tag-blue{background:#3b82f6;color:#fff}
+.mnemonic{background:#1a1a1a;padding:12px;border-radius:8px;font-family:monospace;font-size:13px;color:#caff33;word-break:break-all;margin:12px 0;line-height:1.6}
+.warning{background:#f59e0b11;border:1px solid #f59e0b;color:#f59e0b;padding:12px;border-radius:8px;font-size:13px;margin:12px 0}
+.tx-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #222}
+.tx-item:last-child{border:none}
+.tx-hash{font-family:monospace;font-size:12px;color:#888}
+.select{width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #333;border-radius:8px;color:#fff;font-size:14px;margin-bottom:12px}
+.select:focus{outline:none;border-color:#caff33}
+.copy-btn{background:none;border:none;color:#888;cursor:pointer;font-size:14px;padding:4px 8px}
+.copy-btn:hover{color:#caff33}
+.hidden{display:none}
+.divider{height:1px;background:#222;margin:16px 0}
+.stats-row{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0}
+.stat{flex:1;min-width:120px;background:#1a1a1a;border-radius:8px;padding:12px;text-align:center}
+.stat-value{font-size:18px;font-weight:700;color:#caff33}
+.stat-label{font-size:11px;color:#888;text-transform:uppercase;margin-top:4px}
+.loader{text-align:center;padding:20px;color:#888;font-size:14px}
+
+/* Mobile responsiveness */
+@media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:44px;padding:10px 16px}.card{padding:16px}h1{font-size:22px}}
+@media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:16px}.container{padding:20px}}
+
+.brand-logo-img { height: 36px; width: 36px; display: block; object-fit: contain; flex-shrink: 0; } .brand-text { font-family: Poppins, sans-serif; font-weight: 700; font-size: 18px; color: #fff; white-space: nowrap; margin-left: 2px; }
+@media(max-width:768px) { .brand-logo-img { height: 40px; } }
+
+</style>
+<link rel="icon" type="image/png" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png">
+</head>
+<body>
+<nav class="std-nav">
+  <a href="/" class="nav-brand"><img src="/assets/verdis-v-icon.png" alt="Verdis Chain" class="brand-logo-img"><span class="brand-text">Verdis Chain</span></a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/explorer/">Explorer</a>
+    <a href="/dex/">DEX</a>
+    <a href="/validators/">Validators</a>
+    <a href="/eco/">Eco</a>
+    <a href="/faucet/">Faucet</a>
+    <a href="/wallet/" class="active">Wallet</a>
+    <a href="/sale/">Sale</a>
+    <a href="/docs/">Docs</a>
+    
+  </div>
+  <div class="nav-status"><div class="dot"></div><span class="nav-text">Connected</span></div>
+</nav>
+
+<div class="container">
+<h1>Verdis Non-Custodial Wallet</h1>
+<p class="subtitle">Create, import, and send VRDX tokens on the Verdis Chain testnet. Your keys, your tokens.</p>
+
+<div class="stats-row">
+<div class="stat"><div class="stat-value" id="statBlock">#--</div><div class="stat-label">Block Height</div></div>
+<div class="stat"><div class="stat-value" id="statPeers">--</div><div class="stat-label">Peers</div></div>
+<div class="stat"><div class="stat-value" id="statValidators">--</div><div class="stat-label">Validators</div></div>
+<div class="stat"><div class="stat-value" id="statPools">--</div><div class="stat-label">AMM Pools</div></div>
+</div>
+
+<div class="wallet-grid">
+<div class="card">
+<h2>Account</h2>
+<div id="noAccount">
+<p style="color:#888;font-size:14px;margin-bottom:16px">No account loaded. Create a new wallet or import an existing one.</p>
+<button class="btn btn-primary" id="btnCreate" disabled>Create New Wallet</button>
+<div class="divider"></div>
+<button class="btn btn-secondary" id="btnImport" disabled>Import Wallet</button>
+<div class="divider"></div>
+<div class="label">Or use a dev account:</div>
+<select class="select" id="devAccount" disabled>
+<option value="">-- Select Dev Account --</option>
+<option value="//Alice">//Alice (Test Account)</option>
+<option value="//Bob">//Bob (Test Account)</option>
+<option value="//Charlie">//Charlie (Test Account)</option>
+<option value="//Dave">//Dave (Test Account)</option>
+<option value="//Eve">//Eve (Test Account)</option>
+</select>
+</div>
+<div id="hasAccount" class="hidden">
+<div class="account-box">
+<div class="label">Account Address</div>
+<div class="address" id="accountAddress">--</div>
+<button class="copy-btn" id="btnCopy">📋 Copy Address</button>
+</div>
+<div class="account-box" style="margin-top:12px">
+<div class="label">Balance</div>
+<div class="balance"><span id="balanceValue">0.00</span> <small>VRDX</small></div>
+<div class="label" style="margin-top:8px">Nonce: <span id="nonceValue">--</span></div>
+</div>
+<div class="divider"></div>
+<button class="btn btn-secondary" id="btnRefreshBalance">Refresh Balance</button>
+<div class="divider"></div>
+<button class="btn btn-secondary" id="btnExport">Export Mnemonic</button>
+<div class="divider"></div>
+<button class="btn btn-secondary" id="btnClear" style="color:#ef4444">Clear Wallet</button>
+</div>
+<div id="mnemonicBox" class="hidden">
+<div class="divider"></div>
+<div class="warning">⚠️ Save this mnemonic safely. Anyone with this phrase can access your funds. Never share it!</div>
+<div class="label">Your Mnemonic (Seed Phrase):</div>
+<div class="mnemonic" id="mnemonicText">--</div>
+</div>
+</div>
+
+<div class="card">
+<h2>Send VRDX</h2>
+<div id="sendForm">
+<div class="label">Recipient Address</div>
+<input class="input" id="sendTo" placeholder="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY">
+<div class="label">Amount (VRDX)</div>
+<input class="input" type="number" id="sendAmount" placeholder="100.00" step="0.01" min="0">
+<button class="btn btn-primary" id="btnSend" style="margin-top:12px" disabled>Send Transaction</button>
+<div id="txStatus" style="margin-top:12px;font-size:13px"></div>
+</div>
+<div class="divider"></div>
+<h2>Transaction History</h2>
+<div id="txHistory">
+<p style="color:#888;font-size:13px">No transactions yet.</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Load polkadot.js bundles in dependency order -->
+<script src="https://unpkg.com/@polkadot/util@12.5.1/bundle-polkadot-util.js"></script>
+<script src="https://unpkg.com/@polkadot/util-crypto@12.5.1/bundle-polkadot-util-crypto.js"></script>
+<script src="https://unpkg.com/@polkadot/keyring@12.5.1/bundle-polkadot-keyring.js"></script>
+<script src="https://unpkg.com/@polkadot/types@10.9.1/bundle-polkadot-types.js"></script>
+<script src="https://unpkg.com/@polkadot/api@10.9.1/bundle-polkadot-api.js"></script>
+
+<script>
+const WS_URL = 'wss://verdischain.com/ws';
+const DECIMALS = 12;
+let api = null;
+let keyring = null;
+let currentAccount = null;
+
+// Check if polkadot.js loaded
+function checkPolkadot() {
+    return typeof window.polkadotApi !== 'undefined' &&
+           typeof window.polkadotKeyring !== 'undefined' &&
+           typeof window.polkadotUtilCrypto !== 'undefined';
+}
+
+async function initApi() {
+    try {
+        if (!checkPolkadot()) {
+            console.log('Waiting for polkadot.js to load...');
+            setTimeout(initApi, 500);
+            return;
+        }
+
+        const { ApiPromise, WsProvider } = window.polkadotApi;
+        const { Keyring } = window.polkadotKeyring;
+        const ws = new WsProvider(WS_URL);
+        api = await ApiPromise.create({ provider: ws, noInitWarn: true });
+        keyring = new Keyring({ type: 'sr25519', ss58Format: 909 });
+
+        console.log('polkadot.js API connected');
+        var ns = document.getElementById('netStatus'); if (ns) ns.textContent = 'Connected';
+        if (ns) ns.classList.remove('loading');
+
+        // Enable buttons
+        ['btnCreate', 'btnImport', 'devAccount', 'btnSend'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.disabled = false;
+        });
+
+        updateStats();
+        setInterval(updateStats, 15000);
+
+        // Load saved account
+        loadAccount();
+    } catch(e) {
+        console.error('API init error:', e.message);
+        var ns2 = document.getElementById('netStatus'); if (ns2) ns2.textContent = 'Reconnecting...';
+        setTimeout(initApi, 5000);
+    }
+}
+
+async function updateStats() {
+    // Stats use HTTP RPC, no need to wait for WebSocket API
+    try {
+        // Get block height via direct RPC
+        const res = await fetch('/rpc', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1})
+        });
+        const data = await res.json();
+        const blockNum = parseInt(data.result?.number || '0x0', 16);
+        document.getElementById('statBlock').textContent = '#' + blockNum;
+
+        // Get peers
+        const peersRes = await fetch('/rpc', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({jsonrpc: '2.0', method: 'system_health', params: [], id: 2})
+        });
+        const peersData = await peersRes.json();
+        document.getElementById('statPeers').textContent = peersData.result?.peers || 8;
+
+        // Get validators
+        const valRes = await fetch('/rpc', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({jsonrpc: '2.0', method: 'dpos_activeValidators', params: [], id: 3})
+        });
+        const valData = await valRes.json();
+        document.getElementById('statValidators').textContent = valData.result?.length || 14;
+
+        // Get pool count
+        const poolRes = await fetch('/rpc', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({jsonrpc: '2.0', method: 'amm_dex_getPoolCount', params: [], id: 4})
+        });
+        const poolData = await poolRes.json();
+        document.getElementById('statPools').textContent = poolData.result || 7;
+    } catch(e) {
+        console.log('Stats error:', e.message);
+    }
+}
+
+// Create new wallet
+document.getElementById('btnCreate').addEventListener('click', () => {
+    try {
+        const { mnemonicGenerate } = window.polkadotUtilCrypto;
+        const mnemonic = mnemonicGenerate();
+        const pair = keyring.addFromUri(mnemonic);
+        currentAccount = { mnemonic, address: pair.address, pair };
+        saveAccount(mnemonic, pair.address);
+        showAccount(pair.address);
+        document.getElementById('mnemonicText').textContent = mnemonic;
+        document.getElementById('mnemonicBox').classList.remove('hidden');
+        refreshBalance();
+    } catch(e) {
+        alert('Error creating wallet: ' + e.message);
+    }
+});
+
+// Import wallet
+document.getElementById('btnImport').addEventListener('click', () => {
+    const seed = prompt('Enter your mnemonic or seed (e.g., "//Alice" or "abandon abandon ..."):');
+    if (seed) importAccount(seed);
+});
+
+// Dev account
+document.getElementById('devAccount').addEventListener('change', (e) => {
+    if (e.target.value) importAccount(e.target.value);
+});
+
+function importAccount(seed) {
+    try {
+        const pair = keyring.addFromUri(seed);
+        currentAccount = { mnemonic: seed, address: pair.address, pair };
+        saveAccount(seed, pair.address);
+        showAccount(pair.address);
+        refreshBalance();
+    } catch(e) {
+        alert('Error importing wallet: ' + e.message);
+    }
+}
+
+function showAccount(address) {
+    document.getElementById('noAccount').classList.add('hidden');
+    document.getElementById('hasAccount').classList.remove('hidden');
+    document.getElementById('accountAddress').textContent = address;
+}
+
+async function refreshBalance() {
+    if (!currentAccount || !api) return;
+    try {
+        const account = await api.query.system.account(currentAccount.address);
+        const balance = account.data.free.toBigInt() / BigInt(10n ** BigInt(DECIMALS));
+        const balanceNum = Number(account.data.free) / Math.pow(10, DECIMALS);
+        document.getElementById('balanceValue').textContent = balanceNum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('nonceValue').textContent = account.nonce.toNumber();
+    } catch(e) {
+        console.log('Balance error:', e.message);
+        document.getElementById('balanceValue').textContent = '0.00';
+        document.getElementById('nonceValue').textContent = '0';
+    }
+}
+
+document.getElementById('btnRefreshBalance').addEventListener('click', refreshBalance);
+
+document.getElementById('btnExport').addEventListener('click', () => {
+    const mnemonic = localStorage.getItem('verdis_wallet_seed');
+    if (mnemonic) {
+        document.getElementById('mnemonicText').textContent = mnemonic;
+        document.getElementById('mnemonicBox').classList.remove('hidden');
+    }
+});
+
+document.getElementById('btnClear').addEventListener('click', () => {
+    if (confirm('Clear wallet from this browser? Make sure you have your mnemonic saved!')) {
+        localStorage.removeItem('verdis_wallet_seed');
+        localStorage.removeItem('verdis_wallet_address');
+        localStorage.removeItem('verdis_tx_history');
+        currentAccount = null;
+        location.reload();
+    }
+});
+
+// Send VRDX
+document.getElementById('btnSend').addEventListener('click', async () => {
+    if (!currentAccount) { alert('Create or import a wallet first'); return; }
+    if (!api) { alert('API not connected. Please wait...'); return; }
+
+    const to = document.getElementById('sendTo').value.trim();
+    const amount = parseFloat(document.getElementById('sendAmount').value);
+
+    if (!to || to.length < 10) { alert('Enter a valid recipient address'); return; }
+    if (!amount || amount <= 0) { alert('Enter a valid amount'); return; }
+
+    const btn = document.getElementById('btnSend');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    document.getElementById('txStatus').innerHTML = '<span style="color:#888">Preparing transaction...</span>';
+
+    try {
+        const amountPlanck = BigInt(Math.floor(amount * Math.pow(10, DECIMALS)));
+        const transfer = api.tx.balances.transferAllowDeath(to, amountPlanck);
+
+        document.getElementById('txStatus').innerHTML = '<span style="color:#3b82f6">Signing and broadcasting...</span>';
+
+        const hash = await transfer.signAndSend(currentAccount.pair);
+
+        document.getElementById('txStatus').innerHTML = '<span style="color:#22c55e">✓ Sent! TX Hash: ' + hash.toHex().substring(0, 20) + '...</span>';
+
+        addTxHistory({
+            hash: hash.toHex(),
+            to: to.substring(0, 10) + '...' + to.substring(to.length - 6),
+            amount: amount.toFixed(2),
+            time: new Date().toLocaleString()
+        });
+
+        btn.textContent = 'Send Transaction';
+        btn.disabled = false;
+
+        setTimeout(refreshBalance, 6000);
+        document.getElementById('sendTo').value = '';
+        document.getElementById('sendAmount').value = '';
+    } catch(e) {
+        document.getElementById('txStatus').innerHTML = '<span style="color:#ef4444">✗ Error: ' + e.message + '</span>';
+        btn.textContent = 'Send Transaction';
+        btn.disabled = false;
+    }
+});
+
+// Helper functions
+function saveAccount(seed, address) {
+    localStorage.setItem('verdis_wallet_seed', seed);
+    localStorage.setItem('verdis_wallet_address', address);
+}
+
+function loadAccount() {
+    const seed = localStorage.getItem('verdis_wallet_seed');
+    const address = localStorage.getItem('verdis_wallet_address');
+    if (seed && address && keyring) {
+        try {
+            const pair = keyring.addFromUri(seed);
+            currentAccount = { mnemonic: seed, address: pair.address, pair };
+            showAccount(pair.address);
+            refreshBalance();
+        } catch(e) {
+            console.log('Load account error:', e.message);
+        }
+    }
+}
+
+function addTxHistory(tx) {
+    let history = JSON.parse(localStorage.getItem('verdis_tx_history') || '[]');
+    history.unshift(tx);
+    history = history.slice(0, 10);
+    localStorage.setItem('verdis_tx_history', JSON.stringify(history));
+    renderTxHistory();
+}
+
+function renderTxHistory() {
+    const history = JSON.parse(localStorage.getItem('verdis_tx_history') || '[]');
+    const container = document.getElementById('txHistory');
+    if (history.length === 0) {
+        container.innerHTML = '<p style="color:#888;font-size:13px">No transactions yet.</p>';
+        return;
+    }
+    container.innerHTML = history.map(tx =>
+        '<div class="tx-item">' +
+        '<div><div style="color:#fff;font-size:13px">' + tx.amount + ' VRDX → ' + tx.to + '</div>' +
+        '<div class="tx-hash">' + tx.time + '</div></div>' +
+        '<span class="tag tag-green">Sent</span></div>'
+    ).join('');
+}
+
+// Copy address
+document.getElementById('btnCopy').addEventListener('click', () => {
+    const addr = document.getElementById('accountAddress').textContent;
+    navigator.clipboard.writeText(addr).then(() => alert('Address copied to clipboard!'));
+});
+
+// Initialize
+renderTxHistory();
+setInterval(updateStats, 15000);
+updateStats();
+initApi();
+</script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verdis Token Sale | VRDX Presale</title>
+    <meta name="description" content="Participate in the Verdis (VRDX) token sale. View vesting terms, presale progress, asset acceptance, and participation conditions.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/verdis.css?v=3">
+    <script src="/js/verdis.js?v=3"></script>
+    <style>
+        .timer-box { display: flex; gap: 16px; justify-content: center; margin: 24px 0; }
+        .timer-unit { background: var(--bg-input); border: 1px solid var(--border-light); padding: 16px 20px; border-radius: 12px; text-align: center; min-width: 80px; }
+        .timer-num { font-size: 28px; font-weight: 800; color: var(--accent); font-family: var(--font-mono); }
+        .timer-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
+        .progress-container { background: var(--bg-input); border-radius: 12px; padding: 4px; border: 1px solid var(--border); margin: 20px 0; }
+        .progress-bar-inner { height: 16px; border-radius: 8px; background: var(--gradient-accent); width: 0%; transition: width 1s ease-in-out; }
+        .consent-box { background: var(--bg-card); border: 1px solid var(--border-accent); border-radius: 12px; padding: 24px; margin-top: 32px; }
+        .checkbox-label { display: flex; items-center: flex-start; gap: 12px; cursor: pointer; font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+        .checkbox-label input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent); }
+    </style>
+<link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32"/>
+<link rel="icon" type="image/png" href="/favicon-16.png" sizes="16x16"/>
+<link rel="apple-touch-icon" href="/favicon-192.png"/>
+<link rel="manifest" href="/site.webmanifest"/>
+</head>
+<body>
+<!-- Verdis V Logo Splash -->
+<div class="verdis-splash-overlay" id="verdis-splash">
+  <div class="verdis-splash-logo">
+    <svg class="verdis-anim-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:120px;height:120px">
+      <path class="hex-path" d="M20 3L34 11V27L20 35L6 27V11L20 3Z" stroke="#00ff88" stroke-width="2" fill="rgba(0,255,136,0.03)" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="v-path" d="M13 13L20 27M27 13L20 27" stroke="#00ff88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="leaf-accent" d="M20 18C17 18 15 20 15 23C15 26 17 28 20 28C23 28 25 26 25 23C25 20 23 18 20 18Z" fill="#00ff88" opacity="0.3"/>
+    </svg>
+  </div>
+  <div class="verdis-splash-text">VERDIS</div>
+  <div class="verdis-splash-spinner"></div>
+</div>
+<!-- End Verdis Splash -->
+
+
+<div id="verdis-nav"></div>
+
+<section class="section" style="padding-top:100px;">
+    <div class="section-header reveal">
+        <span class="section-eyebrow">Official Allocation</span>
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px"><span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#0a0e0a;border:1px solid rgba(0,255,136,0.3);flex-shrink:0"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:24px;height:24px"><path d="M20 3L34 11V27L20 35L6 27V11L20 3Z" stroke="#00ff88" stroke-width="2" fill="rgba(0,255,136,0.03)" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 13L20 27M27 13L20 27" stroke="#00ff88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 18C17 18 15 20 15 23C15 26 17 28 20 28C23 28 25 26 25 23C25 20 23 18 20 18Z" fill="#00ff88" opacity="0.3"/></svg></span><h1 class="section-title" style="margin:0">VRDX Token Presale</h1></div>
+        <p class="section-subtitle">
+            Participate in the foundational token sale for the Verdis green Layer-1 blockchain ecosystem.
+        </p>
+    </div>
+
+    <!-- COUNTDOWN & PROGRESS CARD -->
+    <div class="card-glass reveal" style="max-width:800px; margin:0 auto 48px auto; text-align:center;">
+        <span class="badge badge-info" style="font-size:13px;">Presale Phase: Scheduled</span>
+        <h3 style="font-size:22px; margin-top:12px;">Presale Launch Countdown</h3>
+        
+        <div class="timer-box">
+            <div class="timer-unit"><div class="timer-num" id="t-days">TBD</div><div class="timer-label">Days</div></div>
+            <div class="timer-unit"><div class="timer-num" id="t-hours">TBD</div><div class="timer-label">Hours</div></div>
+            <div class="timer-unit"><div class="timer-num" id="t-mins">TBD</div><div class="timer-label">Mins</div></div>
+            <div class="timer-unit"><div class="timer-num" id="t-secs">TBD</div><div class="timer-label">Secs</div></div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--text-secondary); margin-bottom:6px;">
+            <span>Raised: TBD</span>
+            <span>Target: TBD</span>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar-inner" id="sale-progress" style="width: 15%;"></div>
+        </div>
+        <div style="font-size:12px; color:var(--text-muted);">Progress status: Pending presale trigger</div>
+    </div>
+
+    <!-- OVERVIEW & ACCEPTED ASSETS -->
+    <div class="grid-2 reveal" style="margin-bottom:48px;">
+        <div class="card">
+            <h3 style="font-size:20px; color:var(--accent); margin-bottom:16px;">How to Participate</h3>
+            <ol style="padding-left:20px; line-height:2; color:var(--text-secondary);">
+                <li>Connect a supported Web3 wallet or generate a deposit address.</li>
+                <li>Select contribution asset (USDT, USDC, ETH, or BNB).</li>
+                <li>Review the mandatory risk disclosure and vesting agreement.</li>
+                <li>Submit contribution transaction to receive on-chain allocation record.</li>
+            </ol>
+        </div>
+        <div class="card">
+            <h3 style="font-size:20px; color:var(--accent); margin-bottom:16px;">Accepted Assets</h3>
+            <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
+                <div style="background:var(--bg-input); padding:12px; border-radius:8px; border:1px solid var(--border); text-align:center;">
+                    <strong>USDT</strong><br><span style="font-size:12px; color:var(--text-muted);">ERC-20 / BEP-20</span>
+                </div>
+                <div style="background:var(--bg-input); padding:12px; border-radius:8px; border:1px solid var(--border); text-align:center;">
+                    <strong>USDC</strong><br><span style="font-size:12px; color:var(--text-muted);">ERC-20 / BEP-20</span>
+                </div>
+                <div style="background:var(--bg-input); padding:12px; border-radius:8px; border:1px solid var(--border); text-align:center;">
+                    <strong>ETH</strong><br><span style="font-size:12px; color:var(--text-muted);">Ethereum Mainnet</span>
+                </div>
+                <div style="background:var(--bg-input); padding:12px; border-radius:8px; border:1px solid var(--border); text-align:center;">
+                    <strong>BNB</strong><br><span style="font-size:12px; color:var(--text-muted);">BNB Chain</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOKEN ALLOCATION TABLE -->
+    <div class="card reveal" style="margin-bottom:48px;">
+        <h3 style="font-size:20px; margin-bottom:16px;">Presale Stage Parameters</h3>
+        <div class="table-wrap">
+            <table class="verdis-table">
+                <thead>
+                    <tr>
+                        <th>Stage</th>
+                        <th>Token Allocation</th>
+                        <th>Price per VRDX</th>
+                        <th>Min Purchase</th>
+                        <th>Vesting Period</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Seed Round</strong></td>
+                        <td>TBD</td>
+                        <td>TBD</td>
+                        <td>TBD</td>
+                        <td><span class="badge badge-warning">60-Day Linear</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Private Round</strong></td>
+                        <td>TBD</td>
+                        <td>TBD</td>
+                        <td>TBD</td>
+                        <td><span class="badge badge-warning">60-Day Linear</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Public Presale</strong></td>
+                        <td>TBD</td>
+                        <td>TBD</td>
+                        <td>TBD</td>
+                        <td><span class="badge badge-success">30-Day Linear</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- VESTING EXPLANATION -->
+    <div class="card-glass reveal" style="margin-bottom:48px;">
+        <h3 style="font-size:20px; color:var(--accent); margin-bottom:12px;">Implemented Vesting Architecture</h3>
+        <p style="color:var(--text-secondary); line-height:1.7;">
+            To ensure economic stability and protect early community participants, all presale allocations are bound to smart contract vesting logic:
+        </p>
+        <ul style="list-style:none; padding:0; margin-top:12px; line-height:2; color:var(--text-primary);">
+            <li>&#10003; <strong>Seed & Private Allocations:</strong> Subject to a <strong>60-day linear vesting schedule</strong> starting at TGE.</li>
+            <li>&#10003; <strong>Public & Final Presale:</strong> Subject to a <strong>30-day linear vesting schedule</strong> starting at TGE.</li>
+            <li>&#10003; <strong>On-Chain Claims:</strong> Participants claim unlocked VRDX directly via the web wallet contract interface.</li>
+        </ul>
+    </div>
+
+    <!-- RISK DISCLOSURE -->
+    <div class="card reveal" style="border-color:rgba(255,170,0,0.3); margin-bottom:48px;">
+        <h3 style="font-size:20px; color:var(--warning); margin-bottom:12px;">Risk Disclosure & Disclaimers</h3>
+        <p style="color:var(--text-secondary); font-size:14px; line-height:1.6;">
+            Participating in cryptographic token sales involves material risk. Token values can fluctuate substantially. Verdis (VRDX) tokens are utility coins intended for transaction gas, staking, and governance within the Verdis blockchain ecosystem. They do not represent equity, shares, or security ownership in any entity. Participants are responsible for compliance with local regulations and tax laws in their respective jurisdictions.
+        </p>
+    </div>
+
+    <!-- PRESALE PARTICIPATION FORM -->
+    <div class="consent-box reveal">
+        <h3 style="font-size:22px; margin-bottom:16px;">Presale Participation Consent</h3>
+        <p style="font-size:14px; color:var(--text-secondary); margin-bottom:20px;">
+            Please read and acknowledge the disclosures prior to unlocking contribution buttons.
+        </p>
+
+        <label class="checkbox-label" style="margin-bottom:20px;">
+            <input type="checkbox" id="consent-check" onchange="toggleSaleBtn()">
+            <span>
+                I confirm that I have read the Risk Disclosure, understand the vesting rules (60-day for Seed/Private, 30-day for Public), and certify that I am not a resident or citizen of restricted jurisdictions.
+            </span>
+        </label>
+
+        <div style="display:flex; gap:16px; flex-wrap:wrap;">
+            <button class="btn btn-primary btn-lg" id="buy-btn" disabled onclick="alert('Presale portal will open on the announced TBD date.')">
+                Participate in Presale
+            </button>
+            <a href="/whitepaper/" class="btn btn-ghost btn-lg">Read Whitepaper</a>
+        </div>
+    </div>
+</section>
+
+<script>
+const LAUNCH_DATE = new Date("2026-09-15T10:00:00Z").getTime();
+function updateCountdown() {
+    const diff = LAUNCH_DATE - Date.now();
+    if (diff <= 0) {
+        ["t-days","t-hours","t-mins","t-secs"].forEach(id => document.getElementById(id).textContent = "0");
+        return;
+    }
+    document.getElementById("t-days").textContent = String(Math.floor(diff/86400000)).padStart(2,"0");
+    document.getElementById("t-hours").textContent = String(Math.floor((diff%86400000)/3600000)).padStart(2,"0");
+    document.getElementById("t-mins").textContent = String(Math.floor((diff%3600000)/60000)).padStart(2,"0");
+    document.getElementById("t-secs").textContent = String(Math.floor((diff%60000)/1000)).padStart(2,"0");
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+</script>
+<div id="verdis-footer"></div>
+
+<script>
+function toggleSaleBtn() {
+    const checked = document.getElementById('consent-check').checked;
+    document.getElementById('buy-btn').disabled = !checked;
+}
+</script>
+
+<footer style="text-align:center;padding:24px;border-top:1px solid #222"><a href="https://evolvixos.com" style="color:#818cf8;text-decoration:none;font-size:14px">EvolvixOS — AI Engineering OS</a></footer></body>
+</html>
