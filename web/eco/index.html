@@ -14,13 +14,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0a0a0a;
+  --bg: #f1f5f9;
   --bg-1: #111111;
   --bg-2: #1a1a1a;
-  --card: #141414;
-  --border: #222222;
+  --card: #ffffff;
+  --border: #e2e8f0;
   --border-2: #333333;
-  --text: #e8e8e8;
+  --text: #0f172a;
   --text-2: #888888;
   --text-3: #555555;
   --accent: #caff33;
@@ -742,7 +742,7 @@ tr:hover td {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 13px;
   font-weight: 700;
-  color: #fff;
+  color: #0f172a;
   margin-bottom: 16px;
 }
 .cert-amount {
@@ -905,7 +905,7 @@ footer .links a:hover {
   .nav-links a { padding: 6px 10px; font-size: 13px; }
 }
 
-nav.std-nav { position:sticky; top:0; z-index:1000; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid #222; padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
+nav.std-nav { position:sticky; top:0; z-index:1000; background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid #222; padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
 nav.std-nav .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:#e8e8e8; }
 nav.std-nav .nav-brand .logo { width:32px; height:32px; background:#caff33; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#000; font-size:14px; }
 nav.std-nav .nav-brand span { font-weight:600; font-size:14px; }
@@ -935,7 +935,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
 .nav-hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
 .nav-hamburger.active span:nth-child(2){opacity:0}
 .nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-@media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(10,10,10,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.08);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
+@media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(0,0,0,0.06);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
 
 
 /* Responsive tables - prevent viewport expansion */
@@ -1117,7 +1117,7 @@ thead,tbody{display:table;width:100%}
           <div class="progress-group">
             <div class="progress-label">
               <span>🌳 Reforestation & Agroforestry</span>
-              <span class="mono" style="color:var(--text);">62% (7,965 t)</span>
+              <span class="mono" style="color:var(--text,#0f172a);">62% (7,965 t)</span>
             </div>
             <div class="progress-bar">
               <div class="progress-fill" style="width: 62%;"></div>
@@ -1127,7 +1127,7 @@ thead,tbody{display:table;width:100%}
           <div class="progress-group">
             <div class="progress-label">
               <span>💨 Direct Air Capture (DAC)</span>
-              <span class="mono" style="color:var(--text);">21% (2,698 t)</span>
+              <span class="mono" style="color:var(--text,#0f172a);">21% (2,698 t)</span>
             </div>
             <div class="progress-bar">
               <div class="progress-fill" style="width: 21%;"></div>
@@ -1137,7 +1137,7 @@ thead,tbody{display:table;width:100%}
           <div class="progress-group">
             <div class="progress-label">
               <span>☀️ Renewable Energy Offsets</span>
-              <span class="mono" style="color:var(--text);">12% (1,541 t)</span>
+              <span class="mono" style="color:var(--text,#0f172a);">12% (1,541 t)</span>
             </div>
             <div class="progress-bar">
               <div class="progress-fill" style="width: 12%;"></div>
@@ -1147,7 +1147,7 @@ thead,tbody{display:table;width:100%}
           <div class="progress-group">
             <div class="progress-label">
               <span>🔥 Methane & Biochar Avoidance</span>
-              <span class="mono" style="color:var(--text);">5% (643 t)</span>
+              <span class="mono" style="color:var(--text,#0f172a);">5% (643 t)</span>
             </div>
             <div class="progress-bar">
               <div class="progress-fill" style="width: 5%;"></div>
@@ -1280,7 +1280,7 @@ thead,tbody{display:table;width:100%}
                 <div class="td-title">Amazon Rainforest Basin</div>
                 <div style="font-size:12px; color:var(--text-3);">Loreto Region, Peru</div>
               </td>
-              <td class="mono" style="font-weight:600; color:var(--text);">18,450</td>
+              <td class="mono" style="font-weight:600; color:var(--text,#0f172a);">18,450</td>
               <td class="mono accent" style="font-weight:600;">4,820 t</td>
               <td class="mono">2026-08-01</td>
               <td style="font-weight:500;">Verra (VCS)</td>
@@ -1291,7 +1291,7 @@ thead,tbody{display:table;width:100%}
                 <div class="td-title">Congo River Canopy</div>
                 <div style="font-size:12px; color:var(--text-3);">Équateur Province, DRC</div>
               </td>
-              <td class="mono" style="font-weight:600; color:var(--text);">12,300</td>
+              <td class="mono" style="font-weight:600; color:var(--text,#0f172a);">12,300</td>
               <td class="mono accent" style="font-weight:600;">3,150 t</td>
               <td class="mono">2026-07-24</td>
               <td style="font-weight:500;">Gold Standard</td>
@@ -1302,7 +1302,7 @@ thead,tbody{display:table;width:100%}
                 <div class="td-title">Borneo Mangrove Corridor</div>
                 <div style="font-size:12px; color:var(--text-3);">East Kalimantan, Indonesia</div>
               </td>
-              <td class="mono" style="font-weight:600; color:var(--text);">9,842</td>
+              <td class="mono" style="font-weight:600; color:var(--text,#0f172a);">9,842</td>
               <td class="mono accent" style="font-weight:600;">2,640 t</td>
               <td class="mono">2026-07-18</td>
               <td style="font-weight:500;">Rainforest Alliance</td>
@@ -1313,7 +1313,7 @@ thead,tbody{display:table;width:100%}
                 <div class="td-title">Rift Valley Agroforestry</div>
                 <div style="font-size:12px; color:var(--text-3);">Nakuru County, Kenya</div>
               </td>
-              <td class="mono" style="font-weight:600; color:var(--text);">4,200</td>
+              <td class="mono" style="font-weight:600; color:var(--text,#0f172a);">4,200</td>
               <td class="mono accent" style="font-weight:600;">1,120 t</td>
               <td class="mono">2026-06-30</td>
               <td style="font-weight:500;">UN Climate Change</td>
@@ -1324,7 +1324,7 @@ thead,tbody{display:table;width:100%}
                 <div class="td-title">Andes High-Altitude Forest</div>
                 <div style="font-size:12px; color:var(--text-3);">Cusco Region, Peru</div>
               </td>
-              <td class="mono" style="font-weight:600; color:var(--text);">2,600</td>
+              <td class="mono" style="font-weight:600; color:var(--text,#0f172a);">2,600</td>
               <td class="mono accent" style="font-weight:600;">1,117 t</td>
               <td class="mono">2026-06-12</td>
               <td style="font-weight:500;">Verra (VCS)</td>
@@ -1638,7 +1638,7 @@ thead,tbody{display:table;width:100%}
     <div style="background:var(--bg-1); padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border); margin-bottom:20px;" class="mono">
       <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-2);">
         <span>Price per Ton:</span>
-        <span id="modalUnitPrice" style="color:var(--text);">$14.50</span>
+        <span id="modalUnitPrice" style="color:var(--text,#0f172a);">$14.50</span>
       </div>
       <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:700; color:var(--accent); margin-top:6px;">
         <span>Total Estimated Cost:</span>

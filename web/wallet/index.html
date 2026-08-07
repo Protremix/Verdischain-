@@ -23,7 +23,7 @@ body{font-family:'Poppins',sans-serif;background:#f1f5f9;color:var(--text-dark);
 #cursor-glow{position:fixed;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(202,255,51,0.04) 0%,transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);opacity:0;transition:opacity 300ms}
 body:hover #cursor-glow{opacity:1}
 /* Nav */
-.nav{position:sticky;top:0;z-index:100;background:rgba(26,26,26,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--hero-border);transition:padding 250ms}
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--hero-border);transition:padding 250ms}
 .nav-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 24px}
 .nav-brand{font-weight:800;font-size:13px;color:var(--text-white);display:flex;align-items:center;gap:8px;text-decoration:none}
 .nav-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent-glow);animation:pulse 2s infinite}
@@ -79,7 +79,7 @@ body:hover #cursor-glow{opacity:1}
 .btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none}
 .btn-secondary{background:transparent;color:var(--text-dark);font-size:12px;font-weight:600;padding:10px 20px;border-radius:var(--radius-pill);border:1px solid #d1d5db;cursor:pointer;transition:var(--transition)}
 .btn-secondary:hover{border-color:var(--accent);color:var(--accent-3);background:var(--accent-light)}
-.btn-danger{background:#ef4444;color:#fff;font-size:12px;font-weight:600;padding:8px 16px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition)}
+.btn-danger{background:#ef4444;color:#0f172a;font-size:12px;font-weight:600;padding:8px 16px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition)}
 .btn-danger:hover{background:#dc2626;transform:translateY(-1px)}
 /* Dashboard */
 .dash-grid{display:grid;grid-template-columns:280px 1fr;gap:20px}
@@ -148,9 +148,9 @@ body:hover #cursor-glow{opacity:1}
 /* Toast */
 .toast{position:fixed;bottom:20px;right:20px;z-index:300;padding:12px 20px;border-radius:var(--radius);font-size:13px;font-weight:600;transform:translateX(400px);transition:transform 300ms ease;max-width:360px}
 .toast.show{transform:translateX(0)}
-.toast.success{background:#059669;color:#fff}
-.toast.error{background:#ef4444;color:#fff}
-.toast.info{background:var(--accent-3);color:#fff}
+.toast.success{background:#059669;color:#0f172a}
+.toast.error{background:#ef4444;color:#0f172a}
+.toast.info{background:var(--accent-3);color:#0f172a}
 /* Network info */
 .net-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0}
 .net-row .l{color:var(--text-dark-muted)}
@@ -171,16 +171,16 @@ body:hover #cursor-glow{opacity:1}
 .nav-hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
 .nav-hamburger.active span:nth-child(2){opacity:0}
 .nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-@media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(10,10,10,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.08);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
+@media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(0,0,0,0.06);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
 
 /* std-nav unified navigation */
-nav.std-nav{position:sticky;top:0;z-index:100;background:rgba(10,10,10,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+nav.std-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,0,0,0.06);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 nav.std-nav .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text,#fff)}
 nav.std-nav .nav-links{display:flex;align-items:center;gap:4px}
-nav.std-nav .nav-links a{color:rgba(255,255,255,0.6);padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s}
-nav.std-nav .nav-links a:hover{color:#fff;background:rgba(255,255,255,0.06)}
+nav.std-nav .nav-links a{color:#64748b;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s}
+nav.std-nav .nav-links a:hover{color:#0f172a;background:rgba(255,255,255,0.06)}
 nav.std-nav .nav-links a.active{color:#caff33;background:rgba(202,255,51,0.08)}
-nav.std-nav .nav-status{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.6)}
+nav.std-nav .nav-status{display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b}
 nav.std-nav .nav-status .dot{width:8px;height:8px;border-radius:50%;background:#00ff66;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
 </style>
