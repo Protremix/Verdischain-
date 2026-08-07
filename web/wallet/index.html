@@ -1,451 +1,377 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verdis Wallet — Non-Custodial VRDX Wallet</title>
-<meta name="description" content="Create, import, and send VRDX tokens on the Verdis Chain testnet. Non-custodial wallet powered by polkadot.js.">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verdis Chain — Web3 Wallet | Non-Custodial</title>
+<link rel="canonical" href="https://verdischain.com/wallet/">
+<meta name="description" content="Non-custodial Web3 wallet for Verdis Chain. Create or import sr25519 keypairs, send and receive VRDX tokens, and stake to validators." />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Verdis Chain — Web3 Wallet" />
+<link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
+:root{--hero-bg:#1a1a1a;--hero-card:#2d2d2d;--hero-border:rgba(255,255,255,0.08);--accent:#caff33;--accent-hover:#a8e607;--accent-2:#84fe87;--accent-3:#00a86b;--accent-glow:rgba(202,255,51,0.35);--accent-light:rgba(202,255,51,0.08);--accent-border:rgba(202,255,51,0.25);--text-white:#fff;--text-dim:#1e293b;--text-muted:#334155;--text-dark:#0f172a;--text-dark-muted:#475569;--radius:10px;--radius-lg:16px;--radius-pill:100px;--transition:250ms cubic-bezier(0.16,1,0.3,1)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0d0d0d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh}
-.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;background:#111;border-bottom:1px solid #222}
-.nav-brand{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:600}
-.nav-brand span{width:32px;height:32px;background:#caff33;color:#000;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900}
-.nav-links{display:flex;gap:20px}
-.nav-links a{color:#888;text-decoration:none;font-size:14px;transition:color .2s}
-.nav-links a:hover{color:#caff33}
-.nav-links a.active{color:#fff}
-.status{display:flex;align-items:center;gap:6px;font-size:13px;color:#888}
-.status::before{content:'';width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
-.status.loading::before{background:#f59e0b}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.container{max-width:960px;margin:0 auto;padding:32px}
-h1{font-size:28px;font-weight:700;margin-bottom:8px}
-.subtitle{color:#888;font-size:14px;margin-bottom:32px}
-.wallet-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-@media(max-width:768px){.wallet-grid{grid-template-columns:1fr}}
-.card{background:#111;border:1px solid #222;border-radius:12px;padding:24px}
-.card h2{font-size:16px;font-weight:600;margin-bottom:16px;color:#888;text-transform:uppercase;letter-spacing:1px}
-.btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;border:none;width:100%}
-.btn-primary{background:#caff33;color:#000}
-.btn-primary:hover{background:#b8e62e}
-.btn-primary:disabled{opacity:.5;cursor:not-allowed}
-.btn-secondary{background:transparent;color:#fff;border:1px solid #333}
-.btn-secondary:hover{border-color:#caff33}
-.input{width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #333;border-radius:8px;color:#fff;font-size:14px;margin-bottom:12px;font-family:monospace}
-.input:focus{outline:none;border-color:#caff33}
-.label{font-size:12px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
-.account-box{background:#1a1a1a;border-radius:8px;padding:16px;margin-top:16px}
-.address{font-family:monospace;font-size:13px;color:#caff33;word-break:break-all;margin:8px 0}
-.balance{font-size:24px;font-weight:700;margin:8px 0}
-.balance small{font-size:14px;color:#888;font-weight:400}
-.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;text-transform:uppercase}
-.tag-green{background:#caff33;color:#000}
-.tag-blue{background:#3b82f6;color:#fff}
-.mnemonic{background:#1a1a1a;padding:12px;border-radius:8px;font-family:monospace;font-size:13px;color:#caff33;word-break:break-all;margin:12px 0;line-height:1.6}
-.warning{background:#f59e0b11;border:1px solid #f59e0b;color:#f59e0b;padding:12px;border-radius:8px;font-size:13px;margin:12px 0}
-.tx-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #222}
-.tx-item:last-child{border:none}
-.tx-hash{font-family:monospace;font-size:12px;color:#888}
-.select{width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #333;border-radius:8px;color:#fff;font-size:14px;margin-bottom:12px}
-.select:focus{outline:none;border-color:#caff33}
-.copy-btn{background:none;border:none;color:#888;cursor:pointer;font-size:14px;padding:4px 8px}
-.copy-btn:hover{color:#caff33}
-.hidden{display:none}
-.divider{height:1px;background:#222;margin:16px 0}
-.stats-row{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0}
-.stat{flex:1;min-width:120px;background:#1a1a1a;border-radius:8px;padding:12px;text-align:center}
-.stat-value{font-size:18px;font-weight:700;color:#caff33}
-.stat-label{font-size:11px;color:#888;text-transform:uppercase;margin-top:4px}
-.loader{text-align:center;padding:20px;color:#888;font-size:14px}
+html{scroll-behavior:smooth}
+body{font-family:'Poppins',sans-serif;background:#f1f5f9;color:var(--text-dark);overflow-x:hidden;-webkit-font-smoothing:antialiased;font-size:14px}
+.mono{font-family:'JetBrains Mono',monospace}
+/* Scroll progress */
+#scroll-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#caff33,#84fe87,#00a86b);z-index:10000;width:0;transition:width 50ms;box-shadow:0 0 8px var(--accent-glow)}
+/* Cursor glow */
+#cursor-glow{position:fixed;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(202,255,51,0.04) 0%,transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);opacity:0;transition:opacity 300ms}
+body:hover #cursor-glow{opacity:1}
+/* Nav */
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--hero-border);transition:padding 250ms}
+.nav-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 24px}
+.nav-brand{font-weight:800;font-size:13px;color:var(--text-white);display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent-glow);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 10px var(--accent-glow)}50%{box-shadow:0 0 20px rgba(202,255,51,0.5)}}
+.nav-links{display:flex;gap:24px}
+.nav-links a{color:var(--text-dim);font-size:13px;font-weight:500;text-decoration:none;transition:color 250ms;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:var(--accent);border-radius:1px;transition:width 250ms}
+.nav-links a:hover{color:var(--text-white)}
+.nav-links a:hover::after{width:100%}
+.nav-links a.active{color:var(--accent)}
+.nav-links a.active::after{width:100%}
 
-/* Mobile responsiveness */
-@media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:44px;padding:10px 16px}.card{padding:16px}h1{font-size:22px}}
-@media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:16px}.container{padding:20px}}
+/* Wallet wrap */
+.wallet-wrap{max-width:1000px;margin:0 auto;padding:24px 20px}
+/* Hero */
+.wallet-hero{background:var(--hero-bg);border-radius:var(--radius-lg);padding:24px;text-align:center;position:relative;overflow:hidden;margin-bottom:12px;opacity:0;animation:fadeInUp 600ms ease-out forwards}
+.wallet-hero::before{content:'';position:absolute;top:-30%;right:-10%;width:350px;height:350px;background:radial-gradient(circle,var(--accent-glow),transparent 55%);opacity:0.1;animation:pulse-bg 4s ease-in-out infinite}
+.wallet-hero::after{content:'';position:absolute;bottom:-20%;left:-10%;width:250px;height:250px;background:radial-gradient(circle,rgba(0,168,107,0.12),transparent 60%);opacity:0.06;animation:pulse-bg 6s ease-in-out infinite 1s}
+@keyframes pulse-bg{0%,100%{opacity:0.06;transform:scale(1)}50%{opacity:0.12;transform:scale(1.1)}}
+.wallet-hero h1{font-size:14px;font-weight:800;color:var(--text-white);margin-bottom:8px;position:relative;z-index:2;letter-spacing:-0.02em}
+.wallet-hero h1 .grad{background:linear-gradient(135deg,#caff33 0%,#a8e607 50%,#00a86b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.wallet-hero p{color:var(--text-dim);font-size:13px;position:relative;z-index:2}
+.wallet-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--accent-light);border:1px solid var(--accent-border);border-radius:var(--radius-pill);font-size:11px;font-weight:600;color:var(--accent);margin-bottom:16px;position:relative;z-index:2}
+.wallet-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+/* States */
+.wallet-state{display:none}
+.wallet-state.active{display:block;animation:fadeInUp 400ms ease-out}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+/* Auth cards */
+.auth-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:600px;margin:0 auto}
+.auth-card{background:#fff;border-radius:var(--radius-lg);padding:24px;border:1px solid #e2e8f0;transition:var(--transition);cursor:pointer;text-align:left;opacity:0;animation:fadeInUp 500ms ease-out forwards}
+.auth-card:nth-child(2){animation-delay:100ms}
+.auth-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(202,255,51,0.12);transform:translateY(-3px)}
+.auth-card .icon{width:40px;height:40px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:14px;transition:transform 250ms}
+.auth-card:hover .icon{transform:scale(1.1) rotate(-5deg)}
+.auth-card h3{font-size:14px;font-weight:700;margin-bottom:6px;color:var(--text-dark)}
+.auth-card p{font-size:12px;color:var(--text-dark-muted);margin-bottom:16px;line-height:1.5}
+.auth-card .btn{background:linear-gradient(135deg,#caff33,#a8e607);color:#1a1a1a;font-size:12px;font-weight:600;padding:8px 16px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition)}
+.auth-card .btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px var(--accent-glow)}
+/* Forms */
+.import-form{background:#fff;border-radius:var(--radius-lg);padding:24px;max-width:480px;margin:0 auto;border:1px solid #e2e8f0;opacity:0;animation:fadeInUp 400ms ease-out forwards}
+.import-form h3{font-size:13px;font-weight:700;margin-bottom:16px;color:var(--text-dark)}
+.form-group{margin-bottom:12px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-dark-muted);margin-bottom:4px}
+.form-input{width:100%;padding:10px 14px;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'Poppins',sans-serif;font-size:13px;transition:all 250ms}
+.form-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+.form-input.mono{font-family:'JetBrains Mono',monospace;font-size:12px}
+/* Buttons */
+.btn-primary{background:linear-gradient(135deg,#caff33,#a8e607);color:#1a1a1a;font-size:13px;font-weight:700;padding:10px 24px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition);position:relative;overflow:hidden}
+.btn-primary::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);transition:left 500ms}
+.btn-primary:hover::before{left:100%}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px var(--accent-glow)}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.btn-secondary{background:transparent;color:var(--text-dark);font-size:12px;font-weight:600;padding:10px 20px;border-radius:var(--radius-pill);border:1px solid #d1d5db;cursor:pointer;transition:var(--transition)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent-3);background:var(--accent-light)}
+.btn-danger{background:#ef4444;color:#0f172a;font-size:12px;font-weight:600;padding:8px 16px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition)}
+.btn-danger:hover{background:#dc2626;transform:translateY(-1px)}
+/* Dashboard */
+.dash-grid{display:grid;grid-template-columns:280px 1fr;gap:20px}
+.dash-side{display:flex;flex-direction:column;gap:16px}
+.dash-main{display:flex;flex-direction:column;gap:16px}
+.info-card{background:#fff;border-radius:var(--radius-lg);padding:20px;border:1px solid #e2e8f0;transition:var(--transition);opacity:0;animation:fadeInUp 500ms ease-out forwards}
+.info-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.06)}
+.info-card h3{font-size:14px;font-weight:700;color:var(--text-dark);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.info-card .h3-icon{width:20px;height:20px;border-radius:5px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:12px}
+.bal-display{text-align:center;padding:12px 0}
+.bal-label{font-size:11px;font-weight:600;color:var(--text-dark-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+.bal-value{font-size:13px;font-weight:900;color:var(--text-dark);font-family:'JetBrains Mono',monospace;transition:transform 250ms}
+.bal-value:hover{transform:scale(1.02)}
+.bal-value .unit{font-size:14px;color:var(--text-dark-muted);font-weight:600}
+.bal-row{display:flex;justify-content:space-around;padding-top:12px;border-top:1px solid #f1f5f9}
+.bal-stat{text-align:center;transition:transform 250ms}
+.bal-stat:hover{transform:translateY(-2px)}
+.bal-stat .label{font-size:10px;color:var(--text-dark-muted);text-transform:uppercase;letter-spacing:0.05em}
+.bal-stat .val{font-size:14px;font-weight:700;color:var(--text-dark);margin-top:2px}
+.addr-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:var(--radius);padding:12px;word-break:break-all;transition:border-color 250ms}
+.addr-box:hover{border-color:var(--accent-border)}
+.addr-box .label{font-size:10px;color:var(--text-dark-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px}
+.addr-box .addr{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dark);font-weight:500}
+.copy-btn{float:right;font-size:11px;color:var(--accent-3);cursor:pointer;background:none;border:none;font-weight:600;transition:opacity 200ms}
+.copy-btn:hover{opacity:0.7;text-decoration:underline}
+.mnemonic-box{background:#fffbe6;border:2px solid var(--accent);border-radius:var(--radius);padding:16px;margin:12px 0;transition:box-shadow 250ms}
+.mnemonic-box:hover{box-shadow:0 0 16px rgba(202,255,51,0.15)}
+.mnemonic-box .warn{font-size:12px;color:#92400e;font-weight:600;margin-bottom:8px}
+.mnemonic-words{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.mnemonic-word{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;text-align:center;transition:all 250ms}
+.mnemonic-word:hover{border-color:var(--accent);background:var(--accent-light);transform:translateY(-2px)}
+/* Send form */
+.send-form .form-group{margin-bottom:12px}
+.send-form .amount-row{display:flex;gap:8px;align-items:center}
+.send-form .amount-row .form-input{flex:1}
+.send-form .max-btn{font-size:11px;font-weight:600;color:var(--accent-3);background:var(--accent-light);padding:6px 12px;border-radius:var(--radius);border:1px solid var(--accent-border);cursor:pointer;white-space:nowrap;transition:var(--transition)}
+.send-form .max-btn:hover{background:var(--accent);color:#1a1a1a}
+/* TX list */
+.tx-list{display:flex;flex-direction:column;gap:6px}
+.tx-item{display:flex;align-items:center;gap:10px;padding:10px;background:#f8fafc;border-radius:var(--radius);border:1px solid #f1f5f9;transition:var(--transition);opacity:0;animation:fadeInUp 300ms ease-out forwards}
+.tx-item:hover{border-color:var(--accent-border);transform:translateX(4px)}
+.tx-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.tx-icon.send{background:#fef3c7;color:#92400e}
+.tx-icon.recv{background:#d1fae5;color:#065f46}
+.tx-icon.stake{background:#dbeafe;color:#1e40af}
+.tx-info{flex:1;min-width:0}
+.tx-info .addr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dark-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx-info .time{font-size:10px;color:var(--text-dark-muted);margin-top:1px}
+.tx-amount{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;flex-shrink:0}
+.tx-amount.send{color:#ef4444}
+.tx-amount.recv{color:#059669}
+/* Tabs */
+.tabs{display:flex;gap:4px;background:#f1f5f9;border-radius:var(--radius);padding:3px;margin-bottom:16px}
+.tab{flex:1;padding:8px 12px;text-align:center;font-size:13px;font-weight:600;color:var(--text-dark-muted);border-radius:8px;cursor:pointer;transition:all 250ms}
+.tab:hover{color:var(--accent-3)}
+.tab.active{background:#fff;color:var(--accent-3);box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+/* Quick action buttons */
+.qa-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:var(--radius);cursor:pointer;transition:var(--transition);font-size:12px;font-weight:600;color:var(--text-dark);width:100%;text-align:left}
+.qa-btn:hover{border-color:var(--accent);background:var(--accent-light);transform:translateX(4px)}
+/* Loading */
+.loader{display:inline-block;width:16px;height:16px;border:2px solid var(--accent-border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.loading-overlay.active{display:flex}
+.loading-box{background:#fff;border-radius:var(--radius-lg);padding:24px;text-align:center;animation:fadeInUp 300ms ease-out}
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;z-index:300;padding:12px 20px;border-radius:var(--radius);font-size:13px;font-weight:600;transform:translateX(400px);transition:transform 300ms ease;max-width:360px}
+.toast.show{transform:translateX(0)}
+.toast.success{background:#059669;color:#0f172a}
+.toast.error{background:#ef4444;color:#0f172a}
+.toast.info{background:var(--accent-3);color:#0f172a}
+/* Network info */
+.net-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0}
+.net-row .l{color:var(--text-dark-muted)}
+.net-row .v{font-weight:600;color:var(--text-dark)}
+/* Responsive */
+@media(max-width:768px){.dash-grid{grid-template-columns:1fr}.auth-cards{grid-template-columns:1fr}.wallet-hero h1{font-size:13px}.bal-value{font-size:14px}.mnemonic-words{grid-template-columns:repeat(3,1fr)}.nav-links{gap:12px}.nav-links a{font-size:11px}}
 
-.brand-logo-img { height: 36px; width: 36px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,255,136,0.35)); } .brand-text { font-family: Poppins, sans-serif; font-weight: 700; font-size: 18px; color: #fff; white-space: nowrap; margin-left: 2px; letter-spacing: -0.3px; text-decoration: none !important; }
-@media(max-width:768px) { .brand-logo-img { height: 40px; } }
-
-</style>
-<link rel="icon" type="image/png" href="/assets/favicon-32.png">
-<link rel="apple-touch-icon" href="/assets/favicon-180.png">
-<style id="nav-brand-no-underline-fix">a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration: none !important; }</style></head>
-<body>
-<nav class="std-nav">
-  <a href="/" class="nav-brand"><img src="/assets/verdis-v-icon.png" alt="Verdis Chain" class="brand-logo-img"><span class="brand-text">Verdis Chain</span></a>
-  <div class="nav-links">
-    <a href="/">Home</a>
-    <a href="/explorer/">Explorer</a>
-    <a href="/dex/">DEX</a>
-    <a href="/validators/">Validators</a>
-    <a href="/eco/">Eco</a>
-    <a href="/faucet/">Faucet</a>
-    <a href="/wallet/" class="active">Wallet</a>
-    <a href="/sale/">Sale</a>
-    <a href="/docs/">Docs</a>
     
-  </div>
-  <div class="nav-status"><div class="dot"></div><span class="nav-text">Connected</span></div>
-</nav>
+     50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.7)); } }
+    
+    .brand-logo-img { height:64px; width: auto; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(202,255,51,0.4)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
+    .brand-logo-img { filter: drop-shadow(0 0 20px rgba(202,255,51,0.7)); }
+    @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(202,255,51,0.35)); } 50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.6)); } }
 
-<div class="container">
-<h1>Verdis Non-Custodial Wallet</h1>
-<p class="subtitle">Create, import, and send VRDX tokens on the Verdis Chain testnet. Your keys, your tokens.</p>
+/* Mobile hamburger menu */
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:40px;height:40px;background:transparent;border:none;cursor:pointer;padding:8px;z-index:1001}
+.nav-hamburger span{display:block;width:22px;height:2px;background:#caff33;border-radius:2px;transition:all 250ms cubic-bezier(0.16,1,0.3,1)}
+.nav-hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.nav-hamburger.active span:nth-child(2){opacity:0}
+.nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+@media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(0,0,0,0.06);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
 
-<div class="stats-row">
-<div class="stat"><div class="stat-value" id="statBlock">#--</div><div class="stat-label">Block Height</div></div>
-<div class="stat"><div class="stat-value" id="statPeers">--</div><div class="stat-label">Peers</div></div>
-<div class="stat"><div class="stat-value" id="statValidators">--</div><div class="stat-label">Validators</div></div>
-<div class="stat"><div class="stat-value" id="statPools">--</div><div class="stat-label">AMM Pools</div></div>
-</div>
+/* std-nav unified navigation */
+nav.std-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,0,0,0.06);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+nav.std-nav .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text,#fff)}
+nav.std-nav .nav-links{display:flex;align-items:center;gap:4px}
+nav.std-nav .nav-links a{color:#334155;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s}
+nav.std-nav .nav-links a:hover{color:#0f172a;background:rgba(255,255,255,0.06)}
+nav.std-nav .nav-links a.active{color:#caff33;background:rgba(202,255,51,0.08)}
+nav.std-nav .nav-status{display:flex;align-items:center;gap:6px;font-size:12px;color:#334155}
+nav.std-nav .nav-status .dot{width:8px;height:8px;border-radius:50%;background:#00ff66;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+</style>
+</head>
+<body>
+<div id="scroll-bar"></div>
+<div id="cursor-glow"></div>
 
-<div class="wallet-grid">
-<div class="card">
-<h2>Account</h2>
-<div id="noAccount">
-<p style="color:#888;font-size:14px;margin-bottom:16px">No account loaded. Create a new wallet or import an existing one.</p>
-<button class="btn btn-primary" id="btnCreate" disabled>Create New Wallet</button>
-<div class="divider"></div>
-<button class="btn btn-secondary" id="btnImport" disabled>Import Wallet</button>
-<div class="divider"></div>
-<div class="label">Or use a dev account:</div>
-<select class="select" id="devAccount" disabled>
-<option value="">-- Select Dev Account --</option>
-<option value="//Alice">//Alice (Test Account)</option>
-<option value="//Bob">//Bob (Test Account)</option>
-<option value="//Charlie">//Charlie (Test Account)</option>
-<option value="//Dave">//Dave (Test Account)</option>
-<option value="//Eve">//Eve (Test Account)</option>
-</select>
-</div>
-<div id="hasAccount" class="hidden">
-<div class="account-box">
-<div class="label">Account Address</div>
-<div class="address" id="accountAddress">--</div>
-<button class="copy-btn" id="btnCopy">📋 Copy Address</button>
-</div>
-<div class="account-box" style="margin-top:12px">
-<div class="label">Balance</div>
-<div class="balance"><span id="balanceValue">0.00</span> <small>VRDX</small></div>
-<div class="label" style="margin-top:8px">Nonce: <span id="nonceValue">--</span></div>
-</div>
-<div class="divider"></div>
-<button class="btn btn-secondary" id="btnRefreshBalance">Refresh Balance</button>
-<div class="divider"></div>
-<button class="btn btn-secondary" id="btnExport">Export Mnemonic</button>
-<div class="divider"></div>
-<button class="btn btn-secondary" id="btnClear" style="color:#ef4444">Clear Wallet</button>
-</div>
-<div id="mnemonicBox" class="hidden">
-<div class="divider"></div>
-<div class="warning">⚠️ Save this mnemonic safely. Anyone with this phrase can access your funds. Never share it!</div>
-<div class="label">Your Mnemonic (Seed Phrase):</div>
-<div class="mnemonic" id="mnemonicText">--</div>
-</div>
+<nav class="std-nav"><a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain" class="brand-logo-img" style="height:48px;width:auto;display:block;object-fit:contain;flex-shrink:0"></a><button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links"><a href="/">Home</a><a href="/explorer/">Verdiscan</a><a href="/dex/">DEX</a><a href="/validators/">Validators</a><a href="/eco/">Eco</a><a href="/faucet/">Faucet</a><a href="/wallet/">Wallet</a><a href="/sale/">Sale</a><a href="/docs/">Docs</a></div><div class="nav-status"><div class="dot"></div><span>Connected</span></div></nav>
+
+<div class="toast" id="toast"></div>
+<div class="loading-overlay" id="loading"><div class="loading-box">
+<div class="loader" style="margin:0 auto 12px"></div>
+<p id="loading-text" style="color:var(--text-dark-muted);font-size:13px">Loading...</p>
+</div></div>
+
+<div class="wallet-wrap">
+<div class="wallet-hero">
+<div class="wallet-badge"><span class="wallet-badge-dot"></span>Testnet Live · Block #<span id="block-num">—</span></div>
+<h1>VRDX <span class="grad">Web Wallet</span></h1>
+<p>Non-custodial · sr25519 · HD Keys · Live RPC</p>
 </div>
 
-<div class="card">
-<h2>Send VRDX</h2>
-<div id="sendForm">
-<div class="label">Recipient Address</div>
-<input class="input" id="sendTo" placeholder="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY">
-<div class="label">Amount (VRDX)</div>
-<input class="input" type="number" id="sendAmount" placeholder="100.00" step="0.01" min="0">
-<button class="btn btn-primary" id="btnSend" style="margin-top:12px" disabled>Send Transaction</button>
-<div id="txStatus" style="margin-top:12px;font-size:13px"></div>
+<!-- Auth -->
+<div class="wallet-state active" id="state-auth">
+<div class="auth-cards">
+<div class="auth-card" onclick="showCreate()">
+<div class="icon">🔑</div><h3>Create New Wallet</h3>
+<p>Generate a fresh sr25519 keypair with mnemonic backup.</p>
+<button class="btn">Create Wallet</button>
 </div>
-<div class="divider"></div>
-<h2>Transaction History</h2>
-<div id="txHistory">
-<p style="color:#888;font-size:13px">No transactions yet.</p>
-</div>
+<div class="auth-card" onclick="showImport()">
+<div class="icon">📥</div><h3>Import Wallet</h3>
+<p>Restore from mnemonic seed phrase.</p>
+<button class="btn">Import</button>
 </div>
 </div>
 </div>
 
-<!-- Load polkadot.js bundles in dependency order -->
-<script src="https://unpkg.com/@polkadot/util@12.5.1/bundle-polkadot-util.js"></script>
-<script src="https://unpkg.com/@polkadot/util-crypto@12.5.1/bundle-polkadot-util-crypto.js"></script>
-<script src="https://unpkg.com/@polkadot/keyring@12.5.1/bundle-polkadot-keyring.js"></script>
-<script src="https://unpkg.com/@polkadot/types@10.9.1/bundle-polkadot-types.js"></script>
-<script src="https://unpkg.com/@polkadot/api@10.9.1/bundle-polkadot-api.js"></script>
+<!-- Create -->
+<div class="wallet-state" id="state-create">
+<div class="import-form">
+<h3>🔐 New Wallet Created</h3>
+<p style="color:var(--text-dark-muted);font-size:12px;margin-bottom:12px">Save your mnemonic securely. It's the only way to recover your wallet.</p>
+<div class="mnemonic-box">
+<div class="warn">⚠️ Write down these 12 words and never share them.</div>
+<div class="mnemonic-words" id="mnemonic-words"></div>
+</div>
+<div style="display:flex;gap:8px;margin-top:16px">
+<button class="btn-secondary" onclick="copyMnemonic()">Copy</button>
+<button class="btn-primary" onclick="openWallet()">I've Saved It</button>
+</div></div>
+</div>
+
+<!-- Import -->
+<div class="wallet-state" id="state-import">
+<div class="import-form">
+<h3>📥 Import Wallet</h3>
+<div class="form-group"><label class="form-label">Mnemonic (12 words)</label>
+<input class="form-input mono" id="import-mnemonic" placeholder="word1 word2 word3..." /></div>
+<div style="display:flex;gap:8px;margin-top:16px">
+<button class="btn-secondary" onclick="showAuth()">Back</button>
+<button class="btn-primary" onclick="importWallet()">Import</button>
+</div></div>
+</div>
+
+<!-- Dashboard -->
+<div class="wallet-state" id="state-dash">
+<div class="dash-grid">
+<div class="dash-side">
+<div class="info-card">
+<h3><span class="h3-icon">👤</span>Account</h3>
+<div class="addr-box"><div class="label">Address</div><div class="addr" id="dash-addr">—</div><button class="copy-btn" onclick="copyAddr()">Copy</button></div>
+<div style="margin-top:8px"><button class="btn-danger" style="width:100%" onclick="lockWallet()">Lock Wallet</button></div>
+</div>
+<div class="info-card">
+<h3><span class="h3-icon">⚡</span>Quick Actions</h3>
+<div style="display:flex;flex-direction:column;gap:6px">
+<button class="qa-btn" onclick="setTab('send')">📤 Send VRDX</button>
+<button class="qa-btn" onclick="setTab('receive')">📥 Receive</button>
+<button class="qa-btn" onclick="setTab('stake')">🟢 Stake</button>
+<button class="qa-btn" onclick="setTab('history')">📋 History</button>
+</div></div>
+<div class="info-card">
+<h3><span class="h3-icon">📊</span>Network</h3>
+<div class="net-row"><span class="l">Block</span><span class="v mono" id="net-block">—</span></div>
+<div class="net-row"><span class="l">Peers</span><span class="v mono" id="net-peers">—</span></div>
+<div class="net-row"><span class="l">Token</span><span class="v mono">VRDX</span></div>
+<div class="net-row"><span class="l">Supply</span><span class="v mono">100B</span></div>
+</div></div>
+
+<div class="dash-main">
+<div class="info-card">
+<div class="bal-display">
+<div class="bal-label">Total Balance</div>
+<div class="bal-value"><span id="bal-num">0.0000</span> <span class="unit">VRDX</span></div>
+</div>
+<div class="bal-row">
+<div class="bal-stat"><div class="label">Transferable</div><div class="val mono" id="bal-free">0.0000</div></div>
+<div class="bal-stat"><div class="label">Reserved</div><div class="val mono" id="bal-reserved">0.0000</div></div>
+<div class="bal-stat"><div class="label">Locked</div><div class="val mono" id="bal-locked">0.0000</div></div>
+</div></div>
+
+<div class="info-card">
+<div class="tabs">
+<div class="tab active" data-tab="send" onclick="setTab('send')">Send</div>
+<div class="tab" data-tab="receive" onclick="setTab('receive')">Receive</div>
+<div class="tab" data-tab="stake" onclick="setTab('stake')">Stake</div>
+<div class="tab" data-tab="history" onclick="setTab('history')">History</div>
+</div>
+<div id="tab-send" class="tab-content">
+<div class="send-form">
+<div class="form-group"><label class="form-label">Recipient Address</label>
+<input class="form-input mono" id="send-to" placeholder="5GrwvaEF..." /></div>
+<div class="form-group"><label class="form-label">Amount (VRDX)</label>
+<div class="amount-row">
+<input class="form-input mono" id="send-amount" type="number" step="0.0001" placeholder="0.0000" />
+<button class="max-btn" onclick="setMaxAmount()">MAX</button>
+</div></div>
+<button class="btn-primary" id="send-btn" onclick="sendVRDX()" style="width:100%">Send VRDX</button>
+</div></div>
+<div id="tab-receive" class="tab-content" style="display:none">
+<div style="text-align:center;padding:16px 0">
+<p style="color:var(--text-dark-muted);font-size:12px;margin-bottom:12px">Share your address to receive VRDX</p>
+<div class="addr-box" style="max-width:420px;margin:0 auto"><div class="label">Your Address</div><div class="addr" id="receive-addr">—</div><button class="copy-btn" onclick="copyReceiveAddr()">Copy</button></div>
+</div></div>
+<div id="tab-stake" class="tab-content" style="display:none">
+<div style="padding:8px 0"><p style="color:var(--text-dark-muted);font-size:12px;margin-bottom:12px">Stake VRDX with a validator.</p>
+<div id="validator-list" style="display:flex;flex-direction:column;gap:8px"></div></div></div>
+<div id="tab-history" class="tab-content" style="display:none">
+<div style="padding:8px 0"><div class="tx-list" id="tx-list"><div style="text-align:center;color:var(--text-dark-muted);padding:24px;font-size:12px">No transactions yet.</div></div></div></div>
+</div></div></div></div></div>
+
+<script type="module">
+import { ApiPromise, WsProvider } from 'https://esm.sh/@polkadot/api@11.0.2';
+import { Keyring } from 'https://esm.sh/@polkadot/keyring@12.6.2';
+import { mnemonicGenerate, mnemonicValidate } from 'https://esm.sh/@polkadot/util-crypto@12.6.2';
+import { decodeAddress } from 'https://esm.sh/@polkadot/util-crypto@12.6.2';
+import { cryptoWaitReady } from 'https://esm.sh/@polkadot/util-crypto@12.6.2';
+
+let api=null,keyring=null,wallet=null;
+const RPC=location.protocol==='https:'?'wss://'+location.host+'/ws':'ws://'+location.host+':9948';
+
+window.showToast=(m,t='info')=>{const e=document.getElementById('toast');e.textContent=m;e.className='toast show '+t;setTimeout(()=>e.className='toast '+t,3000)};
+window.showLoading=(t)=>{document.getElementById('loading-text').textContent=t||'Loading...';document.getElementById('loading').classList.add('active')};
+window.hideLoading=()=>document.getElementById('loading').classList.remove('active');
+window.showAuth=()=>showState('state-auth');
+window.showCreate=async()=>{await cryptoWaitReady();const m=mnemonicGenerate(12),w=m.split(' ');document.getElementById('mnemonic-words').innerHTML=w.map((x,i)=>`<div class="mnemonic-word">${i+1}. ${x}</div>`).join('');window._mn=m;showState('state-create')};
+window.showImport=()=>showState('state-import');
+window.copyMnemonic=()=>{navigator.clipboard.writeText(window._mn||'');showToast('Mnemonic copied','success')};
+window.openWallet=async()=>await initWallet(window._mn);
+window.importWallet=async()=>{const m=document.getElementById('import-mnemonic').value.trim();if(!m){showToast('Enter mnemonic','error');return}if(!mnemonicValidate(m)){showToast('Invalid mnemonic','error');return}await initWallet(m)};
+
+async function initWallet(mnemonic){
+try{showLoading('Connecting...');await cryptoWaitReady();
+if(!api){const p=new WsProvider(RPC);api=await ApiPromise.create({provider:p})}
+keyring=new Keyring({type:'sr25519',ss58Format:42});
+const pair=keyring.addFromMnemonic(mnemonic),address=pair.address;
+wallet={pair,address,mnemonic};
+document.getElementById('dash-addr').textContent=address;
+document.getElementById('receive-addr').textContent=address;
+showState('state-dash');showLoading('Loading data...');
+await updateBalance();await updateNetwork();await loadValidators();await loadHistory();
+await api.rpc.chain.subscribeNewHeads(async(h)=>{const b=h.number.toNumber();document.getElementById('block-num').textContent=b;document.getElementById('net-block').textContent='#'+b;if(b%5===0)await updateBalance()});
+hideLoading();showToast('Wallet connected','success')
+}catch(e){hideLoading();showToast('Error: '+e.message,'error');console.error(e)}}
+
+async function updateBalance(){if(!api||!wallet)return;try{const{data:b}=await api.query.system.account(wallet.address);const f=parseFloat(b.free.toString())/1e18,r=parseFloat(b.reserved.toString())/1e18;document.getElementById('bal-num').textContent=(f+r).toFixed(4);document.getElementById('bal-free').textContent=f.toFixed(4);document.getElementById('bal-reserved').textContent=r.toFixed(4);document.getElementById('bal-locked').textContent='0.0000'}catch(e){console.error(e)}}
+async function updateNetwork(){if(!api)return;try{const p=await api.rpc.system.peers();document.getElementById('net-peers').textContent=p.length}catch(e){document.getElementById('net-peers').textContent='8'}}
+
+window.sendVRDX=async()=>{if(!api||!wallet)return;const to=document.getElementById('send-to').value.trim(),amt=document.getElementById('send-amount').value;if(!to){showToast('Enter address','error');return}if(!amt||parseFloat(amt)<=0){showToast('Enter amount','error');return}try{showLoading('Sending...');const a=Math.floor(parseFloat(amt)*1e18);try{decodeAddress(to)}catch{showToast('Invalid address','error');hideLoading();return}const tx=api.tx.balances.transferAllowDeath(to,a);const unsub=await tx.signAndSend(wallet.pair,({status,dispatchError})=>{if(dispatchError){showToast('TX failed','error');hideLoading();unsub();return}if(status.isInBlock)showToast('In block...','info');if(status.isFinalized){showToast('Finalized!','success');hideLoading();document.getElementById('send-to').value='';document.getElementById('send-amount').value='';updateBalance();loadHistory();unsub()}})}catch(e){hideLoading();showToast('Error: '+e.message,'error')}};
+window.setMaxAmount=()=>{document.getElementById('send-amount').value=document.getElementById('bal-free').textContent};
+window.copyAddr=()=>{if(wallet){navigator.clipboard.writeText(wallet.address);showToast('Copied','success')}};
+window.copyReceiveAddr=()=>{if(wallet){navigator.clipboard.writeText(wallet.address);showToast('Copied','success')}};
+window.setTab=(t)=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');const e=document.getElementById('tab-'+t);if(e)e.style.display='block'};
+window.lockWallet=()=>{wallet=null;keyring=null;showState('state-auth');showToast('Wallet locked','info')};
+
+async function loadValidators(){if(!api)return;try{const v=await api.query.session.validators();const l=document.getElementById('validator-list');if(!v.length){l.innerHTML='<div style="color:var(--text-dark-muted);text-align:center;padding:12px;font-size:12px">No active validators</div>';return}l.innerHTML=v.map((x,i)=>{const a=x.toString();return`<div class="tx-item"><div class="tx-icon stake">🟢</div><div class="tx-info"><div class="addr mono">${a.substring(0,16)}...${a.slice(-6)}</div><div class="time">Validator #${i+1}</div></div><button class="btn-secondary" style="font-size:11px;padding:4px 10px" onclick="showToast('Staking coming soon','info')">Stake</button></div>`}).join('')}catch(e){console.error(e)}}
+async function loadHistory(){if(!api||!wallet)return;try{const ev=await api.query.system.events();const rel=ev.filter(({event})=>event.section==='balances'&&event.data.some(d=>d.toString()===wallet.address));const l=document.getElementById('tx-list');if(!rel.length){l.innerHTML='<div style="text-align:center;color:var(--text-dark-muted);padding:24px;font-size:12px">No transactions yet.</div>';return}l.innerHTML=rel.slice(0,20).map(({event})=>{const s=event.method==='Transfer'&&event.data[0].toString()===wallet.address,r=event.method==='Transfer'&&event.data[1].toString()===wallet.address;if(!s&&!r)return'';const o=s?event.data[1].toString():event.data[0].toString(),a=parseFloat(event.data[2].toString())/1e18;return`<div class="tx-item"><div class="tx-icon ${s?'send':'recv'}">${s?'📤':'📥'}</div><div class="tx-info"><div class="addr mono">${s?'To: ':'From: '}${o.substring(0,16)}...${o.slice(-6)}</div><div class="time">Block #${event.index?.blockNumber||'recent'}</div></div><div class="tx-amount ${s?'send':'recv'}">${s?'-':'+'}${a.toFixed(4)} VRDX</div></div>`}).join('')}catch(e){console.error(e)}}
+function showState(id){document.querySelectorAll('.wallet-state').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+
+// Scroll progress + cursor glow
+window.addEventListener('scroll',()=>{const s=window.scrollY/(document.body.scrollHeight-window.innerHeight)*100;document.getElementById('scroll-bar').style.width=s+'%'});
+document.addEventListener('mousemove',(e)=>{const g=document.getElementById('cursor-glow');g.style.left=e.clientX+'px';g.style.top=e.clientY+'px'});
+
+(async()=>{try{await cryptoWaitReady();const r=await fetch('/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'chain_getHeader',params:[],id:1})});if(r.ok){const d=await r.json();if(d.result?.number)document.getElementById('block-num').textContent=parseInt(d.result.number,16)}}catch(e){}})();
+</script>
 
 <script>
-const WS_URL = 'wss://verdischain.com/ws';
-const DECIMALS = 12;
-let api = null;
-let keyring = null;
-let currentAccount = null;
-
-// Check if polkadot.js loaded
-function checkPolkadot() {
-    return typeof window.polkadotApi !== 'undefined' &&
-           typeof window.polkadotKeyring !== 'undefined' &&
-           typeof window.polkadotUtilCrypto !== 'undefined';
-}
-
-async function initApi() {
-    try {
-        if (!checkPolkadot()) {
-            console.log('Waiting for polkadot.js to load...');
-            setTimeout(initApi, 500);
-            return;
-        }
-
-        const { ApiPromise, WsProvider } = window.polkadotApi;
-        const { Keyring } = window.polkadotKeyring;
-        const ws = new WsProvider(WS_URL);
-        api = await ApiPromise.create({ provider: ws, noInitWarn: true });
-        keyring = new Keyring({ type: 'sr25519', ss58Format: 909 });
-
-        console.log('polkadot.js API connected');
-        var ns = document.getElementById('netStatus'); if (ns) ns.textContent = 'Connected';
-        if (ns) ns.classList.remove('loading');
-
-        // Enable buttons
-        ['btnCreate', 'btnImport', 'devAccount', 'btnSend'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.disabled = false;
-        });
-
-        updateStats();
-        setInterval(updateStats, 15000);
-
-        // Load saved account
-        loadAccount();
-    } catch(e) {
-        console.error('API init error:', e.message);
-        var ns2 = document.getElementById('netStatus'); if (ns2) ns2.textContent = 'Reconnecting...';
-        setTimeout(initApi, 5000);
-    }
-}
-
-async function updateStats() {
-    // Stats use HTTP RPC, no need to wait for WebSocket API
-    try {
-        // Get block height via direct RPC
-        const res = await fetch('/rpc', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1})
-        });
-        const data = await res.json();
-        const blockNum = parseInt(data.result?.number || '0x0', 16);
-        document.getElementById('statBlock').textContent = '#' + blockNum;
-
-        // Get peers
-        const peersRes = await fetch('/rpc', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({jsonrpc: '2.0', method: 'system_health', params: [], id: 2})
-        });
-        const peersData = await peersRes.json();
-        document.getElementById('statPeers').textContent = peersData.result?.peers || 8;
-
-        // Get validators
-        const valRes = await fetch('/rpc', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({jsonrpc: '2.0', method: 'dpos_activeValidators', params: [], id: 3})
-        });
-        const valData = await valRes.json();
-        document.getElementById('statValidators').textContent = valData.result?.length || 14;
-
-        // Get pool count
-        const poolRes = await fetch('/rpc', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({jsonrpc: '2.0', method: 'amm_dex_getPoolCount', params: [], id: 4})
-        });
-        const poolData = await poolRes.json();
-        document.getElementById('statPools').textContent = poolData.result || 7;
-    } catch(e) {
-        console.log('Stats error:', e.message);
-    }
-}
-
-// Create new wallet
-document.getElementById('btnCreate').addEventListener('click', () => {
-    try {
-        const { mnemonicGenerate } = window.polkadotUtilCrypto;
-        const mnemonic = mnemonicGenerate();
-        const pair = keyring.addFromUri(mnemonic);
-        currentAccount = { mnemonic, address: pair.address, pair };
-        saveAccount(mnemonic, pair.address);
-        showAccount(pair.address);
-        document.getElementById('mnemonicText').textContent = mnemonic;
-        document.getElementById('mnemonicBox').classList.remove('hidden');
-        refreshBalance();
-    } catch(e) {
-        alert('Error creating wallet: ' + e.message);
-    }
-});
-
-// Import wallet
-document.getElementById('btnImport').addEventListener('click', () => {
-    const seed = prompt('Enter your mnemonic or seed (e.g., "//Alice" or "abandon abandon ..."):');
-    if (seed) importAccount(seed);
-});
-
-// Dev account
-document.getElementById('devAccount').addEventListener('change', (e) => {
-    if (e.target.value) importAccount(e.target.value);
-});
-
-function importAccount(seed) {
-    try {
-        const pair = keyring.addFromUri(seed);
-        currentAccount = { mnemonic: seed, address: pair.address, pair };
-        saveAccount(seed, pair.address);
-        showAccount(pair.address);
-        refreshBalance();
-    } catch(e) {
-        alert('Error importing wallet: ' + e.message);
-    }
-}
-
-function showAccount(address) {
-    document.getElementById('noAccount').classList.add('hidden');
-    document.getElementById('hasAccount').classList.remove('hidden');
-    document.getElementById('accountAddress').textContent = address;
-}
-
-async function refreshBalance() {
-    if (!currentAccount || !api) return;
-    try {
-        const account = await api.query.system.account(currentAccount.address);
-        const balance = account.data.free.toBigInt() / BigInt(10n ** BigInt(DECIMALS));
-        const balanceNum = Number(account.data.free) / Math.pow(10, DECIMALS);
-        document.getElementById('balanceValue').textContent = balanceNum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        document.getElementById('nonceValue').textContent = account.nonce.toNumber();
-    } catch(e) {
-        console.log('Balance error:', e.message);
-        document.getElementById('balanceValue').textContent = '0.00';
-        document.getElementById('nonceValue').textContent = '0';
-    }
-}
-
-document.getElementById('btnRefreshBalance').addEventListener('click', refreshBalance);
-
-document.getElementById('btnExport').addEventListener('click', () => {
-    const mnemonic = localStorage.getItem('verdis_wallet_seed');
-    if (mnemonic) {
-        document.getElementById('mnemonicText').textContent = mnemonic;
-        document.getElementById('mnemonicBox').classList.remove('hidden');
-    }
-});
-
-document.getElementById('btnClear').addEventListener('click', () => {
-    if (confirm('Clear wallet from this browser? Make sure you have your mnemonic saved!')) {
-        localStorage.removeItem('verdis_wallet_seed');
-        localStorage.removeItem('verdis_wallet_address');
-        localStorage.removeItem('verdis_tx_history');
-        currentAccount = null;
-        location.reload();
-    }
-});
-
-// Send VRDX
-document.getElementById('btnSend').addEventListener('click', async () => {
-    if (!currentAccount) { alert('Create or import a wallet first'); return; }
-    if (!api) { alert('API not connected. Please wait...'); return; }
-
-    const to = document.getElementById('sendTo').value.trim();
-    const amount = parseFloat(document.getElementById('sendAmount').value);
-
-    if (!to || to.length < 10) { alert('Enter a valid recipient address'); return; }
-    if (!amount || amount <= 0) { alert('Enter a valid amount'); return; }
-
-    const btn = document.getElementById('btnSend');
-    btn.disabled = true;
-    btn.textContent = 'Sending...';
-    document.getElementById('txStatus').innerHTML = '<span style="color:#888">Preparing transaction...</span>';
-
-    try {
-        const amountPlanck = BigInt(Math.floor(amount * Math.pow(10, DECIMALS)));
-        const transfer = api.tx.balances.transferAllowDeath(to, amountPlanck);
-
-        document.getElementById('txStatus').innerHTML = '<span style="color:#3b82f6">Signing and broadcasting...</span>';
-
-        const hash = await transfer.signAndSend(currentAccount.pair);
-
-        document.getElementById('txStatus').innerHTML = '<span style="color:#22c55e">✓ Sent! TX Hash: ' + hash.toHex().substring(0, 20) + '...</span>';
-
-        addTxHistory({
-            hash: hash.toHex(),
-            to: to.substring(0, 10) + '...' + to.substring(to.length - 6),
-            amount: amount.toFixed(2),
-            time: new Date().toLocaleString()
-        });
-
-        btn.textContent = 'Send Transaction';
-        btn.disabled = false;
-
-        setTimeout(refreshBalance, 6000);
-        document.getElementById('sendTo').value = '';
-        document.getElementById('sendAmount').value = '';
-    } catch(e) {
-        document.getElementById('txStatus').innerHTML = '<span style="color:#ef4444">✗ Error: ' + e.message + '</span>';
-        btn.textContent = 'Send Transaction';
-        btn.disabled = false;
-    }
-});
-
-// Helper functions
-function saveAccount(seed, address) {
-    localStorage.setItem('verdis_wallet_seed', seed);
-    localStorage.setItem('verdis_wallet_address', address);
-}
-
-function loadAccount() {
-    const seed = localStorage.getItem('verdis_wallet_seed');
-    const address = localStorage.getItem('verdis_wallet_address');
-    if (seed && address && keyring) {
-        try {
-            const pair = keyring.addFromUri(seed);
-            currentAccount = { mnemonic: seed, address: pair.address, pair };
-            showAccount(pair.address);
-            refreshBalance();
-        } catch(e) {
-            console.log('Load account error:', e.message);
-        }
-    }
-}
-
-function addTxHistory(tx) {
-    let history = JSON.parse(localStorage.getItem('verdis_tx_history') || '[]');
-    history.unshift(tx);
-    history = history.slice(0, 10);
-    localStorage.setItem('verdis_tx_history', JSON.stringify(history));
-    renderTxHistory();
-}
-
-function renderTxHistory() {
-    const history = JSON.parse(localStorage.getItem('verdis_tx_history') || '[]');
-    const container = document.getElementById('txHistory');
-    if (history.length === 0) {
-        container.innerHTML = '<p style="color:#888;font-size:13px">No transactions yet.</p>';
-        return;
-    }
-    container.innerHTML = history.map(tx =>
-        '<div class="tx-item">' +
-        '<div><div style="color:#fff;font-size:13px">' + tx.amount + ' VRDX → ' + tx.to + '</div>' +
-        '<div class="tx-hash">' + tx.time + '</div></div>' +
-        '<span class="tag tag-green">Sent</span></div>'
-    ).join('');
-}
-
-// Copy address
-document.getElementById('btnCopy').addEventListener('click', () => {
-    const addr = document.getElementById('accountAddress').textContent;
-    navigator.clipboard.writeText(addr).then(() => alert('Address copied to clipboard!'));
-});
-
-// Initialize
-renderTxHistory();
-setInterval(updateStats, 15000);
-updateStats();
-initApi();
+(function(){var h=document.getElementById('navHamburger'),l=document.querySelector('.nav-links');if(!h||!l)return;h.addEventListener('click',function(){h.classList.toggle('active');l.classList.toggle('open');});l.addEventListener('click',function(e){if(e.target.tagName==='A'){h.classList.remove('active');l.classList.remove('open');}});})();
 </script>
+
 </body>
 </html>

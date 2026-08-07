@@ -4,52 +4,88 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Verdis Chain — Developer Documentation</title>
-<meta name="description" content="Comprehensive developer documentation for Verdis Chain: architecture, RPC API, pallets, wallet, DEX, validators, security, and deployment.">
+<link rel="canonical" href="https://verdischain.com/docs/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Verdis Chain — Developer Documentation">
+<meta property="og:description" content="Complete developer documentation for Verdis Chain. Learn about the Substrate-based architecture, SDK, RPC APIs, and smart contracts.">
+<meta property="og:url" content="https://verdischain.com/docs/">
+<meta property="og:image" content="https://verdischain.com/assets/verdis-logo-black.png">
+<meta name="description" content="Complete developer documentation for Verdis Chain. Learn about the Substrate-based architecture, SDK, RPC APIs, and smart contracts.">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0d0d0d;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.7;padding:0}
+body{overflow-x:hidden;background:#f1f5f9;color:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.7;padding:0}
 .nav{position:sticky;top:0;background:#111;border-bottom:1px solid #222;padding:12px 32px;display:flex;justify-content:space-between;align-items:center;z-index:100}
-.nav-brand{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:600;color:#fff}
-.nav-brand span{width:28px;height:28px;background:#caff33;color:#000;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px}
+.nav-brand{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#0f172a}
+.nav-brand span{font-weight:600;font-size:14px;color:#0f172a;white-space:nowrap}
 .nav-links{display:flex;gap:16px}
-.nav-links a{color:#888;text-decoration:none;font-size:13px}
+.nav-links a{color:#334155;text-decoration:none;font-size:13px}
 .nav-links a:hover{color:#caff33}
 .container{max-width:900px;margin:0 auto;padding:32px}
-h1{font-size:28px;color:#fff;margin-bottom:8px;border-bottom:1px solid #222;padding-bottom:16px}
-h2{font-size:22px;color:#caff33;margin:32px 0 16px}
-h3{font-size:18px;color:#fff;margin:24px 0 12px}
-p{margin:8px 0;color:#ccc}
+h1{font-size:14px;color:#0f172a;margin-bottom:8px;border-bottom:1px solid #222;padding-bottom:16px}
+h2{font-size:13px;color:#caff33;margin:32px 0 16px}
+h3{font-size:13px;color:#0f172a;margin:24px 0 12px}
+p{margin:8px 0;color:#334155}
 code{background:#1a1a1a;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:13px;color:#caff33}
 pre{background:#1a1a1a;padding:16px;border-radius:8px;overflow-x:auto;margin:12px 0;border:1px solid #222}
-pre code{background:none;padding:0;color:#e0e0e0}
+pre code{background:none;padding:0;color:#334155}
 table{border-collapse:collapse;width:100%;margin:12px 0}
 th{background:#1a1a1a;color:#caff33;padding:8px 12px;text-align:left;border:1px solid #222;font-size:13px;text-transform:uppercase}
 td{padding:8px 12px;border:1px solid #222;font-size:13px}
 a{color:#caff33;text-decoration:none}
 a:hover{text-decoration:underline}
 ul,ol{margin:8px 0 8px 24px}
-li{margin:4px 0;color:#ccc}
-strong{color:#fff}
+li{margin:4px 0;color:#334155}
+strong{color:#0f172a}
 hr{border:none;border-top:1px solid #222;margin:32px 0}
 .toc{background:#111;border:1px solid #222;border-radius:12px;padding:20px;margin:16px 0 32px}
-.toc h2{font-size:14px;color:#888;margin:0 0 12px;text-transform:uppercase}
+.toc h2{font-size:14px;color:#334155;margin:0 0 12px;text-transform:uppercase}
 .toc ol{margin:0}
 .toc li{margin:6px 0;font-size:14px}
-@media(max-width:768px){.nav-links{display:none}.container{padding:16px}h1{font-size:22px}h2{font-size:18px}}
+@media(max-width:768px){.nav-links{display:none}.container{padding:16px}h1{font-size:13px}h2{font-size:13px}}
 
-.brand-logo-img { height: 36px; width: 36px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,255,136,0.35)); } .brand-text { font-family: Poppins, sans-serif; font-weight: 700; font-size: 18px; color: #fff; white-space: nowrap; margin-left: 2px; letter-spacing: -0.3px; text-decoration: none !important; }
-@media(max-width:768px) { .brand-logo-img { height: 40px; } }
 
+     50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.7)); } }
+    
+    .nav-brand:hover 
+@media(max-width:768px) {  }
+
+
+nav.std-nav { position:sticky; top:0; z-index:1000; background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid rgba(0,0,0,0.06); padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
+nav.std-nav .nav-links { display:flex; gap:4px; flex-wrap:wrap; }
+nav.std-nav .nav-links a { color:#334155; text-decoration:none; padding:8px 12px; border-radius:8px; font-size:13px; font-weight:500; transition:all .2s; }
+nav.std-nav .nav-links a:hover, nav.std-nav .nav-links a.active { color:#caff33; background:rgba(255,255,255,0.06); }
+nav.std-nav .nav-status { display:flex; align-items:center; gap:8px; font-size:13px; color:#334155; }
+nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px rgba(34,197,94,0.6); animation:std-nav-pulse 2s infinite; }
+@keyframes std-nav-pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+
+    .brand-logo-img { height:64px; width: auto; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(202,255,51,0.4)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
+    .brand-logo-img { filter: drop-shadow(0 0 20px rgba(202,255,51,0.7)); }
+    @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(202,255,51,0.35)); } 50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.6)); } }
+
+/* Mobile hamburger menu */
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:40px;height:40px;background:transparent;border:none;cursor:pointer;padding:8px;z-index:1001}
+.nav-hamburger span{display:block;width:22px;height:2px;background:#caff33;border-radius:2px;transition:all 250ms cubic-bezier(0.16,1,0.3,1)}
+.nav-hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.nav-hamburger.active span:nth-child(2){opacity:0}
+.nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+@media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(0,0,0,0.06);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
+
+
+/* Responsive tables - prevent viewport expansion */
+html{overflow-x:hidden;max-width:100vw}
+table{width:100%!important;max-width:100%!important;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+thead,tbody{display:table;width:100%}
 </style>
 <link rel="icon" type="image/png" href="/assets/favicon-32.png">
 <link rel="apple-touch-icon" href="/assets/favicon-180.png">
 <style id="nav-brand-no-underline-fix">a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration: none !important; }</style></head>
 <body>
 <nav class="std-nav">
-  <a href="/" class="nav-brand"><img src="/assets/verdis-v-icon.png" alt="Verdis Chain" class="brand-logo-img"><span class="brand-text">Verdis Chain</span></a>
-  <div class="nav-links">
+  <a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain" class="brand-logo-img" style="height:48px;width:auto;display:block;object-fit:contain;flex-shrink:0"></a>
+  <button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links">
     <a href="/">Home</a>
-    <a href="/explorer/">Explorer</a>
+    <a href="/explorer/">Verdiscan</a>
     <a href="/dex/">DEX</a>
     <a href="/validators/">Validators</a>
     <a href="/eco/">Eco</a>
@@ -80,11 +116,11 @@ hr{border:none;border-top:1px solid #222;margin:32px 0}
 <hr>
 <h2 id="overview">Overview</h2>
 <p>Verdis Chain is a Substrate-based blockchain with native DPoS consensus, an AMM DEX, and eco-friendly features including carbon credit tracking and green validator scoring.</p>
-<p>**Token:** VRDX (100B total supply, 12 decimals)  </p>
-<p>**Chain ID:** 909  </p>
-<p>**SS58 Format:** 909  </p>
-<p>**Consensus:** DPoS (Delegated Proof of Stake)  </p>
-<p>**Network:** Testnet  </p>
+<p><strong>Token:</strong> VRDX (100B total supply, 12 decimals)  </p>
+<p><strong>Chain ID:</strong> 909  </p>
+<p><strong>SS58 Format:</strong> 909  </p>
+<p><strong>Consensus:</strong> DPoS (Delegated Proof of Stake)  </p>
+<p><strong>Network:</strong> Testnet  </p>
 <hr>
 <h2 id="architecture">Architecture</h2>
 <h3>Pallets (7)</h3>
@@ -98,28 +134,28 @@ hr{border:none;border-top:1px solid #222;margin:32px 0}
 <tr><td>Storage</td><td>70</td><td>On-chain data storage</td></tr>
 </table>
 <h3>Infrastructure</h3>
-<li>**Node:** Substrate-based, 5 validators + 2 RPC nodes + 2 boot nodes</li>
-<li>**Web:** Nginx reverse proxy, 12 pages, WebSocket at `/ws`</li>
-<li>**Monitoring:** Prometheus + Grafana + Node Exporter</li>
-<li>**Security:** UFW firewall, Fail2Ban, SSH key-only, TLS 1.2/1.3</li>
+<li><strong>Node:</strong> Substrate-based, 5 validators + 2 RPC nodes + 2 boot nodes</li>
+<li><strong>Web:</strong> Nginx reverse proxy, 12 pages, WebSocket at `/ws`</li>
+<li><strong>Monitoring:</strong> Prometheus + Grafana + Node Exporter</li>
+<li><strong>Security:</strong> Firewall, intrusion detection, TLS 1.2/1.3</li>
 
 <hr>
 <h2 id="quick-start">Quick Start</h2>
 <h3>Access the Web Interface</h3>
-<li>**Landing:** https://verdischain.com</li>
-<li>**Explorer:** https://verdischain.com/explorer/</li>
-<li>**Wallet:** https://verdischain.com/wallet/</li>
-<li>**DEX:** https://verdischain.com/dex/</li>
-<li>**Faucet:** https://verdischain.com/faucet/</li>
-<li>**Status:** https://verdischain.com/status/</li>
-<li>**Grafana:** https://verdischain.com/grafana/ (admin/verdis2026)</li>
+<li><strong>Landing:</strong> https://verdischain.com</li>
+<li><strong>Explorer:</strong> https://verdischain.com/explorer/</li>
+<li><strong>Wallet:</strong> https://verdischain.com/wallet/</li>
+<li><strong>DEX:</strong> https://verdischain.com/dex/</li>
+<li><strong>Faucet:</strong> https://verdischain.com/faucet/</li>
+<li><strong>Status:</strong> https://verdischain.com/status/</li>
+<li><strong>Grafana:</strong> https://verdischain.com/grafana/ (contact admin)</li>
 
 <h3>Connect via polkadot.js</h3>
 <pre><code>
 const { ApiPromise, WsProvider } = require('@polkadot/api');
 const wsProvider = new WsProvider('wss://verdischain.com/ws');
 const api = await ApiPromise.create({ provider: wsProvider });
-console.log('Connected to', await api.rpc.system.chain());
+);
 </code></pre>
 <h3>Dev Accounts</h3>
 <table><tr><th>Account</th><th>Seed</th><th>Use</th></tr>
@@ -274,7 +310,7 @@ wss://verdischain.com/ws
 <h2 id="validator-guide">Validator Guide</h2>
 <h3>Current Validators</h3>
 <p>14 active DPoS validators running on the testnet. Each validator:</p>
-<li>Runs as a systemd service on 91.98.160.145</li>
+<li>Runs as a systemd service</li>
 <li>Produces blocks in round-robin order</li>
 <li>Earns VRDX rewards for block production</li>
 <li>Has a green energy score (0-100)</li>
@@ -298,7 +334,7 @@ cargo build --release
 ./target/release/verdis-node \
   --chain testnet \
   --validator \
-  --bootnodes /ip4/91.98.160.145/tcp/30333/p2p/12D3KooW... \
+  --bootnodes <your-bootnode-multiaddr> \
   --rpc-port 9948
 </code></pre>
 <hr>
@@ -334,8 +370,8 @@ const api = await ApiPromise.create({ provider: new WsProvider('wss://verdischai
 <hr>
 <h2 id="security">Security</h2>
 <h3>Server Hardening</h3>
-<li>SSH: Key-only authentication (password auth disabled)</li>
-<li>Fail2Ban: Active, monitoring SSH and nginx</li>
+<li>Authentication: Key-based only</li>
+<li>Intrusion detection: Active</li>
 <li>UFW Firewall: Only ports 22, 80, 443, 30333-30341 open</li>
 <li>TLS: 1.2/1.3 only, HSTS preload enabled</li>
 <li>SSL Certificate: Valid until November 2026</li>
@@ -349,7 +385,7 @@ const api = await ApiPromise.create({ provider: new WsProvider('wss://verdischai
 <li>`Content-Security-Policy: default-src 'self' ...`</li>
 
 <h3>Rate Limiting</h3>
-<p>5 nginx rate limit zones:</p>
+<p>Rate limiting zones:</p>
 <li>`rpc`: 10 req/s (RPC endpoint)</li>
 <li>`ws`: 20 connections/s (WebSocket)</li>
 <li>`api`: 20 req/s (API endpoints)</li>
@@ -366,13 +402,13 @@ const api = await ApiPromise.create({ provider: new WsProvider('wss://verdischai
 <hr>
 <h2 id="monitoring">Monitoring</h2>
 <h3>Prometheus</h3>
-<li>URL: http://localhost:9090 (internal only)</li>
+<li>URL: Internal metrics endpoint (not public)</li>
 <li>Scrape interval: 15s</li>
 <li>Targets: Node Exporter, Verdis RPC, Nginx</li>
 
 <h3>Grafana</h3>
 <li>URL: https://verdischain.com/grafana/</li>
-<li>Login: admin / verdis2026</li>
+<li>Login: configured at setup</li>
 <li>Datasource: Prometheus</li>
 <li>Dashboard: Verdis Chain Overview</li>
 
@@ -407,12 +443,12 @@ const api = await ApiPromise.create({ provider: new WsProvider('wss://verdischai
 <hr>
 <h2 id="deployment">Deployment</h2>
 <h3>Server</h3>
-<li>**IP:** 91.98.160.145</li>
-<li>**Domain:** verdischain.com</li>
-<li>**OS:** Ubuntu 26.04 LTS</li>
-<li>**CPU:** 8-core AMD EPYC</li>
-<li>**RAM:** 32GB</li>
-<li>**Disk:** 225GB</li>
+<li><strong>Access:</strong> via verdischain.com</li>
+<li><strong>Domain:</strong> verdischain.com</li>
+<li><strong>OS:</strong> Ubuntu 26.04 LTS</li>
+<li><strong>CPU:</strong> 8-core AMD EPYC</li>
+<li><strong>RAM:</strong> 32GB</li>
+<li><strong>Disk:</strong> 225GB</li>
 
 <h3>Services (13 active)</h3>
 <pre><code>
@@ -430,16 +466,14 @@ verdis-rpc-filter.service — RPC filter proxy
 verdis-tx-bot.service     — Transaction bot
 verdis-transfer-bot.service — Transfer bot
 verdis-health-monitor.service — Health monitor
-nginx.service             — Web server
-prometheus.service        — Monitoring
 grafana-server.service    — Dashboards
 node-exporter.service     — System metrics
 </code></pre>
 <h3>Nginx Configuration</h3>
-<li>RPC proxy: `/rpc` → `localhost:9948`</li>
-<li>WebSocket: `/ws` → `localhost:9948` (upgrade)</li>
-<li>Grafana: `/grafana/` → `localhost:3001`</li>
-<li>Static pages: `/var/www/verdiscan/`</li>
+<li>RPC proxy: `/rpc` → `local node`</li>
+<li>WebSocket: `/ws` → `local node` (upgrade)</li>
+<li>Grafana: `/grafana/` → `local Grafana`</li>
+<li>Static pages served via nginx</li>
 <li>Rate limiting on 5 zones</li>
 <li>SSL termination with Let's Encrypt</li>
 
@@ -467,7 +501,7 @@ npm run test:mobile                 # Mobile viewport (375px)
 <tr><td>Explorer</td><td>4</td><td>Block height, peers, validators</td></tr>
 <tr><td>API</td><td>15</td><td>RPC methods, WebSocket, security headers</td></tr>
 <tr><td>Mobile</td><td>5</td><td>Responsive at 375/768/1024/1280px</td></tr>
-<tr><td>**Total**</td><td>**52**</td><td>Full E2E coverage</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>52</strong></td><td>Full E2E coverage</td></tr>
 </table>
 <h3>CI/CD Integration</h3>
 <p>Tests run automatically via GitHub Actions:</p>
@@ -479,16 +513,16 @@ npm run test:mobile                 # Mobile viewport (375px)
 <hr>
 <h2 id="token-economics">Token Economics</h2>
 <h3>VRDX Token</h3>
-<li>**Total Supply:** 100,000,000,000 (100B)</li>
-<li>**Investor Allocation:** 12,000,000,000 (12B)</li>
-<li>**Decimals:** 12</li>
-<li>**Ticker:** VRDX</li>
-<li>**SS58 Format:** 909</li>
+<li><strong>Total Supply:</strong> 100,000,000,000 (100B)</li>
+<li><strong>Investor Allocation:</strong> 12,000,000,000 (12B)</li>
+<li><strong>Decimals:</strong> 12</li>
+<li><strong>Ticker:</strong> VRDX</li>
+<li><strong>SS58 Format:</strong> 909</li>
 
 <h3>Token Sale Phases</h3>
-<p>1. **Seed Phase** — Early investors (vesting: 24 months)</p>
-<p>2. **Private Sale** — Strategic partners (vesting: 12 months)</p>
-<p>3. **Public Sale** — Community (vesting: 3 months)</p>
+<p>1. <strong>Seed Phase</strong> — Early investors (vesting: 24 months)</p>
+<p>2. <strong>Private Sale</strong> — Strategic partners (vesting: 12 months)</p>
+<p>3. <strong>Public Sale</strong> — Community (vesting: 3 months)</p>
 <h3>Vesting</h3>
 <p>Vesting schedules are enforced on-chain via the Vesting pallet:</p>
 <li>Linear vesting with cliff periods</li>
@@ -514,5 +548,10 @@ npm run test:mobile                 # Mobile viewport (375px)
 <li>Immutable proof of reforestation</li>
 
 </div>
+
+<script>
+(function(){var h=document.getElementById('navHamburger'),l=document.querySelector('.nav-links');if(!h||!l)return;h.addEventListener('click',function(){h.classList.toggle('active');l.classList.toggle('open');});l.addEventListener('click',function(e){if(e.target.tagName==='A'){h.classList.remove('active');l.classList.remove('open');}});})();
+</script>
+
 </body>
 </html>

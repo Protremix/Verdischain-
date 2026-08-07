@@ -3,20 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verdis Chain Eco</title>
-<meta name="description" content="Verdis Chain Eco — Carbon-Negative Layer-1 Protocol with Live RPC Data">
+<title>Verdis Chain — Eco Metrics & Carbon Credits</title>
+<link rel="canonical" href="https://verdischain.com/eco/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Verdis Chain — Eco Metrics & Carbon Credits">
+<meta property="og:description" content="Track carbon credits, CO2 offset, trees planted, and green validator scores on Verdis Chain's eco-friendly blockchain platform.">
+<meta property="og:url" content="https://verdischain.com/eco/">
+<meta property="og:image" content="https://verdischain.com/assets/verdis-logo-black.png">
+<meta name="description" content="Track carbon credits, CO2 offset, trees planted, and green validator scores on Verdis Chain's eco-friendly blockchain platform.">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0a0a0a;
+  --bg: #f1f5f9;
   --bg-1: #111111;
   --bg-2: #1a1a1a;
-  --card: #141414;
-  --border: #222222;
+  --card: #ffffff;
+  --border: #e2e8f0;
   --border-2: #333333;
-  --text: #e8e8e8;
-  --text-2: #888888;
-  --text-3: #555555;
+  --text: #0f172a;
+  --text-2: #475569;
+  --text-3: #334155;
   --accent: #caff33;
   --accent-2: #b4f849;
   --accent-glow: rgba(202, 255, 51, 0.15);
@@ -27,7 +33,7 @@
   --radius-sm: 8px;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body {
+body { overflow-x:hidden;
   font-family: 'Inter', sans-serif;
   background: var(--bg);
   color: var(--text);
@@ -69,12 +75,12 @@ nav {
   justify-content: center;
   font-weight: 700;
   color: #000;
-  font-size: 16px;
+  font-size: 14px;
   font-family: 'Space Grotesk', sans-serif;
 }
 .nav-brand span {
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
   font-family: 'Space Grotesk', sans-serif;
 }
 .nav-links {
@@ -122,7 +128,7 @@ nav {
   padding: 0 24px;
 }
 .section {
-  padding: 48px 0;
+  padding: 28px 0;
   border-bottom: 1px solid var(--border);
 }
 .section:last-of-type {
@@ -133,7 +139,7 @@ nav {
 }
 .section-header h2 {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 28px;
+  font-size: 14px;
   font-weight: 700;
   margin-bottom: 8px;
   display: flex;
@@ -142,13 +148,13 @@ nav {
 }
 .section-header p {
   color: var(--text-2);
-  font-size: 15px;
+  font-size: 13px;
   max-width: 680px;
 }
 
 /* HERO */
 .hero {
-  padding: 48px 0 36px;
+  padding: 28px 0 36px;
 }
 .hero-badge {
   display: inline-flex;
@@ -171,7 +177,7 @@ nav {
 }
 .hero h1 {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 44px;
+  font-size: 20px;
   font-weight: 700;
   line-height: 1.15;
   margin-bottom: 16px;
@@ -185,9 +191,9 @@ nav {
 }
 .hero p {
   color: var(--text-2);
-  font-size: 16px;
+  font-size: 14px;
   max-width: 720px;
-  margin-bottom: 28px;
+  margin-bottom: 16px;
   line-height: 1.6;
 }
 .hero-actions {
@@ -262,7 +268,7 @@ nav {
 }
 .stat-card .value {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 26px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--text);
 }
@@ -325,7 +331,7 @@ nav {
   border-color: var(--border-2);
 }
 .card-icon {
-  font-size: 28px;
+  font-size: 14px;
   margin-bottom: 16px;
   width: 48px;
   height: 48px;
@@ -338,7 +344,7 @@ nav {
 }
 .card h3 {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 18px;
+  font-size: 13px;
   font-weight: 600;
   margin-bottom: 10px;
   color: var(--text);
@@ -374,7 +380,7 @@ nav {
 }
 .chart-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 18px;
+  font-size: 13px;
   font-weight: 600;
 }
 .chart-sub {
@@ -383,7 +389,7 @@ nav {
 }
 .chart-val {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 22px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--accent);
 }
@@ -452,7 +458,7 @@ nav {
 }
 .score-big {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 42px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--accent);
   margin: 12px 0 4px;
@@ -582,13 +588,13 @@ tr:hover td {
 }
 .mc-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text);
 }
 .mc-price {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--accent);
   background: rgba(202, 255, 51, 0.1);
@@ -720,7 +726,7 @@ tr:hover td {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 15px;
+  font-size: 13px;
 }
 .cert-body {
   margin-bottom: 20px;
@@ -734,14 +740,14 @@ tr:hover td {
 }
 .cert-recipient {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 22px;
+  font-size: 13px;
   font-weight: 700;
-  color: #fff;
+  color: #0f172a;
   margin-bottom: 16px;
 }
 .cert-amount {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 28px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--accent);
   margin-bottom: 8px;
@@ -779,9 +785,9 @@ tr:hover td {
   border-color: var(--border-2);
 }
 .partner-icon {
-  font-size: 24px;
+  font-size: 13px;
   width: 44px;
-  height: 44px;
+  height:64px;
   background: var(--bg-1);
   border-radius: var(--radius-sm);
   display: flex;
@@ -828,7 +834,7 @@ tr:hover td {
   position: absolute;
   top: 16px;
   right: 16px;
-  font-size: 20px;
+  font-size: 14px;
   color: var(--text-3);
   cursor: pointer;
   transition: color .2s;
@@ -885,7 +891,7 @@ footer .links a:hover {
     padding-bottom: 4px;
     white-space: nowrap;
   }
-  .hero h1 { font-size: 32px; }
+  .hero h1 { font-size: 13px; }
   .container { padding: 0 16px; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .table-filter-bar { flex-direction: column; align-items: stretch; }
@@ -893,28 +899,49 @@ footer .links a:hover {
 }
 
 @media (max-width: 375px) {
-  .hero h1 { font-size: 26px; }
+  .hero h1 { font-size: 16px; }
   .stats-grid { grid-template-columns: 1fr; }
   .partners-grid { grid-template-columns: 1fr; }
   .nav-links a { padding: 6px 10px; font-size: 13px; }
 }
 
-nav.std-nav { position:sticky; top:0; z-index:1000; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid #222; padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
-nav.std-nav .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:#e8e8e8; }
-nav.std-nav .nav-brand .logo { width:32px; height:32px; background:#caff33; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#000; font-size:16px; }
-nav.std-nav .nav-brand span { font-weight:600; font-size:16px; }
+nav.std-nav { position:sticky; top:0; z-index:1000; background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid #222; padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
+nav.std-nav .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:#1e293b; }
+nav.std-nav .nav-brand .logo { width:32px; height:32px; background:#caff33; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#000; font-size:14px; }
+nav.std-nav .nav-brand span { font-weight:600; font-size:14px; }
 nav.std-nav .nav-links { display:flex; gap:4px; flex-wrap:wrap; }
-nav.std-nav .nav-links a { color:#888; text-decoration:none; padding:8px 12px; border-radius:8px; font-size:13px; font-weight:500; transition:all .2s; }
+nav.std-nav .nav-links a { color:#334155; text-decoration:none; padding:8px 12px; border-radius:8px; font-size:13px; font-weight:500; transition:all .2s; }
 nav.std-nav .nav-links a:hover, nav.std-nav .nav-links a.active { color:#caff33; background:#141414; }
-nav.std-nav .nav-status { display:flex; align-items:center; gap:8px; font-size:13px; color:#888; }
+nav.std-nav .nav-status { display:flex; align-items:center; gap:8px; font-size:13px; color:#334155; }
 nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; background:#4ade80; box-shadow:0 0 8px #4ade80; animation:std-pulse 2s infinite; }
 @keyframes std-pulse { 0%,100%{opacity:1;} 50%{opacity:.5;} }
 @media(max-width:768px) { nav.std-nav .nav-links { display:none; } nav.std-nav .nav-brand span { font-size:14px; } }
 
 
-.brand-logo-img { height: 36px; width: 36px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,255,136,0.35)); } .brand-text { font-family: Poppins, sans-serif; font-weight: 700; font-size: 18px; color: #fff; white-space: nowrap; margin-left: 2px; letter-spacing: -0.3px; text-decoration: none !important; }
-@media(max-width:768px) { .brand-logo-img { height: 40px; } }
 
+     50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.7)); } }
+    
+    .nav-brand:hover 
+@media(max-width:768px) {  }
+
+
+    .brand-logo-img { height:64px; width: auto; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(202,255,51,0.4)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
+    .brand-logo-img { filter: drop-shadow(0 0 20px rgba(202,255,51,0.7)); }
+    @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(202,255,51,0.35)); } 50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.6)); } }
+
+/* Mobile hamburger menu */
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:40px;height:40px;background:transparent;border:none;cursor:pointer;padding:8px;z-index:1001}
+.nav-hamburger span{display:block;width:22px;height:2px;background:#caff33;border-radius:2px;transition:all 250ms cubic-bezier(0.16,1,0.3,1)}
+.nav-hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.nav-hamburger.active span:nth-child(2){opacity:0}
+.nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+@media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(0,0,0,0.06);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
+
+
+/* Responsive tables - prevent viewport expansion */
+html{overflow-x:hidden;max-width:100vw}
+table{width:100%!important;max-width:100%!important;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+thead,tbody{display:table;width:100%}
 </style>
 <link rel="icon" type="image/png" href="/assets/favicon-32.png">
 <link rel="apple-touch-icon" href="/assets/favicon-180.png">
@@ -923,10 +950,10 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
 
 <!-- NAVIGATION -->
 <nav class="std-nav">
-  <a href="/" class="nav-brand"><img src="/assets/verdis-v-icon.png" alt="Verdis Chain" class="brand-logo-img"><span class="brand-text">Verdis Chain</span></a>
-  <div class="nav-links">
+  <a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain" class="brand-logo-img" style="height:48px;width:auto;display:block;object-fit:contain;flex-shrink:0"></a>
+  <button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links">
     <a href="/">Home</a>
-    <a href="/explorer/">Explorer</a>
+    <a href="/explorer/">Verdiscan</a>
     <a href="/dex/">DEX</a>
     <a href="/validators/" class="active">Validators</a>
     <a href="/eco/" class="active">Eco</a>
@@ -961,12 +988,12 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
     <div class="stats-grid">
       <div class="stat-card">
         <div class="label">Total CO2 Offset</div>
-        <div class="value accent">0 t</div>
+        <div class="value accent" data-eco-co2>0 t</div>
         <div class="sub">Verified Metric Tons <span class="badge-static">Demo Data</span></div>
       </div>
       <div class="stat-card">
         <div class="label">Trees Planted</div>
-        <div class="value">0</div>
+        <div class="value" data-eco-trees>0</div>
         <div class="sub">Telemetry Logged <span class="badge-static">Demo Data</span></div>
       </div>
       <div class="stat-card">
@@ -986,7 +1013,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
       </div>
       <div class="stat-card">
         <div class="label">Avg Green Score</div>
-        <div class="value success">87.4<span style="font-size:16px;">/100</span></div>
+        <div class="value success">87.4<span style="font-size:14px;">/100</span></div>
         <div class="sub">Protocol Rating <span class="badge-static">Calculated</span></div>
       </div>
     </div>
@@ -1048,7 +1075,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
             <div class="chart-title">Cumulative CO2 Offset Over Time</div>
             <div class="chart-sub">Measured in Metric Tons (2025 – 2026)</div>
           </div>
-          <div class="chart-val">0 t</div>
+          <div class="chart-val" data-eco-co2>0 t</div>
         </div>
         <div style="height: 180px; width: 100%; margin-bottom: 12px;">
           <svg viewBox="0 0 500 180" style="width: 100%; height: 100%;">
@@ -1090,7 +1117,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
           <div class="progress-group">
             <div class="progress-label">
               <span>🌳 Reforestation & Agroforestry</span>
-              <span class="mono" style="color:var(--text);">62% (7,965 t)</span>
+              <span class="mono" style="color:var(--text,#0f172a);">62% (7,965 t)</span>
             </div>
             <div class="progress-bar">
               <div class="progress-fill" style="width: 62%;"></div>
@@ -1100,7 +1127,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
           <div class="progress-group">
             <div class="progress-label">
               <span>💨 Direct Air Capture (DAC)</span>
-              <span class="mono" style="color:var(--text);">21% (2,698 t)</span>
+              <span class="mono" style="color:var(--text,#0f172a);">21% (2,698 t)</span>
             </div>
             <div class="progress-bar">
               <div class="progress-fill" style="width: 21%;"></div>
@@ -1110,7 +1137,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
           <div class="progress-group">
             <div class="progress-label">
               <span>☀️ Renewable Energy Offsets</span>
-              <span class="mono" style="color:var(--text);">12% (1,541 t)</span>
+              <span class="mono" style="color:var(--text,#0f172a);">12% (1,541 t)</span>
             </div>
             <div class="progress-bar">
               <div class="progress-fill" style="width: 12%;"></div>
@@ -1120,7 +1147,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
           <div class="progress-group">
             <div class="progress-label">
               <span>🔥 Methane & Biochar Avoidance</span>
-              <span class="mono" style="color:var(--text);">5% (643 t)</span>
+              <span class="mono" style="color:var(--text,#0f172a);">5% (643 t)</span>
             </div>
             <div class="progress-bar">
               <div class="progress-fill" style="width: 5%;"></div>
@@ -1253,7 +1280,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
                 <div class="td-title">Amazon Rainforest Basin</div>
                 <div style="font-size:12px; color:var(--text-3);">Loreto Region, Peru</div>
               </td>
-              <td class="mono" style="font-weight:600; color:var(--text);">18,450</td>
+              <td class="mono" style="font-weight:600; color:var(--text,#0f172a);">18,450</td>
               <td class="mono accent" style="font-weight:600;">4,820 t</td>
               <td class="mono">2026-08-01</td>
               <td style="font-weight:500;">Verra (VCS)</td>
@@ -1264,7 +1291,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
                 <div class="td-title">Congo River Canopy</div>
                 <div style="font-size:12px; color:var(--text-3);">Équateur Province, DRC</div>
               </td>
-              <td class="mono" style="font-weight:600; color:var(--text);">12,300</td>
+              <td class="mono" style="font-weight:600; color:var(--text,#0f172a);">12,300</td>
               <td class="mono accent" style="font-weight:600;">3,150 t</td>
               <td class="mono">2026-07-24</td>
               <td style="font-weight:500;">Gold Standard</td>
@@ -1275,7 +1302,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
                 <div class="td-title">Borneo Mangrove Corridor</div>
                 <div style="font-size:12px; color:var(--text-3);">East Kalimantan, Indonesia</div>
               </td>
-              <td class="mono" style="font-weight:600; color:var(--text);">9,842</td>
+              <td class="mono" style="font-weight:600; color:var(--text,#0f172a);">9,842</td>
               <td class="mono accent" style="font-weight:600;">2,640 t</td>
               <td class="mono">2026-07-18</td>
               <td style="font-weight:500;">Rainforest Alliance</td>
@@ -1286,7 +1313,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
                 <div class="td-title">Rift Valley Agroforestry</div>
                 <div style="font-size:12px; color:var(--text-3);">Nakuru County, Kenya</div>
               </td>
-              <td class="mono" style="font-weight:600; color:var(--text);">4,200</td>
+              <td class="mono" style="font-weight:600; color:var(--text,#0f172a);">4,200</td>
               <td class="mono accent" style="font-weight:600;">1,120 t</td>
               <td class="mono">2026-06-30</td>
               <td style="font-weight:500;">UN Climate Change</td>
@@ -1297,7 +1324,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
                 <div class="td-title">Andes High-Altitude Forest</div>
                 <div style="font-size:12px; color:var(--text-3);">Cusco Region, Peru</div>
               </td>
-              <td class="mono" style="font-weight:600; color:var(--text);">2,600</td>
+              <td class="mono" style="font-weight:600; color:var(--text,#0f172a);">2,600</td>
               <td class="mono accent" style="font-weight:600;">1,117 t</td>
               <td class="mono">2026-06-12</td>
               <td style="font-weight:500;">Verra (VCS)</td>
@@ -1586,10 +1613,10 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
 <footer>
   <div class="links">
     <a href="/">Landing</a>
-    <a href="/explorer">Explorer</a>
-    <a href="/dex">DEX</a>
-    <a href="/validators">Validators</a>
-    <a href="/docs">Docs</a>
+    <a href="/explorer/">Verdiscan</a>
+    <a href="/dex/">DEX</a>
+    <a href="/validators/">Validators</a>
+    <a href="/docs/">Docs</a>
     <a href="/whitepaper/" target="_blank">Whitepaper</a>
     <a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a>
   </div>
@@ -1600,7 +1627,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
 <div class="modal-overlay" id="tradeModal">
   <div class="modal-card">
     <span class="modal-close" onclick="closeModal()">&times;</span>
-    <h3 id="modalTitle" style="font-size:18px; font-weight:700; margin-bottom:12px; font-family:'Space Grotesk', sans-serif;">Trade cVRDX Credits</h3>
+    <h3 id="modalTitle" style="font-size:13px; font-weight:700; margin-bottom:12px; font-family:'Space Grotesk', sans-serif;">Trade cVRDX Credits</h3>
     <p id="modalDesc" style="font-size:13px; color:var(--text-2); margin-bottom:20px;">Execute on-chain transaction via Verdis DEX smart contract.</p>
     
     <div class="form-group">
@@ -1611,7 +1638,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
     <div style="background:var(--bg-1); padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border); margin-bottom:20px;" class="mono">
       <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-2);">
         <span>Price per Ton:</span>
-        <span id="modalUnitPrice" style="color:var(--text);">$14.50</span>
+        <span id="modalUnitPrice" style="color:var(--text,#0f172a);">$14.50</span>
       </div>
       <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:700; color:var(--accent); margin-top:6px;">
         <span>Total Estimated Cost:</span>
@@ -1681,8 +1708,7 @@ async function loadLiveRPC() {
         document.getElementById('stat-peers').textContent = health.peers || 0;
       }
     } catch (e) {
-      console.log('system_health notice:', e.message);
-    }
+      }
 
     // 3. Get Active Validators
     try {
@@ -1691,30 +1717,25 @@ async function loadLiveRPC() {
         document.getElementById('stat-validators').textContent = validators.length;
       }
     } catch (e) {
-      console.log('dpos_activeValidators notice:', e.message);
-    }
+      }
 
     // 4. Try eco-specific RPC calls
     try {
       const credits = await rpc('eco_getCarbonCredits');
       if (credits && credits.totalOffset) {
-        console.log('Live carbon credit data received:', credits);
-      }
+        }
     } catch (e) {
       try {
         const creditsAlt = await rpc('eco_carbonCredits');
-        if (creditsAlt) console.log('Live carbon credits alt:', creditsAlt);
-      } catch (err) {}
+        if (creditsAlt) } catch (err) {}
     }
 
     try {
       const reforest = await rpc('eco_getReforestationLog');
-      if (reforest) console.log('Live reforestation log:', reforest);
-    } catch (e) {
+      if (reforest) } catch (e) {
       try {
         const reforestAlt = await rpc('eco_reforestationLog');
-        if (reforestAlt) console.log('Live reforestation log alt:', reforestAlt);
-      } catch (err) {}
+        if (reforestAlt) } catch (err) {}
     }
 
     if (statusEl) statusEl.textContent = 'Connected';
@@ -1779,8 +1800,8 @@ function updateCertPreview() {
   
   let hashNum = 0;
   for (let i = 0; i < name.length; i++) hashNum += name.charCodeAt(i);
-  let dummyHash = '0x' + Math.abs(Math.floor(hashNum * ton * 889412)).toString(16).padStart(8, '0') + '...12e8';
-  document.getElementById('pcHash').innerText = 'HASH: ' + dummyHash;
+  let hashDisplay = '0x' + Math.abs(Math.floor(hashNum * ton * 889412)).toString(16).padStart(8, '0') + '...12e8';
+  document.getElementById('pcHash').innerText = 'HASH: ' + hashDisplay;
 }
 
 // MODAL LOGIC
@@ -1815,6 +1836,97 @@ window.addEventListener('DOMContentLoaded', () => {
   loadLiveRPC();
   setInterval(loadLiveRPC, 12000);
 });
+</script>
+
+<script>
+// Eco pallet storage keys (xxhash64 computed)
+const ECO_PALLET_KEY = '0x2680888a0748104b';  // twox64("Eco")
+const STORAGE_KEYS = {
+  co2: '0x2680888a0748104b2a2a6d2225476c87',    // TotalCO2Offset
+  trees: '0x2680888a0748104ba708c311d6f4910e',   // TotalTreesPlanted
+  retired: '0x2680888a0748104bcf008879e83944d7' // TotalCreditsRetired
+};
+
+async function fetchEcoStats() {
+  const RPC = '/rpc';
+  try {
+    // Fetch all 3 storage values in parallel
+    const [co2Res, treesRes, retiredRes] = await Promise.all([
+      fetch(RPC, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'state_getStorage',params:[STORAGE_KEYS.co2],id:1})}),
+      fetch(RPC, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'state_getStorage',params:[STORAGE_KEYS.trees],id:2})}),
+      fetch(RPC, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'state_getStorage',params:[STORAGE_KEYS.retired],id:3})}),
+    ]);
+
+    const co2Data = await co2Res.json();
+    const treesData = await treesRes.json();
+    const retiredData = await retiredRes.json();
+
+    // Decode SCALE-encoded values
+    function decodeU64(hex) {
+      if (!hex || hex === '0x' || hex.length < 18) return 0;
+      // u64 little-endian from hex
+      let val = 0;
+      const bytes = hex.slice(2, 18);
+      for (let i = 6; i >= 0; i--) {
+        val = val * 256 + parseInt(bytes.slice(i*2, i*2+2), 16);
+      }
+      return val;
+    }
+    function decodeU32(hex) {
+      if (!hex || hex === '0x' || hex.length < 10) return 0;
+      let val = 0;
+      const bytes = hex.slice(2, 10);
+      for (let i = 3; i >= 0; i--) {
+        val = val * 256 + parseInt(bytes.slice(i*2, i*2+2), 16);
+      }
+      return val;
+    }
+
+    const co2 = decodeU64(co2Data.result);
+    const trees = decodeU32(treesData.result);
+    const retired = decodeU64(retiredData.result);
+
+    // Update all eco stat displays
+    document.querySelectorAll('[data-eco-co2]').forEach(el => el.textContent = co2.toLocaleString() + ' t');
+    document.querySelectorAll('[data-eco-trees]').forEach(el => el.textContent = trees.toLocaleString());
+    document.querySelectorAll('[data-eco-retired]').forEach(el => el.textContent = retired.toLocaleString());
+
+    // Update any value.accent elements that show CO2
+    document.querySelectorAll('.value.accent').forEach(el => {
+      if (el.textContent.includes(' t') || el.textContent === '0 t') {
+        el.textContent = co2.toLocaleString() + ' t';
+      }
+    });
+
+    // Update tree count
+    document.querySelectorAll('.value').forEach(el => {
+      if (el.textContent === '0' && el.nextElementSibling && el.nextElementSibling.textContent.toLowerCase().includes('tree')) {
+        el.textContent = trees.toLocaleString();
+      }
+    });
+
+    } catch(e) {
+    }
+}
+
+// Also fetch block height for eco page
+async function fetchBlockHeight() {
+  try {
+    const r = await fetch('/rpc', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'chain_getHeader',params:[],id:1})});
+    const d = await r.json();
+    const h = parseInt(d.result.number, 16);
+    document.querySelectorAll('[data-block-height]').forEach(el => el.textContent = '#' + h.toLocaleString());
+  } catch(e) {}
+}
+
+fetchEcoStats();
+fetchBlockHeight();
+setInterval(fetchEcoStats, 30000);
+setInterval(fetchBlockHeight, 15000);
+</script>
+
+<script>
+(function(){var h=document.getElementById('navHamburger'),l=document.querySelector('.nav-links');if(!h||!l)return;h.addEventListener('click',function(){h.classList.toggle('active');l.classList.toggle('open');});l.addEventListener('click',function(e){if(e.target.tagName==='A'){h.classList.remove('active');l.classList.remove('open');}});})();
 </script>
 
 </body>

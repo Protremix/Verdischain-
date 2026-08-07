@@ -10,14 +10,10 @@
 
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{
-    dispatch::DispatchResult,
-    ensure,
-    pallet_prelude::*,
-    traits::Get,
-    PalletId, DefaultNoBound,
+    dispatch::DispatchResult, ensure, pallet_prelude::*, traits::Get, DefaultNoBound, PalletId,
 };
-use scale_info::TypeInfo;
 use frame_system::pallet_prelude::*;
+use scale_info::TypeInfo;
 use sp_std::prelude::*;
 
 pub use pallet::*;
@@ -101,15 +97,45 @@ pub mod pallet {
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
-        CarbonCreditMinted { id: Vec<u8>, tons_co2: u64, owner: T::AccountId },
-        CarbonCreditVerified { id: Vec<u8> },
-        CarbonCreditRetired { id: Vec<u8>, tons_co2: u64 },
-        CarbonCreditTransferred { id: Vec<u8>, from: T::AccountId, to: T::AccountId },
-        ReforestProjectCreated { id: Vec<u8>, name: Vec<u8>, trees: u32 },
-        ReforestProjectUpdated { id: Vec<u8>, trees: u32, survival_rate: u8 },
-        ReforestProjectVerified { id: Vec<u8> },
-        GreenValidatorRegistered { address: T::AccountId, energy_source: Vec<u8>, score: u8 },
-        GreenScoreUpdated { address: T::AccountId, score: u8 },
+        CarbonCreditMinted {
+            id: Vec<u8>,
+            tons_co2: u64,
+            owner: T::AccountId,
+        },
+        CarbonCreditVerified {
+            id: Vec<u8>,
+        },
+        CarbonCreditRetired {
+            id: Vec<u8>,
+            tons_co2: u64,
+        },
+        CarbonCreditTransferred {
+            id: Vec<u8>,
+            from: T::AccountId,
+            to: T::AccountId,
+        },
+        ReforestProjectCreated {
+            id: Vec<u8>,
+            name: Vec<u8>,
+            trees: u32,
+        },
+        ReforestProjectUpdated {
+            id: Vec<u8>,
+            trees: u32,
+            survival_rate: u8,
+        },
+        ReforestProjectVerified {
+            id: Vec<u8>,
+        },
+        GreenValidatorRegistered {
+            address: T::AccountId,
+            energy_source: Vec<u8>,
+            score: u8,
+        },
+        GreenScoreUpdated {
+            address: T::AccountId,
+            score: u8,
+        },
     }
 
     // === Errors ===
@@ -173,7 +199,8 @@ pub mod pallet {
 
             for (id, name, tons, verified, owner) in &self.carbon_credits {
                 let id_bv: BoundedVec<u8, ConstU32<64>> = id.clone().try_into().unwrap_or_default();
-                let name_bv: BoundedVec<u8, ConstU32<128>> = name.clone().try_into().unwrap_or_default();
+                let name_bv: BoundedVec<u8, ConstU32<128>> =
+                    name.clone().try_into().unwrap_or_default();
                 let credit = CarbonCredit {
                     id: id_bv.clone(),
                     project_name: name_bv,
@@ -232,14 +259,21 @@ pub mod pallet {
             project_name: Vec<u8>,
             tons_co2: u64,
         ) -> DispatchResult {
-            let who = ensure_root(origin)?;
+            let who = ensure_signed(origin)?;
 
-            let id_bv: BoundedVec<u8, ConstU32<64>> = id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
-            let name_bv: BoundedVec<u8, ConstU32<128>> = project_name.clone().try_into().map_err(|_| Error::<T>::NameTooLong)?;
+            let id_bv: BoundedVec<u8, ConstU32<64>> =
+                id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
+            let name_bv: BoundedVec<u8, ConstU32<128>> = project_name
+                .clone()
+                .try_into()
+                .map_err(|_| Error::<T>::NameTooLong)?;
 
-            ensure!(!CarbonCredits::<T>::contains_key(&id_bv), Error::<T>::CreditAlreadyExists);
             ensure!(
-                CarbonCredits::<T>::iter().count() as u32 < T::MaxCarbonCredits::get(),
+                !CarbonCredits::<T>::contains_key(&id_bv),
+                Error::<T>::CreditAlreadyExists
+            );
+            ensure!(
+                (CarbonCredits::<T>::iter().count() as u32) < T::MaxCarbonCredits::get(),
                 Error::<T>::MaxCarbonCreditsReached
             );
 
@@ -270,7 +304,8 @@ pub mod pallet {
         pub fn verify_carbon_credit(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
             ensure_root(origin)?;
 
-            let id_bv: BoundedVec<u8, ConstU32<64>> = id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
+            let id_bv: BoundedVec<u8, ConstU32<64>> =
+                id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
 
             CarbonCredits::<T>::mutate(&id_bv, |c| {
                 let credit = c.as_mut().ok_or(Error::<T>::CreditNotFound)?;
@@ -289,7 +324,8 @@ pub mod pallet {
         pub fn retire_carbon_credit(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
-            let id_bv: BoundedVec<u8, ConstU32<64>> = id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
+            let id_bv: BoundedVec<u8, ConstU32<64>> =
+                id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
 
             CarbonCredits::<T>::mutate(&id_bv, |c| {
                 let credit = c.as_mut().ok_or(Error::<T>::CreditNotFound)?;
@@ -319,7 +355,8 @@ pub mod pallet {
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
-            let id_bv: BoundedVec<u8, ConstU32<64>> = id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
+            let id_bv: BoundedVec<u8, ConstU32<64>> =
+                id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
 
             CarbonCredits::<T>::mutate(&id_bv, |c| {
                 let credit = c.as_mut().ok_or(Error::<T>::CreditNotFound)?;
@@ -329,11 +366,7 @@ pub mod pallet {
                 Ok::<(), Error<T>>(())
             })?;
 
-            Self::deposit_event(Event::CarbonCreditTransferred {
-                id,
-                from: who,
-                to,
-            });
+            Self::deposit_event(Event::CarbonCreditTransferred { id, from: who, to });
             Ok(())
         }
 
@@ -347,13 +380,17 @@ pub mod pallet {
             trees_planted: u32,
             location: Vec<u8>,
         ) -> DispatchResult {
-            let _who = ensure_root(origin)?;
+            let _who = ensure_signed(origin)?;
 
-            let id_bv: BoundedVec<u8, ConstU32<64>> = id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
+            let id_bv: BoundedVec<u8, ConstU32<64>> =
+                id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
 
-            ensure!(!ReforestProjects::<T>::contains_key(&id_bv), Error::<T>::ProjectAlreadyExists);
             ensure!(
-                ReforestProjects::<T>::iter().count() as u32 < T::MaxReforestProjects::get(),
+                !ReforestProjects::<T>::contains_key(&id_bv),
+                Error::<T>::ProjectAlreadyExists
+            );
+            ensure!(
+                (ReforestProjects::<T>::iter().count() as u32) < T::MaxReforestProjects::get(),
                 Error::<T>::MaxReforestProjectsReached
             );
 
@@ -388,7 +425,8 @@ pub mod pallet {
         ) -> DispatchResult {
             ensure_root(origin)?;
 
-            let id_bv: BoundedVec<u8, ConstU32<64>> = id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
+            let id_bv: BoundedVec<u8, ConstU32<64>> =
+                id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
 
             ReforestProjects::<T>::mutate(&id_bv, |p| {
                 let project = p.as_mut().ok_or(Error::<T>::ProjectNotFound)?;
@@ -411,7 +449,8 @@ pub mod pallet {
         pub fn verify_reforest_project(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
             ensure_root(origin)?;
 
-            let id_bv: BoundedVec<u8, ConstU32<64>> = id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
+            let id_bv: BoundedVec<u8, ConstU32<64>> =
+                id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
 
             ReforestProjects::<T>::mutate(&id_bv, |p| {
                 let project = p.as_mut().ok_or(Error::<T>::ProjectNotFound)?;
@@ -436,13 +475,19 @@ pub mod pallet {
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
-            let energy_bv: BoundedVec<u8, ConstU32<64>> = energy_source.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
+            let energy_bv: BoundedVec<u8, ConstU32<64>> = energy_source
+                .clone()
+                .try_into()
+                .map_err(|_| Error::<T>::IdTooLong)?;
 
-            ensure!(!GreenValidators::<T>::contains_key(&who), Error::<T>::ValidatorAlreadyRegistered);
+            ensure!(
+                !GreenValidators::<T>::contains_key(&who),
+                Error::<T>::ValidatorAlreadyRegistered
+            );
             ensure!(score >= T::MinGreenScore::get(), Error::<T>::InvalidScore);
             ensure!(score <= T::MaxGreenScore::get(), Error::<T>::InvalidScore);
             ensure!(
-                GreenValidators::<T>::iter().count() as u32 < T::MaxGreenValidators::get(),
+                (GreenValidators::<T>::iter().count() as u32) < T::MaxGreenValidators::get(),
                 Error::<T>::MaxGreenValidatorsReached
             );
 
@@ -472,7 +517,10 @@ pub mod pallet {
         pub fn update_green_score(origin: OriginFor<T>, score: u8) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
-            ensure!(GreenValidators::<T>::contains_key(&who), Error::<T>::ValidatorNotFound);
+            ensure!(
+                GreenValidators::<T>::contains_key(&who),
+                Error::<T>::ValidatorNotFound
+            );
             ensure!(score >= T::MinGreenScore::get(), Error::<T>::InvalidScore);
             ensure!(score <= T::MaxGreenScore::get(), Error::<T>::InvalidScore);
 
@@ -483,7 +531,10 @@ pub mod pallet {
                 }
             });
 
-            Self::deposit_event(Event::GreenScoreUpdated { address: who, score });
+            Self::deposit_event(Event::GreenScoreUpdated {
+                address: who,
+                score,
+            });
             Ok(())
         }
     }
@@ -503,14 +554,215 @@ pub mod pallet {
 
     pub struct SubstrateWeight<T>(PhantomData<T>);
     impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
-        fn mint_carbon_credit() -> Weight { Weight::from_parts(80_000_000, 0) }
-        fn verify_carbon_credit() -> Weight { Weight::from_parts(30_000_000, 0) }
-        fn retire_carbon_credit() -> Weight { Weight::from_parts(40_000_000, 0) }
-        fn transfer_carbon_credit() -> Weight { Weight::from_parts(50_000_000, 0) }
-        fn create_reforest_project() -> Weight { Weight::from_parts(70_000_000, 0) }
-        fn update_reforest_project() -> Weight { Weight::from_parts(50_000_000, 0) }
-        fn verify_reforest_project() -> Weight { Weight::from_parts(30_000_000, 0) }
-        fn register_green_validator() -> Weight { Weight::from_parts(60_000_000, 0) }
-        fn update_green_score() -> Weight { Weight::from_parts(20_000_000, 0) }
+        fn mint_carbon_credit() -> Weight {
+            Weight::from_parts(80_000_000, 0)
+        }
+        fn verify_carbon_credit() -> Weight {
+            Weight::from_parts(30_000_000, 0)
+        }
+        fn retire_carbon_credit() -> Weight {
+            Weight::from_parts(40_000_000, 0)
+        }
+        fn transfer_carbon_credit() -> Weight {
+            Weight::from_parts(50_000_000, 0)
+        }
+        fn create_reforest_project() -> Weight {
+            Weight::from_parts(70_000_000, 0)
+        }
+        fn update_reforest_project() -> Weight {
+            Weight::from_parts(50_000_000, 0)
+        }
+        fn verify_reforest_project() -> Weight {
+            Weight::from_parts(30_000_000, 0)
+        }
+        fn register_green_validator() -> Weight {
+            Weight::from_parts(60_000_000, 0)
+        }
+        fn update_green_score() -> Weight {
+            Weight::from_parts(20_000_000, 0)
+        }
+    }
+}
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+    use frame_support::{
+        assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types, traits::ConstU32,
+    };
+    use sp_io::TestExternalities;
+    use sp_keyring::Sr25519Keyring;
+    use sp_runtime::{traits::IdentityLookup, BuildStorage};
+
+    type Block = frame_system::mocking::MockBlock<Test>;
+
+    construct_runtime!(
+        pub enum Test { System: frame_system, Eco: crate }
+    );
+
+    #[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
+    impl frame_system::Config for Test {
+        type AccountId = sp_core::crypto::AccountId32;
+        type Lookup = IdentityLookup<Self::AccountId>;
+        type Block = Block;
+        type AccountData = ();
+    }
+
+    parameter_types! {
+        pub const EcoPalletId: PalletId = PalletId(*b"v/ecoess");
+        pub const MaxCarbonCredits: u32 = 100;
+        pub const MaxReforestProjects: u32 = 50;
+        pub const MaxGreenValidators: u32 = 101;
+        pub const MinGreenScore: u8 = 0;
+        pub const MaxGreenScore: u8 = 100;
+    }
+
+    impl Config for Test {
+        type RuntimeEvent = RuntimeEvent;
+        type PalletId = EcoPalletId;
+        type MaxCarbonCredits = MaxCarbonCredits;
+        type MaxReforestProjects = MaxReforestProjects;
+        type MaxGreenValidators = MaxGreenValidators;
+        type MinGreenScore = MinGreenScore;
+        type MaxGreenScore = MaxGreenScore;
+        type WeightInfo = SubstrateWeight<Test>;
+    }
+
+    pub fn new_test_ext() -> TestExternalities {
+        let mut t = frame_system::GenesisConfig::<Test>::default()
+            .build_storage()
+            .unwrap();
+        GenesisConfig::<Test> {
+            carbon_credits: vec![],
+            reforest_projects: vec![],
+            green_validators: vec![],
+        }
+        .assimilate_storage(&mut t)
+        .unwrap();
+        let mut ext = TestExternalities::new(t);
+        ext.execute_with(|| System::set_block_number(1));
+        ext
+    }
+
+    #[test]
+    fn test_genesis_empty() {
+        new_test_ext().execute_with(|| {
+            assert_eq!(TotalCO2Offset::<Test>::get(), 0);
+            assert_eq!(TotalTreesPlanted::<Test>::get(), 0);
+        });
+    }
+
+    #[test]
+    fn test_mint_carbon_credit() {
+        new_test_ext().execute_with(|| {
+            assert_ok!(Eco::mint_carbon_credit(
+                RuntimeOrigin::signed(Sr25519Keyring::Alice.to_account_id()),
+                b"c1".to_vec(),
+                b"Amazon".to_vec(),
+                100,
+            ));
+            assert_eq!(TotalCO2Offset::<Test>::get(), 100);
+        });
+    }
+
+    #[test]
+    fn test_mint_duplicate() {
+        new_test_ext().execute_with(|| {
+            Eco::mint_carbon_credit(
+                RuntimeOrigin::signed(Sr25519Keyring::Alice.to_account_id()),
+                b"c1".to_vec(),
+                b"P".to_vec(),
+                50,
+            )
+            .unwrap();
+            assert_noop!(
+                Eco::mint_carbon_credit(
+                    RuntimeOrigin::signed(Sr25519Keyring::Bob.to_account_id()),
+                    b"c1".to_vec(),
+                    b"P2".to_vec(),
+                    30,
+                ),
+                Error::<Test>::CreditAlreadyExists
+            );
+        });
+    }
+
+    #[test]
+    fn test_verify_credit() {
+        new_test_ext().execute_with(|| {
+            Eco::mint_carbon_credit(
+                RuntimeOrigin::signed(Sr25519Keyring::Alice.to_account_id()),
+                b"c1".to_vec(),
+                b"P".to_vec(),
+                50,
+            )
+            .unwrap();
+            assert_ok!(Eco::verify_carbon_credit(
+                RuntimeOrigin::root(),
+                b"c1".to_vec()
+            ));
+        });
+    }
+
+    #[test]
+    fn test_verify_nonexistent() {
+        new_test_ext().execute_with(|| {
+            assert_noop!(
+                Eco::verify_carbon_credit(RuntimeOrigin::root(), b"nope".to_vec()),
+                Error::<Test>::CreditNotFound
+            );
+        });
+    }
+
+    #[test]
+    fn test_create_reforest() {
+        new_test_ext().execute_with(|| {
+            assert_ok!(Eco::create_reforest_project(
+                RuntimeOrigin::signed(Sr25519Keyring::Alice.to_account_id()),
+                b"p1".to_vec(),
+                b"Amazon".to_vec(),
+                5000,
+                b"Brazil".to_vec(),
+            ));
+            assert_eq!(TotalTreesPlanted::<Test>::get(), 5000);
+        });
+    }
+
+    #[test]
+    fn test_register_green_validator() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_ok!(Eco::register_green_validator(
+                RuntimeOrigin::signed(alice.clone()),
+                b"Solar".to_vec(),
+                500,
+                100,
+                90,
+            ));
+            assert_eq!(GreenValidators::<Test>::get(&alice).unwrap().score, 90);
+        });
+    }
+
+    #[test]
+    fn test_update_green_score() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            Eco::register_green_validator(
+                RuntimeOrigin::signed(alice.clone()),
+                b"Solar".to_vec(),
+                500,
+                100,
+                90,
+            )
+            .unwrap();
+            assert_ok!(Eco::update_green_score(
+                RuntimeOrigin::signed(alice.clone()),
+                95
+            ));
+            assert_eq!(GreenValidators::<Test>::get(&alice).unwrap().score, 95);
+        });
     }
 }

@@ -10,15 +10,14 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, DecodeWithMemTracking, Encode, MaxEncodedLen};
-use frame_support::{dispatch::DispatchResult, ensure, pallet_prelude::*, traits::Get, PalletId};
+use frame_support::{
+    dispatch::DispatchResult, ensure, pallet_prelude::*, traits::Get, DefaultNoBound, PalletId,
+};
 use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
 use sp_std::prelude::*;
 
 pub use pallet::*;
-
-#[cfg(feature = "runtime-benchmarks")]
-pub mod benchmarking;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -78,11 +77,34 @@ pub mod pallet {
     pub type PinRequests<T: Config> =
         StorageMap<_, Blake2_128Concat, BoundedVec<u8, ConstU32<64>>, bool, ValueQuery>;
 
+    // === Cloudbreak: Horizontal Account Scaling ===
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Default)]
+    pub struct ShardInfo {
+        pub shard_id: u32,
+        pub account_count: u64,
+        pub total_size_bytes: u64,
+        pub last_updated_block: u32,
+    }
+
+    #[pallet::storage]
+    #[pallet::getter(fn account_shards)]
+    pub type AccountShards<T: Config> = StorageMap<_, Twox64Concat, u32, BoundedVec<T::AccountId, ConstU32<1024>>, ValueQuery>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn shard_info)]
+    pub type ShardInfoStorage<T: Config> = StorageMap<_, Twox64Concat, u32, ShardInfo, ValueQuery>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn account_to_shard)]
+    pub type AccountToShard<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, u32, ValueQuery>;
+
     // === Events ===
 
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
+        AccountSharded { account: T::AccountId, shard_id: u32 },
+        ShardRebalanced { shard_id: u32, new_count: u64 },
         StorageRecordCreated {
             id: Vec<u8>,
             backend: StorageBackend,
@@ -136,6 +158,8 @@ pub mod pallet {
         type PalletId: Get<PalletId>;
         #[pallet::constant]
         type MaxRecords: Get<u32>;
+        #[pallet::constant]
+        type ShardCount: Get<u32>;
         type WeightInfo: WeightInfo;
     }
 
@@ -344,13 +368,132 @@ pub mod pallet {
     }
 }
 
-impl WeightInfo for () {
-    fn register_storage() -> Weight { Weight::zero() }
-    fn verify_storage() -> Weight { Weight::zero() }
-    fn register_provider() -> Weight { Weight::zero() }
-    fn request_pin() -> Weight { Weight::zero() }
-    fn remove_pin() -> Weight { Weight::zero() }
-}
-
 #[cfg(test)]
-mod tests;
+mod tests {
+    use super::*;
+    use frame_support::{
+        assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types, traits::ConstU32,
+    };
+    use sp_io::TestExternalities;
+    use sp_keyring::Sr25519Keyring;
+    use sp_runtime::{traits::IdentityLookup, BuildStorage};
+
+    type Block = frame_system::mocking::MockBlock<Test>;
+
+    construct_runtime!(
+        pub enum Test { System: frame_system, Storage: crate }
+    );
+
+    #[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
+    impl frame_system::Config for Test {
+        type AccountId = sp_core::crypto::AccountId32;
+        type Lookup = IdentityLookup<Self::AccountId>;
+        type Block = Block;
+        type AccountData = ();
+    }
+
+    parameter_types! {
+        pub const StorPalletId: PalletId = PalletId(*b"v/stores");
+        pub const MaxRecords: u32 = 1000;
+    }
+
+    impl Config for Test {
+    type ShardCount = ConstU32<16>;
+        type RuntimeEvent = RuntimeEvent;
+        type PalletId = StorPalletId;
+        type MaxRecords = MaxRecords;
+        type WeightInfo = SubstrateWeight<Test>;
+    }
+
+    pub fn new_test_ext() -> TestExternalities {
+        let t = frame_system::GenesisConfig::<Test>::default()
+            .build_storage()
+            .unwrap();
+        let mut ext = TestExternalities::new(t);
+        ext.execute_with(|| System::set_block_number(1));
+        ext
+    }
+
+    #[test]
+    fn test_genesis_empty() {
+        new_test_ext().execute_with(|| {
+            assert_eq!(Storage::get_total_stored(), 0);
+        });
+    }
+
+    #[test]
+    fn test_register_storage() {
+        new_test_ext().execute_with(|| {
+            let hash = [1u8; 32];
+            assert_ok!(Storage::register_storage(
+                RuntimeOrigin::signed(Sr25519Keyring::Alice.to_account_id()),
+                b"doc-1".to_vec(),
+                StorageBackend::Ipfs,
+                1024,
+                hash,
+            ));
+            let key: BoundedVec<u8, ConstU32<64>> = b"doc-1".to_vec().try_into().unwrap();
+            assert!(StorageRecords::<Test>::contains_key(&key));
+            assert_eq!(Storage::get_total_stored(), 1024);
+        });
+    }
+
+    #[test]
+    fn test_register_duplicate() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let hash = [1u8; 32];
+            Storage::register_storage(
+                RuntimeOrigin::signed(alice.clone()),
+                b"doc-1".to_vec(),
+                StorageBackend::Ipfs,
+                1024,
+                hash,
+            )
+            .unwrap();
+            assert_noop!(
+                Storage::register_storage(
+                    RuntimeOrigin::signed(alice),
+                    b"doc-1".to_vec(),
+                    StorageBackend::Ipfs,
+                    512,
+                    hash,
+                ),
+                Error::<Test>::RecordAlreadyExists
+            );
+        });
+    }
+
+    #[test]
+    fn test_verify_storage() {
+        new_test_ext().execute_with(|| {
+            let hash = [1u8; 32];
+            Storage::register_storage(
+                RuntimeOrigin::signed(Sr25519Keyring::Alice.to_account_id()),
+                b"doc-1".to_vec(),
+                StorageBackend::Ipfs,
+                1024,
+                hash,
+            )
+            .unwrap();
+            assert_ok!(Storage::verify_storage(
+                RuntimeOrigin::signed(Sr25519Keyring::Bob.to_account_id()),
+                b"doc-1".to_vec(),
+                hash,
+            ));
+        });
+    }
+
+    #[test]
+    fn test_register_provider() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_ok!(Storage::register_provider(
+                RuntimeOrigin::signed(alice.clone()),
+                StorageBackend::Ipfs,
+                b"https://pinata.cloud".to_vec(),
+            ));
+            assert!(StorageProviders::<Test>::contains_key(&alice));
+        });
+    }
+}

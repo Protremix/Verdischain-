@@ -3,8 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verdis Ecosystem Blog | Green Blockchain Technology & News</title>
-    <meta name="description" content="Explore technical deep dives, validator insights, eco-sustainability reports, and developer guides from the Verdis carbon-negative blockchain ecosystem. Powered by VRDX.">
+    <title>Verdis Chain Blog — Updates & Announcements</title>
+<link rel="canonical" href="https://verdischain.com/blog/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Verdis Chain Blog — Updates & Announcements">
+<meta property="og:description" content="Latest news, updates, and announcements from the Verdis Chain team. Follow our progress building the green blockchain.">
+<meta property="og:url" content="https://verdischain.com/blog/">
+<meta property="og:image" content="https://verdischain.com/assets/verdis-logo-black.png">
+    <meta name="description" content="Latest news, updates, and announcements from the Verdis Chain team. Follow our progress building the green blockchain.">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,7 +52,7 @@
             border: 1px solid var(--border);
             border-radius: var(--radius-full);
             color: var(--text-primary);
-            font-size: 15px;
+            font-size: 13px;
             outline: none;
             transition: var(--transition);
         }
@@ -148,9 +154,9 @@
         }
         .featured-excerpt {
             color: var(--text-secondary);
-            font-size: 15px;
+            font-size: 13px;
             line-height: 1.7;
-            margin-bottom: 24px;
+            margin-bottom: 12px;
         }
         .author-box {
             display: flex;
@@ -159,7 +165,7 @@
         }
         .author-avatar {
             width: 44px;
-            height: 44px;
+            height:64px;
             border-radius: 50%;
             background: var(--bg-secondary);
             border: 1px solid var(--border-accent);
@@ -168,7 +174,7 @@
             justify-content: center;
             font-weight: 700;
             color: var(--accent);
-            font-size: 16px;
+            font-size: 14px;
         }
         .author-details h5 {
             font-size: 14px;
@@ -243,7 +249,7 @@
         .tag-tutorials { background: rgba(180, 100, 255, 0.15); color: #b464ff; border: 1px solid rgba(180, 100, 255, 0.3); }
 
         .post-title {
-            font-size: 20px;
+            font-size: 14px;
             font-weight: 700;
             line-height: 1.35;
             margin-bottom: 12px;
@@ -297,13 +303,13 @@
             margin-bottom: 60px;
         }
         .newsletter-title {
-            font-size: 28px;
+            font-size: 14px;
             font-weight: 800;
             margin-bottom: 12px;
         }
         .newsletter-subtitle {
             color: var(--text-secondary);
-            font-size: 15px;
+            font-size: 13px;
             max-width: 540px;
             margin: 0 auto 30px;
         }
@@ -372,7 +378,7 @@
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 13px;
             transition: var(--transition);
         }
         .modal-close-btn:hover {
@@ -383,11 +389,11 @@
         .modal-article-body {
             line-height: 1.8;
             color: var(--text-secondary);
-            font-size: 16px;
+            font-size: 14px;
         }
         .modal-article-body h2 {
             color: var(--text-primary);
-            font-size: 22px;
+            font-size: 13px;
             font-weight: 700;
             margin: 28px 0 14px;
         }
@@ -429,8 +435,12 @@
             font-size: 14px;
             font-weight: 600;
         }
-    </style>
-<link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32"/>
+    
+/* Mobile responsiveness */
+@media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:64px;padding:10px 16px}.card{padding:16px}h1{font-size:13px}}
+@media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:14px}.container{padding:20px}}
+</style>
+<link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32"/>
 <link rel="icon" type="image/png" href="/favicon-16.png" sizes="16x16"/>
 <link rel="apple-touch-icon" href="/favicon-192.png"/>
 <link rel="manifest" href="/site.webmanifest"/>
@@ -509,12 +519,12 @@
                 <div style="display:flex; flex-direction:column; gap:12px; margin:20px 0;">
                     <div class="graphic-stat-box">
                         <div style="font-size:12px; color:var(--text-muted);">Energy Consumption / Tx</div>
-                        <div style="font-size:22px; font-weight:800; color:var(--accent);">0.00018 kWh</div>
+                        <div style="font-size:13px; font-weight:800; color:var(--accent);">0.00018 kWh</div>
                         <div style="font-size:11px; color:var(--text-secondary);">99.999% lower than Legacy PoW</div>
                     </div>
                     <div class="graphic-stat-box">
                         <div style="font-size:12px; color:var(--text-muted);">Carbon Credits Retired</div>
-                        <div style="font-size:22px; font-weight:800; color:#00aaff;">1,248.9 Tonnes CO₂</div>
+                        <div style="font-size:13px; font-weight:800; color:#00aaff;">1,248.9 Tonnes CO₂</div>
                         <div style="font-size:11px; color:var(--text-secondary);">Verified on Gold Standard Registry</div>
                     </div>
                 </div>
@@ -896,8 +906,8 @@ cargo contract build --release</pre>
                     <span>⏱️ ${article.readTime}</span>
                     <span>✍️ ${article.author}</span>
                 </div>
-                <h1 style="font-size:28px; font-weight:800; color:var(--text-primary); margin-bottom:20px; line-height:1.25;">${article.title}</h1>
-                <div style="width:100%; height:1px; background:var(--border); margin-bottom:24px;"></div>
+                <h1 style="font-size:14px; font-weight:800; color:var(--text-primary); margin-bottom:20px; line-height:1.25;">${article.title}</h1>
+                <div style="width:100%; height:1px; background:var(--border); margin-bottom:12px;"></div>
                 <div class="modal-article-body">${article.content}</div>
                 <div style="margin-top:32px; padding-top:20px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-size:13px; color:var(--text-muted);">Share this article on X, Telegram, or Discord</span>

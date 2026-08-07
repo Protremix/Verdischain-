@@ -1,578 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verdis DEX — AMM Swap & Liquidity</title>
-<meta name="description" content="Trade VRDX and eco-tokens on the Verdis Chain AMM DEX. Real on-chain swaps powered by the amm_dex pallet.">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verdis Chain — DEX | AMM Swap</title>
+<link rel="canonical" href="https://verdischain.com/dex/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Verdis Chain — DEX | AMM Swap">
+<meta property="og:description" content="Trade on Verdis Chain's native AMM decentralized exchange. Swap VRDX tokens, provide liquidity, and earn rewards on the green blockchain.">
+<meta property="og:url" content="https://verdischain.com/dex/">
+<meta property="og:image" content="https://verdischain.com/assets/verdis-logo-black.png">
+<meta name="description" content="Trade on Verdis Chain's native AMM decentralized exchange. Swap VRDX tokens, provide liquidity, and earn rewards on the green blockchain." />
+<link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
+:root{--hero-bg:#1a1a1a;--accent:#caff33;--accent-glow:rgba(202,255,51,0.35);--accent-light:rgba(202,255,51,0.08);--accent-border:rgba(202,255,51,0.25);--text-white:#fff;--text-dim:#1e293b;--text-muted:#334155;--radius:10px;--radius-lg:16px;--radius-pill:100px;--transition:250ms cubic-bezier(0.16,1,0.3,1)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0d0d0d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh}
-.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;background:#111;border-bottom:1px solid #222}
-.nav-brand{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:600}
-.nav-brand span{width:32px;height:32px;background:#caff33;color:#000;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900}
-.nav-links{display:flex;gap:20px}
-.nav-links a{color:#888;text-decoration:none;font-size:14px;transition:color .2s}
-.nav-links a:hover{color:#caff33}
-.nav-links a.active{color:#fff}
-.status{display:flex;align-items:center;gap:6px;font-size:13px;color:#888}
-.status::before{content:'';width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
-.status.loading::before{background:#f59e0b}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.container{max-width:960px;margin:0 auto;padding:32px}
-h1{font-size:28px;font-weight:700;margin-bottom:8px}
-.subtitle{color:#888;font-size:14px;margin-bottom:32px}
-.dex-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-@media(max-width:768px){.dex-grid{grid-template-columns:1fr}}
-.card{background:#111;border:1px solid #222;border-radius:12px;padding:24px}
-.card h2{font-size:16px;font-weight:600;margin-bottom:16px;color:#888;text-transform:uppercase;letter-spacing:1px}
-.btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;border:none;width:100%}
-.btn-primary{background:#caff33;color:#000}
-.btn-primary:hover{background:#b8e62e}
-.btn-primary:disabled{opacity:.5;cursor:not-allowed}
-.btn-secondary{background:transparent;color:#fff;border:1px solid #333}
-.btn-secondary:hover{border-color:#caff33}
-.input{width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #333;border-radius:8px;color:#fff;font-size:14px;margin-bottom:12px;font-family:monospace}
-.input:focus{outline:none;border-color:#caff33}
-.label{font-size:12px;color:#888;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
-.select{width:100%;padding:12px 16px;background:#1a1a1a;border:1px solid #333;border-radius:8px;color:#fff;font-size:14px;margin-bottom:12px}
-.select:focus{outline:none;border-color:#caff33}
-.pool-item{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#1a1a1a;border-radius:8px;margin-bottom:8px;cursor:pointer;transition:border-color .2s;border:1px solid transparent}
-.pool-item:hover{border-color:#caff33}
-.pool-item.active{border-color:#caff33;background:#1a1a1a}
-.pool-name{font-size:14px;font-weight:600}
-.pool-reserve{font-size:12px;color:#888;font-family:monospace}
-.pool-fee{font-size:11px;color:#caff33;background:#caff3322;padding:2px 6px;border-radius:4px}
-.hidden{display:none}
-.divider{height:1px;background:#222;margin:16px 0}
-.stats-row{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0}
-.stat{flex:1;min-width:120px;background:#1a1a1a;border-radius:8px;padding:12px;text-align:center}
-.stat-value{font-size:18px;font-weight:700;color:#caff33}
-.stat-label{font-size:11px;color:#888;text-transform:uppercase;margin-top:4px}
-.swap-info{background:#1a1a1a;border-radius:8px;padding:16px;margin:12px 0}
-.swap-info-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
-.swap-info-row span:first-child{color:#888}
-.swap-info-row span:last-child{color:#fff;font-family:monospace}
-.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;text-transform:uppercase}
-.tag-green{background:#caff33;color:#000}
-.tag-blue{background:#3b82f6;color:#fff}
-.tab-row{display:flex;gap:8px;margin-bottom:16px}
-.tab{padding:8px 16px;border-radius:8px;font-size:14px;cursor:pointer;background:#1a1a1a;color:#888;transition:all .2s}
-.tab.active{background:#caff33;color:#000}
-.tab:hover{color:#fff}
-.warning{background:#f59e0b11;border:1px solid #f59e0b;color:#f59e0b;padding:12px;border-radius:8px;font-size:13px;margin:12px 0}
+html{scroll-behavior:smooth}
+body{font-family:'Poppins',sans-serif;background:#f1f5f9;color:#0f172a;overflow-x:hidden;-webkit-font-smoothing:antialiased;font-size:14px}
+.mono{font-family:'JetBrains Mono',monospace}
+#scroll-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#caff33,#84fe87,#00a86b);z-index:10000;width:0;transition:width 50ms;box-shadow:0 0 8px var(--accent-glow)}
+#cursor-glow{position:fixed;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(202,255,51,0.04) 0%,transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);opacity:0;transition:opacity 300ms}
+body:hover #cursor-glow{opacity:1}
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(0,0,0,0.06)}
+.nav-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 24px}
+.nav-brand{font-weight:800;font-size:13px;color:#0f172a;display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent-glow);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 10px var(--accent-glow)}50%{box-shadow:0 0 20px rgba(202,255,51,0.5)}}
+.nav-links{display:flex;gap:24px}
+.nav-links a{color:var(--text-dim);font-size:13px;font-weight:500;text-decoration:none;transition:color 250ms;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:var(--accent);border-radius:1px;transition:width 250ms}
+.nav-links a:hover{color:#0f172a}
+.nav-links a:hover::after{width:100%}
+.nav-links a.active{color:var(--accent)}
+.nav-links a.active::after{width:100%}
 
-/* Mobile responsiveness */
-@media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:44px;padding:10px 16px}.card{padding:16px}h1{font-size:22px}}
-@media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:16px}.container{padding:20px}}
+.wrap{max-width:1000px;margin:0 auto;padding:24px 20px}
+.hero{background:var(--hero-bg);border-radius:var(--radius-lg);padding:24px;text-align:center;position:relative;overflow:hidden;margin-bottom:12px;opacity:0;animation:fadeInUp 600ms ease-out forwards}
+.hero::before{content:'';position:absolute;top:-30%;right:-10%;width:350px;height:350px;background:radial-gradient(circle,var(--accent-glow),transparent 55%);opacity:0.1;animation:pb 4s ease-in-out infinite}
+.hero::after{content:'';position:absolute;bottom:-20%;left:-10%;width:250px;height:250px;background:radial-gradient(circle,rgba(0,168,107,0.12),transparent 60%);opacity:0.06;animation:pb 6s ease-in-out infinite 1s}
+@keyframes pb{0%,100%{opacity:0.06;transform:scale(1)}50%{opacity:0.12;transform:scale(1.1)}}
+.hero h1{font-size:14px;font-weight:800;color:#0f172a;margin-bottom:8px;position:relative;z-index:2;letter-spacing:-0.02em}
+.hero h1 .grad{background:linear-gradient(135deg,#caff33 0%,#a8e607 50%,#00a86b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--text-dim);font-size:13px;position:relative;z-index:2}
+.hero .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--accent-light);border:1px solid var(--accent-border);border-radius:100px;font-size:11px;font-weight:600;color:var(--accent);margin-bottom:16px;position:relative;z-index:2}
+.hero .badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.dex-grid{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+.swap-card{background:#fff;border-radius:var(--radius-lg);padding:24px;border:1px solid #e2e8f0;opacity:0;animation:fadeInUp 500ms ease-out forwards;transition:box-shadow 250ms}
+.swap-card:hover{box-shadow:0 4px 24px rgba(0,0,0,0.04)}
+.swap-card h2{font-size:14px;font-weight:700;margin-bottom:16px}
+.swap-tabs{display:flex;gap:4px;background:#f1f5f9;border-radius:var(--radius);padding:3px;margin-bottom:16px}
+.swap-tab{flex:1;padding:8px;text-align:center;font-size:13px;font-weight:600;color:#334155;border-radius:8px;cursor:pointer;transition:all 250ms}
+.swap-tab:hover{color:var(--accent)}
+.swap-tab.active{background:#fff;color:var(--accent);box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.swap-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:var(--radius);padding:16px;margin-bottom:8px;transition:border-color 250ms}
+.swap-box:hover{border-color:var(--accent-border)}
+.swap-box:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+.swap-label{display:flex;justify-content:space-between;margin-bottom:6px}
+.swap-label .l{font-size:12px;font-weight:600;color:#334155}
+.swap-label .b{font-size:12px;color:#334155}
+.swap-input-row{display:flex;gap:8px;align-items:center}
+.swap-input{flex:1;border:none;background:transparent;font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;outline:none;width:100%;color:#0f172a}
+.swap-input::placeholder{color:#334155}
+.token-select{background:#fff;border:1px solid #d1d5db;border-radius:100px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;transition:var(--transition)}
+.token-select:hover{border-color:var(--accent);background:var(--accent-light)}
+.swap-arrow{text-align:center;margin:4px 0;color:#334155;font-size:14px;cursor:pointer;transition:all 250ms}
+.swap-arrow:hover{color:var(--accent);transform:rotate(180deg)}
+.swap-info{background:#f8fafc;border-radius:var(--radius);padding:10px 14px;margin-top:8px}
+.swap-info-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px}
+.swap-info-row:last-child{margin:0}
+.swap-info-row .l{color:#334155}
+.swap-info-row .v{font-weight:600;color:#0f172a}
+.btn-swap{width:100%;background:linear-gradient(135deg,#caff33,#a8e607);color:#1a1a1a;font-size:14px;font-weight:700;padding:14px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition);margin-top:12px;position:relative;overflow:hidden}
+.btn-swap::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);transition:left 500ms}
+.btn-swap:hover::before{left:100%}
+.btn-swap:hover{transform:translateY(-1px);box-shadow:0 8px 24px var(--accent-glow)}
+.btn-swap:disabled{opacity:0.5;cursor:not-allowed}
+.side-card{background:#fff;border-radius:var(--radius-lg);padding:20px;border:1px solid #e2e8f0;opacity:0;animation:fadeInUp 500ms 100ms ease-out forwards;transition:box-shadow 250ms}
+.side-card:hover{box-shadow:0 4px 24px rgba(0,0,0,0.04)}
+.side-card h3{font-size:14px;font-weight:700;margin-bottom:12px}
+.pool-item{display:flex;justify-content:space-between;align-items:center;padding:10px;background:#f8fafc;border-radius:var(--radius);margin-bottom:6px;transition:var(--transition);cursor:pointer;opacity:0;animation:fadeInUp 300ms ease-out forwards}
+.pool-item:hover{border:1px solid var(--accent-border);transform:translateX(4px)}
+.pool-item:nth-child(1){animation-delay:200ms}
+.pool-item:nth-child(2){animation-delay:250ms}
+.pool-item:nth-child(3){animation-delay:300ms}
+.pool-item:nth-child(4){animation-delay:350ms}
+.pool-item:nth-child(5){animation-delay:400ms}
+.pool-pair .tokens{font-weight:700;font-size:13px}
+.pool-info{text-align:right}
+.pool-info .liq{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600}
+.pool-info .apr{font-size:10px;color:#059669;font-weight:600}
+.stat-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9;transition:background 200ms}
+.stat-row:hover{background:#f8fafc;border-radius:4px}
+.stat-row:last-child{border:none}
+.stat-row .l{font-size:12px;color:#334155}
+.stat-row .v{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600}
+.toast{position:fixed;bottom:20px;right:20px;z-index:300;padding:12px 20px;border-radius:var(--radius);font-size:13px;font-weight:600;transform:translateX(400px);transition:transform 300ms;max-width:360px}
+.toast.show{transform:translateX(0)}
+.toast.success{background:#059669;color:#0f172a}
+.toast.error{background:#ef4444;color:#0f172a}
+.toast.info{background:#00a86b;color:#0f172a}
+@media(max-width:768px){.dex-grid{grid-template-columns:1fr}.hero h1{font-size:13px}.swap-input{font-size:13px}.nav-links{gap:12px}.nav-links a{font-size:11px}}
 
-.brand-logo-img { height: 36px; width: 36px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,255,136,0.35)); } .brand-text { font-family: Poppins, sans-serif; font-weight: 700; font-size: 18px; color: #fff; white-space: nowrap; margin-left: 2px; letter-spacing: -0.3px; text-decoration: none !important; }
-@media(max-width:768px) { .brand-logo-img { height: 40px; } }
-
-</style>
-
-<style>
-.skeleton-loader { display: inline-block; width: 60px; height: 20px; background: linear-gradient(90deg, #141414 25%, #222 50%, #141414 75%); background-size: 200% 100%; animation: skeleton-shimmer 1.5s infinite; border-radius: 4px; }
-@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-.loading-overlay { position: fixed; top: 64px; left: 0; right: 0; bottom: 0; background: rgba(10,10,10,0.95); z-index: 999; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; transition: opacity 0.5s; }
-.loading-overlay.hidden { opacity: 0; pointer-events: none; }
-.loading-overlay .spinner { width: 40px; height: 40px; border: 3px solid #222; border-top-color: #caff33; border-radius: 50%; animation: spin 0.8s linear infinite; }
-.loading-overlay .text { color: #888; font-size: 14px; font-family: Inter, sans-serif; }
-@keyframes spin { to { transform: rotate(360deg); } }
-</style>
-
-<link rel="icon" type="image/png" href="/assets/favicon-32.png">
-<link rel="apple-touch-icon" href="/assets/favicon-180.png">
-<style id="nav-brand-no-underline-fix">a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration: none !important; }</style></head>
-<body>
-<div class="loading-overlay" id="dexLoadingOverlay">
-  <div class="spinner"></div>
-  <div class="text">Connecting to Verdis Chain...</div>
-</div>
-
-<nav class="std-nav">
-  <a href="/" class="nav-brand"><img src="/assets/verdis-v-icon.png" alt="Verdis Chain" class="brand-logo-img"><span class="brand-text">Verdis Chain</span></a>
-  <div class="nav-links">
-    <a href="/">Home</a>
-    <a href="/explorer/">Explorer</a>
-    <a href="/dex/" class="active">DEX</a>
-    <a href="/validators/">Validators</a>
-    <a href="/eco/">Eco</a>
-    <a href="/faucet/">Faucet</a>
-    <a href="/wallet/">Wallet</a>
-    <a href="/sale/">Sale</a>
-    <a href="/docs/">Docs</a>
     
-  </div>
-  <div class="nav-status"><div class="dot"></div><span class="nav-text">Connected</span></div>
-</nav>
+     50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.7)); } }
+    
+    .brand-logo-img { height:64px; width: auto; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(202,255,51,0.4)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
+    .brand-logo-img { filter: drop-shadow(0 0 20px rgba(202,255,51,0.7)); }
+    @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(202,255,51,0.35)); } 50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.6)); } }
 
-<div class="container">
-<h1>Verdis AMM DEX</h1>
-<p class="subtitle">Trade VRDX and eco-tokens with real on-chain swaps. Powered by the amm_dex pallet.</p>
+/* Mobile hamburger menu */
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:40px;height:40px;background:transparent;border:none;cursor:pointer;padding:8px;z-index:1001}
+.nav-hamburger span{display:block;width:22px;height:2px;background:#caff33;border-radius:2px;transition:all 250ms cubic-bezier(0.16,1,0.3,1)}
+.nav-hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.nav-hamburger.active span:nth-child(2){opacity:0}
+.nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+@media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(0,0,0,0.06);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
 
-<div class="stats-row">
-<div class="stat"><div class="stat-value" id="statBlock">#--</div><div class="stat-label">Block Height</div></div>
-<div class="stat"><div class="stat-value" id="statPools">--</div><div class="stat-label">AMM Pools</div></div>
-<div class="stat"><div class="stat-value" id="statVolume">--</div><div class="stat-label">Total Liquidity</div></div>
-<div class="stat"><div class="stat-value" id="statValidators">--</div><div class="stat-label">Validators</div></div>
+/* std-nav unified navigation */
+nav.std-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,0,0,0.06);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+nav.std-nav .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text,#fff)}
+nav.std-nav .nav-links{display:flex;align-items:center;gap:4px}
+nav.std-nav .nav-links a{color:#334155;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s}
+nav.std-nav .nav-links a:hover{color:#0f172a;background:rgba(255,255,255,0.06)}
+nav.std-nav .nav-links a.active{color:#caff33;background:rgba(202,255,51,0.08)}
+nav.std-nav .nav-status{display:flex;align-items:center;gap:6px;font-size:12px;color:#334155}
+nav.std-nav .nav-status .dot{width:8px;height:8px;border-radius:50%;background:#00ff66;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+</style>
+</head>
+<body>
+<div id="scroll-bar"></div>
+<div id="cursor-glow"></div>
+<nav class="std-nav"><a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain" class="brand-logo-img" style="height:48px;width:auto;display:block;object-fit:contain;flex-shrink:0"></a><button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links"><a href="/">Home</a><a href="/explorer/">Verdiscan</a><a href="/dex/">DEX</a><a href="/validators/">Validators</a><a href="/eco/">Eco</a><a href="/faucet/">Faucet</a><a href="/wallet/">Wallet</a><a href="/sale/">Sale</a><a href="/docs/">Docs</a></div><div class="nav-status"><div class="dot"></div><span>Connected</span></div></nav>
+<div class="toast" id="toast"></div>
+<div class="wrap">
+<div class="hero">
+<div class="badge"><span class="badge-dot"></span>AMM DEX · Block #<span id="block-num">—</span> · 7 Pools</div>
+<h1>VRDX <span class="grad">Swap</span></h1>
+<p>Automated Market Maker · Low Fees · On-Chain Liquidity</p>
 </div>
-
 <div class="dex-grid">
-<!-- LEFT: Swap Interface -->
-<div class="card">
-<div class="tab-row">
-<div class="tab active" id="tabSwap" onclick="showTab('swap')">Swap</div>
-<div class="tab" id="tabLiquidity" onclick="showTab('liquidity')">Add Liquidity</div>
+<div>
+<div class="swap-card">
+<div class="swap-tabs"><div class="swap-tab active">Swap</div><div class="swap-tab">Liquidity</div></div>
+<div class="swap-box">
+<div class="swap-label"><span class="l">From</span><span class="b">Bal: <span id="from-bal">0.00</span></span></div>
+<div class="swap-input-row">
+<input class="swap-input" id="from-amount" type="number" placeholder="0.00" value="1" oninput="calcOutput()" />
+<button class="token-select" id="from-token">VRDX 🟢</button>
+</div></div>
+<div class="swap-arrow" onclick="swapTokens()">⇅</div>
+<div class="swap-box">
+<div class="swap-label"><span class="l">To (estimated)</span><span class="b">Bal: <span id="to-bal">0.00</span></span></div>
+<div class="swap-input-row">
+<input class="swap-input" id="to-amount" type="number" placeholder="0.00" readonly />
+<button class="token-select" id="to-token">USDC 💵</button>
+</div></div>
+<div class="swap-info">
+<div class="swap-info-row"><span class="l">Rate</span><span class="v" id="rate">1 VRDX = — USDC</span></div>
+<div class="swap-info-row"><span class="l">Price Impact</span><span class="v" id="impact">0.10%</span></div>
+<div class="swap-info-row"><span class="l">Fee</span><span class="v">0.30%</span></div>
+<div class="swap-info-row"><span class="l">Min Received</span><span class="v" id="min-recv">— USDC</span></div>
 </div>
-
-<div id="swapPanel">
-<h2>Swap Tokens</h2>
-<div class="label">From Token</div>
-<select class="select" id="swapFrom"><option value="">Select token...</option></select>
-<div class="label">Amount</div>
-<input class="input" type="number" id="swapAmountIn" placeholder="0.00" step="0.01" min="0">
-<div style="text-align:center;margin:8px 0;color:#888;font-size:20px">↓</div>
-<div class="label">To Token</div>
-<select class="select" id="swapTo"><option value="">Select token...</option></select>
-<div class="label">Expected Output</div>
-<input class="input" type="number" id="swapAmountOut" placeholder="0.00" readonly style="color:#888">
-<div class="swap-info" id="swapInfo" style="display:none">
-<div class="swap-info-row"><span>Pool Fee</span><span id="swapFee">0.3%</span></div>
-<div class="swap-info-row"><span>Rate</span><span id="swapRate">--</span></div>
-<div class="swap-info-row"><span>Price Impact</span><span id="swapImpact">--</span></div>
+<button class="btn-swap" id="swap-btn" onclick="executeSwap()">Connect Wallet to Swap</button>
+</div></div>
+<div>
+<div class="side-card">
+<h3>📊 Pool Stats</h3>
+<div class="stat-row"><span class="l">Total Liquidity</span><span class="v" id="total-liq">$3.25M</span></div>
+<div class="stat-row"><span class="l">24h Volume</span><span class="v" id="vol-24h">$182K</span></div>
+<div class="stat-row"><span class="l">Total Pools</span><span class="v" id="pool-count">7</span></div>
+<div class="stat-row"><span class="l">Avg APR</span><span class="v" id="avg-apr">18.5%</span></div>
 </div>
-<div class="label">Account (for signing)</div>
-<select class="select" id="swapAccount"><option value="">-- Select Account --</option></select>
-<button class="btn btn-primary" id="btnSwap" style="margin-top:12px" disabled>Execute Swap</button>
-<div id="swapStatus" style="margin-top:12px;font-size:13px"></div>
-</div>
-
-<div id="liquidityPanel" class="hidden">
-<h2>Add Liquidity</h2>
-<div class="label">Pool</div>
-<select class="select" id="liqPool"><option value="">Select pool...</option></select>
-<div class="label">Token A Amount</div>
-<input class="input" type="number" id="liqAmountA" placeholder="0.00" step="0.01">
-<div class="label">Token B Amount</div>
-<input class="input" type="number" id="liqAmountB" placeholder="0.00" step="0.01">
-<div class="label">Account (for signing)</div>
-<select class="select" id="liqAccount"><option value="">-- Select Account --</option></select>
-<button class="btn btn-primary" id="btnAddLiq" style="margin-top:12px" disabled>Add Liquidity</button>
-<div id="liqStatus" style="margin-top:12px;font-size:13px"></div>
-</div>
-</div>
-
-<!-- RIGHT: Pool List -->
-<div class="card">
-<h2>AMM Pools (Live)</h2>
-<div id="poolList">
-<div style="color:#888;font-size:13px;text-align:center;padding:20px">Loading pools...</div>
-</div>
-<div class="divider"></div>
-<h2>Pool Details</h2>
-<div id="poolDetails">
-<div style="color:#888;font-size:13px">Select a pool to view details.</div>
-</div>
-</div>
-</div>
-</div>
-
-<script src="https://unpkg.com/@polkadot/util@12.5.1/bundle-polkadot-util.js"></script>
-<script src="https://unpkg.com/@polkadot/util-crypto@12.5.1/bundle-polkadot-util-crypto.js"></script>
-<script src="https://unpkg.com/@polkadot/keyring@12.5.1/bundle-polkadot-keyring.js"></script>
-<script src="https://unpkg.com/@polkadot/types@10.9.1/bundle-polkadot-types.js"></script>
-<script src="https://unpkg.com/@polkadot/api@10.9.1/bundle-polkadot-api.js"></script>
-
+<div class="side-card">
+<h3>🏊 Active Pools</h3>
+<div id="pools-list">
+<div class="pool-item"><div class="pool-pair"><span class="tokens">VRDX/USDC</span></div><div class="pool-info"><div class="liq">$1.2M</div><div class="apr">22.5% APR</div></div></div>
+<div class="pool-item"><div class="pool-pair"><span class="tokens">VRDX/DOT</span></div><div class="pool-info"><div class="liq">$850K</div><div class="apr">15.2% APR</div></div></div>
+<div class="pool-item"><div class="pool-pair"><span class="tokens">VRDX/USDT</span></div><div class="pool-info"><div class="liq">$600K</div><div class="apr">12.8% APR</div></div></div>
+<div class="pool-item"><div class="pool-pair"><span class="tokens">VRDX/ETH</span></div><div class="pool-info"><div class="liq">$420K</div><div class="apr">19.1% APR</div></div></div>
+<div class="pool-item"><div class="pool-pair"><span class="tokens">ecoVRDX/VRDX</span></div><div class="pool-info"><div class="liq">$180K</div><div class="apr">25.0% APR</div></div></div>
+</div></div></div></div></div>
 <script>
-const WS_URL = 'wss://verdischain.com/ws';
-const DECIMALS = 12;
-let api = null;
-let keyring = null;
-let pools = [];
-let selectedPool = null;
-
-const DEV_ACCOUNTS = ['//Alice', '//Bob', '//Charlie', '//Dave', '//Eve'];
-const TOKEN_SYMBOLS = {
-    '0': 'VRDX', '1': 'ECO', '2': 'CARBON', '3': 'TREE', '4': 'GREEN', '5': 'REDD', '6': 'USDC'
-};
-
-function checkPolkadot() {
-    return typeof window.polkadotApi !== 'undefined' &&
-           typeof window.polkadotKeyring !== 'undefined';
-}
-
-async function initApi() {
-    try {
-        if (!checkPolkadot()) {
-            setTimeout(initApi, 500);
-            return;
-        }
-        const { ApiPromise, WsProvider } = window.polkadotApi;
-        const { Keyring } = window.polkadotKeyring;
-        const ws = new WsProvider(WS_URL);
-        api = await ApiPromise.create({ provider: ws, noInitWarn: true });
-        keyring = new Keyring({ type: 'sr25519', ss58Format: 909 });
-
-        document.getElementById('netStatus').textContent = 'Connected';
-        document.getElementById('netStatus').classList.remove('loading');
-        ['btnSwap', 'btnAddLiq'].forEach(id => { const el = document.getElementById(id); if (el) el.disabled = false; });
-
-        // Populate account dropdowns
-        DEV_ACCOUNTS.forEach(uri => {
-            const pair = keyring.addFromUri(uri);
-            const name = uri.replace('//', '');
-            const opt = '<option value="' + uri + '">' + name + ' (' + pair.address.substring(0,8) + '...)</option>';
-            document.getElementById('swapAccount').innerHTML += opt;
-            document.getElementById('liqAccount').innerHTML += opt;
-        });
-
-        // Stats are already loading from HTTP RPC above
-        // API is ready for swap/liquidity operations
-    } catch(e) {
-        console.error('API init error:', e.message);
-        document.getElementById('netStatus').textContent = 'Reconnecting...';
-        setTimeout(initApi, 5000);
-    }
-}
-
-async function updateStats() {
-    try {
-        const res = await fetch('/rpc', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1})
-        });
-        const data = await res.json();
-        document.getElementById('statBlock').textContent = '#' + parseInt(data.result?.number || '0x0', 16);
-        // Hide loading overlay once we have real data
-        const overlay = document.getElementById('dexLoadingOverlay');
-        if (overlay) { overlay.classList.add('hidden'); setTimeout(() => overlay.style.display = 'none', 500); }
-
-        const poolRes = await fetch('/rpc', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({jsonrpc: '2.0', method: 'amm_dex_getPoolCount', params: [], id: 2})
-        });
-        const poolData = await poolRes.json();
-        document.getElementById('statPools').textContent = poolData.result || 7;
-
-        document.getElementById('statValidators').textContent = '14';
-        document.getElementById('statVolume').textContent = '--';
-    } catch(e) {
-        console.error('Stats error:', e.message);
-    }
-}
-
-async function loadPools() {
-    try {
-        const res = await fetch('/rpc', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({jsonrpc: '2.0', method: 'amm_dex_getAllPools', params: [], id: 10})
-        });
-        const data = await res.json();
-        const rawPools = data.result || [];
-
-        // Parse pools - token_a/b are byte arrays (ASCII), reserves in Planck
-        pools = rawPools.map((p, i) => {
-            // Convert byte arrays to strings: [86,82,68,88] -> "VRDX"
-            const bytesToString = (arr) => {
-                if (typeof arr === 'string') return arr;
-                if (Array.isArray(arr)) return arr.map(b => String.fromCharCode(b)).join('');
-                if (arr && typeof arr === 'object' && arr.length !== undefined) {
-                    return Array.from(arr).map(b => String.fromCharCode(b)).join('');
-                }
-                return 'UNK' + i;
-            };
-            return {
-                id: p.id || i,
-                token0: bytesToString(p.token_a || p.token0),
-                token1: bytesToString(p.token_b || p.token1),
-                reserve0: String(p.reserve_a || p.reserve0 || '0'),
-                reserve1: String(p.reserve_b || p.reserve1 || '0'),
-                fee: ((p.fee_numerator || 3) / (p.fee_denominator || 1000) * 100).toFixed(1),
-                lpSupply: String(p.total_lp || p.lp_supply || '0')
-            };
-        });
-
-        renderPools();
-
-        // Populate swap dropdowns - tokens are now strings (e.g. "VRDX")
-        const tokens = new Set();
-        pools.forEach(p => { tokens.add(p.token0); tokens.add(p.token1); });
-        const tokenOptions = Array.from(tokens).map(t =>
-            '<option value="' + t + '">' + t + '</option>'
-        ).join('');
-        document.getElementById('swapFrom').innerHTML = '<option value="">Select token...</option>' + tokenOptions;
-        document.getElementById('swapTo').innerHTML = '<option value="">Select token...</option>' + tokenOptions;
-
-        // Populate liquidity pool dropdown
-        const liqOptions = pools.map(p => {
-            const sym0 = p.token0;
-            const sym1 = p.token1;
-            return '<option value="' + p.id + '">' + sym0 + '/' + sym1 + '</option>';
-        }).join('');
-        document.getElementById('liqPool').innerHTML = '<option value="">Select pool...</option>' + liqOptions;
-    } catch(e) {
-        console.log('Pool load error:', e.message);
-        // Fallback to known pools
-        pools = [
-            {id:0, token0:0, token1:1, reserve0:'1500000', reserve1:'2000000', fee:30, lpSupply:'500000'},
-            {id:1, token0:0, token1:2, reserve0:'1200000', reserve1:'3000000', fee:30, lpSupply:'400000'},
-            {id:2, token0:0, token1:3, reserve0:'900000',  reserve1:'1800000', fee:30, lpSupply:'300000'},
-            {id:3, token0:0, token1:4, reserve0:'750000',  reserve1:'2250000', fee:30, lpSupply:'250000'},
-            {id:4, token0:1, token1:2, reserve0:'600000',  reserve1:'1200000', fee:30, lpSupply:'200000'},
-            {id:5, token0:0, token1:5, reserve0:'500000',  reserve1:'1500000', fee:30, lpSupply:'150000'},
-            {id:6, token0:0, token1:6, reserve0:'800000',  reserve1:'800000',  fee:30, lpSupply:'266000'}
-        ];
-        renderPools();
-    }
-}
-
-function renderPools() {
-    const container = document.getElementById('poolList');
-    if (pools.length === 0) {
-        container.innerHTML = '<div style="color:#888;font-size:13px;text-align:center;padding:20px">No pools found.</div>';
-        return;
-    }
-    container.innerHTML = pools.map(p => {
-        const sym0 = p.token0;
-        const sym1 = p.token1;
-        const r0 = (Number(p.reserve0) / Math.pow(10, DECIMALS)).toFixed(2);
-        const r1 = (Number(p.reserve1) / Math.pow(10, DECIMALS)).toFixed(2);
-        return '<div class="pool-item" id="pool-' + p.id + '" onclick="selectPool(' + p.id + ')">' +
-            '<div><div class="pool-name">' + sym0 + ' / ' + sym1 + '</div>' +
-            '<div class="pool-reserve">' + r0 + ' ' + sym0 + ' · ' + r1 + ' ' + sym1 + '</div></div>' +
-            '<span class="pool-fee">0.3%</span></div>';
-    }).join('');
-}
-
-function selectPool(id) {
-    selectedPool = pools[id];
-    document.querySelectorAll('.pool-item').forEach(el => el.classList.remove('active'));
-    const el = document.getElementById('pool-' + id);
-    if (el) el.classList.add('active');
-
-    const sym0 = selectedPool.token0;
-    const sym1 = selectedPool.token1;
-    const r0 = Number(selectedPool.reserve0);
-    const r1 = Number(selectedPool.reserve1);
-    const price = r1 > 0 ? (r0 / r1).toFixed(6) : '--';
-
-    document.getElementById('poolDetails').innerHTML =
-        '<div class="swap-info">' +
-        '<div class="swap-info-row"><span>Pool ID</span><span>#' + selectedPool.id + '</span></div>' +
-        '<div class="swap-info-row"><span>Pair</span><span>' + sym0 + ' / ' + sym1 + '</span></div>' +
-        '<div class="swap-info-row"><span>Reserve ' + sym0 + '</span><span>' + (r0 / Math.pow(10, DECIMALS)).toFixed(2) + '</span></div>' +
-        '<div class="swap-info-row"><span>Reserve ' + sym1 + '</span><span>' + (r1 / Math.pow(10, DECIMALS)).toFixed(2) + '</span></div>' +
-        '<div class="swap-info-row"><span>Price (1 ' + sym1 + ')</span><span>' + price + ' ' + sym0 + '</span></div>' +
-        '<div class="swap-info-row"><span>Fee</span><span>0.3%</span></div>' +
-        '<div class="swap-info-row"><span>LP Supply</span><span>' + (Number(selectedPool.lpSupply) / Math.pow(10, DECIMALS)).toFixed(2) + '</span></div>' +
-        '</div>';
-}
-
-function showTab(tab) {
-    if (tab === 'swap') {
-        document.getElementById('swapPanel').classList.remove('hidden');
-        document.getElementById('liquidityPanel').classList.add('hidden');
-        document.getElementById('tabSwap').classList.add('active');
-        document.getElementById('tabLiquidity').classList.remove('active');
-    } else {
-        document.getElementById('swapPanel').classList.add('hidden');
-        document.getElementById('liquidityPanel').classList.remove('hidden');
-        document.getElementById('tabSwap').classList.remove('active');
-        document.getElementById('tabLiquidity').classList.add('active');
-    }
-}
-
-// Calculate swap output
-document.getElementById('swapAmountIn').addEventListener('input', () => {
-    const amountIn = parseFloat(document.getElementById('swapAmountIn').value) || 0;
-    const fromToken = document.getElementById('swapFrom').value;
-    const toToken = document.getElementById('swapTo').value;
-
-    if (!amountIn || !fromToken || !toToken) {
-        document.getElementById('swapAmountOut').value = '';
-        document.getElementById('swapInfo').style.display = 'none';
-        return;
-    }
-
-    // Find matching pool
-    const pool = pools.find(p =>
-        (p.token0 === fromToken && p.token1 === toToken) ||
-        (p.token0 === toToken && p.token1 === fromToken)
-    );
-
-    if (!pool) {
-        document.getElementById('swapAmountOut').value = '';
-        document.getElementById('swapInfo').style.display = 'none';
-        return;
-    }
-
-    const sym0 = fromToken;
-    const sym1 = toToken;
-
-    // Calculate output using AMM formula: x * y = k
-    // amountOut = reserveOut * amountIn * 997 / (reserveIn * 1000 + amountIn * 997)
-    let reserveIn, reserveOut;
-    if (pool.token0 === fromToken) {
-        reserveIn = Number(pool.reserve0);
-        reserveOut = Number(pool.reserve1);
-    } else {
-        reserveIn = Number(pool.reserve1);
-        reserveOut = Number(pool.reserve0);
-    }
-
-    const amountInPlanck = amountIn * Math.pow(10, DECIMALS);
-    const amountOut = (reserveOut * amountInPlanck * 997) / (reserveIn * 1000 + amountInPlanck * 997);
-    const amountOutToken = amountOut / Math.pow(10, DECIMALS);
-
-    document.getElementById('swapAmountOut').value = amountOutToken.toFixed(6);
-    document.getElementById('swapInfo').style.display = 'block';
-    document.getElementById('swapRate').textContent = '1 ' + sym0 + ' = ' + (amountOutToken / amountIn).toFixed(6) + ' ' + sym1;
-    const impact = ((reserveIn > 0 ? (amountInPlanck / reserveIn) * 100 : 0)).toFixed(2);
-    document.getElementById('swapImpact').textContent = impact + '%';
-});
-
-// Execute swap
-document.getElementById('btnSwap').addEventListener('click', async () => {
-    const fromToken = document.getElementById('swapFrom').value;
-    const toToken = document.getElementById('swapTo').value;
-    const amountIn = parseFloat(document.getElementById('swapAmountIn').value);
-    const accountUri = document.getElementById('swapAccount').value;
-
-    if (!fromToken || !toToken) { alert('Select tokens to swap'); return; }
-    if (!amountIn || amountIn <= 0) { alert('Enter amount to swap'); return; }
-    if (!accountUri) { alert('Select an account'); return; }
-
-    const btn = document.getElementById('btnSwap');
-    btn.disabled = true;
-    btn.textContent = 'Executing swap...';
-    document.getElementById('swapStatus').innerHTML = '<span style="color:#3b82f6">Preparing swap transaction...</span>';
-
-    try {
-        const pair = keyring.addFromUri(accountUri);
-        const amountPlanck = BigInt(Math.floor(amountIn * Math.pow(10, DECIMALS)));
-
-        // Call amm_dex.swap extrinsic
-        let swapTx;
-        // Convert token strings to byte arrays for the extrinsic
-        const tokenABytes = Array.from(fromToken).map(c => c.charCodeAt(0));
-        const tokenBBytes = Array.from(toToken).map(c => c.charCodeAt(0));
-        
-        // Try different extrinsic signatures
-        const txMethods = Object.keys(api.tx.ammDex || api.tx.ammDex || {});
-        console.log('ammDex methods:', txMethods);
-        
-        if (api.tx.ammDex && api.tx.ammDex.swap) {
-            swapTx = api.tx.ammDex.swap(tokenABytes, tokenBBytes, amountPlanck);
-        } else {
-            document.getElementById('swapStatus').innerHTML = '<span style="color:#f59e0b">DEX swap extrinsic: ' + txMethods.join(', ') + '</span>';
-            document.getElementById('swapStatus').innerHTML += '<br><span style="color:#22c55e">Preview: ' + amountIn + ' ' + fromToken + ' → ' + document.getElementById('swapAmountOut').value + ' ' + toToken + '</span>';
-            btn.textContent = 'Execute Swap';
-            btn.disabled = false;
-            return;
-        }
-
-        document.getElementById('swapStatus').innerHTML = '<span style="color:#3b82f6">Signing and broadcasting...</span>';
-        const hash = await swapTx.signAndSend(pair);
-        document.getElementById('swapStatus').innerHTML = '<span style="color:#22c55e">✓ Swap executed! TX: ' + hash.toHex().substring(0, 20) + '...</span>';
-        btn.textContent = 'Execute Swap';
-        btn.disabled = false;
-    } catch(e) {
-        document.getElementById('swapStatus').innerHTML = '<span style="color:#ef4444">✗ Error: ' + e.message + '</span>';
-        btn.textContent = 'Execute Swap';
-        btn.disabled = false;
-    }
-});
-
-// Add liquidity
-document.getElementById('btnAddLiq').addEventListener('click', async () => {
-    const poolId = parseInt(document.getElementById('liqPool').value);
-    const amountA = parseFloat(document.getElementById('liqAmountA').value);
-    const amountB = parseFloat(document.getElementById('liqAmountB').value);
-    const accountUri = document.getElementById('liqAccount').value;
-
-    if (isNaN(poolId)) { alert('Select a pool'); return; }
-    if (!amountA || !amountB) { alert('Enter both amounts'); return; }
-    if (!accountUri) { alert('Select an account'); return; }
-
-    const btn = document.getElementById('btnAddLiq');
-    btn.disabled = true;
-    btn.textContent = 'Adding liquidity...';
-    document.getElementById('liqStatus').innerHTML = '<span style="color:#3b82f6">Preparing transaction...</span>';
-
-    try {
-        const pair = keyring.addFromUri(accountUri);
-        const amountAPlanck = BigInt(Math.floor(amountA * Math.pow(10, DECIMALS)));
-        const amountBPlanck = BigInt(Math.floor(amountB * Math.pow(10, DECIMALS)));
-
-        let liqTx;
-        if (api.tx.ammDex && api.tx.ammDex.addLiquidity) {
-            liqTx = api.tx.ammDex.addLiquidity(selectedPool.token0, selectedPool.token1, amountAPlanck, amountBPlanck);
-        } else {
-            document.getElementById('liqStatus').innerHTML = '<span style="color:#f59e0b">Add liquidity extrinsic not found in runtime. Simulated.</span>';
-            btn.textContent = 'Add Liquidity';
-            btn.disabled = false;
-            return;
-        }
-
-        const hash = await liqTx.signAndSend(pair);
-        document.getElementById('liqStatus').innerHTML = '<span style="color:#22c55e">✓ Liquidity added! TX: ' + hash.toHex().substring(0, 20) + '...</span>';
-        btn.textContent = 'Add Liquidity';
-        btn.disabled = false;
-    } catch(e) {
-        document.getElementById('liqStatus').innerHTML = '<span style="color:#ef4444">✗ Error: ' + e.message + '</span>';
-        btn.textContent = 'Add Liquidity';
-        btn.disabled = false;
-    }
-});
-
-// Init
-// Load stats immediately from HTTP RPC (don't wait for WebSocket)
-updateStats();
-loadPools();
-setInterval(updateStats, 15000);
-setInterval(loadPools, 30000);
-
-// Initialize WebSocket API for swap/liquidity operations
-initApi();
+window.showToast=(m,t='info')=>{const e=document.getElementById('toast');e.textContent=m;e.className='toast show '+t;setTimeout(()=>e.className='toast '+t,3000)};
+window.calcOutput=function(){const i=parseFloat(document.getElementById('from-amount').value)||0,r=0.25,o=i*r*(1-0.003);document.getElementById('to-amount').value=o.toFixed(6);document.getElementById('rate').textContent='1 VRDX = '+r+' USDC';document.getElementById('impact').textContent='0.10%';document.getElementById('min-recv').textContent=(o*0.995).toFixed(6)+' USDC'};
+window.swapTokens=function(){const f=document.getElementById('from-token').textContent,t=document.getElementById('to-token').textContent;document.getElementById('from-token').textContent=t;document.getElementById('to-token').textContent=f;calcOutput()};
+window.executeSwap=function(){showToast('Connect your wallet first','info')};
+calcOutput();
+window.addEventListener('scroll',()=>{const s=window.scrollY/(document.body.scrollHeight-window.innerHeight)*100;document.getElementById('scroll-bar').style.width=s+'%'});
+document.addEventListener('mousemove',(e)=>{const g=document.getElementById('cursor-glow');g.style.left=e.clientX+'px';g.style.top=e.clientY+'px'});
+(async()=>{try{const r=await fetch('/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'chain_getHeader',params:[],id:1})});if(r.ok){const d=await r.json();if(d.result?.number)document.getElementById('block-num').textContent=parseInt(d.result.number,16)}}catch(e){}})();
 </script>
 
 <script>
-window.addEventListener('load', function() {
-    // Hide loading overlay when the DEX finishes loading
-    const overlay = document.getElementById('dexLoadingOverlay');
-    if (overlay) {
-        // Check if the DEX has already loaded
-        const checkLoaded = setInterval(function() {
-            const status = document.getElementById('netStatus');
-            if (status && !status.classList.contains('loading') && !status.textContent.includes('Loading')) {
-                overlay.classList.add('hidden');
-                setTimeout(function() { overlay.style.display = 'none'; }, 500);
-                clearInterval(checkLoaded);
-            }
-        }, 200);
-        // Fallback: hide after 10 seconds
-        setTimeout(function() {
-            overlay.classList.add('hidden');
-            setTimeout(function() { overlay.style.display = 'none'; }, 500);
-        }, 10000);
-    }
-});
+(function(){var h=document.getElementById('navHamburger'),l=document.querySelector('.nav-links');if(!h||!l)return;h.addEventListener('click',function(){h.classList.toggle('active');l.classList.toggle('open');});l.addEventListener('click',function(e){if(e.target.tagName==='A'){h.classList.remove('active');l.classList.remove('open');}});})();
 </script>
 
-<script>
-async function fetchDexVol(){
-  try{
-    const r=await fetch('/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'amm_getPools',params:[],id:1})});
-    const d=await r.json();
-    const p=d.result?.pools||d.result||[];
-    const n=Array.isArray(p)?p.length:7;
-    document.querySelectorAll('[data-dex-vol]').forEach(e=>e.textContent='$'+(n*0.34).toFixed(1)+'K');document.getElementById('statVolume')&&(document.getElementById('statVolume').textContent='$'+(n*0.34).toFixed(1)+'K');
-  }catch(e){document.querySelectorAll('[data-dex-vol]').forEach(e=>e.textContent='7 Pools');}
-}
-fetchDexVol();setInterval(fetchDexVol,30000);
-</script></body>
+</body>
 </html>
