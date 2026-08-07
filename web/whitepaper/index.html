@@ -3,936 +3,361 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verdis Chain Whitepaper — Green DPoS Blockchain</title>
-<link rel="canonical" href="https://verdischain.com/whitepaper/">
+<title>Whitepaper — Verdis Chain</title>
+<meta name="description" content="Verdis Chain Whitepaper v2.0: Comprehensive protocol specification, architecture, ecosystem vision, and team. The world's first carbon-negative Layer-1 blockchain.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Verdis Chain Whitepaper — Green DPoS Blockchain">
-<meta property="og:description" content="The Verdis Chain whitepaper: a Layer-1 blockchain with native DPoS consensus, AMM DEX, carbon credit tracking, and 100B VRDX supply.">
-<meta property="og:url" content="https://verdischain.com/whitepaper/">
+<meta property="og:title" content="Verdis Chain Whitepaper v2.0">
+<meta property="og:description" content="The world's first carbon-negative Layer-1 blockchain. Native DPoS, AMM DEX, carbon credits, and the EvolvixOS ecosystem.">
 <meta property="og:image" content="https://verdischain.com/assets/verdis-logo-black.png">
-<meta name="description" content="The Verdis Chain whitepaper: a Layer-1 blockchain with native DPoS consensus, AMM DEX, carbon credit tracking, and 100B VRDX supply.">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #f1f5f9;
-  --bg-1: #111111;
-  --bg-2: #1a1a1a;
-  --card: #ffffff;
-  --border: #e2e8f0;
-  --border-2: #333333;
-  --text: #0f172a;
-  --text-2: #475569;
-  --text-3: #334155;
-  --accent: #caff33;
-  --accent-2: #b4f849;
-  --accent-glow: rgba(202, 255, 51, 0.15);
-  --success: #4ade80;
-  --warning: #fbbf24;
-  --error: #ef4444;
-  --radius: 12px;
-  --radius-sm: 8px;
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { overflow-x:hidden;
-  font-family: 'Inter', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.6;
-  overflow-x: hidden;
-}
-.mono { font-family: 'JetBrains Mono', monospace; }
-.grotesk { font-family: 'Space Grotesk', sans-serif; }
-
-/* Scroll progress bar */
-#scroll-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #caff33, #84fe87, #00a86b);
-  z-index: 10000;
-  width: 0%;
-  transition: width 50ms;
-}
-
-/* NAV */
-nav {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(10,10,10,0.85);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
-.nav-brand .logo { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #000; font-size: 14px; }
-.nav-brand span { font-weight: 600; font-size: 14px; }
-.nav-links { display: flex; gap: 4px; }
-.nav-links a { color: var(--text-2); text-decoration: none; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: all .2s; }
-.nav-links a:hover, .nav-links a.active { color: var(--accent); background: var(--card); }
-.nav-status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); }
-.nav-status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
-
-/* HERO */
-.hero { padding: 56px 24px 32px; max-width: 1280px; margin: 0 auto; text-align: left; }
-.hero-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; font-size: 13px; color: var(--accent); margin-bottom: 20px; }
-.hero-badge .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
-.hero h1 { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; margin-bottom: 12px; line-height: 1.2; }
-.hero h1 .accent { color: var(--accent); }
-.hero p { color: var(--text-2); font-size: 14px; max-width: 720px; margin-bottom: 16px; }
-
-/* HERO BUTTONS */
-.hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 40px; }
-.btn-primary { background: var(--accent); color: #000; padding: 12px 24px; border-radius: var(--radius-sm); font-weight: 600; text-decoration: none; font-size: 14px; transition: all .2s; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border: none; }
-.btn-primary:hover { background: var(--accent-2); transform: translateY(-1px); }
-.btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 12px 24px; border-radius: var(--radius-sm); font-weight: 500; text-decoration: none; font-size: 14px; transition: all .2s; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
-.btn-secondary:hover { border-color: var(--border-2); background: var(--bg-1); }
-
-/* STATS BAR */
-.stats-bar { max-width: 1280px; margin: 0 auto 48px; padding: 0 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; transition: border-color .2s; }
-.stat-card:hover { border-color: var(--border-2); }
-.stat-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-3); margin-bottom: 8px; }
-.stat-card .value { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text); }
-.stat-card .value.accent { color: var(--accent); }
-.stat-card .sub { font-size: 13px; color: var(--text-2); margin-top: 4px; }
-
-/* CONTAINER & SECTIONS */
-.container { max-width: 1280px; margin: 0 auto; padding: 0 24px 64px; }
-.section-block { margin-bottom: 64px; scroll-margin-top: 80px; }
-.section-header { margin-bottom: 12px; }
-.section-tag { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 6px; display: block; }
-.section-title { font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
-.section-desc { color: var(--text-2); font-size: 13px; max-width: 720px; }
-
-/* PANEL & CARD STYLING */
-.card-panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; margin-bottom: 12px; }
-
-/* OVERVIEW GRID */
-.overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 12px; }
-.ov-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 6px; }
-.ov-lbl { font-size: 12px; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; }
-.ov-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent); }
-.ov-sub { font-size: 13px; color: var(--text-2); }
-
-/* TABLES */
-.table-responsive { overflow-x: auto; margin-top: 16px; }
-table.specs-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
-table.specs-table th { background: var(--bg-1); color: var(--text-2); padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
-table.specs-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); color: var(--text); }
-table.specs-table tr:last-child td { border-bottom: none; }
-
-/* DISTRIBUTION / PIE CHART */
-.dist-grid { display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: center; }
-@media (max-width: 850px) { .dist-grid { grid-template-columns: 1fr; } }
-.pie-wrapper { position: relative; width: 240px; height: 240px; margin: 0 auto; }
-.pie-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-.pie-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
-.pie-center-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent); }
-.pie-center-lbl { font-size: 12px; color: var(--text-2); }
-
-.dist-list { display: flex; flex-direction: column; gap: 12px; }
-.dist-item { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all .2s; }
-.dist-item:hover, .dist-item.active { border-color: var(--accent); background: rgba(202,255,51,0.03); }
-.dist-left { display: flex; align-items: center; gap: 12px; }
-.dist-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
-.dist-name { font-weight: 600; font-size: 14px; color: var(--text); }
-.dist-desc { font-size: 12px; color: var(--text-2); }
-.dist-right { text-align: right; }
-.dist-pct { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent); }
-.dist-amt { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-3); }
-
-/* VESTING SCHEDULE */
-.vesting-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-.vest-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; display: flex; flex-direction: column; gap: 12px; }
-.vest-header { display: flex; justify-content: space-between; align-items: center; }
-.vest-title { font-weight: 600; font-size: 14px; color: #0f172a; }
-.vest-badge { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); background: var(--accent-glow); padding: 4px 10px; border-radius: 6px; }
-.vest-cliff { font-size: 12px; font-weight: 600; color: var(--warning); background: rgba(251, 191, 36, 0.1); padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid rgba(251, 191, 36, 0.2); width: fit-content; }
-.vest-details { font-size: 13px; color: var(--text-2); line-height: 1.5; }
-.vest-bar { height: 6px; background: var(--bg-1); border-radius: 3px; overflow: hidden; }
-.vest-fill { height: 100%; background: var(--accent); border-radius: 3px; }
-
-/* STAKING & CALCULATOR */
-.staking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-@media (max-width: 900px) { .staking-grid { grid-template-columns: 1fr; } }
-
-.calc-card { background: var(--card); border: 1px solid var(--accent); box-shadow: 0 0 20px var(--accent-glow); border-radius: var(--radius); padding: 28px; }
-.calc-title { font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 20px; color: var(--accent); display: flex; align-items: center; gap: 10px; }
-.calc-group { margin-bottom: 20px; }
-.calc-label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 8px; font-weight: 500; }
-.calc-input-wrap { position: relative; }
-.calc-input { width: 100%; background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; color: var(--text); font-size: 13px; outline: none; transition: border-color .2s; }
-.calc-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-.calc-unit { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--accent); font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 13px; }
-
-.calc-results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; background: var(--bg-1); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
-@media (max-width: 500px) { .calc-results { grid-template-columns: 1fr; } }
-.res-box { text-align: center; }
-.res-lbl { font-size: 11px; text-transform: uppercase; color: var(--text-3); letter-spacing: 0.5px; }
-.res-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent); margin-top: 4px; }
-
-/* CARBON ECONOMICS */
-.carbon-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: center; }
-@media (max-width: 850px) { .carbon-box { grid-template-columns: 1fr; } }
-.carbon-left h3 { font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 12px; color: #0f172a; }
-.carbon-left p { color: var(--text-2); font-size: 14px; margin-bottom: 20px; }
-.carbon-pills { display: flex; gap: 8px; flex-wrap: wrap; }
-.carbon-pill { font-size: 12px; background: rgba(74, 222, 128, 0.1); color: var(--success); border: 1px solid rgba(74, 222, 128, 0.2); padding: 4px 10px; border-radius: 20px; font-weight: 500; }
-
-.carbon-right { display: flex; flex-direction: column; gap: 12px; }
-.c-metric-row { background: var(--bg-1); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
-.c-m-lbl { font-size: 13px; color: var(--text-2); }
-.c-m-val { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent); }
-
-/* UTILITY GRID */
-.utility-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
-.u-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; transition: all .2s; }
-.u-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-.u-icon { width: 40px; height: 40px; background: var(--accent-glow); color: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 14px; }
-.u-title { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 600; color: #0f172a; margin-bottom: 8px; }
-.u-desc { font-size: 14px; color: var(--text-2); line-height: 1.5; }
-
-/* ROADMAP */
-.roadmap-timeline { position: relative; border-left: 2px solid var(--border); margin-left: 16px; padding-left: 28px; display: flex; flex-direction: column; gap: 16px; }
-.rm-item { position: relative; }
-.rm-dot { position: absolute; left: -36px; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
-.rm-content { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
-.rm-phase { font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--accent); letter-spacing: 1px; margin-bottom: 4px; }
-.rm-title { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
-.rm-desc { font-size: 14px; color: var(--text-2); }
-
-/* CTA */
-.cta-card { background: linear-gradient(135deg, rgba(202,255,51,0.08) 0%, rgba(20,20,20,1) 100%); border: 1px solid var(--accent); border-radius: var(--radius); padding: 40px; text-align: center; margin-top: 32px; }
-.cta-card h2 { font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 12px; }
-.cta-card p { color: var(--text-2); font-size: 13px; max-width: 600px; margin: 0 auto 24px; }
-.cta-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
-
-/* FOOTER */
-footer { border-top: 1px solid var(--border); padding: 32px 24px; text-align: center; color: var(--text-3); font-size: 14px; background: var(--bg); }
-footer a { color: var(--accent); text-decoration: none; transition: color .2s; }
-footer a:hover { color: var(--accent-2); }
-footer .links { display: flex; gap: 20px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
-
-/* RESPONSIVE BREAKPOINTS */
-@media (max-width: 1024px) {
-  .hero h1 { font-size: 13px; }
-}
-@media (max-width: 768px) {
-  .nav-links { display: none; }
-  .hero { padding-top: 36px; }
-  .hero h1 { font-size: 14px; }
-  .stats-bar { grid-template-columns: 1fr 1fr; }
-  .staking-grid { grid-template-columns: 1fr; }
-  .carbon-box { grid-template-columns: 1fr; }
-}
-@media (max-width: 375px) {
-  .stats-bar { grid-template-columns: 1fr; }
-  .hero-actions { flex-direction: column; }
-  .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
-  .calc-results { grid-template-columns: 1fr; }
-}
-
-nav.std-nav { position:sticky; top:0; z-index:1000; background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid #222; padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
-nav.std-nav .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:#1e293b; }
-nav.std-nav .nav-brand .logo { width:32px; height:32px; background:#caff33; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#000; font-size:14px; }
-nav.std-nav .nav-brand span { font-weight:600; font-size:14px; }
-nav.std-nav .nav-links { display:flex; gap:4px; flex-wrap:wrap; }
-nav.std-nav .nav-links a { color:#334155; text-decoration:none; padding:8px 12px; border-radius:8px; font-size:13px; font-weight:500; transition:all .2s; }
-nav.std-nav .nav-links a:hover, nav.std-nav .nav-links a.active { color:#caff33; background:#141414; }
-nav.std-nav .nav-status { display:flex; align-items:center; gap:8px; font-size:13px; color:#334155; }
-nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; background:#4ade80; box-shadow:0 0 8px #4ade80; animation:std-pulse 2s infinite; }
-@keyframes std-pulse { 0%,100%{opacity:1;} 50%{opacity:.5;} }
-@media(max-width:768px) { nav.std-nav .nav-links { display:none; } nav.std-nav .nav-brand span { font-size:14px; } }
-
-
-
-     50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.7)); } }
-    
-    .nav-brand:hover 
-@media(max-width:768px) {  }
-
-
-    .brand-logo-img { height:64px; width: auto; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(202,255,51,0.4)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
-    .brand-logo-img { filter: drop-shadow(0 0 20px rgba(202,255,51,0.7)); }
-    @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(202,255,51,0.35)); } 50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.6)); } }
-
-/* Mobile hamburger menu */
-.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:40px;height:40px;background:transparent;border:none;cursor:pointer;padding:8px;z-index:1001}
-.nav-hamburger span{display:block;width:22px;height:2px;background:#caff33;border-radius:2px;transition:all 250ms cubic-bezier(0.16,1,0.3,1)}
-.nav-hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
-.nav-hamburger.active span:nth-child(2){opacity:0}
-.nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-@media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(0,0,0,0.06);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
-
-
-/* Responsive tables - prevent viewport expansion */
-html{overflow-x:hidden;max-width:100vw}
-table{width:100%!important;max-width:100%!important;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
-thead,tbody{display:table;width:100%}
+:root{--bg:#f1f5f9;--bg-1:#111111;--bg-2:#1a1a1a;--card:#ffffff;--border:#e2e8f0;--border-2:#333333;--text:#0f172a;--text-2:#475569;--text-3:#334155;--accent:#caff33;--accent-2:#b4f849;--accent-glow:rgba(202,255,51,0.15);--accent-glow-strong:rgba(202,255,51,0.35);--accent-light:rgba(202,255,51,0.08);--accent-border:rgba(202,255,51,0.25);--success:#4ade80;--warning:#fbbf24;--error:#ef4444;--radius:12px;--radius-sm:8px;--radius-lg:20px;--radius-pill:100px;--hero-bg:#1a1a1a;--hero-card:#2d2d2d;--text-white:#ffffff;--text-dim:#F1F5F9;--text-muted:#CBD5E1;--transition:300ms cubic-bezier(0.16,1,0.3,1)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{overflow-x:hidden;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}.mono{font-family:'JetBrains Mono',monospace}
+#scroll-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#caff33,#84fe87,#00a86b);z-index:10000;width:0;transition:width 50ms;box-shadow:0 0 12px var(--accent-glow-strong)}
+#cursor-glow{position:fixed;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(202,255,51,0.04) 0%,transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);opacity:0;transition:opacity 300ms}body:hover #cursor-glow{opacity:1}
+nav.std-nav{position:sticky;top:0;z-index:100;background:rgba(10,10,10,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}.brand-logo-img{height:48px;width:auto;display:block;object-fit:contain;flex-shrink:0}.nav-hamburger{display:none;flex-direction:column;gap:4px;background:none;border:none;cursor:pointer;padding:4px}.nav-hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px}.nav-links{display:flex;gap:4px;align-items:center}.nav-links a{color:var(--text-2);text-decoration:none;padding:8px 14px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;transition:all .2s}.nav-links a:hover,.nav-links a.active{color:var(--accent)}.nav-status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-2)}.nav-status .dot{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success);animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}@media(max-width:768px){.nav-hamburger{display:flex}.nav-links{display:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;background:var(--bg-1);padding:12px;border-bottom:1px solid var(--border)}.nav-links.show{display:flex}.nav-status{display:none}}
+.hero-section{position:relative;background:var(--bg);padding:0 24px;overflow:hidden}.hero-container{max-width:1100px;margin:0 auto;background:var(--hero-bg);border-radius:24px;overflow:hidden;position:relative;min-height:400px;display:flex}.hero-container::before{content:'';position:absolute;top:-30%;right:-15%;width:700px;height:700px;background:radial-gradient(circle,var(--accent-glow-strong),transparent 55%);opacity:.12;animation:pulse-bg 4s ease-in-out infinite;pointer-events:none}.hero-container::after{content:'';position:absolute;bottom:-20%;left:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(0,168,107,0.15),transparent 60%);opacity:.08;animation:pulse-bg 6s ease-in-out infinite 1s;pointer-events:none}@keyframes pulse-bg{0%,100%{opacity:.08;transform:scale(1)}50%{opacity:.15;transform:scale(1.1)}}
+.hero-left{flex:1;display:flex;flex-direction:column;justify-content:center;padding:60px 32px 32px 56px;position:relative;z-index:5}.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--accent-light);border:1px solid var(--accent-border);border-radius:var(--radius-pill);font-size:11px;font-weight:600;color:var(--accent);margin-bottom:16px;width:fit-content;opacity:0;transform:translateY(20px);animation:slideUp 600ms 200ms forwards}.hero-badge-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse-dot 2s infinite}@keyframes pulse-dot{0%,100%{box-shadow:0 0 16px var(--accent-glow-strong)}50%{box-shadow:0 0 28px rgba(202,255,51,0.6)}}
+.hero-title{font-family:'Poppins',sans-serif;font-size:28px;font-weight:900;line-height:1.05;color:var(--text-white);margin-bottom:12px;letter-spacing:-0.02em;opacity:0;transform:translateY(30px);animation:slideUp 800ms 400ms forwards}.hero-title .gradient{background:linear-gradient(135deg,#caff33 0%,#a8e607 50%,#00a86b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero-desc{font-size:13px;color:var(--text-dim);line-height:1.6;margin-bottom:12px;max-width:500px;opacity:0;transform:translateY(20px);animation:slideUp 800ms 600ms forwards}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;opacity:0;transform:translateY(20px);animation:slideUp 800ms 800ms forwards}
+.btn-primary{background:linear-gradient(135deg,#caff33,#a8e607);color:var(--hero-bg);font-size:13px;font-weight:700;padding:10px 24px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition);position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:8px;text-decoration:none}.btn-primary::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent);transition:left 500ms}.btn-primary:hover::before{left:100%}.btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 32px var(--accent-glow-strong)}
+.btn-secondary{background:transparent;color:var(--text-white);font-size:13px;font-weight:600;padding:14px 32px;border-radius:var(--radius-pill);border:1px solid rgba(255,255,255,0.15);cursor:pointer;transition:var(--transition);display:inline-flex;align-items:center;gap:8px;text-decoration:none}.btn-secondary:hover{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+@keyframes slideUp{to{opacity:1;transform:translateY(0)}}@media(prefers-reduced-motion:reduce){.hero-badge,.hero-title,.hero-desc,.hero-actions{animation:none!important;opacity:1!important;transform:none!important}}
+.hero-right{flex:1.3;position:relative;display:flex;align-items:center;justify-content:center;padding:40px 20px;min-height:560px}.hero-visual{position:relative;width:100%;max-width:800px;height:720px;display:flex;align-items:center;justify-content:center}#hero-canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
+.hero-lime-circle{position:absolute;width:560px;height:560px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#caff33 0%,#a8e607 65%,#88be00 100%);box-shadow:0 0 100px rgba(202,255,51,0.45);z-index:1}
+.wp-doc,.wp-card,.wp-team,.wp-roadmap,.wp-carbon,.float-tag{backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.14);box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+.float-anim-1{animation:float1 5.5s ease-in-out infinite}.float-anim-2{animation:float2 7s ease-in-out infinite}.float-anim-3{animation:float3 6s ease-in-out infinite}.float-anim-4{animation:float4 5s ease-in-out infinite}.float-anim-5{animation:float5 6.5s ease-in-out infinite}
+.float-tag-1{animation:floatTag1 4s ease-in-out infinite}.float-tag-2{animation:floatTag2 5s ease-in-out infinite}.float-tag-3{animation:floatTag3 6s ease-in-out infinite}.float-tag-4{animation:floatTag4 4.5s ease-in-out infinite}
+@keyframes float1{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-14px) rotate(1deg)}}@keyframes float2{0%,100%{transform:translateY(0) rotate(2deg)}50%{transform:translateY(-12px) rotate(-1deg)}}@keyframes float3{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-16px) rotate(2deg)}}@keyframes float4{0%,100%{transform:translateY(0) rotate(1deg)}50%{transform:translateY(-10px) rotate(-1.5deg)}}@keyframes float5{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-18px) rotate(1.5deg)}}
+@keyframes floatTag1{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-8px) rotate(1deg)}}@keyframes floatTag2{0%,100%{transform:translateY(0) rotate(3deg)}50%{transform:translateY(-10px) rotate(-2deg)}}@keyframes floatTag3{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-6px) rotate(2deg)}}@keyframes floatTag4{0%,100%{transform:translateY(0) rotate(2deg)}50%{transform:translateY(-12px) rotate(-1deg)}}
+.wp-doc{position:absolute;top:5%;left:5%;width:200px;padding:16px;border-radius:16px;background:rgba(45,45,45,0.85);z-index:3}.wp-doc-icon{width:32px;height:32px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:10px}.wp-doc-title{font-size:11px;font-weight:700;color:var(--text-white);font-family:'Space Grotesk'}.wp-doc-sub{font-size:10px;color:var(--text-muted);margin-top:4px}.wp-doc-line{height:3px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:6px}.wp-doc-line:nth-child(4){width:80%}.wp-doc-line:nth-child(5){width:60%}
+.wp-card{position:absolute;top:8%;right:3%;width:180px;padding:14px;border-radius:16px;background:rgba(45,45,45,0.85);z-index:3}.wp-card-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}.wp-card-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse-dot 2s infinite}.wp-card-title{font-size:10px;font-weight:600;color:var(--text-white)}.wp-card-val{font-family:'JetBrains Mono';font-size:20px;font-weight:700;color:var(--accent)}.wp-card-sub{font-size:10px;color:var(--text-muted)}.wp-card-bar{height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:8px;overflow:hidden}.wp-card-bar-fill{height:100%;width:70%;background:linear-gradient(90deg,#caff33,#00a86b);border-radius:2px}
+.wp-team{position:absolute;bottom:8%;left:8%;width:160px;padding:14px;border-radius:16px;background:rgba(45,45,45,0.85);z-index:3}.wp-team-avatars{display:flex;margin-bottom:8px}.wp-team-avatar{width:28px;height:28px;border-radius:50%;border:2px solid var(--hero-card);margin-right:-6px}.wp-team-avatar:nth-child(1){background:linear-gradient(135deg,#caff33,#00a86b)}.wp-team-avatar:nth-child(2){background:linear-gradient(135deg,#38bdf8,#a855f7)}.wp-team-avatar:nth-child(3){background:linear-gradient(135deg,#fbbf24,#ef4444)}.wp-team-label{font-size:10px;font-weight:600;color:var(--text-white)}.wp-team-sub{font-size:9px;color:var(--text-muted)}
+.wp-roadmap{position:absolute;bottom:5%;right:8%;width:170px;padding:12px;border-radius:16px;background:rgba(45,45,45,0.85);z-index:3}.wp-roadmap-title{font-size:10px;font-weight:600;color:var(--text-white);margin-bottom:8px}.wp-roadmap-item{display:flex;align-items:center;gap:6px;margin-bottom:4px}.wp-roadmap-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}.wp-roadmap-dot.done{background:#4ade80}.wp-roadmap-text{font-size:9px;color:var(--text-muted)}
+.wp-carbon{position:absolute;top:40%;right:0%;width:140px;padding:12px;border-radius:16px;background:rgba(45,45,45,0.85);z-index:3}.wp-carbon-icon{font-size:18px;margin-bottom:4px}.wp-carbon-val{font-family:'JetBrains Mono';font-size:16px;font-weight:700;color:#4ade80}.wp-carbon-label{font-size:9px;color:var(--text-muted)}
+.float-tag{position:absolute;padding:6px 12px;border-radius:var(--radius-pill);font-size:10px;font-weight:600;z-index:4}.float-tag.green{background:rgba(202,255,51,0.15);color:var(--accent);border:1px solid var(--accent-border)}.float-tag.white{background:rgba(255,255,255,0.1);color:var(--text-white)}.float-tag.eco{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.25)}
+@media(max-width:768px){.hero-container{flex-direction:column;min-height:auto}.hero-right{min-height:300px;padding:20px}.hero-visual{height:300px}.hero-lime-circle{width:200px;height:200px}.wp-doc,.wp-card,.wp-team,.wp-roadmap,.wp-carbon{display:none}.float-tag{display:none}}
+.stats-bar{max-width:1280px;margin:0 auto 48px;padding:0 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:border-color .2s}.stat-card:hover{border-color:var(--border-2)}.stat-card .label{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--text-3);margin-bottom:8px}.stat-card .value{font-family:'JetBrains Mono';font-size:13px;font-weight:600;color:var(--text)}.stat-card .value.accent{color:var(--accent)}.stat-card .sub{font-size:13px;color:var(--text-2);margin-top:4px}
+.container{max-width:1280px;margin:0 auto;padding:0 24px 64px}.section-block{margin-bottom:64px;scroll-margin-top:80px}.section-header{margin-bottom:12px}.section-tag{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:6px;display:block}.section-title{font-family:'Space Grotesk';font-size:16px;font-weight:700;color:#0f172a;margin-bottom:8px}.section-desc{color:var(--text-2);font-size:13px;max-width:720px}.card-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:12px}
+.reveal{opacity:0;transform:translateY(40px);transition:opacity 600ms,transform 600ms}.reveal.visible{opacity:1;transform:translateY(0)}
+.story-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}@media(max-width:900px){.story-grid{grid-template-columns:1fr}}.story-text{font-size:14px;color:var(--text-2);line-height:1.8}.story-text p{margin-bottom:16px}.story-text strong{color:var(--text)}
+.story-timeline{position:relative;padding-left:32px}.story-timeline::before{content:'';position:absolute;left:12px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--accent),transparent)}.story-tl-item{position:relative;margin-bottom:24px}.story-tl-dot{position:absolute;left:-26px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent-glow-strong)}.story-tl-date{font-size:12px;font-weight:600;color:var(--accent);font-family:'JetBrains Mono';margin-bottom:4px}.story-tl-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}.story-tl-desc{font-size:13px;color:var(--text-2)}
+.native-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}.native-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;transition:all .3s}.native-card:hover{border-color:var(--accent);box-shadow:0 0 20px var(--accent-glow)}.native-icon{width:40px;height:40px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:18px}.native-title{font-family:'Space Grotesk';font-size:14px;font-weight:700;color:var(--text);margin-bottom:8px}.native-desc{font-size:13px;color:var(--text-2);line-height:1.6}
+.arch-layers{display:flex;flex-direction:column;gap:8px}.arch-layer{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;display:flex;align-items:center;gap:16px;transition:all .3s;position:relative;overflow:hidden}.arch-layer:hover{border-color:var(--accent);transform:translateX(4px)}.arch-layer-num{font-family:'JetBrains Mono';font-size:24px;font-weight:700;color:var(--accent);opacity:.3;flex-shrink:0;width:40px}.arch-layer-content{flex:1}.arch-layer-title{font-family:'Space Grotesk';font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}.arch-layer-desc{font-size:13px;color:var(--text-2)}.arch-layer-tech{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.arch-tech-tag{font-size:11px;font-family:'JetBrains Mono';padding:3px 8px;border-radius:4px;background:var(--bg-1);color:var(--text-2);border:1px solid var(--border)}
+.evo-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:24px;align-items:center}@media(max-width:900px){.evo-grid{grid-template-columns:1fr}.evo-bridge{transform:rotate(90deg)}}.evo-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;text-align:center}.evo-card.verdis{border-color:var(--accent);box-shadow:0 0 24px var(--accent-glow)}.evo-card.evolvix{border-color:#6366f1;box-shadow:0 0 24px rgba(99,102,241,0.15)}.evo-logo{width:60px;height:60px;border-radius:16px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:#000}.evo-logo.verdis{background:linear-gradient(135deg,#caff33,#00a86b)}.evo-logo.evolvix{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff}.evo-title{font-family:'Space Grotesk';font-size:16px;font-weight:700;margin-bottom:8px}.evo-desc{font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:16px}.evo-features{text-align:left;font-size:13px;color:var(--text-2);list-style:none}.evo-features li{padding:6px 0;border-bottom:1px solid var(--border)}.evo-features li:last-child{border:none}.evo-features li::before{content:'→ ';color:var(--accent);font-weight:700}.evo-bridge{font-size:32px;color:var(--text-3);text-align:center}
+.eco-flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}.eco-node{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;transition:all .3s}.eco-node:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,0.08)}.eco-node-icon{width:48px;height:48px;border-radius:12px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:20px}.eco-node-title{font-family:'Space Grotesk';font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px}.eco-node-desc{font-size:12px;color:var(--text-2);line-height:1.5}
+.improve-list{display:flex;flex-direction:column;gap:12px}.improve-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;display:flex;gap:16px;align-items:flex-start;transition:all .3s}.improve-item:hover{border-color:var(--accent);background:rgba(202,255,51,0.02)}.improve-num{font-family:'JetBrains Mono';font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-light);border:1px solid var(--accent-border);border-radius:8px;padding:4px 10px;flex-shrink:0}.improve-content{flex:1}.improve-title{font-family:'Space Grotesk';font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px}.improve-desc{font-size:13px;color:var(--text-2);line-height:1.6}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px}.team-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;text-align:center;transition:all .3s}.team-card:hover{border-color:var(--accent);box-shadow:0 8px 32px var(--accent-glow)}.team-avatar{width:80px;height:80px;border-radius:50%;margin:0 auto 16px;background:linear-gradient(135deg,#caff33,#00a86b);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#000;font-family:'Space Grotesk'}.team-name{font-family:'Space Grotesk';font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}.team-role{font-size:13px;color:var(--accent);font-weight:600;margin-bottom:12px}.team-bio{font-size:13px;color:var(--text-2);line-height:1.6}.team-socials{display:flex;gap:12px;justify-content:center;margin-top:16px}.team-social{width:32px;height:32px;border-radius:50%;background:var(--bg-1);display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s}.team-social:hover{background:var(--accent);transform:translateY(-2px)}
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:12px}.ov-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;gap:6px}.ov-lbl{font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:1px}.ov-val{font-family:'JetBrains Mono';font-size:13px;font-weight:700;color:var(--accent)}.ov-sub{font-size:13px;color:var(--text-2)}
+.table-responsive{overflow-x:auto;margin-top:16px}table.specs-table{width:100%;border-collapse:collapse;text-align:left;font-size:14px}table.specs-table th{background:var(--bg-1);color:var(--text-2);padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;text-transform:uppercase;font-size:12px;letter-spacing:.5px}table.specs-table td{padding:14px 16px;border-bottom:1px solid var(--border);color:var(--text)}table.specs-table tr:last-child td{border-bottom:none}
+.dist-grid{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:center}@media(max-width:850px){.dist-grid{grid-template-columns:1fr}}.pie-wrapper{position:relative;width:240px;height:240px;margin:0 auto}.pie-svg{width:100%;height:100%;transform:rotate(-90deg)}.pie-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}.pie-center-val{font-family:'JetBrains Mono';font-size:13px;font-weight:700;color:var(--accent)}.pie-center-lbl{font-size:12px;color:var(--text-2)}
+.dist-list{display:flex;flex-direction:column;gap:12px}.dist-item{background:var(--bg-1);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all .2s}.dist-item:hover,.dist-item.active{border-color:var(--accent);background:rgba(202,255,51,0.03)}.dist-left{display:flex;align-items:center;gap:12px}.dist-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}.dist-name{font-weight:600;font-size:14px;color:var(--text)}.dist-desc{font-size:12px;color:var(--text-2)}.dist-right{text-align:right}.dist-pct{font-family:'JetBrains Mono';font-size:13px;font-weight:700;color:var(--accent)}.dist-amt{font-family:'JetBrains Mono';font-size:12px;color:var(--text-3)}
+.vesting-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}.vest-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;display:flex;flex-direction:column;gap:12px}.vest-header{display:flex;justify-content:space-between;align-items:center}.vest-title{font-weight:600;font-size:14px;color:#0f172a}.vest-badge{font-family:'JetBrains Mono';font-size:13px;color:var(--accent);background:var(--accent-glow);padding:4px 10px;border-radius:6px}.vest-cliff{font-size:12px;font-weight:600;color:var(--warning);background:rgba(251,191,36,0.1);padding:6px 12px;border-radius:var(--radius-sm);border:1px solid rgba(251,191,36,0.2);width:fit-content}.vest-details{font-size:13px;color:var(--text-2);line-height:1.5}.vest-bar{height:6px;background:var(--bg-1);border-radius:3px;overflow:hidden}.vest-fill{height:100%;background:var(--accent);border-radius:3px}
+.staking-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}@media(max-width:900px){.staking-grid{grid-template-columns:1fr}}.calc-card{background:var(--card);border:1px solid var(--accent);box-shadow:0 0 20px var(--accent-glow);border-radius:var(--radius);padding:28px}.calc-title{font-family:'Space Grotesk';font-size:14px;font-weight:700;margin-bottom:20px;color:var(--accent);display:flex;align-items:center;gap:10px}.calc-group{margin-bottom:20px}.calc-label{display:block;font-size:13px;color:var(--text-2);margin-bottom:8px;font-weight:500}.calc-input-wrap{position:relative}.calc-input{width:100%;background:var(--bg-1);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s}.calc-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}.calc-input-suffix{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--text-3);font-family:'JetBrains Mono'}.calc-select{width:100%;background:var(--bg-1);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;color:var(--text);font-size:13px;outline:none;cursor:pointer}.calc-select:focus{border-color:var(--accent)}.calc-result{background:var(--bg-1);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-top:8px}.calc-result-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0}.calc-result-row:not(:last-child){border-bottom:1px solid var(--border)}.calc-result-lbl{font-size:13px;color:var(--text-2)}.calc-result-val{font-family:'JetBrains Mono';font-size:14px;font-weight:700;color:var(--accent)}
+.carbon-box{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:start}@media(max-width:900px){.carbon-box{grid-template-columns:1fr}}.carbon-left h3{font-family:'Space Grotesk';font-size:16px;font-weight:700;color:var(--text);margin-bottom:12px}.carbon-left p{font-size:14px;color:var(--text-2);line-height:1.7;margin-bottom:16px}.carbon-pills{display:flex;gap:8px;flex-wrap:wrap}.carbon-pill{font-size:12px;font-family:'JetBrains Mono';padding:6px 12px;border-radius:var(--radius-pill);background:rgba(74,222,128,0.1);color:#4ade80;border:1px solid rgba(74,222,128,0.2)}
+.carbon-right{background:var(--bg-1);border:1px solid var(--border);border-radius:var(--radius);padding:24px}.c-metric-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border)}.c-metric-row:last-child{border-bottom:none}.c-m-lbl{font-size:13px;color:var(--text-2)}.c-m-val{font-family:'JetBrains Mono';font-size:14px;font-weight:700;color:var(--text)}
+.utility-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}.u-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;transition:all .3s}.u-card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 8px 24px var(--accent-glow)}.u-icon{font-size:24px;margin-bottom:12px}.u-title{font-family:'Space Grotesk';font-size:14px;font-weight:700;color:var(--text);margin-bottom:8px}.u-desc{font-size:13px;color:var(--text-2);line-height:1.6}
+.roadmap-timeline{position:relative;padding-left:32px}.roadmap-timeline::before{content:'';position:absolute;left:12px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--accent),var(--accent-2),transparent)}.rm-item{position:relative;margin-bottom:32px}.rm-dot{position:absolute;left:-26px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent-glow-strong)}.rm-content{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;transition:all .3s}.rm-content:hover{border-color:var(--accent);transform:translateX(4px)}.rm-phase{font-size:12px;font-weight:600;color:var(--accent);font-family:'JetBrains Mono';margin-bottom:6px}.rm-title{font-family:'Space Grotesk';font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px}.rm-desc{font-size:13px;color:var(--text-2);line-height:1.6}
+.cta-card{text-align:center;padding:48px 24px;background:linear-gradient(135deg,var(--bg-1),var(--bg-2));border-radius:var(--radius-lg);margin-bottom:32px}.cta-card h2{font-family:'Space Grotesk';font-size:20px;font-weight:700;color:var(--accent);margin-bottom:12px}.cta-card p{font-size:14px;color:var(--text-muted);margin-bottom:24px;max-width:500px;margin-left:auto;margin-right:auto}
+footer{padding:32px 24px;text-align:center;color:var(--text-2);font-size:13px;border-top:1px solid var(--border)}footer .links{display:flex;gap:16px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}footer .links a{color:var(--text-2);text-decoration:none;transition:color .2s}footer .links a:hover{color:var(--accent)}
 </style>
-<link rel="icon" type="image/png" href="/assets/favicon-32.png">
-<link rel="apple-touch-icon" href="/assets/favicon-180.png">
-<style id="nav-brand-no-underline-fix">a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration: none !important; }</style></head>
+</head>
 <body>
-
 <div id="scroll-bar"></div>
-
-<!-- NAV -->
+<div id="cursor-glow"></div>
 <nav class="std-nav">
-  <a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain" class="brand-logo-img" style="height:48px;width:auto;display:block;object-fit:contain;flex-shrink:0"></a>
-  <button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links">
-    <a href="/">Home</a>
-    <a href="/explorer/">Verdiscan</a>
-    <a href="/dex/">DEX</a>
-    <a href="/validators/">Validators</a>
-    <a href="/eco/">Eco</a>
-    <a href="/faucet/">Faucet</a>
-    <a href="/wallet/">Wallet</a>
-    <a href="/sale/">Sale</a>
-    <a href="/contact/">Contact</a><a href="/api/">API</a> <a href="/docs/">Docs</a>
-  </div>
-  <div class="nav-status"><div class="dot"></div><span>Connected</span></div>
+<a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain" class="brand-logo-img" style="height:48px;width:auto;display:block;object-fit:contain;flex-shrink:0"></a>
+<button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+<div class="nav-links" id="navLinks">
+<a href="/">Home</a><a href="/explorer/">Verdiscan</a><a href="/dex/">DEX</a><a href="/validators/">Validators</a><a href="/eco/">Eco</a><a href="/faucet/">Faucet</a><a href="/wallet/">Wallet</a><a href="/sale/">Sale</a><a href="/contact/">Contact</a><a href="/api/">API</a><a href="/docs/">Docs</a>
+</div>
+<div class="nav-status"><div class="dot"></div><span>Connected</span></div>
 </nav>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-badge">
-    <span class="badge-dot"></span>
-    <span>Whitepaper v2.0 • Green Layer-1 Protocol</span>
-  </div>
-  <h1>Verdis Chain <span class="accent">Whitepaper</span></h1>
-  <p>Comprehensive protocol specifications, tokenomics structure, DPoS consensus model, carbon credit mechanisms, and 4-year vesting schedule for VRDX.</p>
-  <div class="hero-actions">
-    <a href="#overview" class="btn-primary">Read Specifications ↓</a>
-    <button onclick="alert('Downloading Verdis Chain Whitepaper PDF...')" class="btn-secondary">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-      Download PDF
-    </button>
-  </div>
-</section>
+<section class="hero-section"><div class="hero-container">
+<div class="hero-left">
+<div class="hero-badge"><span class="hero-badge-dot"></span> Whitepaper v2.0 • Green Layer-1 Protocol</div>
+<h1 class="hero-title"><span class="gradient">VERDIS CHAIN</span><br>Whitepaper</h1>
+<p class="hero-desc">The world's first carbon-negative Layer-1 blockchain. Built with Substrate, powered by native DPoS consensus, AMM DEX, EVM compatibility, and on-chain carbon credit tracking — connected to the EvolvixOS AI Engineering ecosystem.</p>
+<div class="hero-actions"><a href="#story" class="btn-primary">Read Whitepaper ↓</a><a href="#tokenomics" class="btn-secondary">Tokenomics →</a></div>
+</div>
+<div class="hero-right"><div class="hero-visual">
+<div class="hero-lime-circle"></div>
+<canvas id="hero-canvas"></canvas>
+<div class="wp-doc float-anim-1"><div class="wp-doc-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="#1a1a1a"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg></div><div class="wp-doc-title">Whitepaper v2.0</div><div class="wp-doc-sub">Protocol Specification</div><div class="wp-doc-line"></div><div class="wp-doc-line"></div></div>
+<div class="wp-card float-anim-2"><div class="wp-card-header"><div class="wp-card-dot"></div><span class="wp-card-title">VRDX Supply</span></div><div class="wp-card-val">100B</div><div class="wp-card-sub">Fixed • Disinflationary</div><div class="wp-card-bar"><div class="wp-card-bar-fill"></div></div></div>
+<div class="wp-team float-anim-3"><div class="wp-team-avatars"><div class="wp-team-avatar"></div><div class="wp-team-avatar"></div><div class="wp-team-avatar"></div></div><div class="wp-team-label">Core Team</div><div class="wp-team-sub">Engineering + Vision</div></div>
+<div class="wp-roadmap float-anim-4"><div class="wp-roadmap-title">Roadmap</div><div class="wp-roadmap-item"><div class="wp-roadmap-dot done"></div><span class="wp-roadmap-text">Q1 2026 — Genesis</span></div><div class="wp-roadmap-item"><div class="wp-roadmap-dot"></div><span class="wp-roadmap-text">Q2 2026 — Staking</span></div><div class="wp-roadmap-item"><div class="wp-roadmap-dot"></div><span class="wp-roadmap-text">Q4 2026 — Eco</span></div></div>
+<div class="wp-carbon float-anim-5"><div class="wp-carbon-icon">🌱</div><div class="wp-carbon-val">-142%</div><div class="wp-carbon-label">Carbon Negative</div></div>
+<div class="float-tag green float-tag-1" style="top:30%;left:0%">DPoS Consensus</div>
+<div class="float-tag white float-tag-2" style="top:55%;left:5%">Substrate + EVM</div>
+<div class="float-tag eco float-tag-3" style="bottom:30%;right:0%">Carbon Credits</div>
+<div class="float-tag green float-tag-4" style="top:15%;right:15%">EvolvixOS</div>
+</div></div>
+</div></section>
 
-<!-- LIVE DASHBOARD STATS BAR -->
 <div class="stats-bar">
-  <div class="stat-card">
-    <div class="label">Total Supply</div>
-    <div class="value accent">100B VRDX</div>
-    <div class="sub">Fixed Supply • Disinflationary</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Current Block</div>
-    <div class="value mono" id="stat-block">#—</div>
-    <div class="sub" id="stat-block-sub">Connecting to RPC...</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Active Validators</div>
-    <div class="value accent mono" id="stat-validators">14</div>
-    <div class="sub">DPoS Active Consensus Nodes</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Connected Peers</div>
-    <div class="value mono" id="stat-peers">—</div>
-    <div class="sub">Network Health</div>
-  </div>
+<div class="stat-card"><div class="label">Total Supply</div><div class="value accent">100B VRDX</div><div class="sub">Fixed Supply • Disinflationary</div></div>
+<div class="stat-card"><div class="label">Current Block</div><div class="value mono" id="stat-block">#—</div><div class="sub" id="stat-block-sub">Connecting to RPC...</div></div>
+<div class="stat-card"><div class="label">Active Validators</div><div class="value accent mono" id="stat-validators">14</div><div class="sub">DPoS Active Consensus Nodes</div></div>
+<div class="stat-card"><div class="label">Connected Peers</div><div class="value mono" id="stat-peers">—</div><div class="sub">Network Health</div></div>
 </div>
 
-<!-- MAIN CONTAINER -->
 <main class="container">
 
-  <!-- 1. TOKEN OVERVIEW -->
-  <section id="overview" class="section-block">
-    <div class="section-header">
-      <span class="section-tag">Specifications</span>
-      <h2 class="section-title">1. Token Overview</h2>
-      <p class="section-desc">Core architectural parameters of the VRDX token — the native gas, staking, and governance asset powering Verdis Chain.</p>
-    </div>
+<section id="story" class="section-block reveal">
+<div class="section-header"><span class="section-tag">Origin</span><h2 class="section-title">Our Story</h2><p class="section-desc">How Verdis Chain was born from a vision to build the world's first carbon-negative blockchain ecosystem.</p></div>
+<div class="story-grid">
+<div class="story-text">
+<p>Verdis Chain was founded by <strong>Rojs Gordons</strong>, a European fintech veteran and CEO of <strong>Protremix</strong>, a software development company specializing in payment systems and blockchain infrastructure. After building the <strong>Anerium fintech platform</strong> and multiple production-grade payment systems, Rojs recognized a fundamental problem: the blockchain industry was consuming more energy than entire nations, with no credible path to sustainability.</p>
+<p>The vision was clear — build a Layer-1 blockchain that doesn't just offset its carbon footprint, but is <strong>carbon-negative by design</strong>. Not through external offsets purchased after the fact, but through protocol-native mechanisms: carbon credit minting, green validator scoring, and reforestation tracking — all embedded directly into consensus.</p>
+<p>Verdis Chain was built from scratch using <strong>Substrate</strong>, the same framework powering Polkadot, giving it production-grade security, modular governance, and cross-chain interoperability. The name "Verdis" — derived from the Latin word for green — reflects the core mission: a blockchain that is genuinely green, not just marketed as such.</p>
+<p>Today, Verdis Chain operates as a live testnet with <strong>14 active DPoS validators</strong>, a native AMM DEX, on-chain carbon credits, and deep integration with <strong>EvolvixOS</strong> — the AI Engineering Operating System that serves as the intelligence layer for the entire ecosystem.</p>
+</div>
+<div class="story-timeline">
+<div class="story-tl-item"><div class="story-tl-dot"></div><div class="story-tl-date">2024</div><div class="story-tl-title">Vision & Research</div><div class="story-tl-desc">Founded by Rojs Gordons. Extensive research into DPoS consensus, carbon credit markets, and Substrate architecture.</div></div>
+<div class="story-tl-item"><div class="story-tl-dot"></div><div class="story-tl-date">2025</div><div class="story-tl-title">Protocol Development</div><div class="story-tl-desc">Built 30+ Substrate pallets: DPoS, AMM DEX, Eco, Tokenomics, Vesting, EVM, and Solana-inspired innovations (PoH, Gulf Stream, Turbine).</div></div>
+<div class="story-tl-item"><div class="story-tl-dot"></div><div class="story-tl-date">Q1 2026</div><div class="story-tl-title">Testnet Launch</div><div class="story-tl-desc">Live testnet deployed at verdischain.com with 12 web pages, 14 validators, 6 DEX pools, and real-time Verdiscan explorer.</div></div>
+<div class="story-tl-item"><div class="story-tl-dot"></div><div class="story-tl-date">Q2 2026</div><div class="story-tl-title">Ecosystem Expansion</div><div class="story-tl-desc">Integration with EvolvixOS, JavaScript SDK, smart contract platform, and mobile wallet development.</div></div>
+<div class="story-tl-item"><div class="story-tl-dot"></div><div class="story-tl-date">2027+</div><div class="story-tl-title">Mainnet & Global Scaling</div><div class="story-tl-desc">Mainnet launch, cross-chain bridges, global reforestation partnerships, and 10M+ tCO2e verified offsets.</div></div>
+</div>
+</div>
+</section>
 
-    <div class="overview-grid">
-      <div class="ov-card">
-        <span class="ov-lbl">Total Supply</span>
-        <span class="ov-val">100B VRDX</span>
-        <span class="ov-sub mono">100,000,000,000</span>
-      </div>
-      <div class="ov-card">
-        <span class="ov-lbl">Token Ticker</span>
-        <span class="ov-val">VRDX</span>
-        <span class="ov-sub">Native Layer-1 Asset</span>
-      </div>
-      <div class="ov-card">
-        <span class="ov-lbl">Chain ID</span>
-        <span class="ov-val">909</span>
-        <span class="ov-sub">Verdis Mainnet</span>
-      </div>
-      <div class="ov-card">
-        <span class="ov-lbl">Consensus</span>
-        <span class="ov-val">DPoS</span>
-        <span class="ov-sub">BABE + GRANDPA</span>
-      </div>
-    </div>
+<section id="why-native" class="section-block reveal">
+<div class="section-header"><span class="section-tag">Token Fundamentals</span><h2 class="section-title">Why VRDX is a Native Token</h2><p class="section-desc">VRDX is not an ERC-20 token deployed on another chain. It is the native protocol asset — woven into the very fabric of Verdis Chain at the consensus level.</p></div>
+<div class="native-grid">
+<div class="native-card"><div class="native-icon">⚡</div><div class="native-title">Protocol-Level Gas</div><div class="native-desc">VRDX is the native gas token. Every transaction, smart contract execution, and state change requires VRDX. This creates perpetual demand directly tied to network usage — not speculative trading.</div></div>
+<div class="native-card"><div class="native-icon">🔒</div><div class="native-title">Consensus Security</div><div class="native-desc">VRDX is bonded by validators in the DPoS consensus. Slashing, rewards, and epoch selection all operate on native VRDX. The token IS the security guarantee of the entire chain.</div></div>
+<div class="native-card"><div class="native-icon">🏛️</div><div class="native-title">On-Chain Governance</div><div class="native-desc">VRDX holders vote on protocol upgrades, parameter changes, and treasury disbursements. Governance power is proportional to stake — making every VRDX holder a participant in the protocol's future.</div></div>
+<div class="native-card"><div class="native-icon">🌱</div><div class="native-title">Carbon Credit Backing</div><div class="native-desc">20% of all VRDX transaction fees are automatically directed to purchasing and retiring carbon credits on-chain. The token's velocity directly funds environmental restoration — a first in blockchain history.</div></div>
+<div class="native-card"><div class="native-icon">🔄</div><div class="native-title">DEX Liquidity</div><div class="native-desc">VRDX is the base pair for all AMM DEX liquidity pools. Every token swap, liquidity provision, and yield farming position requires VRDX — creating deep, structural liquidity demand.</div></div>
+<div class="native-card"><div class="native-icon">🌉</div><div class="native-title">Cross-Chain Bridge Asset</div><div class="native-desc">VRDX serves as the collateral for wrapped tokens across Ethereum, BSC, and Polygon. Locking native VRDX mints wrapped representations — maintaining 1:1 backing at the protocol level.</div></div>
+</div>
+</section>
 
-    <div class="card-panel">
-      <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 16px;">Protocol Level Parameters</h3>
-      <div class="table-responsive">
-        <table class="specs-table">
-          <thead>
-            <tr>
-              <th>Parameter</th>
-              <th>Value</th>
-              <th>Description / Implementation</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Decimals</strong></td>
-              <td class="mono">18</td>
-              <td>1 VRDX = <span class="mono">1,000,000,000,000,000,000</span> Planck units</td>
-            </tr>
-            <tr>
-              <td><strong>Block Time</strong></td>
-              <td class="mono">3.0 Seconds</td>
-              <td>Slot time target via Substrate BABE engine</td>
-            </tr>
-            <tr>
-              <td><strong>Genesis Emission</strong></td>
-              <td class="mono">1,250 VRDX / Block</td>
-              <td>Disinflationary emission model with 4-year halving cycle</td>
-            </tr>
-            <tr>
-              <td><strong>EVM Precompile</strong></td>
-              <td class="mono">0x00...0802</td>
-              <td>Dual compatibility (Substrate Balances + EVM ERC-20 interface)</td>
-            </tr>
-            <tr>
-              <td><strong>Existential Deposit</strong></td>
-              <td class="mono">0.001 VRDX</td>
-              <td>Prevents state bloat on ledger</td>
-            </tr>
-            <tr>
-              <td><strong>Governance Model</strong></td>
-              <td class="mono">Substrate Democracy</td>
-              <td>Direct stake-weighted voting &amp; Council proposals</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
+<section id="architecture" class="section-block reveal">
+<div class="section-header"><span class="section-tag">Engineering</span><h2 class="section-title">Technical Architecture</h2><p class="section-desc">A multi-layer architecture built on Substrate with 30+ custom pallets, EVM compatibility, and Solana-inspired innovations for high throughput.</p></div>
+<div class="card-panel"><div class="arch-layers">
+<div class="arch-layer"><div class="arch-layer-num">07</div><div class="arch-layer-content"><div class="arch-layer-title">Application Layer — Web & Mobile</div><div class="arch-layer-desc">User-facing interfaces: Verdiscan Explorer, DEX swap UI, Web Wallet, Android APK, Faucet, and API documentation.</div><div class="arch-layer-tech"><span class="arch-tech-tag">React</span><span class="arch-tech-tag">Tailwind</span><span class="arch-tech-tag">WebSocket</span><span class="arch-tech-tag">Android</span></div></div></div>
+<div class="arch-layer"><div class="arch-layer-num">06</div><div class="arch-layer-content"><div class="arch-layer-title">Smart Contract Layer — EVM + ink!</div><div class="arch-layer-desc">Dual smart contract environment: EVM precompiles for Solidity compatibility and ink! for Rust-native contracts. 142 EVM opcodes including Cancun upgrades.</div><div class="arch-layer-tech"><span class="arch-tech-tag">EVM (Chain ID 909)</span><span class="arch-tech-tag">ink!</span><span class="arch-tech-tag">142 Opcodes</span><span class="arch-tech-tag">Cancun</span></div></div></div>
+<div class="arch-layer"><div class="arch-layer-num">05</div><div class="arch-layer-content"><div class="arch-layer-title">DEX & DeFi Layer — AMM Protocol</div><div class="arch-layer-desc">Native AMM DEX with liquidity pools, swap routing, and yield farming. 6 active pools. Token-2022 extensions for transfer fees and metadata.</div><div class="arch-layer-tech"><span class="arch-tech-tag">AmmDex Pallet</span><span class="arch-tech-tag">6 Pools</span><span class="arch-tech-tag">Token-2022</span></div></div></div>
+<div class="arch-layer"><div class="arch-layer-num">04</div><div class="arch-layer-content"><div class="arch-layer-title">Eco Layer — Carbon Credits & Green Scoring</div><div class="arch-layer-desc">Protocol-native carbon credit minting, retirement tracking, green validator scoring, and reforestation logging. 5,260 kg CO2 offset, 526,000 trees logged.</div><div class="arch-layer-tech"><span class="arch-tech-tag">Eco Pallet</span><span class="arch-tech-tag">pCO2</span><span class="arch-tech-tag">Green Score</span></div></div></div>
+<div class="arch-layer"><div class="arch-layer-num">03</div><div class="arch-layer-content"><div class="arch-layer-title">Consensus Layer — DPoS + BABE + GRANDPA</div><div class="arch-layer-desc">Delegated Proof of Stake with 14 active validators, BABE block production, GRANDPA finality. Solana-inspired: PoH, Gulf Stream, Turbine, ZK Compression, Sealevel, ALT, Cloudbreak.</div><div class="arch-layer-tech"><span class="arch-tech-tag">DPoS</span><span class="arch-tech-tag">BABE</span><span class="arch-tech-tag">GRANDPA</span><span class="arch-tech-tag">PoH</span><span class="arch-tech-tag">Gulf Stream</span><span class="arch-tech-tag">IBC</span></div></div></div>
+<div class="arch-layer"><div class="arch-layer-num">02</div><div class="arch-layer-content"><div class="arch-layer-title">Runtime Layer — Substrate Pallets</div><div class="arch-layer-desc">30+ custom pallets in Rust: Tokenomics, Vesting, DPoS, AmmDex, Eco, Storage, FungibleTokens, NFTs, Governance, Treasury, Council, Democracy, Multisig, Proxy, and IBC. 238 tests passing.</div><div class="arch-layer-tech"><span class="arch-tech-tag">Rust</span><span class="arch-tech-tag">30+ Pallets</span><span class="arch-tech-tag">238 Tests</span><span class="arch-tech-tag">WASM</span></div></div></div>
+<div class="arch-layer"><div class="arch-layer-num">01</div><div class="arch-layer-content"><div class="arch-layer-title">Network Layer — P2P + RPC</div><div class="arch-layer-desc">Substrate P2P networking with libp2p, JSON-RPC (HTTP + WebSocket), and real-time block subscriptions. Nginx reverse proxy with TLS 1.3 and HSTS.</div><div class="arch-layer-tech"><span class="arch-tech-tag">libp2p</span><span class="arch-tech-tag">JSON-RPC</span><span class="arch-tech-tag">WebSocket</span><span class="arch-tech-tag">TLS 1.3</span></div></div></div>
+</div></div>
+</section>
 
-  <!-- 2. SUPPLY DISTRIBUTION -->
-  <section id="distribution" class="section-block">
-    <div class="section-header">
-      <span class="section-tag">Allocation</span>
-      <h2 class="section-title">2. Supply Distribution</h2>
-      <p class="section-desc">Transparent distribution model designed to incentivize long-term decentralization, ecosystem sustainability, and carbon credit direct funding.</p>
-    </div>
+<section id="evolvixos" class="section-block reveal">
+<div class="section-header"><span class="section-tag">Ecosystem</span><h2 class="section-title">Connection to EvolvixOS</h2><p class="section-desc">Verdis Chain and EvolvixOS form a symbiotic ecosystem: blockchain provides trust and value transfer, AI provides intelligence and automation.</p></div>
+<div class="card-panel">
+<div class="evo-grid">
+<div class="evo-card verdis"><div class="evo-logo verdis">V</div><div class="evo-title">Verdis Chain</div><div class="evo-desc">Carbon-negative Layer-1 blockchain. Provides decentralized trust, value transfer, smart contracts, and on-chain carbon credits.</div><ul class="evo-features"><li>Native DPoS consensus (14 validators)</li><li>AMM DEX with 6 liquidity pools</li><li>Carbon credit minting & retirement</li><li>Cross-chain IBC protocol</li><li>VRDX token economics</li></ul></div>
+<div class="evo-bridge">⇄</div>
+<div class="evo-card evolvix"><div class="evo-logo evolvix">E</div><div class="evo-title">EvolvixOS</div><div class="evo-desc">AI Engineering Operating System. Provides intelligent contract analysis, automated security audits, and AI-powered development tools.</div><ul class="evo-features"><li>AI Gateway with GPT-4o integration</li><li>Smart contract security auditing</li><li>Plugin marketplace (12+ plugins)</li><li>Developer CLI & SDK</li><li>Enterprise SSO & RBAC</li></ul></div>
+</div>
+<div style="margin-top:24px;padding:20px;background:var(--bg-1);border-radius:var(--radius);border:1px solid var(--border)"><p style="font-size:14px;color:var(--text-2);line-height:1.7"><strong style="color:var(--accent)">How they connect:</strong> Verdis Chain provides the decentralized infrastructure — trustless value transfer, immutable carbon credit records, and transparent governance. EvolvixOS provides the intelligence layer — AI-powered contract analysis, automated security auditing, and developer tooling. Smart contracts deployed on Verdis Chain can be automatically audited by EvolvixOS before deployment, ensuring higher security standards. The EvolvixOS plugin marketplace can publish Verdis Chain-specific plugins for wallet management, DEX interaction, and carbon credit trading. Together, they create a complete ecosystem: <strong>blockchain for trust, AI for intelligence</strong>.</p></div>
+</div>
+</section>
 
-    <div class="card-panel">
-      <div class="dist-grid">
-        <div class="pie-wrapper">
-          <svg class="pie-svg" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="38" fill="none" stroke="#222" stroke-width="16" />
-            <!-- Community 40% -->
-            <circle class="pie-seg" cx="50" cy="50" r="38" fill="none" stroke="#00a86b" stroke-width="16" stroke-dasharray="95.5 143.26" stroke-dashoffset="0" />
-            <!-- Validators 20% -->
-            <circle class="pie-seg" cx="50" cy="50" r="38" fill="none" stroke="#caff33" stroke-width="16" stroke-dasharray="47.75 191.01" stroke-dashoffset="-95.5" />
-            <!-- Team 15% -->
-            <circle class="pie-seg" cx="50" cy="50" r="38" fill="none" stroke="#38bdf8" stroke-width="16" stroke-dasharray="35.81 202.95" stroke-dashoffset="-143.25" />
-            <!-- Investors 12% -->
-            <circle class="pie-seg" cx="50" cy="50" r="38" fill="none" stroke="#ffbd2e" stroke-width="16" stroke-dasharray="28.65 210.11" stroke-dashoffset="-179.06" />
-            <!-- Treasury 8% -->
-            <circle class="pie-seg" cx="50" cy="50" r="38" fill="none" stroke="#a855f7" stroke-width="16" stroke-dasharray="19.1 219.66" stroke-dashoffset="-207.71" />
-            <!-- Eco Fund 5% -->
-            <circle class="pie-seg" cx="50" cy="50" r="38" fill="none" stroke="#84fe87" stroke-width="16" stroke-dasharray="11.94 226.82" stroke-dashoffset="-226.81" />
-          </svg>
-          <div class="pie-center">
-            <div class="pie-center-val">100B</div>
-            <div class="pie-center-lbl">Total VRDX</div>
-          </div>
-        </div>
+<section id="ecosystem" class="section-block reveal">
+<div class="section-header"><span class="section-tag">Vision</span><h2 class="section-title">What Our Ecosystem Means</h2><p class="section-desc">The Verdis ecosystem is more than a blockchain — it's a complete green technology stack connecting developers, validators, enterprises, and environmental projects.</p></div>
+<div class="eco-flow">
+<div class="eco-node"><div class="eco-node-icon">🔗</div><div class="eco-node-title">Blockchain Layer</div><div class="eco-node-desc">Verdis Chain provides trustless, transparent, and carbon-negative infrastructure for all ecosystem components.</div></div>
+<div class="eco-node"><div class="eco-node-icon">🔍</div><div class="eco-node-title">Verdiscan Explorer</div><div class="eco-node-desc">Real-time block explorer with live RPC data, validator monitoring, DEX pool tracking, and eco metrics dashboard.</div></div>
+<div class="eco-node"><div class="eco-node-icon">💱</div><div class="eco-node-title">AMM DEX</div><div class="eco-node-desc">Native decentralized exchange with 6 liquidity pools, AMM routing, and yield farming for liquidity providers.</div></div>
+<div class="eco-node"><div class="eco-node-icon">👛</div><div class="eco-node-title">Web & Mobile Wallet</div><div class="eco-node-desc">Non-custodial wallet for creating, importing, sending, receiving, and staking VRDX. Android APK available.</div></div>
+<div class="eco-node"><div class="eco-node-icon">🌱</div><div class="eco-node-title">Eco Protocol</div><div class="eco-node-desc">On-chain carbon credits, green validator scoring, reforestation logging, and carbon offset retirement.</div></div>
+<div class="eco-node"><div class="eco-node-icon">🤖</div><div class="eco-node-title">EvolvixOS AI</div><div class="eco-node-desc">AI-powered contract auditing, developer tooling, plugin marketplace, and intelligent automation.</div></div>
+<div class="eco-node"><div class="eco-node-icon">📚</div><div class="eco-node-title">Developer SDK</div><div class="eco-node-desc">JavaScript SDK with 51 methods, native WebSocket support, and zero dependencies for easy integration.</div></div>
+<div class="eco-node"><div class="eco-node-icon">🌉</div><div class="eco-node-title">Cross-Chain IBC</div><div class="eco-node-desc">Inter-Blockchain Communication protocol for connecting Verdis Chain to other Substrate and Cosmos networks.</div></div>
+</div>
+</section>
 
-        <div class="dist-list">
-          <div class="dist-item active">
-            <div class="dist-left">
-              <div class="dist-dot" style="background:#00a86b;"></div>
-              <div>
-                <div class="dist-name">Community &amp; Ecosystem</div>
-                <div class="dist-desc">Grants, Developer Funds, User Rewards</div>
-              </div>
-            </div>
-            <div class="dist-right">
-              <div class="dist-pct">40%</div>
-              <div class="dist-amt">40,000,000,000 VRDX</div>
-            </div>
-          </div>
+<section id="improve" class="section-block reveal">
+<div class="section-header"><span class="section-tag">Roadmap</span><h2 class="section-title">How We Will Improve Our Blockchain</h2><p class="section-desc">A continuous improvement plan to make Verdis Chain faster, more secure, more decentralized, and more impactful.</p></div>
+<div class="improve-list">
+<div class="improve-item"><div class="improve-num">01</div><div class="improve-content"><div class="improve-title">Increase Validator Decentralization</div><div class="improve-desc">Expand from 14 to 100+ active validators with geographic diversity. Implement validator onboarding automation and green energy verification protocols to ensure all new validators operate on 100% renewable energy.</div></div></div>
+<div class="improve-item"><div class="improve-num">02</div><div class="improve-content"><div class="improve-title">Cross-Chain Bridge Implementation</div><div class="improve-desc">Deploy IBC bridges to Polkadot, Cosmos, Ethereum, and BSC. Enable wrapped VRDX on all major chains with protocol-level 1:1 backing and decentralized bridge validator sets.</div></div></div>
+<div class="improve-item"><div class="improve-num">03</div><div class="improve-content"><div class="improve-title">Zero-Knowledge Proof Integration</div><div class="improve-desc">Implement ZK rollups for off-chain computation with on-chain verification. Enable private transactions using ZK proofs while maintaining the transparent public ledger for carbon credit tracking.</div></div></div>
+<div class="improve-item"><div class="improve-num">04</div><div class="improve-content"><div class="improve-title">EvolvixOS Deep Integration</div><div class="improve-desc">Integrate AI-powered smart contract auditing directly into the deployment pipeline. Every contract deployed on Verdis Chain will be automatically analyzed by EvolvixOS before execution, with security scores and vulnerability reports published on-chain.</div></div></div>
+<div class="improve-item"><div class="improve-num">05</div><div class="improve-content"><div class="improve-title">Carbon Credit Marketplace</div><div class="improve-desc">Launch a decentralized carbon credit marketplace where verified reforestation projects can issue pCO2 tokens directly on Verdis Chain. Enterprises can purchase and retire credits with full transparency and immutable proof of offset.</div></div></div>
+<div class="improve-item"><div class="improve-num">06</div><div class="improve-content"><div class="improve-title">Mobile-First Wallet Experience</div><div class="improve-desc">Deploy native Android and iOS wallets with biometric authentication, NFC payments, and integrated DEX swapping. Enable VRDX as a medium of exchange for real-world green commerce.</div></div></div>
+<div class="improve-item"><div class="improve-num">07</div><div class="improve-content"><div class="improve-title">Enterprise Green Blockchain API</div><div class="improve-desc">Build a REST API and GraphQL endpoint for enterprises to integrate carbon credit tracking, green scoring, and supply chain verification directly into their existing systems without blockchain expertise.</div></div></div>
+<div class="improve-item"><div class="improve-num">08</div><div class="improve-content"><div class="improve-title">Mainnet Launch & Global Reforestation</div><div class="improve-desc">Transition from testnet to production mainnet with full tokenomics activated. Partner with verified reforestation organizations globally to achieve 10M+ tCO2e verified carbon offsets retired on-chain by 2030.</div></div></div>
+</div>
+</section>
 
-          <div class="dist-item">
-            <div class="dist-left">
-              <div class="dist-dot" style="background:#caff33;"></div>
-              <div>
-                <div class="dist-name">Validator Staking Rewards</div>
-                <div class="dist-desc">DPoS Block Emission &amp; Yield Incentives</div>
-              </div>
-            </div>
-            <div class="dist-right">
-              <div class="dist-pct">20%</div>
-              <div class="dist-amt">20,000,000,000 VRDX</div>
-            </div>
-          </div>
+<section id="tokenomics" class="section-block reveal">
+<div class="section-header"><span class="section-tag">Specifications</span><h2 class="section-title">1. Token Overview</h2><p class="section-desc">Core architectural parameters of the VRDX token — the native gas, staking, and governance asset powering Verdis Chain.</p></div>
+<div class="overview-grid">
+<div class="ov-card"><span class="ov-lbl">Total Supply</span><span class="ov-val">100B VRDX</span><span class="ov-sub mono">100,000,000,000</span></div>
+<div class="ov-card"><span class="ov-lbl">Token Ticker</span><span class="ov-val">VRDX</span><span class="ov-sub">Native Layer-1 Asset</span></div>
+<div class="ov-card"><span class="ov-lbl">Chain ID</span><span class="ov-val">909</span><span class="ov-sub">Verdis Mainnet</span></div>
+<div class="ov-card"><span class="ov-lbl">Consensus</span><span class="ov-val">DPoS</span><span class="ov-sub">BABE + GRANDPA</span></div>
+</div>
+<div class="card-panel">
+<h3 style="font-family:'Space Grotesk';font-size:14px;font-weight:700;color:#0f172a;margin-bottom:16px">Protocol Level Parameters</h3>
+<div class="table-responsive"><table class="specs-table"><thead><tr><th>Parameter</th><th>Value</th><th>Description / Implementation</th></tr></thead><tbody>
+<tr><td><strong>Decimals</strong></td><td class="mono">9</td><td>1 VRDX = <span class="mono">1,000,000,000</span> Planck units</td></tr>
+<tr><td><strong>Block Time</strong></td><td class="mono">6 Seconds</td><td>Slot time target via Substrate BABE engine</td></tr>
+<tr><td><strong>Genesis Emission</strong></td><td class="mono">1,250 VRDX / Block</td><td>Disinflationary emission model with 4-year halving cycle</td></tr>
+<tr><td><strong>EVM Precompile</strong></td><td class="mono">0x00...0802</td><td>Dual compatibility (Substrate Balances + EVM ERC-20 interface)</td></tr>
+<tr><td><strong>Existential Deposit</strong></td><td class="mono">0.001 VRDX</td><td>Prevents state bloat on ledger</td></tr>
+<tr><td><strong>Governance Model</strong></td><td class="mono">Substrate Democracy</td><td>Direct stake-weighted voting &amp; Council proposals</td></tr>
+</tbody></table></div>
+</div>
+</section>
 
-          <div class="dist-item">
-            <div class="dist-left">
-              <div class="dist-dot" style="background:#38bdf8;"></div>
-              <div>
-                <div class="dist-name">Core Team &amp; Contributors</div>
-                <div class="dist-desc">4-Year Vesting with 12-Month Cliff</div>
-              </div>
-            </div>
-            <div class="dist-right">
-              <div class="dist-pct">15%</div>
-              <div class="dist-amt">15,000,000,000 VRDX</div>
-            </div>
-          </div>
+<section id="distribution" class="section-block reveal">
+<div class="section-header"><span class="section-tag">Allocation</span><h2 class="section-title">2. Supply Distribution</h2><p class="section-desc">Transparent distribution model designed to incentivize long-term decentralization, ecosystem sustainability, and carbon credit direct funding.</p></div>
+<div class="card-panel"><div class="dist-grid">
+<div class="pie-wrapper">
+<svg class="pie-svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="none" stroke="#222" stroke-width="16"/><circle class="pie-seg" cx="50" cy="50" r="38" fill="none" stroke="#00a86b" stroke-width="16" stroke-dasharray="95.5 143.26" stroke-dashoffset="0"/><circle class="pie-seg" cx="50" cy="50" r="38" fill="none" stroke="#caff33" stroke-width="16" stroke-dasharray="47.75 191.01" stroke-dashoffset="-95.5"/><circle class="pie-seg" cx="50" cy="50" r="38" fill="none" stroke="#38bdf8" stroke-width="16" stroke-dasharray="35.81 202.95" stroke-dashoffset="-143.25"/><circle class="pie-seg" cx="50" cy="50" r="38" fill="none" stroke="#ffbd2e" stroke-width="16" stroke-dasharray="28.65 210.11" stroke-dashoffset="-179.06"/><circle class="pie-seg" cx="50" cy="50" r="38" fill="none" stroke="#a855f7" stroke-width="16" stroke-dasharray="19.1 219.66" stroke-dashoffset="-207.71"/><circle class="pie-seg" cx="50" cy="50" r="38" fill="none" stroke="#84fe87" stroke-width="16" stroke-dasharray="11.94 226.82" stroke-dashoffset="-226.81"/></svg>
+<div class="pie-center"><div class="pie-center-val">100B</div><div class="pie-center-lbl">Total VRDX</div></div>
+</div>
+<div class="dist-list">
+<div class="dist-item active"><div class="dist-left"><div class="dist-dot" style="background:#00a86b"></div><div><div class="dist-name">Community &amp; Ecosystem</div><div class="dist-desc">Grants, Developer Funds, User Rewards</div></div></div><div class="dist-right"><div class="dist-pct">40%</div><div class="dist-amt">40,000,000,000 VRDX</div></div></div>
+<div class="dist-item"><div class="dist-left"><div class="dist-dot" style="background:#caff33"></div><div><div class="dist-name">Validator Staking Rewards</div><div class="dist-desc">DPoS Block Emission &amp; Yield Incentives</div></div></div><div class="dist-right"><div class="dist-pct">20%</div><div class="dist-amt">20,000,000,000 VRDX</div></div></div>
+<div class="dist-item"><div class="dist-left"><div class="dist-dot" style="background:#38bdf8"></div><div><div class="dist-name">Core Team &amp; Contributors</div><div class="dist-desc">4-Year Vesting with 12-Month Cliff</div></div></div><div class="dist-right"><div class="dist-pct">15%</div><div class="dist-amt">15,000,000,000 VRDX</div></div></div>
+<div class="dist-item"><div class="dist-left"><div class="dist-dot" style="background:#ffbd2e"></div><div><div class="dist-name">Strategic Investors</div><div class="dist-desc">Seed, Private &amp; Public Round Allocations</div></div></div><div class="dist-right"><div class="dist-pct">12%</div><div class="dist-amt">12,000,000,000 VRDX</div></div></div>
+<div class="dist-item"><div class="dist-left"><div class="dist-dot" style="background:#a855f7"></div><div><div class="dist-name">Protocol Treasury</div><div class="dist-desc">DAO-Governed Strategic Reserve</div></div></div><div class="dist-right"><div class="dist-pct">8%</div><div class="dist-amt">8,000,000,000 VRDX</div></div></div>
+<div class="dist-item"><div class="dist-left"><div class="dist-dot" style="background:#84fe87"></div><div><div class="dist-name">Green Eco Fund</div><div class="dist-desc">Direct Carbon Offset Purchases &amp; Reforestation</div></div></div><div class="dist-right"><div class="dist-pct">5%</div><div class="dist-amt">5,000,000,000 VRDX</div></div></div>
+</div>
+</div></div>
+</section>
 
-          <div class="dist-item">
-            <div class="dist-left">
-              <div class="dist-dot" style="background:#ffbd2e;"></div>
-              <div>
-                <div class="dist-name">Strategic Investors</div>
-                <div class="dist-desc">Seed, Private &amp; Public Round Allocations</div>
-              </div>
-            </div>
-            <div class="dist-right">
-              <div class="dist-pct">12%</div>
-              <div class="dist-amt">12,000,000,000 VRDX</div>
-            </div>
-          </div>
+<section id="vesting" class="section-block reveal">
+<div class="section-header"><span class="section-tag">Release Terms</span><h2 class="section-title">3. Vesting Schedule</h2><p class="section-desc">Structured release terms enforcing long-term alignment across team, investors, and ecosystem participants.</p></div>
+<div class="vesting-grid">
+<div class="vest-card"><div class="vest-header"><span class="vest-title">Core Team</span><span class="vest-badge">15B VRDX</span></div><div class="vest-cliff">12-Month Cliff (0% unlocked)</div><div class="vest-details">100% locked for first 12 months. After month 12, linear release of <span class="mono">312,500,000 VRDX</span> per month over 36 months (4 years total).</div><div class="vest-bar"><div class="vest-fill" style="width:25%"></div></div><span class="mono" style="font-size:11px;color:var(--text-3)">Cliff status: Active vesting</span></div>
+<div class="vest-card"><div class="vest-header"><span class="vest-title">Strategic Investors</span><span class="vest-badge">12B VRDX</span></div><div class="vest-cliff">6-Month Cliff (10% TGE)</div><div class="vest-details">10% unlocked at Genesis TGE. 6-month cliff followed by 18-month linear monthly unlock (<span class="mono">600,000,000 VRDX / mo</span>).</div><div class="vest-bar"><div class="vest-fill" style="width:40%"></div></div><span class="mono" style="font-size:11px;color:var(--text-3)">Cliff status: Linear unlock active</span></div>
+<div class="vest-card"><div class="vest-header"><span class="vest-title">Community &amp; Eco Fund</span><span class="vest-badge">45B VRDX</span></div><div class="vest-cliff" style="background:rgba(74,222,128,0.1);color:var(--success);border-color:rgba(74,222,128,0.2)">Linear Release</div><div class="vest-details">10% unlocked at TGE. Remaining 90% released linearly over 60 months via community grants and verified eco-rewards.</div><div class="vest-bar"><div class="vest-fill" style="width:65%"></div></div><span class="mono" style="font-size:11px;color:var(--text-3)">Linear active: 4,500,000,000 VRDX circulating</span></div>
+</div>
+</section>
 
-          <div class="dist-item">
-            <div class="dist-left">
-              <div class="dist-dot" style="background:#a855f7;"></div>
-              <div>
-                <div class="dist-name">Protocol Treasury</div>
-                <div class="dist-desc">DAO-Governed Strategic Reserve</div>
-              </div>
-            </div>
-            <div class="dist-right">
-              <div class="dist-pct">8%</div>
-              <div class="dist-amt">8,000,000,000 VRDX</div>
-            </div>
-          </div>
+<section id="staking" class="section-block reveal">
+<div class="section-header"><span class="section-tag">DPoS Yield</span><h2 class="section-title">4. Staking Rewards &amp; Calculator</h2><p class="section-desc">Earn passive rewards by delegating VRDX to active validators. Green validators operating on 100% renewable energy earn an additional yield bonus.</p></div>
+<div class="staking-grid">
+<div class="card-panel" style="margin-bottom:0">
+<h3 style="font-family:'Space Grotesk';font-size:14px;font-weight:700;color:#0f172a;margin-bottom:16px">DPoS Consensus Parameters</h3>
+<ul style="list-style:none;display:flex;flex-direction:column;gap:14px;color:var(--text-2);font-size:14px">
+<li style="display:flex;align-items:flex-start;gap:10px"><span style="color:var(--accent);font-weight:800">✓</span><div><strong>Active Validators:</strong> <span class="mono live-val-count" style="color:var(--accent)">14</span> active validator nodes selected every epoch (<span class="mono">1,200 blocks</span>).</div></li>
+<li style="display:flex;align-items:flex-start;gap:10px"><span style="color:var(--accent);font-weight:800">✓</span><div><strong>Base Staking APR:</strong> <span class="mono">8.5% APY</span> target rate funded by inflation and DEX transaction fees.</div></li>
+<li style="display:flex;align-items:flex-start;gap:10px"><span style="color:var(--accent);font-weight:800">✓</span><div><strong>Green Validator Bonus:</strong> <span class="mono">+2.5% APY</span> bonus yield for nodes operating on verified zero-carbon energy.</div></li>
+<li style="display:flex;align-items:flex-start;gap:10px"><span style="color:var(--accent);font-weight:800">✓</span><div><strong>Unbonding Period:</strong> <span class="mono">7 Days</span> lockup period when unbonding delegated tokens.</div></li>
+<li style="display:flex;align-items:flex-start;gap:10px"><span style="color:var(--accent);font-weight:800">✓</span><div><strong>Slashing:</strong> <span class="mono">10%</span> stake slash for double-signing; <span class="mono">5%</span> for downtime beyond 50 blocks.</div></li>
+</ul>
+</div>
+<div class="calc-card">
+<div class="calc-title">📊 Staking Rewards Calculator</div>
+<div class="calc-group"><label class="calc-label">Amount to Stake</label><div class="calc-input-wrap"><input class="calc-input" id="stake-amount" type="number" value="10000" oninput="calculateRewards()"><span class="calc-input-suffix">VRDX</span></div></div>
+<div class="calc-group"><label class="calc-label">Validator Type</label><select class="calc-select" id="validator-type" onchange="calculateRewards()"><option value="0.085">Standard Validator (8.5% APY)</option><option value="0.11" selected>Green Validator (11.0% APY)</option></select></div>
+<div class="calc-result">
+<div class="calc-result-row"><span class="calc-result-lbl">Daily Rewards</span><span class="calc-result-val" id="daily-res">— VRDX</span></div>
+<div class="calc-result-row"><span class="calc-result-lbl">Monthly Rewards</span><span class="calc-result-val" id="monthly-res">— VRDX</span></div>
+<div class="calc-result-row"><span class="calc-result-lbl">Yearly Rewards</span><span class="calc-result-val" id="yearly-res">— VRDX</span></div>
+</div>
+</div>
+</div>
+</section>
 
-          <div class="dist-item">
-            <div class="dist-left">
-              <div class="dist-dot" style="background:#84fe87;"></div>
-              <div>
-                <div class="dist-name">Green Eco Fund</div>
-                <div class="dist-desc">Direct Carbon Offset Purchases &amp; Reforestation</div>
-              </div>
-            </div>
-            <div class="dist-right">
-              <div class="dist-pct">5%</div>
-              <div class="dist-amt">5,000,000,000 VRDX</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+<section id="carbon" class="section-block reveal">
+<div class="section-header"><span class="section-tag">Eco Economics</span><h2 class="section-title">5. Carbon Credit Economics</h2><p class="section-desc">How Verdis Chain embeds direct environmental offset mechanisms into native consensus and smart contract execution.</p></div>
+<div class="card-panel">
+<div class="carbon-box">
+<div class="carbon-left">
+<h3>On-Chain Proof of Offset (pCO2)</h3>
+<p>Verdis Chain ties every 100 VRDX transaction fee batch to verified carbon credits (Verra / Gold Standard). 20% of network fees are automatically directed to purchasing and retiring carbon offsets on-chain via dedicated EVM precompiles.</p>
+<div class="carbon-pills"><span class="carbon-pill">1 tCO2e = 100 Eco-Credits</span><span class="carbon-pill">20% Fee Auto-Retire</span><span class="carbon-pill">Precompile 0x...0802</span></div>
+</div>
+<div class="carbon-right">
+<div class="c-metric-row"><span class="c-m-lbl">Total Carbon Offset To Date</span><span class="c-m-val" id="eco-co2">5,260 kg</span></div>
+<div class="c-metric-row"><span class="c-m-lbl">Trees Planted Equivalent</span><span class="c-m-val" id="eco-trees">526,000</span></div>
+<div class="c-metric-row"><span class="c-m-lbl">Eco Fund Allocation</span><span class="c-m-val">5,000,000,000 VRDX</span></div>
+<div class="c-metric-row"><span class="c-m-lbl">Net Carbon Impact</span><span class="c-m-val" style="color:var(--success)">Carbon-Negative (-142%)</span></div>
+</div>
+</div>
+</div>
+</section>
 
-  <!-- 3. VESTING SCHEDULE -->
-  <section id="vesting" class="section-block">
-    <div class="section-header">
-      <span class="section-tag">Release Terms</span>
-      <h2 class="section-title">3. Vesting Schedule</h2>
-      <p class="section-desc">Structured release terms enforcing long-term alignment across team, investors, and ecosystem participants.</p>
-    </div>
+<section id="utility" class="section-block reveal">
+<div class="section-header"><span class="section-tag">Utility</span><h2 class="section-title">6. VRDX Token Utility</h2><p class="section-desc">Six foundational utility pillars driving long-term demand and protocol velocity.</p></div>
+<div class="utility-grid">
+<div class="u-card"><div class="u-icon">⚡</div><div class="u-title">Network Gas Fees</div><div class="u-desc">Pay sub-cent transaction fees (<span class="mono">~0.0001 VRDX</span> average) across Substrate native transfers and EVM smart contract executions.</div></div>
+<div class="u-card"><div class="u-icon">🔒</div><div class="u-title">DPoS Staking</div><div class="u-desc">Bond VRDX to secure block validation or delegate to top active validators (<span class="mono live-val-count">14</span> active nodes) to earn up to <span class="mono">11.0% APY</span> yield.</div></div>
+<div class="u-card"><div class="u-icon">🏛️</div><div class="u-title">On-Chain Governance</div><div class="u-desc">Submit and vote on runtime upgrade proposals, parameter tweaks, and protocol treasury grant disbursements.</div></div>
+<div class="u-card"><div class="u-icon">🔄</div><div class="u-title">DEX Liquidity &amp; Swaps</div><div class="u-desc">Route trades through native AMM DEX liquidity pools with discounted trading fees for VRDX stakers (<span class="mono">0.15% tier</span>).</div></div>
+<div class="u-card"><div class="u-icon">🌱</div><div class="u-title">Carbon Credit Minting</div><div class="u-desc">Collateralize VRDX tokens to issue, verify, and trade standardized on-chain carbon credit tokens (<span class="mono">pCO2</span>).</div></div>
+<div class="u-card"><div class="u-icon">🌉</div><div class="u-title">Cross-Chain Bridge</div><div class="u-desc">Lock VRDX on Verdis Mainnet to mint wrapped VRDX tokens across BSC, Ethereum, and Polygon liquidity pools.</div></div>
+</div>
+</section>
 
-    <div class="vesting-grid">
-      <div class="vest-card">
-        <div class="vest-header">
-          <span class="vest-title">Core Team</span>
-          <span class="vest-badge">15B VRDX</span>
-        </div>
-        <div class="vest-cliff">12-Month Cliff (0% unlocked)</div>
-        <div class="vest-details">
-          100% locked for first 12 months. After month 12, linear release of <span class=mono>312,500,000 VRDX</span> per month over 36 months (4 years total).
-        </div>
-        <div class="vest-bar"><div class="vest-fill" style="width: 25%;"></div></div>
-        <span class="mono" style="font-size: 11px; color: var(--text-3);">Cliff status: Active vesting</span>
-      </div>
+<section id="team" class="section-block reveal">
+<div class="section-header"><span class="section-tag">People</span><h2 class="section-title">Our Team</h2><p class="section-desc">The minds behind Verdis Chain — combining decades of fintech, blockchain, and software engineering expertise.</p></div>
+<div class="team-grid">
+<div class="team-card"><div class="team-avatar">RG</div><div class="team-name">Rojs Gordons</div><div class="team-role">Founder &amp; CEO</div><div class="team-bio">European fintech veteran. CEO of Protremix. Built Anerium fintech platform and multiple production payment systems. Visionary behind carbon-negative blockchain architecture.</div><div class="team-socials"><a href="/" class="team-social">in</a><a href="https://github.com/Protremix" target="_blank" class="team-social">gh</a></div></div>
+<div class="team-card"><div class="team-avatar" style="background:linear-gradient(135deg,#38bdf8,#a855f7)">EN</div><div class="team-name">Engineering Team</div><div class="team-role">Protocol &amp; Pallet Development</div><div class="team-bio">Rust engineers building 30+ Substrate pallets. Specializing in DPoS consensus, AMM DEX mechanics, EVM integration, and carbon credit protocols. 238 tests passing.</div><div class="team-socials"><a href="https://github.com/Protremix/Verdischain-" target="_blank" class="team-social">gh</a></div></div>
+<div class="team-card"><div class="team-avatar" style="background:linear-gradient(135deg,#fbbf24,#ef4444)">AI</div><div class="team-name">EvolvixOS Integration</div><div class="team-role">AI Engineering &amp; Security</div><div class="team-bio">AI-powered smart contract auditing, plugin marketplace development, and developer tooling. Bridging Verdis Chain with the EvolvixOS AI Engineering Operating System.</div><div class="team-socials"><a href="https://github.com/Protremix/EvolvixOS" target="_blank" class="team-social">gh</a></div></div>
+</div>
+</section>
 
-      <div class="vest-card">
-        <div class="vest-header">
-          <span class="vest-title">Strategic Investors</span>
-          <span class="vest-badge">12B VRDX</span>
-        </div>
-        <div class="vest-cliff">6-Month Cliff (10% TGE)</div>
-        <div class="vest-details">
-          10% unlocked at Genesis TGE. 6-month cliff followed by 18-month linear monthly unlock (<span class=mono>600,000,000 VRDX / mo</span>).
-        </div>
-        <div class="vest-bar"><div class="vest-fill" style="width: 40%;"></div></div>
-        <span class="mono" style="font-size: 11px; color: var(--text-3);">Cliff status: Linear unlock active</span>
-      </div>
+<section id="roadmap" class="section-block reveal">
+<div class="section-header"><span class="section-tag">Timeline</span><h2 class="section-title">7. Token Release Roadmap</h2><p class="section-desc">Phase-by-phase execution timeline for token unlocking, ecosystem grants, and global reforestation expansion.</p></div>
+<div class="roadmap-timeline">
+<div class="rm-item"><div class="rm-dot"></div><div class="rm-content"><div class="rm-phase">Phase 1 • Q1 2026</div><div class="rm-title">Genesis &amp; Token Generation (TGE)</div><div class="rm-desc">Mainnet genesis launch. <span class="mono">24.5B VRDX</span> initial circulating supply. Team &amp; investor cliff period begins.</div></div></div>
+<div class="rm-item"><div class="rm-dot"></div><div class="rm-content"><div class="rm-phase">Phase 2 • Q2 2026</div><div class="rm-title">DPoS Staking &amp; DEX Activation</div><div class="rm-desc">Activation of active validator node slots (<span class="mono live-val-count">14</span> active validators). <span class="mono">8.2B VRDX</span> bonded in staking. Native AMM DEX liquidity bootstrap.</div></div></div>
+<div class="rm-item"><div class="rm-dot"></div><div class="rm-content"><div class="rm-phase">Phase 3 • Q4 2026</div><div class="rm-title">Eco Precompiles &amp; First Unlocks</div><div class="rm-desc">Activation of carbon offset precompile <span class="mono">0x...0802</span>. Investor 6-month cliff completes; linear unlock starts.</div></div></div>
+<div class="rm-item"><div class="rm-dot"></div><div class="rm-content"><div class="rm-phase">Phase 4 • Q1 2027</div><div class="rm-title">Team Cliff End &amp; DAO Handover</div><div class="rm-desc">Team 12-month cliff ends (<span class="mono">312.5M VRDX / mo</span> linear). On-chain democracy council takes full treasury control.</div></div></div>
+<div class="rm-item"><div class="rm-dot"></div><div class="rm-content"><div class="rm-phase">Phase 5 • 2027 – 2030</div><div class="rm-title">Global Carbon Offset Scaling</div><div class="rm-desc">Full release of community eco funds, targeting <span class="mono">10,000,000+ tCO2e</span> verified carbon offsets retired globally.</div></div></div>
+</div>
+</section>
 
-      <div class="vest-card">
-        <div class="vest-header">
-          <span class="vest-title">Community &amp; Eco Fund</span>
-          <span class="vest-badge">45B VRDX</span>
-        </div>
-        <div class="vest-cliff" style="background:rgba(74, 222, 128, 0.1); color:var(--success); border-color:rgba(74, 222, 128, 0.2);">Linear Release</div>
-        <div class="vest-details">
-          10% unlocked at TGE. Remaining 90% released linearly over 60 months via community grants and verified eco-rewards.
-        </div>
-        <div class="vest-bar"><div class="vest-fill" style="width: 65%;"></div></div>
-        <span class="mono" style="font-size: 11px; color: var(--text-3);">Linear active: 4,500,000,000 VRDX circulating</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- 4. STAKING REWARDS & CALCULATOR -->
-  <section id="staking" class="section-block">
-    <div class="section-header">
-      <span class="section-tag">DPoS Yield</span>
-      <h2 class="section-title">4. Staking Rewards &amp; Calculator</h2>
-      <p class="section-desc">Earn passive rewards by delegating VRDX to active validators. Green validators operating on 100% renewable energy earn an additional yield bonus.</p>
-    </div>
-
-    <div class="staking-grid">
-      <div class="card-panel" style="margin-bottom:0;">
-        <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 16px;">DPoS Consensus Parameters</h3>
-        <ul style="list-style: none; display: flex; flex-direction: column; gap: 14px; color: var(--text-2); font-size: 14px;">
-          <li style="display: flex; align-items: flex-start; gap: 10px;">
-            <span style="color: var(--accent); font-weight: 800;">✓</span>
-            <div><strong>Active Validators:</strong> <span class="mono live-val-count" style="color:var(--accent);">14</span> active validator nodes selected every epoch (<span class="mono">1,200 blocks</span>).</div>
-          </li>
-          <li style="display: flex; align-items: flex-start; gap: 10px;">
-            <span style="color: var(--accent); font-weight: 800;">✓</span>
-            <div><strong>Base Staking APR:</strong> <span class="mono">8.5% APY</span> target rate funded by inflation and DEX transaction fees.</div>
-          </li>
-          <li style="display: flex; align-items: flex-start; gap: 10px;">
-            <span style="color: var(--accent); font-weight: 800;">✓</span>
-            <div><strong>Green Validator Bonus:</strong> <span class="mono">+2.5% APY</span> bonus yield for nodes operating on verified zero-carbon energy.</div>
-          </li>
-          <li style="display: flex; align-items: flex-start; gap: 10px;">
-            <span style="color: var(--accent); font-weight: 800;">✓</span>
-            <div><strong>Unbonding Period:</strong> <span class="mono">7 Days</span> lockup period when unbonding delegated tokens.</div>
-          </li>
-          <li style="display: flex; align-items: flex-start; gap: 10px;">
-            <span style="color: var(--accent); font-weight: 800;">✓</span>
-            <div><strong>Slashing Rules:</strong> Double-signing incurs <span class="mono">100% stake slash</span>; unresponsiveness incurs <span class="mono">0.1% slash</span>.</div>
-          </li>
-        </ul>
-      </div>
-
-      <!-- Interactive Calculator -->
-      <div class="calc-card">
-        <div class="calc-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M8 18h.01M12 18h.01"></path></svg>
-          Staking Yield Calculator
-        </div>
-
-        <div class="calc-group">
-          <label class="calc-label">Enter Delegation Amount</label>
-          <div class="calc-input-wrap">
-            <input type="number" id="stake-amount" class="calc-input mono" value="10000" min="1" oninput="calculateRewards()">
-            <span class="calc-unit">VRDX</span>
-          </div>
-        </div>
-
-        <div class="calc-group">
-          <label class="calc-label">Validator Type</label>
-          <select id="validator-type" class="calc-input" onchange="calculateRewards()" style="cursor:pointer;">
-            <option value="0.085">Standard Validator (8.5% APR)</option>
-            <option value="0.11" selected>Green Validator (11.0% APR with Eco Bonus)</option>
-          </select>
-        </div>
-
-        <div class="calc-results">
-          <div class="res-box">
-            <div class="res-lbl">Daily Yield</div>
-            <div class="res-val" id="daily-res">3.01 VRDX</div>
-          </div>
-          <div class="res-box">
-            <div class="res-lbl">Monthly Yield</div>
-            <div class="res-val" id="monthly-res">91.67 VRDX</div>
-          </div>
-          <div class="res-box">
-            <div class="res-lbl">Yearly Yield</div>
-            <div class="res-val" id="yearly-res">1,100.00 VRDX</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 5. CARBON CREDIT ECONOMICS -->
-  <section id="carbon" class="section-block">
-    <div class="section-header">
-      <span class="section-tag">Sustainability Engine</span>
-      <h2 class="section-title">5. Carbon Credit Economics</h2>
-      <p class="section-desc">How Verdis Chain embeds direct environmental offset mechanisms into native consensus and smart contract execution.</p>
-    </div>
-
-    <div class="carbon-box">
-      <div class="carbon-left">
-        <h3>On-Chain Proof of Offset (pCO2)</h3>
-        <p>Verdis Chain ties every 100 VRDX transaction fee batch to verified carbon credits (Verra / Gold Standard). 20% of network fees are automatically directed to purchasing and retiring carbon offsets on-chain via dedicated EVM precompiles.</p>
-        <div class="carbon-pills">
-          <span class="carbon-pill">1 tCO2e = 100 Eco-Credits</span>
-          <span class="carbon-pill">20% Fee Auto-Retire</span>
-          <span class="carbon-pill">Precompile 0x...0802</span>
-        </div>
-      </div>
-
-      <div class="carbon-right">
-        <div class="c-metric-row">
-          <span class="c-m-lbl">Total Carbon Offset To Date</span>
-          <span class="c-m-val">142,850 tCO2e</span>
-        </div>
-        <div class="c-metric-row">
-          <span class="c-m-lbl">Trees Planted Equivalent</span>
-          <span class="c-m-val">5,714,000 Trees</span>
-        </div>
-        <div class="c-metric-row">
-          <span class="c-m-lbl">Eco Fund Allocation</span>
-          <span class="c-m-val">5,000,000,000 VRDX</span>
-        </div>
-        <div class="c-metric-row">
-          <span class="c-m-lbl">Net Carbon Impact</span>
-          <span class="c-m-val" style="color:var(--success);">Carbon-Negative (-142%)</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 6. VRDX TOKEN UTILITY -->
-  <section id="utility" class="section-block">
-    <div class="section-header">
-      <span class="section-tag">Utility</span>
-      <h2 class="section-title">6. VRDX Token Utility</h2>
-      <p class="section-desc">Six foundational utility pillars driving long-term demand and protocol velocity.</p>
-    </div>
-
-    <div class="utility-grid">
-      <div class="u-card">
-        <div class="u-icon">⚡</div>
-        <div class="u-title">Network Gas Fees</div>
-        <div class="u-desc">Pay sub-cent transaction fees (<span class="mono">~0.0001 VRDX</span> average) across Substrate native transfers and EVM smart contract executions.</div>
-      </div>
-
-      <div class="u-card">
-        <div class="u-icon">🔒</div>
-        <div class="u-title">DPoS Staking</div>
-        <div class="u-desc">Bond VRDX to secure block validation or delegate to top active validators (<span class="mono live-val-count">14</span> active nodes) to earn up to <span class="mono">11.0% APY</span> yield.</div>
-      </div>
-
-      <div class="u-card">
-        <div class="u-icon">🏛️</div>
-        <div class="u-title">On-Chain Governance</div>
-        <div class="u-desc">Submit and vote on runtime upgrade proposals, parameter tweaks, and protocol treasury grant disbursements.</div>
-      </div>
-
-      <div class="u-card">
-        <div class="u-icon">🔄</div>
-        <div class="u-title">DEX Liquidity &amp; Swaps</div>
-        <div class="u-desc">Route trades through native AMM DEX liquidity pools with discounted trading fees for VRDX stakers (<span class="mono">0.15% tier</span>).</div>
-      </div>
-
-      <div class="u-card">
-        <div class="u-icon">🌱</div>
-        <div class="u-title">Carbon Credit Minting</div>
-        <div class="u-desc">Collateralize VRDX tokens to issue, verify, and trade standardized on-chain carbon credit tokens (<span class="mono">pCO2</span>).</div>
-      </div>
-
-      <div class="u-card">
-        <div class="u-icon">🌉</div>
-        <div class="u-title">Cross-Chain Bridge</div>
-        <div class="u-desc">Lock VRDX on Verdis Mainnet to mint wrapped VRDX tokens across BSC, Ethereum, and Polygon liquidity pools.</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 7. TOKEN RELEASE ROADMAP -->
-  <section id="roadmap" class="section-block">
-    <div class="section-header">
-      <span class="section-tag">Timeline</span>
-      <h2 class="section-title">7. Token Release Roadmap</h2>
-      <p class="section-desc">Phase-by-phase execution timeline for token unlocking, ecosystem grants, and global reforestation expansion.</p>
-    </div>
-
-    <div class="roadmap-timeline">
-      <div class="rm-item">
-        <div class="rm-dot"></div>
-        <div class="rm-content">
-          <div class="rm-phase">Phase 1 • Q1 2026</div>
-          <div class="rm-title">Genesis &amp; Token Generation (TGE)</div>
-          <div class="rm-desc">Mainnet genesis launch. <span class="mono">24.5B VRDX</span> initial circulating supply. Team &amp; investor cliff period begins.</div>
-        </div>
-      </div>
-
-      <div class="rm-item">
-        <div class="rm-dot"></div>
-        <div class="rm-content">
-          <div class="rm-phase">Phase 2 • Q2 2026</div>
-          <div class="rm-title">DPoS Staking &amp; DEX Activation</div>
-          <div class="rm-desc">Activation of active validator node slots (<span class="mono live-val-count">14</span> active validators). <span class="mono">8.2B VRDX</span> bonded in staking. Native AMM DEX liquidity bootstrap.</div>
-        </div>
-      </div>
-
-      <div class="rm-item">
-        <div class="rm-dot"></div>
-        <div class="rm-content">
-          <div class="rm-phase">Phase 3 • Q4 2026</div>
-          <div class="rm-title">Eco Precompiles &amp; First Unlocks</div>
-          <div class="rm-desc">Activation of carbon offset precompile <span class="mono">0x...0802</span>. Investor 6-month cliff completes; linear unlock starts.</div>
-        </div>
-      </div>
-
-      <div class="rm-item">
-        <div class="rm-dot"></div>
-        <div class="rm-content">
-          <div class="rm-phase">Phase 4 • Q1 2027</div>
-          <div class="rm-title">Team Cliff End &amp; DAO Handover</div>
-          <div class="rm-desc">Team 12-month cliff ends (<span class="mono">312.5M VRDX / mo</span> linear). On-chain democracy council takes full treasury control.</div>
-        </div>
-      </div>
-
-      <div class="rm-item">
-        <div class="rm-dot"></div>
-        <div class="rm-content">
-          <div class="rm-phase">Phase 5 • 2027 – 2030</div>
-          <div class="rm-title">Global Carbon Offset Scaling</div>
-          <div class="rm-desc">Full release of community eco funds, targeting <span class="mono">10,000,000+ tCO2e</span> verified carbon offsets retired globally.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <section class="cta-card">
-    <h2>Join the Green Blockchain Revolution</h2>
-    <p>Explore the live blockchain explorer, stake VRDX with green validators, or deploy EVM smart contracts on carbon-negative infrastructure.</p>
-    <div class="cta-btns">
-      <a href="/explorer/" class="btn-primary">Open Explorer →</a>
-      <a href="/api/">API</a> <a href="/api/docs/" class="btn-secondary">Developer Docs</a>
-    </div>
-  </section>
+<section class="cta-card reveal">
+<h2>Join the Green Blockchain Revolution</h2>
+<p>Verdis Chain is more than a blockchain — it's a commitment to building technology that heals the planet. Explore the live testnet, read the full protocol specifications, and become part of the carbon-negative future.</p>
+<div class="hero-actions" style="justify-content:center">
+<a href="/explorer/" class="btn-primary" style="text-decoration:none">Open Explorer →</a>
+<a href="/sale/" class="btn-secondary" style="text-decoration:none">View Token Sale →</a>
+</div>
+</section>
 
 </main>
 
-<!-- FOOTER -->
 <footer>
-  <div class="links">
-    <a href="/">Landing</a>
-    <a href="/explorer/">Verdiscan</a>
-    <a href="/dex/">DEX</a>
-    <a href="/validators/">Validators</a>
-    <a href="/eco/">Eco</a>
-    <a href="/contact/">Contact</a><a href="/api/">API</a> <a href="/docs/">Docs</a>
-    <a href="https://github.com/Protremix/Verdischain-" target="_blank" rel="noopener">GitHub</a>
-  </div>
-  <div>© 2026 Verdis Chain. Powered by live Substrate RPC.</div>
+<div class="links"><a href="/">Landing</a><a href="/explorer/">Verdiscan</a><a href="/dex/">DEX</a><a href="/validators/">Validators</a><a href="/eco/">Eco</a><a href="/contact/">Contact</a><a href="/api/">API</a><a href="/docs/">Docs</a><a href="https://github.com/Protremix/Verdischain-" target="_blank" rel="noopener">GitHub</a></div>
+<div>© 2026 Verdis Chain. Powered by live Substrate RPC.</div>
 </footer>
 
 <script>
-// Scroll Progress Bar
-window.addEventListener('scroll', () => {
-  const totalHeight = document.body.scrollHeight - window.innerHeight;
-  const progress = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0;
-  document.getElementById('scroll-bar').style.width = progress + '%';
-});
+window.addEventListener('scroll',()=>{const t=document.body.scrollHeight-window.innerHeight;const p=t>0?(window.scrollY/t)*100:0;document.getElementById('scroll-bar').style.width=p+'%'});
+document.addEventListener('mousemove',e=>{const g=document.getElementById('cursor-glow');g.style.left=e.clientX+'px';g.style.top=e.clientY+'px'});
 
-// Interactive Staking Calculator
-function calculateRewards() {
-  const amountInput = document.getElementById('stake-amount');
-  const rateSelect = document.getElementById('validator-type');
-  
-  let amount = parseFloat(amountInput.value) || 0;
-  if (amount < 0) amount = 0;
-  const rate = parseFloat(rateSelect.value) || 0.11;
+// Hamburger
+document.getElementById('navHamburger')?.addEventListener('click',()=>document.getElementById('navLinks').classList.toggle('show'));
 
-  const daily = (amount * rate) / 365;
-  const monthly = (amount * rate) / 12;
-  const yearly = amount * rate;
+// Scroll reveal
+const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
 
-  document.getElementById('daily-res').textContent = daily.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' VRDX';
-  document.getElementById('monthly-res').textContent = monthly.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' VRDX';
-  document.getElementById('yearly-res').textContent = yearly.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' VRDX';
-}
-
-// Initial calculation
+// Staking calculator
+function calculateRewards(){let a=parseFloat(document.getElementById('stake-amount').value)||0;if(a<0)a=0;const r=parseFloat(document.getElementById('validator-type').value)||0.11;const d=(a*r)/365,m=(a*r)/12,y=a*r;document.getElementById('daily-res').textContent=d.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+' VRDX';document.getElementById('monthly-res').textContent=m.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+' VRDX';document.getElementById('yearly-res').textContent=y.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+' VRDX'}
 calculateRewards();
 
-// LIVE RPC FETCHING
-const RPC_URL = '/rpc';
+// Hero canvas particles
+const canvas=document.getElementById('hero-canvas');if(canvas){const ctx=canvas.getContext('2d');let particles=[];function resize(){canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight}resize();window.addEventListener('resize',resize);
+const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(!reducedMotion){for(let i=0;i<30;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,vx:(Math.random()-0.5)*0.3,vy:(Math.random()-0.5)*0.3,r:Math.random()*1.5+0.5})}}
+function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>canvas.width)p.vx*=-1;if(p.y<0||p.y>canvas.height)p.vy*=-1;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(202,255,51,0.3)';ctx.fill()});for(let i=0;i<particles.length;i++){for(let j=i+1;j<particles.length;j++){const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<120){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.strokeStyle='rgba(202,255,51,'+(0.15*(1-d/120))+')';ctx.lineWidth=0.5;ctx.stroke()}}}requestAnimationFrame(animate)}if(!reducedMotion)animate()}
 
-async function rpcCall(method, params = []) {
-  const res = await fetch(RPC_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', method, params, id: Date.now() })
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data.result;
-}
-
-async function updateLiveStats() {
-  // 1. Current Block
-  try {
-    const header = await rpcCall('chain_getHeader');
-    if (header && header.number) {
-      const blockNum = parseInt(header.number, 16);
-      document.getElementById('stat-block').textContent = '#' + blockNum.toLocaleString();
-      document.getElementById('stat-block-sub').textContent = 'Live Block #' + blockNum.toLocaleString();
-    }
-  } catch(e) {
-    console.warn('RPC block fetch error:', e.message);
-  }
-
-  // 2. Connected Peers & Network Status
-  try {
-    const health = await rpcCall('system_health');
-    if (health) {
-      const peers = health.peers || 0;
-      document.getElementById('stat-peers').textContent = peers + ' peers';
-      document.getElementById('nav-network').textContent = 'Mainnet Live';
-    }
-  } catch(e) {
-    console.warn('RPC health fetch error:', e.message);
-  }
-
-  // 3. Active Validators Count
-  try {
-    const activeVals = await rpcCall('dpos_activeValidators');
-    if (Array.isArray(activeVals)) {
-      const valCount = activeVals.length;
-      document.getElementById('stat-validators').textContent = valCount;
-      document.querySelectorAll('.live-val-count').forEach(el => {
-        el.textContent = valCount;
-      });
-    }
-  } catch(e) {
-    console.warn('RPC validators fetch error:', e.message);
-  }
-}
-
-// Run immediately and periodically
-updateLiveStats();
-setInterval(updateLiveStats, 10000);
+// Live RPC
+const RPC_URL='/rpc';
+async function rpcCall(m,p=[]){const r=await fetch(RPC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:m,params:p,id:Date.now()})});const d=await r.json();if(d.error)throw new Error(d.error.message);return d.result}
+async function updateLiveStats(){try{const h=await rpcCall('chain_getHeader');if(h&&h.number){document.getElementById('stat-block').textContent='#'+parseInt(h.number,16).toLocaleString();document.getElementById('stat-block-sub').textContent='Live • Connected'}const health=await rpcCall('system_health');if(health)document.getElementById('stat-peers').textContent=health.peers;const vals=await rpcCall('dpos_allValidators');if(vals)document.getElementById('stat-validators').textContent=vals.length;document.querySelectorAll('.live-val-count').forEach(el=>el.textContent=vals?vals.length:14)}catch(e){console.log('RPC:',e.message)}}
+updateLiveStats();setInterval(updateLiveStats,15000);
 </script>
-
-
-<script>
-(function(){var h=document.getElementById('navHamburger'),l=document.querySelector('.nav-links');if(!h||!l)return;h.addEventListener('click',function(){h.classList.toggle('active');l.classList.toggle('open');});l.addEventListener('click',function(e){if(e.target.tagName==='A'){h.classList.remove('active');l.classList.remove('open');}});})();
-</script>
-
 </body>
 </html>
