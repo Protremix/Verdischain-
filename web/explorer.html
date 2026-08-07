@@ -557,9 +557,9 @@ function renderValidators(validators) {
       '<div style="display:flex;align-items:center;gap:10px;">' +
       '<div style="width:36px;height:36px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;color:#caff33;font-weight:bold;">' + name.charAt(0) + '</div>' +
       '<div><div style="color:#fff;font-size:13px;">' + name + '</div>' +
-      '<div style="color:#888;font-size:11px;font-family:monospace;">' + addr.substring(0, 10) + '...' + (addr.length > 16 ? addr.substring(addr.length - 6) : '') + '</div></div>' +
+      '<div style="color:#b8bcc4;font-size:11px;font-family:monospace;">' + addr.substring(0, 10) + '...' + (addr.length > 16 ? addr.substring(addr.length - 6) : '') + '</div></div>' +
       '</div><div style="text-align:right;"><div style="color:#caff33;font-size:13px;font-weight:bold;">' + score + '</div>' +
-      '<div style="color:#888;font-size:10px;">Green Score</div></div></div>';
+      '<div style="color:#b8bcc4;font-size:10px;">Green Score</div></div></div>';
   });
   panel.innerHTML = html;
 }
@@ -896,7 +896,7 @@ async function simpleLoadBlocks() {
                 '<div style="display:flex;align-items:center;gap:10px;">' +
                 '<div style="width:36px;height:36px;border-radius:8px;background:#1a1a1a;display:flex;align-items:center;justify-content:center;color:#caff33;font-weight:bold;font-size:12px;">#' + height + '</div>' +
                 '<div><div style="color:#fff;font-size:13px;font-family:monospace;">Block #' + height + '</div>' +
-                '<div style="color:#888;font-size:11px;">' + time + '</div></div>' +
+                '<div style="color:#b8bcc4;font-size:11px;">' + time + '</div></div>' +
                 '</div><div style="color:#caff33;font-size:11px;background:#1a1a1a;padding:2px 8px;border-radius:4px;">Block</div></div>';
         }
         panel.innerHTML = html;
@@ -931,9 +931,9 @@ async function simpleLoadValidators() {
                 '<div style="display:flex;align-items:center;gap:10px;">' +
                 '<div style="width:36px;height:36px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;color:#caff33;font-weight:bold;">' + name.charAt(0) + '</div>' +
                 '<div><div style="color:#fff;font-size:13px;">' + name + '</div>' +
-                '<div style="color:#888;font-size:11px;font-family:monospace;">' + addr.substring(0, 10) + '...' + addr.substring(addr.length - 6) + '</div></div>' +
+                '<div style="color:#b8bcc4;font-size:11px;font-family:monospace;">' + addr.substring(0, 10) + '...' + addr.substring(addr.length - 6) + '</div></div>' +
                 '</div><div style="text-align:right;"><div style="color:#caff33;font-size:13px;font-weight:bold;">' + score + '</div>' +
-                '<div style="color:#888;font-size:10px;">Green Score</div></div></div>';
+                '<div style="color:#b8bcc4;font-size:10px;">Green Score</div></div></div>';
         });
         panel.innerHTML = html;
     } catch(e) {
