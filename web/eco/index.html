@@ -1,1909 +1,1982 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verdis Chain Eco</title>
-<meta name="description" content="Verdis Chain Eco — Carbon-Negative Layer-1 Protocol with Live RPC Data">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #0a0a0a;
-  --bg-1: #111111;
-  --bg-2: #1a1a1a;
-  --card: #141414;
-  --border: #222222;
-  --border-2: #333333;
-  --text: #e8e8e8;
-  --text-2: #888888;
-  --text-3: #555555;
-  --accent: #caff33;
-  --accent-2: #b4f849;
-  --accent-glow: rgba(202, 255, 51, 0.15);
-  --success: #4ade80;
-  --warning: #fbbf24;
-  --error: #ef4444;
-  --radius: 12px;
-  --radius-sm: 8px;
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.6;
-  overflow-x: hidden;
-}
-.mono { font-family: 'JetBrains Mono', monospace; }
-.grotesk { font-family: 'Space Grotesk', sans-serif; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verdis Chain — Eco Metrics & On-Chain Carbon Protocol</title>
+  <meta name="description" content="Verdis Chain is the world's first carbon-negative blockchain. Real-time carbon credit tracking, green validator scoring, reforestation logs, and cVRDX token standard." />
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-/* NAV */
-nav {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(10,10,10,0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.nav-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: var(--text);
-}
-.nav-brand .logo {
-  width: 32px;
-  height: 32px;
-  background: var(--accent);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: #000;
-  font-size: 16px;
-  font-family: 'Space Grotesk', sans-serif;
-}
-.nav-brand span {
-  font-weight: 600;
-  font-size: 16px;
-  font-family: 'Space Grotesk', sans-serif;
-}
-.nav-links {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-}
-.nav-links a {
-  color: var(--text-2);
-  text-decoration: none;
-  padding: 8px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-weight: 500;
-  transition: all .2s;
-}
-.nav-links a:hover, .nav-links a.active {
-  color: var(--accent);
-  background: var(--card);
-}
-.nav-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--text-2);
-}
-.nav-status .dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--success);
-  box-shadow: 0 0 8px var(--success);
-  animation: pulse 2s infinite;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: .5; transform: scale(1.1); }
-}
+  <style>
+    :root {
+      --canvas: #e8ebee;
+      --canvas-light: #f1f5f9;
+      --hero-bg: #1a1a1a;
+      --hero-card: #2d2d2d;
+      --hero-card-dark: #252525;
+      --hero-border: rgba(255,255,255,0.08);
+      --accent: #caff33;
+      --accent-hover: #a8e607;
+      --accent-2: #84fe87;
+      --accent-3: #00a86b;
+      --accent-glow: rgba(202,255,51,0.35);
+      --accent-light: rgba(202,255,51,0.08);
+      --accent-border: rgba(202,255,51,0.25);
+      --text-white: #ffffff;
+      --text-dim: #b8bcc4;
+      --text-muted: #6b7080;
+      --text-dark: #0f172a;
+      --text-dark-muted: #64748b;
+      --radius: 12px;
+      --radius-lg: 20px;
+      --radius-pill: 100px;
+      --transition: 300ms cubic-bezier(0.16,1,0.3,1);
+    }
 
-/* CONTAINER & SECTIONS */
-.container {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 24px;
-}
-.section {
-  padding: 48px 0;
-  border-bottom: 1px solid var(--border);
-}
-.section:last-of-type {
-  border-bottom: none;
-}
-.section-header {
-  margin-bottom: 32px;
-}
-.section-header h2 {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.section-header p {
-  color: var(--text-2);
-  font-size: 15px;
-  max-width: 680px;
-}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--canvas-light);
+      color: var(--text-dark);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    .mono { font-family: 'JetBrains Mono', monospace; }
 
-/* HERO */
-.hero {
-  padding: 48px 0 36px;
-}
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  color: var(--text-2);
-  margin-bottom: 20px;
-}
-.hero-badge .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 6px var(--accent);
-}
-.hero h1 {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 44px;
-  font-weight: 700;
-  line-height: 1.15;
-  margin-bottom: 16px;
-  letter-spacing: -0.02em;
-}
-.hero h1 .accent {
-  color: var(--accent);
-  background: linear-gradient(135deg, #caff33 0%, #4ade80 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.hero p {
-  color: var(--text-2);
-  font-size: 16px;
-  max-width: 720px;
-  margin-bottom: 28px;
-  line-height: 1.6;
-}
-.hero-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.btn-primary {
-  background: var(--accent);
-  color: #000;
-  text-decoration: none;
-  padding: 12px 24px;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  font-size: 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all .2s;
-  border: none;
-  cursor: pointer;
-}
-.btn-primary:hover {
-  background: var(--accent-2);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 20px var(--accent-glow);
-}
-.btn-secondary {
-  background: var(--card);
-  color: var(--text);
-  border: 1px solid var(--border);
-  text-decoration: none;
-  padding: 12px 24px;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  font-size: 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: all .2s;
-  cursor: pointer;
-}
-.btn-secondary:hover {
-  border-color: var(--border-2);
-  background: var(--bg-1);
-}
+    /* ===== SCROLL PROGRESS & CURSOR GLOW ===== */
+    #scroll-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #caff33, #84fe87, #00a86b);
+      z-index: 10000;
+      width: 0%;
+      transition: width 50ms linear;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+    #cursor-glow {
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(202,255,51,0.05) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%,-50%);
+      opacity: 0;
+      transition: opacity 300ms;
+    }
+    body:hover #cursor-glow { opacity: 1; }
 
-/* STATS GRID */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 16px;
-  margin-top: 24px;
-  margin-bottom: 32px;
-}
-.stat-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-  transition: border-color .2s;
-}
-.stat-card:hover {
-  border-color: var(--border-2);
-}
-.stat-card .label {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-3);
-  margin-bottom: 8px;
-}
-.stat-card .value {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--text);
-}
-.stat-card .value.accent {
-  color: var(--accent);
-}
-.stat-card .value.success {
-  color: var(--success);
-}
-.stat-card .sub {
-  font-size: 12px;
-  color: var(--text-2);
-  margin-top: 6px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.badge-live {
-  font-size: 10px;
-  background: rgba(74, 222, 128, 0.15);
-  color: var(--success);
-  border: 1px solid rgba(74, 222, 128, 0.3);
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-.badge-static {
-  font-size: 10px;
-  background: rgba(202, 255, 51, 0.12);
-  color: var(--accent);
-  border: 1px solid rgba(202, 255, 51, 0.25);
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
+    /* ===== HERO SECTION ===== */
+    .hero-section {
+      position: relative;
+      background: var(--canvas);
+      padding: 0 24px;
+      overflow: hidden;
+    }
+    .hero-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      background: var(--hero-bg);
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      min-height: 720px;
+      display: flex;
+    }
+    .hero-container::before {
+      content: '';
+      position: absolute;
+      top: -30%;
+      right: -15%;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, var(--accent-glow), transparent 55%);
+      opacity: 0.12;
+      animation: pulse-bg 4s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes pulse-bg { 0%,100% { opacity: 0.08; transform: scale(1); } 50% { opacity: 0.15; transform: scale(1.1); } }
 
-/* GRIDS */
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-}
-.grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
+    /* ===== NAV ===== */
+    .hero-nav {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 48px;
+    }
+    .nav-brand {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 22px;
+      color: var(--text-white);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .nav-brand-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 16px var(--accent-glow);
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot { 0%,100% { box-shadow: 0 0 16px var(--accent-glow); } 50% { box-shadow: 0 0 28px rgba(202,255,51,0.6); } }
 
-/* CARDS */
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  transition: border-color .2s;
-}
-.card:hover {
-  border-color: var(--border-2);
-}
-.card-icon {
-  font-size: 28px;
-  margin-bottom: 16px;
-  width: 48px;
-  height: 48px;
-  background: var(--bg-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.card h3 {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 10px;
-  color: var(--text);
-}
-.card p {
-  color: var(--text-2);
-  font-size: 14px;
-  line-height: 1.6;
-  margin-bottom: 16px;
-}
-.card-tag {
-  display: inline-block;
-  font-size: 11px;
-  background: var(--bg-1);
-  color: var(--accent);
-  border: 1px solid var(--border);
-  padding: 4px 10px;
-  border-radius: 6px;
-}
+    .nav-links { display: flex; gap: 32px; }
+    .nav-links a {
+      color: var(--text-dim);
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 250ms;
+      position: relative;
+      text-decoration: none;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: width 250ms;
+    }
+    .nav-links a:hover { color: var(--text-white); }
+    .nav-links a:hover::after { width: 100%; }
 
-/* CO2 CHARTS & BREAKDOWN */
-.chart-box {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-}
-.chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 20px;
-}
-.chart-title {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-}
-.chart-sub {
-  font-size: 13px;
-  color: var(--text-2);
-}
-.chart-val {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--accent);
-}
+    .nav-cta { display: flex; gap: 12px; align-items: center; }
+    .btn-signup {
+      background: var(--accent);
+      color: var(--hero-bg);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 10px 24px;
+      border-radius: var(--radius-pill);
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+    }
+    .btn-signup:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--accent-glow); }
 
-/* PROGRESS BARS */
-.progress-group {
-  margin-bottom: 16px;
-}
-.progress-group:last-child {
-  margin-bottom: 0;
-}
-.progress-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  color: var(--text-2);
-  margin-bottom: 6px;
-}
-.progress-bar {
-  height: 8px;
-  background: var(--bg-1);
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-}
-.progress-fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 4px;
-  transition: width .5s ease;
-}
+    /* ===== HERO LEFT ===== */
+    .hero-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 120px 48px 60px 56px;
+      position: relative;
+      z-index: 5;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: var(--accent-light);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--radius-pill);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 24px;
+      width: fit-content;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: slideUp 600ms 200ms forwards;
+    }
+    .hero-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse-dot 2s infinite; }
+    .hero-title {
+      font-size: 50px;
+      font-weight: 900;
+      line-height: 1.05;
+      color: var(--text-white);
+      margin-bottom: 22px;
+      letter-spacing: -0.02em;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: slideUp 800ms 400ms forwards;
+    }
+    .hero-title .gradient {
+      background: linear-gradient(135deg, #caff33 0%, #a8e607 50%, #00a86b 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-desc {
+      font-size: 15px;
+      color: var(--text-dim);
+      line-height: 1.8;
+      margin-bottom: 34px;
+      max-width: 510px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: slideUp 800ms 600ms forwards;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: slideUp 800ms 800ms forwards;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #caff33, #a8e607);
+      color: var(--hero-bg);
+      font-size: 15px;
+      font-weight: 700;
+      padding: 14px 32px;
+      border-radius: var(--radius-pill);
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 32px var(--accent-glow); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-white);
+      font-size: 15px;
+      font-weight: 600;
+      padding: 14px 32px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255,255,255,0.18);
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-secondary:hover { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
 
-/* SIMULATOR */
-.sim-grid {
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 24px;
-}
-.slider-group {
-  margin-bottom: 20px;
-}
-.slider-group label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 8px;
-  color: var(--text-2);
-}
-.slider-group input[type="range"] {
-  width: 100%;
-  accent-color: var(--accent);
-  background: var(--bg-1);
-  cursor: pointer;
-}
-.score-result-card {
-  background: var(--bg-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-.score-big {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 42px;
-  font-weight: 700;
-  color: var(--accent);
-  margin: 12px 0 4px;
-}
+    /* ===== HERO RIGHT — 3D FLOATING UI CLUSTER ===== */
+    .hero-right {
+      flex: 1.25;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 10px;
+      min-height: 680px;
+    }
+    .hero-visual {
+      position: relative;
+      width: 100%;
+      max-width: 640px;
+      height: 620px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-/* TABLE */
-.table-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-.table-filter-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
-}
-.filter-btns {
-  display: flex;
-  gap: 6px;
-}
-.btn-filter {
-  background: var(--bg-1);
-  border: 1px solid var(--border);
-  color: var(--text-2);
-  padding: 6px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  cursor: pointer;
-  transition: all .2s;
-}
-.btn-filter.active, .btn-filter:hover {
-  background: var(--card);
-  border-color: var(--accent);
-  color: var(--accent);
-}
-.search-input {
-  background: var(--bg-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 8px 14px;
-  color: var(--text);
-  font-size: 13px;
-  outline: none;
-  min-width: 240px;
-}
-.search-input:focus {
-  border-color: var(--accent);
-}
-.table-responsive {
-  overflow-x: auto;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: 14px;
-}
-th {
-  background: var(--bg-1);
-  padding: 12px 20px;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-3);
-  border-bottom: 1px solid var(--border);
-  font-weight: 600;
-}
-td {
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-2);
-}
-tr:last-child td {
-  border-bottom: none;
-}
-tr:hover td {
-  background: var(--bg-1);
-}
-.td-title {
-  font-weight: 600;
-  color: var(--text);
-}
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-weight: 600;
-}
-.status-badge.verified {
-  background: rgba(74, 222, 128, 0.15);
-  color: var(--success);
-  border: 1px solid rgba(74, 222, 128, 0.3);
-}
+    /* Lime Green Circle Backdrop */
+    .hero-lime-circle {
+      position: absolute;
+      width: 410px;
+      height: 410px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #caff33 0%, #a8e607 65%, #76b000 100%);
+      box-shadow: 0 0 110px rgba(202, 255, 51, 0.45);
+      z-index: 1;
+    }
 
-/* MARKETPLACE */
-.market-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 20px;
-}
-.market-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: border-color .2s;
-}
-.market-card:hover {
-  border-color: var(--border-2);
-}
-.mc-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
-}
-.mc-title {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text);
-}
-.mc-price {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--accent);
-  background: rgba(202, 255, 51, 0.1);
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid rgba(202, 255, 51, 0.2);
-}
-.mc-loc {
-  font-size: 13px;
-  color: var(--text-2);
-  margin-bottom: 16px;
-}
-.mc-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  background: var(--bg-1);
-  padding: 12px;
-  border-radius: var(--radius-sm);
-  margin-bottom: 20px;
-}
-.mc-stat-lbl {
-  font-size: 11px;
-  color: var(--text-3);
-  text-transform: uppercase;
-}
-.mc-stat-val {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-}
-.mc-actions {
-  display: flex;
-  gap: 10px;
-}
-.btn-buy {
-  flex: 1;
-  background: var(--accent);
-  color: #000;
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 10px;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all .2s;
-  text-align: center;
-}
-.btn-buy:hover {
-  background: var(--accent-2);
-}
-.btn-retire {
-  flex: 1;
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 10px;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all .2s;
-  text-align: center;
-}
-.btn-retire:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
+    /* Common Glassmorphism for floating cards */
+    .monitor-frame,
+    .mobile-phone-mockup,
+    .calendar-widget,
+    .q-card,
+    .monthly-chart-card,
+    .v-btn,
+    .float-tag {
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
 
-/* CERTIFICATE GENERATOR */
-.cert-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-}
-.cert-form {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-}
-.form-group {
-  margin-bottom: 16px;
-}
-.form-group label {
-  display: block;
-  font-size: 13px;
-  color: var(--text-2);
-  margin-bottom: 6px;
-  font-weight: 500;
-}
-.form-control {
-  width: 100%;
-  background: var(--bg-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 10px 14px;
-  color: var(--text);
-  font-size: 14px;
-  outline: none;
-}
-.form-control:focus {
-  border-color: var(--accent);
-}
-.cert-preview-card {
-  background: linear-gradient(145deg, #12160d 0%, #141414 100%);
-  border: 1px solid rgba(202, 255, 51, 0.3);
-  border-radius: var(--radius);
-  padding: 28px;
-  position: relative;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-.cert-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 16px;
-  margin-bottom: 20px;
-}
-.cert-logo {
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 700;
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-}
-.cert-body {
-  margin-bottom: 20px;
-}
-.cert-title {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-3);
-  margin-bottom: 4px;
-}
-.cert-recipient {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 16px;
-}
-.cert-amount {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--accent);
-  margin-bottom: 8px;
-}
-.cert-project {
-  font-size: 14px;
-  color: var(--text-2);
-}
-.cert-footer {
-  border-top: 1px solid var(--border);
-  padding-top: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-}
+    /* Float Animation Classes */
+    .float-anim-1 { animation: float1 5.5s ease-in-out infinite; }
+    .float-anim-2 { animation: float2 7s ease-in-out infinite; }
+    .float-anim-3 { animation: float3 6s ease-in-out infinite; }
+    .float-anim-4 { animation: float4 5s ease-in-out infinite; }
+    .float-anim-5 { animation: float5 6.5s ease-in-out infinite; }
+    .float-anim-6 { animation: float6 6s ease-in-out infinite; }
 
-/* PARTNERS */
-.partners-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-}
-.partner-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  transition: border-color .2s;
-}
-.partner-card:hover {
-  border-color: var(--border-2);
-}
-.partner-icon {
-  font-size: 24px;
-  width: 44px;
-  height: 44px;
-  background: var(--bg-1);
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border);
-}
-.partner-name {
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text);
-}
-.partner-role {
-  font-size: 12px;
-  color: var(--text-3);
-}
+    .float-tag-1 { animation: floatTag1 4s ease-in-out infinite; }
+    .float-tag-2 { animation: floatTag2 5s ease-in-out infinite; }
+    .float-tag-3 { animation: floatTag3 6s ease-in-out infinite; }
+    .float-tag-4 { animation: floatTag4 4.5s ease-in-out infinite; }
 
-/* MODAL */
-.modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.8);
-  backdrop-filter: blur(10px);
-  z-index: 1000;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.modal-overlay.active {
-  display: flex;
-}
-.modal-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  width: 100%;
-  max-width: 460px;
-  padding: 28px;
-  position: relative;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-}
-.modal-close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  font-size: 20px;
-  color: var(--text-3);
-  cursor: pointer;
-  transition: color .2s;
-}
-.modal-close:hover {
-  color: var(--text);
-}
+    @keyframes float1 { 0%,100% { transform: translateY(0px) rotate(-1.5deg); } 50% { transform: translateY(-14px) rotate(1deg); } }
+    @keyframes float2 { 0%,100% { transform: translateY(0px) rotate(2deg); } 50% { transform: translateY(-12px) rotate(-1deg); } }
+    @keyframes float3 { 0%,100% { transform: translateY(0px) rotate(-1deg); } 50% { transform: translateY(-16px) rotate(1deg); } }
+    @keyframes float4 { 0%,100% { transform: translateY(0px) rotate(2deg); } 50% { transform: translateY(-18px) rotate(-1deg); } }
+    @keyframes float5 { 0%,100% { transform: translateY(0px) rotate(1deg); } 50% { transform: translateY(-10px) rotate(-1.5deg); } }
+    @keyframes float6 { 0%,100% { transform: translateY(0px) rotate(-1deg); } 50% { transform: translateY(-12px) rotate(1deg); } }
 
-/* FOOTER */
-footer {
-  border-top: 1px solid var(--border);
-  padding: 40px 24px;
-  max-width: 1280px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  color: var(--text-3);
-  font-size: 13px;
-}
-footer .links {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-footer .links a {
-  color: var(--text-2);
-  text-decoration: none;
-  transition: color .2s;
-}
-footer .links a:hover {
-  color: var(--accent);
-}
+    @keyframes floatTag1 { 0%,100% { transform: translate(0, 0) rotate(-3deg); } 50% { transform: translate(6px, -10px) rotate(2deg); } }
+    @keyframes floatTag2 { 0%,100% { transform: translate(0, 0) rotate(2deg); } 50% { transform: translate(-8px, 12px) rotate(-2deg); } }
+    @keyframes floatTag3 { 0%,100% { transform: translate(0, 0) rotate(-2deg); } 50% { transform: translate(8px, -8px) rotate(3deg); } }
+    @keyframes floatTag4 { 0%,100% { transform: translate(0, 0) rotate(3deg); } 50% { transform: translate(-6px, 10px) rotate(-2deg); } }
 
-/* RESPONSIVE */
-@media (max-width: 1024px) {
-  .grid-2, .grid-3 { grid-template-columns: 1fr; }
-  .sim-grid { grid-template-columns: 1fr; }
-  .cert-container { grid-template-columns: 1fr; }
-}
+    /* 1. CENTRAL MONITOR FRAME → ECO DASHBOARD */
+    .monitor-frame {
+      position: absolute;
+      top: 18%;
+      left: 20%;
+      width: 340px;
+      background: rgba(45, 45, 45, 0.90);
+      border-radius: 18px;
+      overflow: hidden;
+      z-index: 5;
+    }
+    .monitor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: rgba(30, 30, 30, 0.7);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .win-controls { display: flex; gap: 6px; }
+    .win-dot { width: 9px; height: 9px; border-radius: 50%; }
+    .win-dot.red { background: #ff5f56; }
+    .win-dot.yellow { background: #ffbd2e; }
+    .win-dot.green { background: #caff33; }
+    .monitor-title { font-size: 10px; color: #b8bcc4; font-weight: 600; }
+    .monitor-status { font-size: 9px; font-weight: 700; color: #caff33; display: flex; align-items: center; gap: 4px; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #caff33; box-shadow: 0 0 8px #caff33; }
+    
+    .monitor-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+    .monitor-metrics { display: flex; justify-content: space-between; gap: 6px; }
+    .m-stat { display: flex; flex-direction: column; gap: 2px; }
+    .m-lbl { font-size: 9px; color: #b8bcc4; }
+    .m-val { font-size: 13px; font-weight: 700; color: #ffffff; }
+    .m-val.green { color: #caff33; }
+    
+    .monitor-chart-wrap {
+      width: 100%;
+      height: 56px;
+      background: rgba(20, 20, 20, 0.5);
+      border-radius: 8px;
+      padding: 6px;
+      border: 1px solid rgba(255,255,255,0.05);
+      position: relative;
+    }
+    .monitor-chart-svg { width: 100%; height: 100%; }
+    .monitor-log {
+      font-size: 9px;
+      color: #b8bcc4;
+      background: rgba(0,0,0,0.25);
+      padding: 5px 8px;
+      border-radius: 6px;
+      border-left: 2px solid #caff33;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
 
-@media (max-width: 768px) {
-  nav {
-    padding: 0 16px;
-    flex-wrap: wrap;
-    height: auto;
-    padding-top: 12px;
-    padding-bottom: 12px;
-    gap: 12px;
-  }
-  .nav-links {
-    overflow-x: auto;
-    max-width: 100%;
-    padding-bottom: 4px;
-    white-space: nowrap;
-  }
-  .hero h1 { font-size: 32px; }
-  .container { padding: 0 16px; }
-  .stats-grid { grid-template-columns: 1fr 1fr; }
-  .table-filter-bar { flex-direction: column; align-items: stretch; }
-  .search-input { min-width: 100%; }
-}
+    /* 2. MOBILE PHONE MOCKUP → ECO WALLET */
+    .mobile-phone-mockup {
+      position: absolute;
+      top: 14%;
+      left: -2%;
+      width: 195px;
+      background: rgba(35, 35, 35, 0.94);
+      border-radius: 28px;
+      padding: 10px;
+      z-index: 10;
+    }
+    .phone-notch { width: 50px; height: 10px; background: #1a1a1a; border-radius: 0 0 8px 8px; margin: -10px auto 6px auto; }
+    .phone-screen { display: flex; flex-direction: column; gap: 8px; }
+    .phone-profile { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.04); padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.06); }
+    .profile-avatar { width: 26px; height: 26px; border-radius: 50%; background: rgba(202,255,51,0.2); border: 1px solid #caff33; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+    .profile-name { font-size: 10px; font-weight: 700; color: #ffffff; }
+    .profile-address { font-size: 8px; color: #b8bcc4; }
+    
+    .phone-balance-card {
+      background: linear-gradient(135deg, rgba(202,255,51,0.15), rgba(45,45,45,0.7));
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(202,255,51,0.25);
+    }
+    .p-bal-lbl { font-size: 8px; color: #b8bcc4; text-transform: uppercase; font-weight: 600; }
+    .p-bal-val { font-size: 16px; font-weight: 800; color: #caff33; margin: 1px 0; }
+    .p-bal-sub { font-size: 8px; color: #b8bcc4; }
 
-@media (max-width: 375px) {
-  .hero h1 { font-size: 26px; }
-  .stats-grid { grid-template-columns: 1fr; }
-  .partners-grid { grid-template-columns: 1fr; }
-  .nav-links a { padding: 6px 10px; font-size: 13px; }
-}
+    /* Circular Progress Ring in Mobile Phone */
+    .phone-ring-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0,0,0,0.2);
+      padding: 8px;
+      border-radius: 10px;
+    }
+    .ring-svg-wrap { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
+    .ring-svg-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ring-text-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 10px;
+      font-weight: 800;
+      color: #caff33;
+    }
+    .ring-desc { display: flex; flex-direction: column; gap: 2px; }
+    .ring-title { font-size: 9px; font-weight: 700; color: #ffffff; }
+    .ring-sub { font-size: 8px; color: #b8bcc4; }
 
-nav.std-nav { position:sticky; top:0; z-index:1000; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid #222; padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
-nav.std-nav .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:#e8e8e8; }
-nav.std-nav .nav-brand .logo { width:32px; height:32px; background:#caff33; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#000; font-size:16px; }
-nav.std-nav .nav-brand span { font-weight:600; font-size:16px; }
-nav.std-nav .nav-links { display:flex; gap:4px; flex-wrap:wrap; }
-nav.std-nav .nav-links a { color:#888; text-decoration:none; padding:8px 12px; border-radius:8px; font-size:13px; font-weight:500; transition:all .2s; }
-nav.std-nav .nav-links a:hover, nav.std-nav .nav-links a.active { color:#caff33; background:#141414; }
-nav.std-nav .nav-status { display:flex; align-items:center; gap:8px; font-size:13px; color:#888; }
-nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; background:#4ade80; box-shadow:0 0 8px #4ade80; animation:std-pulse 2s infinite; }
-@keyframes std-pulse { 0%,100%{opacity:1;} 50%{opacity:.5;} }
-@media(max-width:768px) { nav.std-nav .nav-links { display:none; } nav.std-nav .nav-brand span { font-size:14px; } }
+    /* 3. CALENDAR WIDGET → REFORESTATION LOG */
+    .calendar-widget {
+      position: absolute;
+      top: 2%;
+      right: 4%;
+      width: 190px;
+      background: rgba(45, 45, 45, 0.88);
+      border-radius: 16px;
+      padding: 12px;
+      z-index: 8;
+    }
+    .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .cal-title { font-size: 11px; font-weight: 700; color: #ffffff; }
+    .cal-month { font-size: 10px; font-weight: 800; color: #caff33; background: rgba(202,255,51,0.15); padding: 2px 6px; border-radius: 100px; }
+    .cal-grid-days { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 2px; font-size: 9px; color: #ffffff; }
+    .cal-grid-days span { padding: 3px 0; border-radius: 4px; }
+    .cal-grid-days span.lbl { font-size: 8px; color: #b8bcc4; font-weight: 600; }
+    .cal-grid-days span.muted { color: rgba(255,255,255,0.2); }
+    .cal-grid-days span.active {
+      background: #caff33;
+      color: #1a1a1a;
+      font-weight: 800;
+      box-shadow: 0 0 8px rgba(202,255,51,0.7);
+    }
+    .cal-footer { font-size: 9px; color: #b8bcc4; margin-top: 8px; display: flex; align-items: center; gap: 4px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 6px; }
+
+    /* 4. GRID OF 4 SMALL CARDS → ECO STATS */
+    .stats-grid-4 {
+      position: absolute;
+      bottom: 2%;
+      left: 2%;
+      width: 230px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      z-index: 9;
+    }
+    .q-card {
+      background: rgba(45, 45, 45, 0.88);
+      border-radius: 12px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .q-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      background: rgba(202,255,51,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #caff33;
+    }
+    .q-lbl { font-size: 8px; color: #b8bcc4; display: block; }
+    .q-val { font-size: 10px; font-weight: 700; color: #ffffff; }
+    .q-val.green { color: #caff33; }
+
+    /* 5. MONTHLY CO2 OFFSET CHART CARD */
+    .monthly-chart-card {
+      position: absolute;
+      bottom: 4%;
+      right: 14%;
+      width: 200px;
+      background: rgba(45, 45, 45, 0.88);
+      border-radius: 16px;
+      padding: 12px;
+      z-index: 7;
+    }
+    .mcc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .mcc-title { font-size: 10px; font-weight: 700; color: #ffffff; }
+    .mcc-badge { font-size: 8px; color: #caff33; background: rgba(202,255,51,0.15); padding: 2px 6px; border-radius: 100px; font-weight: 700; }
+    .mcc-bars { display: flex; align-items: flex-end; gap: 5px; height: 36px; margin-top: 4px; }
+    .mcc-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; height: 100%; justify-content: flex-end; }
+    .mcc-bar { width: 100%; background: linear-gradient(to top, #caff33, #a8e607); border-radius: 2px; }
+    .mcc-lbl { font-size: 7px; color: #b8bcc4; }
+
+    /* 6. VERTICAL ACTION BUTTON STACK */
+    .vertical-action-stack {
+      position: absolute;
+      top: 28%;
+      right: -2%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 10;
+    }
+    .v-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(45, 45, 45, 0.88);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 250ms ease;
+      color: #caff33;
+      text-decoration: none;
+      position: relative;
+    }
+    .v-btn span { font-size: 7px; font-weight: 700; color: #ffffff; margin-top: 2px; }
+    .v-btn:hover {
+      background: #caff33;
+      color: #1a1a1a;
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(202, 255, 51, 0.6);
+    }
+    .v-btn:hover span { color: #1a1a1a; }
+
+    /* 7. SMALL FLOATING TAGS */
+    .float-tag {
+      position: absolute;
+      padding: 4px 10px;
+      border-radius: 100px;
+      background: rgba(202, 255, 51, 0.15);
+      border: 1px solid rgba(202, 255, 51, 0.4);
+      color: #caff33;
+      font-size: 9px;
+      font-weight: 700;
+      z-index: 11;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+    .tag-carbon { top: -2%; left: 32%; }
+    .tag-trees { bottom: 22%; left: -6%; }
+    .tag-co2 { top: 46%; right: 28%; }
+    .tag-green { bottom: -2%; right: 40%; }
 
 
-.brand-logo-img { height: 36px; width: 36px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,255,136,0.35)); } .brand-text { font-family: Poppins, sans-serif; font-weight: 700; font-size: 18px; color: #fff; white-space: nowrap; margin-left: 2px; letter-spacing: -0.3px; text-decoration: none !important; }
-@media(max-width:768px) { .brand-logo-img { height: 40px; } }
+    /* ===== BODY SECTIONS GENERAL STYLING ===== */
+    .section { padding: 90px 24px; position: relative; }
+    .section-light { background: var(--canvas-light); }
+    .section-white { background: #ffffff; }
+    .section-dark { background: #181818; color: var(--text-white); }
+    
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    .section-header { text-align: center; margin-bottom: 56px; }
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #00a86b;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+      display: inline-block;
+      padding: 4px 14px;
+      background: rgba(0,168,107,0.08);
+      border-radius: var(--radius-pill);
+    }
+    .section-header h2 {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 16px;
+      letter-spacing: -0.01em;
+    }
+    .section-dark .section-header h2 { color: var(--text-white); }
+    .section-header p {
+      font-size: 16px;
+      color: var(--text-dark-muted);
+      max-width: 640px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .section-dark .section-header p { color: var(--text-dim); }
 
-</style>
-<link rel="icon" type="image/png" href="/assets/favicon-32.png">
-<link rel="apple-touch-icon" href="/assets/favicon-180.png">
-<style id="nav-brand-no-underline-fix">a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration: none !important; }</style></head>
+    /* REVEAL ANIMATION */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 700ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ===== SECTION 1: CARBON CREDIT SYSTEM ===== */
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .card-feature {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      transition: var(--transition);
+      position: relative;
+    }
+    .card-feature:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      border-color: rgba(0,168,107,0.3);
+    }
+    .card-icon-box {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: rgba(0,168,107,0.1);
+      color: #00a86b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .card-feature h3 { font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 10px; }
+    .card-feature p { font-size: 14px; color: var(--text-dark-muted); line-height: 1.7; margin-bottom: 16px; }
+    .card-tag { display: inline-block; font-size: 12px; font-weight: 600; color: #00a86b; background: rgba(0,168,107,0.08); padding: 4px 12px; border-radius: 6px; }
+
+    /* MOCK CARBON CREDIT CERTIFICATE */
+    .cert-box-wrap {
+      margin-top: 48px;
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border-radius: 24px;
+      padding: 40px;
+      color: #ffffff;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.3);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .cert-box-wrap::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(202,255,51,0.12), transparent 70%);
+      pointer-events: none;
+    }
+    .cert-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 28px; }
+    .cert-logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; color: var(--text-white); }
+    .cert-badge-valid { background: rgba(202,255,51,0.15); border: 1px solid #caff33; color: #caff33; padding: 6px 16px; border-radius: 100px; font-size: 12px; font-weight: 700; }
+    .cert-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 32px; }
+    .cert-details { display: flex; flex-direction: column; gap: 18px; }
+    .cert-row { display: flex; flex-direction: column; gap: 4px; }
+    .cert-lbl { font-size: 12px; color: #94a3b8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+    .cert-val { font-size: 16px; font-weight: 700; color: #ffffff; }
+    .cert-val.highlight { font-size: 26px; color: #caff33; font-weight: 800; }
+    .cert-qr-side { display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.03); border-radius: 16px; padding: 20px; border: 1px dashed rgba(255,255,255,0.15); text-align: center; }
+    .cert-qr-code { width: 110px; height: 110px; background: #ffffff; padding: 8px; border-radius: 10px; margin-bottom: 12px; }
+    .cert-qr-code img { width: 100%; height: 100%; }
+    .cert-hash { font-size: 11px; color: #94a3b8; word-break: break-all; }
+
+    /* ===== SECTION 2: GREEN VALIDATOR SCORE ===== */
+    .validator-breakdown-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+    .score-factors-card { background: #ffffff; border-radius: var(--radius-lg); padding: 32px; border: 1px solid #e2e8f0; }
+    .factor-item { margin-bottom: 20px; }
+    .factor-info { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+    .factor-title { color: var(--text-dark); display: flex; align-items: center; gap: 8px; }
+    .factor-pct { color: #00a86b; font-weight: 700; }
+    .progress-bar-bg { width: 100%; height: 10px; background: #e2e8f0; border-radius: 100px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #00a86b, #caff33); border-radius: 100px; transition: width 1s ease-in-out; }
+
+    .val-table-card { background: #ffffff; border-radius: var(--radius-lg); border: 1px solid #e2e8f0; overflow: hidden; }
+    .val-table-header { padding: 20px 24px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-weight: 700; font-size: 16px; color: var(--text-dark); display: flex; justify-content: space-between; align-items: center; }
+    .table-responsive { overflow-x: auto; }
+    table.custom-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+    table.custom-table th { background: #f8fafc; padding: 14px 20px; color: var(--text-dark-muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; }
+    table.custom-table td { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; color: var(--text-dark); }
+    table.custom-table tr:hover td { background: #f8fafc; }
+    .badge-score { padding: 4px 10px; border-radius: 100px; font-weight: 700; font-size: 12px; display: inline-block; }
+    .badge-score.high { background: rgba(0,168,107,0.12); color: #00a86b; }
+    .badge-score.med { background: rgba(234,179,8,0.12); color: #ca8a04; }
+
+    /* Interactive Calculator */
+    .calc-card {
+      margin-top: 32px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+    .calc-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px; }
+    .calc-inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+    .calc-group { display: flex; flex-direction: column; gap: 6px; }
+    .calc-group label { font-size: 12px; font-weight: 600; color: var(--text-dark-muted); }
+    .calc-group input[type="range"] { accent-color: #00a86b; cursor: pointer; }
+    .calc-result { display: flex; align-items: center; justify-content: space-between; background: #ffffff; padding: 16px 20px; border-radius: 12px; border: 1px solid #cbd5e1; }
+    .calc-res-label { font-weight: 700; font-size: 14px; color: var(--text-dark); }
+    .calc-res-val { font-size: 22px; font-weight: 800; color: #00a86b; }
+
+    /* ===== SECTION 3: REFORESTATION LOG ===== */
+    .table-filter-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 16px; flex-wrap: wrap; }
+    .filter-btns { display: flex; gap: 8px; }
+    .btn-filter { background: #ffffff; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; cursor: pointer; transition: var(--transition); color: var(--text-dark-muted); }
+    .btn-filter.active, .btn-filter:hover { background: #00a86b; color: #ffffff; border-color: #00a86b; }
+    .search-input { padding: 8px 16px; border: 1px solid #cbd5e1; border-radius: var(--radius-pill); font-size: 13px; outline: none; width: 240px; font-family: inherit; }
+    .search-input:focus { border-color: #00a86b; box-shadow: 0 0 0 3px rgba(0,168,107,0.15); }
+
+    .status-badge { padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
+    .status-badge.verified { background: rgba(0,168,107,0.12); color: #00a86b; }
+    .status-badge.pending { background: rgba(234,179,8,0.12); color: #ca8a04; }
+
+    /* ===== SECTION 4: CO2 IMPACT DASHBOARD ===== */
+    .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 32px; }
+    .chart-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius-lg); padding: 28px; }
+    .chart-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .chart-title { font-size: 16px; font-weight: 700; color: var(--text-dark); }
+    .chart-sub { font-size: 12px; color: var(--text-dark-muted); }
+    
+    .chart-svg-box { width: 100%; height: 220px; position: relative; }
+    
+    .cat-breakdown-list { display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
+    .cat-item { display: flex; flex-direction: column; gap: 6px; }
+    .cat-row { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; }
+    .cat-color-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+
+    .impact-stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .impact-stat-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius); padding: 20px; text-align: center; }
+    .is-val { font-size: 28px; font-weight: 800; color: #00a86b; margin-bottom: 4px; }
+    .is-lbl { font-size: 12px; color: var(--text-dark-muted); text-transform: uppercase; font-weight: 600; }
+
+    /* ===== SECTION 5: CARBON CREDIT MARKETPLACE ===== */
+    .market-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 48px; }
+    .market-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: var(--transition);
+    }
+    .market-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); border-color: rgba(0,168,107,0.3); }
+    .mc-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .mc-title { font-size: 16px; font-weight: 700; color: var(--text-dark); }
+    .mc-loc { font-size: 12px; color: var(--text-dark-muted); display: flex; align-items: center; gap: 4px; margin-bottom: 16px; }
+    .mc-metrics { background: #f8fafc; border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; margin-bottom: 20px; }
+    .mc-stat { display: flex; flex-direction: column; gap: 2px; }
+    .mc-lbl { font-size: 11px; color: var(--text-dark-muted); }
+    .mc-val { font-size: 15px; font-weight: 700; color: var(--text-dark); }
+    .mc-actions { display: flex; gap: 10px; }
+    .btn-buy { flex: 1; background: #00a86b; color: #ffffff; padding: 10px 0; border-radius: var(--radius-pill); border: none; font-weight: 700; font-size: 13px; cursor: pointer; transition: var(--transition); text-align: center; }
+    .btn-buy:hover { background: #008f58; box-shadow: 0 4px 14px rgba(0,168,107,0.3); }
+    .btn-retire-outline { flex: 1; background: transparent; color: #00a86b; border: 1px solid #00a86b; padding: 10px 0; border-radius: var(--radius-pill); font-weight: 700; font-size: 13px; cursor: pointer; transition: var(--transition); text-align: center; }
+    .btn-retire-outline:hover { background: rgba(0,168,107,0.08); }
+
+    /* Retirement Generator Box */
+    .generator-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 36px;
+      align-items: center;
+    }
+    .gen-form { display: flex; flex-direction: column; gap: 16px; }
+    .gen-form h3 { font-size: 20px; font-weight: 800; color: var(--text-dark); }
+    .gen-form p { font-size: 14px; color: var(--text-dark-muted); line-height: 1.6; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 12px; font-weight: 600; color: var(--text-dark); }
+    .form-group input, .form-group select { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; }
+    .form-group input:focus, .form-group select:focus { border-color: #00a86b; }
+
+    /* Live Preview Cert */
+    .preview-cert-frame {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      border-radius: 16px;
+      padding: 24px;
+      color: #ffffff;
+      border: 2px solid #caff33;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      position: relative;
+    }
+    .pc-badge { font-size: 10px; font-weight: 800; color: #1a1a1a; background: #caff33; padding: 2px 8px; border-radius: 100px; display: inline-block; margin-bottom: 12px; }
+    .pc-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; color: #ffffff; }
+    .pc-holder { font-size: 14px; color: #caff33; font-weight: 700; margin-bottom: 16px; }
+    .pc-amount { font-size: 28px; font-weight: 900; color: #ffffff; margin-bottom: 16px; }
+    .pc-footer { display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; }
+
+    /* ===== SECTION 6: ECO PARTNERSHIPS ===== */
+    .partners-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .partner-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+    .partner-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); border-color: #00a86b; }
+    .partner-icon { width: 48px; height: 48px; border-radius: 50%; background: rgba(0,168,107,0.1); color: #00a86b; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; margin-bottom: 12px; }
+    .partner-name { font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
+    .partner-role { font-size: 12px; color: var(--text-dark-muted); }
+
+    /* ===== FOOTER ===== */
+    .footer { background: var(--hero-bg); padding: 56px 24px 32px; color: var(--text-dim); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
+    .footer-brand h4 { font-size: 18px; font-weight: 800; color: var(--text-white); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .footer-brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+    .footer-brand p { font-size: 14px; color: var(--text-muted); max-width: 300px; line-height: 1.6; }
+    .footer-col h5 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 16px; }
+    .footer-col a { display: block; font-size: 14px; color: var(--text-dim); margin-bottom: 10px; transition: var(--transition); text-decoration: none; }
+    .footer-col a:hover { color: var(--accent); transform: translateX(4px); }
+    .footer-bottom { max-width: 1200px; margin: 40px auto 0; padding-top: 24px; border-top: 1px solid var(--hero-border); display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); }
+
+    /* ===== MODAL ===== */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 20000; display: none; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal-card { background: #ffffff; border-radius: 20px; padding: 32px; max-width: 480px; width: 90%; position: relative; animation: modalPop 300ms ease; }
+    @keyframes modalPop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-close { position: absolute; top: 16px; right: 20px; font-size: 24px; cursor: pointer; color: var(--text-dark-muted); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1024px) {
+      .hero-container { flex-direction: column; min-height: auto; }
+      .hero-left { padding: 100px 32px 40px; }
+      .hero-right { padding: 20px; min-height: 520px; overflow: hidden; }
+      .hero-visual { transform: scale(0.85); transform-origin: center center; }
+      .hero-title { font-size: 40px; }
+      .grid-3, .market-grid { grid-template-columns: repeat(2, 1fr); }
+      .validator-breakdown-grid, .charts-grid, .generator-card { grid-template-columns: 1fr; gap: 24px; }
+      .impact-stats-row, .partners-grid { grid-template-columns: repeat(2, 1fr); }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hero-visual { transform: scale(0.70); transform-origin: center center; }
+      .hero-title { font-size: 32px; }
+      .grid-3, .market-grid, .impact-stats-row, .partners-grid { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr; }
+      .calc-inputs { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .hero-visual { transform: scale(0.55); transform-origin: center center; }
+      .hero-right { min-height: 380px; }
+    }
+  </style>
+</head>
 <body>
 
-<!-- NAVIGATION -->
-<nav class="std-nav">
-  <a href="/" class="nav-brand"><img src="/assets/verdis-v-icon.png" alt="Verdis Chain" class="brand-logo-img"><span class="brand-text">Verdis Chain</span></a>
-  <div class="nav-links">
-    <a href="/">Home</a>
-    <a href="/explorer/">Explorer</a>
-    <a href="/dex/">DEX</a>
-    <a href="/validators/" class="active">Validators</a>
-    <a href="/eco/" class="active">Eco</a>
-    <a href="/faucet/">Faucet</a>
-    <a href="/wallet/">Wallet</a>
-    <a href="/sale/">Sale</a>
-    <a href="/docs/">Docs</a>
-  </div>
-  <div class="nav-status"><div class="dot"></div><span>Connected</span></div>
-</nav>
+  <!-- Scroll Progress & Cursor Glow -->
+  <div id="scroll-bar"></div>
+  <div id="cursor-glow"></div>
 
-<!-- MAIN CONTENT CONTAINER -->
-<main class="container">
+  <!-- ===== HERO SECTION ===== -->
+  <section class="hero-section">
+    <div class="hero-container">
+      
+      <!-- NAV -->
+      <nav class="hero-nav">
+        <a href="index.html" class="nav-brand">
+          <span class="nav-brand-dot"></span>Verdis Chain
+        </a>
+        <div class="nav-links">
+          <a href="#carbon-system">Carbon</a>
+          <a href="#reforestation">Reforestation</a>
+          <a href="#green-score">Green Score</a>
+          <a href="#credits">Credits</a>
+          <a href="#impact">Impact</a>
+        </div>
+        <div class="nav-cta">
+          <a href="dex.html" class="btn-signup">Sign Up</a>
+        </div>
+      </nav>
 
-  <!-- HERO SECTION -->
-  <section class="hero">
-    <div class="hero-badge">
-      <span class="dot"></span>
-      <span>LIVE RPC • Block #<span id="hero-block-num" class="mono">...</span> • Carbon Negative Protocol</span>
-    </div>
-    <h1>Verdis Chain <span class="accent">Eco Protocol</span></h1>
-    <p>
-      The world's first carbon-negative Layer-1 blockchain. Protocol-native carbon credit tracking, green validator scoring, transparent reforestation logging, and zero-emission consensus — verified on-chain via Substrate RPC.
-    </p>
-    <div class="hero-actions">
-      <a href="#impact" class="btn-primary">Explore Impact ↓</a>
-      <a href="#marketplace" class="btn-secondary">Buy Carbon Credits</a>
-      <a href="#certificate" class="btn-secondary">Certificate Generator</a>
-    </div>
+      <!-- HERO LEFT CONTENT -->
+      <div class="hero-left">
+        <div class="hero-badge">
+          <span class="hero-badge-dot"></span> Carbon Negative · 12,847t CO2 Offset · 47,392 Trees Planted
+        </div>
+        <h1 class="hero-title">
+          <span class="gradient">ECO</span><br />BLOCKCHAIN
+        </h1>
+        <p class="hero-desc">
+          Verdis Chain is the world's first carbon-negative blockchain. On-chain carbon credit tracking, green validator scoring, reforestation logging, and renewable energy verification — all built natively into the protocol.
+        </p>
+        <div class="hero-actions">
+          <a href="#impact" class="btn-primary">View Impact →</a>
+          <a href="#marketplace" class="btn-secondary">Buy Carbon Credits</a>
+        </div>
+      </div>
 
-    <!-- STATS GRID -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="label">Total CO2 Offset</div>
-        <div class="value accent" data-eco-co2>0 t</div>
-        <div class="sub">Verified Metric Tons <span class="badge-static">Demo Data</span></div>
+      <!-- HERO RIGHT 3D FLOATING UI CLUSTER -->
+      <div class="hero-right">
+        <div class="hero-visual">
+          
+          <!-- Lime Green Circle Backdrop -->
+          <div class="hero-lime-circle"></div>
+
+          <!-- 1. Central Monitor Frame → Eco Dashboard -->
+          <div class="monitor-frame float-anim-3">
+            <div class="monitor-header">
+              <div class="win-controls">
+                <span class="win-dot red"></span>
+                <span class="win-dot yellow"></span>
+                <span class="win-dot green"></span>
+              </div>
+              <span class="monitor-title mono">Verdis Eco Engine v2.4</span>
+              <span class="monitor-status"><span class="status-dot"></span> ONLINE</span>
+            </div>
+            <div class="monitor-body">
+              <div class="monitor-metrics">
+                <div class="m-stat">
+                  <span class="m-lbl">CO2 Offset</span>
+                  <span class="m-val mono green">12,847 t</span>
+                </div>
+                <div class="m-stat">
+                  <span class="m-lbl">Trees Planted</span>
+                  <span class="m-val mono">47,392</span>
+                </div>
+                <div class="m-stat">
+                  <span class="m-lbl">Eco Score</span>
+                  <span class="m-val mono green">87/100</span>
+                </div>
+              </div>
+              <div class="monitor-chart-wrap">
+                <svg class="monitor-chart-svg" viewBox="0 0 300 40" preserveAspectRatio="none">
+                  <path d="M0,35 Q30,10 60,25 T120,15 T180,30 T240,10 T300,20 L300,40 L0,40 Z" fill="rgba(202,255,51,0.15)"></path>
+                  <path d="M0,35 Q30,10 60,25 T120,15 T180,30 T240,10 T300,20" fill="none" stroke="#caff33" stroke-width="2"></path>
+                </svg>
+              </div>
+              <div class="monitor-log">
+                <span class="mono">Block #1,847,392 · 25.4t Offset Retired</span>
+                <span style="color:#caff33; font-weight:700;">✓ VERIFIED</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Mobile Phone Mockup → Eco Wallet -->
+          <div class="mobile-phone-mockup float-anim-4">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="phone-profile">
+                <div class="profile-avatar">🌱</div>
+                <div>
+                  <div class="profile-name">Eco Wallet #042</div>
+                  <div class="profile-address mono">0x8f2a...9c41</div>
+                </div>
+              </div>
+              <div class="phone-balance-card">
+                <div class="p-bal-lbl">Carbon Credits Balance</div>
+                <div class="p-bal-val mono">8,421 cVRDX</div>
+                <div class="p-bal-sub mono">~$105,262 USD</div>
+              </div>
+              <div class="phone-ring-box">
+                <div class="ring-svg-wrap">
+                  <svg viewBox="0 0 36 36">
+                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="3"></path>
+                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#caff33" stroke-width="3" stroke-dasharray="75, 100"></path>
+                  </svg>
+                  <div class="ring-text-center mono">75%</div>
+                </div>
+                <div class="ring-desc">
+                  <div class="ring-title">Annual Target</div>
+                  <div class="ring-sub mono">750t / 1,000t Goal</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Calendar Widget → Reforestation Log -->
+          <div class="calendar-widget float-anim-2">
+            <div class="cal-header">
+              <span class="cal-title">Reforestation Log</span>
+              <span class="cal-month">August 2026</span>
+            </div>
+            <div class="cal-grid-days">
+              <span class="lbl">M</span><span class="lbl">T</span><span class="lbl">W</span><span class="lbl">T</span><span class="lbl">F</span><span class="lbl">S</span><span class="lbl">S</span>
+              <span class="muted">28</span><span class="muted">29</span><span class="muted">30</span><span class="muted">31</span><span>1</span><span>2</span><span>3</span>
+              <span>4</span><span class="active">5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+              <span>11</span><span class="active">12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span>
+              <span class="active">18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span class="active">24</span>
+              <span>25</span><span>26</span><span>27</span><span>28</span><span class="active">29</span><span>30</span><span>31</span>
+            </div>
+            <div class="cal-footer">
+              <span style="width:6px; height:6px; border-radius:50%; background:#caff33; display:inline-block;"></span>
+              <span>Planting Event: Congo Basin</span>
+            </div>
+          </div>
+
+          <!-- 4. Grid of 4 Small Cards → Eco Stats -->
+          <div class="stats-grid-4 float-anim-1">
+            <div class="q-card">
+              <div class="q-icon">⚡</div>
+              <div>
+                <span class="q-lbl">CO2 Offset</span>
+                <span class="q-val mono green">12,847t</span>
+              </div>
+            </div>
+            <div class="q-card">
+              <div class="q-icon">🌲</div>
+              <div>
+                <span class="q-lbl">Trees Planted</span>
+                <span class="q-val mono">47,392</span>
+              </div>
+            </div>
+            <div class="q-card">
+              <div class="q-icon">🪙</div>
+              <div>
+                <span class="q-lbl">Carbon Credits</span>
+                <span class="q-val mono green">8,421 cVRDX</span>
+              </div>
+            </div>
+            <div class="q-card">
+              <div class="q-icon">🏆</div>
+              <div>
+                <span class="q-lbl">Green Score</span>
+                <span class="q-val mono green">87 / 100</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Monthly CO2 Offset Chart Card -->
+          <div class="monthly-chart-card float-anim-5">
+            <div class="mcc-header">
+              <span class="mcc-title">Monthly CO2 Offset</span>
+              <span class="mcc-badge">+18.4%</span>
+            </div>
+            <div class="mcc-bars">
+              <div class="mcc-bar-col"><div class="mcc-bar" style="height:40%;"></div><span class="mcc-lbl">Mar</span></div>
+              <div class="mcc-bar-col"><div class="mcc-bar" style="height:55%;"></div><span class="mcc-lbl">Apr</span></div>
+              <div class="mcc-bar-col"><div class="mcc-bar" style="height:65%;"></div><span class="mcc-lbl">May</span></div>
+              <div class="mcc-bar-col"><div class="mcc-bar" style="height:80%;"></div><span class="mcc-lbl">Jun</span></div>
+              <div class="mcc-bar-col"><div class="mcc-bar" style="height:70%;"></div><span class="mcc-lbl">Jul</span></div>
+              <div class="mcc-bar-col"><div class="mcc-bar" style="height:95%;"></div><span class="mcc-lbl">Aug</span></div>
+            </div>
+          </div>
+
+          <!-- 6. Vertical Button Stack → Eco Actions -->
+          <div class="vertical-action-stack float-anim-6">
+            <a href="#marketplace" class="v-btn" title="Offset Carbon">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+              <span>Offset</span>
+            </a>
+            <a href="#reforestation" class="v-btn" title="Plant Trees">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-10 10c0 5.25 10 10 10 10s10-4.75 10-10A10 10 0 0 0 12 2z"></path></svg>
+              <span>Plant</span>
+            </a>
+            <a href="#carbon-system" class="v-btn" title="Mint cVRDX">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8M8 12h8"></path></svg>
+              <span>Mint</span>
+            </a>
+            <a href="#marketplace" class="v-btn" title="Trade Credits">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path></svg>
+              <span>Trade</span>
+            </a>
+          </div>
+
+          <!-- 7. Small Floating Tags -->
+          <div class="float-tag tag-carbon float-tag-1">Carbon</div>
+          <div class="float-tag tag-trees float-tag-2">Trees</div>
+          <div class="float-tag tag-co2 float-tag-3">CO2</div>
+          <div class="float-tag tag-green float-tag-4">Green</div>
+
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="label">Trees Planted</div>
-        <div class="value" data-eco-trees>0</div>
-        <div class="sub">Telemetry Logged <span class="badge-static">Demo Data</span></div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Green Validators</div>
-        <div class="value success" id="stat-validators">14</div>
-        <div class="sub">Active Nodes <span class="badge-live">Live RPC</span></div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Network Peers</div>
-        <div class="value" id="stat-peers">8</div>
-        <div class="sub">P2P Connections <span class="badge-live">Live RPC</span></div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Current Block</div>
-        <div class="value accent" id="stat-block">...</div>
-        <div class="sub">Substrate Height <span class="badge-live">Live RPC</span></div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Avg Green Score</div>
-        <div class="value success">87.4<span style="font-size:16px;">/100</span></div>
-        <div class="sub">Protocol Rating <span class="badge-static">Calculated</span></div>
-      </div>
+
     </div>
   </section>
 
-  <!-- SECTION 1: CARBON CREDIT SYSTEM MECHANISM -->
-  <section class="section" id="mechanism">
-    <div class="section-header">
-      <h2>🌱 On-Chain Carbon Credit System</h2>
-      <p>
-        Verdis Chain implements native <strong class="mono" style="color:var(--accent);">cVRDX</strong> carbon credit tokens. Every cVRDX represents exactly 1 metric ton of verified CO2 greenhouse gas reduction or permanent removal.
-      </p>
-    </div>
 
-    <div class="grid-3">
-      <div class="card">
-        <div class="card-icon">🌿</div>
-        <h3>1. Proof-of-Offset Minting</h3>
+  <!-- ===== SECTION 1: CARBON CREDIT SYSTEM ===== -->
+  <section id="carbon-system" class="section section-light reveal">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Protocol Standard</span>
+        <h2>On-Chain Carbon Credit System</h2>
         <p>
-          Authorized satellite and IoT telemetry sensors verify real-world offset projects (reforestation, DAC, renewable energy) and mint immutable cVRDX credits directly on-chain.
+          Verdis Chain implements native <strong class="mono" style="color:#00a86b;">cVRDX</strong> carbon credit tokens. Every cVRDX represents exactly 1 metric ton of verified CO2 greenhouse gas reduction or removal.
         </p>
-        <span class="card-tag mono">Pallet-Eco :: mint_credit()</span>
       </div>
 
-      <div class="card">
-        <div class="card-icon">🔄</div>
-        <h3>2. Native AMM Trading</h3>
-        <p>
-          Trade cVRDX credits seamlessly on the native Verdis DEX against VRDX, USDT, or ETH with transparent pricing, instant liquidity, and zero intermediary markups.
-        </p>
-        <span class="card-tag mono">Pallet-DEX :: cVRDX/VRDX</span>
+      <div class="grid-3">
+        <div class="card-feature">
+          <div class="card-icon-box">🌱</div>
+          <h3>1. Proof-of-Offset Minting</h3>
+          <p>
+            Authorized satellite or IoT sensors verify real-world carbon offset projects (reforestation, direct air capture, renewable energy) and mint immutable cVRDX credit tokens on-chain.
+          </p>
+          <span class="card-tag mono">Pallet-Eco :: mint_credit()</span>
+        </div>
+
+        <div class="card-feature">
+          <div class="card-icon-box">🔄</div>
+          <h3>2. Native AMM Trading</h3>
+          <p>
+            Trade cVRDX carbon credits liquidity seamlessly on the Verdis DEX against VRDX, USDT, or ETH with zero slippage or intermediary commissions.
+          </p>
+          <span class="card-tag mono">Pallet-DEX :: cVRDX/VRDX</span>
+        </div>
+
+        <div class="card-feature">
+          <div class="card-icon-box">🔥</div>
+          <h3>3. Permanent Retirement</h3>
+          <p>
+            Retire cVRDX tokens by burning them on-chain. Upon burn, a cryptographic NFT certificate is generated verifying your organisation's net-zero contribution.
+          </p>
+          <span class="card-tag mono">Pallet-Eco :: retire_credit()</span>
+        </div>
       </div>
 
-      <div class="card">
-        <div class="card-icon">🔥</div>
-        <h3>3. Permanent Retirement</h3>
-        <p>
-          Retire cVRDX tokens by burning them on-chain. Burning mints a verifiable cryptographic certificate NFT documenting your net-zero carbon offset achievement.
-        </p>
-        <span class="card-tag mono">Pallet-Eco :: retire_credit()</span>
+      <!-- Mock Carbon Credit Certificate Preview -->
+      <div class="cert-box-wrap reveal">
+        <div class="cert-header">
+          <div class="cert-logo">
+            <span style="width:12px; height:12px; border-radius:50%; background:#caff33; display:inline-block;"></span>
+            VERDIS ECO REGISTRY
+          </div>
+          <div class="cert-badge-valid mono">CERTIFICATE #cVRDX-2026-8894</div>
+        </div>
+
+        <div class="cert-grid">
+          <div class="cert-details">
+            <div class="cert-row">
+              <span class="cert-lbl">Certificate Holder</span>
+              <span class="cert-val">Verdis Foundation Global Alliance</span>
+            </div>
+            <div class="cert-row">
+              <span class="cert-lbl">Verified Carbon Offsets Retired</span>
+              <span class="cert-val highlight mono">500.00 Metric Tons CO2e</span>
+            </div>
+            <div class="cert-row">
+              <span class="cert-lbl">Source Project</span>
+              <span class="cert-val">Amazon Rainforest Canopy Restoration Project (Sector 4B)</span>
+            </div>
+            <div class="cert-row">
+              <span class="cert-lbl">Standard / Serial Number</span>
+              <span class="cert-val mono" style="font-size:13px; color:#cbd5e1;">cVRDX-VCS-AMZ-2026-00049182-500000</span>
+            </div>
+          </div>
+
+          <div class="cert-qr-side">
+            <div class="cert-qr-code">
+              <!-- Inline SVG QR Code Mockup -->
+              <svg viewBox="0 0 100 100" style="width:100%; height:100%;">
+                <rect width="100" height="100" fill="#ffffff" />
+                <path d="M10,10 h30 v30 h-30 z M15,15 h20 v20 h-20 z M20,20 h10 v10 h-10 z" fill="#000000" />
+                <path d="M60,10 h30 v30 h-30 z M65,15 h20 v20 h-20 z M70,20 h10 v10 h-10 z" fill="#000000" />
+                <path d="M10,60 h30 v30 h-30 z M15,65 h20 v20 h-20 z M20,70 h10 v10 h-10 z" fill="#000000" />
+                <rect x="50" y="50" width="10" height="10" fill="#000" />
+                <rect x="70" y="50" width="15" height="10" fill="#000" />
+                <rect x="50" y="70" width="10" height="20" fill="#000" />
+                <rect x="70" y="75" width="20" height="15" fill="#000" />
+              </svg>
+            </div>
+            <span class="cert-lbl" style="font-size:10px; margin-bottom:4px;">VERIFICATION HASH</span>
+            <span class="cert-hash mono">0x7f4e...89a2</span>
+          </div>
+        </div>
       </div>
+
     </div>
   </section>
 
-  <!-- SECTION 2: CO2 IMPACT DASHBOARD & CHARTS -->
-  <section class="section" id="impact">
-    <div class="section-header">
-      <h2>📊 CO2 Impact Analytics</h2>
-      <p>
-        Aggregated environmental metrics and offset distribution tracked directly across Verdis Chain blocks and verified IoT telemetry.
-      </p>
-    </div>
 
-    <div class="grid-2">
-      <!-- Cumulative Offset Chart -->
-      <div class="chart-box">
-        <div class="chart-header">
-          <div>
-            <div class="chart-title">Cumulative CO2 Offset Over Time</div>
-            <div class="chart-sub">Measured in Metric Tons (2025 – 2026)</div>
-          </div>
-          <div class="chart-val" data-eco-co2>0 t</div>
-        </div>
-        <div style="height: 180px; width: 100%; margin-bottom: 12px;">
-          <svg viewBox="0 0 500 180" style="width: 100%; height: 100%;">
-            <defs>
-              <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#caff33" stop-opacity="0.25" />
-                <stop offset="100%" stop-color="#caff33" stop-opacity="0.0" />
-              </linearGradient>
-            </defs>
-            <line x1="0" y1="40" x2="500" y2="40" stroke="#222222" stroke-width="1" />
-            <line x1="0" y1="90" x2="500" y2="90" stroke="#222222" stroke-width="1" />
-            <line x1="0" y1="140" x2="500" y2="140" stroke="#222222" stroke-width="1" />
-            <path d="M0,160 Q80,140 160,100 T320,50 T500,15 L500,170 L0,170 Z" fill="url(#chartGrad)"></path>
-            <path d="M0,160 Q80,140 160,100 T320,50 T500,15" fill="none" stroke="#caff33" stroke-width="3"></path>
-            <circle cx="0" cy="160" r="4" fill="#caff33" />
-            <circle cx="120" cy="120" r="4" fill="#caff33" />
-            <circle cx="240" cy="80" r="4" fill="#caff33" />
-            <circle cx="360" cy="40" r="4" fill="#caff33" />
-            <circle cx="500" cy="15" r="6" fill="#4ade80" stroke="#000" stroke-width="2" />
-          </svg>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-3);" class="mono">
-          <span>Q1 2025</span>
-          <span>Q3 2025</span>
-          <span>Q1 2026</span>
-          <span>Q3 2026 (Live)</span>
-        </div>
+  <!-- ===== SECTION 2: GREEN VALIDATOR SCORE ===== -->
+  <section id="green-score" class="section section-white reveal">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Consensus Mechanics</span>
+        <h2>Green Validator Scoring Algorithm</h2>
+        <p>
+          Verdis Chain conditions block rewards and validator selection on environmental sustainability. Validators with higher Green Scores earn higher staking APY yields.
+        </p>
       </div>
 
-      <!-- Category Breakdown -->
-      <div class="chart-box">
-        <div class="chart-header">
-          <div>
-            <div class="chart-title">Offsets by Project Category</div>
-            <div class="chart-sub">Distribution across verified conservation types</div>
-          </div>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 14px; justify-content: center; height: calc(100% - 60px);">
-          <div class="progress-group">
-            <div class="progress-label">
-              <span>🌳 Reforestation & Agroforestry</span>
-              <span class="mono" style="color:var(--text);">62% (7,965 t)</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: 62%;"></div>
-            </div>
-          </div>
-
-          <div class="progress-group">
-            <div class="progress-label">
-              <span>💨 Direct Air Capture (DAC)</span>
-              <span class="mono" style="color:var(--text);">21% (2,698 t)</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: 21%;"></div>
-            </div>
-          </div>
-
-          <div class="progress-group">
-            <div class="progress-label">
-              <span>☀️ Renewable Energy Offsets</span>
-              <span class="mono" style="color:var(--text);">12% (1,541 t)</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: 12%;"></div>
-            </div>
-          </div>
-
-          <div class="progress-group">
-            <div class="progress-label">
-              <span>🔥 Methane & Biochar Avoidance</span>
-              <span class="mono" style="color:var(--text);">5% (643 t)</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: 5%;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECTION 3: GREEN VALIDATOR SCORING ALGORITHM & SIMULATOR -->
-  <section class="section" id="scoring">
-    <div class="section-header">
-      <h2>⚡ Green Validator Scoring Algorithm</h2>
-      <p>
-        Verdis Chain conditions block rewards and validator weight on environmental sustainability. Validators with higher Green Scores earn enhanced staking APY boosts.
-      </p>
-    </div>
-
-    <div class="sim-grid">
-      <!-- Factor Breakdown -->
-      <div class="card">
-        <h3 style="margin-bottom: 20px;">Score Component Weights</h3>
+      <div class="validator-breakdown-grid">
         
-        <div class="progress-group" style="margin-bottom:18px;">
-          <div class="progress-label">
-            <span>☀️ Renewable Energy Usage</span>
-            <span class="mono">30%</span>
+        <!-- Score Factors -->
+        <div class="score-factors-card">
+          <h3 style="font-size:18px; font-weight:700; margin-bottom:20px; color:var(--text-dark);">Score Component Weights</h3>
+          
+          <div class="factor-item">
+            <div class="factor-info">
+              <span class="factor-title">☀️ Renewable Energy Usage</span>
+              <span class="factor-pct mono">30%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width: 30%;"></div>
+            </div>
           </div>
-          <div class="progress-bar"><div class="progress-fill" style="width: 30%;"></div></div>
-        </div>
 
-        <div class="progress-group" style="margin-bottom:18px;">
-          <div class="progress-label">
-            <span>🌿 Carbon Offsets Retired</span>
-            <span class="mono">25%</span>
+          <div class="factor-item">
+            <div class="factor-info">
+              <span class="factor-title">🌿 Carbon Offsets Retired</span>
+              <span class="factor-pct mono">25%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width: 25%;"></div>
+            </div>
           </div>
-          <div class="progress-bar"><div class="progress-fill" style="width: 25%;"></div></div>
-        </div>
 
-        <div class="progress-group" style="margin-bottom:18px;">
-          <div class="progress-label">
-            <span>💻 Hardware Energy Efficiency</span>
-            <span class="mono">20%</span>
+          <div class="factor-item">
+            <div class="factor-info">
+              <span class="factor-title">💻 Hardware Energy Efficiency</span>
+              <span class="factor-pct mono">20%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width: 20%;"></div>
+            </div>
           </div>
-          <div class="progress-bar"><div class="progress-fill" style="width: 20%;"></div></div>
-        </div>
 
-        <div class="progress-group" style="margin-bottom:18px;">
-          <div class="progress-label">
-            <span>⏱️ Node Uptime & Reliability</span>
-            <span class="mono">15%</span>
+          <div class="factor-item">
+            <div class="factor-info">
+              <span class="factor-title">⏱️ Node Uptime & Reliability</span>
+              <span class="factor-pct mono">15%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width: 15%;"></div>
+            </div>
           </div>
-          <div class="progress-bar"><div class="progress-fill" style="width: 15%;"></div></div>
-        </div>
 
-        <div class="progress-group">
-          <div class="progress-label">
-            <span>🤝 Community Reforestation</span>
-            <span class="mono">10%</span>
+          <div class="factor-item">
+            <div class="factor-info">
+              <span class="factor-title">🤝 Community Reforestation Contribution</span>
+              <span class="factor-pct mono">10%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width: 10%;"></div>
+            </div>
           </div>
-          <div class="progress-bar"><div class="progress-fill" style="width: 10%;"></div></div>
-        </div>
-      </div>
 
-      <!-- Interactive Calculator -->
-      <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
-        <h3>Validator Score Simulator</h3>
-        <p style="font-size:13px; color:var(--text-3);">Adjust inputs to simulate node Green Score & APY boost:</p>
+          <!-- Interactive Score Calculator -->
+          <div class="calc-card">
+            <div class="calc-title">🧮 Interactive Validator Score Simulator</div>
+            <div class="calc-inputs">
+              <div class="calc-group">
+                <label>Renewable Energy (%): <span id="val-ren-txt" class="mono">95%</span></label>
+                <input type="range" id="input-ren" min="0" max="100" value="95" oninput="updateScoreCalc()" />
+              </div>
+              <div class="calc-group">
+                <label>Offset Ratio (%): <span id="val-off-txt" class="mono">88%</span></label>
+                <input type="range" id="input-off" min="0" max="100" value="88" oninput="updateScoreCalc()" />
+              </div>
+              <div class="calc-group">
+                <label>Efficiency Score: <span id="val-eff-txt" class="mono">90</span></label>
+                <input type="range" id="input-eff" min="0" max="100" value="90" oninput="updateScoreCalc()" />
+              </div>
+            </div>
+            <div class="calc-result">
+              <span class="calc-res-label">Simulated Green Score:</span>
+              <span class="calc-res-val mono" id="calc-final-score">92.4 / 100</span>
+            </div>
+          </div>
 
-        <div class="slider-group">
-          <label><span>Renewable Energy</span> <span id="val-ren-txt" class="mono accent">85%</span></label>
-          <input type="range" id="input-ren" min="0" max="100" value="85" oninput="updateScoreCalc()" />
         </div>
 
-        <div class="slider-group">
-          <label><span>Carbon Offsets</span> <span id="val-off-txt" class="mono accent">90%</span></label>
-          <input type="range" id="input-off" min="0" max="100" value="90" oninput="updateScoreCalc()" />
+        <!-- Top Green Validators Leaderboard Table -->
+        <div class="val-table-card">
+          <div class="val-table-header">
+            <span>🏆 Top Green Validators</span>
+            <span style="font-size:12px; color:var(--text-dark-muted); font-weight:500;">Live Network Ranking</span>
+          </div>
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Rank & Node</th>
+                  <th>Renewable</th>
+                  <th>Monthly Offset</th>
+                  <th>Green Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <strong style="color:var(--text-dark);">#1 EcoNode-Alpha</strong><br />
+                    <span class="mono" style="font-size:11px; color:var(--text-dark-muted);">0x91a3...4e11</span>
+                  </td>
+                  <td><span class="mono">100% Solar</span></td>
+                  <td><span class="mono">420 tCO2</span></td>
+                  <td><span class="badge-score high mono">98.5</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong style="color:var(--text-dark);">#2 GreenValidator-01</strong><br />
+                    <span class="mono" style="font-size:11px; color:var(--text-dark-muted);">0x34b8...1f09</span>
+                  </td>
+                  <td><span class="mono">98% Wind</span></td>
+                  <td><span class="mono">380 tCO2</span></td>
+                  <td><span class="badge-score high mono">96.2</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong style="color:var(--text-dark);">#3 SolarStake-Nordic</strong><br />
+                    <span class="mono" style="font-size:11px; color:var(--text-dark-muted);">0x12c9...88a4</span>
+                  </td>
+                  <td><span class="mono">100% Hydro</span></td>
+                  <td><span class="mono">310 tCO2</span></td>
+                  <td><span class="badge-score high mono">94.8</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong style="color:var(--text-dark);">#4 CleanBlock-Node</strong><br />
+                    <span class="mono" style="font-size:11px; color:var(--text-dark-muted);">0x77d1...02e5</span>
+                  </td>
+                  <td><span class="mono">85% Solar</span></td>
+                  <td><span class="mono">240 tCO2</span></td>
+                  <td><span class="badge-score med mono">88.0</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong style="color:var(--text-dark);">#5 TerraStake-Global</strong><br />
+                    <span class="mono" style="font-size:11px; color:var(--text-dark-muted);">0x55e2...99d0</span>
+                  </td>
+                  <td><span class="mono">82% Mixed</span></td>
+                  <td><span class="mono">190 tCO2</span></td>
+                  <td><span class="badge-score med mono">85.4</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div class="slider-group">
-          <label><span>Hardware Efficiency</span> <span id="val-eff-txt" class="mono accent">80</span></label>
-          <input type="range" id="input-eff" min="0" max="100" value="80" oninput="updateScoreCalc()" />
-        </div>
-
-        <div class="score-result-card">
-          <span style="font-size:11px; text-transform:uppercase; color:var(--text-3); letter-spacing:1px;">Calculated Green Score</span>
-          <div class="score-big" id="calc-final-score">88.5</div>
-          <span style="font-size:12px; color:var(--success); font-weight:600;" id="calc-apy-boost">+12.4% Staking Bonus</span>
-        </div>
       </div>
     </div>
   </section>
 
-  <!-- SECTION 4: ON-CHAIN REFORESTATION LOG -->
-  <section class="section" id="reforestation">
-    <div class="section-header">
-      <h2>🌲 On-Chain Reforestation Log</h2>
-      <p>
-        Every tree planted and verified via Verdis Chain IoT ground telemetry is permanently stored on-chain. Explore active global conservation projects below.
-      </p>
-    </div>
 
-    <div class="table-card">
+  <!-- ===== SECTION 3: REFORESTATION LOG ===== -->
+  <section id="reforestation" class="section section-light reveal">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Global Impact Registry</span>
+        <h2>On-Chain Reforestation Log</h2>
+        <p>
+          Every tree planted and verified via Verdis Chain IoT ground telemetry is permanently stored on-chain. Explore active global conservation projects below.
+        </p>
+      </div>
+
       <div class="table-filter-bar">
         <div class="filter-btns">
-          <button class="btn-filter active" onclick="filterProjects('All', event)">All Projects</button>
-          <button class="btn-filter" onclick="filterProjects('South America', event)">South America</button>
-          <button class="btn-filter" onclick="filterProjects('Africa', event)">Africa</button>
-          <button class="btn-filter" onclick="filterProjects('Asia-Pacific', event)">Asia-Pacific</button>
+          <button class="btn-filter active" onclick="filterProjects('All')">All Projects</button>
+          <button class="btn-filter" onclick="filterProjects('South America')">South America</button>
+          <button class="btn-filter" onclick="filterProjects('Africa')">Africa</button>
+          <button class="btn-filter" onclick="filterProjects('Asia-Pacific')">Asia-Pacific</button>
         </div>
         <input type="text" id="projectSearch" class="search-input" placeholder="Search location or verifier..." onkeyup="searchTable()" />
       </div>
 
-      <div class="table-responsive">
-        <table id="reforestationTable">
-          <thead>
-            <tr>
-              <th>Location & Region</th>
-              <th>Trees Planted</th>
-              <th>CO2 Offset</th>
-              <th>Date Logged</th>
-              <th>Verified By</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr data-region="South America">
-              <td>
-                <div class="td-title">Amazon Rainforest Basin</div>
-                <div style="font-size:12px; color:var(--text-3);">Loreto Region, Peru</div>
-              </td>
-              <td class="mono" style="font-weight:600; color:var(--text);">18,450</td>
-              <td class="mono accent" style="font-weight:600;">4,820 t</td>
-              <td class="mono">2026-08-01</td>
-              <td style="font-weight:500;">Verra (VCS)</td>
-              <td><span class="status-badge" style="border-color:#f59e0b;color:#f59e0b">DEMO DATA</span></td>
-            </tr>
-            <tr data-region="Africa">
-              <td>
-                <div class="td-title">Congo River Canopy</div>
-                <div style="font-size:12px; color:var(--text-3);">Équateur Province, DRC</div>
-              </td>
-              <td class="mono" style="font-weight:600; color:var(--text);">12,300</td>
-              <td class="mono accent" style="font-weight:600;">3,150 t</td>
-              <td class="mono">2026-07-24</td>
-              <td style="font-weight:500;">Gold Standard</td>
-              <td><span class="status-badge" style="border-color:#f59e0b;color:#f59e0b">DEMO DATA</span></td>
-            </tr>
-            <tr data-region="Asia-Pacific">
-              <td>
-                <div class="td-title">Borneo Mangrove Corridor</div>
-                <div style="font-size:12px; color:var(--text-3);">East Kalimantan, Indonesia</div>
-              </td>
-              <td class="mono" style="font-weight:600; color:var(--text);">9,842</td>
-              <td class="mono accent" style="font-weight:600;">2,640 t</td>
-              <td class="mono">2026-07-18</td>
-              <td style="font-weight:500;">Rainforest Alliance</td>
-              <td><span class="status-badge" style="border-color:#f59e0b;color:#f59e0b">DEMO DATA</span></td>
-            </tr>
-            <tr data-region="Africa">
-              <td>
-                <div class="td-title">Rift Valley Agroforestry</div>
-                <div style="font-size:12px; color:var(--text-3);">Nakuru County, Kenya</div>
-              </td>
-              <td class="mono" style="font-weight:600; color:var(--text);">4,200</td>
-              <td class="mono accent" style="font-weight:600;">1,120 t</td>
-              <td class="mono">2026-06-30</td>
-              <td style="font-weight:500;">UN Climate Change</td>
-              <td><span class="status-badge" style="border-color:#f59e0b;color:#f59e0b">DEMO DATA</span></td>
-            </tr>
-            <tr data-region="South America">
-              <td>
-                <div class="td-title">Andes High-Altitude Forest</div>
-                <div style="font-size:12px; color:var(--text-3);">Cusco Region, Peru</div>
-              </td>
-              <td class="mono" style="font-weight:600; color:var(--text);">2,600</td>
-              <td class="mono accent" style="font-weight:600;">1,117 t</td>
-              <td class="mono">2026-06-12</td>
-              <td style="font-weight:500;">Verra (VCS)</td>
-              <td><span class="status-badge" style="border-color:#f59e0b;color:#f59e0b">DEMO DATA</span></td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="val-table-card">
+        <div class="table-responsive">
+          <table class="custom-table" id="reforestationTable">
+            <thead>
+              <tr>
+                <th>Location & Region</th>
+                <th>Trees Planted</th>
+                <th>CO2 Offset</th>
+                <th>Date Logged</th>
+                <th>Verified By</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-region="South America">
+                <td>
+                  <strong>Amazon Rainforest Basin</strong><br />
+                  <span style="font-size:12px; color:var(--text-dark-muted);">Loreto Region, Peru</span>
+                </td>
+                <td><span class="mono" style="font-weight:700;">18,450</span></td>
+                <td><span class="mono" style="color:#00a86b; font-weight:700;">4,820 t</span></td>
+                <td><span class="mono">2026-08-01</span></td>
+                <td><span style="font-weight:600;">Verra (VCS)</span></td>
+                <td><span class="status-badge verified">✓ VERIFIED</span></td>
+              </tr>
+              <tr data-region="Africa">
+                <td>
+                  <strong>Congo River Canopy</strong><br />
+                  <span style="font-size:12px; color:var(--text-dark-muted);">Équateur Province, DRC</span>
+                </td>
+                <td><span class="mono" style="font-weight:700;">12,300</span></td>
+                <td><span class="mono" style="color:#00a86b; font-weight:700;">3,150 t</span></td>
+                <td><span class="mono">2026-07-24</span></td>
+                <td><span style="font-weight:600;">Gold Standard</span></td>
+                <td><span class="status-badge verified">✓ VERIFIED</span></td>
+              </tr>
+              <tr data-region="Asia-Pacific">
+                <td>
+                  <strong>Sumatra Rainforest Reserve</strong><br />
+                  <span style="font-size:12px; color:var(--text-dark-muted);">North Sumatra, Indonesia</span>
+                </td>
+                <td><span class="mono" style="font-weight:700;">9,840</span></td>
+                <td><span class="mono" style="color:#00a86b; font-weight:700;">2,610 t</span></td>
+                <td><span class="mono">2026-07-18</span></td>
+                <td><span style="font-weight:600;">Rainforest Alliance</span></td>
+                <td><span class="status-badge verified">✓ VERIFIED</span></td>
+              </tr>
+              <tr data-region="Africa">
+                <td>
+                  <strong>Ranomafana Rainforest Corridor</strong><br />
+                  <span style="font-size:12px; color:var(--text-dark-muted);">Fianarantsoa, Madagascar</span>
+                </td>
+                <td><span class="mono" style="font-weight:700;">6,800</span></td>
+                <td><span class="mono" style="color:#00a86b; font-weight:700;">1,767 t</span></td>
+                <td><span class="mono">2026-07-02</span></td>
+                <td><span style="font-weight:600;">UN Climate Change</span></td>
+                <td><span class="status-badge verified">✓ VERIFIED</span></td>
+              </tr>
+              <tr data-region="South America">
+                <td>
+                  <strong>Monteverde Cloud Forest</strong><br />
+                  <span style="font-size:12px; color:var(--text-dark-muted);">Puntarenas, Costa Rica</span>
+                </td>
+                <td><span class="mono" style="font-weight:700;">4,200</span></td>
+                <td><span class="mono" style="color:#ca8a04; font-weight:700;">980 t</span></td>
+                <td><span class="mono">2026-08-05</span></td>
+                <td><span style="font-weight:600;">Carbon Trust</span></td>
+                <td><span class="status-badge pending">⏳ AUDIT IN PROGRESS</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
+
     </div>
   </section>
 
-  <!-- SECTION 5: CARBON CREDIT MARKETPLACE -->
-  <section class="section" id="marketplace">
-    <div class="section-header">
-      <h2>🛒 Carbon Credit Marketplace</h2>
-      <p>
-        Purchase verified cVRDX carbon credits directly on-chain or retire them instantly to offset your corporate or personal carbon footprint.
-      </p>
-    </div>
 
-    <div class="market-grid">
-      <!-- Project 1 -->
-      <div class="market-card">
-        <div>
-          <div class="mc-header">
-            <div class="mc-title">Amazon Canopy Protection Batch #26</div>
-            <div class="mc-price">$14.50 / t</div>
-          </div>
-          <div class="mc-loc">📍 Loreto, Peru • Verra VCS Certified</div>
-          <div class="mc-stats">
-            <div>
-              <div class="mc-stat-lbl">Available</div>
-              <div class="mc-stat-val">2,400 cVRDX</div>
-            </div>
-            <div>
-              <div class="mc-stat-lbl">Vintage</div>
-              <div class="mc-stat-val">2026</div>
-            </div>
-          </div>
-        </div>
-        <div class="mc-actions">
-          <button class="btn-buy" onclick="openModal('Amazon Canopy Protection Batch #26', 14.50)">Buy cVRDX</button>
-          <button class="btn-retire" onclick="openModal('Amazon Canopy Protection Batch #26', 14.50, true)">Retire</button>
-        </div>
+  <!-- ===== SECTION 4: CO2 IMPACT DASHBOARD ===== -->
+  <section id="impact" class="section section-white reveal">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Real-Time Telemetry</span>
+        <h2>CO2 Impact Dashboard</h2>
+        <p>
+          Aggregated environmental impact analytics tracked directly across Verdis Chain blocks and verified satellite feeds.
+        </p>
       </div>
 
-      <!-- Project 2 -->
-      <div class="market-card">
-        <div>
-          <div class="mc-header">
-            <div class="mc-title">Congo Basin High-Density Forest</div>
-            <div class="mc-price">$12.80 / t</div>
-          </div>
-          <div class="mc-loc">📍 Équateur, DRC • Gold Standard</div>
-          <div class="mc-stats">
-            <div>
-              <div class="mc-stat-lbl">Available</div>
-              <div class="mc-stat-val">1,850 cVRDX</div>
-            </div>
-            <div>
-              <div class="mc-stat-lbl">Vintage</div>
-              <div class="mc-stat-val">2026</div>
-            </div>
-          </div>
-        </div>
-        <div class="mc-actions">
-          <button class="btn-buy" onclick="openModal('Congo Basin High-Density Forest', 12.80)">Buy cVRDX</button>
-          <button class="btn-retire" onclick="openModal('Congo Basin High-Density Forest', 12.80, true)">Retire</button>
-        </div>
-      </div>
-
-      <!-- Project 3 -->
-      <div class="market-card">
-        <div>
-          <div class="mc-header">
-            <div class="mc-title">Hellisheiði Direct Air Capture</div>
-            <div class="mc-price">$22.00 / t</div>
-          </div>
-          <div class="mc-loc">📍 Hengill, Iceland • Climeworks Registry</div>
-          <div class="mc-stats">
-            <div>
-              <div class="mc-stat-lbl">Available</div>
-              <div class="mc-stat-val">920 cVRDX</div>
-            </div>
-            <div>
-              <div class="mc-stat-lbl">Vintage</div>
-              <div class="mc-stat-val">2026</div>
-            </div>
-          </div>
-        </div>
-        <div class="mc-actions">
-          <button class="btn-buy" onclick="openModal('Hellisheiði Direct Air Capture', 22.00)">Buy cVRDX</button>
-          <button class="btn-retire" onclick="openModal('Hellisheiði Direct Air Capture', 22.00, true)">Retire</button>
-        </div>
-      </div>
-
-      <!-- Project 4 -->
-      <div class="market-card">
-        <div>
-          <div class="mc-header">
-            <div class="mc-title">Sundarbans Mangrove Restoration</div>
-            <div class="mc-price">$16.20 / t</div>
-          </div>
-          <div class="mc-loc">📍 West Bengal, India • Rainforest Alliance</div>
-          <div class="mc-stats">
-            <div>
-              <div class="mc-stat-lbl">Available</div>
-              <div class="mc-stat-val">3,100 cVRDX</div>
-            </div>
-            <div>
-              <div class="mc-stat-lbl">Vintage</div>
-              <div class="mc-stat-val">2026</div>
-            </div>
-          </div>
-        </div>
-        <div class="mc-actions">
-          <button class="btn-buy" onclick="openModal('Sundarbans Mangrove Restoration', 16.20)">Buy cVRDX</button>
-          <button class="btn-retire" onclick="openModal('Sundarbans Mangrove Restoration', 16.20, true)">Retire</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECTION 6: RETIREMENT CERTIFICATE GENERATOR -->
-  <section class="section" id="certificate">
-    <div class="section-header">
-      <h2>📜 Retirement Certificate Generator</h2>
-      <p>
-        Generate and preview official on-chain carbon offset retirement certificates issued by the Verdis Eco Registry.
-      </p>
-    </div>
-
-    <div class="cert-container">
-      <!-- Certificate Inputs -->
-      <div class="cert-form">
-        <h3 style="margin-bottom: 20px; font-family:'Space Grotesk', sans-serif;">Certificate Parameters</h3>
+      <div class="charts-grid">
         
-        <div class="form-group">
-          <label>Beneficiary / Entity Name</label>
-          <input type="text" id="certNameInput" class="form-control" value="Verdis Eco Alliance Corp" oninput="updateCertPreview()" />
-        </div>
-
-        <div class="form-group">
-          <label>Offset Amount (tCO2e / cVRDX)</label>
-          <input type="number" id="certTonInput" class="form-control" value="25.00" step="0.5" min="1" oninput="updateCertPreview()" />
-        </div>
-
-        <div class="form-group">
-          <label>Selected Conservation Project</label>
-          <select id="certProjectSelect" class="form-control" onchange="updateCertPreview()">
-            <option value="Amazon Canopy Protection Batch #26">Amazon Canopy Protection Batch #26</option>
-            <option value="Congo Basin High-Density Forest">Congo Basin High-Density Forest</option>
-            <option value="Hellisheiði Direct Air Capture">Hellisheiði Direct Air Capture</option>
-            <option value="Sundarbans Mangrove Restoration">Sundarbans Mangrove Restoration</option>
-          </select>
-        </div>
-
-        <button class="btn-primary" style="width:100%; margin-top:12px; justify-content:center;" onclick="updateCertPreview()">
-          Generate Live Certificate
-        </button>
-      </div>
-
-      <!-- Live Certificate Preview -->
-      <div class="cert-preview-card">
-        <div>
-          <div class="cert-header">
-            <div class="cert-logo">
-              <span style="width:10px; height:10px; border-radius:50%; background:var(--accent); display:inline-block;"></span>
-              VERDIS ECO REGISTRY
-            </div>
-            <span class="mono" style="font-size:11px; color:var(--accent); background:rgba(202,255,51,0.1); padding:2px 8px; border-radius:4px; border:1px solid rgba(202,255,51,0.2);">
-              OFFICIAL CERTIFICATE
-            </span>
-          </div>
-
-          <div class="cert-body">
-            <div class="cert-title">Verified Carbon Offset Beneficiary</div>
-            <div class="cert-recipient" id="pcName">Verdis Eco Alliance Corp</div>
-
-            <div class="cert-title">Permanent Retired Volume</div>
-            <div class="cert-amount" id="pcAmount">25.00 tCO2e</div>
-
-            <div class="cert-title">Underlying Project</div>
-            <div class="cert-project" id="pcProject">Amazon Canopy Protection Batch #26</div>
-          </div>
-        </div>
-
-        <div>
-          <div class="cert-footer">
+        <!-- Cumulative CO2 Offset Over Time Chart -->
+        <div class="chart-card">
+          <div class="chart-card-header">
             <div>
-              <div class="mono" id="pcHash" style="color:var(--text-2); font-size:11px;">HASH: 0x88f91a24...12e8</div>
-              <div style="color:var(--text-3); font-size:11px; margin-top:2px;">Date: 2026-08-07 • Substrate Block Verified</div>
+              <div class="chart-title">Total Cumulative CO2 Offset Over Time</div>
+              <div class="chart-sub">Measured in Metric Tons (2024 – 2026)</div>
             </div>
-            <div style="background:var(--accent); color:#000; padding:6px 10px; border-radius:6px; font-weight:700; font-size:10px; font-family:'JetBrains Mono', monospace;">
-              DEMO DATA
-            </div>
+            <span class="mono" style="font-weight:800; color:#00a86b; font-size:18px;">12,847 t</span>
           </div>
-          <div style="display:flex; gap:10px; margin-top:16px;">
-            <button class="btn-primary" style="flex:1; padding:8px 12px; font-size:12px; justify-content:center;" onclick="alert('Downloading high-resolution certificate PDF...')">Download PDF</button>
-            <button class="btn-secondary" style="flex:1; padding:8px 12px; font-size:12px; justify-content:center;" onclick="alert('Minting NFT certificate on Verdis Chain...')">Mint NFT</button>
+
+          <div class="chart-svg-box">
+            <svg viewBox="0 0 500 200" style="width:100%; height:100%;">
+              <defs>
+                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#00a86b" stop-opacity="0.35" />
+                  <stop offset="100%" stop-color="#00a86b" stop-opacity="0.0" />
+                </linearGradient>
+              </defs>
+              <!-- Grid lines -->
+              <line x1="0" y1="40" x2="500" y2="40" stroke="#f1f5f9" stroke-width="1" />
+              <line x1="0" y1="90" x2="500" y2="90" stroke="#f1f5f9" stroke-width="1" />
+              <line x1="0" y1="140" x2="500" y2="140" stroke="#f1f5f9" stroke-width="1" />
+              
+              <!-- Area -->
+              <path d="M0,180 Q80,160 160,120 T320,70 T500,20 L500,190 L0,190 Z" fill="url(#chartGrad)"></path>
+              
+              <!-- Line -->
+              <path d="M0,180 Q80,160 160,120 T320,70 T500,20" fill="none" stroke="#00a86b" stroke-width="3"></path>
+              
+              <!-- Dots -->
+              <circle cx="0" cy="180" r="4" fill="#00a86b" />
+              <circle cx="120" cy="140" r="4" fill="#00a86b" />
+              <circle cx="240" cy="100" r="4" fill="#00a86b" />
+              <circle cx="360" cy="55" r="4" fill="#00a86b" />
+              <circle cx="500" cy="20" r="6" fill="#caff33" stroke="#00a86b" stroke-width="3" />
+            </svg>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-dark-muted);" class="mono">
+            <span>Q1 2025</span>
+            <span>Q3 2025</span>
+            <span>Q1 2026</span>
+            <span>Q3 2026 (Today)</span>
           </div>
         </div>
+
+        <!-- Offset by Category Breakdown -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div>
+              <div class="chart-title">Offset by Category</div>
+              <div class="chart-sub">Distribution Protocol Share</div>
+            </div>
+          </div>
+
+          <div class="cat-breakdown-list">
+            <div class="cat-item">
+              <div class="cat-row">
+                <span><span class="cat-color-dot" style="background:#00a86b;"></span>Reforestation</span>
+                <span class="mono">45% (5,781t)</span>
+              </div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:45%;"></div></div>
+            </div>
+
+            <div class="cat-item">
+              <div class="cat-row">
+                <span><span class="cat-color-dot" style="background:#84fe87;"></span>Renewable Energy</span>
+                <span class="mono">35% (4,496t)</span>
+              </div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:35%; background:#84fe87;"></div></div>
+            </div>
+
+            <div class="cat-item">
+              <div class="cat-row">
+                <span><span class="cat-color-dot" style="background:#38bdf8;"></span>Direct Air Capture</span>
+                <span class="mono">20% (2,570t)</span>
+              </div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:20%; background:#38bdf8;"></div></div>
+            </div>
+          </div>
+        </div>
+
       </div>
+
+      <!-- Impact Stats Boxes -->
+      <div class="impact-stats-row">
+        <div class="impact-stat-box">
+          <div class="is-val mono">12,847 t</div>
+          <div class="is-lbl">Net CO2 Removed</div>
+        </div>
+        <div class="impact-stat-box">
+          <div class="is-val mono">47,392</div>
+          <div class="is-lbl">Trees Planted</div>
+        </div>
+        <div class="impact-stat-box">
+          <div class="is-val mono">99.98%</div>
+          <div class="is-lbl">Green Energy Node Ratio</div>
+        </div>
+        <div class="impact-stat-box">
+          <div class="is-val mono">8,421</div>
+          <div class="is-lbl">Active cVRDX Holders</div>
+        </div>
+      </div>
+
     </div>
   </section>
 
-  <!-- SECTION 7: ENVIRONMENTAL PARTNERS & CERTIFICATIONS -->
-  <section class="section" id="partners">
-    <div class="section-header">
-      <h2>🌍 Environmental Partners & Certifications</h2>
-      <p>
-        Verdis Chain collaborates with leading international environmental organizations, carbon standard bodies, and climate registries.
-      </p>
-    </div>
 
-    <div class="partners-grid">
-      <div class="partner-card">
-        <div class="partner-icon">🌟</div>
-        <div>
+  <!-- ===== SECTION 5: CARBON CREDIT MARKETPLACE ===== -->
+  <section id="marketplace" class="section section-light reveal">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">On-Chain Trading</span>
+        <h2>Carbon Credit Marketplace</h2>
+        <p>
+          Purchase verified cVRDX carbon credits directly on-chain or retire them instantly to offset your corporate or personal carbon footprint.
+        </p>
+      </div>
+
+      <div class="market-grid">
+        
+        <!-- Card 1 -->
+        <div class="market-card">
+          <div>
+            <div class="mc-head">
+              <div class="mc-title">Amazon Canopy Protection Batch #26</div>
+              <span class="badge-score high mono">$14.50 / t</span>
+            </div>
+            <div class="mc-loc">📍 Loreto, Peru · Verra VCS Certified</div>
+            <div class="mc-metrics">
+              <div class="mc-stat">
+                <span class="mc-lbl">Available</span>
+                <span class="mc-val mono">2,400 cVRDX</span>
+              </div>
+              <div class="mc-stat">
+                <span class="mc-lbl">Vintage</span>
+                <span class="mc-val mono">2026</span>
+              </div>
+            </div>
+          </div>
+          <div class="mc-actions">
+            <button class="btn-buy" onclick="openModal('Amazon Canopy Protection Batch #26', 14.50)">Buy cVRDX</button>
+            <button class="btn-retire-outline" onclick="openModal('Amazon Canopy Protection Batch #26', 14.50, true)">Retire</button>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="market-card">
+          <div>
+            <div class="mc-head">
+              <div class="mc-title">Congo Basin High-Density Forest</div>
+              <span class="badge-score high mono">$12.80 / t</span>
+            </div>
+            <div class="mc-loc">📍 Équateur, DRC · Gold Standard</div>
+            <div class="mc-metrics">
+              <div class="mc-stat">
+                <span class="mc-lbl">Available</span>
+                <span class="mc-val mono">1,850 cVRDX</span>
+              </div>
+              <div class="mc-stat">
+                <span class="mc-lbl">Vintage</span>
+                <span class="mc-val mono">2026</span>
+              </div>
+            </div>
+          </div>
+          <div class="mc-actions">
+            <button class="btn-buy" onclick="openModal('Congo Basin High-Density Forest', 12.80)">Buy cVRDX</button>
+            <button class="btn-retire-outline" onclick="openModal('Congo Basin High-Density Forest', 12.80, true)">Retire</button>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="market-card">
+          <div>
+            <div class="mc-head">
+              <div class="mc-title">Hellisheiði Direct Air Capture</div>
+              <span class="badge-score high mono">$22.00 / t</span>
+            </div>
+            <div class="mc-loc">📍 Hellisheiði, Iceland · Climeworks DAC</div>
+            <div class="mc-metrics">
+              <div class="mc-stat">
+                <span class="mc-lbl">Available</span>
+                <span class="mc-val mono">920 cVRDX</span>
+              </div>
+              <div class="mc-stat">
+                <span class="mc-lbl">Vintage</span>
+                <span class="mc-val mono">2026</span>
+              </div>
+            </div>
+          </div>
+          <div class="mc-actions">
+            <button class="btn-buy" onclick="openModal('Hellisheiði Direct Air Capture', 22.00)">Buy cVRDX</button>
+            <button class="btn-retire-outline" onclick="openModal('Hellisheiði Direct Air Capture', 22.00, true)">Retire</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Retirement Certificate Generator -->
+      <div class="generator-card reveal">
+        <div class="gen-form">
+          <h3>📜 Retirement Certificate Generator</h3>
+          <p>Instantly generate an immutable, verified carbon retirement certificate preview by selecting your offset amount and beneficiary details.</p>
+          
+          <div class="form-group">
+            <label>Beneficiary / Company Name</label>
+            <input type="text" id="certNameInput" value="Verdis Eco Alliance Corp" oninput="updateCertPreview()" />
+          </div>
+
+          <div class="form-group">
+            <label>Metric Tons of CO2 to Retire</label>
+            <input type="number" id="certTonInput" value="125" min="1" max="10000" oninput="updateCertPreview()" />
+          </div>
+
+          <div class="form-group">
+            <label>Select Project Batch</label>
+            <select id="certProjectSelect" onchange="updateCertPreview()">
+              <option value="Amazon Rainforest Canopy Restoration">Amazon Rainforest Canopy Restoration</option>
+              <option value="Congo Basin Reforestation Project">Congo Basin Reforestation Project</option>
+              <option value="Iceland Direct Air Capture Facility">Iceland Direct Air Capture Facility</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="preview-cert-frame">
+          <span class="pc-badge mono">OFFICIAL CERTIFICATE PREVIEW</span>
+          <div class="pc-title" id="pcProject">Amazon Rainforest Canopy Restoration</div>
+          <div style="font-size:12px; color:#cbd5e1; margin-bottom:8px;">Issued To:</div>
+          <div class="pc-holder" id="pcName">Verdis Eco Alliance Corp</div>
+          <div class="pc-amount mono" id="pcAmount">125.00 tCO2e</div>
+          <div style="font-size:11px; color:#94a3b8; line-height:1.5; margin-bottom:12px;">
+            Permanently retired on Verdis Chain consensus ledger. Verified non-fungible proof of greenhouse gas offset.
+          </div>
+          <div class="pc-footer">
+            <span>ISSUER: VERDIS ECO REGISTRY</span>
+            <span class="mono" id="pcHash">HASH: 0x9c3f...12e8</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ===== SECTION 6: ECO PARTNERSHIPS ===== -->
+  <section class="section section-white reveal">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-label">Global Standards</span>
+        <h2>Environmental Partners & Certifications</h2>
+        <p>
+          Verdis Chain collaborates with leading international environmental organizations, carbon standard bodies, and climate registries.
+        </p>
+      </div>
+
+      <div class="partners-grid">
+        <div class="partner-card">
+          <div class="partner-icon">🌟</div>
           <div class="partner-name">Gold Standard</div>
           <div class="partner-role">Carbon Offset Certification</div>
         </div>
-      </div>
 
-      <div class="partner-card">
-        <div class="partner-icon">🌳</div>
-        <div>
+        <div class="partner-card">
+          <div class="partner-icon">🌳</div>
           <div class="partner-name">Verra (VCS)</div>
           <div class="partner-role">Verified Carbon Standard</div>
         </div>
-      </div>
 
-      <div class="partner-card">
-        <div class="partner-icon">🐸</div>
-        <div>
+        <div class="partner-card">
+          <div class="partner-icon">🐸</div>
           <div class="partner-name">Rainforest Alliance</div>
           <div class="partner-role">Ecosystem Audit</div>
         </div>
-      </div>
 
-      <div class="partner-card">
-        <div class="partner-icon">🇺🇳</div>
-        <div>
+        <div class="partner-card">
+          <div class="partner-icon">🇺🇳</div>
           <div class="partner-name">UN Climate Change</div>
           <div class="partner-role">UNFCCC Framework</div>
         </div>
-      </div>
 
-      <div class="partner-card">
-        <div class="partner-icon">🛡️</div>
-        <div>
+        <div class="partner-card">
+          <div class="partner-icon">🛡️</div>
           <div class="partner-name">Carbon Trust</div>
           <div class="partner-role">Footprint Verification</div>
         </div>
-      </div>
 
-      <div class="partner-card">
-        <div class="partner-icon">🌍</div>
-        <div>
+        <div class="partner-card">
+          <div class="partner-icon">🌍</div>
           <div class="partner-name">Earth Alliance</div>
-          <div class="partner-role">Biodiversity Watch</div>
+          <div class="partner-role">Biodiversity Conservation</div>
         </div>
-      </div>
 
-      <div class="partner-card">
-        <div class="partner-icon">🐼</div>
-        <div>
+        <div class="partner-card">
+          <div class="partner-icon">🐼</div>
           <div class="partner-name">WWF Climate</div>
-          <div class="partner-role">Habitat Protection</div>
+          <div class="partner-role">Wildlife Habitat Watch</div>
         </div>
-      </div>
 
-      <div class="partner-card">
-        <div class="partner-icon">📊</div>
-        <div>
+        <div class="partner-card">
+          <div class="partner-icon">📊</div>
           <div class="partner-name">Climate Action Reserve</div>
           <div class="partner-role">Ledger Compliance Audit</div>
         </div>
       </div>
+
     </div>
   </section>
 
-</main>
 
-<!-- FOOTER -->
-<footer>
-  <div class="links">
-    <a href="/">Landing</a>
-    <a href="/explorer">Explorer</a>
-    <a href="/dex">DEX</a>
-    <a href="/validators">Validators</a>
-    <a href="/docs">Docs</a>
-    <a href="/whitepaper/" target="_blank">Whitepaper</a>
-    <a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a>
-  </div>
-  <div>© 2026 Verdis Chain. Powered by live Substrate RPC.</div>
-</footer>
-
-<!-- TRADE MODAL -->
-<div class="modal-overlay" id="tradeModal">
-  <div class="modal-card">
-    <span class="modal-close" onclick="closeModal()">&times;</span>
-    <h3 id="modalTitle" style="font-size:18px; font-weight:700; margin-bottom:12px; font-family:'Space Grotesk', sans-serif;">Trade cVRDX Credits</h3>
-    <p id="modalDesc" style="font-size:13px; color:var(--text-2); margin-bottom:20px;">Execute on-chain transaction via Verdis DEX smart contract.</p>
-    
-    <div class="form-group">
-      <label>Amount (Metric Tons / cVRDX)</label>
-      <input type="number" id="modalAmount" class="form-control" value="10" min="1" oninput="calcModalTotal()" />
-    </div>
-
-    <div style="background:var(--bg-1); padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border); margin-bottom:20px;" class="mono">
-      <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-2);">
-        <span>Price per Ton:</span>
-        <span id="modalUnitPrice" style="color:var(--text);">$14.50</span>
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <h4><span class="footer-brand-dot"></span>Verdis Chain</h4>
+        <p>
+          The world's first carbon-negative blockchain. Native DPoS consensus with on-chain carbon credits, green validator scoring, and transparent reforestation logging.
+        </p>
       </div>
-      <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:700; color:var(--accent); margin-top:6px;">
-        <span>Total Estimated Cost:</span>
-        <span id="modalTotalCost">$145.00</span>
+
+      <div class="footer-col">
+        <h5>Ecosystem</h5>
+        <a href="index.html">Landing Page</a>
+        <a href="explorer.html">Block Explorer</a>
+        <a href="validators.html">Validators & Staking</a>
+        <a href="dex.html">Verdis DEX</a>
+        <a href="eco.html">Eco Metrics</a>
+      </div>
+
+      <div class="footer-col">
+        <h5>Resources</h5>
+        <a href="docs.html">Documentation</a>
+        <a href="whitepaper.html">Whitepaper</a>
+        <a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub Repository</a>
+        <a href="#">Audit Report</a>
+      </div>
+
+      <div class="footer-col">
+        <h5>Network Status</h5>
+        <a href="#" class="mono">Mainnet v2.4 Active</a>
+        <a href="#" class="mono">100% Green Energy Nodes</a>
+        <a href="#" class="mono">cVRDX Token Standard</a>
       </div>
     </div>
 
-    <button class="btn-buy" style="width:100%; padding:12px; font-size:14px;" onclick="confirmTrade()">Confirm Transaction</button>
+    <div class="footer-bottom">
+      <span>© 2026 Verdis Chain · Powered by Protremix</span>
+      <span>verdischain.com · Carbon Negative Protocol</span>
+    </div>
+  <div style="text-align:center;margin-top:12px"><a href="https://evolvixos.com" style="color:#818cf8;text-decoration:none;font-size:14px">EvolvixOS — AI Engineering OS</a></div></footer>
+
+
+  <!-- ===== MODAL ===== -->
+  <div class="modal-overlay" id="tradeModal">
+    <div class="modal-card">
+      <span class="modal-close" onclick="closeModal()">&times;</span>
+      <h3 id="modalTitle" style="font-size:18px; font-weight:800; margin-bottom:12px; color:var(--text-dark);">Trade cVRDX Credits</h3>
+      <p id="modalDesc" style="font-size:13px; color:var(--text-dark-muted); margin-bottom:20px;">Execute on-chain transaction via Verdis DEX smart contract.</p>
+      
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>Amount (Metric Tons / cVRDX)</label>
+        <input type="number" id="modalAmount" value="10" min="1" oninput="calcModalTotal()" />
+      </div>
+
+      <div style="background:#f8fafc; padding:12px; border-radius:10px; margin-bottom:20px;" class="mono">
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-dark-muted);">
+          <span>Price per Ton:</span>
+          <span id="modalUnitPrice">$14.50</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:800; color:#00a86b; margin-top:4px;">
+          <span>Total Estimated Cost:</span>
+          <span id="modalTotalCost">$145.00</span>
+        </div>
+      </div>
+
+      <button class="btn-buy" style="width:100%;" onclick="confirmTrade()">Confirm Transaction</button>
+    </div>
   </div>
-</div>
 
-<!-- SCRIPTS -->
-<script>
-// RPC CONFIGURATION
-const RPC_URL = '/rpc';
-const FALLBACK_RPC_URL = 'https://verdischain.com/rpc';
-let nextId = 1;
 
-// Helper to query JSON-RPC
-async function rpc(method, params = []) {
-  const payload = JSON.stringify({ jsonrpc: '2.0', method, params, id: nextId++ });
-  try {
-    const res = await fetch(RPC_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: payload
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (data.error) throw data.error;
-    return data.result;
-  } catch (err) {
-    // Fallback to full domain if relative proxy fails
-    const res = await fetch(FALLBACK_RPC_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: payload
-    });
-    const data = await res.json();
-    if (data.error) throw data.error;
-    return data.result;
-  }
-}
-
-// Convert Hex to Number
-function hexToNum(hex) {
-  if (!hex) return 0;
-  return parseInt(hex, 16);
-}
-
-// Load Live RPC Data
-async function loadLiveRPC() {
-  const statusEl = document.getElementById('nav-network');
-  try {
-    // 1. Get Block Header
-    const header = await rpc('chain_getHeader');
-    if (header && header.number) {
-      const blockNum = hexToNum(header.number).toLocaleString();
-      document.getElementById('stat-block').textContent = '#' + blockNum;
-      document.getElementById('hero-block-num').textContent = blockNum;
-    }
-
-    // 2. Get Peers & Sync Status
-    try {
-      const health = await rpc('system_health');
-      if (health) {
-        document.getElementById('stat-peers').textContent = health.peers || 0;
-      }
-    } catch (e) {
-      console.log('system_health notice:', e.message);
-    }
-
-    // 3. Get Active Validators
-    try {
-      const validators = await rpc('dpos_activeValidators');
-      if (Array.isArray(validators)) {
-        document.getElementById('stat-validators').textContent = validators.length;
-      }
-    } catch (e) {
-      console.log('dpos_activeValidators notice:', e.message);
-    }
-
-    // 4. Try eco-specific RPC calls
-    try {
-      const credits = await rpc('eco_getCarbonCredits');
-      if (credits && credits.totalOffset) {
-        console.log('Live carbon credit data received:', credits);
-      }
-    } catch (e) {
-      try {
-        const creditsAlt = await rpc('eco_carbonCredits');
-        if (creditsAlt) console.log('Live carbon credits alt:', creditsAlt);
-      } catch (err) {}
-    }
-
-    try {
-      const reforest = await rpc('eco_getReforestationLog');
-      if (reforest) console.log('Live reforestation log:', reforest);
-    } catch (e) {
-      try {
-        const reforestAlt = await rpc('eco_reforestationLog');
-        if (reforestAlt) console.log('Live reforestation log alt:', reforestAlt);
-      } catch (err) {}
-    }
-
-    if (statusEl) statusEl.textContent = 'Connected';
-  } catch (err) {
-    console.warn('RPC Poll Error:', err);
-    if (statusEl) statusEl.textContent = 'RPC Standby';
-  }
-}
-
-// SIMULATOR CALCULATOR
-function updateScoreCalc() {
-  const ren = parseFloat(document.getElementById('input-ren').value);
-  const off = parseFloat(document.getElementById('input-off').value);
-  const eff = parseFloat(document.getElementById('input-eff').value);
-
-  document.getElementById('val-ren-txt').innerText = ren + '%';
-  document.getElementById('val-off-txt').innerText = off + '%';
-  document.getElementById('val-eff-txt').innerText = eff;
-
-  // Formula: Renewable(30%) + Offset(25%) + Hardware(20%) + Fixed Uptime & Community(25%)
-  const score = (ren * 0.30) + (off * 0.25) + (eff * 0.20) + 24.5;
-  document.getElementById('calc-final-score').innerText = score.toFixed(1);
-
-  const bonus = ((score - 50) * 0.33).toFixed(1);
-  document.getElementById('calc-apy-boost').innerText = '+' + (bonus > 0 ? bonus : '0.0') + '% Staking Bonus';
-}
-
-// TABLE FILTER & SEARCH
-function filterProjects(region, evt) {
-  const btns = document.querySelectorAll('.btn-filter');
-  btns.forEach(b => b.classList.remove('active'));
-  if (evt && evt.target) evt.target.classList.add('active');
-
-  const rows = document.querySelectorAll('#reforestationTable tbody tr');
-  rows.forEach(row => {
-    if (region === 'All' || row.getAttribute('data-region') === region) {
-      row.style.display = '';
-    } else {
-      row.style.display = 'none';
-    }
-  });
-}
-
-function searchTable() {
-  const query = document.getElementById('projectSearch').value.toLowerCase();
-  const rows = document.querySelectorAll('#reforestationTable tbody tr');
-  rows.forEach(row => {
-    const text = row.innerText.toLowerCase();
-    row.style.display = text.includes(query) ? '' : 'none';
-  });
-}
-
-// CERTIFICATE PREVIEW
-function updateCertPreview() {
-  const name = document.getElementById('certNameInput').value || 'Verdis Eco Alliance Corp';
-  const ton = parseFloat(document.getElementById('certTonInput').value) || 0;
-  const proj = document.getElementById('certProjectSelect').value;
-
-  document.getElementById('pcName').innerText = name;
-  document.getElementById('pcAmount').innerText = ton.toFixed(2) + ' tCO2e';
-  document.getElementById('pcProject').innerText = proj;
-  
-  let hashNum = 0;
-  for (let i = 0; i < name.length; i++) hashNum += name.charCodeAt(i);
-  let dummyHash = '0x' + Math.abs(Math.floor(hashNum * ton * 889412)).toString(16).padStart(8, '0') + '...12e8';
-  document.getElementById('pcHash').innerText = 'HASH: ' + dummyHash;
-}
-
-// MODAL LOGIC
-let currentUnitPrice = 14.50;
-
-function openModal(title, price, isRetire = false) {
-  currentUnitPrice = price;
-  document.getElementById('modalTitle').innerText = (isRetire ? 'Retire cVRDX Credits: ' : 'Buy cVRDX Credits: ') + title;
-  document.getElementById('modalUnitPrice').innerText = '$' + price.toFixed(2);
-  document.getElementById('modalAmount').value = 10;
-  calcModalTotal();
-  document.getElementById('tradeModal').classList.add('active');
-}
-
-function closeModal() {
-  document.getElementById('tradeModal').classList.remove('active');
-}
-
-function calcModalTotal() {
-  const amt = parseFloat(document.getElementById('modalAmount').value) || 0;
-  const total = amt * currentUnitPrice;
-  document.getElementById('modalTotalCost').innerText = '$' + total.toFixed(2);
-}
-
-function confirmTrade() {
-  alert('Transaction submitted to Verdis Mainnet! Your cVRDX carbon credits order is processing.');
-  closeModal();
-}
-
-// INITIALIZATION
-window.addEventListener('DOMContentLoaded', () => {
-  loadLiveRPC();
-  setInterval(loadLiveRPC, 12000);
-});
-</script>
-
-<script>
-// Eco pallet storage keys (xxhash64 computed)
-const ECO_PALLET_KEY = '0x2680888a0748104b';  // twox64("Eco")
-const STORAGE_KEYS = {
-  co2: '0x2680888a0748104b2a2a6d2225476c87',    // TotalCO2Offset
-  trees: '0x2680888a0748104ba708c311d6f4910e',   // TotalTreesPlanted
-  retired: '0x2680888a0748104bcf008879e83944d7' // TotalCreditsRetired
-};
-
-async function fetchEcoStats() {
-  const RPC = '/rpc';
-  try {
-    // Fetch all 3 storage values in parallel
-    const [co2Res, treesRes, retiredRes] = await Promise.all([
-      fetch(RPC, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'state_getStorage',params:[STORAGE_KEYS.co2],id:1})}),
-      fetch(RPC, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'state_getStorage',params:[STORAGE_KEYS.trees],id:2})}),
-      fetch(RPC, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'state_getStorage',params:[STORAGE_KEYS.retired],id:3})}),
-    ]);
-
-    const co2Data = await co2Res.json();
-    const treesData = await treesRes.json();
-    const retiredData = await retiredRes.json();
-
-    // Decode SCALE-encoded values
-    function decodeU64(hex) {
-      if (!hex || hex === '0x' || hex.length < 18) return 0;
-      // u64 little-endian from hex
-      let val = 0;
-      const bytes = hex.slice(2, 18);
-      for (let i = 6; i >= 0; i--) {
-        val = val * 256 + parseInt(bytes.slice(i*2, i*2+2), 16);
-      }
-      return val;
-    }
-    function decodeU32(hex) {
-      if (!hex || hex === '0x' || hex.length < 10) return 0;
-      let val = 0;
-      const bytes = hex.slice(2, 10);
-      for (let i = 3; i >= 0; i--) {
-        val = val * 256 + parseInt(bytes.slice(i*2, i*2+2), 16);
-      }
-      return val;
-    }
-
-    const co2 = decodeU64(co2Data.result);
-    const trees = decodeU32(treesData.result);
-    const retired = decodeU64(retiredData.result);
-
-    // Update all eco stat displays
-    document.querySelectorAll('[data-eco-co2]').forEach(el => el.textContent = co2.toLocaleString() + ' t');
-    document.querySelectorAll('[data-eco-trees]').forEach(el => el.textContent = trees.toLocaleString());
-    document.querySelectorAll('[data-eco-retired]').forEach(el => el.textContent = retired.toLocaleString());
-
-    // Update any value.accent elements that show CO2
-    document.querySelectorAll('.value.accent').forEach(el => {
-      if (el.textContent.includes(' t') || el.textContent === '0 t') {
-        el.textContent = co2.toLocaleString() + ' t';
-      }
+  <!-- ===== INLINE JAVASCRIPT ===== -->
+  <script>
+    // ===== CURSOR GLOW =====
+    const glow = document.getElementById('cursor-glow');
+    document.addEventListener('mousemove', e => {
+      glow.style.left = e.clientX + 'px';
+      glow.style.top = e.clientY + 'px';
     });
 
-    // Update tree count
-    document.querySelectorAll('.value').forEach(el => {
-      if (el.textContent === '0' && el.nextElementSibling && el.nextElementSibling.textContent.toLowerCase().includes('tree')) {
-        el.textContent = trees.toLocaleString();
-      }
+    // ===== SCROLL PROGRESS BAR =====
+    const scrollBar = document.getElementById('scroll-bar');
+    window.addEventListener('scroll', () => {
+      const totalHeight = document.body.scrollHeight - window.innerHeight;
+      const progress = (window.scrollY / totalHeight) * 100;
+      scrollBar.style.width = progress + '%';
     });
 
-    console.log('Eco stats loaded: CO2=' + co2 + ' Trees=' + trees + ' Retired=' + retired);
-  } catch(e) {
-    console.log('Eco stats not available:', e.message);
-  }
-}
+    // ===== SCROLL REVEAL ANIMATION =====
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
 
-// Also fetch block height for eco page
-async function fetchBlockHeight() {
-  try {
-    const r = await fetch('/rpc', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'chain_getHeader',params:[],id:1})});
-    const d = await r.json();
-    const h = parseInt(d.result.number, 16);
-    document.querySelectorAll('[data-block-height]').forEach(el => el.textContent = '#' + h.toLocaleString());
-  } catch(e) {}
-}
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-fetchEcoStats();
-fetchBlockHeight();
-setInterval(fetchEcoStats, 30000);
-setInterval(fetchBlockHeight, 15000);
-</script>
+    // ===== VALIDATOR SCORE SIMULATOR =====
+    function updateScoreCalc() {
+      const ren = parseFloat(document.getElementById('input-ren').value);
+      const off = parseFloat(document.getElementById('input-off').value);
+      const eff = parseFloat(document.getElementById('input-eff').value);
+
+      document.getElementById('val-ren-txt').innerText = ren + '%';
+      document.getElementById('val-off-txt').innerText = off + '%';
+      document.getElementById('val-eff-txt').innerText = eff;
+
+      // Score formula: Renewable(30%) + Offset(25%) + Hardware(20%) + Fixed Uptime&Community(25%)
+      const score = (ren * 0.30) + (off * 0.25) + (eff * 0.20) + 24.5;
+      document.getElementById('calc-final-score').innerText = score.toFixed(1) + ' / 100';
+    }
+
+    // ===== REFORESTATION TABLE FILTER & SEARCH =====
+    function filterProjects(region) {
+      const btns = document.querySelectorAll('.btn-filter');
+      btns.forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const rows = document.querySelectorAll('#reforestationTable tbody tr');
+      rows.forEach(row => {
+        if (region === 'All' || row.getAttribute('data-region') === region) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    function searchTable() {
+      const query = document.getElementById('projectSearch').value.toLowerCase();
+      const rows = document.querySelectorAll('#reforestationTable tbody tr');
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        if (text.includes(query)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    // ===== RETIREMENT CERTIFICATE GENERATOR PREVIEW =====
+    function updateCertPreview() {
+      const name = document.getElementById('certNameInput').value || 'Verdis Eco Alliance Corp';
+      const ton = parseFloat(document.getElementById('certTonInput').value) || 0;
+      const proj = document.getElementById('certProjectSelect').value;
+
+      document.getElementById('pcName').innerText = name;
+      document.getElementById('pcAmount').innerText = ton.toFixed(2) + ' tCO2e';
+      document.getElementById('pcProject').innerText = proj;
+      
+      // Generate deterministic hash string
+      let dummyHash = '0x' + Math.abs((name.length * ton * 889412)).toString(16).padStart(8, '0') + '...12e8';
+      document.getElementById('pcHash').innerText = 'HASH: ' + dummyHash;
+    }
+
+    // ===== MODAL LOGIC =====
+    let currentUnitPrice = 14.50;
+
+    function openModal(title, price, isRetire = false) {
+      currentUnitPrice = price;
+      document.getElementById('modalTitle').innerText = (isRetire ? 'Retire cVRDX Credits: ' : 'Buy cVRDX Credits: ') + title;
+      document.getElementById('modalUnitPrice').innerText = '$' + price.toFixed(2);
+      document.getElementById('modalAmount').value = 10;
+      calcModalTotal();
+      document.getElementById('tradeModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('tradeModal').classList.remove('active');
+    }
+
+    function calcModalTotal() {
+      const amt = parseFloat(document.getElementById('modalAmount').value) || 0;
+      const total = amt * currentUnitPrice;
+      document.getElementById('modalTotalCost').innerText = '$' + total.toFixed(2);
+    }
+
+    function confirmTrade() {
+      alert('Transaction submitted to Verdis Mainnet! Your cVRDX carbon credits order is processing.');
+      closeModal();
+    }
+  </script>
 </body>
 </html>

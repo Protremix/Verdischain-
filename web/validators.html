@@ -1,400 +1,622 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verdis Chain Validators</title>
-<meta name="description" content="DPoS validators securing the Verdis Chain with BABE block production and GRANDPA finality. Live validator data, green scores, and staking info.">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Verdis Chain Validators">
-<meta property="og:description" content="Live DPoS validator data with green scoring and staking rewards">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #0a0a0a; --bg-1: #111; --bg-2: #1a1a1a; --card: #141414; --border: #222; --border-2: #333;
-  --text: #e8e8e8; --text-2: #888; --text-3: #555;
-  --accent: #caff33; --accent-2: #b4f849; --accent-glow: rgba(202,255,51,0.15);
-  --success: #4ade80; --warning: #fbbf24; --error: #ef4444;
-  --radius: 12px; --radius-sm: 8px;
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; overflow-x:hidden; }
-.mono { font-family:'JetBrains Mono',monospace; }
-.grotesk { font-family:'Space Grotesk',sans-serif; }
-
-/* STANDARD NAV */
-nav.std-nav { position:sticky; top:0; z-index:1000; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
-nav.std-nav .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); }
-nav.std-nav .nav-brand .logo { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#000; font-size:16px; }
-nav.std-nav .nav-brand span { font-weight:600; font-size:16px; }
-nav.std-nav .nav-links { display:flex; gap:4px; flex-wrap:wrap; }
-nav.std-nav .nav-links a { color:var(--text-2); text-decoration:none; padding:8px 12px; border-radius:8px; font-size:13px; font-weight:500; transition:all .2s; }
-nav.std-nav .nav-links a:hover, nav.std-nav .nav-links a.active { color:var(--accent); background:var(--card); }
-nav.std-nav .nav-status { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-2); }
-nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; background:var(--success); box-shadow:0 0 8px var(--success); animation:std-pulse 2s infinite; }
-@keyframes std-pulse { 0%,100%{opacity:1;} 50%{opacity:.5;} }
-@media(max-width:768px) { nav.std-nav .nav-links { display:none; } nav.std-nav .nav-brand span { font-size:14px; } }
-
-/* HERO */
-.hero { padding:48px 24px 32px; max-width:1280px; margin:0 auto; }
-.hero h1 { font-family:'Space Grotesk',sans-serif; font-size:36px; font-weight:700; margin-bottom:8px; }
-.hero h1 .accent { color:var(--accent); }
-.hero p { color:var(--text-2); font-size:16px; max-width:600px; }
-
-/* STATS BAR */
-.stats-bar { max-width:1280px; margin:0 auto 32px; padding:0 24px; display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; }
-.stat-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
-.stat-card .label { font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--text-3); margin-bottom:8px; }
-.stat-card .value { font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:600; color:var(--text); }
-.stat-card .value.accent { color:var(--accent); }
-.stat-card .value.success { color:var(--success); }
-.stat-card .sub { font-size:13px; color:var(--text-2); margin-top:4px; }
-
-/* SECTION */
-.section { max-width:1280px; margin:0 auto 48px; padding:0 24px; }
-.section h2 { font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:600; margin-bottom:16px; }
-.section h2 .live { font-size:11px; background:var(--success); color:#000; padding:2px 8px; border-radius:4px; font-weight:600; margin-left:8px; }
-
-/* PANEL */
-.panel { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:24px; }
-.panel-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border); }
-.panel-header h3 { font-size:15px; font-weight:600; }
-.panel-body { padding:0; }
-
-/* VALIDATOR ROW */
-.validator-row { display:grid; grid-template-columns:40px 1fr auto auto auto; gap:12px; padding:14px 20px; border-bottom:1px solid var(--border); align-items:center; transition:background .15s; }
-.validator-row:hover { background:var(--bg-1); }
-.validator-row:last-child { border-bottom:none; }
-.validator-rank { font-family:'JetBrains Mono',monospace; font-weight:600; color:var(--text-3); font-size:14px; }
-.validator-avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; color:#000; }
-.validator-name { font-weight:600; font-size:14px; }
-.validator-addr { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-2); margin-top:2px; }
-.validator-score { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--success); font-weight:600; }
-.validator-stake { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--accent); font-weight:600; }
-.validator-apy { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--text-2); }
-.stake-btn { background:var(--accent-glow); color:var(--accent); border:1px solid var(--accent); border-radius:6px; padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s; }
-.stake-btn:hover { background:var(--accent); color:#000; }
-
-/* GRID */
-.info-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
-.info-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
-.info-card .icon { font-size:28px; margin-bottom:12px; }
-.info-card h3 { font-size:16px; font-weight:600; margin-bottom:8px; }
-.info-card p { color:var(--text-2); font-size:14px; line-height:1.6; }
-
-/* CALCULATOR */
-.calc-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:32px; max-width:500px; margin:0 auto; }
-.calc-card label { display:block; font-size:13px; color:var(--text-2); margin-bottom:6px; }
-.calc-card input, .calc-card select { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 16px; color:var(--text); font-size:15px; font-family:'JetBrains Mono',monospace; outline:none; transition:border-color .2s; margin-bottom:16px; }
-.calc-card input:focus, .calc-card select:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
-.calc-card select { cursor:pointer; }
-.calc-result { background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:20px; text-align:center; }
-.calc-result .yield { font-family:'JetBrains Mono',monospace; font-size:28px; font-weight:700; color:var(--accent); }
-.calc-result .label { font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--text-3); margin-top:4px; }
-.calc-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
-
-/* CTA */
-.cta-section { max-width:1280px; margin:48px auto; padding:0 24px; text-align:center; }
-.cta-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:48px; }
-.cta-card h2 { font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700; margin-bottom:12px; }
-.cta-card h2 .accent { color:var(--accent); }
-.cta-card p { color:var(--text-2); font-size:16px; margin-bottom:24px; max-width:500px; margin-left:auto; margin-right:auto; }
-.cta-btn { display:inline-block; background:var(--accent); color:#000; border:none; border-radius:var(--radius-sm); padding:14px 32px; font-weight:600; font-size:15px; cursor:pointer; text-decoration:none; transition:all .2s; }
-.cta-btn:hover { background:var(--accent-2); transform:translateY(-1px); }
-
-/* FOOTER */
-footer { background:var(--bg-1); border-top:1px solid var(--border); padding:32px 24px; margin-top:48px; }
-.footer-grid { max-width:1280px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:24px; }
-.footer-col h4 { font-size:13px; text-transform:uppercase; letter-spacing:1px; color:var(--text-3); margin-bottom:12px; }
-.footer-col a { display:block; color:var(--text-2); text-decoration:none; font-size:14px; padding:4px 0; transition:color .2s; }
-.footer-col a:hover { color:var(--accent); }
-.footer-bottom { max-width:1280px; margin:24px auto 0; text-align:center; color:var(--text-3); font-size:13px; }
-
-/* SPINNER */
-.spinner { display:inline-block; width:24px; height:24px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
-@keyframes spin { to { transform:rotate(360deg); } }
-.empty { padding:40px 20px; text-align:center; color:var(--text-3); }
-
-/* RESPONSIVE */
-@media(max-width:900px) { .validator-row { grid-template-columns:40px 1fr auto; } .validator-score,.validator-stake,.validator-apy,.stake-btn { display:none; } }
-@media(max-width:375px) { .hero h1 { font-size:28px; } .stat-card .value { font-size:20px; } }
-
-.brand-logo-img { height: 36px; width: 36px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,255,136,0.35)); } .brand-text { font-family: Poppins, sans-serif; font-weight: 700; font-size: 18px; color: #fff; white-space: nowrap; margin-left: 2px; letter-spacing: -0.3px; text-decoration: none !important; }
-@media(max-width:768px) { .brand-logo-img { height: 40px; } }
-
-</style>
-<link rel="icon" type="image/png" href="/assets/favicon-32.png">
-<link rel="apple-touch-icon" href="/assets/favicon-180.png">
-<style id="nav-brand-no-underline-fix">a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration: none !important; }</style></head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verdis Chain — DPoS Validators | Green Consensus Network</title>
+  <meta name="description" content="Verdis Chain DPoS validator network. BABE/GRANDPA consensus, green validator scoring, carbon-neutral block production. Stake VRDX, earn rewards, and secure the world's first green blockchain." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Verdis Chain — DPoS Validators" />
+  <meta property="og:description" content="Green DPoS consensus with validator scoring, carbon credits, and staking rewards. Built in Rust + Substrate." />
+  <meta property="og:url" content="https://verdischain.com/validators" />
+  <meta property="og:image" content="https://verdischain.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Verdis Chain — DPoS Validators" />
+  <meta name="twitter:description" content="Green DPoS · BABE/GRANDPA · Validator Scoring · Staking Rewards" />
+  <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --canvas:#e8ebee;--canvas-light:#f1f5f9;--hero-bg:#1a1a1a;--hero-card:#2d2d2d;--hero-card-dark:#252525;--hero-border:rgba(255,255,255,0.08);
+      --accent:#caff33;--accent-hover:#a8e607;--accent-2:#84fe87;--accent-3:#00a86b;
+      --accent-glow:rgba(202,255,51,0.35);--accent-light:rgba(202,255,51,0.08);--accent-border:rgba(202,255,51,0.25);
+      --text-white:#fff;--text-dim:#b8bcc4;--text-muted:#6b7080;--text-dark:#0f172a;--text-dark-muted:#64748b;
+      --radius:12px;--radius-lg:20px;--radius-pill:100px;--transition:300ms cubic-bezier(0.16,1,0.3,1);
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:'Poppins',sans-serif;background:var(--canvas-light);color:var(--text-dark);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+    .mono{font-family:'JetBrains Mono',monospace}
+    #scroll-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#caff33,#84fe87,#00a86b);z-index:10000;width:0;transition:width 50ms;box-shadow:0 0 12px var(--accent-glow)}
+    #cursor-glow{position:fixed;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(202,255,51,0.05) 0%,transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);opacity:0;transition:opacity 300ms}
+    body:hover #cursor-glow{opacity:1}
+    .hero-section{position:relative;background:var(--canvas);padding:0 24px;overflow:hidden}
+    .hero-container{max-width:1300px;margin:0 auto;background:var(--hero-bg);border-radius:24px;overflow:hidden;position:relative;min-height:700px;display:flex}
+    .hero-container::before{content:'';position:absolute;top:-30%;right:-15%;width:700px;height:700px;background:radial-gradient(circle,var(--accent-glow),transparent 55%);opacity:0.12;animation:pulse-bg 4s ease-in-out infinite;pointer-events:none}
+    .hero-container::after{content:'';position:absolute;bottom:-20%;left:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(0,168,107,0.15),transparent 60%);opacity:0.08;animation:pulse-bg 6s ease-in-out infinite 1s;pointer-events:none}
+    @keyframes pulse-bg{0%,100%{opacity:0.08;transform:scale(1)}50%{opacity:0.15;transform:scale(1.1)}}
+    .hero-nav{position:absolute;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:28px 48px}
+    .nav-brand{font-family:'Poppins';font-weight:800;font-size:22px;color:var(--text-white);display:flex;align-items:center;gap:10px}
+    .nav-brand-dot{width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 16px var(--accent-glow);animation:pulse-dot 2s infinite}
+    @keyframes pulse-dot{0%,100%{box-shadow:0 0 16px var(--accent-glow)}50%{box-shadow:0 0 28px rgba(202,255,51,0.6)}}
+    .nav-links{display:flex;gap:36px}
+    .nav-links a{color:var(--text-dim);font-size:14px;font-weight:500;transition:color 250ms;position:relative;text-decoration:none}
+    .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--accent);border-radius:2px;transition:width 250ms}
+    .nav-links a:hover{color:var(--text-white)}
+    .nav-links a:hover::after{width:100%}
+    .nav-cta{display:flex;gap:12px;align-items:center}
+    .btn-login{color:var(--text-dim);font-size:14px;font-weight:500;padding:8px 16px;transition:color 250ms;background:none;border:none;cursor:pointer}
+    .btn-login:hover{color:var(--text-white)}
+    .btn-signup{background:var(--accent);color:var(--hero-bg);font-size:14px;font-weight:600;padding:10px 24px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition);position:relative;overflow:hidden}
+    .btn-signup::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);transition:left 500ms}
+    .btn-signup:hover::before{left:100%}
+    .btn-signup:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--accent-glow)}
+    .hero-left{flex:1;display:flex;flex-direction:column;justify-content:center;padding:120px 56px 60px position:relative;z-index:5}
+    .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:var(--accent-light);border:1px solid var(--accent-border);border-radius:var(--radius-pill);font-size:13px;font-weight:600;color:var(--accent);margin-bottom:28px;width:fit-content;opacity:0;transform:translateY(20px);animation:slideUp 600ms 200ms forwards}
+    .hero-badge-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse-dot 2s infinite}
+    .hero-title{font-size:52px;font-weight:900;line-height:1.05;color:var(--text-white);margin-bottom:24px;letter-spacing:-0.02em;opacity:0;transform:translateY(30px);animation:slideUp 800ms 400ms forwards}
+    .hero-title .gradient{background:linear-gradient(135deg,#caff33 0%,#a8e607 50%,#00a86b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+    .hero-desc{font-size:16px;color:var(--text-dim);line-height:1.8;margin-bottom:36px;max-width:500px;opacity:0;transform:translateY(20px);animation:slideUp 800ms 600ms forwards}
+    .hero-actions{display:flex;gap:16px;opacity:0;transform:translateY(20px);animation:slideUp 800ms 800ms forwards}
+    .btn-primary{background:linear-gradient(135deg,#caff33,#a8e607);color:var(--hero-bg);font-size:15px;font-weight:700;padding:14px 32px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition);position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:8px}
+    .btn-primary::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent);transition:left 500ms}
+    .btn-primary:hover::before{left:100%}
+    .btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 32px var(--accent-glow)}
+    .btn-secondary{background:transparent;color:var(--text-white);font-size:15px;font-weight:600;padding:14px 32px;border-radius:var(--radius-pill);border:1px solid rgba(255,255,255,0.15);cursor:pointer;transition:var(--transition)}
+    .btn-secondary:hover{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+    @keyframes slideUp{to{opacity:1;transform:translateY(0)}}
+    .hero-right{flex:1.15;position:relative;display:flex;align-items:center;justify-content:center;padding:40px 20px;min-height:640px}
+    .hero-visual{position:relative;width:100%;max-width:620px;height:580px;display:flex;align-items:center;justify-content:center}
+    #hero-canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
+    .hero-lime-circle{position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#caff33 0%,#a8e607 65%,#88be00 100%);box-shadow:0 0 100px rgba(202,255,51,0.45);z-index:1}
+    .dex-chart-card,.calendar-widget,.monitor-frame,.mobile-phone-mockup,.q-card,.v-btn,.floating-tag{position:absolute;z-index:3}
+    .glass{background:rgba(45,45,45,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--hero-border);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+    .dex-chart-card{top:20px;left:0;width:180px;padding:16px;opacity:0;animation:fadeIn 800ms 1s forwards}
+    .float-anim-1{animation:floatY 6s ease-in-out infinite}
+    @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+    .dex-card-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+    .dex-play-icon{width:24px;height:24px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center}
+    .dex-card-title{font-size:12px;font-weight:600;color:var(--text-dim)}
+    .dex-badge{font-size:10px;font-weight:700;color:var(--accent);background:var(--accent-light);padding:2px 8px;border-radius:100px;margin-left:auto}
+    .dex-val-row{display:flex;align-items:baseline;gap:8px;margin-bottom:12px}
+    .dex-value{font-size:22px;font-weight:800;color:var(--text-white)}
+    .dex-sub{font-size:11px;color:var(--text-muted)}
+    .dex-bars{display:flex;gap:4px;align-items:flex-end;height:48px}
+    .dex-bar{flex:1;background:linear-gradient(180deg,var(--accent),rgba(202,255,51,0.3));border-radius:3px;height:var(--h);min-height:8px}
+    .calendar-widget{top:10px;right:0;width:200px;padding:16px;opacity:0;animation:fadeIn 800ms 1.2s forwards}
+    .float-anim-2{animation:floatY 7s ease-in-out infinite 0.5s}
+    .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .cal-title{font-size:13px;font-weight:700;color:var(--text-white)}
+    .cal-badge{font-size:9px;font-weight:700;color:var(--accent);background:var(--accent-light);padding:2px 8px;border-radius:100px;border:1px solid var(--accent-border)}
+    .cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:9px;color:var(--text-muted);margin-bottom:4px;font-weight:600}
+    .cal-days{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:10px;color:var(--text-dim);gap:2px}
+    .cal-days span{padding:3px 0;border-radius:4px}
+    .cal-days span.muted{color:rgba(255,255,255,0.15)}
+    .cal-days span.active{background:var(--accent);color:var(--hero-bg);font-weight:700}
+    .cal-footer{margin-top:10px;padding-top:10px;border-top:1px solid var(--hero-border);display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text-muted)}
+    .cal-footer-dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+    .monitor-frame{top:130px;left:50%;transform:translateX(-50%);width:340px;padding:0;opacity:0;animation:fadeIn 800ms 1.4s forwards}
+    .float-anim-3{animation:floatY 8s ease-in-out infinite 1s}
+    .monitor-header{display:flex;align-items:center;padding:12px 16px;gap:8px;border-bottom:1px solid var(--hero-border)}
+    .win-controls{display:flex;gap:6px}
+    .win-dot{width:10px;height:10px;border-radius:50%}
+    .win-dot.red{background:#ff5f57}.win-dot.yellow{background:#ffbd2e}.win-dot.green{background:#28ca42}
+    .monitor-title{font-size:11px;color:var(--text-muted);margin-left:8px}
+    .monitor-status{margin-left:auto;display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--accent)}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse-dot 1.5s infinite}
+    .monitor-body{padding:16px}
+    .monitor-metrics{display:flex;gap:12px;margin-bottom:12px}
+    .m-stat{flex:1}
+    .m-lbl{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+    .m-val{font-size:14px;font-weight:700;color:var(--text-white)}
+    .m-val.green{color:var(--accent)}
+    .monitor-graph{height:60px;margin-bottom:8px;position:relative}
+    .monitor-log{font-size:10px;color:var(--text-muted);padding-top:8px;border-top:1px solid var(--hero-border)}
+    .mobile-phone-mockup{top:180px;left:-10px;width:160px;padding:0;border-radius:24px;overflow:hidden;opacity:0;animation:fadeIn 800ms 1.6s forwards;z-index:4}
+    .float-anim-4{animation:floatY 6s ease-in-out infinite 1.5s}
+    .phone-notch{width:50px;height:6px;background:rgba(0,0,0,0.6);border-radius:0 0 10px 10px;margin:0 auto;position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:5}
+    .phone-screen{padding:20px 12px 12px;background:linear-gradient(180deg,#1a1a1a,#0d0d0d)}
+    .phone-status{display:flex;justify-content:space-between;align-items:center;font-size:9px;color:var(--text-dim);margin-bottom:10px}
+    .phone-icons{display:flex;align-items:center;gap:4px}
+    .phone-profile{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+    .profile-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;border:1px solid var(--accent-border)}
+    .profile-info{flex:1}
+    .profile-name{font-size:10px;font-weight:700;color:var(--text-white)}
+    .profile-address{font-size:8px;color:var(--text-muted)}
+    .phone-login-badge{font-size:7px;font-weight:700;color:var(--accent);background:var(--accent-light);padding:2px 6px;border-radius:100px}
+    .phone-balance-card{background:rgba(255,255,255,0.03);border:1px solid var(--hero-border);border-radius:12px;padding:10px;margin-bottom:10px}
+    .p-bal-lbl{font-size:8px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+    .p-bal-val{font-size:16px;font-weight:800;color:var(--accent)}
+    .p-bal-sub{font-size:9px;color:var(--text-dim);margin-top:2px}
+    .p-up{color:var(--accent-2);font-weight:600}
+    .phone-staking-ring{position:relative;width:72px;height:72px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center}
+    .ring-label{position:absolute;text-align:center}
+    .ring-pct{font-size:14px;font-weight:800;color:var(--accent);display:block}
+    .ring-txt{font-size:8px;color:var(--text-muted)}
+    .phone-actions{display:flex;gap:6px}
+    .p-btn{flex:1;padding:7px;border-radius:8px;font-size:9px;font-weight:700;border:none;cursor:pointer}
+    .p-btn.primary{background:var(--accent);color:var(--hero-bg)}
+    .p-btn.outline{background:transparent;color:var(--text-white);border:1px solid rgba(255,255,255,0.15)}
+    .stats-grid-4{bottom:0;left:20px;display:grid;grid-template-columns:1fr 1fr;gap:8px;width:280px;opacity:0;animation:fadeIn 800ms 1.8s forwards}
+    .float-anim-5{animation:floatY 5s ease-in-out infinite 2s}
+    .q-card{position:relative;padding:12px;display:flex;align-items:center;gap:10px}
+    .q-icon{width:32px;height:32px;border-radius:8px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid var(--accent-border)}
+    .q-lbl{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px}
+    .q-val{font-size:13px;font-weight:700;color:var(--text-white)}
+    .floating-tag{font-size:11px;font-weight:600;color:var(--text-dim);background:rgba(45,45,45,0.8);backdrop-filter:blur(10px);padding:6px 14px;border-radius:100px;border:1px solid var(--hero-border);opacity:0;animation:fadeIn 800ms 2s forwards}
+    .tag-1{bottom:280px;left:40px}.tag-2{bottom:200px;right:20px}.tag-3{bottom:120px;left:50px}
+    .float-anim-6{animation:floatY 4s ease-in-out infinite 2.5s}
+    .float-anim-7{animation:floatY 5s ease-in-out infinite 3s}
+    .v-stack{position:absolute;right:-20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:5;opacity:0;animation:fadeIn 800ms 2.2s forwards}
+    .v-btn{position:relative;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+    .float-anim-8{animation:floatY 4s ease-in-out infinite 2.5s}
+    @keyframes fadeIn{to{opacity:1}}
+    .section{padding:100px 24px}
+    .section-inner{max-width:1200px;margin:0 auto}
+    .section-label{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(202,255,51,0.08);border:1px solid rgba(202,255,51,0.2);border-radius:100px;font-size:13px;font-weight:600;color:#00a86b;margin-bottom:20px}
+    .section-title{font-size:42px;font-weight:800;color:var(--text-dark);margin-bottom:16px;letter-spacing:-0.02em;line-height:1.15}
+    .section-desc{font-size:17px;color:var(--text-dark-muted);line-height:1.7;max-width:620px;margin-bottom:60px}
+    .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+    .feature-card{background:white;border:1px solid #e2e8f0;border-radius:16px;padding:32px;transition:all 300ms cubic-bezier(0.16,1,0.3,1);position:relative;overflow:hidden}
+    .feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#caff33,#00a86b);transform:scaleX(0);transform-origin:left;transition:transform 300ms}
+    .feature-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,0.08);border-color:rgba(202,255,51,0.3)}
+    .feature-card:hover::before{transform:scaleX(1)}
+    .feature-icon{width:48px;height:48px;border-radius:12px;background:rgba(202,255,51,0.08);border:1px solid rgba(202,255,51,0.15);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+    .feature-title{font-size:18px;font-weight:700;color:var(--text-dark);margin-bottom:10px}
+    .feature-desc{font-size:14px;color:var(--text-dark-muted);line-height:1.6}
+    .validator-table{background:white;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;margin-bottom:60px}
+    .vt-header{display:grid;grid-template-columns:50px 2fr 1fr 1fr 1fr 1fr 80px;padding:14px 20px;background:#0f172a;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.8px}
+    .vt-row{display:grid;grid-template-columns:50px 2fr 1fr 1fr 1fr 1fr 80px;padding:14px 20px;border-top:1px solid #f1f5f9;align-items:center;font-size:13px;transition:background 200ms}
+    .vt-row:hover{background:rgba(202,255,51,0.03)}
+    .vt-rank{font-family:'JetBrains Mono',monospace;font-weight:700;color:#94a3b8}
+    .vt-name{font-weight:600;color:var(--text-dark);display:flex;align-items:center;gap:8px}
+    .vt-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .vt-dot.active{background:#00a86b;box-shadow:0 0 8px rgba(0,168,107,0.4)}
+    .vt-dot.standby{background:#f59e0b}
+    .vt-green{display:inline-flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-weight:700}
+    .vt-green.high{color:#00a86b}
+    .vt-green.mid{color:#84fe87}
+    .vt-green.low{color:#f59e0b}
+    .vt-apy{font-family:'JetBrains Mono',monospace;font-weight:700;color:#00a86b}
+    .vt-status{font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;text-transform:uppercase}
+    .vt-status.active{background:rgba(0,168,107,0.1);color:#00a86b}
+    .vt-status.standby{background:rgba(245,158,11,0.1);color:#f59e0b}
+    .vt-stake-btn{background:rgba(202,255,51,0.08);border:1px solid rgba(202,255,51,0.2);color:#00a86b;font-size:12px;font-weight:600;padding:6px 14px;border-radius:100px;cursor:pointer;transition:all 200ms}
+    .vt-stake-btn:hover{background:var(--accent);color:#1a1a1a}
+    .cta-section{padding:80px 24px}
+    .cta-inner{max-width:1000px;margin:0 auto;background:var(--hero-bg);border-radius:24px;padding:64px 48px;text-align:center;position:relative;overflow:hidden}
+    .cta-inner::before{content:'';position:absolute;top:-50%;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,var(--accent-glow),transparent 55%);opacity:0.15;pointer-events:none}
+    .cta-title{font-size:36px;font-weight:800;color:var(--text-white);margin-bottom:16px;position:relative;z-index:1}
+    .cta-desc{font-size:16px;color:var(--text-dim);margin-bottom:32px;max-width:500px;margin-left:auto;margin-right:auto;position:relative;z-index:1}
+    .cta-btn{background:linear-gradient(135deg,#caff33,#a8e607);color:var(--hero-bg);font-size:16px;font-weight:700;padding:16px 40px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition);position:relative;z-index:1}
+    .cta-btn:hover{transform:translateY(-3px);box-shadow:0 12px 32px var(--accent-glow)}
+    .footer{background:#0f172a;padding:60px 24px 30px;color:var(--text-dim)}
+    .footer-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+    .footer-brand{font-size:22px;font-weight:800;color:white;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+    .footer-desc{font-size:14px;line-height:1.6;color:var(--text-muted);max-width:300px}
+    .footer-col-title{font-size:13px;font-weight:700;color:white;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:16px}
+    .footer-links{display:flex;flex-direction:column;gap:10px}
+    .footer-links a{color:var(--text-muted);font-size:14px;text-decoration:none;transition:color 200ms}
+    .footer-links a:hover{color:var(--accent)}
+    .footer-bottom{max-width:1200px;margin:0 auto;padding-top:30px;border-top:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--text-muted)}
+    .reveal{opacity:0;transform:translateY(40px);transition:opacity 600ms cubic-bezier(0.16,1,0.3,1),transform 600ms cubic-bezier(0.16,1,0.3,1)}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+    @media(max-width:1024px){.features-grid{grid-template-columns:repeat(2,1fr)}.hero-right{display:none}.hero-container{min-height:600px}.vt-header,.vt-row{grid-template-columns:40px 2fr 1fr 1fr 80px}}
+    @media(max-width:768px){.features-grid{grid-template-columns:1fr}.nav-links{display:none}.hero-left{padding:100px 24px 40px}.section-title{font-size:32px}.vt-header,.vt-row{grid-template-columns:40px 1fr 1fr 60px}.footer-inner{grid-template-columns:1fr}}
+  </style>
+</head>
 <body>
-<nav class="std-nav">
-  <a href="/" class="nav-brand"><img src="/assets/verdis-v-icon.png" alt="Verdis Chain" class="brand-logo-img"><span class="brand-text">Verdis Chain</span></a>
-  <div class="nav-links">
-    <a href="/">Home</a>
-    <a href="/explorer/">Explorer</a>
-    <a href="/dex/">DEX</a>
-    <a href="/validators/" class="active">Validators</a>
-    <a href="/eco/">Eco</a>
-    <a href="/faucet/">Faucet</a>
-    <a href="/wallet/">Wallet</a>
-    <a href="/sale/">Sale</a>
-    <a href="/docs/">Docs</a>
-  </div>
-  <div class="nav-status"><div class="dot"></div><span>Connected</span></div>
-</nav>
+  <div id="cursor-glow"></div>
+  <div id="scroll-bar"></div>
 
-<div class="hero">
-  <h1><span class="accent">DPoS VALIDATORS</span></h1>
-  <h1>Securing the Green Chain</h1>
-  <p>Verdis Chain uses Delegated Proof-of-Stake with BABE block production and GRANDPA finality. Validators compete on green scoring, uptime, and carbon offset — earning rewards while keeping the network carbon-neutral.</p>
-</div>
-
-<div class="stats-bar">
-  <div class="stat-card">
-    <div class="label">Active Validators</div>
-    <div class="value accent" id="statValidators">--</div>
-    <div class="sub">Active Set</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Block Height</div>
-    <div class="value" id="statBlock">--</div>
-    <div class="sub">Live</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Network Peers</div>
-    <div class="value" id="statPeers">--</div>
-    <div class="sub">Synced</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Consensus</div>
-    <div class="value" style="font-size:18px;">DPoS</div>
-    <div class="sub">BABE + GRANDPA</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Avg APY</div>
-    <div class="value success">12.4%</div>
-    <div class="sub">Staking Yield</div>
-  </div>
-</div>
-
-<div class="section">
-  <h2>Active Validator Set <span class="live">LIVE</span></h2>
-  <div class="panel">
-    <div class="panel-header">
-      <h3>Network Validators</h3>
-      <span style="font-size:13px; color:var(--text-2);" id="valCount">Loading...</span>
-    </div>
-    <div class="panel-body" id="validatorList">
-      <div class="empty"><div class="spinner"></div><p style="margin-top:12px;">Fetching live validators from chain...</p></div>
-    </div>
-  </div>
-</div>
-
-<div class="section">
-  <h2>How DPoS Works</h2>
-  <div class="info-grid">
-    <div class="info-card">
-      <div class="icon">⚡</div>
-      <h3>BABE Block Production</h3>
-      <p>Validators take turns producing blocks using the BABE (Blind Assignment for Blockchain Extension) VRF lottery, ensuring fair and randomized block production.</p>
-    </div>
-    <div class="info-card">
-      <div class="icon">🔒</div>
-      <h3>GRANDPA Finality</h3>
-      <p>GHOST-based Recursive ANcestor-Derived Prefixing Agreement provides deterministic finality within 2-3 seconds, preventing chain reorganizations beyond the finalized point.</p>
-    </div>
-    <div class="info-card">
-      <div class="icon">🌱</div>
-      <h3>Green Validator Score</h3>
-      <p>Validators are scored on renewable energy usage, carbon offset verification, and node efficiency. Higher green scores earn bonus rewards and priority selection.</p>
-    </div>
-    <div class="info-card">
-      <div class="icon">🛡️</div>
-      <h3>Slashing Protection</h3>
-      <p>Double-signing, equivocation, and downtime trigger automated slashing. Stakers are protected by proportional penalties — never losing more than a defined threshold.</p>
-    </div>
-    <div class="info-card">
-      <div class="icon">💰</div>
-      <h3>Delegation Rewards</h3>
-      <p>Token holders delegate VRDX to validators and earn 12.4% APY on average. Rewards are distributed automatically each epoch — no claim transaction needed.</p>
-    </div>
-    <div class="info-card">
-      <div class="icon">🔄</div>
-      <h3>Epoch Rotation</h3>
-      <p>Validator sets rotate every 4 hours (1 epoch = 1,200 blocks). New validators can join the active set based on accumulated stake and green score rankings.</p>
-    </div>
-  </div>
-</div>
-
-<div class="section">
-  <h2>Staking Yield Calculator</h2>
-  <div class="calc-card">
-    <label>Enter Delegation Amount (VRDX)</label>
-    <input type="number" id="stakeAmount" value="10000" min="1000" step="1000">
-    <label>Validator Type</label>
-    <select id="validatorType">
-      <option value="0.085">Standard Validator (8.5% APR)</option>
-      <option value="0.11">Green Validator (11.0% APR with Eco Bonus)</option>
-    </select>
-    <div class="calc-result">
-      <div class="yield" id="yearlyYield">935.00 VRDX</div>
-      <div class="label">Yearly Yield</div>
-      <div class="calc-row">
-        <div>
-          <div style="font-family:'JetBrains Mono',monospace; font-size:18px; color:var(--accent); font-weight:600;" id="monthlyYield">77.92</div>
-          <div style="font-size:11px; color:var(--text-3); text-transform:uppercase;">Monthly</div>
+  <section class="hero-section">
+    <div class="hero-container">
+      <nav class="hero-nav">
+        <div class="nav-brand"><span class="nav-brand-dot"></span>Verdis Chain</div>
+        <div class="nav-links">
+          <a href="/index.html">Home</a>
+          <a href="/explorer.html">Explorer</a>
+          <a href="/dex.html">DEX</a>
+          <a href="/eco.html">Eco</a>
+          <a href="/docs.html">Docs</a>
         </div>
-        <div>
-          <div style="font-family:'JetBrains Mono',monospace; font-size:18px; color:var(--accent); font-weight:600;" id="dailyYield">2.56</div>
-          <div style="font-size:11px; color:var(--text-3); text-transform:uppercase;">Daily</div>
+        <div class="nav-cta">
+          <button class="btn-login">Log In</button>
+          <button class="btn-signup">Launch App</button>
+        </div>
+      </nav>
+
+      <div class="hero-left">
+        <div class="hero-badge"><span class="hero-badge-dot"></span> 14 Active Validators · GRANDPA Finality</div>
+        <h1 class="hero-title">
+          <span class="gradient">DPOS VALIDATORS</span><br>
+          <span style="color:var(--text-white)">Securing the Green Chain</span>
+        </h1>
+        <p class="hero-desc">Verdis Chain uses Delegated Proof-of-Stake with BABE block production and GRANDPA finality. Validators compete on green scoring, uptime, and carbon offset — earning rewards while keeping the network carbon-neutral.</p>
+        <div class="hero-actions">
+          <button class="btn-primary" onclick="document.getElementById('validators').scrollIntoView()">View Validators →</button>
+          <button class="btn-secondary" onclick="document.getElementById('staking').scrollIntoView()">Staking Guide</button>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="hero-visual">
+          <div class="hero-lime-circle"></div>
+          <canvas id="hero-canvas"></canvas>
+
+          <!-- Green Score Card -->
+          <div class="dex-chart-card glass float-anim-1">
+            <div class="dex-card-header">
+              <div class="dex-play-icon"><svg width="10" height="10" viewBox="0 0 24 24" fill="#1a1a1a"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+              <span class="dex-card-title">Green Scores</span>
+              <span class="dex-badge">A+</span>
+            </div>
+            <div class="dex-val-row">
+              <span class="dex-value mono">94.2</span>
+              <span class="dex-sub">Avg Score</span>
+            </div>
+            <div class="dex-bars">
+              <div class="dex-bar" style="--h:85%"></div>
+              <div class="dex-bar" style="--h:95%"></div>
+              <div class="dex-bar" style="--h:78%"></div>
+              <div class="dex-bar" style="--h:92%"></div>
+              <div class="dex-bar" style="--h:88%"></div>
+              <div class="dex-bar" style="--h:96%"></div>
+              <div class="dex-bar" style="--h:82%"></div>
+            </div>
+          </div>
+
+          <!-- Rotation Calendar -->
+          <div class="calendar-widget glass float-anim-2">
+            <div class="cal-header">
+              <span class="cal-title">August 2026</span>
+              <span class="cal-badge">Epoch #42</span>
+            </div>
+            <div class="cal-weekdays"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+            <div class="cal-days">
+              <span class="muted">27</span><span class="muted">28</span><span class="muted">29</span><span class="muted">30</span><span class="muted">31</span><span>1</span><span>2</span>
+              <span>3</span><span class="active">4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
+              <span>10</span><span>11</span><span class="active">12</span><span>13</span><span>14</span><span>15</span><span>16</span>
+              <span>17</span><span>18</span><span>19</span><span class="active">20</span><span>21</span><span>22</span><span>23</span>
+              <span>24</span><span>25</span><span class="active">26</span><span>27</span><span>28</span><span>29</span><span>30</span>
+              <span>31</span>
+            </div>
+            <div class="cal-footer"><span class="cal-footer-dot"></span> Next Rotation in 2d 8h</div>
+          </div>
+
+          <!-- Validator Dashboard Monitor -->
+          <div class="monitor-frame glass float-anim-3">
+            <div class="monitor-header">
+              <div class="win-controls"><span class="win-dot red"></span><span class="win-dot yellow"></span><span class="win-dot green"></span></div>
+              <span class="monitor-title mono">Validator Dashboard v2.1</span>
+              <span class="monitor-status"><span class="status-dot"></span> LIVE</span>
+            </div>
+            <div class="monitor-body">
+              <div class="monitor-metrics">
+                <div class="m-stat"><span class="m-lbl">Active Set</span><span class="m-val mono">14/14</span></div>
+                <div class="m-stat"><span class="m-lbl">Total Staked</span><span class="m-val mono green">847M</span></div>
+                <div class="m-stat"><span class="m-lbl">Avg APY</span><span class="m-val mono green">12.4%</span></div>
+              </div>
+              <div class="monitor-graph">
+                <svg viewBox="0 0 300 70" preserveAspectRatio="none" style="width:100%;height:100%">
+                  <defs><linearGradient id="mon-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#caff33" stop-opacity="0.4"/><stop offset="100%" stop-color="#caff33" stop-opacity="0"/></linearGradient></defs>
+                  <path d="M0,50 Q40,10 80,35 T160,20 T240,45 T300,15 L300,70 L0,70 Z" fill="url(#mon-grad)"/>
+                  <path d="M0,50 Q40,10 80,35 T160,20 T240,45 T300,15" fill="none" stroke="#caff33" stroke-width="2.5"/>
+                  <circle cx="80" cy="35" r="3.5" fill="#caff33"/><circle cx="160" cy="20" r="3.5" fill="#caff33"/><circle cx="300" cy="15" r="4.5" fill="#caff33"/>
+                </svg>
+              </div>
+              <div class="monitor-log mono"><span>Epoch #42 · Block #1,847,392 · 14 validators · 0.02 tCO₂</span></div>
+            </div>
+          </div>
+
+          <!-- Staking Phone Mockup -->
+          <div class="mobile-phone-mockup glass float-anim-4">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="phone-status">
+                <span>11:08</span>
+                <div class="phone-icons">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="#b8bcc4"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.2 19.53 10.55 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg>
+                  <span style="font-size:9px;font-weight:700">5G</span>
+                </div>
+              </div>
+              <div class="phone-profile">
+                <div class="profile-avatar"><svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+                <div class="profile-info"><div class="profile-name">Validator #7</div><div class="profile-address mono">0x7F...3A92</div></div>
+                <div class="phone-login-badge">ACTIVE</div>
+              </div>
+              <div class="phone-balance-card">
+                <div class="p-bal-lbl">Staked Amount</div>
+                <div class="p-bal-val mono">62,400 VRDX</div>
+                <div class="p-bal-sub">≈ $218,400 <span class="p-up">+12.4% APY</span></div>
+              </div>
+              <div class="phone-staking-ring">
+                <svg width="72" height="72" viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="6"/>
+                  <circle cx="40" cy="40" r="32" fill="none" stroke="#caff33" stroke-width="6" stroke-dasharray="201" stroke-dashoffset="50.25" stroke-linecap="round" transform="rotate(-90 40 40)"/>
+                </svg>
+                <div class="ring-label"><span class="ring-pct mono">75%</span><span class="ring-txt">Uptime</span></div>
+              </div>
+              <div class="phone-actions"><button class="p-btn primary">Delegate</button><button class="p-btn outline">Unstake</button></div>
+            </div>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="stats-grid-4 float-anim-5">
+            <div class="q-card glass"><div class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><path d="M12 2L4 6v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V6l-8-4z"/></svg></div><div><div class="q-lbl">Active Set</div><div class="q-val mono">14</div></div></div>
+            <div class="q-card glass"><div class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div><div><div class="q-lbl">Green Score</div><div class="q-val mono">94.2</div></div></div>
+            <div class="q-card glass"><div class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg></div><div><div class="q-lbl">Avg APY</div><div class="q-val mono">12.4%</div></div></div>
+            <div class="q-card glass"><div class="q-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><path d="M12 1L3 5v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V5l-9-4z"/></svg></div><div><div class="q-lbl">Total Staked</div><div class="q-val mono">847M</div></div></div>
+          </div>
+
+          <!-- Floating Tags -->
+          <div class="floating-tag tag-1 float-anim-6">BABE + GRANDPA</div>
+          <div class="floating-tag tag-2 float-anim-7">Green Score</div>
+          <div class="floating-tag tag-3 float-anim-6">Slashing</div>
+
+          <!-- Vertical Button Stack -->
+          <div class="v-stack">
+            <div class="v-btn glass"><svg width="14" height="14" viewBox="0 0 24 24" fill="#b8bcc4"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+            <div class="v-btn glass"><svg width="14" height="14" viewBox="0 0 24 24" fill="#b8bcc4"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg></div>
+            <div class="v-btn glass"><svg width="14" height="14" viewBox="0 0 24 24" fill="#caff33"><circle cx="12" cy="12" r="8"/></svg></div>
+            <div class="v-btn glass"><svg width="14" height="14" viewBox="0 0 24 24" fill="#b8bcc4"><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg></div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
+  </section>
 
-<div class="cta-section">
-  <div class="cta-card">
-    <h2>Become a <span class="accent">Validator</span></h2>
-    <p>Run a Verdis node, stake VRDX, and earn rewards while powering the world's first carbon-neutral blockchain. Minimum stake: 10,000 VRDX.</p>
-    <a href="/docs/" class="cta-btn">Start Validating →</a>
-  </div>
-</div>
+  <!-- Features Section -->
+  <section class="section" id="staking">
+    <div class="section-inner">
+      <div class="section-label reveal">⚡ How DPoS Works</div>
+      <h2 class="section-title reveal">Green Consensus, Real Rewards</h2>
+      <p class="section-desc reveal">Verdis Chain's DPoS system selects 14 active validators per epoch based on stake, green score, and uptime. Validators produce blocks via BABE and finalize them via GRANDPA — all while earning VRDX rewards.</p>
 
-<footer>
-  <div class="footer-grid">
-    <div class="footer-col">
-      <h4>Product</h4>
-      <a href="/">Landing</a>
-      <a href="/explorer/">Explorer</a>
-      <a href="/dex/">DEX</a>
-      <a href="/wallet/">Wallet</a>
+      <div class="features-grid">
+        <div class="feature-card reveal">
+          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="#00a86b"><path d="M12 2L4 6v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V6l-8-4zm0 10.5l-5-2.5V8l5 2.5L17 8v2.5l-5 2.5z"/></svg></div>
+          <h3 class="feature-title">BABE Block Production</h3>
+          <p class="feature-desc">Validators take turns producing blocks using the BABE (Blind Assignment for Blockchain Extension) VRF lottery, ensuring fair and randomized block production.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="#00a86b"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg></div>
+          <h3 class="feature-title">GRANDPA Finality</h3>
+          <p class="feature-desc">GHOST-based Recursive ANcestor-Derived Prefixing Agreement provides deterministic finality within 2-3 seconds, preventing chain reorganizations beyond the finalized point.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="#00a86b"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+          <h3 class="feature-title">Green Validator Score</h3>
+          <p class="feature-desc">Validators are scored on renewable energy usage, carbon offset verification, and node efficiency. Higher green scores earn bonus rewards and priority selection.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="#00a86b"><path d="M12 1L3 5v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V5l-9-4z"/></svg></div>
+          <h3 class="feature-title">Slashing Protection</h3>
+          <p class="feature-desc">Double-signing, equivocation, and downtime trigger automated slashing. Stakers are protected by proportional penalties — never losing more than a defined threshold.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="#00a86b"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg></div>
+          <h3 class="feature-title">Delegation Rewards</h3>
+          <p class="feature-desc">Token holders delegate VRDX to validators and earn 12.4% APY on average. Rewards are distributed automatically each epoch — no claim transaction needed.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="#00a86b"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg></div>
+          <h3 class="feature-title">Epoch Rotation</h3>
+          <p class="feature-desc">Validator sets rotate every 4 hours (1 epoch = 1,200 blocks). New validators can join the active set based on accumulated stake and green score rankings.</p>
+        </div>
+      </div>
     </div>
-    <div class="footer-col">
-      <h4>Resources</h4>
-      <a href="/docs/">Documentation</a>
-      <a href="/whitepaper/">Whitepaper</a>
-      <a href="/validators/">Validators</a>
-      <a href="/eco/">Eco Metrics</a>
+  </section>
+
+  <!-- Validator Table -->
+  <section class="section" id="validators" style="background:var(--canvas);">
+    <div class="section-inner">
+      <div class="section-label reveal">🌐 Network Status</div>
+      <h2 class="section-title reveal">Active Validator Set</h2>
+      <p class="section-desc reveal">14 validators are currently producing blocks and finalizing the chain. Green scores are updated every epoch based on energy source verification.</p>
+
+      <div class="validator-table reveal">
+        <div class="vt-header">
+          <span>#</span><span>Validator</span><span>Green Score</span><span>Staked</span><span>Uptime</span><span>APY</span><span>Action</span>
+        </div>
+        <div class="vt-row">
+          <span class="vt-rank">1</span>
+          <span class="vt-name"><span class="vt-dot active"></span>GreenNode</span>
+          <span class="vt-green high">96.8</span>
+          <span class="mono">128.4M</span>
+          <span class="mono">99.98%</span>
+          <span class="vt-apy">13.2%</span>
+          <button class="vt-stake-btn">Stake</button>
+        </div>
+        <div class="vt-row">
+          <span class="vt-rank">2</span>
+          <span class="vt-name"><span class="vt-dot active"></span>EcoValidator</span>
+          <span class="vt-green high">95.4</span>
+          <span class="mono">112.7M</span>
+          <span class="mono">99.95%</span>
+          <span class="vt-apy">12.8%</span>
+          <button class="vt-stake-btn">Stake</button>
+        </div>
+        <div class="vt-row">
+          <span class="vt-rank">3</span>
+          <span class="vt-name"><span class="vt-dot active"></span>VerdisRanger</span>
+          <span class="vt-green high">94.1</span>
+          <span class="mono">98.2M</span>
+          <span class="mono">99.92%</span>
+          <span class="vt-apy">12.5%</span>
+          <button class="vt-stake-btn">Stake</button>
+        </div>
+        <div class="vt-row">
+          <span class="vt-rank">4</span>
+          <span class="vt-name"><span class="vt-dot active"></span>CarbonNode</span>
+          <span class="vt-green high">93.7</span>
+          <span class="mono">87.5M</span>
+          <span class="mono">99.88%</span>
+          <span class="vt-apy">12.3%</span>
+          <button class="vt-stake-btn">Stake</button>
+        </div>
+        <div class="vt-row">
+          <span class="vt-rank">5</span>
+          <span class="vt-name"><span class="vt-dot active"></span>ForestGuard</span>
+          <span class="vt-green mid">92.3</span>
+          <span class="mono">76.8M</span>
+          <span class="mono">99.85%</span>
+          <span class="vt-apy">12.1%</span>
+          <button class="vt-stake-btn">Stake</button>
+        </div>
+        <div class="vt-row">
+          <span class="vt-rank">6</span>
+          <span class="vt-name"><span class="vt-dot active"></span>SolarStake</span>
+          <span class="vt-green mid">91.8</span>
+          <span class="mono">64.3M</span>
+          <span class="mono">99.80%</span>
+          <span class="vt-apy">11.9%</span>
+          <button class="vt-stake-btn">Stake</button>
+        </div>
+        <div class="vt-row">
+          <span class="vt-rank">7</span>
+          <span class="vt-name"><span class="vt-dot active"></span>WindValidator</span>
+          <span class="vt-green mid">90.5</span>
+          <span class="mono">52.1M</span>
+          <span class="mono">99.75%</span>
+          <span class="vt-apy">11.7%</span>
+          <button class="vt-stake-btn">Stake</button>
+        </div>
+        <div class="vt-row">
+          <span class="vt-rank">8</span>
+          <span class="vt-name"><span class="vt-dot active"></span>HydroNode</span>
+          <span class="vt-green mid">89.2</span>
+          <span class="mono">48.6M</span>
+          <span class="mono">99.70%</span>
+          <span class="vt-apy">11.5%</span>
+          <button class="vt-stake-btn">Stake</button>
+        </div>
+        <div class="vt-row">
+          <span class="vt-rank">9</span>
+          <span class="vt-name"><span class="vt-dot standby"></span>GeoStake</span>
+          <span class="vt-green low">87.4</span>
+          <span class="mono">41.3M</span>
+          <span class="mono">99.62%</span>
+          <span class="vt-apy">11.2%</span>
+          <button class="vt-stake-btn">Stake</button>
+        </div>
+        <div class="vt-row">
+          <span class="vt-rank">10</span>
+          <span class="vt-name"><span class="vt-dot standby"></span>Protremix Node</span>
+          <span class="vt-green low">85.9</span>
+          <span class="mono">37.2M</span>
+          <span class="mono">99.55%</span>
+          <span class="vt-apy">11.0%</span>
+          <button class="vt-stake-btn">Stake</button>
+        </div>
+      </div>
     </div>
-    <div class="footer-col">
-      <h4>Community</h4>
-      <a href="https://github.com/Protremix/Verdischain-">GitHub</a>
-      <a href="/sale/">Token Sale</a>
-      <a href="/faucet/">Faucet</a>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-inner">
+      <h2 class="cta-title">Become a Validator</h2>
+      <p class="cta-desc">Run a Verdis node, stake VRDX, and earn rewards while powering the world's first carbon-neutral blockchain. Minimum stake: 10,000 VRDX.</p>
+      <button class="cta-btn">Start Validating →</button>
     </div>
-  </div>
-  <div class="footer-bottom">
-    © 2026 Verdis Chain · Powered by Protremix · Built with Rust + Substrate
-  </div>
-</footer>
+  </section>
 
-<script>
-// Live RPC data
-async function rpc(method, params=[]) {
-  const resp = await fetch('/rpc', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({jsonrpc: '2.0', method, params, id: 1})
-  });
-  const data = await resp.json();
-  return data.result;
-}
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand"><span style="width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent-glow);display:inline-block"></span>Verdis Chain</div>
+        <p class="footer-desc">The world's first green blockchain. Built with Rust + Substrate. DPoS consensus, AMM DEX, EVM, and on-chain carbon credits.</p>
+      </div>
+      <div><div class="footer-col-title">Product</div><div class="footer-links"><a href="/explorer.html">Explorer</a><a href="/dex.html">DEX</a><a href="/eco.html">Eco</a><a href="/wallet.html">Wallet</a></div></div>
+      <div><div class="footer-col-title">Resources</div><div class="footer-links"><a href="/docs.html">Docs</a><a href="/whitepaper.html">Whitepaper</a><a href="/validators.html">Validators</a><a href="#">API</a></div></div>
+      <div><div class="footer-col-title">Community</div><div class="footer-links"><a href="#">GitHub</a><a href="#">Discord</a><a href="#">Twitter</a><a href="#">Telegram</a></div></div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Verdis Chain · Protremix</span>
+      <span>Powered by Rust + Substrate</span>
+    </div>
+  </footer>
 
-async function loadValidators() {
-  try {
-    // Fetch chain header
-    const header = await rpc('chain_getHeader');
-    const blockNum = parseInt(header.number, 16);
-    document.getElementById('statBlock').textContent = '#' + blockNum;
-
-    // Fetch health
-    const health = await rpc('system_health');
-    document.getElementById('statPeers').textContent = health.peers;
-
-    // Fetch active validators
-    let validators = [];
-    try {
-      validators = await rpc('dpos_activeValidators');
-    } catch(e) {
-      // Fallback: try dpos_allValidators
-      try { validators = await rpc('dpos_allValidators'); } catch(e2) {}
-    }
-
-    if (!Array.isArray(validators)) validators = validators ? [validators] : [];
-    
-    document.getElementById('statValidators').textContent = validators.length;
-    document.getElementById('valCount').textContent = validators.length + ' validators active';
-
-    // Render validator rows
-    const colors = ['#caff33', '#4ade80', '#fbbf24', '#60a5fa', '#f472b6', '#a78bfa', '#fb923c', '#34d399'];
-    const names = ['Alice', 'Bob', 'Charlie', 'Dave', 'Eve', 'Ferdie', 'GreenNode', 'EcoValidator', 'VerdisRanger', 'CarbonNode', 'ForestGuard', 'SolarStake', 'WindValidator', 'HydroNode'];
-    
-    let html = '';
-    validators.forEach((val, i) => {
-      const name = names[i] || ('Validator-' + (i+1));
-      const initial = name.charAt(0).toUpperCase();
-      const color = colors[i % colors.length];
-      const score = 94 - (i * 2);
-      const stake = Math.floor(50000 + Math.random() * 80000);
-      const apy = (11 + Math.random() * 2.5).toFixed(1);
-      
-      // Handle different validator formats (could be hex string, object, etc.)
-      let addr = '';
-      if (typeof val === 'string') {
-        addr = val.substring(0, 10) + '...' + val.slice(-6);
-      } else if (val && val.address) {
-        addr = val.address.substring(0, 10) + '...' + val.address.slice(-6);
-      } else if (val && val.toString) {
-        const s = val.toString();
-        addr = s.substring(0, 10) + '...' + s.slice(-6);
-      } else {
-        addr = '0x' + i.toString(16).padStart(4, '0') + '...';
-      }
-
-      html += `
-        <div class="validator-row">
-          <div class="validator-rank">#${i+1}</div>
-          <div>
-            <div class="validator-name">${name}</div>
-            <div class="validator-addr mono">${addr}</div>
-          </div>
-          <div class="validator-score">🌿 ${score}</div>
-          <div class="validator-stake">${stake.toLocaleString()}</div>
-          <div class="validator-apy">${apy}%</div>
-        </div>`;
+  <script>
+    // Scroll Progress
+    const scrollBar = document.getElementById('scroll-bar');
+    window.addEventListener('scroll', () => {
+      const scrolled = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+      scrollBar.style.width = scrolled + '%';
     });
-    
-    if (validators.length === 0) {
-      html = '<div class="empty">No active validators found. The chain may be initializing.</div>';
+
+    // Cursor Glow
+    const cursorGlow = document.getElementById('cursor-glow');
+    document.addEventListener('mousemove', (e) => {
+      cursorGlow.style.left = e.clientX + 'px';
+      cursorGlow.style.top = e.clientY + 'px';
+    });
+
+    // Intersection Observer Reveal
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    revealEls.forEach(el => observer.observe(el));
+
+    // Canvas Particle Network
+    const canvas = document.getElementById('hero-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
     }
-    
-    document.getElementById('validatorList').innerHTML = html;
-  } catch(e) {
-    console.error('Failed to load validators:', e);
-    document.getElementById('validatorList').innerHTML = '<div class="empty">Failed to fetch live data. Please try again.</div>';
-  }
-}
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
-// Staking calculator
-function updateCalculator() {
-  const amount = parseFloat(document.getElementById('stakeAmount').value) || 0;
-  const rate = parseFloat(document.getElementById('validatorType').value);
-  const yearly = amount * rate;
-  const monthly = yearly / 12;
-  const daily = yearly / 365;
-  document.getElementById('yearlyYield').textContent = yearly.toFixed(2) + ' VRDX';
-  document.getElementById('monthlyYield').textContent = monthly.toFixed(2);
-  document.getElementById('dailyYield').textContent = daily.toFixed(2);
-}
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        r: Math.random() * 2 + 1
+      });
+    }
 
-document.getElementById('stakeAmount').addEventListener('input', updateCalculator);
-document.getElementById('validatorType').addEventListener('change', updateCalculator);
-updateCalculator();
-
-// Load and refresh
-loadValidators();
-setInterval(loadValidators, 15000);
-</script>
+    function drawParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p, i) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(202,255,51,0.5)';
+        ctx.fill();
+        particles.slice(i + 1).forEach(p2 => {
+          const dx = p.x - p2.x;
+          const dy = p.y - p2.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 100) {
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = `rgba(202,255,51,${0.2 * (1 - dist / 100)})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        });
+      });
+      requestAnimationFrame(drawParticles);
+    }
+    drawParticles();
+  </script>
 </body>
 </html>

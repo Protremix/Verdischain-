@@ -12,7 +12,7 @@
 body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; overflow-x:hidden; }
 .mono { font-family:'JetBrains Mono',monospace; }
 
-nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
+nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 24px; height:64px; display:flex; align-items:center; justify-content:space-between; }
 .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); }
 .nav-brand .logo { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#000; font-size:16px; }
 .nav-brand span { font-weight:600; font-size:16px; }
@@ -91,35 +91,17 @@ footer .links { display:flex; gap:20px; justify-content:center; margin-bottom:12
 footer a { color:var(--accent); text-decoration:none; }
 
 @media(max-width:768px) { .nav-links { display:none; } .hero h1 { font-size:28px; } .hero-right { display:none; } }
-
-/* Mobile responsiveness */
-@media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:44px;padding:10px 16px}.card{padding:16px}h1{font-size:22px}}
-@media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:16px}.container{padding:20px}}
-
-.brand-logo-img { height: 36px; width: 36px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,255,136,0.35)); } .brand-text { font-family: Poppins, sans-serif; font-weight: 700; font-size: 18px; color: #fff; white-space: nowrap; margin-left: 2px; letter-spacing: -0.3px; text-decoration: none !important; }
-@media(max-width:768px) { .brand-logo-img { height: 40px; } }
-
 </style>
-<link rel="icon" type="image/png" href="/assets/favicon-32.png">
-<link rel="apple-touch-icon" href="/assets/favicon-180.png">
-<style id="nav-brand-no-underline-fix">a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration: none !important; }</style></head>
+</head>
 <body>
 
-<nav class="std-nav">
-  <a href="/" class="nav-brand"><img src="/assets/verdis-v-icon.png" alt="Verdis Chain" class="brand-logo-img"><span class="brand-text">Verdis Chain</span></a>
+<nav>
+  <a href="/" class="nav-brand"><div class="logo">V</div><span>Verdis Faucet</span></a>
   <div class="nav-links">
-    <a href="/">Home</a>
-    <a href="/explorer/">Explorer</a>
-    <a href="/dex/">DEX</a>
-    <a href="/validators/">Validators</a>
-    <a href="/eco/">Eco</a>
-    <a href="/faucet/" class="active">Faucet</a>
-    <a href="/wallet/">Wallet</a>
-    <a href="/sale/">Sale</a>
-    <a href="/docs/">Docs</a>
-    
+    <a href="/">Home</a><a href="/explorer">Explorer</a><a href="/dex">DEX</a>
+    <a href="/validators">Validators</a><a href="/eco">Eco</a><a href="/wallet">Wallet</a>
+    <a href="/sale">Sale</a><a href="/referral">Referral</a><a href="/incentives" style="display:none">Incentives</a><a href="/docs">Docs</a>
   </div>
-  <div class="nav-status"><div class="dot"></div><span class="nav-text">Connected</span></div>
 </nav>
 
 <section class="hero">
@@ -131,7 +113,7 @@ footer a { color:var(--accent); text-decoration:none; }
     <div class="float-card fc-stats">
       <div style="font-size:13px;color:var(--text-3);margin-bottom:12px">Faucet Stats</div>
       <div class="stat-mini"><div class="v">2,450,000 VRDX</div><div class="l">Total Dispensed</div></div>
-      <div class="stat-mini"><div class="v" id="faucet-recipients">0</div><div class="l">Unique Recipients</div></div>
+      <div class="stat-mini"><div class="v">1,847</div><div class="l">Unique Recipients</div></div>
       <div class="stat-mini"><div class="v">500 / 10,000</div><div class="l">Daily Budget Remaining</div></div>
     </div>
     <div class="float-card fc-drip">
@@ -186,7 +168,7 @@ footer a { color:var(--accent); text-decoration:none; }
 <div class="stats-section">
   <div class="stats-grid">
     <div class="stat-card"><div class="icon">💧</div><div class="value">2.45M</div><div class="label">Total Dispensed</div></div>
-    <div class="stat-card"><div class="icon">👥</div><div class="value" id="faucet-recipients2">0</div><div class="label">Unique Recipients</div></div>
+    <div class="stat-card"><div class="icon">👥</div><div class="value">1,847</div><div class="label">Unique Recipients</div></div>
     <div class="stat-card"><div class="icon">📅</div><div class="value">95</div><div class="label">Today's Requests</div></div>
     <div class="stat-card"><div class="icon">⚡</div><div class="value">~2s</div><div class="label">Avg Delivery Time</div></div>
   </div>
@@ -348,116 +330,5 @@ function addHistory(addr, token, amount, hash) {
 generateCaptcha();
 renderHistory();
 </script>
-
-<script>
-async function loadPageMetrics() {
-    try {
-        const res = await fetch('/rpc', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1})
-        });
-        const data = await res.json();
-        const height = parseInt(data.result?.number || '0x0', 16);
-        document.querySelectorAll('[data-block-height]').forEach(el => {
-            el.textContent = '#' + height.toLocaleString();
-        });
-    } catch(e) {}
-}
-loadPageMetrics();
-setInterval(loadPageMetrics, 15000);
-</script>
-
-
-<script>
-// Live RPC data for faucet stats
-async function fetchLiveFaucetStats() {
-    try {
-        // Fetch blockchain stats from RPC
-        const hdrResp = await fetch('/rpc', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1})
-        });
-        const hdrData = await hdrResp.json();
-        const blockNum = parseInt(hdrData.result.number, 16);
-        
-        const healthResp = await fetch('/rpc', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({jsonrpc: '2.0', method: 'system_health', params: [], id: 2})
-        });
-        const healthData = await healthResp.json();
-        const peers = healthData.result.peers;
-        
-        // Try to fetch faucet stats from backend
-        let faucetStats = {totalDispensed: 0, uniqueRecipients: 0, todayRequests: 0, distributions: []};
-        try {
-            const fResp = await fetch('/faucet/stats.json');
-            if (fResp.ok) faucetStats = await fResp.json();
-        } catch(e) { /* use defaults */ }
-        
-        // Update DOM
-        document.querySelectorAll('.stat-value, .faucet-stat').forEach(el => {
-            const text = el.textContent || '';
-            if (text.includes('VRDX') && text.includes('Dispensed')) {
-                el.textContent = (faucetStats.totalDispensed || 2450000).toLocaleString() + ' VRDX';
-            }
-        });
-        
-        // Update any block height elements
-        document.querySelectorAll('[data-stat="block"]').forEach(el => {
-            el.textContent = '#' + blockNum;
-        });
-        document.querySelectorAll('[data-stat="peers"]').forEach(el => {
-            el.textContent = peers;
-        });
-        
-        // Update distributions table
-        if (faucetStats.distributions && faucetStats.distributions.length > 0) {
-            const tableBody = document.querySelector('table tbody');
-            if (tableBody) {
-                tableBody.innerHTML = faucetStats.distributions.slice(0, 6).map(d => 
-                    '<tr><td>' + d.address + '</td><td>VRDX</td><td>' + d.amount + '</td><td>' + d.txHash + '</td><td>recent</td></tr>'
-                ).join('');
-            }
-        }
-        
-        // Update header stat
-        const totalEl = document.getElementById('totalDispensed');
-        if (totalEl) totalEl.textContent = (faucetStats.totalDispensed || 2450000).toLocaleString();
-        
-        const uniqueEl = document.getElementById('uniqueRecipients');
-        if (uniqueEl) uniqueEl.textContent = faucetStats.uniqueRecipients || 1847;
-        
-        const todayEl = document.getElementById('todayRequests');
-        if (todayEl) todayEl.textContent = faucetStats.todayRequests || 95;
-        
-    } catch(e) {
-        console.log('Live stats fetch failed, using defaults');
-    }
-}
-fetchLiveFaucetStats();
-setInterval(fetchLiveFaucetStats, 30000);
-</script>
-
-<script>
-async function fetchFaucetStats() {
-  try {
-    const res = await fetch('/faucet/api/stats');
-    const data = await res.json();
-    document.querySelectorAll('#faucet-recipients, #faucet-recipients2').forEach(el => {
-      el.textContent = (data.uniqueRecipients || 0).toLocaleString();
-    });
-    document.querySelectorAll('#faucet-total, #faucet-total2').forEach(el => {
-      el.textContent = (data.totalDispensed || 0).toLocaleString() + ' VRDX';
-    });
-    document.querySelectorAll('#faucet-today, #faucet-today2').forEach(el => {
-      el.textContent = (data.todayRequests || 0).toLocaleString();
-    });
-  } catch(e) { console.log('Faucet stats not available'); }
-}
-fetchFaucetStats();
-setInterval(fetchFaucetStats, 30000);
-</script></body>
+</body>
 </html>

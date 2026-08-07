@@ -1,0 +1,175 @@
+{
+  "name": "Verdis Mainnet",
+  "id": "verdis_909",
+  "chainType": "Live",
+  "bootNodes": [
+    "/ip4/127.0.0.1/tcp/30333/p2p/12D3KooW4b36822aa41f362c10ea969a09e6aa38d5a22570",
+    "/ip4/127.0.0.1/tcp/30334/p2p/12D3KooW02c7aecd15729e7698f38fe312c4a70e67d051c1"
+  ],
+  "telemetryEndpoints": [
+    [
+      "wss://telemetry.verdischain.com/submit/",
+      0
+    ]
+  ],
+  "protocolId": "verdis",
+  "properties": {
+    "tokenSymbol": "VRS",
+    "tokenDecimals": 9,
+    "ss58Format": 909,
+    "tokenSupply": "100000000000"
+  },
+  "genesis": {
+    "runtime": {
+      "system": {
+        "code": "0x"
+      },
+      "babe": {
+        "epochConfig": {
+          "c": [
+            1,
+            4
+          ],
+          "allowed_slots": "PrimaryAndSecondaryPlainSlots"
+        },
+        "authorities": [
+          [
+            "0x6ab608ebd9b4b63254e0ad1fe553daa08ed83368b1eb66a9c796a585fb9e9fce",
+            1
+          ],
+          [
+            "0x07ac7bae7b0e2fde6d4ed0f5c106a7ce599c0b5fe0ca3bc420f8d8a108c5ebcd",
+            1
+          ],
+          [
+            "0x269d32f7fb1e8ce2dbf6f79705528bd31bf6253551baebdcdb3f34e30f900d5f",
+            1
+          ],
+          [
+            "0xc4872e01f23d94bb052361aa362618f2e8afc335bde4dea966ebe535afc1d850",
+            1
+          ],
+          [
+            "0x44932ca341704a9bc6b2276be5faface5ff689f84a0cc7e922573481ca324e1f",
+            1
+          ]
+        ],
+        "epochDuration": 600
+      },
+      "grandpa": {
+        "authorities": [
+          [
+            "0xf0ff570d9ae1b0fea459250344d328b2c5e77fee587dded6ad7ad77a21fcd5cc",
+            1
+          ],
+          [
+            "0xfe39200ebcf9620a58a7f8c6521367ca90f3c0c5a11e18859933df22c8fe2f46",
+            1
+          ],
+          [
+            "0xe28070ec1562d9ec456a815504ec3c069ad5fc7d96c1a45b23a1e3681584d401",
+            1
+          ],
+          [
+            "0xf9e954fdd0d7ba30ad0a453824f64f35aa76cf516c7225f2937e73ccac37735a",
+            1
+          ],
+          [
+            "0x49c025dc0a72b1d410decc6877298fb7b2362dc2cde8ffee533dcbcf52b0a6fe",
+            1
+          ]
+        ]
+      },
+      "session": {
+        "keys": [
+          [
+            "0xdf8de8eaf30909be0ed86de9984cf6488ca2fd8699f983a488f1db62088216a6",
+            "0xdf8de8eaf30909be0ed86de9984cf6488ca2fd8699f983a488f1db62088216a6",
+            {
+              "babe": "0x6ab608ebd9b4b63254e0ad1fe553daa08ed83368b1eb66a9c796a585fb9e9fce",
+              "grandpa": "0xf0ff570d9ae1b0fea459250344d328b2c5e77fee587dded6ad7ad77a21fcd5cc",
+              "im_online": "0xefd5c6c53a1fefe4ffc90c58a224034e3dbae2f0759a371fe1bbe0b751ca9d2f",
+              "authority_discovery": "0x5f9e43ddfeb32da5f6107eaca515bde3933ccebeb78497a21762f50fd0a5377f"
+            }
+          ],
+          [
+            "0x85978b5ca0aabb4f4429a48ddf06e2aafc5292d06d93b31ac79ab7370f8e12e9",
+            "0x85978b5ca0aabb4f4429a48ddf06e2aafc5292d06d93b31ac79ab7370f8e12e9",
+            {
+              "babe": "0x07ac7bae7b0e2fde6d4ed0f5c106a7ce599c0b5fe0ca3bc420f8d8a108c5ebcd",
+              "grandpa": "0xfe39200ebcf9620a58a7f8c6521367ca90f3c0c5a11e18859933df22c8fe2f46",
+              "im_online": "0x6db3e0f5532bd25250dd8eb1860dc086aa8db738054b4f157982a0c37726c385",
+              "authority_discovery": "0x661b951646e5af8c5bb0d7be58b2ed75018a8ba274868d7c673b31130f4a72a1"
+            }
+          ],
+          [
+            "0x1aff3927e2a05e4745910bd8b8104fb0f9a8777bf48a1dd6845bdf33edd05fcd",
+            "0x1aff3927e2a05e4745910bd8b8104fb0f9a8777bf48a1dd6845bdf33edd05fcd",
+            {
+              "babe": "0x269d32f7fb1e8ce2dbf6f79705528bd31bf6253551baebdcdb3f34e30f900d5f",
+              "grandpa": "0xe28070ec1562d9ec456a815504ec3c069ad5fc7d96c1a45b23a1e3681584d401",
+              "im_online": "0x08a328f7b2851dd4f9f17a4de257080d1fd71a31a9f48488b8032a63c84f63f9",
+              "authority_discovery": "0x3cdf69b4959021eaa0a6b83954edee1d2c306663ac05c514d79a7097491d957f"
+            }
+          ],
+          [
+            "0x3c6d62c3cb6d2ca7017168ef9730518704ca283de532dbccf41f50d849154205",
+            "0x3c6d62c3cb6d2ca7017168ef9730518704ca283de532dbccf41f50d849154205",
+            {
+              "babe": "0xc4872e01f23d94bb052361aa362618f2e8afc335bde4dea966ebe535afc1d850",
+              "grandpa": "0xf9e954fdd0d7ba30ad0a453824f64f35aa76cf516c7225f2937e73ccac37735a",
+              "im_online": "0xd9282bfde58cde19e712f603a66402c0ebaedb8ba4fbb1b15d3a3896936d057d",
+              "authority_discovery": "0xb2f5ad82e39f67980fd8978d55d3fb0b32d43ef6167a43504bb21e4026f3f315"
+            }
+          ],
+          [
+            "0x9bfbdf50d16cbd8eedffa7bfd0a47efc8c6c8567e606a6da65ab82da39c7c9fb",
+            "0x9bfbdf50d16cbd8eedffa7bfd0a47efc8c6c8567e606a6da65ab82da39c7c9fb",
+            {
+              "babe": "0x44932ca341704a9bc6b2276be5faface5ff689f84a0cc7e922573481ca324e1f",
+              "grandpa": "0x49c025dc0a72b1d410decc6877298fb7b2362dc2cde8ffee533dcbcf52b0a6fe",
+              "im_online": "0x39da1a8e5b9af3c43643bbb18230f79bb037b5ffc452c29d86480abece3c17af",
+              "authority_discovery": "0x424960fddc1c37f90e7caf4359075e14ca7ee437b51545453a1bb5446355de98"
+            }
+          ]
+        ],
+        "period": 600
+      },
+      "balances": {
+        "balances": [
+          [
+            "0xdf8de8eaf30909be0ed86de9984cf6488ca2fd8699f983a488f1db62088216a6",
+            "10000000000000000000"
+          ],
+          [
+            "0x85978b5ca0aabb4f4429a48ddf06e2aafc5292d06d93b31ac79ab7370f8e12e9",
+            "10000000000000000000"
+          ],
+          [
+            "0x1aff3927e2a05e4745910bd8b8104fb0f9a8777bf48a1dd6845bdf33edd05fcd",
+            "10000000000000000000"
+          ],
+          [
+            "0x3c6d62c3cb6d2ca7017168ef9730518704ca283de532dbccf41f50d849154205",
+            "10000000000000000000"
+          ],
+          [
+            "0x9bfbdf50d16cbd8eedffa7bfd0a47efc8c6c8567e606a6da65ab82da39c7c9fb",
+            "10000000000000000000"
+          ],
+          [
+            "0x1111111111111111111111111111111111111111111111111111111111111111",
+            "30000000000000000000"
+          ],
+          [
+            "0x9999999999999999999999999999999999999999999999999999999999999999",
+            "20000000000000000000"
+          ]
+        ]
+      },
+      "sudo": {
+        "key": "0xdf8de8eaf30909be0ed86de9984cf6488ca2fd8699f983a488f1db62088216a6"
+      }
+    }
+  }
+}

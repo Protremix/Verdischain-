@@ -15,7 +15,7 @@ use frame_support::{
     ensure,
     pallet_prelude::*,
     traits::{Currency, Get, ReservableCurrency},
-    PalletId, DefaultNoBound,
+    DefaultNoBound, PalletId,
 };
 use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
@@ -25,26 +25,65 @@ use sp_std::prelude::*;
 
 pub use pallet::*;
 
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
 
-    type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+    type BalanceOf<T> =
+        <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
     pub trait WeightInfo {
         fn create_pool() -> Weight;
         fn add_liquidity() -> Weight;
         fn remove_liquidity() -> Weight;
         fn swap() -> Weight;
+        fn create_token_pool() -> Weight;
+        fn add_token_liquidity() -> Weight;
+        fn remove_token_liquidity() -> Weight;
+        fn swap_token() -> Weight;
         fn get_price() -> Weight;
     }
 
     impl WeightInfo for () {
-        fn create_pool() -> Weight { Weight::from_parts(10_000, 0) }
-        fn add_liquidity() -> Weight { Weight::from_parts(10_000, 0) }
-        fn remove_liquidity() -> Weight { Weight::from_parts(10_000, 0) }
-        fn swap() -> Weight { Weight::from_parts(10_000, 0) }
-        fn get_price() -> Weight { Weight::from_parts(10_000, 0) }
+        /// Pool creation: 2 BoundedVec conversions, 2 transfers, sqrt, 3 storage writes
+        fn create_pool() -> Weight {
+            Weight::from_parts(35_000_000, 0)
+        }
+        /// Add liquidity: storage read, balance math, sqrt, 2 transfers, 3 storage writes
+        fn add_liquidity() -> Weight {
+            Weight::from_parts(30_000_000, 0)
+        }
+        /// Remove liquidity: storage read, ratio math, 2 transfers, 3 storage writes
+        fn remove_liquidity() -> Weight {
+            Weight::from_parts(25_000_000, 0)
+        }
+        /// Swap: storage read, AMM formula, 2 transfers, 1 storage write
+        fn swap() -> Weight {
+            Weight::from_parts(25_000_000, 0)
+        }
+        /// Token pool creation: TokenHandler dispatch, 2 transfers, 4 storage writes
+        fn create_token_pool() -> Weight {
+            Weight::from_parts(40_000_000, 0)
+        }
+        /// Token add liquidity: TokenHandler, math, 2 transfers, 3 storage writes
+        fn add_token_liquidity() -> Weight {
+            Weight::from_parts(35_000_000, 0)
+        }
+        /// Token remove liquidity: TokenHandler, ratio math, 2 transfers, 3 storage writes
+        fn remove_token_liquidity() -> Weight {
+            Weight::from_parts(30_000_000, 0)
+        }
+        /// Token swap: TokenHandler, AMM formula, 2 transfers, 1 storage write
+        fn swap_token() -> Weight {
+            Weight::from_parts(30_000_000, 0)
+        }
+        /// Get price: storage read, simple division (read-only, no writes)
+        fn get_price() -> Weight {
+            Weight::from_parts(5_000_000, 0)
+        }
     }
 
     #[pallet::pallet]
@@ -53,6 +92,7 @@ pub mod pallet {
     // === Types ===
 
     #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
     pub struct Pool<AccountId, Balance> {
         pub id: u32,
         pub token_a: BoundedVec<u8, ConstU32<32>>,
@@ -65,11 +105,58 @@ pub mod pallet {
         pub creator: AccountId,
     }
 
+    /// Asset identifier — either native VRS or a custom fungible token
+    #[derive(Encode, Decode, Clone, Copy, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]
+    #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
+    pub enum AssetId {
+        /// Native VRS token
+        Native,
+        /// Custom fungible token (pallet-fungible-tokens ID)
+        Custom(u64),
+    }
+
+    impl codec::DecodeWithMemTracking for AssetId {}
+
+    /// Liquidity pool for fungible tokens
+    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
+    pub struct TokenPool<AccountId, Balance> {
+        pub id: u32,
+        pub asset_a: AssetId,
+        pub asset_b: AssetId,
+        pub reserve_a: Balance,
+        pub reserve_b: Balance,
+        pub total_lp: Balance,
+        pub fee_numerator: u32,
+        pub fee_denominator: u32,
+        pub creator: AccountId,
+    }
+
+    /// Trait for transferring tokens — implemented in runtime
+    pub trait TokenHandler<AccountId, Balance> {
+        fn transfer(
+            asset: &AssetId,
+            from: &AccountId,
+            to: &AccountId,
+            amount: Balance,
+        ) -> DispatchResult;
+        fn has_balance(asset: &AssetId, who: &AccountId, amount: Balance) -> bool;
+
+        /// Fund an account for benchmarking purposes only.
+        /// This method is gated behind the `runtime-benchmarks` feature
+        /// and has a no-op default implementation that does NOT affect
+        /// production runtime behavior. Only the test runtime overrides
+        /// this to mint custom fungible tokens for benchmark setup.
+        #[cfg(feature = "runtime-benchmarks")]
+        fn fund_for_benchmark(_asset: &AssetId, _who: &AccountId, _amount: Balance) {}
+    }
+
     // === Storage ===
 
     #[pallet::storage]
     #[pallet::getter(fn pools)]
-    pub type Pools<T: Config> = StorageMap<_, Blake2_128Concat, u32, Pool<T::AccountId, BalanceOf<T>>>;
+    pub type Pools<T: Config> =
+        StorageMap<_, Blake2_128Concat, u32, Pool<T::AccountId, BalanceOf<T>>>;
 
     #[pallet::storage]
     #[pallet::getter(fn pool_count)]
@@ -82,8 +169,12 @@ pub mod pallet {
 
     #[pallet::storage]
     #[pallet::getter(fn pool_by_pair)]
-    pub type PoolByPair<T: Config> =
-        StorageMap<_, Blake2_128Concat, (BoundedVec<u8, ConstU32<32>>, BoundedVec<u8, ConstU32<32>>), u32>;
+    pub type PoolByPair<T: Config> = StorageMap<
+        _,
+        Blake2_128Concat,
+        (BoundedVec<u8, ConstU32<32>>, BoundedVec<u8, ConstU32<32>>),
+        u32,
+    >;
 
     #[pallet::storage]
     #[pallet::getter(fn total_volume)]
@@ -92,6 +183,24 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn total_swaps)]
     pub type TotalSwaps<T: Config> = StorageValue<_, u64, ValueQuery>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn token_pools)]
+    pub type TokenPools<T: Config> =
+        StorageMap<_, Blake2_128Concat, u32, TokenPool<T::AccountId, BalanceOf<T>>>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn token_pool_count)]
+    pub type TokenPoolCount<T: Config> = StorageValue<_, u32, ValueQuery>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn token_lp)]
+    pub type TokenLiquidityProviders<T: Config> =
+        StorageDoubleMap<_, Blake2_128Concat, u32, Blake2_128Concat, T::AccountId, BalanceOf<T>>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn token_pool_by_pair)]
+    pub type TokenPoolByPair<T: Config> = StorageMap<_, Blake2_128Concat, (AssetId, AssetId), u32>;
 
     // === Events ===
 
@@ -127,6 +236,35 @@ pub mod pallet {
             amount_out: BalanceOf<T>,
             fee: BalanceOf<T>,
         },
+        TokenPoolCreated {
+            pool_id: u32,
+            asset_a: AssetId,
+            asset_b: AssetId,
+            creator: T::AccountId,
+        },
+        TokenLiquidityAdded {
+            pool_id: u32,
+            provider: T::AccountId,
+            amount_a: BalanceOf<T>,
+            amount_b: BalanceOf<T>,
+            lp_minted: BalanceOf<T>,
+        },
+        TokenLiquidityRemoved {
+            pool_id: u32,
+            provider: T::AccountId,
+            amount_a: BalanceOf<T>,
+            amount_b: BalanceOf<T>,
+            lp_burned: BalanceOf<T>,
+        },
+        TokenSwapExecuted {
+            pool_id: u32,
+            trader: T::AccountId,
+            asset_in: AssetId,
+            asset_out: AssetId,
+            amount_in: BalanceOf<T>,
+            amount_out: BalanceOf<T>,
+            fee: BalanceOf<T>,
+        },
     }
 
     // === Errors ===
@@ -148,7 +286,7 @@ pub mod pallet {
         AmountTooLow,
         TokenTooLong,
         SwapHistoryFull,
-        PoolEmpty,
+        PriceImpactTooHigh,
     }
 
     // === Config ===
@@ -167,7 +305,10 @@ pub mod pallet {
         type MinLiquidity: Get<BalanceOf<Self>>;
         #[pallet::constant]
         type MaxPools: Get<u32>;
+        #[pallet::constant]
+        type MaxPriceImpact: Get<sp_runtime::Permill>;
         type WeightInfo: WeightInfo;
+        type TokenHandler: TokenHandler<Self::AccountId, BalanceOf<Self>>;
     }
 
     // === Genesis ===
@@ -185,8 +326,10 @@ pub mod pallet {
         fn build(&self) {
             let mut id = 0u32;
             for (token_a, token_b, reserve_a, reserve_b, fee) in &self.initial_pools {
-                let ta: BoundedVec<u8, ConstU32<32>> = token_a.clone().try_into().unwrap_or_default();
-                let tb: BoundedVec<u8, ConstU32<32>> = token_b.clone().try_into().unwrap_or_default();
+                let ta: BoundedVec<u8, ConstU32<32>> =
+                    token_a.clone().try_into().unwrap_or_default();
+                let tb: BoundedVec<u8, ConstU32<32>> =
+                    token_b.clone().try_into().unwrap_or_default();
                 let pool = Pool {
                     id,
                     token_a: ta.clone(),
@@ -226,8 +369,14 @@ pub mod pallet {
             ensure!(amount_a > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
             ensure!(amount_b > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
-            let ta: BoundedVec<u8, ConstU32<32>> = token_a.clone().try_into().map_err(|_| Error::<T>::TokenTooLong)?;
-            let tb: BoundedVec<u8, ConstU32<32>> = token_b.clone().try_into().map_err(|_| Error::<T>::TokenTooLong)?;
+            let ta: BoundedVec<u8, ConstU32<32>> = token_a
+                .clone()
+                .try_into()
+                .map_err(|_| Error::<T>::TokenTooLong)?;
+            let tb: BoundedVec<u8, ConstU32<32>> = token_b
+                .clone()
+                .try_into()
+                .map_err(|_| Error::<T>::TokenTooLong)?;
 
             let count = PoolCount::<T>::get();
             ensure!(count < T::MaxPools::get(), Error::<T>::MaxPoolsReached);
@@ -237,8 +386,11 @@ pub mod pallet {
             );
 
             let pool_id = count;
-            let lp_minted = amount_a.checked_mul(amount_b).ok_or(Error::<T>::AmountTooLow)?.integer_sqrt();
-            ensure!(lp_minted >= T::MinLiquidity::get(), Error::<T>::AmountTooLow);
+            let lp_minted = (amount_a * amount_b).integer_sqrt();
+            ensure!(
+                lp_minted >= T::MinLiquidity::get(),
+                Error::<T>::AmountTooLow
+            );
 
             T::Currency::reserve(&who, amount_a)?;
             T::Currency::reserve(&who, amount_b)?;
@@ -289,7 +441,10 @@ pub mod pallet {
             let lp_b = pool.total_lp.saturating_mul(amount_b) / pool.reserve_b;
             let lp_minted = lp_a.min(lp_b);
 
-            ensure!(lp_minted > BalanceOf::<T>::zero(), Error::<T>::InsufficientAmount);
+            ensure!(
+                lp_minted > BalanceOf::<T>::zero(),
+                Error::<T>::InsufficientAmount
+            );
 
             T::Currency::reserve(&who, amount_a)?;
             T::Currency::reserve(&who, amount_b)?;
@@ -301,7 +456,10 @@ pub mod pallet {
             Pools::<T>::insert(pool_id, pool.clone());
 
             LiquidityProviders::<T>::mutate(pool_id, &who, |lp| {
-                *lp = Some(lp.unwrap_or(BalanceOf::<T>::zero()).saturating_add(lp_minted));
+                *lp = Some(
+                    lp.unwrap_or(BalanceOf::<T>::zero())
+                        .saturating_add(lp_minted),
+                );
             });
 
             Self::deposit_event(Event::LiquidityAdded {
@@ -326,11 +484,11 @@ pub mod pallet {
 
             let mut pool = Pools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
 
-            let user_lp = LiquidityProviders::<T>::get(pool_id, &who).unwrap_or(BalanceOf::<T>::zero());
+            let user_lp =
+                LiquidityProviders::<T>::get(pool_id, &who).unwrap_or(BalanceOf::<T>::zero());
             ensure!(user_lp >= lp_amount, Error::<T>::InsufficientLpBalance);
             ensure!(lp_amount > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
-            ensure!(pool.total_lp > BalanceOf::<T>::zero(), Error::<T>::PoolEmpty);
             let amount_a = pool.reserve_a.saturating_mul(lp_amount) / pool.total_lp;
             let amount_b = pool.reserve_b.saturating_mul(lp_amount) / pool.total_lp;
 
@@ -344,7 +502,10 @@ pub mod pallet {
             Pools::<T>::insert(pool_id, pool.clone());
 
             LiquidityProviders::<T>::mutate(pool_id, &who, |lp| {
-                *lp = Some(lp.unwrap_or(BalanceOf::<T>::zero()).saturating_sub(lp_amount));
+                *lp = Some(
+                    lp.unwrap_or(BalanceOf::<T>::zero())
+                        .saturating_sub(lp_amount),
+                );
             });
 
             Self::deposit_event(Event::LiquidityRemoved {
@@ -373,7 +534,10 @@ pub mod pallet {
 
             ensure!(amount_in > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
-            let token_in_bv: BoundedVec<u8, ConstU32<32>> = token_in.clone().try_into().map_err(|_| Error::<T>::TokenTooLong)?;
+            let token_in_bv: BoundedVec<u8, ConstU32<32>> = token_in
+                .clone()
+                .try_into()
+                .map_err(|_| Error::<T>::TokenTooLong)?;
 
             let (is_a_to_b, token_out) = if token_in_bv == pool.token_a {
                 (true, pool.token_b.clone())
@@ -389,16 +553,28 @@ pub mod pallet {
                 (pool.reserve_b, pool.reserve_a)
             };
 
-            let fee = amount_in.saturating_mul(T::FeeNumerator::get().into()) / T::FeeDenominator::get().into();
+            let fee = amount_in.saturating_mul(T::FeeNumerator::get().into())
+                / T::FeeDenominator::get().into();
             let amount_in_after_fee = amount_in.saturating_sub(fee);
 
             let numerator = reserve_out.saturating_mul(amount_in_after_fee);
             let denominator = reserve_in.saturating_add(amount_in_after_fee);
-            ensure!(denominator > BalanceOf::<T>::zero(), Error::<T>::InsufficientLiquidity);
             let amount_out = numerator / denominator;
 
+            // Circuit breaker: limit single swap size to MaxPriceImpact of pool reserves
+            let max_swap_in = reserve_in
+                .saturating_mul(T::MaxPriceImpact::get().deconstruct().into())
+                / 1_000_000u32.into();
+            ensure!(
+                amount_in_after_fee <= max_swap_in,
+                Error::<T>::PriceImpactTooHigh
+            );
+
             ensure!(amount_out >= min_amount_out, Error::<T>::SlippageExceeded);
-            ensure!(amount_out > BalanceOf::<T>::zero(), Error::<T>::InsufficientLiquidity);
+            ensure!(
+                amount_out > BalanceOf::<T>::zero(),
+                Error::<T>::InsufficientLiquidity
+            );
 
             if is_a_to_b {
                 pool.reserve_a = pool.reserve_a.saturating_add(amount_in);
@@ -428,16 +604,271 @@ pub mod pallet {
             Ok(())
         }
 
+        /// Create a new fungible token liquidity pool
+        #[pallet::call_index(5)]
+        #[pallet::weight(T::WeightInfo::create_pool())]
+        pub fn create_token_pool(
+            origin: OriginFor<T>,
+            asset_a: AssetId,
+            asset_b: AssetId,
+            amount_a: BalanceOf<T>,
+            amount_b: BalanceOf<T>,
+        ) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+            ensure!(asset_a != asset_b, Error::<T>::SameToken);
+            ensure!(amount_a > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
+            ensure!(amount_b > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
+
+            let count = TokenPoolCount::<T>::get();
+            ensure!(count < T::MaxPools::get(), Error::<T>::MaxPoolsReached);
+            let pair = (asset_a.clone(), asset_b.clone());
+            ensure!(
+                !TokenPoolByPair::<T>::contains_key(pair.clone()),
+                Error::<T>::PoolAlreadyExists
+            );
+
+            ensure!(
+                T::TokenHandler::has_balance(&asset_a, &who, amount_a),
+                Error::<T>::InsufficientLiquidityBalance
+            );
+            ensure!(
+                T::TokenHandler::has_balance(&asset_b, &who, amount_b),
+                Error::<T>::InsufficientLiquidityBalance
+            );
+
+            let pool_id = count;
+            let lp_minted = (amount_a * amount_b).integer_sqrt();
+            ensure!(
+                lp_minted >= T::MinLiquidity::get(),
+                Error::<T>::AmountTooLow
+            );
+
+            let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
+            T::TokenHandler::transfer(&asset_a, &who, &dex_account, amount_a)?;
+            T::TokenHandler::transfer(&asset_b, &who, &dex_account, amount_b)?;
+
+            let pool = TokenPool {
+                id: pool_id,
+                asset_a,
+                asset_b,
+                reserve_a: amount_a,
+                reserve_b: amount_b,
+                total_lp: lp_minted,
+                fee_numerator: T::FeeNumerator::get(),
+                fee_denominator: T::FeeDenominator::get(),
+                creator: who.clone(),
+            };
+
+            TokenPools::<T>::insert(pool_id, pool);
+            TokenPoolByPair::<T>::insert(pair, pool_id);
+            TokenLiquidityProviders::<T>::insert(pool_id, &who, lp_minted);
+            TokenPoolCount::<T>::mutate(|c| *c += 1);
+
+            Self::deposit_event(Event::TokenPoolCreated {
+                pool_id,
+                asset_a,
+                asset_b,
+                creator: who,
+            });
+            Ok(())
+        }
+
+        /// Add liquidity to a fungible token pool
+        #[pallet::call_index(6)]
+        #[pallet::weight(T::WeightInfo::add_liquidity())]
+        pub fn add_token_liquidity(
+            origin: OriginFor<T>,
+            pool_id: u32,
+            amount_a: BalanceOf<T>,
+            amount_b: BalanceOf<T>,
+        ) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+            let mut pool = TokenPools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
+            ensure!(amount_a > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
+            ensure!(amount_b > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
+
+            let lp_a = pool.total_lp.saturating_mul(amount_a) / pool.reserve_a;
+            let lp_b = pool.total_lp.saturating_mul(amount_b) / pool.reserve_b;
+            let lp_minted = lp_a.min(lp_b);
+            ensure!(
+                lp_minted > BalanceOf::<T>::zero(),
+                Error::<T>::InsufficientAmount
+            );
+
+            ensure!(
+                T::TokenHandler::has_balance(&pool.asset_a, &who, amount_a),
+                Error::<T>::InsufficientLiquidityBalance
+            );
+            ensure!(
+                T::TokenHandler::has_balance(&pool.asset_b, &who, amount_b),
+                Error::<T>::InsufficientLiquidityBalance
+            );
+
+            let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
+            T::TokenHandler::transfer(&pool.asset_a, &who, &dex_account, amount_a)?;
+            T::TokenHandler::transfer(&pool.asset_b, &who, &dex_account, amount_b)?;
+
+            pool.reserve_a = pool.reserve_a.saturating_add(amount_a);
+            pool.reserve_b = pool.reserve_b.saturating_add(amount_b);
+            pool.total_lp = pool.total_lp.saturating_add(lp_minted);
+
+            TokenPools::<T>::insert(pool_id, pool);
+            TokenLiquidityProviders::<T>::mutate(pool_id, &who, |lp| {
+                *lp = Some(
+                    lp.unwrap_or(BalanceOf::<T>::zero())
+                        .saturating_add(lp_minted),
+                );
+            });
+
+            Self::deposit_event(Event::TokenLiquidityAdded {
+                pool_id,
+                provider: who,
+                amount_a,
+                amount_b,
+                lp_minted,
+            });
+            Ok(())
+        }
+
+        /// Remove liquidity from a fungible token pool
+        #[pallet::call_index(7)]
+        #[pallet::weight(T::WeightInfo::remove_liquidity())]
+        pub fn remove_token_liquidity(
+            origin: OriginFor<T>,
+            pool_id: u32,
+            lp_amount: BalanceOf<T>,
+        ) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+            let mut pool = TokenPools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
+
+            let user_lp =
+                TokenLiquidityProviders::<T>::get(pool_id, &who).unwrap_or(BalanceOf::<T>::zero());
+            ensure!(user_lp >= lp_amount, Error::<T>::InsufficientLpBalance);
+            ensure!(lp_amount > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
+
+            let amount_a = pool.reserve_a.saturating_mul(lp_amount) / pool.total_lp;
+            let amount_b = pool.reserve_b.saturating_mul(lp_amount) / pool.total_lp;
+
+            let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
+            T::TokenHandler::transfer(&pool.asset_a, &dex_account, &who, amount_a)?;
+            T::TokenHandler::transfer(&pool.asset_b, &dex_account, &who, amount_b)?;
+
+            pool.reserve_a = pool.reserve_a.saturating_sub(amount_a);
+            pool.reserve_b = pool.reserve_b.saturating_sub(amount_b);
+            pool.total_lp = pool.total_lp.saturating_sub(lp_amount);
+
+            TokenPools::<T>::insert(pool_id, pool);
+            TokenLiquidityProviders::<T>::mutate(pool_id, &who, |lp| {
+                *lp = Some(
+                    lp.unwrap_or(BalanceOf::<T>::zero())
+                        .saturating_sub(lp_amount),
+                );
+            });
+
+            Self::deposit_event(Event::TokenLiquidityRemoved {
+                pool_id,
+                provider: who,
+                amount_a,
+                amount_b,
+                lp_burned: lp_amount,
+            });
+            Ok(())
+        }
+
+        /// Swap tokens in a fungible token pool
+        #[pallet::call_index(8)]
+        #[pallet::weight(T::WeightInfo::swap())]
+        pub fn swap_token(
+            origin: OriginFor<T>,
+            pool_id: u32,
+            asset_in: AssetId,
+            amount_in: BalanceOf<T>,
+            min_amount_out: BalanceOf<T>,
+        ) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+            let mut pool = TokenPools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
+            ensure!(amount_in > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
+
+            let (is_a_to_b, asset_out) = if asset_in == pool.asset_a {
+                (true, pool.asset_b.clone())
+            } else if asset_in == pool.asset_b {
+                (false, pool.asset_a.clone())
+            } else {
+                return Err(Error::<T>::PoolNotFound.into());
+            };
+
+            let (reserve_in, reserve_out) = if is_a_to_b {
+                (pool.reserve_a, pool.reserve_b)
+            } else {
+                (pool.reserve_b, pool.reserve_a)
+            };
+
+            let fee = amount_in.saturating_mul(T::FeeNumerator::get().into())
+                / T::FeeDenominator::get().into();
+            let amount_in_after_fee = amount_in.saturating_sub(fee);
+            let numerator = reserve_out.saturating_mul(amount_in_after_fee);
+            let denominator = reserve_in.saturating_add(amount_in_after_fee);
+            let amount_out = numerator / denominator;
+
+            // Circuit breaker: limit single swap size to MaxPriceImpact of pool reserves
+            let max_swap_in = reserve_in
+                .saturating_mul(T::MaxPriceImpact::get().deconstruct().into())
+                / 1_000_000u32.into();
+            ensure!(
+                amount_in_after_fee <= max_swap_in,
+                Error::<T>::PriceImpactTooHigh
+            );
+
+            ensure!(amount_out >= min_amount_out, Error::<T>::SlippageExceeded);
+            ensure!(
+                amount_out > BalanceOf::<T>::zero(),
+                Error::<T>::InsufficientLiquidity
+            );
+            ensure!(
+                T::TokenHandler::has_balance(&asset_in, &who, amount_in),
+                Error::<T>::InsufficientLiquidityBalance
+            );
+
+            let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
+            T::TokenHandler::transfer(&asset_in, &who, &dex_account, amount_in)?;
+            T::TokenHandler::transfer(&asset_out, &dex_account, &who, amount_out)?;
+
+            if is_a_to_b {
+                pool.reserve_a = pool.reserve_a.saturating_add(amount_in);
+                pool.reserve_b = pool.reserve_b.saturating_sub(amount_out);
+            } else {
+                pool.reserve_b = pool.reserve_b.saturating_add(amount_in);
+                pool.reserve_a = pool.reserve_a.saturating_sub(amount_out);
+            }
+
+            TokenPools::<T>::insert(pool_id, pool);
+            TotalVolume::<T>::mutate(|v| *v = v.saturating_add(amount_in));
+            TotalSwaps::<T>::mutate(|s| *s += 1);
+
+            Self::deposit_event(Event::TokenSwapExecuted {
+                pool_id,
+                trader: who,
+                asset_in,
+                asset_out,
+                amount_in,
+                amount_out,
+                fee,
+            });
+            Ok(())
+        }
+
+        /// Get pool price
+
         /// Get pool price
         #[pallet::call_index(4)]
         #[pallet::weight(T::WeightInfo::get_price())]
-        pub fn get_price(
-            origin: OriginFor<T>,
-            pool_id: u32,
-        ) -> DispatchResult {
+        pub fn get_price(origin: OriginFor<T>, pool_id: u32) -> DispatchResult {
             ensure_signed(origin)?;
             let pool = Pools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
-            ensure!(pool.reserve_b > BalanceOf::<T>::zero(), Error::<T>::InsufficientLiquidity);
+            ensure!(
+                pool.reserve_b > BalanceOf::<T>::zero(),
+                Error::<T>::InsufficientLiquidity
+            );
             Ok(())
         }
     }
@@ -463,3 +894,6 @@ pub mod pallet {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;
