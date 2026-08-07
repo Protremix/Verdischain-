@@ -40,6 +40,15 @@ hr{border:none;border-top:1px solid #222;margin:32px 0}
 .brand-logo-img { height: 36px; width: 36px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,255,136,0.35)); } .brand-text { font-family: Poppins, sans-serif; font-weight: 700; font-size: 13px; color: #fff; white-space: nowrap; margin-left: 2px; letter-spacing: -0.3px; text-decoration: none !important; }
 @media(max-width:768px) { .brand-logo-img { height: 40px; } }
 
+
+nav.std-nav { position:sticky; top:0; z-index:1000; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid rgba(255,255,255,0.08); padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
+nav.std-nav .nav-links { display:flex; gap:4px; flex-wrap:wrap; }
+nav.std-nav .nav-links a { color:#b8bcc4; text-decoration:none; padding:8px 12px; border-radius:8px; font-size:13px; font-weight:500; transition:all .2s; }
+nav.std-nav .nav-links a:hover, nav.std-nav .nav-links a.active { color:#caff33; background:rgba(255,255,255,0.06); }
+nav.std-nav .nav-status { display:flex; align-items:center; gap:8px; font-size:13px; color:#b8bcc4; }
+nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px rgba(34,197,94,0.6); animation:std-nav-pulse 2s infinite; }
+@keyframes std-nav-pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+@media(max-width:900px){ nav.std-nav .nav-links{ display:none; } }
 </style>
 <link rel="icon" type="image/png" href="/assets/favicon-32.png">
 <link rel="apple-touch-icon" href="/assets/favicon-180.png">
@@ -83,11 +92,11 @@ hr{border:none;border-top:1px solid #222;margin:32px 0}
 <hr>
 <h2 id="overview">Overview</h2>
 <p>Verdis Chain is a Substrate-based blockchain with native DPoS consensus, an AMM DEX, and eco-friendly features including carbon credit tracking and green validator scoring.</p>
-<p>**Token:** VRDX (100B total supply, 12 decimals)  </p>
-<p>**Chain ID:** 909  </p>
-<p>**SS58 Format:** 909  </p>
-<p>**Consensus:** DPoS (Delegated Proof of Stake)  </p>
-<p>**Network:** Testnet  </p>
+<p><strong>Token:</strong> VRDX (100B total supply, 12 decimals)  </p>
+<p><strong>Chain ID:</strong> 909  </p>
+<p><strong>SS58 Format:</strong> 909  </p>
+<p><strong>Consensus:</strong> DPoS (Delegated Proof of Stake)  </p>
+<p><strong>Network:</strong> Testnet  </p>
 <hr>
 <h2 id="architecture">Architecture</h2>
 <h3>Pallets (7)</h3>
@@ -101,21 +110,21 @@ hr{border:none;border-top:1px solid #222;margin:32px 0}
 <tr><td>Storage</td><td>70</td><td>On-chain data storage</td></tr>
 </table>
 <h3>Infrastructure</h3>
-<li>**Node:** Substrate-based, 5 validators + 2 RPC nodes + 2 boot nodes</li>
-<li>**Web:** Nginx reverse proxy, 12 pages, WebSocket at `/ws`</li>
-<li>**Monitoring:** Prometheus + Grafana + Node Exporter</li>
-<li>**Security:** Firewall, intrusion detection, TLS 1.2/1.3</li>
+<li><strong>Node:</strong> Substrate-based, 5 validators + 2 RPC nodes + 2 boot nodes</li>
+<li><strong>Web:</strong> Nginx reverse proxy, 12 pages, WebSocket at `/ws`</li>
+<li><strong>Monitoring:</strong> Prometheus + Grafana + Node Exporter</li>
+<li><strong>Security:</strong> Firewall, intrusion detection, TLS 1.2/1.3</li>
 
 <hr>
 <h2 id="quick-start">Quick Start</h2>
 <h3>Access the Web Interface</h3>
-<li>**Landing:** https://verdischain.com</li>
-<li>**Explorer:** https://verdischain.com/explorer/</li>
-<li>**Wallet:** https://verdischain.com/wallet/</li>
-<li>**DEX:** https://verdischain.com/dex/</li>
-<li>**Faucet:** https://verdischain.com/faucet/</li>
-<li>**Status:** https://verdischain.com/status/</li>
-<li>**Grafana:** https://verdischain.com/grafana/ (contact admin)</li>
+<li><strong>Landing:</strong> https://verdischain.com</li>
+<li><strong>Explorer:</strong> https://verdischain.com/explorer/</li>
+<li><strong>Wallet:</strong> https://verdischain.com/wallet/</li>
+<li><strong>DEX:</strong> https://verdischain.com/dex/</li>
+<li><strong>Faucet:</strong> https://verdischain.com/faucet/</li>
+<li><strong>Status:</strong> https://verdischain.com/status/</li>
+<li><strong>Grafana:</strong> https://verdischain.com/grafana/ (contact admin)</li>
 
 <h3>Connect via polkadot.js</h3>
 <pre><code>
@@ -410,12 +419,12 @@ const api = await ApiPromise.create({ provider: new WsProvider('wss://verdischai
 <hr>
 <h2 id="deployment">Deployment</h2>
 <h3>Server</h3>
-<li>**Access:** via verdischain.com</li>
-<li>**Domain:** verdischain.com</li>
-<li>**OS:** Ubuntu 26.04 LTS</li>
-<li>**CPU:** 8-core AMD EPYC</li>
-<li>**RAM:** 32GB</li>
-<li>**Disk:** 225GB</li>
+<li><strong>Access:</strong> via verdischain.com</li>
+<li><strong>Domain:</strong> verdischain.com</li>
+<li><strong>OS:</strong> Ubuntu 26.04 LTS</li>
+<li><strong>CPU:</strong> 8-core AMD EPYC</li>
+<li><strong>RAM:</strong> 32GB</li>
+<li><strong>Disk:</strong> 225GB</li>
 
 <h3>Services (13 active)</h3>
 <pre><code>
@@ -468,7 +477,7 @@ npm run test:mobile                 # Mobile viewport (375px)
 <tr><td>Explorer</td><td>4</td><td>Block height, peers, validators</td></tr>
 <tr><td>API</td><td>15</td><td>RPC methods, WebSocket, security headers</td></tr>
 <tr><td>Mobile</td><td>5</td><td>Responsive at 375/768/1024/1280px</td></tr>
-<tr><td>**Total**</td><td>**52**</td><td>Full E2E coverage</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>52</strong></td><td>Full E2E coverage</td></tr>
 </table>
 <h3>CI/CD Integration</h3>
 <p>Tests run automatically via GitHub Actions:</p>
@@ -480,16 +489,16 @@ npm run test:mobile                 # Mobile viewport (375px)
 <hr>
 <h2 id="token-economics">Token Economics</h2>
 <h3>VRDX Token</h3>
-<li>**Total Supply:** 100,000,000,000 (100B)</li>
-<li>**Investor Allocation:** 12,000,000,000 (12B)</li>
-<li>**Decimals:** 12</li>
-<li>**Ticker:** VRDX</li>
-<li>**SS58 Format:** 909</li>
+<li><strong>Total Supply:</strong> 100,000,000,000 (100B)</li>
+<li><strong>Investor Allocation:</strong> 12,000,000,000 (12B)</li>
+<li><strong>Decimals:</strong> 12</li>
+<li><strong>Ticker:</strong> VRDX</li>
+<li><strong>SS58 Format:</strong> 909</li>
 
 <h3>Token Sale Phases</h3>
-<p>1. **Seed Phase** — Early investors (vesting: 24 months)</p>
-<p>2. **Private Sale** — Strategic partners (vesting: 12 months)</p>
-<p>3. **Public Sale** — Community (vesting: 3 months)</p>
+<p>1. <strong>Seed Phase</strong> — Early investors (vesting: 24 months)</p>
+<p>2. <strong>Private Sale</strong> — Strategic partners (vesting: 12 months)</p>
+<p>3. <strong>Public Sale</strong> — Community (vesting: 3 months)</p>
 <h3>Vesting</h3>
 <p>Vesting schedules are enforced on-chain via the Vesting pallet:</p>
 <li>Linear vesting with cliff periods</li>

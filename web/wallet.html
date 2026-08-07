@@ -66,6 +66,15 @@ h1{font-size:14px;font-weight:700;margin-bottom:8px}
 .brand-logo-img { height: 36px; width: 36px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,255,136,0.35)); } .brand-text { font-family: Poppins, sans-serif; font-weight: 700; font-size: 13px; color: #fff; white-space: nowrap; margin-left: 2px; letter-spacing: -0.3px; text-decoration: none !important; }
 @media(max-width:768px) { .brand-logo-img { height: 40px; } }
 
+
+nav.std-nav { position:sticky; top:0; z-index:1000; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid rgba(255,255,255,0.08); padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
+nav.std-nav .nav-links { display:flex; gap:4px; flex-wrap:wrap; }
+nav.std-nav .nav-links a { color:#b8bcc4; text-decoration:none; padding:8px 12px; border-radius:8px; font-size:13px; font-weight:500; transition:all .2s; }
+nav.std-nav .nav-links a:hover, nav.std-nav .nav-links a.active { color:#caff33; background:rgba(255,255,255,0.06); }
+nav.std-nav .nav-status { display:flex; align-items:center; gap:8px; font-size:13px; color:#b8bcc4; }
+nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px rgba(34,197,94,0.6); animation:std-nav-pulse 2s infinite; }
+@keyframes std-nav-pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+@media(max-width:900px){ nav.std-nav .nav-links{ display:none; } }
 </style>
 <link rel="icon" type="image/png" href="/assets/favicon-32.png">
 <link rel="apple-touch-icon" href="/assets/favicon-180.png">
