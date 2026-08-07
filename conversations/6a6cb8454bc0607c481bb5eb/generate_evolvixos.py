@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+import re
+
+html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -935,3 +937,9 @@
   </script>
 </body>
 </html>
+"""
+
+with open("evolvixos-landing.html", "w") as f:
+    f.write(html_content)
+
+print("Generated evolvixos-landing.html successfully! Size:", len(html_content))
