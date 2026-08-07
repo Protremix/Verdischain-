@@ -909,7 +909,7 @@
         <p>Validators are ranked by their green score — a measure of energy efficiency, carbon offset, and uptime.</p>
       </div>
       <div class="validators-grid reveal-stagger">
-        <div class="validator-card"><div class="validator-header"><div class="validator-name">0x4f2a...8b9c</div><div class="validator-rank">#1</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">98/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:98%"></div></div><div class="validator-stats"><span>📦 12,847 blocks</span><span>⏱ 99.8% uptime</span></div><div class="validator-status">Active · Elected</div></div>
+        <div class="validator-card"><div class="validator-header"><div class="validator-name">0x4f2a...8b9c</div><div class="validator-rank">#1</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">98/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:98%"></div></div><div class="validator-stats"><span>📦 <span data-val-blocks>#---</span> blocks</span><span>⏱ 99.8% uptime</span></div><div class="validator-status">Active · Elected</div></div>
         <div class="validator-card"><div class="validator-header"><div class="validator-name">0x7a1b...3e4f</div><div class="validator-rank">#2</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">96/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:96%"></div></div><div class="validator-stats"><span>📦 11,203 blocks</span><span>⏱ 99.5% uptime</span></div><div class="validator-status">Active · Elected</div></div>
         <div class="validator-card"><div class="validator-header"><div class="validator-name">0x9c3d...1a2b</div><div class="validator-rank">#3</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">94/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:94%"></div></div><div class="validator-stats"><span>📦 10,891 blocks</span><span>⏱ 99.2% uptime</span></div><div class="validator-status">Active · Elected</div></div>
         <div class="validator-card"><div class="validator-header"><div class="validator-name">0x2e5f...7c8d</div><div class="validator-rank">#4</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">91/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:91%"></div></div><div class="validator-stats"><span>📦 9,447 blocks</span><span>⏱ 98.9% uptime</span></div><div class="validator-status">Active · Elected</div></div>
@@ -1230,6 +1230,16 @@ async function fetchDexPools() {
 }
 fetchDexPools();
 setInterval(fetchDexPools, 30000);
+</script><script>
+async function updateValBlocks(){
+  try{
+    const r=await fetch('/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'chain_getHeader',params:[],id:9})});
+    const d=await r.json();
+    const h=parseInt(d.result.number,16);
+    document.querySelectorAll('[data-val-blocks]').forEach(e=>e.textContent='#'+h.toLocaleString());
+  }catch(e){}
+}
+updateValBlocks();setInterval(updateValBlocks,15000);
 </script></body>
 <script>
 (function(){
