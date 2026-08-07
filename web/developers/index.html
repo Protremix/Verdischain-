@@ -41,7 +41,7 @@
       margin: 0 auto;
       padding: 84px 24px 60px 24px;
       display: flex;
-      gap: 36px;
+      gap: 20px;
       position: relative;
     }
 
@@ -169,7 +169,7 @@
     }
 
     .dev-hero h1 {
-      font-size: 40px;
+      font-size: 13px;
       font-weight: 800;
       color: #ffffff;
       margin-bottom: 14px;
@@ -223,7 +223,7 @@
     }
 
     .fact-value {
-      font-size: 15px;
+      font-size: 13px;
       font-weight: 700;
       color: #ffffff;
       font-family: 'JetBrains Mono', monospace;
@@ -235,7 +235,7 @@
       background: rgba(18, 24, 18, 0.45);
       border: 1px solid var(--border, #1e2e1e);
       border-radius: 18px;
-      padding: 36px;
+      padding: 24px;
       margin-bottom: 44px;
       scroll-margin-top: 90px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.2);
@@ -251,7 +251,7 @@
     }
 
     .section-title {
-      font-size: 26px;
+      font-size: 16px;
       font-weight: 800;
       color: #ffffff;
       display: flex;
@@ -261,11 +261,11 @@
 
     .section-title i {
       color: var(--accent, #00ff88);
-      font-size: 24px;
+      font-size: 13px;
     }
 
     .section-desc {
-      font-size: 15px;
+      font-size: 13px;
       color: var(--text-secondary);
       margin-top: 6px;
       line-height: 1.5;
@@ -374,7 +374,7 @@
       background: linear-gradient(135deg, #00ff88, #00aa55);
       color: #0a0e0a;
       font-weight: 800;
-      font-size: 15px;
+      font-size: 13px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -383,7 +383,7 @@
     }
 
     .step-title {
-      font-size: 18px;
+      font-size: 13px;
       font-weight: 700;
       color: #ffffff;
       margin-bottom: 8px;
@@ -504,7 +504,7 @@
       top: 50%;
       transform: translateY(-50%);
       color: var(--text-muted);
-      font-size: 15px;
+      font-size: 13px;
     }
 
     .search-input {
@@ -625,7 +625,7 @@
     }
 
     .arch-card h4 {
-      font-size: 17px;
+      font-size: 14px;
       color: var(--accent, #00ff88);
       margin-bottom: 10px;
       display: flex;
@@ -744,7 +744,11 @@
       .sidebar-links { display: flex; overflow-x: auto; padding-bottom: 10px; }
       .sidebar-links li { flex-shrink: 0; }
     }
-  </style>
+  
+/* Mobile responsiveness */
+@media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:44px;padding:10px 16px}.card{padding:16px}h1{font-size:13px}}
+@media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:14px}.container{padding:20px}}
+</style>
 <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32"/>
 <link rel="icon" type="image/png" href="/favicon-16.png" sizes="16x16"/>
 <link rel="apple-touch-icon" href="/favicon-192.png"/>
@@ -1617,7 +1621,7 @@ asyncio.<span class="token fn">run</span>(<span class="token fn">subscribe_verdi
 
         <!-- Example 1: Balance Query -->
         <div style="margin-bottom:30px;">
-          <h3 style="font-size:17px; color:#fff; margin-bottom:10px;"><i class="fa-solid fa-coins" style="color:var(--accent);"></i> Query Account Balance & Staking Info</h3>
+          <h3 style="font-size:14px; color:#fff; margin-bottom:10px;"><i class="fa-solid fa-coins" style="color:var(--accent);"></i> Query Account Balance & Staking Info</h3>
           
           <div class="code-box">
             <div class="code-header">
@@ -1671,7 +1675,7 @@ curl -X POST https://rpc.verdischain.com \
 
         <!-- Example 2: AMM DEX & Eco -->
         <div style="margin-bottom:30px;">
-          <h3 style="font-size:17px; color:#fff; margin-bottom:10px;"><i class="fa-solid fa-right-left" style="color:var(--accent);"></i> Query AMM DEX Pools & Green Carbon Metrics</h3>
+          <h3 style="font-size:14px; color:#fff; margin-bottom:10px;"><i class="fa-solid fa-right-left" style="color:var(--accent);"></i> Query AMM DEX Pools & Green Carbon Metrics</h3>
           
           <div class="code-box">
             <div class="code-header">
@@ -1715,7 +1719,7 @@ curl -X POST https://rpc.verdischain.com \
 
         <!-- Example 3: Smart Contract Deployment -->
         <div>
-          <h3 style="font-size:17px; color:#fff; margin-bottom:10px;"><i class="fa-solid fa-file-code" style="color:var(--accent);"></i> Deploy WASM Smart Contract (`pallet-contracts`)</h3>
+          <h3 style="font-size:14px; color:#fff; margin-bottom:10px;"><i class="fa-solid fa-file-code" style="color:var(--accent);"></i> Deploy WASM Smart Contract (`pallet-contracts`)</h3>
           
           <div class="code-box">
             <div class="code-header">
@@ -1778,7 +1782,7 @@ curl -X POST https://rpc.verdischain.com \
         </div>
               <!-- Example 3b: Smart Contract RPC Methods -->
         <div class="example-card">
-          <h3 style="font-size:17px; color:#fff; margin-bottom:10px;"><i class="fa-solid fa-satellite-dish" style="color:var(--accent);"></i> Smart Contract RPC — Query & Simulate</h3>
+          <h3 style="font-size:14px; color:#fff; margin-bottom:10px;"><i class="fa-solid fa-satellite-dish" style="color:var(--accent);"></i> Smart Contract RPC — Query & Simulate</h3>
           <p style="font-size:13px; color:var(--text-secondary); margin-bottom:14px;">Use the 3 native Contracts RPC methods to query contract storage and simulate calls without submitting extrinsics.</p>
           <div class="code-tabs">
             <button class="code-tab active" onclick="switchTab(this, 'ex-sc-rpc-curl')">cURL</button>
@@ -1875,7 +1879,7 @@ result = <span class="token fn">call_rpc</span>(<span class="token str">'contrac
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap:22px;">
           
           <div style="background:rgba(18,24,18,0.85); border:1px solid var(--border-light); border-radius:14px; padding:24px;">
-            <h4 style="color:#fff; font-size:17px; margin-bottom:10px;"><i class="fa-solid fa-server" style="color:var(--accent);"></i> Setting Up a Local Node</h4>
+            <h4 style="color:#fff; font-size:14px; margin-bottom:10px;"><i class="fa-solid fa-server" style="color:var(--accent);"></i> Setting Up a Local Node</h4>
             <p style="font-size:13.5px; color:var(--text-secondary); margin-bottom:14px;">Compile `verdis-chain` from Rust source and launch a single-node development network.</p>
             
             <div style="background:var(--code-bg); padding:12px; border-radius:8px; font-family:monospace; font-size:12px; color:var(--accent); margin-bottom:14px; line-height:1.6;">
@@ -1887,7 +1891,7 @@ result = <span class="token fn">call_rpc</span>(<span class="token str">'contrac
           </div>
 
           <div style="background:rgba(18,24,18,0.85); border:1px solid var(--border-light); border-radius:14px; padding:24px;">
-            <h4 style="color:#fff; font-size:17px; margin-bottom:10px;"><i class="fa-solid fa-network-wired" style="color:var(--accent);"></i> Connecting to Testnet</h4>
+            <h4 style="color:#fff; font-size:14px; margin-bottom:10px;"><i class="fa-solid fa-network-wired" style="color:var(--accent);"></i> Connecting to Testnet</h4>
             <p style="font-size:13.5px; color:var(--text-secondary); margin-bottom:14px;">Join the 10-node Verdis testnet using raw chain spec (`verdis-testnet-raw.json`).</p>
             
             <div style="background:var(--code-bg); padding:12px; border-radius:8px; font-family:monospace; font-size:12px; color:var(--accent); margin-bottom:14px; line-height:1.6;">
@@ -1899,7 +1903,7 @@ result = <span class="token fn">call_rpc</span>(<span class="token str">'contrac
           </div>
 
           <div style="background:rgba(18,24,18,0.85); border:1px solid var(--border-light); border-radius:14px; padding:24px;">
-            <h4 style="color:#fff; font-size:17px; margin-bottom:10px;"><i class="fa-solid fa-laptop-code" style="color:var(--accent);"></i> Building a Simple dApp</h4>
+            <h4 style="color:#fff; font-size:14px; margin-bottom:10px;"><i class="fa-solid fa-laptop-code" style="color:var(--accent);"></i> Building a Simple dApp</h4>
             <p style="font-size:13.5px; color:var(--text-secondary); margin-bottom:14px;">Connect React/Vue frontend apps to Verdis extension wallets and query state in real-time.</p>
             
             <div style="background:var(--code-bg); padding:12px; border-radius:8px; font-family:monospace; font-size:12px; color:var(--accent); margin-bottom:14px; line-height:1.6;">
@@ -1910,7 +1914,7 @@ result = <span class="token fn">call_rpc</span>(<span class="token str">'contrac
           </div>
 
           <div style="background:rgba(18,24,18,0.85); border:1px solid var(--border-light); border-radius:14px; padding:24px;">
-            <h4 style="color:#fff; font-size:17px; margin-bottom:10px;"><i class="fa-solid fa-file-contract" style="color:var(--accent);"></i> Interacting with Smart Contracts</h4>
+            <h4 style="color:#fff; font-size:14px; margin-bottom:10px;"><i class="fa-solid fa-file-contract" style="color:var(--accent);"></i> Interacting with Smart Contracts</h4>
             <p style="font-size:13.5px; color:var(--text-secondary); margin-bottom:14px;">Compile ink! smart contracts to WASM bytecode and upload to `pallet-contracts`.</p>
             
             <div style="background:var(--code-bg); padding:12px; border-radius:8px; font-family:monospace; font-size:12px; color:var(--accent); margin-bottom:14px; line-height:1.6;">
@@ -2000,7 +2004,7 @@ cargo contract test</pre>
         </div>
 
         <div style="margin-top:28px;">
-          <h4 style="color:#fff; font-size:16px; margin-bottom:14px;">Pallet Directory:</h4>
+          <h4 style="color:#fff; font-size:14px; margin-bottom:14px;">Pallet Directory:</h4>
           
           <div style="margin-bottom:16px;">
             <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:700; margin-bottom:8px;">Custom Core Pallets</div>

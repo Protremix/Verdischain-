@@ -17,10 +17,14 @@
         .max-supply-badge { background: var(--bg-card); border: 1px solid var(--border-accent); border-radius: 20px; padding: 24px 32px; display: inline-block; box-shadow: var(--shadow-glow); margin-top: 20px; }
         .cat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
         .cat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .cat-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
-        .cat-pct { font-size: 20px; font-weight: 800; color: var(--accent); font-family: var(--font-mono); }
+        .cat-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+        .cat-pct { font-size: 14px; font-weight: 800; color: var(--accent); font-family: var(--font-mono); }
         .cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 13px; margin-top: 12px; background: var(--bg-input); padding: 12px; border-radius: 8px; }
-    </style>
+    
+/* Mobile responsiveness */
+@media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:44px;padding:10px 16px}.card{padding:16px}h1{font-size:13px}}
+@media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:14px}.container{padding:20px}}
+</style>
 <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32"/>
 <link rel="icon" type="image/png" href="/favicon-16.png" sizes="16x16"/>
 <link rel="apple-touch-icon" href="/favicon-192.png"/>
@@ -47,14 +51,14 @@
 <section class="section">
     <div class="tokenomics-hero reveal">
         <span class="section-eyebrow">Economic Architecture</span>
-        <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px"><span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#0a0e0a;border:1px solid rgba(0,255,136,0.3);flex-shrink:0"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:24px;height:24px"><path d="M20 3L34 11V27L20 35L6 27V11L20 3Z" stroke="#00ff88" stroke-width="2" fill="rgba(0,255,136,0.03)" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 13L20 27M27 13L20 27" stroke="#00ff88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 18C17 18 15 20 15 23C15 26 17 28 20 28C23 28 25 26 25 23C25 20 23 18 20 18Z" fill="#00ff88" opacity="0.3"/></svg></span><h1 class="section-title" style="margin:0">VRDX Tokenomics</h1></div>
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px"><span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#0a0e0a;border:1px solid rgba(0,255,136,0.3);flex-shrink:0"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:24px;height:24px"><path d="M20 3L34 11V27L20 35L6 27V11L20 3Z" stroke="#00ff88" stroke-width="2" fill="rgba(0,255,136,0.03)" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 13L20 27M27 13L20 27" stroke="#00ff88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 18C17 18 15 20 15 23C15 26 17 28 20 28C23 28 25 26 25 23C25 20 23 18 20 18Z" fill="#00ff88" opacity="0.3"/></svg></span><h1 class="section-title" style="margin:0">VRDX Tokenomics</h1></div>
         <p class="section-subtitle">
             A balanced 100-billion supply distribution engineered for long-term decentralization, ecosystem liquidity, and sustainable validator incentives.
         </p>
         
         <div class="max-supply-badge">
             <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600;">Max Supply Counter</div>
-            <div style="font-size:36px; font-weight:800; color:var(--accent); font-family:var(--font-mono); margin-top:4px;">
+            <div style="font-size:13px; font-weight:800; color:var(--accent); font-family:var(--font-mono); margin-top:4px;">
                 100,000,000,000 VRDX
             </div>
             <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Fixed Protocol Hard Cap</div>
@@ -67,7 +71,7 @@
             <canvas id="tokenomicsChart"></canvas>
         </div>
         <div>
-            <h3 style="font-size:22px; margin-bottom:16px;">8-Category Distribution Model</h3>
+            <h3 style="font-size:13px; margin-bottom:16px;">8-Category Distribution Model</h3>
             <p style="color:var(--text-secondary); line-height:1.6; margin-bottom:20px;">
                 The VRDX supply is split across 8 dedicated categories to maintain network security, incentivize validators, fund grants, and maintain liquidity.
             </p>
@@ -237,7 +241,7 @@
 
     <!-- IMPLEMENTATION MATRIX -->
     <div class="card-glass reveal" style="margin-top:48px;">
-        <h3 style="font-size:22px; color:var(--accent); margin-bottom:16px;">Implementation Status Matrix</h3>
+        <h3 style="font-size:13px; color:var(--accent); margin-bottom:16px;">Implementation Status Matrix</h3>
         <p style="color:var(--text-secondary); margin-bottom:20px;">
             To maintain complete operational clarity, protocol parameters are categorized by their implementation status:
         </p>

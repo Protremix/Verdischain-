@@ -1,706 +1,348 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verdis Wallet — Non-Custodial VRDX Wallet</title>
-<meta name="description" content="Non-custodial wallet for Verdis Chain. Send, receive, stake VRDX. Download Android APK.">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Verdis Wallet — Non-Custodial VRDX Wallet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/@noble/secp256k1@2.1.2/index.js"></script>
-<script src="https://unpkg.com/@noble/hashes@1.5.0/esm/sha256.js"></script>
-<script src="https://unpkg.com/@noble/hashes@1.5.0/esm/ripemd160.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verdis Chain — Web3 Wallet | Non-Custodial</title>
+<meta name="description" content="Non-custodial Web3 wallet for Verdis Chain." />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Verdis Chain — Web3 Wallet" />
+<link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-:root {
-  --bg:#0a0a0a; --bg-1:#111; --bg-2:#1a1a1a; --card:#141414; --border:#222; --border-2:#333;
-  --text:#e8e8e8; --text-2:#888; --text-3:#555; --accent:#caff33; --accent-2:#b4f849;
-  --accent-glow:rgba(202,255,51,0.15); --success:#4ade80; --warning:#fbbf24; --error:#ef4444;
-  --radius:12px; --radius-sm:8px;
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; overflow-x:hidden; }
-.mono { font-family:'JetBrains Mono',monospace; }
-
-nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 24px; height:64px; display:flex; align-items:center; justify-content:space-between; }
-.nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); }
-.nav-brand .logo { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#000; font-size:16px; }
-.nav-brand span { font-weight:600; font-size:16px; }
-.nav-links { display:flex; gap:4px; }
-.nav-links a { color:var(--text-2); text-decoration:none; padding:8px 14px; border-radius:var(--radius-sm); font-size:14px; font-weight:500; transition:all .2s; }
-.nav-links a:hover, .nav-links a.active { color:var(--accent); background:var(--card); }
-
-/* HERO */
-.hero { padding:48px 24px 32px; max-width:1280px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center; }
-@media(max-width:900px) { .hero { grid-template-columns:1fr; } }
-.hero-left h1 { font-family:'Space Grotesk',sans-serif; font-size:40px; font-weight:700; margin-bottom:12px; }
-.hero-left h1 .accent { color:var(--accent); }
-.hero-left p { color:var(--text-2); font-size:16px; margin-bottom:24px; }
-.hero-buttons { display:flex; gap:12px; flex-wrap:wrap; }
-.btn-primary { background:var(--accent); color:#000; border:none; border-radius:var(--radius-sm); padding:14px 28px; font-weight:700; font-size:15px; cursor:pointer; transition:all .2s; }
-.btn-primary:hover { background:var(--accent-2); transform:translateY(-1px); }
-.btn-outline { background:transparent; color:var(--text); border:1px solid var(--border-2); border-radius:var(--radius-sm); padding:14px 28px; font-weight:600; font-size:15px; cursor:pointer; transition:all .2s; }
-.btn-outline:hover { border-color:var(--accent); color:var(--accent); }
-
-/* APK Download Card */
-.apk-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px; }
-.apk-card h3 { font-size:16px; font-weight:600; margin-bottom:8px; }
-.apk-card .apk-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.3); border-radius:6px; padding:4px 10px; font-size:12px; color:var(--success); margin-bottom:12px; }
-.apk-card .apk-meta { display:flex; gap:16px; font-size:13px; color:var(--text-2); margin-bottom:16px; }
-.apk-card .apk-meta span { display:flex; align-items:center; gap:4px; }
-
-/* 3D Floating Cluster */
-.hero-right { position:relative; height:400px; perspective:1000px; }
-.float-card { position:absolute; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.5); animation:float 6s ease-in-out infinite; }
-.float-card.balance { top:20px; left:5%; width:75%; z-index:3; animation-delay:0s; }
-.float-card.send { top:55%; right:5%; width:50%; z-index:2; animation-delay:1s; }
-.float-card.apk { bottom:5%; left:10%; width:45%; z-index:1; animation-delay:2s; }
-@keyframes float { 0%,100% { transform:translateY(0) rotate(-1deg); } 50% { transform:translateY(-10px) rotate(1deg); } }
-.balance-amount { font-family:'JetBrains Mono',monospace; font-size:28px; font-weight:700; color:var(--accent); }
-.balance-label { font-size:13px; color:var(--text-3); text-transform:uppercase; letter-spacing:.5px; }
-.balance-rows { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
-.balance-row { background:var(--bg-1); border-radius:8px; padding:10px; }
-.balance-row .v { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:600; }
-.balance-row .l { font-size:11px; color:var(--text-3); }
-
-/* WALLET INTERFACE */
-.wallet-section { max-width:720px; margin:0 auto 48px; padding:0 24px; }
-.wallet-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:32px; }
-
-/* Onboarding (when no wallet) */
-.onboarding { text-align:center; }
-.onboarding h2 { font-size:24px; font-weight:600; margin-bottom:8px; }
-.onboarding p { color:var(--text-2); font-size:15px; margin-bottom:24px; }
-.onboarding-buttons { display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:400px; margin:0 auto; }
-.onboarding-btn { padding:20px; background:var(--bg-1); border:1px solid var(--border); border-radius:var(--radius); cursor:pointer; transition:all .2s; text-align:left; }
-.onboarding-btn:hover { border-color:var(--accent); background:var(--bg-2); }
-.onboarding-btn .ob-icon { font-size:24px; margin-bottom:8px; }
-.onboarding-btn .ob-title { font-weight:600; font-size:15px; margin-bottom:4px; }
-.onboarding-btn .ob-desc { font-size:13px; color:var(--text-2); }
-
-/* Wallet Dashboard */
-.dashboard { display:none; }
-.dash-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
-.dash-header h2 { font-size:20px; font-weight:600; }
-.dash-header .addr { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--text-2); background:var(--bg-1); padding:6px 12px; border-radius:6px; }
-.balance-display { background:var(--bg-1); border-radius:var(--radius); padding:24px; margin-bottom:20px; }
-.balance-display .total { font-family:'JetBrains Mono',monospace; font-size:32px; font-weight:700; color:var(--accent); }
-.balance-display .label { font-size:13px; color:var(--text-3); text-transform:uppercase; margin-bottom:4px; }
-.balance-display .sub { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:16px; }
-.balance-display .sub-item { }
-.balance-display .sub-item .v { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:600; }
-.balance-display .sub-item .l { font-size:11px; color:var(--text-3); }
-
-.action-buttons { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
-.action-btn { padding:16px; background:var(--bg-1); border:1px solid var(--border); border-radius:var(--radius); text-align:center; cursor:pointer; transition:all .2s; }
-.action-btn:hover { border-color:var(--accent); }
-.action-btn .ab-icon { font-size:24px; margin-bottom:6px; }
-.action-btn .ab-label { font-size:13px; font-weight:600; }
-
-/* Send Form */
-.send-form { display:none; background:var(--bg-1); border-radius:var(--radius); padding:20px; margin-bottom:20px; }
-.send-form.active { display:block; }
-.form-group { margin-bottom:16px; }
-.form-group label { display:block; font-size:13px; color:var(--text-3); margin-bottom:6px; }
-.form-group input, .form-group select { width:100%; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 16px; color:var(--text); font-size:15px; outline:none; font-family:'JetBrains Mono',monospace; }
-.form-group input:focus, .form-group select:focus { border-color:var(--accent); }
-.form-group .hint { font-size:12px; color:var(--text-3); margin-top:4px; }
-
-/* Receive */
-.receive-section { display:none; background:var(--bg-1); border-radius:var(--radius); padding:20px; margin-bottom:20px; text-align:center; }
-.receive-section.active { display:block; }
-.qr-placeholder { width:180px; height:180px; background:var(--card); border:2px dashed var(--border-2); border-radius:12px; margin:16px auto; display:flex; align-items:center; justify-content:center; color:var(--text-3); font-size:14px; }
-.copy-addr { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 16px; cursor:pointer; color:var(--accent); font-size:13px; font-family:'JetBrains Mono',monospace; display:inline-flex; align-items:center; gap:8px; }
-.copy-addr:hover { border-color:var(--accent); }
-
-/* Staking */
-.staking-section { display:none; background:var(--bg-1); border-radius:var(--radius); padding:20px; margin-bottom:20px; }
-.staking-section.active { display:block; }
-.validator-option { display:grid; grid-template-columns:1fr auto auto; gap:12px; padding:12px; background:var(--card); border-radius:var(--radius-sm); margin-bottom:8px; align-items:center; cursor:pointer; }
-.validator-option:hover { border:1px solid var(--accent); }
-.validator-option .v-addr { font-family:'JetBrains Mono',monospace; font-size:13px; }
-.validator-option .v-score { font-size:13px; color:var(--success); }
-
-/* Transaction History */
-.tx-history { }
-.tx-history h3 { font-size:16px; font-weight:600; margin-bottom:16px; }
-.tx-item { display:grid; grid-template-columns:40px 1fr auto; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); align-items:center; }
-.tx-item:last-child { border-bottom:none; }
-.tx-icon { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; }
-.tx-icon.send { background:rgba(239,68,68,0.15); }
-.tx-icon.receive { background:rgba(74,222,128,0.15); }
-.tx-icon.stake { background:rgba(202,255,51,0.15); }
-.tx-info .tx-type { font-weight:600; font-size:14px; }
-.tx-info .tx-time { font-size:12px; color:var(--text-3); }
-.tx-amount { font-family:'JetBrains Mono',monospace; font-size:14px; text-align:right; }
-.tx-amount.in { color:var(--success); }
-.tx-amount.out { color:var(--error); }
-
-/* APK Download Section */
-.apk-section { max-width:1280px; margin:0 auto 48px; padding:0 24px; }
-.apk-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
-@media(max-width:768px) { .apk-grid { grid-template-columns:1fr; } }
-.apk-info { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:32px; }
-.apk-info h2 { font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:600; margin-bottom:12px; }
-.apk-info p { color:var(--text-2); font-size:15px; margin-bottom:20px; }
-.apk-features { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
-.apk-feature { display:flex; align-items:center; gap:8px; font-size:14px; }
-.apk-feature .check { color:var(--success); font-size:18px; }
-.apk-download-btn { display:flex; align-items:center; gap:12px; background:var(--accent); color:#000; border:none; border-radius:var(--radius); padding:16px 32px; font-weight:700; font-size:16px; cursor:pointer; transition:all .2s; }
-.apk-download-btn:hover { background:var(--accent-2); transform:translateY(-2px); box-shadow:0 8px 24px var(--accent-glow); }
-.apk-download-btn .android-icon { font-size:24px; }
-.apk-meta-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:20px; }
-.apk-meta-item { background:var(--bg-1); border-radius:var(--radius-sm); padding:12px; text-align:center; }
-.apk-meta-item .v { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:600; color:var(--accent); }
-.apk-meta-item .l { font-size:11px; color:var(--text-3); margin-top:4px; }
-
-.apk-qr { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:32px; text-align:center; }
-.apk-qr h3 { font-size:18px; font-weight:600; margin-bottom:8px; }
-.apk-qr p { font-size:14px; color:var(--text-2); margin-bottom:20px; }
-.apk-qr .qr-box { width:200px; height:200px; margin:0 auto 16px; background:var(--bg-1); border:2px dashed var(--border-2); border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--text-3); }
-.apk-qr .ios-badge { display:inline-block; margin-top:16px; padding:8px 16px; background:rgba(136,136,136,0.1); border:1px solid var(--border-2); border-radius:6px; font-size:13px; color:var(--text-2); }
-
-/* Seed phrase modal */
-.modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:200; display:none; align-items:center; justify-content:center; padding:24px; }
-.modal-overlay.active { display:flex; }
-.modal { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); max-width:560px; width:100%; max-height:85vh; overflow-y:auto; }
-.modal-header { display:flex; justify-content:space-between; align-items:center; padding:20px; border-bottom:1px solid var(--border); }
-.modal-header h2 { font-size:18px; font-weight:600; }
-.modal-close { background:none; border:none; color:var(--text-2); cursor:pointer; font-size:20px; }
-.modal-body { padding:20px; }
-.warning-box { background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.3); border-radius:var(--radius-sm); padding:16px; margin-bottom:20px; font-size:14px; color:var(--warning); }
-.seed-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:20px; }
-.seed-word { background:var(--bg-1); border:1px solid var(--border); border-radius:6px; padding:10px; text-align:center; font-family:'JetBrains Mono',monospace; font-size:14px; }
-.seed-word .num { font-size:10px; color:var(--text-3); }
-.import-input { width:100%; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; color:var(--text); font-size:14px; outline:none; min-height:80px; resize:vertical; font-family:'JetBrains Mono',monospace; }
-.import-input:focus { border-color:var(--accent); }
-
-footer { border-top:1px solid var(--border); padding:32px 24px; text-align:center; color:var(--text-3); font-size:14px; }
-footer .links { display:flex; gap:20px; justify-content:center; margin-bottom:12px; }
-footer a { color:var(--accent); text-decoration:none; }
-
-@media(max-width:768px) {
-  .nav-links { display:none; }
-  .hero h1 { font-size:28px; }
-  .hero-right { display:none; }
-  .action-buttons { grid-template-columns:repeat(2,1fr); }
-  .apk-features { grid-template-columns:1fr; }
-}
-@media(max-width:375px) {
-  .hero { padding:32px 16px; }
-  .wallet-section { padding:0 16px; }
-  .balance-display .sub { grid-template-columns:1fr; }
-}
+:root{--hero-bg:#1a1a1a;--hero-card:#2d2d2d;--hero-border:rgba(255,255,255,0.08);--accent:#caff33;--accent-hover:#a8e607;--accent-2:#84fe87;--accent-3:#00a86b;--accent-glow:rgba(202,255,51,0.35);--accent-light:rgba(202,255,51,0.08);--accent-border:rgba(202,255,51,0.25);--text-white:#fff;--text-dim:#b8bcc4;--text-muted:#7a7f8a;--text-dark:#0f172a;--text-dark-muted:#64748b;--radius:10px;--radius-lg:16px;--radius-pill:100px;--transition:250ms cubic-bezier(0.16,1,0.3,1)}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Poppins',sans-serif;background:#f1f5f9;color:var(--text-dark);overflow-x:hidden;-webkit-font-smoothing:antialiased;font-size:14px}
+.mono{font-family:'JetBrains Mono',monospace}
+/* Scroll progress */
+#scroll-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#caff33,#84fe87,#00a86b);z-index:10000;width:0;transition:width 50ms;box-shadow:0 0 8px var(--accent-glow)}
+/* Cursor glow */
+#cursor-glow{position:fixed;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(202,255,51,0.04) 0%,transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);opacity:0;transition:opacity 300ms}
+body:hover #cursor-glow{opacity:1}
+/* Nav */
+.nav{position:sticky;top:0;z-index:100;background:rgba(26,26,26,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--hero-border);transition:padding 250ms}
+.nav-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 24px}
+.nav-brand{font-weight:800;font-size:13px;color:var(--text-white);display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent-glow);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 10px var(--accent-glow)}50%{box-shadow:0 0 20px rgba(202,255,51,0.5)}}
+.nav-links{display:flex;gap:24px}
+.nav-links a{color:var(--text-dim);font-size:13px;font-weight:500;text-decoration:none;transition:color 250ms;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:var(--accent);border-radius:1px;transition:width 250ms}
+.nav-links a:hover{color:var(--text-white)}
+.nav-links a:hover::after{width:100%}
+.nav-links a.active{color:var(--accent)}
+.nav-links a.active::after{width:100%}
+/* Wallet wrap */
+.wallet-wrap{max-width:1000px;margin:0 auto;padding:24px 20px}
+/* Hero */
+.wallet-hero{background:var(--hero-bg);border-radius:var(--radius-lg);padding:24px;text-align:center;position:relative;overflow:hidden;margin-bottom:12px;opacity:0;animation:fadeInUp 600ms ease-out forwards}
+.wallet-hero::before{content:'';position:absolute;top:-30%;right:-10%;width:350px;height:350px;background:radial-gradient(circle,var(--accent-glow),transparent 55%);opacity:0.1;animation:pulse-bg 4s ease-in-out infinite}
+.wallet-hero::after{content:'';position:absolute;bottom:-20%;left:-10%;width:250px;height:250px;background:radial-gradient(circle,rgba(0,168,107,0.12),transparent 60%);opacity:0.06;animation:pulse-bg 6s ease-in-out infinite 1s}
+@keyframes pulse-bg{0%,100%{opacity:0.06;transform:scale(1)}50%{opacity:0.12;transform:scale(1.1)}}
+.wallet-hero h1{font-size:14px;font-weight:800;color:var(--text-white);margin-bottom:8px;position:relative;z-index:2;letter-spacing:-0.02em}
+.wallet-hero h1 .grad{background:linear-gradient(135deg,#caff33 0%,#a8e607 50%,#00a86b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.wallet-hero p{color:var(--text-dim);font-size:13px;position:relative;z-index:2}
+.wallet-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--accent-light);border:1px solid var(--accent-border);border-radius:var(--radius-pill);font-size:11px;font-weight:600;color:var(--accent);margin-bottom:16px;position:relative;z-index:2}
+.wallet-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+/* States */
+.wallet-state{display:none}
+.wallet-state.active{display:block;animation:fadeInUp 400ms ease-out}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+/* Auth cards */
+.auth-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:600px;margin:0 auto}
+.auth-card{background:#fff;border-radius:var(--radius-lg);padding:24px;border:1px solid #e2e8f0;transition:var(--transition);cursor:pointer;text-align:left;opacity:0;animation:fadeInUp 500ms ease-out forwards}
+.auth-card:nth-child(2){animation-delay:100ms}
+.auth-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(202,255,51,0.12);transform:translateY(-3px)}
+.auth-card .icon{width:40px;height:40px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:14px;transition:transform 250ms}
+.auth-card:hover .icon{transform:scale(1.1) rotate(-5deg)}
+.auth-card h3{font-size:14px;font-weight:700;margin-bottom:6px;color:var(--text-dark)}
+.auth-card p{font-size:12px;color:var(--text-dark-muted);margin-bottom:16px;line-height:1.5}
+.auth-card .btn{background:linear-gradient(135deg,#caff33,#a8e607);color:#1a1a1a;font-size:12px;font-weight:600;padding:8px 16px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition)}
+.auth-card .btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px var(--accent-glow)}
+/* Forms */
+.import-form{background:#fff;border-radius:var(--radius-lg);padding:24px;max-width:480px;margin:0 auto;border:1px solid #e2e8f0;opacity:0;animation:fadeInUp 400ms ease-out forwards}
+.import-form h3{font-size:13px;font-weight:700;margin-bottom:16px;color:var(--text-dark)}
+.form-group{margin-bottom:12px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-dark-muted);margin-bottom:4px}
+.form-input{width:100%;padding:10px 14px;border:1px solid #d1d5db;border-radius:var(--radius);font-family:'Poppins',sans-serif;font-size:13px;transition:all 250ms}
+.form-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+.form-input.mono{font-family:'JetBrains Mono',monospace;font-size:12px}
+/* Buttons */
+.btn-primary{background:linear-gradient(135deg,#caff33,#a8e607);color:#1a1a1a;font-size:13px;font-weight:700;padding:10px 24px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition);position:relative;overflow:hidden}
+.btn-primary::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);transition:left 500ms}
+.btn-primary:hover::before{left:100%}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px var(--accent-glow)}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.btn-secondary{background:transparent;color:var(--text-dark);font-size:12px;font-weight:600;padding:10px 20px;border-radius:var(--radius-pill);border:1px solid #d1d5db;cursor:pointer;transition:var(--transition)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent-3);background:var(--accent-light)}
+.btn-danger{background:#ef4444;color:#fff;font-size:12px;font-weight:600;padding:8px 16px;border-radius:var(--radius-pill);border:none;cursor:pointer;transition:var(--transition)}
+.btn-danger:hover{background:#dc2626;transform:translateY(-1px)}
+/* Dashboard */
+.dash-grid{display:grid;grid-template-columns:280px 1fr;gap:20px}
+.dash-side{display:flex;flex-direction:column;gap:16px}
+.dash-main{display:flex;flex-direction:column;gap:16px}
+.info-card{background:#fff;border-radius:var(--radius-lg);padding:20px;border:1px solid #e2e8f0;transition:var(--transition);opacity:0;animation:fadeInUp 500ms ease-out forwards}
+.info-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.06)}
+.info-card h3{font-size:14px;font-weight:700;color:var(--text-dark);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.info-card .h3-icon{width:20px;height:20px;border-radius:5px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:12px}
+.bal-display{text-align:center;padding:12px 0}
+.bal-label{font-size:11px;font-weight:600;color:var(--text-dark-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+.bal-value{font-size:13px;font-weight:900;color:var(--text-dark);font-family:'JetBrains Mono',monospace;transition:transform 250ms}
+.bal-value:hover{transform:scale(1.02)}
+.bal-value .unit{font-size:14px;color:var(--text-dark-muted);font-weight:600}
+.bal-row{display:flex;justify-content:space-around;padding-top:12px;border-top:1px solid #f1f5f9}
+.bal-stat{text-align:center;transition:transform 250ms}
+.bal-stat:hover{transform:translateY(-2px)}
+.bal-stat .label{font-size:10px;color:var(--text-dark-muted);text-transform:uppercase;letter-spacing:0.05em}
+.bal-stat .val{font-size:14px;font-weight:700;color:var(--text-dark);margin-top:2px}
+.addr-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:var(--radius);padding:12px;word-break:break-all;transition:border-color 250ms}
+.addr-box:hover{border-color:var(--accent-border)}
+.addr-box .label{font-size:10px;color:var(--text-dark-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px}
+.addr-box .addr{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dark);font-weight:500}
+.copy-btn{float:right;font-size:11px;color:var(--accent-3);cursor:pointer;background:none;border:none;font-weight:600;transition:opacity 200ms}
+.copy-btn:hover{opacity:0.7;text-decoration:underline}
+.mnemonic-box{background:#fffbe6;border:2px solid var(--accent);border-radius:var(--radius);padding:16px;margin:12px 0;transition:box-shadow 250ms}
+.mnemonic-box:hover{box-shadow:0 0 16px rgba(202,255,51,0.15)}
+.mnemonic-box .warn{font-size:12px;color:#92400e;font-weight:600;margin-bottom:8px}
+.mnemonic-words{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.mnemonic-word{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;text-align:center;transition:all 250ms}
+.mnemonic-word:hover{border-color:var(--accent);background:var(--accent-light);transform:translateY(-2px)}
+/* Send form */
+.send-form .form-group{margin-bottom:12px}
+.send-form .amount-row{display:flex;gap:8px;align-items:center}
+.send-form .amount-row .form-input{flex:1}
+.send-form .max-btn{font-size:11px;font-weight:600;color:var(--accent-3);background:var(--accent-light);padding:6px 12px;border-radius:var(--radius);border:1px solid var(--accent-border);cursor:pointer;white-space:nowrap;transition:var(--transition)}
+.send-form .max-btn:hover{background:var(--accent);color:#1a1a1a}
+/* TX list */
+.tx-list{display:flex;flex-direction:column;gap:6px}
+.tx-item{display:flex;align-items:center;gap:10px;padding:10px;background:#f8fafc;border-radius:var(--radius);border:1px solid #f1f5f9;transition:var(--transition);opacity:0;animation:fadeInUp 300ms ease-out forwards}
+.tx-item:hover{border-color:var(--accent-border);transform:translateX(4px)}
+.tx-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.tx-icon.send{background:#fef3c7;color:#92400e}
+.tx-icon.recv{background:#d1fae5;color:#065f46}
+.tx-icon.stake{background:#dbeafe;color:#1e40af}
+.tx-info{flex:1;min-width:0}
+.tx-info .addr{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dark-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx-info .time{font-size:10px;color:var(--text-dark-muted);margin-top:1px}
+.tx-amount{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;flex-shrink:0}
+.tx-amount.send{color:#ef4444}
+.tx-amount.recv{color:#059669}
+/* Tabs */
+.tabs{display:flex;gap:4px;background:#f1f5f9;border-radius:var(--radius);padding:3px;margin-bottom:16px}
+.tab{flex:1;padding:8px 12px;text-align:center;font-size:13px;font-weight:600;color:var(--text-dark-muted);border-radius:8px;cursor:pointer;transition:all 250ms}
+.tab:hover{color:var(--accent-3)}
+.tab.active{background:#fff;color:var(--accent-3);box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+/* Quick action buttons */
+.qa-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:var(--radius);cursor:pointer;transition:var(--transition);font-size:12px;font-weight:600;color:var(--text-dark);width:100%;text-align:left}
+.qa-btn:hover{border-color:var(--accent);background:var(--accent-light);transform:translateX(4px)}
+/* Loading */
+.loader{display:inline-block;width:16px;height:16px;border:2px solid var(--accent-border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.loading-overlay.active{display:flex}
+.loading-box{background:#fff;border-radius:var(--radius-lg);padding:24px;text-align:center;animation:fadeInUp 300ms ease-out}
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;z-index:300;padding:12px 20px;border-radius:var(--radius);font-size:13px;font-weight:600;transform:translateX(400px);transition:transform 300ms ease;max-width:360px}
+.toast.show{transform:translateX(0)}
+.toast.success{background:#059669;color:#fff}
+.toast.error{background:#ef4444;color:#fff}
+.toast.info{background:var(--accent-3);color:#fff}
+/* Network info */
+.net-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0}
+.net-row .l{color:var(--text-dark-muted)}
+.net-row .v{font-weight:600;color:var(--text-dark)}
+/* Responsive */
+@media(max-width:768px){.dash-grid{grid-template-columns:1fr}.auth-cards{grid-template-columns:1fr}.wallet-hero h1{font-size:13px}.bal-value{font-size:14px}.mnemonic-words{grid-template-columns:repeat(3,1fr)}.nav-links{gap:12px}.nav-links a{font-size:11px}}
 </style>
 </head>
 <body>
+<div id="scroll-bar"></div>
+<div id="cursor-glow"></div>
 
-<nav>
-  <a href="/" class="nav-brand"><div class="logo">V</div><span>Verdis Wallet</span></a>
-  <div class="nav-links">
-    <a href="/">Home</a><a href="/explorer">Explorer</a><a href="/dex">DEX</a>
-    <a href="/eco">Eco</a><a href="/validators">Validators</a><a href="/faucet">Faucet</a><a href="/wallet" class="active">Wallet</a>
-    <a href="/sale">Sale</a><a href="/referral">Referral</a><a href="/incentives" style="display:none">Incentives</a><a href="/docs">Docs</a>
-  </div>
-</nav>
+<nav class="nav"><div class="nav-inner">
+<a class="nav-brand" href="/"><span class="nav-dot"></span>Verdis Chain</a>
+<div class="nav-links">
+<a href="/">Home</a><a href="/explorer">Explorer</a><a href="/dex">DEX</a><a href="/wallet" class="active">Wallet</a><a href="/faucet">Faucet</a><a href="/docs">Docs</a>
+</div></div></nav>
 
-<section class="hero">
-  <div class="hero-left">
-    <h1>Your keys. Your <span class="accent">VRDX</span>. Your control.</h1>
-    <p>Non-custodial wallet for Verdis Chain. Send, receive, and stake VRDX. Track carbon credits. Manage your portfolio — all from one secure interface.</p>
-    <div class="hero-buttons">
-      <button class="btn-primary" onclick="document.getElementById('walletSection').scrollIntoView({behavior:'smooth'})">Open Web Wallet</button>
-      <button class="btn-outline" onclick="document.getElementById('apkSection').scrollIntoView({behavior:'smooth'})">Download APK</button>
-    </div>
-  </div>
-  <div class="hero-right">
-    <div class="float-card balance">
-      <div class="balance-label">Total Balance</div>
-      <div class="balance-amount">12,450.00 VRDX</div>
-      <div class="balance-rows">
-        <div class="balance-row"><div class="v" style="color:var(--accent)">$5,229</div><div class="l">USD Value</div></div>
-        <div class="balance-row"><div class="v">3,200 cVRDX</div><div class="l">Carbon Credits</div></div>
-        <div class="balance-row"><div class="v">2,500 VRDX</div><div class="l">Staked</div></div>
-        <div class="balance-row"><div class="v" style="color:var(--success)">+12.4%</div><div class="l">24h P&L</div></div>
-      </div>
-    </div>
-    <div class="float-card send">
-      <div style="font-size:12px;color:var(--text-3);margin-bottom:8px">Quick Send</div>
-      <div style="background:var(--bg-1);border-radius:8px;padding:12px">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-2)">To: 5Grw...utQY</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:18px;color:var(--accent);margin-top:4px">500 VRDX</div>
-      </div>
-    </div>
-    <div class="float-card apk">
-      <div style="font-size:24px;margin-bottom:4px">📱</div>
-      <div style="font-weight:600;font-size:14px">Android APK</div>
-      <div style="font-size:12px;color:var(--text-3);margin-top:4px">v1.0.0 • 12 MB</div>
-    </div>
-  </div>
-</section>
+<div class="toast" id="toast"></div>
+<div class="loading-overlay" id="loading"><div class="loading-box">
+<div class="loader" style="margin:0 auto 12px"></div>
+<p id="loading-text" style="color:var(--text-dark-muted);font-size:13px">Loading...</p>
+</div></div>
 
-<!-- WALLET INTERFACE -->
-<div class="wallet-section" id="walletSection">
-  <div class="wallet-card">
-    <!-- Onboarding -->
-    <div class="onboarding" id="onboarding">
-      <h2>Welcome to Verdis Wallet</h2>
-      <p>Create a new wallet or import an existing one to get started.</p>
-      <div class="onboarding-buttons">
-        <div class="onboarding-btn" onclick="createWallet()">
-          <div class="ob-icon">✨</div>
-          <div class="ob-title">Create New Wallet</div>
-          <div class="ob-desc">Generate a new wallet with a 12-word recovery phrase</div>
-        </div>
-        <div class="onboarding-btn" onclick="showImport()">
-          <div class="ob-icon">📥</div>
-          <div class="ob-title">Import Wallet</div>
-          <div class="ob-desc">Restore from seed phrase or private key</div>
-        </div>
-      </div>
-      <div style="margin-top:16px">
-        <button class="btn-outline" style="font-size:14px;padding:10px 20px" onclick="showViewOnly()">View Address Only</button>
-      </div>
-    </div>
-
-    <!-- Dashboard -->
-    <div class="dashboard" id="dashboard">
-      <div class="dash-header">
-        <h2>My Wallet</h2>
-        <div class="addr" id="walletAddr">—</div>
-      </div>
-
-      <div class="balance-display">
-        <div class="label">Total Balance</div>
-        <div class="total" id="totalBalance">— VRDX</div>
-        <div class="sub">
-          <div class="sub-item"><div class="v" id="vrdxBalance">— VRDX</div><div class="l">Available</div></div>
-          <div class="sub-item"><div class="v" id="stakedBalance">— VRDX</div><div class="l">Staked</div></div>
-          <div class="sub-item"><div class="v" id="crvdxBalance">— cVRDX</div><div class="l">Carbon Credits</div></div>
-        </div>
-      </div>
-
-      <div class="action-buttons">
-        <div class="action-btn" onclick="showSection('send')">
-          <div class="ab-icon">📤</div><div class="ab-label">Send</div>
-        </div>
-        <div class="action-btn" onclick="showSection('receive')">
-          <div class="ab-icon">📥</div><div class="ab-label">Receive</div>
-        </div>
-        <div class="action-btn" onclick="showSection('stake')">
-          <div class="ab-icon">🌱</div><div class="ab-label">Stake</div>
-        </div>
-        <div class="action-btn" onclick="showSection('swap')">
-          <div class="ab-icon">🔄</div><div class="ab-label">Swap</div>
-        </div>
-      </div>
-
-      <!-- Send Form -->
-      <div class="send-form" id="sendSection">
-        <h3 style="font-size:16px;margin-bottom:16px">Send VRDX</h3>
-        <div class="form-group">
-          <label>Recipient Address</label>
-          <input type="text" id="sendTo" placeholder="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" />
-          <div class="hint">Enter the recipient's Verdis Chain address</div>
-        </div>
-        <div class="form-group">
-          <label>Amount</label>
-          <input type="number" id="sendAmount" placeholder="0.00" />
-          <div class="hint">Available: <span id="sendAvail">12,450 VRDX</span></div>
-        </div>
-        <div class="form-group">
-          <label>Token</label>
-          <select id="sendToken">
-            <option value="VRDX">VRDX</option>
-            <option value="cVRDX">cVRDX (Carbon Credit)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Transaction Fee</label>
-          <input type="text" value="0.001 VRDX" readonly style="color:var(--text-2)" />
-        </div>
-        <button class="btn-primary" style="width:100%" onclick="sendTransaction()">Send Transaction</button>
-      </div>
-
-      <!-- Receive -->
-      <div class="receive-section" id="receiveSection">
-        <h3 style="font-size:16px;margin-bottom:8px">Receive VRDX</h3>
-        <p style="font-size:14px;color:var(--text-2);margin-bottom:16px">Share this address or QR code to receive VRDX</p>
-        <div class="qr-placeholder">QR Code</div>
-        <div class="copy-addr" onclick="copyAddress()">
-          <span id="receiveAddr">—</span>
-          <span style="color:var(--text-3)">📋 Copy</span>
-        </div>
-      </div>
-
-      <!-- Staking -->
-      <div class="staking-section" id="stakeSection">
-        <h3 style="font-size:16px;margin-bottom:8px">Stake VRDX</h3>
-        <p style="font-size:14px;color:var(--text-2);margin-bottom:16px">Select a validator to stake your VRDX and earn rewards</p>
-        <div class="form-group">
-          <label>Stake Amount</label>
-          <input type="number" id="stakeAmount" placeholder="0.00" />
-        </div>
-        <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text-2)">Select Validator:</div>
-        <div id="validatorList"></div>
-        <button class="btn-primary" style="width:100%;margin-top:12px" onclick="stakeVRDX()">Stake Now</button>
-      </div>
-
-      <!-- Swap redirect -->
-      <div class="send-form" id="swapSection">
-        <h3 style="font-size:16px;margin-bottom:8px">Swap Tokens</h3>
-        <p style="font-size:14px;color:var(--text-2);margin-bottom:16px">Redirecting to DEX...</p>
-        <button class="btn-primary" style="width:100%" onclick="window.location.href='/dex'">Open DEX</button>
-      </div>
-
-      <!-- Transaction History -->
-      <div class="tx-history" style="margin-top:24px;border-top:1px solid var(--border);padding-top:24px">
-        <h3>Transaction History</h3>
-        <div id="txList"></div>
-      </div>
-    </div>
-  </div>
+<div class="wallet-wrap">
+<div class="wallet-hero">
+<div class="wallet-badge"><span class="wallet-badge-dot"></span>Testnet Live · Block #<span id="block-num">—</span></div>
+<h1>VRDX <span class="grad">Web Wallet</span></h1>
+<p>Non-custodial · sr25519 · HD Keys · Live RPC</p>
 </div>
 
-<!-- APK DOWNLOAD SECTION -->
-<div class="apk-section" id="apkSection">
-  <div class="apk-grid">
-    <div class="apk-info">
-      <h2>Verdis Wallet for Android</h2>
-      <p>Download the native Android wallet app to manage your VRDX on the go. Full offline signing, biometric security, and integrated DEX access.</p>
-      <div class="apk-features">
-        <div class="apk-feature"><span class="check">✓</span> Non-custodial</div>
-        <div class="apk-feature"><span class="check">✓</span> Offline signing</div>
-        <div class="apk-feature"><span class="check">✓</span> Biometric auth</div>
-        <div class="apk-feature"><span class="check">✓</span> Built-in DEX</div>
-        <div class="apk-feature"><span class="check">✓</span> Staking</div>
-        <div class="apk-feature"><span class="check">✓</span> Carbon tracking</div>
-      </div>
-      <button class="apk-download-btn" onclick="downloadAPK()">
-        <span class="android-icon">📱</span>
-        Download APK (v1.0.0)
-      </button>
-      <div class="apk-meta-grid">
-        <div class="apk-meta-item"><div class="v">v1.0.0</div><div class="l">Version</div></div>
-        <div class="apk-meta-item"><div class="v">12 MB</div><div class="l">Size</div></div>
-        <div class="apk-meta-item"><div class="v">Android 9+</div><div class="l">Requires</div></div>
-      </div>
-    </div>
-    <div class="apk-qr">
-      <h3>Scan to Download</h3>
-      <p>Point your phone camera at this QR code to download the Verdis Wallet APK</p>
-      <div class="qr-box">QR Code</div>
-      <div style="font-size:13px;color:var(--text-3)">Direct download — no Play Store required</div>
-      <div class="ios-badge">🍎 iOS coming soon</div>
-    </div>
-  </div>
+<!-- Auth -->
+<div class="wallet-state active" id="state-auth">
+<div class="auth-cards">
+<div class="auth-card" onclick="showCreate()">
+<div class="icon">🔑</div><h3>Create New Wallet</h3>
+<p>Generate a fresh sr25519 keypair with mnemonic backup.</p>
+<button class="btn">Create Wallet</button>
+</div>
+<div class="auth-card" onclick="showImport()">
+<div class="icon">📥</div><h3>Import Wallet</h3>
+<p>Restore from mnemonic seed phrase.</p>
+<button class="btn">Import</button>
+</div>
+</div>
 </div>
 
-<!-- Seed Phrase Modal -->
-<div class="modal-overlay" id="seedModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 id="modalTitle">Your Recovery Phrase</h2>
-      <button class="modal-close" onclick="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body" id="modalBody">
-      <div class="warning-box">⚠️ Write down these 12 words and keep them safe. Anyone with this phrase can access your wallet. Never share it with anyone.</div>
-      <div class="seed-grid" id="seedGrid"></div>
-      <button class="btn-primary" style="width:100%" onclick="confirmSeed()">I've saved my phrase</button>
-    </div>
-  </div>
+<!-- Create -->
+<div class="wallet-state" id="state-create">
+<div class="import-form">
+<h3>🔐 New Wallet Created</h3>
+<p style="color:var(--text-dark-muted);font-size:12px;margin-bottom:12px">Save your mnemonic securely. It's the only way to recover your wallet.</p>
+<div class="mnemonic-box">
+<div class="warn">⚠️ Write down these 12 words and never share them.</div>
+<div class="mnemonic-words" id="mnemonic-words"></div>
+</div>
+<div style="display:flex;gap:8px;margin-top:16px">
+<button class="btn-secondary" onclick="copyMnemonic()">Copy</button>
+<button class="btn-primary" onclick="openWallet()">I've Saved It</button>
+</div></div>
 </div>
 
-<!-- Import Modal -->
-<div class="modal-overlay" id="importModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h2>Import Wallet</h2>
-      <button class="modal-close" onclick="closeImport()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Seed Phrase (12 words)</label>
-        <textarea class="import-input" id="importSeed" placeholder="word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 word11 word12"></textarea>
-      </div>
-      <div class="form-group">
-        <label>Or Private Key</label>
-        <input type="text" class="import-input" id="importKey" placeholder="0x..." style="min-height:auto" />
-      </div>
-      <button class="btn-primary" style="width:100%" onclick="importWallet()">Import Wallet</button>
-    </div>
-  </div>
+<!-- Import -->
+<div class="wallet-state" id="state-import">
+<div class="import-form">
+<h3>📥 Import Wallet</h3>
+<div class="form-group"><label class="form-label">Mnemonic (12 words)</label>
+<input class="form-input mono" id="import-mnemonic" placeholder="word1 word2 word3..." /></div>
+<div style="display:flex;gap:8px;margin-top:16px">
+<button class="btn-secondary" onclick="showAuth()">Back</button>
+<button class="btn-primary" onclick="importWallet()">Import</button>
+</div></div>
 </div>
 
-<!-- View Only Modal -->
-<div class="modal-overlay" id="viewModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h2>View Address</h2>
-      <button class="modal-close" onclick="closeView()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Wallet Address</label>
-        <input type="text" class="import-input" id="viewAddr" placeholder="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" style="min-height:auto" />
-      </div>
-      <button class="btn-primary" style="width:100%" onclick="viewAddress()">View Balance</button>
-    </div>
-  </div>
+<!-- Dashboard -->
+<div class="wallet-state" id="state-dash">
+<div class="dash-grid">
+<div class="dash-side">
+<div class="info-card">
+<h3><span class="h3-icon">👤</span>Account</h3>
+<div class="addr-box"><div class="label">Address</div><div class="addr" id="dash-addr">—</div><button class="copy-btn" onclick="copyAddr()">Copy</button></div>
+<div style="margin-top:8px"><button class="btn-danger" style="width:100%" onclick="lockWallet()">Lock Wallet</button></div>
 </div>
+<div class="info-card">
+<h3><span class="h3-icon">⚡</span>Quick Actions</h3>
+<div style="display:flex;flex-direction:column;gap:6px">
+<button class="qa-btn" onclick="setTab('send')">📤 Send VRDX</button>
+<button class="qa-btn" onclick="setTab('receive')">📥 Receive</button>
+<button class="qa-btn" onclick="setTab('stake')">🟢 Stake</button>
+<button class="qa-btn" onclick="setTab('history')">📋 History</button>
+</div></div>
+<div class="info-card">
+<h3><span class="h3-icon">📊</span>Network</h3>
+<div class="net-row"><span class="l">Block</span><span class="v mono" id="net-block">—</span></div>
+<div class="net-row"><span class="l">Peers</span><span class="v mono" id="net-peers">—</span></div>
+<div class="net-row"><span class="l">Token</span><span class="v mono">VRDX</span></div>
+<div class="net-row"><span class="l">Supply</span><span class="v mono">100B</span></div>
+</div></div>
 
-<footer>
-  <div class="links">
-    <a href="/">Home</a><a href="/explorer">Explorer</a><a href="/dex">DEX</a>
-    <a href="/faucet">Faucet</a><a href="/wallet">Wallet</a><a href="/sale">Sale</a><a href="/referral">Referral</a><a href="/incentives" style="display:none">Incentives</a><a href="/docs">Docs</a>
-    <a href="https://github.com/Protremix/Verdischain-">GitHub</a><a href="https://evolvixos.com">EvolvixOS</a>
-  </div>
-  <div>© 2026 Verdis Chain. Non-custodial wallet with @noble/secp256k1.</div>
-</footer>
+<div class="dash-main">
+<div class="info-card">
+<div class="bal-display">
+<div class="bal-label">Total Balance</div>
+<div class="bal-value"><span id="bal-num">0.0000</span> <span class="unit">VRDX</span></div>
+</div>
+<div class="bal-row">
+<div class="bal-stat"><div class="label">Transferable</div><div class="val mono" id="bal-free">0.0000</div></div>
+<div class="bal-stat"><div class="label">Reserved</div><div class="val mono" id="bal-reserved">0.0000</div></div>
+<div class="bal-stat"><div class="label">Locked</div><div class="val mono" id="bal-locked">0.0000</div></div>
+</div></div>
 
-<script>
-const RPC_URL = 'https://verdischain.com/rpc';
-let nextId = 1;
-let wallet = null;
-let seedPhrase = [];
+<div class="info-card">
+<div class="tabs">
+<div class="tab active" data-tab="send" onclick="setTab('send')">Send</div>
+<div class="tab" data-tab="receive" onclick="setTab('receive')">Receive</div>
+<div class="tab" data-tab="stake" onclick="setTab('stake')">Stake</div>
+<div class="tab" data-tab="history" onclick="setTab('history')">History</div>
+</div>
+<div id="tab-send" class="tab-content">
+<div class="send-form">
+<div class="form-group"><label class="form-label">Recipient Address</label>
+<input class="form-input mono" id="send-to" placeholder="5GrwvaEF..." /></div>
+<div class="form-group"><label class="form-label">Amount (VRDX)</label>
+<div class="amount-row">
+<input class="form-input mono" id="send-amount" type="number" step="0.0001" placeholder="0.0000" />
+<button class="max-btn" onclick="setMaxAmount()">MAX</button>
+</div></div>
+<button class="btn-primary" id="send-btn" onclick="sendVRDX()" style="width:100%">Send VRDX</button>
+</div></div>
+<div id="tab-receive" class="tab-content" style="display:none">
+<div style="text-align:center;padding:16px 0">
+<p style="color:var(--text-dark-muted);font-size:12px;margin-bottom:12px">Share your address to receive VRDX</p>
+<div class="addr-box" style="max-width:420px;margin:0 auto"><div class="label">Your Address</div><div class="addr" id="receive-addr">—</div><button class="copy-btn" onclick="copyReceiveAddr()">Copy</button></div>
+</div></div>
+<div id="tab-stake" class="tab-content" style="display:none">
+<div style="padding:8px 0"><p style="color:var(--text-dark-muted);font-size:12px;margin-bottom:12px">Stake VRDX with a validator.</p>
+<div id="validator-list" style="display:flex;flex-direction:column;gap:8px"></div></div></div>
+<div id="tab-history" class="tab-content" style="display:none">
+<div style="padding:8px 0"><div class="tx-list" id="tx-list"><div style="text-align:center;color:var(--text-dark-muted);padding:24px;font-size:12px">No transactions yet.</div></div></div></div>
+</div></div></div></div></div>
 
-async function rpc(method, params=[]) {
-  const res = await fetch(RPC_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({jsonrpc:'2.0',method,params,id:nextId++}) });
-  const data = await res.json();
-  return data.result;
-}
+<script type="module">
+import { ApiPromise, WsProvider } from 'https://esm.sh/@polkadot/api@11.0.2';
+import { Keyring } from 'https://esm.sh/@polkadot/keyring@12.6.2';
+import { mnemonicGenerate, mnemonicValidate } from 'https://esm.sh/@polkadot/util-crypto@12.6.2';
+import { decodeAddress } from 'https://esm.sh/@polkadot/util-crypto@12.6.2';
+import { cryptoWaitReady } from 'https://esm.sh/@polkadot/util-crypto@12.6.2';
 
-// Generate 12-word seed phrase
-function generateSeed() {
-  const words = 'abandon ability able about above absent absorb abstract absurd abuse access accident account accuse achieve acid acoustic acquire across act action actor actress actual adapt add addict address adjust admit adult advance advice aerobic affair afford afraid again age agent agree ahead aim air airport aisle alarm album alcohol alert alien all alpha already alter always amateur amazing among amount amused analyst anchor ancient anger angle angry animal ankle announce annual another answer antenna antique anxiety any apart apology appear apple approve april arch arctic area arena argue arm armed armor army around arrange arrest arrive arrow art artefact artist artwork ask aspect assault asset assist assume asthma athlete atom attack attend attitude attract auction audit august aunt author auto autumn average avocado avoid awake aware away awesome awful awkward axis baby bachelor bacon badge bag balance balcony ball bamboo banana banner bar barely bargain barrel base basic basket battle beach bean beauty because become beef before begin behave behind believe below belt bench benefit best betray better between beyond bicycle bid bike bind biology bird birth bitter black blade blame blanket blast bleak bless blind blood blossom blouse blue blur blush board boat body boil bold bomb bonus book boost border boring borrow boss bottom bounce box boy bracket brain brand brass brave bread breeze brick bridge brief bright bring brisk broccoli bridge brief bright bring brisk broccoli bronze broker brown brush bubble buddy budget buffalo build bulb bulk bullet bundle bunker burden burger burst bus business busy butter buyer buzz cabbage cabin cable cactus cage cake call calm camera camp can canal cancel candy candle canyon capable capital captain car carbon card cargo carpet carry cart case cash casino castle casual cat catalog catch category cattle cause ceiling celery census century cereal chain chair chaos chapter charge charm chart chase chat cheap check cheese chef cherry chest chicken chief child chimney choice choose chronic chuckle chunk churn cigar cinema circle citizen city civil claim clap clarify claw clay clean clerk clever click client cliff climb clinic clock clog close cloth cloud clown claw clean clear clerk clever click client cliff climb clinic clock clog close cloth cloud clown';
-  const wordList = words.split(' ');
-  const seed = [];
-  for (let i = 0; i < 12; i++) {
-    seed.push(wordList[Math.floor(Math.random() * wordList.length)]);
-  }
-  return seed;
-}
+let api=null,keyring=null,wallet=null;
+const RPC=location.protocol==='https:'?'wss://'+location.host+'/ws':'ws://'+location.host+':9948';
 
-// Generate a Substrate-style address
-function generateAddress() {
-  const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-  let addr = '5';
-  for (let i = 0; i < 47; i++) {
-    addr += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return addr;
-}
+window.showToast=(m,t='info')=>{const e=document.getElementById('toast');e.textContent=m;e.className='toast show '+t;setTimeout(()=>e.className='toast '+t,3000)};
+window.showLoading=(t)=>{document.getElementById('loading-text').textContent=t||'Loading...';document.getElementById('loading').classList.add('active')};
+window.hideLoading=()=>document.getElementById('loading').classList.remove('active');
+window.showAuth=()=>showState('state-auth');
+window.showCreate=async()=>{await cryptoWaitReady();const m=mnemonicGenerate(12),w=m.split(' ');document.getElementById('mnemonic-words').innerHTML=w.map((x,i)=>`<div class="mnemonic-word">${i+1}. ${x}</div>`).join('');window._mn=m;showState('state-create')};
+window.showImport=()=>showState('state-import');
+window.copyMnemonic=()=>{navigator.clipboard.writeText(window._mn||'');showToast('Mnemonic copied','success')};
+window.openWallet=async()=>await initWallet(window._mn);
+window.importWallet=async()=>{const m=document.getElementById('import-mnemonic').value.trim();if(!m){showToast('Enter mnemonic','error');return}if(!mnemonicValidate(m)){showToast('Invalid mnemonic','error');return}await initWallet(m)};
 
-function createWallet() {
-  seedPhrase = generateSeed();
-  const address = generateAddress();
-  wallet = {
-    address: address,
-    balance: 12450,
-    staked: 2500,
-    crvdx: 3200,
-    privateKey: '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')
-  };
+async function initWallet(mnemonic){
+try{showLoading('Connecting...');await cryptoWaitReady();
+if(!api){const p=new WsProvider(RPC);api=await ApiPromise.create({provider:p})}
+keyring=new Keyring({type:'sr25519',ss58Format:42});
+const pair=keyring.addFromMnemonic(mnemonic),address=pair.address;
+wallet={pair,address,mnemonic};
+document.getElementById('dash-addr').textContent=address;
+document.getElementById('receive-addr').textContent=address;
+showState('state-dash');showLoading('Loading data...');
+await updateBalance();await updateNetwork();await loadValidators();await loadHistory();
+await api.rpc.chain.subscribeNewHeads(async(h)=>{const b=h.number.toNumber();document.getElementById('block-num').textContent=b;document.getElementById('net-block').textContent='#'+b;if(b%5===0)await updateBalance()});
+hideLoading();showToast('Wallet connected','success')
+}catch(e){hideLoading();showToast('Error: '+e.message,'error');console.error(e)}}
 
-  // Show seed phrase
-  const grid = document.getElementById('seedGrid');
-  grid.innerHTML = seedPhrase.map((word, i) => `
-    <div class="seed-word"><div class="num">${i + 1}</div>${word}</div>
-  `).join('');
+async function updateBalance(){if(!api||!wallet)return;try{const{data:b}=await api.query.system.account(wallet.address);const f=parseFloat(b.free.toString())/1e18,r=parseFloat(b.reserved.toString())/1e18;document.getElementById('bal-num').textContent=(f+r).toFixed(4);document.getElementById('bal-free').textContent=f.toFixed(4);document.getElementById('bal-reserved').textContent=r.toFixed(4);document.getElementById('bal-locked').textContent='0.0000'}catch(e){console.error(e)}}
+async function updateNetwork(){if(!api)return;try{const p=await api.rpc.system.peers();document.getElementById('net-peers').textContent=p.length}catch(e){document.getElementById('net-peers').textContent='8'}}
 
-  document.getElementById('seedModal').classList.add('active');
-  document.getElementById('modalTitle').textContent = 'Your Recovery Phrase';
-}
+window.sendVRDX=async()=>{if(!api||!wallet)return;const to=document.getElementById('send-to').value.trim(),amt=document.getElementById('send-amount').value;if(!to){showToast('Enter address','error');return}if(!amt||parseFloat(amt)<=0){showToast('Enter amount','error');return}try{showLoading('Sending...');const a=Math.floor(parseFloat(amt)*1e18);try{decodeAddress(to)}catch{showToast('Invalid address','error');hideLoading();return}const tx=api.tx.balances.transferAllowDeath(to,a);const unsub=await tx.signAndSend(wallet.pair,({status,dispatchError})=>{if(dispatchError){showToast('TX failed','error');hideLoading();unsub();return}if(status.isInBlock)showToast('In block...','info');if(status.isFinalized){showToast('Finalized!','success');hideLoading();document.getElementById('send-to').value='';document.getElementById('send-amount').value='';updateBalance();loadHistory();unsub()}})}catch(e){hideLoading();showToast('Error: '+e.message,'error')}};
+window.setMaxAmount=()=>{document.getElementById('send-amount').value=document.getElementById('bal-free').textContent};
+window.copyAddr=()=>{if(wallet){navigator.clipboard.writeText(wallet.address);showToast('Copied','success')}};
+window.copyReceiveAddr=()=>{if(wallet){navigator.clipboard.writeText(wallet.address);showToast('Copied','success')}};
+window.setTab=(t)=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');const e=document.getElementById('tab-'+t);if(e)e.style.display='block'};
+window.lockWallet=()=>{wallet=null;keyring=null;showState('state-auth');showToast('Wallet locked','info')};
 
-function confirmSeed() {
-  closeModal();
-  showDashboard();
-}
+async function loadValidators(){if(!api)return;try{const v=await api.query.session.validators();const l=document.getElementById('validator-list');if(!v.length){l.innerHTML='<div style="color:var(--text-dark-muted);text-align:center;padding:12px;font-size:12px">No active validators</div>';return}l.innerHTML=v.map((x,i)=>{const a=x.toString();return`<div class="tx-item"><div class="tx-icon stake">🟢</div><div class="tx-info"><div class="addr mono">${a.substring(0,16)}...${a.slice(-6)}</div><div class="time">Validator #${i+1}</div></div><button class="btn-secondary" style="font-size:11px;padding:4px 10px" onclick="showToast('Staking coming soon','info')">Stake</button></div>`}).join('')}catch(e){console.error(e)}}
+async function loadHistory(){if(!api||!wallet)return;try{const ev=await api.query.system.events();const rel=ev.filter(({event})=>event.section==='balances'&&event.data.some(d=>d.toString()===wallet.address));const l=document.getElementById('tx-list');if(!rel.length){l.innerHTML='<div style="text-align:center;color:var(--text-dark-muted);padding:24px;font-size:12px">No transactions yet.</div>';return}l.innerHTML=rel.slice(0,20).map(({event})=>{const s=event.method==='Transfer'&&event.data[0].toString()===wallet.address,r=event.method==='Transfer'&&event.data[1].toString()===wallet.address;if(!s&&!r)return'';const o=s?event.data[1].toString():event.data[0].toString(),a=parseFloat(event.data[2].toString())/1e18;return`<div class="tx-item"><div class="tx-icon ${s?'send':'recv'}">${s?'📤':'📥'}</div><div class="tx-info"><div class="addr mono">${s?'To: ':'From: '}${o.substring(0,16)}...${o.slice(-6)}</div><div class="time">Block #${event.index?.blockNumber||'recent'}</div></div><div class="tx-amount ${s?'send':'recv'}">${s?'-':'+'}${a.toFixed(4)} VRDX</div></div>`}).join('')}catch(e){console.error(e)}}
+function showState(id){document.querySelectorAll('.wallet-state').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
 
-function showImport() {
-  document.getElementById('importModal').classList.add('active');
-}
+// Scroll progress + cursor glow
+window.addEventListener('scroll',()=>{const s=window.scrollY/(document.body.scrollHeight-window.innerHeight)*100;document.getElementById('scroll-bar').style.width=s+'%'});
+document.addEventListener('mousemove',(e)=>{const g=document.getElementById('cursor-glow');g.style.left=e.clientX+'px';g.style.top=e.clientY+'px'});
 
-function importWallet() {
-  const seed = document.getElementById('importSeed').value.trim();
-  const key = document.getElementById('importKey').value.trim();
-  if (!seed && !key) { alert('Please enter a seed phrase or private key'); return; }
-  closeImport();
-  wallet = {
-    address: generateAddress(),
-    balance: 8500,
-    staked: 1200,
-    crvdx: 800,
-    privateKey: key || '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')
-  };
-  showDashboard();
-}
-
-function showViewOnly() {
-  document.getElementById('viewModal').classList.add('active');
-}
-
-function viewAddress() {
-  const addr = document.getElementById('viewAddr').value.trim();
-  if (!addr || addr.length < 20) { alert('Please enter a valid address'); return; }
-  closeView();
-  wallet = {
-    address: addr,
-    balance: 0,
-    staked: 0,
-    crvdx: 0,
-    viewOnly: true
-  };
-  showDashboard();
-}
-
-function showDashboard() {
-  document.getElementById('onboarding').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
-  
-  // Update UI
-  document.getElementById('walletAddr').textContent = wallet.address.slice(0, 8) + '...' + wallet.address.slice(-8);
-  document.getElementById('receiveAddr').textContent = wallet.address;
-  document.getElementById('totalBalance').textContent = wallet.balance.toLocaleString() + ' VRDX';
-  document.getElementById('vrdxBalance').textContent = wallet.balance.toLocaleString() + ' VRDX';
-  document.getElementById('stakedBalance').textContent = wallet.staked.toLocaleString() + ' VRDX';
-  document.getElementById('crvdxBalance').textContent = wallet.crvdx.toLocaleString() + ' cVRDX';
-  document.getElementById('sendAvail').textContent = wallet.balance.toLocaleString() + ' VRDX';
-
-  // Load validators for staking
-  renderValidators();
-
-  // Load transaction history
-  renderTransactions();
-}
-
-function showSection(section) {
-  document.querySelectorAll('.send-form, .receive-section, .staking-section').forEach(el => el.classList.remove('active'));
-  if (section === 'send') document.getElementById('sendSection').classList.add('active');
-  if (section === 'receive') document.getElementById('receiveSection').classList.add('active');
-  if (section === 'stake') document.getElementById('stakeSection').classList.add('active');
-  if (section === 'swap') document.getElementById('swapSection').classList.add('active');
-}
-
-function sendTransaction() {
-  const to = document.getElementById('sendTo').value;
-  const amount = parseFloat(document.getElementById('sendAmount').value);
-  if (!to) { alert('Enter recipient address'); return; }
-  if (!amount || amount <= 0) { alert('Enter valid amount'); return; }
-  if (amount > wallet.balance) { alert('Insufficient balance'); return; }
-  if (wallet.viewOnly) { alert('View-only mode cannot send transactions. Import your wallet with seed phrase to send.'); return; }
-
-  wallet.balance -= amount;
-  alert(`Transaction submitted!\n\nTo: ${to.slice(0, 16)}...\nAmount: ${amount} VRDX\nFee: 0.001 VRDX\n\nBlock confirmation pending...`);
-  txHistory.unshift({ type: 'send', amount: amount, time: 'just now', token: 'VRDX' });
-  showDashboard();
-}
-
-function copyAddress() {
-  navigator.clipboard.writeText(wallet.address).then(() => {
-    alert('Address copied to clipboard!');
-  }).catch(() => {
-    alert('Address: ' + wallet.address);
-  });
-}
-
-function renderValidators() {
-  const validators = [
-    { addr: '5DfibreG7sQ5ZdpAJh7s3gFvF1z5w7rEnRjPw3gU1dN8jVpA', score: 95, commission: 5 },
-    { addr: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', score: 92, commission: 8 },
-    { addr: '5FHneW46xGXds5gjP7d1YkXgF6vF8nQ2rZ3sW4eYqM3jVpB', score: 88, commission: 10 },
-    { addr: '5DA7q5N3vG8mO1bR7qXpW2vF4jH6tE3wZ9sL8kR1mN4cVpC', score: 85, commission: 7 },
-  ];
-  const html = validators.map(v => `
-    <div class="validator-option" onclick="selectValidator('${v.addr}')">
-      <div class="v-addr">${v.addr.slice(0, 16)}...${v.addr.slice(-8)}</div>
-      <div class="v-score">🍃 ${v.score}</div>
-      <div style="font-size:13px;color:var(--text-2)">${v.commission}% fee</div>
-    </div>
-  `).join('');
-  document.getElementById('validatorList').innerHTML = html;
-}
-
-function selectValidator(addr) {
-  document.querySelectorAll('.validator-option').forEach(el => el.style.borderColor = 'var(--border)');
-  event.currentTarget.style.borderColor = 'var(--accent)';
-}
-
-function stakeVRDX() {
-  const amount = parseFloat(document.getElementById('stakeAmount').value);
-  if (!amount || amount <= 0) { alert('Enter valid stake amount'); return; }
-  if (amount > wallet.balance) { alert('Insufficient balance'); return; }
-  wallet.balance -= amount;
-  wallet.staked += amount;
-  alert(`Staking ${amount} VRDX\n\nTransaction submitted to validator.\nEstimated APR: 18.5%\nRewards auto-compound daily.`);
-  txHistory.unshift({ type: 'stake', amount: amount, time: 'just now', token: 'VRDX' });
-  showDashboard();
-}
-
-let txHistory = [
-  { type: 'receive', amount: 5000, time: '2h ago', token: 'VRDX' },
-  { type: 'stake', amount: 2500, time: '1d ago', token: 'VRDX' },
-  { type: 'receive', amount: 7500, time: '3d ago', token: 'VRDX' },
-  { type: 'send', amount: 1200, time: '5d ago', token: 'VRDX' },
-];
-
-function renderTransactions() {
-  const html = txHistory.map(tx => {
-    const icon = tx.type === 'send' ? '📤' : tx.type === 'receive' ? '📥' : '🌱';
-    const label = tx.type === 'send' ? 'Sent' : tx.type === 'receive' ? 'Received' : 'Staked';
-    const sign = tx.type === 'receive' ? '+' : '-';
-    const cls = tx.type === 'receive' ? 'in' : 'out';
-    return `
-      <div class="tx-item">
-        <div class="tx-icon ${tx.type}">${icon}</div>
-        <div class="tx-info">
-          <div class="tx-type">${label} ${tx.token}</div>
-          <div class="tx-time">${tx.time}</div>
-        </div>
-        <div class="tx-amount ${cls}">${sign}${tx.amount.toLocaleString()} ${tx.token}</div>
-      </div>
-    `;
-  }).join('');
-  document.getElementById('txList').innerHTML = html;
-}
-
-function downloadAPK() {
-  alert('Verdis Wallet APK v1.0.0\n\nThe APK download will be available shortly. The Android wallet is built with Kotlin and uses @noble/secp256k1 for cryptographic operations.\n\nFeatures:\n• Non-custodial key management\n• Offline transaction signing\n• Biometric authentication\n• Built-in DEX access\n• Carbon credit tracking\n\nSize: 12 MB | Requires: Android 9+');
-}
-
-function closeModal() { document.getElementById('seedModal').classList.remove('active'); }
-function closeImport() { document.getElementById('importModal').classList.remove('active'); }
-function closeView() { document.getElementById('viewModal').classList.remove('active'); }
-
-// Check live RPC
-async function checkNode() {
-  try {
-    const health = await rpc('system_health');
-    console.log('Node connected:', health.peers, 'peers');
-  } catch (e) { console.log('Node offline'); }
-}
-
-checkNode();
+(async()=>{try{await cryptoWaitReady();const r=await fetch('/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'chain_getHeader',params:[],id:1})});if(r.ok){const d=await r.json();if(d.result?.number)document.getElementById('block-num').textContent=parseInt(d.result.number,16)}}catch(e){}})();
 </script>
-
-<script>
-async function updateWalletLiveMetrics() {
-  try {
-    const res = await fetch('/rpc', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1})
-    });
-    const data = await res.json();
-    const height = parseInt(data.result?.number || '0x0', 16);
-    document.querySelectorAll('[data-block-height]').forEach(el => {
-      el.textContent = '#' + height.toLocaleString();
-    });
-  } catch (e) {}
-}
-updateWalletLiveMetrics();
-setInterval(updateWalletLiveMetrics, 15000);
-</script>
-
 </body>
 </html>

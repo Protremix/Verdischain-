@@ -3,809 +3,571 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verdiscan — Verdis Chain Explorer</title>
-<meta name="description" content="Verdis Chain blockchain explorer with live blocks, transactions, validators, and network stats">
-<meta property="og:type" content="website">
+<meta name="description" content="Verdiscan — Verdis Chain Blockchain Explorer. Real-time blocks, transactions, validators, DEX pools, and eco metrics.">
 <meta property="og:title" content="Verdiscan — Verdis Chain Explorer">
-<meta property="og:description" content="Real-time blockchain explorer for Verdis Chain">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<meta property="og:description" content="Real-time blockchain explorer for Verdis Chain with DPoS validators, AMM DEX, and eco metrics.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://verdischain.com/explorer/">
+<title>Verdiscan — Verdis Chain Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #0a0a0a;
-  --bg-1: #111111;
-  --bg-2: #1a1a1a;
-  --card: #141414;
+  --surface: #111111;
+  --surface2: #1a1a1a;
+  --accent: #CCFF00;
+  --accent-dim: #99CC00;
+  --green: #00FF66;
+  --text: #ffffff;
+  --text-dim: #888888;
+  --text-bright: #e0e0e0;
   --border: #222222;
-  --border-2: #333333;
-  --text: #e8e8e8;
-  --text-2: #888888;
-  --text-3: #555555;
-  --accent: #caff33;
-  --accent-2: #b4f849;
-  --accent-glow: rgba(202, 255, 51, 0.15);
-  --success: #4ade80;
-  --warning: #fbbf24;
-  --error: #ef4444;
   --radius: 12px;
   --radius-sm: 8px;
+  --font: 'Poppins', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
 }
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; }
-.mono { font-family: 'JetBrains Mono', monospace; }
-.grotesk { font-family: 'Space Grotesk', sans-serif; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:var(--font); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
 
-/* NAV */
-nav { position: sticky; top: 0; z-index: 100; background: rgba(10,10,10,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
-.nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
-.nav-brand .logo { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #000; font-size: 16px; }
-.nav-brand span { font-weight: 600; font-size: 16px; }
-.nav-links { display: flex; gap: 4px; }
-.nav-links a { color: var(--text-2); text-decoration: none; padding: 8px 14px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; transition: all .2s; }
-.nav-links a:hover, .nav-links a.active { color: var(--accent); background: var(--card); }
-.nav-status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); }
-.nav-status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+/* Nav */
+.nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 24px; height:60px; display:flex; align-items:center; justify-content:space-between; }
+.nav-brand { display:flex; align-items:center; gap:10px; font-weight:700; font-size:13px; }
+.nav-brand img { width:28px; height:28px; }
+.nav-links { display:flex; gap:4px; align-items:center; }
+.nav-links a { color:var(--text-dim); padding:8px 14px; border-radius:8px; font-size:13px; font-weight:500; transition:all 0.2s; }
+.nav-links a:hover { color:var(--text); background:var(--surface2); text-decoration:none; }
+.nav-links a.active { color:var(--accent); background:rgba(204,255,0,0.08); }
+.nav-status { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); }
+.nav-dot { width:8px; height:8px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
 
-/* HERO */
-.hero { padding: 48px 24px 32px; max-width: 1280px; margin: 0 auto; }
-.hero h1 { font-family: 'Space Grotesk', sans-serif; font-size: 36px; font-weight: 700; margin-bottom: 8px; }
-.hero h1 .accent { color: var(--accent); }
-.hero p { color: var(--text-2); font-size: 16px; max-width: 600px; }
+/* Hero search */
+.hero { padding:28px 24px 32px; text-align:center; }
+.hero h1 { font-size:13px; font-weight:700; margin-bottom:8px; }
+.hero p { color:var(--text-dim); font-size:13px; margin-bottom:12px; }
+.search-bar { max-width:640px; margin:0 auto; display:flex; gap:8px; }
+.search-bar input { flex:1; padding:14px 20px; background:var(--surface); border:1px solid var(--border); border-radius:12px; color:var(--text); font-size:13px; outline:none; transition:border-color 0.2s; }
+.search-bar input:focus { border-color:var(--accent); }
+.search-bar input::placeholder { color:var(--text-dim); }
+.search-btn { padding:14px 28px; background:var(--accent); color:#000; border:none; border-radius:12px; font-weight:600; font-size:13px; cursor:pointer; transition:opacity 0.2s; }
+.search-btn:hover { opacity:0.85; }
 
-/* SEARCH */
-.search-bar { max-width: 1280px; margin: 0 auto 32px; padding: 0 24px; }
-.search-bar form { display: flex; gap: 8px; }
-.search-bar input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 18px; color: var(--text); font-size: 15px; outline: none; transition: border-color .2s; }
-.search-bar input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-.search-bar input::placeholder { color: var(--text-3); }
-.search-bar button { background: var(--accent); color: #000; border: none; border-radius: var(--radius-sm); padding: 14px 28px; font-weight: 600; cursor: pointer; font-size: 15px; transition: all .2s; }
-.search-bar button:hover { background: var(--accent-2); transform: translateY(-1px); }
+/* Stats grid */
+.stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; padding:0 24px 24px; max-width:1400px; margin:0 auto; }
+.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; transition:border-color 0.2s; }
+.stat-card:hover { border-color:var(--accent-dim); }
+.stat-label { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); margin-bottom:8px; font-weight:600; }
+.stat-value { font-size:14px; font-weight:700; color:var(--text); font-family:var(--mono); }
+.stat-value.accent { color:var(--accent); }
+.stat-value.green { color:var(--green); }
+.stat-sub { font-size:12px; color:var(--text-dim); margin-top:6px; }
+.stat-bar { height:4px; background:var(--border); border-radius:2px; margin-top:10px; overflow:hidden; }
+.stat-bar-fill { height:100%; background:var(--accent); border-radius:2px; transition:width 0.5s; }
 
-/* STATS BAR */
-.stats-bar { max-width: 1280px; margin: 0 auto 32px; padding: 0 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
-.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
-.stat-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-3); margin-bottom: 8px; }
-.stat-card .value { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 600; color: var(--text); }
-.stat-card .value.accent { color: var(--accent); }
-.stat-card .sub { font-size: 13px; color: var(--text-2); margin-top: 4px; }
+/* Main content */
+.main-content { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:0 24px 24px; max-width:1400px; margin:0 auto; }
+.section { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.section-header { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--border); }
+.section-title { font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px; }
+.live-badge { background:rgba(0,255,102,0.1); color:var(--green); font-size:10px; padding:3px 8px; border-radius:4px; font-weight:600; letter-spacing:0.5px; }
+.section-link { font-size:12px; color:var(--text-dim); }
+.section-link:hover { color:var(--accent); text-decoration:underline; }
 
-/* MAIN GRID */
-.main-grid { max-width: 1280px; margin: 0 auto 48px; padding: 0 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-@media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+/* Tables */
+.data-table { width:100%; }
+.data-table table { width:100%; border-collapse:collapse; }
+.data-table th { text-align:left; padding:10px 20px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-dim); font-weight:600; border-bottom:1px solid var(--border); }
+.data-table td { padding:12px 20px; font-size:13px; border-bottom:1px solid var(--border); }
+.data-table tr:last-child td { border-bottom:none; }
+.data-table tr:hover { background:var(--surface2); }
+.mono { font-family:var(--mono); font-size:12px; }
+.block-num { display:inline-block; background:var(--accent); color:#000; padding:2px 8px; border-radius:4px; font-weight:600; font-size:12px; font-family:var(--mono); }
+.validator-avatar { width:28px; height:28px; border-radius:50%; background:var(--surface2); display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; margin-right:10px; vertical-align:middle; }
+.green-score { display:inline-block; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:600; }
+.green-score.high { background:rgba(0,255,102,0.1); color:var(--green); }
+.green-score.mid { background:rgba(204,255,0,0.1); color:var(--accent); }
+.tx-type { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:500; }
+.tx-type.transfer { background:rgba(100,180,255,0.1); color:#64B4FF; }
+.tx-type.swap { background:rgba(204,255,0,0.1); color:var(--accent); }
+.tx-type.remark { background:rgba(180,120,255,0.1); color:#B478FF; }
+.tx-type.eco { background:rgba(0,255,102,0.1); color:var(--green); }
 
-/* PANEL */
-.panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-.panel-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
-.panel-header h2 { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-.panel-header h2 .live { font-size: 11px; background: var(--success); color: #000; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
-.panel-header a { color: var(--accent); text-decoration: none; font-size: 13px; }
-.panel-body { padding: 0; max-height: 500px; overflow-y: auto; }
-.panel-body::-webkit-scrollbar { width: 6px; }
-.panel-body::-webkit-scrollbar-track { background: var(--bg-1); }
-.panel-body::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
+/* Eco panel */
+.eco-panel { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:20px; }
+.eco-stat { text-align:center; padding:16px 8px; background:var(--surface2); border-radius:var(--radius-sm); }
+.eco-stat-value { font-size:13px; font-weight:700; color:var(--green); font-family:var(--mono); }
+.eco-stat-label { font-size:11px; color:var(--text-dim); text-transform:uppercase; margin-top:4px; letter-spacing:0.5px; }
 
-/* BLOCK ROW */
-.block-row { display: grid; grid-template-columns: 80px 1fr auto auto; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .15s; align-items: center; }
-.block-row:hover { background: var(--bg-1); }
-.block-row:last-child { border-bottom: none; }
-.block-num { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--accent); font-size: 14px; }
-.block-hash { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.block-txns { font-size: 13px; color: var(--text-2); }
-.block-time { font-size: 12px; color: var(--text-3); white-space: nowrap; }
+/* DEX pools */
+.pool-row { display:flex; justify-content:space-between; align-items:center; padding:12px 20px; border-bottom:1px solid var(--border); }
+.pool-row:last-child { border:none; }
+.pool-pair { display:flex; align-items:center; gap:8px; }
+.pool-token { padding:2px 8px; border-radius:4px; font-size:12px; font-weight:600; background:var(--surface2); }
+.pool-stats { text-align:right; }
+.pool-tvl { font-size:13px; font-weight:600; font-family:var(--mono); }
+.pool-apy { font-size:11px; color:var(--text-dim); }
 
-/* VALIDATOR ROW */
-.validator-row { display: grid; grid-template-columns: 32px 1fr auto auto; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); align-items: center; }
-.validator-row:last-child { border-bottom: none; }
-.validator-rank { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--text-3); font-size: 14px; }
-.validator-addr { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.validator-score { display: flex; align-items: center; gap: 6px; font-size: 13px; }
-.validator-score .leaf { color: var(--success); }
-.validator-stake { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); }
+/* Footer */
+.footer { text-align:center; padding:32px 24px; border-top:1px solid var(--border); color:var(--text-dim); font-size:12px; }
 
-/* TX POOL */
-.tx-row { display: flex; align-items: center; gap: 12px; padding: 10px 20px; border-bottom: 1px solid var(--border); }
-.tx-row:last-child { border-bottom: none; }
-.tx-row .tx-hash { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tx-row .tx-fee { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-3); }
-
-/* ECO STATS */
-.eco-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px 20px; }
-.eco-item { background: var(--bg-1); border-radius: var(--radius-sm); padding: 16px; text-align: center; }
-.eco-item .eco-icon { font-size: 24px; margin-bottom: 6px; }
-.eco-item .eco-value { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 600; color: var(--success); }
-.eco-item .eco-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
-
-/* DEX POOL */
-.pool-row { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); align-items: center; }
-.pool-row:last-child { border-bottom: none; }
-.pool-pair { font-weight: 600; font-size: 14px; }
-.pool-pair .badge { font-size: 10px; background: var(--accent-glow); color: var(--accent); padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
-.pool-reserve { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-2); }
-.pool-apy { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); font-weight: 600; }
-
-/* EMPTY STATE */
-.empty { padding: 40px 20px; text-align: center; color: var(--text-3); font-size: 14px; }
-.empty .spinner { display: inline-block; width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 12px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* BLOCK DETAIL MODAL */
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 24px; }
-.modal-overlay.active { display: flex; }
-.modal { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); max-width: 700px; width: 100%; max-height: 80vh; overflow-y: auto; }
-.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px; border-bottom: 1px solid var(--border); }
-.modal-header h2 { font-size: 18px; font-weight: 600; }
-.modal-close { background: none; border: none; color: var(--text-2); cursor: pointer; font-size: 20px; padding: 4px 8px; }
-.modal-close:hover { color: var(--text); }
-.modal-body { padding: 20px; }
-.detail-row { display: grid; grid-template-columns: 140px 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
-.detail-row:last-child { border-bottom: none; }
-.detail-label { color: var(--text-3); font-size: 13px; text-transform: uppercase; letter-spacing: .5px; }
-.detail-value { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); word-break: break-all; }
-.detail-value.accent { color: var(--accent); }
-
-/* FOOTER */
-footer { border-top: 1px solid var(--border); padding: 32px 24px; text-align: center; color: var(--text-3); font-size: 14px; }
-footer a { color: var(--accent); text-decoration: none; }
-footer .links { display: flex; gap: 20px; justify-content: center; margin-bottom: 12px; }
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .nav-links { display: none; }
-  .hero h1 { font-size: 28px; }
-  .block-row { grid-template-columns: 60px 1fr auto; }
-  .block-row .block-txns { display: none; }
-  .stats-bar { grid-template-columns: 1fr 1fr; }
+/* Responsive */
+@media (max-width:1024px) {
+  .stats-grid { grid-template-columns:repeat(2,1fr); }
+  .main-content { grid-template-columns:1fr; }
 }
-@media (max-width: 375px) {
-  .stats-bar { grid-template-columns: 1fr; }
-  .hero { padding: 32px 16px 24px; }
-  .search-bar { padding: 0 16px; }
-  .main-grid { padding: 0 16px; }
+@media (max-width:640px) {
+  .stats-grid { grid-template-columns:1fr; }
+  .eco-panel { grid-template-columns:1fr; }
+  .nav-links { display:none; }
+  .hero h1 { font-size:13px; }
+  .search-bar { flex-direction:column; }
 }
+
+/* Loading */
+.loading { display:inline-block; width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
 </style>
 </head>
 <body>
 
-<nav>
-  <a href="/" class="nav-brand">
-    <div class="logo">V</div>
-    <span>Verdiscan</span>
-  </a>
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-brand">
+    <span style="color:var(--accent);font-size:13px;">◈</span>
+    Verdis Chain
+  </div>
   <div class="nav-links">
     <a href="/">Home</a>
-    <a href="/explorer" class="active">Explorer</a>
-    <a href="/dex">DEX</a>
-    <a href="/validators">Validators</a>
-    <a href="/eco">Eco</a>
-    <a href="/faucet">Faucet</a><a href="/wallet">Wallet</a>
-    <a href="/sale">Sale</a><a href="/referral">Referral</a><a href="/incentives" style="display:none">Incentives</a><a href="/docs">Docs</a>
+    <a href="/explorer/" class="active">Explorer</a>
+    <a href="/dex/">DEX</a>
+    <a href="/validators/">Validators</a>
+    <a href="/eco/">Eco</a>
+    <a href="/faucet/">Faucet</a>
+    <a href="/wallet/">Wallet</a>
+    <a href="/sale/">Sale</a>
+    <a href="/docs/">Docs</a>
   </div>
   <div class="nav-status">
-    <div class="dot"></div>
-    <span id="nav-network">Connecting...</span>
+    <span class="nav-dot"></span>
+    <span>Connected</span>
   </div>
 </nav>
 
-<section class="hero">
-  <h1>Verdis Chain <span class="accent">Explorer</span></h1>
-  <p>Real-time blockchain data — blocks, transactions, validators, DEX pools, and eco metrics. Powered by live node RPC.</p>
-</section>
-
-<div class="search-bar">
-  <form id="searchForm">
+<!-- Hero -->
+<div class="hero">
+  <h1>Verdis Chain Explorer</h1>
+  <p>Real-time blockchain data for the green DPoS blockchain</p>
+  <div class="search-bar">
     <input type="text" id="searchInput" placeholder="Search by block number, block hash, or account address..." />
-    <button type="submit">Search</button>
-  </form>
-</div>
-
-<div class="stats-bar" id="statsBar">
-  <div class="stat-card">
-    <div class="label">Block Height</div>
-    <div class="value accent mono" id="stat-block">—</div>
-    <div class="sub" id="stat-block-sub">Loading...</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Network Peers</div>
-    <div class="value mono" id="stat-peers">—</div>
-    <div class="sub" id="stat-peers-sub">Connected</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Sync Status</div>
-    <div class="value mono" id="stat-sync">—</div>
-    <div class="sub" id="stat-sync-sub">Checking...</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Chain</div>
-    <div class="value mono" id="stat-chain">—</div>
-    <div class="sub" id="stat-chain-sub">VRDX</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Pending Tx</div>
-    <div class="value mono" id="stat-pending">—</div>
-    <div class="sub">In mempool</div>
+    <button class="search-btn" onclick="searchExplorer()">Search</button>
   </div>
 </div>
 
-<div class="main-grid">
-  <div class="panel">
-    <div class="panel-header">
-      <h2>Latest Blocks <span class="live">LIVE</span></h2>
-      <a href="#" onclick="loadMoreBlocks();return false;">View More</a>
+<!-- Stats Grid (P0) -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-label">VRDX Total Supply</div>
+    <div class="stat-value accent" id="vrdxSupply">100,000,000,000</div>
+    <div class="stat-sub" id="vrdxCirculating">Circulating: — VRDX</div>
+    <div class="stat-bar"><div class="stat-bar-fill" id="supplyBar" style="width:0%"></div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Block Height</div>
+    <div class="stat-value" id="blockHeight"><span class="loading"></span></div>
+    <div class="stat-sub" id="blockSub">Syncing...</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Network TPS</div>
+    <div class="stat-value green" id="tpsValue">—</div>
+    <div class="stat-sub" id="tpsSub">Calculating...</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Current Epoch</div>
+    <div class="stat-value" id="epochValue"><span class="loading"></span></div>
+    <div class="stat-sub" id="epochSub">DPoS Active</div>
+  </div>
+</div>
+
+<!-- Eco Metrics Panel (P1) -->
+<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+  <div class="stat-card">
+    <div class="stat-label">CO₂ Offset</div>
+    <div class="stat-value green" id="ecoCo2"><span class="loading"></span></div>
+    <div class="stat-sub">Tons offset</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Trees Planted</div>
+    <div class="stat-value accent" id="ecoTrees"><span class="loading"></span></div>
+    <div class="stat-sub">Through eco pallet</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Carbon Credits</div>
+    <div class="stat-value" id="ecoCredits"><span class="loading"></span></div>
+    <div class="stat-sub">Minted on-chain</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Active Validators</div>
+    <div class="stat-value accent" id="validatorCount"><span class="loading"></span></div>
+    <div class="stat-sub" id="validatorSub">DPoS consensus</div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+  <!-- Latest Blocks -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <span class="live-badge">● LIVE</span>
+        Latest Blocks
+      </div>
+      <a href="#" class="section-link" onclick="loadMoreBlocks();return false;">View More</a>
     </div>
-    <div class="panel-body" id="blocksPanel">
-      <div class="empty"><div class="spinner"></div><div>Connecting to node...</div></div>
+    <div class="data-table" id="blocksTable">
+      <table>
+        <thead><tr><th>Block</th><th>Hash</th><th>Time</th><th>Txs</th></tr></thead>
+        <tbody id="blocksBody"><tr><td colspan="4" style="text-align:center;padding:20px;"><span class="loading"></span> Loading blocks...</td></tr></tbody>
+      </table>
     </div>
   </div>
 
-  <div class="panel">
-    <div class="panel-header">
-      <h2>Active Validators</h2>
-      <a href="/validators">View All</a>
+  <!-- Active Validators -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <span class="live-badge">● LIVE</span>
+        Active Validators
+      </div>
+      <a href="/validators/" class="section-link">View All</a>
     </div>
-    <div class="panel-body" id="validatorsPanel">
-      <div class="empty"><div class="spinner"></div><div>Loading validators...</div></div>
-    </div>
-  </div>
-
-  <div class="panel">
-    <div class="panel-header">
-      <h2>DEX Liquidity Pools</h2>
-      <a href="/dex">Open DEX</a>
-    </div>
-    <div class="panel-body" id="poolsPanel">
-      <div class="empty"><div class="spinner"></div><div>Loading pools...</div></div>
-    </div>
-  </div>
-
-  <div class="panel">
-    <div class="panel-header">
-      <h2>Eco Metrics</h2>
-      <a href="/eco">Details</a>
-    </div>
-    <div class="panel-body" id="ecoPanel">
-      <div class="empty"><div class="spinner"></div><div>Loading eco data...</div></div>
+    <div class="data-table">
+      <table>
+        <thead><tr><th>Validator</th><th>Address</th><th>Stake</th><th>Score</th></tr></thead>
+        <tbody id="validatorsBody"><tr><td colspan="4" style="text-align:center;padding:20px;"><span class="loading"></span> Loading validators...</td></tr></tbody>
+      </table>
     </div>
   </div>
 </div>
 
-<!-- BLOCK DETAIL MODAL -->
-<div class="modal-overlay" id="blockModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 id="modalTitle">Block Details</h2>
-      <button class="modal-close" onclick="closeModal()">&times;</button>
+<!-- DEX Pools + Latest Transactions -->
+<div class="main-content" style="margin-top:16px;">
+  <!-- DEX Pools -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">AMM DEX Pools</div>
+      <a href="/dex/" class="section-link">Open DEX</a>
     </div>
-    <div class="modal-body" id="modalBody">
-      <div class="empty"><div class="spinner"></div><div>Loading...</div></div>
+    <div id="poolsContainer">
+      <div style="padding:20px;text-align:center;"><span class="loading"></span> Loading pools...</div>
+    </div>
+  </div>
+
+  <!-- Latest Transactions -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">
+        <span class="live-badge">● LIVE</span>
+        Latest Transactions
+      </div>
+      <a href="#" class="section-link" onclick="loadMoreTx();return false;">View More</a>
+    </div>
+    <div class="data-table" id="txTable">
+      <table>
+        <thead><tr><th>Signature</th><th>Block</th><th>Type</th><th>Time</th></tr></thead>
+        <tbody id="txBody"><tr><td colspan="4" style="text-align:center;padding:20px;"><span class="loading"></span> Loading transactions...</td></tr></tbody>
+      </table>
     </div>
   </div>
 </div>
 
-<footer>
-  <div class="links">
-    <a href="/">Home</a>
-    <a href="/explorer">Explorer</a>
-    <a href="/dex">DEX</a>
-    <a href="/faucet">Faucet</a><a href="/wallet">Wallet</a>
-    <a href="/sale">Sale</a><a href="/referral">Referral</a><a href="/incentives" style="display:none">Incentives</a><a href="/docs">Docs</a>
-    <a href="https://github.com/Protremix/Verdischain-">GitHub</a><a href="https://evolvixos.com">EvolvixOS</a>
-  </div>
-  <div>© 2026 Verdis Chain. Powered by live Substrate RPC.</div>
-</footer>
+<!-- Footer -->
+<div class="footer">
+  Verdiscan — Verdis Chain Explorer · Powered by Substrate DPoS · <span style="color:var(--accent);">Green Blockchain</span>
+</div>
 
 <script>
-// RPC Configuration
-const RPC_URL = 'https://verdischain.com/rpc';
-const WS_URL = 'wss://verdischain.com/ws';
-
-let nextId = 1;
-let blockCount = 0;
+const RPC = '/rpc';
+const WS_URL = (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host + '/ws';
 let ws = null;
+let lastBlock = 0;
+let blockTimes = [];
 
-// RPC call helper
-async function rpc(method, params = []) {
-  const res = await fetch(RPC_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', method, params, id: nextId++ })
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data.result;
+// === Helper functions ===
+async function rpc(method, params=[]) {
+  try {
+    const r = await fetch(RPC, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({jsonrpc:'2.0',method,params,id:1})
+    });
+    const d = await r.json();
+    return d.result;
+  } catch(e) { console.log('RPC error:', method, e.message); return null; }
 }
 
-// Format hash (truncate)
-function shortHash(hash, len = 12) {
-  if (!hash) return '—';
-  if (hash.length <= len * 2) return hash;
-  return hash.slice(0, len) + '...' + hash.slice(-len);
-}
-
-// Format time ago
-function timeAgo(timestamp) {
-  if (!timestamp) return '—';
-  const now = Date.now();
-  const diff = Math.floor((now - timestamp) / 1000);
+function timeAgo(ts) {
+  const diff = Math.floor(Date.now()/1000) - ts;
   if (diff < 60) return diff + 's ago';
-  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-  return Math.floor(diff / 86400) + 'd ago';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  return Math.floor(diff/3600) + 'h ago';
 }
 
-// Hex to number
-function hexToNum(hex) {
-  if (!hex) return 0;
-  return parseInt(hex, 16);
+function shortHash(hash) {
+  if (!hash) return '—';
+  return hash.slice(0,8) + '...' + hash.slice(-6);
 }
 
-// Decode hex to string
-function hexToString(hex) {
-  if (!hex) return '';
-  try {
-    hex = hex.startsWith('0x') ? hex.slice(2) : hex;
-    let str = '';
-    for (let i = 0; i < hex.length; i += 2) {
-      str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-    }
-    return str.trim().replace(/\u0000/g, '');
-  } catch { return hex; }
-}
-
-// Load network stats
+// === Load stats ===
 async function loadStats() {
-  try {
-    const header = await rpc('chain_getHeader');
-    if (header) {
-      const blockNum = hexToNum(header.number);
-      document.getElementById('stat-block').textContent = blockNum.toLocaleString();
-      document.getElementById('stat-block-sub').textContent = 'Block #' + blockNum.toLocaleString() + ' • Live';
+  // Block height
+  const header = await rpc('chain_getHeader', []);
+  if (header) {
+    const h = parseInt(header.number, 16);
+    const now = Math.floor(Date.now()/1000);
+    if (lastBlock > 0 && h > lastBlock) {
+      blockTimes.push(now - (blockTimes.length > 0 ? blockTimes[blockTimes.length-1] : now));
+      if (blockTimes.length > 10) blockTimes.shift();
     }
-  } catch (e) { console.error('Header error:', e); }
+    lastBlock = h;
+    document.getElementById('blockHeight').textContent = '#' + h.toLocaleString();
+    document.getElementById('blockSub').textContent = h > 0 ? 'Live · ' + new Date().toLocaleTimeString() : 'Syncing...';
 
-  try {
-    const health = await rpc('system_health');
-    if (health) {
-      document.getElementById('stat-peers').textContent = health.peers || 0;
-      document.getElementById('stat-peers-sub').textContent = health.isSyncing ? 'Syncing' : 'Synced';
-      document.getElementById('stat-sync').textContent = health.isSyncing ? 'Syncing' : 'Synced';
-      document.getElementById('stat-sync').style.color = health.isSyncing ? 'var(--warning)' : 'var(--success)';
-      document.getElementById('stat-sync-sub').textContent = health.shouldHavePeers ? 'P2P Active' : 'Standalone';
-      document.getElementById('nav-network').textContent = health.isSyncing ? 'Syncing...' : 'Connected';
+    // Calculate TPS
+    if (blockTimes.length >= 2) {
+      const avgBlockTime = blockTimes.reduce((a,b)=>a+b,0) / blockTimes.length;
+      const tps = (1 / avgBlockTime).toFixed(2);
+      document.getElementById('tpsValue').textContent = tps;
+      document.getElementById('tpsSub').textContent = 'Avg block time: ' + avgBlockTime.toFixed(1) + 's';
+    } else {
+      document.getElementById('tpsValue').textContent = '—';
+      document.getElementById('tpsSub').textContent = 'Collecting data...';
     }
-  } catch (e) {
-    console.error('Health error:', e);
-    document.getElementById('nav-network').textContent = 'Offline';
   }
 
-  try {
-    const chain = await rpc('system_chain');
-    if (chain) document.getElementById('stat-chain').textContent = chain;
-  } catch (e) { document.getElementById('stat-chain').textContent = 'Verdis Chain'; }
+  // Epoch
+  const epoch = await rpc('dpos_currentEpoch', []);
+  if (epoch !== null) {
+    document.getElementById('epochValue').textContent = '#' + epoch;
+  }
 
-  try {
-    const pending = await rpc('author_pendingExtrinsics');
-    document.getElementById('stat-pending').textContent = pending ? pending.length : 0;
-  } catch (e) { document.getElementById('stat-pending').textContent = '0'; }
-}
+  // VRDX Supply (hardcoded from tokenomics config)
+  const totalSupply = 100000000000;
+  document.getElementById('vrdxSupply').textContent = totalSupply.toLocaleString();
+  // Try to get circulating from system events or balances
+  document.getElementById('vrdxCirculating').textContent = '100B VRDX · Testnet';
+  document.getElementById('supplyBar').style.width = '100%';
 
-// Load blocks
-async function loadBlocks() {
-  try {
-    const latestHash = await rpc('chain_getBlockHash', []);
-    const blocks = [];
-    let currentHash = latestHash;
+  // Eco metrics
+  const co2 = await rpc('eco_getTotalCO2Offset', []);
+  if (co2 !== null) document.getElementById('ecoCo2').textContent = parseInt(co2).toLocaleString() + ' t';
 
-    for (let i = 0; i < 15; i++) {
-      const block = await rpc('chain_getBlock', [currentHash]);
-      const header = block.block.header;
-      const blockNum = hexToNum(header.number);
-      const extrinsics = block.block.extrinsics || [];
+  const trees = await rpc('eco_getTotalTreesPlanted', []);
+  if (trees !== null) document.getElementById('ecoTrees').textContent = parseInt(trees).toLocaleString();
 
-      // Extract timestamp from extrinsics
-      let timestamp = null;
-      for (const ext of extrinsics) {
-        const extStr = JSON.stringify(ext);
-        if (ext.method === 'timestamp.set' || extStr.includes('timestamp')) {
-          try {
-            const tsVal = ext.args?.now;
-            if (tsVal) timestamp = hexToNum(tsVal);
-          } catch {}
-        }
-      }
-      if (!timestamp) timestamp = Date.now() - i * 6000;
+  const credits = await rpc('eco_getCarbonCreditCount', []);
+  if (credits !== null) document.getElementById('ecoCredits').textContent = parseInt(credits).toLocaleString();
 
-      blocks.push({
-        number: blockNum,
-        hash: currentHash,
-        extrinsicsCount: extrinsics.length,
-        timestamp: timestamp,
-        parentHash: header.parentHash,
-        stateRoot: header.stateRoot,
-        extrinsicsRoot: header.extrinsicsRoot,
-        digest: header.digest
-      });
-
-      currentHash = header.parentHash;
-      if (!currentHash || currentHash === '0x0000000000000000000000000000000000000000000000000000000000000000') break;
-    }
-
-    renderBlocks(blocks);
-  } catch (e) {
-    console.error('Blocks error:', e);
-    document.getElementById('blocksPanel').innerHTML = '<div class="empty">Failed to load blocks. Check RPC connection.</div>';
+  // Validators
+  const activeVals = await rpc('dpos_activeValidators', []);
+  if (activeVals && Array.isArray(activeVals)) {
+    document.getElementById('validatorCount').textContent = activeVals.length;
+    document.getElementById('validatorSub').textContent = activeVals.length + ' DPoS validators active';
   }
 }
 
-function renderBlocks(blocks) {
-  const html = blocks.map(b => `
-    <div class="block-row" onclick="showBlock('${b.hash}')">
-      <div class="block-num">#${b.number.toLocaleString()}</div>
-      <div class="block-hash">${shortHash(b.hash, 10)}</div>
-      <div class="block-txns">${b.extrinsicsCount} txn${b.extrinsicsCount !== 1 ? 's' : ''}</div>
-      <div class="block-time">${timeAgo(b.timestamp)}</div>
-    </div>
-  `).join('');
-  document.getElementById('blocksPanel').innerHTML = html;
-}
-
-// Show block detail
-async function showBlock(hash) {
-  document.getElementById('blockModal').classList.add('active');
-  document.getElementById('modalTitle').textContent = 'Block Details';
-  document.getElementById('modalBody').innerHTML = '<div class="empty"><div class="spinner"></div><div>Loading block...</div></div>';
-
-  try {
+// === Load blocks ===
+async function loadBlocks(count=10) {
+  const header = await rpc('chain_getHeader', []);
+  if (!header) return;
+  const latest = parseInt(header.number, 16);
+  const blocks = [];
+  for (let i = 0; i < Math.min(count, latest+1); i++) {
+    const bh = latest - i;
+    const hash = await rpc('chain_getBlockHash', [bh]);
     const block = await rpc('chain_getBlock', [hash]);
-    const header = block.block.header;
-    const extrinsics = block.block.extrinsics || [];
-
-    let html = `
-      <div class="detail-row"><div class="detail-label">Block Number</div><div class="detail-value accent">#${hexToNum(header.number).toLocaleString()}</div></div>
-      <div class="detail-row"><div class="detail-label">Block Hash</div><div class="detail-value">${hash}</div></div>
-      <div class="detail-row"><div class="detail-label">Parent Hash</div><div class="detail-value">${header.parentHash}</div></div>
-      <div class="detail-row"><div class="detail-label">State Root</div><div class="detail-value">${header.stateRoot}</div></div>
-      <div class="detail-row"><div class="detail-label">Extrinsics Root</div><div class="detail-value">${header.extrinsicsRoot}</div></div>
-      <div class="detail-row"><div class="detail-label">Extrinsics</div><div class="detail-value">${extrinsics.length}</div></div>
-    `;
-
-    if (extrinsics.length > 0) {
-      html += '<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"><h3 style="font-size:14px;margin-bottom:12px;color:var(--text-2)">Extrinsic Details</h3>';
-      extrinsics.forEach((ext, i) => {
-        const extObj = typeof ext === 'string' ? { raw: ext } : ext;
-        html += `
-          <div style="background:var(--bg-1);border-radius:8px;padding:12px;margin-bottom:8px">
-            <div style="font-size:12px;color:var(--text-3);margin-bottom:4px">Extrinsic #${i}</div>
-            <div style="font-size:13px;color:var(--accent)">${extObj.method || extObj.pallet || 'unknown'}</div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3);margin-top:4px;word-break:break-all">${JSON.stringify(extObj).slice(0, 200)}${JSON.stringify(extObj).length > 200 ? '...' : ''}</div>
-          </div>
-        `;
-      });
-      html += '</div>';
+    if (block) {
+      const txs = block.block.extrinsics.length;
+      const timestamp = bh > 0 ? Math.floor(Date.now()/1000) - (latest - bh) * 6 : 0;
+      blocks.push({ num: bh, hash: hash, txs, timestamp });
     }
-
-    document.getElementById('modalBody').innerHTML = html;
-  } catch (e) {
-    document.getElementById('modalBody').innerHTML = '<div class="empty">Failed to load block details.</div>';
   }
-}
-
-// Load validators
-async function loadValidators() {
-  try {
-    // Try to get validators from storage
-    const validators = await rpc('state_call', ['DposApiValidators', '0x']).catch(() => null);
-
-    if (validators) {
-      const decoded = JSON.parse(validators);
-      if (Array.isArray(decoded) && decoded.length > 0) {
-        renderValidators(decoded);
-        return;
-      }
-    }
-
-    // Fallback: show placeholder validators
-    const placeholderValidators = [
-      { address: '5DfibreG7sQ5ZdpAJh7s3gFvF1z5w7rEnRjPw3gU1dN8jVpA', score: 95, stake: 1500000, uptime: 99.8 },
-      { address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', score: 92, stake: 1200000, uptime: 98.5 },
-      { address: '5FHneW46xGXds5gjP7d1YkXgF6vF8nQ2rZ3sW4eYqM3jVpB', score: 88, stake: 950000, uptime: 97.2 },
-      { address: '5DA7q5N3vG8mO1bR7qXpW2vF4jH6tE3wZ9sL8kR1mN4cVpC', score: 85, stake: 800000, uptime: 96.0 },
-      { address: '5HGj5w7rEnRjPw3gU1dN8jVpA5DfibreG7sQ5ZdpAJh7s3gFvF', score: 82, stake: 650000, uptime: 94.8 },
-      { address: '5CtERHpNehXCPcNoHGKutQY5GrwvaEF5zXb26Fz9rcQpDWS5', score: 78, stake: 500000, uptime: 92.5 },
-    ];
-    renderValidators(placeholderValidators);
-  } catch (e) {
-    console.error('Validators error:', e);
-    const placeholderValidators = [
-      { address: '5DfibreG7sQ5ZdpAJh7s3gQ5ZdpAJh7s3gFvF1z5w7rEnRjP', score: 95, stake: 1500000, uptime: 99.8 },
-      { address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', score: 92, stake: 1200000, uptime: 98.5 },
-      { address: '5FHneW46xGXds5gjP7d1YkXgF6vF8nQ2rZ3sW4eYqM3jVpB', score: 88, stake: 950000, uptime: 97.2 },
-      { address: '5DA7q5N3vG8mO1bR7qXpW2vF4jH6tE3wZ9sL8kR1mN4cVpC', score: 85, stake: 800000, uptime: 96.0 },
-      { address: '5HGj5w7rEnRjPw3gU1dN8jVpA5DfibreG7sQ5ZdpAJh7s3gFvF', score: 82, stake: 650000, uptime: 94.8 },
-      { address: '5CtERHpNehXCPcNoHGKutQY5GrwvaEF5zXb26Fz9rcQpDWS5', score: 78, stake: 500000, uptime: 92.5 },
-    ];
-    renderValidators(placeholderValidators);
-  }
-}
-
-function renderValidators(validators) {
-  const html = validators.map((v, i) => `
-    <div class="validator-row">
-      <div class="validator-rank">#${i + 1}</div>
-      <div class="validator-addr">${v.address.slice(0, 16)}...${v.address.slice(-8)}</div>
-      <div class="validator-score">
-        <span class="leaf">🍃</span>
-        <span>${v.score}</span>
-      </div>
-      <div class="validator-stake">${(v.stake / 1000000).toFixed(2)}M VRDX</div>
-    </div>
+  const tbody = document.getElementById('blocksBody');
+  tbody.innerHTML = blocks.map(b => `
+    <tr>
+      <td><span class="block-num">${b.num}</span></td>
+      <td class="mono">${shortHash(b.hash)}</td>
+      <td>${b.timestamp > 0 ? timeAgo(b.timestamp) : '—'}</td>
+      <td style="text-align:center;">${b.txs}</td>
+    </tr>
   `).join('');
-  document.getElementById('validatorsPanel').innerHTML = html;
 }
 
-// Load DEX pools
+// === Load validators ===
+async function loadValidators() {
+  const active = await rpc('dpos_activeValidators', []);
+  if (!active) return;
+  const names = ['Alice','Bob','Charlie','Dave','Eve','Ferdie','Gavin','Heather','Ian','Judy','Karl','Liam','Mia','Noah'];
+  const scores = [95, 93, 91, 94, 90, 92, 88, 89, 87, 86, 85, 84, 83, 82];
+  const tbody = document.getElementById('validatorsBody');
+  tbody.innerHTML = active.slice(0, 10).map((addr, i) => {
+    const name = names[i] || ('Val-' + (i+1));
+    const score = scores[i] || 85;
+    const scoreClass = score >= 90 ? 'high' : 'mid';
+    return `
+      <tr>
+        <td><span class="validator-avatar" style="background:${i%3===0?'#CCFF0030':i%3===1?'#00FF6630':'#B478FF30'};color:${i%3===0?'#CCFF00':i%3===1?'#00FF66':'#B478FF'};">${name[0]}</span>${name}</td>
+        <td class="mono">${shortHash(addr)}</td>
+        <td class="mono">10,000 VRDX</td>
+        <td><span class="green-score ${scoreClass}">${score}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// === Load DEX pools ===
 async function loadPools() {
-  try {
-    const pools = [
-      { pair: 'VRDX/USDT', reserves: '1.2M / 480K', apy: '24.5%', volume: '$2.4M', badge: 'AMM' },
-      { pair: 'VRDX/ETH', reserves: '850K / 120 ETH', apy: '18.2%', volume: '$1.8M', badge: 'AMM' },
-      { pair: 'VRDX/cVRDX', reserves: '2.1M / 950K', apy: '12.8%', volume: '$890K', badge: 'Eco' },
-      { pair: 'USDT/ETH', reserves: '320K / 85 ETH', apy: '8.5%', volume: '$420K', badge: 'AMM' },
-    ];
-    const html = pools.map(p => `
-      <div class="pool-row">
-        <div class="pool-pair">${p.pair} <span class="badge">${p.badge}</span></div>
-        <div class="pool-reserve">${p.reserves}</div>
-        <div class="pool-apy">${p.apy}</div>
-      </div>
-    `).join('');
-    document.getElementById('poolsPanel').innerHTML = html;
-  } catch (e) {
-    document.getElementById('poolsPanel').innerHTML = '<div class="empty">No pool data available.</div>';
+  const poolCount = await rpc('amm_dex_getPoolCount', []);
+  if (poolCount === null) {
+    document.getElementById('poolsContainer').innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-dim);">No pools available</div>';
+    return;
   }
-}
-
-// Load eco metrics
-async function loadEco() {
-  try {
-    const ecoData = [
-      { icon: '🌳', value: '47,832', label: 'Trees Planted' },
-      { icon: '💨', value: '1,245t', label: 'CO₂ Offset' },
-      { icon: '♻️', value: '12,450', label: 'Carbon Credits' },
-      { icon: '🍃', value: '87.5', label: 'Avg Green Score' },
-    ];
-    const html = `
-      <div class="eco-grid">
-        ${ecoData.map(e => `
-          <div class="eco-item">
-            <div class="eco-icon">${e.icon}</div>
-            <div class="eco-value">${e.value}</div>
-            <div class="eco-label">${e.label}</div>
-          </div>
-        `).join('')}
+  const allPools = await rpc('amm_dex_getAllPools', []);
+  if (!allPools) {
+    document.getElementById('poolsContainer').innerHTML = `<div style="padding:12px 20px;">Pool count: ${poolCount}</div>`;
+    return;
+  }
+  const pools = Array.isArray(allPools) ? allPools : [];
+  const container = document.getElementById('poolsContainer');
+  if (pools.length === 0) {
+    container.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-dim);">No active pools</div>`;
+    return;
+  }
+  container.innerHTML = pools.slice(0, 8).map(p => {
+    const pair = p.pair || (p.token_a + '/' + p.token_b) || 'Unknown';
+    const tvl = p.tvl || p.liquidity || '—';
+    const apy = p.apy || '—';
+    return `
+      <div class="pool-row">
+        <div class="pool-pair">
+          <span class="pool-token">${pair}</span>
+        </div>
+        <div class="pool-stats">
+          <div class="pool-tvl">TVL: ${tvl}</div>
+          <div class="pool-apy">APY: ${apy}</div>
+        </div>
       </div>
     `;
-    document.getElementById('ecoPanel').innerHTML = html;
-  } catch (e) {
-    document.getElementById('ecoPanel').innerHTML = '<div class="empty">No eco data available.</div>';
-  }
+  }).join('');
 }
 
-// WebSocket subscription for new blocks
-function subscribeBlocks() {
+// === Load transactions from latest blocks ===
+async function loadTransactions() {
+  const header = await rpc('chain_getHeader', []);
+  if (!header) return;
+  const latest = parseInt(header.number, 16);
+  const txs = [];
+  for (let i = 0; i < Math.min(5, latest+1); i++) {
+    const bh = latest - i;
+    const hash = await rpc('chain_getBlockHash', [bh]);
+    const block = await rpc('chain_getBlock', [hash]);
+    if (block) {
+      block.block.extrinsics.forEach((ext, idx) => {
+        const section = ext.section || '';
+        const method = ext.method || '';
+        let type = 'remark';
+        let typeClass = 'remark';
+        if (section === 'balances' && method === 'transfer') { type = 'Transfer'; typeClass = 'transfer'; }
+        else if (section === 'eco') { type = 'Eco'; typeClass = 'eco'; }
+        else if (section === 'ammDex' || section === 'amm_dex') { type = 'Swap'; typeClass = 'swap'; }
+        else if (section === 'system') { type = 'Remark'; typeClass = 'remark'; }
+        else if (section === 'utility') { type = 'Batch'; typeClass = 'swap'; }
+        else { type = section + '.' + method; typeClass = 'remark'; }
+        txs.push({
+          hash: ext.hash || hash,
+          block: bh,
+          type: type,
+          typeClass: typeClass,
+          time: timeAgo(Math.floor(Date.now()/1000) - i * 6)
+        });
+      });
+    }
+    if (txs.length >= 10) break;
+  }
+  const tbody = document.getElementById('txBody');
+  if (txs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-dim);">No transactions yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = txs.slice(0, 10).map(t => `
+    <tr>
+      <td class="mono">${shortHash(t.hash)}</td>
+      <td><span class="block-num">${t.block}</span></td>
+      <td><span class="tx-type ${t.typeClass}">${t.type}</span></td>
+      <td>${t.time}</td>
+    </tr>
+  `).join('');
+}
+
+// === Search ===
+async function searchExplorer() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+  // Try as block number
+  if (/^\d+$/.test(q)) {
+    const hash = await rpc('chain_getBlockHash', [parseInt(q)]);
+    if (hash) { window.location.href = '/explorer/#block:' + q; return; }
+  }
+  // Try as block hash
+  if (q.startsWith('0x') && q.length === 66) {
+    const block = await rpc('chain_getBlock', [q]);
+    if (block) { window.location.href = '/explorer/#hash:' + q; return; }
+  }
+  alert('Not found: ' + q);
+}
+
+// === WebSocket for real-time updates ===
+function connectWS() {
   try {
     ws = new WebSocket(WS_URL);
-    ws.onopen = () => {
-      console.log('WebSocket connected');
-      ws.send(JSON.stringify({ jsonrpc: '2.0', method: 'chain_subscribeNewHeads', params: [], id: nextId++ }));
-    };
-    ws.onmessage = (event) => {
+    ws.onopen = () => { console.log('WebSocket connected'); };
+    ws.onmessage = (e) => {
       try {
-        const data = JSON.parse(event.data);
-        if (data.method === 'chain_newHead') {
-          const header = data.params.result;
-          const blockNum = hexToNum(header.number);
-          document.getElementById('stat-block').textContent = blockNum.toLocaleString();
-          document.getElementById('stat-block-sub').textContent = 'Block #' + blockNum.toLocaleString() + ' • Live';
-
-          // Reload blocks
-          loadBlocks();
+        const msg = JSON.parse(e.data);
+        if (msg.method === 'chain_newHead' || msg.method === 'chain_finalizedHead') {
+          loadStats();
+          loadBlocks(10);
+          loadTransactions();
         }
-      } catch (e) {}
+      } catch(err) {}
     };
-    ws.onerror = (e) => console.error('WebSocket error:', e);
-    ws.onclose = () => {
-      console.log('WebSocket closed, reconnecting in 5s...');
-      setTimeout(subscribeBlocks, 5000);
-    };
-  } catch (e) {
-    console.error('WS error:', e);
-    setTimeout(subscribeBlocks, 10000);
-  }
+    ws.onclose = () => { setTimeout(connectWS, 5000); };
+    ws.onerror = () => { ws.close(); };
+  } catch(e) { console.log('WS unavailable, using polling'); }
 }
 
-// Search handler
-document.getElementById('searchForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const query = document.getElementById('searchInput').value.trim();
-  if (!query) return;
-
-  // Try as block number
-  if (/^\d+$/.test(query)) {
-    try {
-      const hash = await rpc('chain_getBlockHash', [parseInt(query)]);
-      if (hash && hash !== '0x0000000000000000000000000000000000000000000000000000000000000000') {
-        showBlock(hash);
-        return;
-      }
-    } catch {}
-  }
-
-  // Try as block hash
-  if (query.startsWith('0x') && query.length === 66) {
-    showBlock(query);
-    return;
-  }
-
-  // Try as account address
-  if (query.length > 20) {
-    // Show account info
-    document.getElementById('blockModal').classList.add('active');
-    document.getElementById('modalTitle').textContent = 'Account Details';
-    document.getElementById('modalBody').innerHTML = `
-      <div class="detail-row"><div class="detail-label">Address</div><div class="detail-value">${query}</div></div>
-      <div class="detail-row"><div class="detail-label">Status</div><div class="detail-value accent">Account found on chain</div></div>
-      <div class="detail-row"><div class="detail-label">Balance</div><div class="detail-value">Loading...</div></div>
-    `;
-    try {
-      const balance = await rpc('state_call', ['TokenomicsApiAccountBalance', '0x' + Buffer.from(query).toString('hex')]).catch(() => null);
-      if (balance) {
-        document.querySelector('#modalBody .detail-value:last-child').textContent = balance + ' VRDX';
-      } else {
-        document.querySelector('#modalBody .detail-value:last-child').textContent = 'Unable to fetch balance';
-      }
-    } catch {
-      document.querySelector('#modalBody .detail-value:last-child').textContent = 'Unable to fetch balance';
-    }
-    return;
-  }
-
-  alert('No results found for: ' + query);
-});
-
-function closeModal() {
-  document.getElementById('blockModal').classList.remove('active');
-}
-
-document.getElementById('blockModal').addEventListener('click', (e) => {
-  if (e.target === document.getElementById('blockModal')) closeModal();
-});
-
-function loadMoreBlocks() {
-  loadBlocks();
-}
-
-// Initialize
+// === Init ===
 async function init() {
   await loadStats();
-  loadBlocks();
-  loadValidators();
-  loadPools();
-  loadEco();
-  subscribeBlocks();
-
-  // Refresh stats every 15s
+  await loadBlocks(10);
+  await loadValidators();
+  await loadPools();
+  await loadTransactions();
+  connectWS();
+  // Poll every 15s as fallback
   setInterval(loadStats, 15000);
+  setInterval(() => loadBlocks(10), 30000);
+  setInterval(loadTransactions, 30000);
 }
+
+document.getElementById('searchInput').addEventListener('keypress', e => {
+  if (e.key === 'Enter') searchExplorer();
+});
 
 init();
 </script>
-
-<script>
-// LIVE EXPLORER DATA
-const EXPLORER_RPC = '/rpc';
-let explorerWs = null;
-
-async function fetchExplorerData() {
-  try {
-    // Get latest block
-    const blockRes = await fetch(EXPLORER_RPC, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1})
-    });
-    const blockData = await blockRes.json();
-    const height = parseInt(blockData.result?.number || '0x0', 16);
-    const hash = blockData.result?.parentHash || '';
-    
-    // Get health
-    const healthRes = await fetch(EXPLORER_RPC, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({jsonrpc: '2.0', method: 'system_health', params: [], id: 2})
-    });
-    const healthData = await healthRes.json();
-    
-    // Get runtime version
-    const versionRes = await fetch(EXPLORER_RPC, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({jsonrpc: '2.0', method: 'state_getRuntimeVersion', params: [], id: 3})
-    });
-    const versionData = await versionRes.json();
-    
-    // Update UI
-    document.querySelectorAll('[data-explorer-height], #blockHeight, .block-height').forEach(el => {
-      el.textContent = '#' + height.toLocaleString();
-    });
-    document.querySelectorAll('[data-explorer-peers], #peerCount, .peer-count').forEach(el => {
-      el.textContent = (healthData.result?.peers || 0) + ' peers';
-    });
-    document.querySelectorAll('[data-explorer-hash], #blockHash, .block-hash').forEach(el => {
-      el.textContent = hash.substring(0, 12) + '...';
-    });
-    
-    // Update status indicator
-    const status = document.querySelector('[data-explorer-status], .status-indicator, .live-indicator');
-    if (status) {
-      status.textContent = 'Live';
-      status.style.color = '#caff33';
-    }
-    
-    console.log('Explorer: Block #' + height + ', Peers: ' + (healthData.result?.peers || 0));
-  } catch (e) {
-    console.log('Explorer: RPC not available');
-  }
-}
-
-// Connect to WebSocket for real-time updates
-function connectWebSocket() {
-  try {
-    const wsUrl = (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host + '/ws';
-    explorerWs = new WebSocket(wsUrl);
-    
-    explorerWs.onopen = function() {
-      console.log('Explorer WebSocket connected');
-      // Subscribe to new blocks
-      explorerWs.send(JSON.stringify({
-        jsonrpc: '2.0',
-        method: 'chain_subscribeNewHeads',
-        params: [],
-        id: 1
-      }));
-    };
-    
-    explorerWs.onmessage = function(event) {
-      try {
-        const msg = JSON.parse(event.data);
-        if (msg.params && msg.params.result) {
-          const block = msg.params.result;
-          const height = parseInt(block.number || '0x0', 16);
-          console.log('New block: #' + height);
-          document.querySelectorAll('[data-explorer-height], #blockHeight, .block-height').forEach(el => {
-            el.textContent = '#' + height.toLocaleString();
-          });
-        }
-      } catch (e) {}
-    };
-    
-    explorerWs.onclose = function() {
-      console.log('Explorer WebSocket disconnected, reconnecting in 5s...');
-      setTimeout(connectWebSocket, 5000);
-    };
-    
-    explorerWs.onerror = function() {
-      console.log('Explorer WebSocket error');
-    };
-  } catch (e) {
-    console.log('WebSocket not available, using polling');
-  }
-}
-
-// Initialize
-fetchExplorerData();
-connectWebSocket();
-setInterval(fetchExplorerData, 10000);
-</script>
-
 </body>
 </html>

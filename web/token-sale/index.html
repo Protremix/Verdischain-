@@ -13,14 +13,18 @@
     <style>
         .timer-box { display: flex; gap: 16px; justify-content: center; margin: 24px 0; }
         .timer-unit { background: var(--bg-input); border: 1px solid var(--border-light); padding: 16px 20px; border-radius: 12px; text-align: center; min-width: 80px; }
-        .timer-num { font-size: 28px; font-weight: 800; color: var(--accent); font-family: var(--font-mono); }
+        .timer-num { font-size: 14px; font-weight: 800; color: var(--accent); font-family: var(--font-mono); }
         .timer-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
         .progress-container { background: var(--bg-input); border-radius: 12px; padding: 4px; border: 1px solid var(--border); margin: 20px 0; }
         .progress-bar-inner { height: 16px; border-radius: 8px; background: var(--gradient-accent); width: 0%; transition: width 1s ease-in-out; }
         .consent-box { background: var(--bg-card); border: 1px solid var(--border-accent); border-radius: 12px; padding: 24px; margin-top: 32px; }
         .checkbox-label { display: flex; items-center: flex-start; gap: 12px; cursor: pointer; font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
         .checkbox-label input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent); }
-    </style>
+    
+/* Mobile responsiveness */
+@media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:44px;padding:10px 16px}.card{padding:16px}h1{font-size:13px}}
+@media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:14px}.container{padding:20px}}
+</style>
 <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32"/>
 <link rel="icon" type="image/png" href="/favicon-16.png" sizes="16x16"/>
 <link rel="apple-touch-icon" href="/favicon-192.png"/>
@@ -47,7 +51,7 @@
 <section class="section" style="padding-top:100px;">
     <div class="section-header reveal">
         <span class="section-eyebrow">Official Allocation</span>
-        <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px"><span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#0a0e0a;border:1px solid rgba(0,255,136,0.3);flex-shrink:0"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:24px;height:24px"><path d="M20 3L34 11V27L20 35L6 27V11L20 3Z" stroke="#00ff88" stroke-width="2" fill="rgba(0,255,136,0.03)" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 13L20 27M27 13L20 27" stroke="#00ff88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 18C17 18 15 20 15 23C15 26 17 28 20 28C23 28 25 26 25 23C25 20 23 18 20 18Z" fill="#00ff88" opacity="0.3"/></svg></span><h1 class="section-title" style="margin:0">VRDX Token Presale</h1></div>
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px"><span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#0a0e0a;border:1px solid rgba(0,255,136,0.3);flex-shrink:0"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:24px;height:24px"><path d="M20 3L34 11V27L20 35L6 27V11L20 3Z" stroke="#00ff88" stroke-width="2" fill="rgba(0,255,136,0.03)" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 13L20 27M27 13L20 27" stroke="#00ff88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 18C17 18 15 20 15 23C15 26 17 28 20 28C23 28 25 26 25 23C25 20 23 18 20 18Z" fill="#00ff88" opacity="0.3"/></svg></span><h1 class="section-title" style="margin:0">VRDX Token Presale</h1></div>
         <p class="section-subtitle">
             Participate in the foundational token sale for the Verdis green Layer-1 blockchain ecosystem.
         </p>
@@ -56,7 +60,7 @@
     <!-- COUNTDOWN & PROGRESS CARD -->
     <div class="card-glass reveal" style="max-width:800px; margin:0 auto 48px auto; text-align:center;">
         <span class="badge badge-info" style="font-size:13px;">Presale Phase: Scheduled</span>
-        <h3 style="font-size:22px; margin-top:12px;">Presale Launch Countdown</h3>
+        <h3 style="font-size:13px; margin-top:12px;">Presale Launch Countdown</h3>
         
         <div class="timer-box">
             <div class="timer-unit"><div class="timer-num" id="t-days">TBD</div><div class="timer-label">Days</div></div>
@@ -78,7 +82,7 @@
     <!-- OVERVIEW & ACCEPTED ASSETS -->
     <div class="grid-2 reveal" style="margin-bottom:48px;">
         <div class="card">
-            <h3 style="font-size:20px; color:var(--accent); margin-bottom:16px;">How to Participate</h3>
+            <h3 style="font-size:14px; color:var(--accent); margin-bottom:16px;">How to Participate</h3>
             <ol style="padding-left:20px; line-height:2; color:var(--text-secondary);">
                 <li>Connect a supported Web3 wallet or generate a deposit address.</li>
                 <li>Select contribution asset (USDT, USDC, ETH, or BNB).</li>
@@ -87,7 +91,7 @@
             </ol>
         </div>
         <div class="card">
-            <h3 style="font-size:20px; color:var(--accent); margin-bottom:16px;">Accepted Assets</h3>
+            <h3 style="font-size:14px; color:var(--accent); margin-bottom:16px;">Accepted Assets</h3>
             <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
                 <div style="background:var(--bg-input); padding:12px; border-radius:8px; border:1px solid var(--border); text-align:center;">
                     <strong>USDT</strong><br><span style="font-size:12px; color:var(--text-muted);">ERC-20 / BEP-20</span>
@@ -107,7 +111,7 @@
 
     <!-- TOKEN ALLOCATION TABLE -->
     <div class="card reveal" style="margin-bottom:48px;">
-        <h3 style="font-size:20px; margin-bottom:16px;">Presale Stage Parameters</h3>
+        <h3 style="font-size:14px; margin-bottom:16px;">Presale Stage Parameters</h3>
         <div class="table-wrap">
             <table class="verdis-table">
                 <thead>
@@ -148,7 +152,7 @@
 
     <!-- VESTING EXPLANATION -->
     <div class="card-glass reveal" style="margin-bottom:48px;">
-        <h3 style="font-size:20px; color:var(--accent); margin-bottom:12px;">Implemented Vesting Architecture</h3>
+        <h3 style="font-size:14px; color:var(--accent); margin-bottom:12px;">Implemented Vesting Architecture</h3>
         <p style="color:var(--text-secondary); line-height:1.7;">
             To ensure economic stability and protect early community participants, all presale allocations are bound to smart contract vesting logic:
         </p>
@@ -161,7 +165,7 @@
 
     <!-- RISK DISCLOSURE -->
     <div class="card reveal" style="border-color:rgba(255,170,0,0.3); margin-bottom:48px;">
-        <h3 style="font-size:20px; color:var(--warning); margin-bottom:12px;">Risk Disclosure & Disclaimers</h3>
+        <h3 style="font-size:14px; color:var(--warning); margin-bottom:12px;">Risk Disclosure & Disclaimers</h3>
         <p style="color:var(--text-secondary); font-size:14px; line-height:1.6;">
             Participating in cryptographic token sales involves material risk. Token values can fluctuate substantially. Verdis (VRDX) tokens are utility coins intended for transaction gas, staking, and governance within the Verdis blockchain ecosystem. They do not represent equity, shares, or security ownership in any entity. Participants are responsible for compliance with local regulations and tax laws in their respective jurisdictions.
         </p>
@@ -169,7 +173,7 @@
 
     <!-- PRESALE PARTICIPATION FORM -->
     <div class="consent-box reveal">
-        <h3 style="font-size:22px; margin-bottom:16px;">Presale Participation Consent</h3>
+        <h3 style="font-size:13px; margin-bottom:16px;">Presale Participation Consent</h3>
         <p style="font-size:14px; color:var(--text-secondary); margin-bottom:20px;">
             Please read and acknowledge the disclosures prior to unlocking contribution buttons.
         </p>

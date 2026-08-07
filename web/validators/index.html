@@ -25,8 +25,8 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 /* STANDARD NAV */
 nav.std-nav { position:sticky; top:0; z-index:1000; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
 nav.std-nav .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); }
-nav.std-nav .nav-brand .logo { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#000; font-size:16px; }
-nav.std-nav .nav-brand span { font-weight:600; font-size:16px; }
+nav.std-nav .nav-brand .logo { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#000; font-size:14px; }
+nav.std-nav .nav-brand span { font-weight:600; font-size:14px; }
 nav.std-nav .nav-links { display:flex; gap:4px; flex-wrap:wrap; }
 nav.std-nav .nav-links a { color:var(--text-2); text-decoration:none; padding:8px 12px; border-radius:8px; font-size:13px; font-weight:500; transition:all .2s; }
 nav.std-nav .nav-links a:hover, nav.std-nav .nav-links a.active { color:var(--accent); background:var(--card); }
@@ -36,29 +36,29 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
 @media(max-width:768px) { nav.std-nav .nav-links { display:none; } nav.std-nav .nav-brand span { font-size:14px; } }
 
 /* HERO */
-.hero { padding:48px 24px 32px; max-width:1280px; margin:0 auto; }
-.hero h1 { font-family:'Space Grotesk',sans-serif; font-size:36px; font-weight:700; margin-bottom:8px; }
+.hero { padding:28px 24px 32px; max-width:1280px; margin:0 auto; }
+.hero h1 { font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:700; margin-bottom:8px; }
 .hero h1 .accent { color:var(--accent); }
-.hero p { color:var(--text-2); font-size:16px; max-width:600px; }
+.hero p { color:var(--text-2); font-size:14px; max-width:600px; }
 
 /* STATS BAR */
 .stats-bar { max-width:1280px; margin:0 auto 32px; padding:0 24px; display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; }
 .stat-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
 .stat-card .label { font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--text-3); margin-bottom:8px; }
-.stat-card .value { font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:600; color:var(--text); }
+.stat-card .value { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; color:var(--text); }
 .stat-card .value.accent { color:var(--accent); }
 .stat-card .value.success { color:var(--success); }
 .stat-card .sub { font-size:13px; color:var(--text-2); margin-top:4px; }
 
 /* SECTION */
 .section { max-width:1280px; margin:0 auto 48px; padding:0 24px; }
-.section h2 { font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:600; margin-bottom:16px; }
+.section h2 { font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; margin-bottom:16px; }
 .section h2 .live { font-size:11px; background:var(--success); color:#000; padding:2px 8px; border-radius:4px; font-weight:600; margin-left:8px; }
 
 /* PANEL */
-.panel { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:24px; }
+.panel { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:12px; }
 .panel-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border); }
-.panel-header h3 { font-size:15px; font-weight:600; }
+.panel-header h3 { font-size:13px; font-weight:600; }
 .panel-body { padding:0; }
 
 /* VALIDATOR ROW */
@@ -78,28 +78,28 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
 /* GRID */
 .info-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
 .info-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
-.info-card .icon { font-size:28px; margin-bottom:12px; }
-.info-card h3 { font-size:16px; font-weight:600; margin-bottom:8px; }
+.info-card .icon { font-size:14px; margin-bottom:12px; }
+.info-card h3 { font-size:14px; font-weight:600; margin-bottom:8px; }
 .info-card p { color:var(--text-2); font-size:14px; line-height:1.6; }
 
 /* CALCULATOR */
 .calc-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:32px; max-width:500px; margin:0 auto; }
 .calc-card label { display:block; font-size:13px; color:var(--text-2); margin-bottom:6px; }
-.calc-card input, .calc-card select { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 16px; color:var(--text); font-size:15px; font-family:'JetBrains Mono',monospace; outline:none; transition:border-color .2s; margin-bottom:16px; }
+.calc-card input, .calc-card select { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 16px; color:var(--text); font-size:13px; font-family:'JetBrains Mono',monospace; outline:none; transition:border-color .2s; margin-bottom:16px; }
 .calc-card input:focus, .calc-card select:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
 .calc-card select { cursor:pointer; }
 .calc-result { background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:20px; text-align:center; }
-.calc-result .yield { font-family:'JetBrains Mono',monospace; font-size:28px; font-weight:700; color:var(--accent); }
+.calc-result .yield { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; color:var(--accent); }
 .calc-result .label { font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--text-3); margin-top:4px; }
 .calc-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
 
 /* CTA */
 .cta-section { max-width:1280px; margin:48px auto; padding:0 24px; text-align:center; }
-.cta-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:48px; }
-.cta-card h2 { font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700; margin-bottom:12px; }
+.cta-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; }
+.cta-card h2 { font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:700; margin-bottom:12px; }
 .cta-card h2 .accent { color:var(--accent); }
-.cta-card p { color:var(--text-2); font-size:16px; margin-bottom:24px; max-width:500px; margin-left:auto; margin-right:auto; }
-.cta-btn { display:inline-block; background:var(--accent); color:#000; border:none; border-radius:var(--radius-sm); padding:14px 32px; font-weight:600; font-size:15px; cursor:pointer; text-decoration:none; transition:all .2s; }
+.cta-card p { color:var(--text-2); font-size:14px; margin-bottom:12px; max-width:500px; margin-left:auto; margin-right:auto; }
+.cta-btn { display:inline-block; background:var(--accent); color:#000; border:none; border-radius:var(--radius-sm); padding:14px 32px; font-weight:600; font-size:13px; cursor:pointer; text-decoration:none; transition:all .2s; }
 .cta-btn:hover { background:var(--accent-2); transform:translateY(-1px); }
 
 /* FOOTER */
@@ -117,9 +117,9 @@ footer { background:var(--bg-1); border-top:1px solid var(--border); padding:32p
 
 /* RESPONSIVE */
 @media(max-width:900px) { .validator-row { grid-template-columns:40px 1fr auto; } .validator-score,.validator-stake,.validator-apy,.stake-btn { display:none; } }
-@media(max-width:375px) { .hero h1 { font-size:28px; } .stat-card .value { font-size:20px; } }
+@media(max-width:375px) { .hero h1 { font-size:14px; } .stat-card .value { font-size:14px; } }
 
-.brand-logo-img { height: 36px; width: 36px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,255,136,0.35)); } .brand-text { font-family: Poppins, sans-serif; font-weight: 700; font-size: 18px; color: #fff; white-space: nowrap; margin-left: 2px; letter-spacing: -0.3px; text-decoration: none !important; }
+.brand-logo-img { height: 36px; width: 36px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,255,136,0.35)); } .brand-text { font-family: Poppins, sans-serif; font-weight: 700; font-size: 13px; color: #fff; white-space: nowrap; margin-left: 2px; letter-spacing: -0.3px; text-decoration: none !important; }
 @media(max-width:768px) { .brand-logo-img { height: 40px; } }
 
 </style>
@@ -167,7 +167,7 @@ footer { background:var(--bg-1); border-top:1px solid var(--border); padding:32p
   </div>
   <div class="stat-card">
     <div class="label">Consensus</div>
-    <div class="value" style="font-size:18px;">DPoS</div>
+    <div class="value" style="font-size:13px;">DPoS</div>
     <div class="sub">BABE + GRANDPA</div>
   </div>
   <div class="stat-card">
@@ -241,11 +241,11 @@ footer { background:var(--bg-1); border-top:1px solid var(--border); padding:32p
       <div class="label">Yearly Yield</div>
       <div class="calc-row">
         <div>
-          <div style="font-family:'JetBrains Mono',monospace; font-size:18px; color:var(--accent); font-weight:600;" id="monthlyYield">77.92</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--accent); font-weight:600;" id="monthlyYield">77.92</div>
           <div style="font-size:11px; color:var(--text-3); text-transform:uppercase;">Monthly</div>
         </div>
         <div>
-          <div style="font-family:'JetBrains Mono',monospace; font-size:18px; color:var(--accent); font-weight:600;" id="dailyYield">2.56</div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--accent); font-weight:600;" id="dailyYield">2.56</div>
           <div style="font-size:11px; color:var(--text-3); text-transform:uppercase;">Daily</div>
         </div>
       </div>

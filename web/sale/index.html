@@ -20,10 +20,10 @@
 body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; overflow-x:hidden; }
 .mono { font-family:'JetBrains Mono',monospace; }
 
-nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 24px; height:64px; display:flex; align-items:center; justify-content:space-between; }
+nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
 .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); }
-.nav-brand .logo { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#000; font-size:16px; }
-.nav-brand span { font-weight:600; font-size:16px; }
+.nav-brand .logo { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#000; font-size:14px; }
+.nav-brand span { font-weight:600; font-size:14px; }
 .nav-links { display:flex; gap:4px; }
 .nav-links a { color:var(--text-2); text-decoration:none; padding:8px 14px; border-radius:var(--radius-sm); font-size:14px; font-weight:500; transition:all .2s; }
 .nav-links a:hover, .nav-links a.active { color:var(--accent); background:var(--card); }
@@ -34,13 +34,13 @@ nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backd
 .hero-left .badge { display:inline-flex; align-items:center; gap:8px; background:var(--accent-glow); border:1px solid var(--accent); border-radius:100px; padding:6px 16px; font-size:13px; color:var(--accent); font-weight:600; margin-bottom:16px; }
 .hero-left .badge .dot { width:8px; height:8px; border-radius:50%; background:var(--accent); animation:pulse 2s infinite; }
 @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
-.hero-left h1 { font-family:'Space Grotesk',sans-serif; font-size:44px; font-weight:700; margin-bottom:12px; line-height:1.1; }
+.hero-left h1 { font-family:'Space Grotesk',sans-serif; font-size: 20px; font-weight:700; margin-bottom:12px; line-height:1.1; }
 .hero-left h1 .accent { color:var(--accent); }
-.hero-left p { color:var(--text-2); font-size:17px; margin-bottom:24px; max-width:520px; }
+.hero-left p { color:var(--text-2); font-size:14px; margin-bottom:12px; max-width:520px; }
 .hero-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; max-width:480px; }
 .hero-stat { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px; }
 .hero-stat .label { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3); }
-.hero-stat .value { font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:600; color:var(--accent); margin-top:4px; }
+.hero-stat .value { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; color:var(--accent); margin-top:4px; }
 
 /* 3D FLOATING CLUSTER */
 .hero-right { position:relative; height:440px; perspective:1000px; }
@@ -49,7 +49,7 @@ nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backd
 .fc-main { top:20px; left:5%; width:80%; z-index:3; }
 .fc-price { top:50%; right:0%; width:50%; z-index:2; animation-delay:1.5s; }
 .fc-alloc { bottom:10%; left:8%; width:55%; z-index:1; animation-delay:3s; }
-.price-big { font-family:'JetBrains Mono',monospace; font-size:36px; font-weight:700; color:var(--accent); }
+.price-big { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--accent); }
 .price-change { display:inline-block; background:rgba(74,222,128,0.15); color:var(--success); padding:2px 8px; border-radius:4px; font-size:13px; font-weight:600; margin-top:4px; }
 .alloc-bar { height:8px; background:var(--bg-1); border-radius:4px; overflow:hidden; margin-top:8px; }
 .alloc-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); border-radius:4px; }
@@ -59,8 +59,8 @@ nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backd
 
 /* SALE PHASES */
 .phases-section { max-width:1280px; margin:0 auto 48px; padding:0 24px; }
-.section-title { font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:600; margin-bottom:8px; }
-.section-sub { color:var(--text-2); font-size:15px; margin-bottom:32px; }
+.section-title { font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; margin-bottom:8px; }
+.section-sub { color:var(--text-2); font-size:13px; margin-bottom:32px; }
 .phases-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
 @media(max-width:768px) { .phases-grid { grid-template-columns:1fr; } }
 .phase-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; position:relative; overflow:hidden; transition:all .3s; }
@@ -70,9 +70,9 @@ nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backd
 .phase-badge.active { background:var(--accent); color:#000; }
 .phase-badge.upcoming { background:var(--border-2); color:var(--text-2); }
 .phase-badge.sold { background:rgba(239,68,68,0.2); color:var(--error); }
-.phase-card h3 { font-size:18px; font-weight:600; margin-bottom:8px; }
-.phase-card .phase-price { font-family:'JetBrains Mono',monospace; font-size:28px; font-weight:700; color:var(--accent); margin:12px 0; }
-.phase-card .phase-price .old { font-size:16px; color:var(--text-3); text-decoration:line-through; margin-left:8px; }
+.phase-card h3 { font-size:13px; font-weight:600; margin-bottom:8px; }
+.phase-card .phase-price { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; color:var(--accent); margin:12px 0; }
+.phase-card .phase-price .old { font-size:14px; color:var(--text-3); text-decoration:line-through; margin-left:8px; }
 .phase-card .phase-info { font-size:14px; color:var(--text-2); margin-bottom:16px; }
 .phase-progress { margin:16px 0; }
 .phase-progress .prog-label { display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; }
@@ -84,7 +84,7 @@ nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backd
 .phase-meta-item { background:var(--bg-1); border-radius:6px; padding:8px 10px; }
 .phase-meta-item .l { font-size:11px; color:var(--text-3); }
 .phase-meta-item .v { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; margin-top:2px; }
-.phase-card .btn { width:100%; padding:12px; border-radius:var(--radius-sm); font-weight:600; font-size:15px; cursor:pointer; border:none; transition:all .2s; margin-top:16px; }
+.phase-card .btn { width:100%; padding:12px; border-radius:var(--radius-sm); font-weight:600; font-size:13px; cursor:pointer; border:none; transition:all .2s; margin-top:16px; }
 .btn-sale { background:var(--accent); color:#000; }
 .btn-sale:hover { background:var(--accent-2); transform:translateY(-1px); }
 .btn-sale:disabled { background:var(--border-2); color:var(--text-3); cursor:not-allowed; transform:none; }
@@ -94,13 +94,13 @@ nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backd
 /* BUY INTERFACE */
 .buy-section { max-width:720px; margin:0 auto 48px; padding:0 24px; }
 .buy-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:32px; }
-.buy-card h2 { font-size:24px; font-weight:600; margin-bottom:8px; }
-.buy-card .buy-sub { color:var(--text-2); font-size:15px; margin-bottom:24px; }
+.buy-card h2 { font-size:13px; font-weight:600; margin-bottom:8px; }
+.buy-card .buy-sub { color:var(--text-2); font-size:13px; margin-bottom:12px; }
 .buy-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
 .buy-input-group { background:var(--bg-1); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; }
 .buy-input-group label { display:block; font-size:13px; color:var(--text-3); margin-bottom:8px; }
 .buy-input-group .input-row { display:flex; align-items:center; gap:8px; }
-.buy-input-group input { flex:1; background:transparent; border:none; color:var(--text); font-size:24px; font-family:'JetBrains Mono',monospace; outline:none; width:100%; }
+.buy-input-group input { flex:1; background:transparent; border:none; color:var(--text); font-size:13px; font-family:'JetBrains Mono',monospace; outline:none; width:100%; }
 .buy-input-group input::placeholder { color:var(--text-3); }
 .currency-select { background:var(--card); border:1px solid var(--border-2); border-radius:6px; padding:6px 12px; cursor:pointer; font-weight:600; font-size:14px; white-space:nowrap; display:flex; align-items:center; gap:6px; }
 .currency-select .token-icon { width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
@@ -109,16 +109,16 @@ nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backd
 .token-icon.vrdx { background:var(--accent); color:#000; }
 .buy-output { background:var(--bg-1); border:1px solid var(--accent); border-radius:var(--radius-sm); padding:16px; margin-bottom:20px; }
 .buy-output label { font-size:13px; color:var(--text-3); }
-.buy-output .output-value { font-family:'JetBrains Mono',monospace; font-size:28px; font-weight:700; color:var(--accent); margin-top:4px; }
+.buy-output .output-value { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; color:var(--accent); margin-top:4px; }
 .buy-output .output-rate { font-size:13px; color:var(--text-2); margin-top:4px; }
 .buy-details { background:var(--bg-1); border-radius:var(--radius-sm); padding:16px; margin-bottom:20px; }
 .buy-details .detail-row { display:flex; justify-content:space-between; padding:6px 0; font-size:14px; }
 .buy-details .detail-row .l { color:var(--text-3); }
 .buy-details .detail-row .v { font-family:'JetBrains Mono',monospace; color:var(--text-2); }
 .buy-details .detail-row .v.accent { color:var(--accent); }
-.buy-details .detail-row.total { border-top:1px solid var(--border); padding-top:12px; margin-top:4px; font-weight:600; font-size:16px; }
-.buy-details .detail-row.total .v { color:var(--accent); font-size:18px; }
-.btn-buy { width:100%; padding:18px; background:var(--accent); color:#000; border:none; border-radius:var(--radius-sm); font-weight:700; font-size:17px; cursor:pointer; transition:all .2s; }
+.buy-details .detail-row.total { border-top:1px solid var(--border); padding-top:12px; margin-top:4px; font-weight:600; font-size:14px; }
+.buy-details .detail-row.total .v { color:var(--accent); font-size:13px; }
+.btn-buy { width:100%; padding:18px; background:var(--accent); color:#000; border:none; border-radius:var(--radius-sm); font-weight:700; font-size:14px; cursor:pointer; transition:all .2s; }
 .btn-buy:hover { background:var(--accent-2); transform:translateY(-1px); box-shadow:0 8px 24px var(--accent-glow); }
 .btn-buy:disabled { opacity:.5; cursor:not-allowed; transform:none; }
 
@@ -129,7 +129,7 @@ nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backd
 @media(max-width:768px) { .alloc-grid { grid-template-columns:1fr; } }
 .donut-container { position:relative; width:280px; height:280px; margin:0 auto; }
 .donut-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
-.donut-center .total { font-family:'JetBrains Mono',monospace; font-size:28px; font-weight:700; color:var(--accent); }
+.donut-center .total { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; color:var(--accent); }
 .donut-center .label { font-size:12px; color:var(--text-3); text-transform:uppercase; }
 .alloc-legend { display:flex; flex-direction:column; gap:12px; }
 .legend-item { display:flex; align-items:center; gap:12px; }
@@ -157,12 +157,12 @@ nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backd
 /* WHITELIST */
 .whitelist-section { max-width:720px; margin:0 auto 48px; padding:0 24px; }
 .whitelist-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:32px; text-align:center; }
-.whitelist-card h2 { font-size:24px; font-weight:600; margin-bottom:8px; }
-.whitelist-card p { color:var(--text-2); font-size:15px; margin-bottom:24px; }
+.whitelist-card h2 { font-size:13px; font-weight:600; margin-bottom:8px; }
+.whitelist-card p { color:var(--text-2); font-size:13px; margin-bottom:12px; }
 .whitelist-form { display:flex; gap:8px; max-width:480px; margin:0 auto; }
-.whitelist-form input { flex:1; background:var(--bg-1); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 18px; color:var(--text); font-size:15px; outline:none; }
+.whitelist-form input { flex:1; background:var(--bg-1); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 18px; color:var(--text); font-size:13px; outline:none; }
 .whitelist-form input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
-.whitelist-form button { background:var(--accent); color:#000; border:none; border-radius:var(--radius-sm); padding:14px 28px; font-weight:700; font-size:15px; cursor:pointer; transition:all .2s; white-space:nowrap; }
+.whitelist-form button { background:var(--accent); color:#000; border:none; border-radius:var(--radius-sm); padding:14px 28px; font-weight:700; font-size:13px; cursor:pointer; transition:all .2s; white-space:nowrap; }
 .whitelist-form button:hover { background:var(--accent-2); transform:translateY(-1px); }
 .whitelist-count { margin-top:20px; font-size:14px; color:var(--text-2); }
 .whitelist-count .num { font-family:'JetBrains Mono',monospace; font-weight:600; color:var(--accent); }
@@ -170,7 +170,7 @@ nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backd
 /* FAQ */
 .faq-section { max-width:720px; margin:0 auto 48px; padding:0 24px; }
 .faq-item { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:12px; overflow:hidden; }
-.faq-q { padding:16px 20px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-weight:600; font-size:15px; }
+.faq-q { padding:16px 20px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-weight:600; font-size:13px; }
 .faq-q .arrow { color:var(--text-3); transition:transform .2s; }
 .faq-item.open .faq-q .arrow { transform:rotate(180deg); }
 .faq-a { max-height:0; overflow:hidden; transition:max-height .3s ease; }
@@ -180,26 +180,40 @@ nav { position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.85); backd
 /* COUNTDOWN */
 .countdown { display:flex; gap:12px; justify-content:center; margin:20px 0; }
 .cd-unit { background:var(--bg-1); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 20px; text-align:center; min-width:70px; }
-.cd-unit .cd-val { font-family:'JetBrains Mono',monospace; font-size:28px; font-weight:700; color:var(--accent); }
+.cd-unit .cd-val { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; color:var(--accent); }
 .cd-unit .cd-label { font-size:11px; color:var(--text-3); text-transform:uppercase; }
 
 footer { border-top:1px solid var(--border); padding:32px 24px; text-align:center; color:var(--text-3); font-size:14px; }
 footer .links { display:flex; gap:20px; justify-content:center; margin-bottom:12px; }
 footer a { color:var(--accent); text-decoration:none; }
 
-@media(max-width:768px) { .nav-links { display:none; } .hero h1 { font-size:30px; } .hero-right { display:none; } .buy-grid { grid-template-columns:1fr; } .whitelist-form { flex-direction:column; } }
+@media(max-width:768px) { .nav-links { display:none; } .hero h1 { font-size: 18px; } .hero-right { display:none; } .buy-grid { grid-template-columns:1fr; } .whitelist-form { flex-direction:column; } }
 @media(max-width:375px) { .hero { padding:32px 16px; } .hero-stats { grid-template-columns:1fr; } .countdown { flex-wrap:wrap; } }
+
+.brand-logo-img { height: 36px; width: 36px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,255,136,0.35)); } .brand-text { font-family: Poppins, sans-serif; font-weight: 700; font-size: 13px; color: #fff; white-space: nowrap; margin-left: 2px; letter-spacing: -0.3px; text-decoration: none !important; }
+@media(max-width:768px) { .brand-logo-img { height: 40px; } }
+
 </style>
-</head>
+<link rel="icon" type="image/png" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png">
+<style id="nav-brand-no-underline-fix">a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration: none !important; }</style></head>
 <body>
 
-<nav>
-  <a href="/" class="nav-brand"><div class="logo">V</div><span>VRDX Token Sale</span></a>
+<nav class="std-nav">
+  <a href="/" class="nav-brand"><img src="/assets/verdis-v-icon.png" alt="Verdis Chain" class="brand-logo-img"><span class="brand-text">Verdis Chain</span></a>
   <div class="nav-links">
-    <a href="/">Home</a><a href="/explorer">Explorer</a><a href="/dex">DEX</a>
-    <a href="/validators">Validators</a><a href="/eco">Eco</a><a href="/wallet">Wallet</a>
-    <a href="/faucet">Faucet</a><a href="/referral">Referral</a><a href="/incentives" style="display:none">Incentives</a><a href="/docs">Docs</a>
+    <a href="/">Home</a>
+    <a href="/explorer/">Explorer</a>
+    <a href="/dex/">DEX</a>
+    <a href="/validators/">Validators</a>
+    <a href="/eco/">Eco</a>
+    <a href="/faucet/">Faucet</a>
+    <a href="/wallet/">Wallet</a>
+    <a href="/sale/" class="active">Sale</a>
+    <a href="/docs/">Docs</a>
+    
   </div>
+  <div class="nav-status"><div class="dot"></div><span class="nav-text">Connected</span></div>
 </nav>
 
 <section class="hero">
@@ -223,7 +237,7 @@ footer a { color:var(--accent); text-decoration:none; }
     </div>
     <div class="float-card fc-price">
       <div style="font-size:12px;color:var(--text-3);margin-bottom:6px">Phase 2 Ends In</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:var(--accent)" id="heroCountdown">14d 06h 32m</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--accent)" id="heroCountdown">14d 06h 32m</div>
       <div class="mini-row" style="margin-top:8px"><span class="l">Hard Cap</span><span class="v">$300M</span></div>
       <div class="mini-row"><span class="l">Raised</span><span class="v" style="color:var(--accent)">$201M</span></div>
     </div>
@@ -606,5 +620,25 @@ setInterval(updateCountdown, 1000);
 updateCountdown();
 calculatePurchase();
 </script>
+
+<script>
+async function loadPageMetrics() {
+    try {
+        const res = await fetch('/rpc', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1})
+        });
+        const data = await res.json();
+        const height = parseInt(data.result?.number || '0x0', 16);
+        document.querySelectorAll('[data-block-height]').forEach(el => {
+            el.textContent = '#' + height.toLocaleString();
+        });
+    } catch(e) {}
+}
+loadPageMetrics();
+setInterval(loadPageMetrics, 15000);
+</script>
+
 </body>
 </html>

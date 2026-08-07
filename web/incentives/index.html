@@ -9,18 +9,18 @@
 <style>
 :root{--bg:#0a0a0a;--bg-1:#111;--bg-2:#1a1a1a;--card:#141414;--border:#222;--border-2:#333;--text:#e8e8e8;--text-2:#888;--text-3:#555;--accent:#caff33;--accent-2:#b4f849;--accent-glow:rgba(202,255,51,0.15);--success:#4ade80;--warning:#fbbf24;--error:#ef4444;--radius:12px;--radius-sm:8px}
 *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}.mono{font-family:'JetBrains Mono',monospace}
-nav{position:sticky;top:0;z-index:100;background:rgba(10,10,10,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}
-.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}.nav-brand .logo{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;font-size:16px}.nav-brand span{font-weight:600;font-size:16px}
+nav{position:sticky;top:0;z-index:100;background:rgba(10,10,10,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;height:76px;display:flex;align-items:center;justify-content:space-between}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}.nav-brand .logo{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;font-size:14px}.nav-brand span{font-weight:600;font-size:14px}
 .nav-links{display:flex;gap:4px}.nav-links a{color:var(--text-2);text-decoration:none;padding:8px 14px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;transition:all .2s}.nav-links a:hover,.nav-links a.active{color:var(--accent);background:var(--card)}
 .hero{padding:56px 24px 40px;max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
 @media(max-width:900px){.hero{grid-template-columns:1fr}}
 .hero-left .badge{display:inline-flex;align-items:center;gap:8px;background:var(--accent-glow);border:1px solid var(--accent);border-radius:100px;padding:6px 16px;font-size:13px;color:var(--accent);font-weight:600;margin-bottom:16px}
 .hero-left .badge .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.hero-left h1{font-family:'Space Grotesk',sans-serif;font-size:42px;font-weight:700;margin-bottom:12px;line-height:1.1}.hero-left h1 .accent{color:var(--accent)}
-.hero-left p{color:var(--text-2);font-size:17px;margin-bottom:24px;max-width:520px}
+.hero-left h1{font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;margin-bottom:12px;line-height:1.1}.hero-left h1 .accent{color:var(--accent)}
+.hero-left p{color:var(--text-2);font-size:14px;margin-bottom:12px;max-width:520px}
 .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:480px}
-.hero-stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px}.hero-stat .label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3)}.hero-stat .value{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--accent);margin-top:4px}
+.hero-stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px}.hero-stat .label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3)}.hero-stat .value{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--accent);margin-top:4px}
 .hero-right{position:relative;height:440px;perspective:1000px}
 .float-card{position:absolute;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:float 6s ease-in-out infinite}
 @keyframes float{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-12px) rotate(1deg)}}
@@ -31,20 +31,20 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,10,10,0.85);backdrop-fi
 .score-ring .ring-bg{stroke:var(--bg-1);fill:none;stroke-width:8}
 .score-ring .ring-fill{stroke:var(--accent);fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1s}
 .score-val{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
-.score-val .num{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--accent)}
+.score-val .num{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent)}
 .score-val .lbl{font-size:10px;color:var(--text-3);text-transform:uppercase}
 .section{max-width:1280px;margin:0 auto 48px;padding:0 24px}
-.section-title{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:600;margin-bottom:8px}.section-sub{color:var(--text-2);font-size:15px;margin-bottom:32px}
+.section-title{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;margin-bottom:8px}.section-sub{color:var(--text-2);font-size:13px;margin-bottom:32px}
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
 @media(max-width:768px){.stats-grid{grid-template-columns:1fr 1fr}}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}.stat-card .icon{font-size:24px;margin-bottom:8px}.stat-card .label{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3)}.stat-card .value{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:600;color:var(--accent);margin-top:4px}.stat-card .sub{font-size:13px;color:var(--text-2);margin-top:4px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}.stat-card .icon{font-size:13px;margin-bottom:8px}.stat-card .label{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3)}.stat-card .value{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--accent);margin-top:4px}.stat-card .sub{font-size:13px;color:var(--text-2);margin-top:4px}
 .tiers-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
 @media(max-width:900px){.tiers-grid{grid-template-columns:1fr 1fr}}
 .tier-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;transition:all .3s}
 .tier-card:hover{border-color:var(--accent);transform:translateY(-2px)}
 .tier-card .tier-badge{display:inline-block;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600;margin-bottom:8px}
 .tier-bronze{background:rgba(205,127,50,0.15);color:#cd7f32}.tier-silver{background:rgba(192,192,192,0.15);color:#c0c0c0}.tier-gold{background:rgba(251,191,36,0.15);color:var(--warning)}.tier-platinum{background:rgba(202,255,51,0.15);color:var(--accent)}
-.tier-card .tier-apr{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--accent);margin:8px 0}
+.tier-card .tier-apr{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent);margin:8px 0}
 .tier-card .tier-score{font-size:13px;color:var(--text-2);margin-bottom:8px}
 .tier-card .tier-bonus{font-size:12px;color:var(--success);font-weight:600}
 .calc-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;margin-bottom:32px;max-width:720px}
@@ -52,15 +52,15 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,10,10,0.85);backdrop-fi
 @media(max-width:768px){.calc-grid{grid-template-columns:1fr}}
 .calc-input{background:var(--bg-1);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px}
 .calc-input label{display:block;font-size:13px;color:var(--text-3);margin-bottom:8px}
-.calc-input input{width:100%;background:transparent;border:none;color:var(--text);font-size:24px;font-family:'JetBrains Mono',monospace;outline:none}
+.calc-input input{width:100%;background:transparent;border:none;color:var(--text);font-size:13px;font-family:'JetBrains Mono',monospace;outline:none}
 .calc-input select{width:100%;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px;color:var(--text);font-size:14px;outline:none}
 .calc-results{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
 @media(max-width:768px){.calc-results{grid-template-columns:1fr}}
 .calc-result-item{background:var(--bg-1);border-radius:var(--radius-sm);padding:16px;text-align:center}
-.calc-result-item .label{font-size:11px;color:var(--text-3);text-transform:uppercase}.calc-result-item .value{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--accent);margin-top:4px}
+.calc-result-item .label{font-size:11px;color:var(--text-3);text-transform:uppercase}.calc-result-item .value{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent);margin-top:4px}
 .donut-container{position:relative;width:260px;height:260px;margin:0 auto}
 .donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
-.donut-center .total{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--accent)}.donut-center .label{font-size:11px;color:var(--text-3);text-transform:uppercase}
+.donut-center .total{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent)}.donut-center .label{font-size:11px;color:var(--text-3);text-transform:uppercase}
 .alloc-chart{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px;margin-bottom:32px}
 .alloc-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
 @media(max-width:768px){.alloc-grid{grid-template-columns:1fr}}
@@ -71,23 +71,45 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,10,10,0.85);backdrop-fi
 .compare-table th{text-align:left;padding:14px 20px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);border-bottom:1px solid var(--border)}
 .compare-table td{padding:14px 20px;border-bottom:1px solid var(--border);font-size:14px}
 .compare-table tr:hover{background:var(--bg-1)}.compare-table tr:last-child td{border-bottom:none}
-.compare-check{color:var(--success);font-size:18px}.compare-x{color:var(--error);font-size:18px}
+.compare-check{color:var(--success);font-size:13px}.compare-x{color:var(--error);font-size:13px}
 .req-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:32px}
 @media(max-width:768px){.req-grid{grid-template-columns:1fr}}
 .req-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px}
 .req-card .step-num{width:36px;height:36px;border-radius:50%;background:var(--accent);color:#000;display:flex;align-items:center;justify-content:center;font-weight:700;margin-bottom:12px}
-.req-card h3{font-size:16px;font-weight:600;margin-bottom:8px}.req-card p{font-size:14px;color:var(--text-2);margin-bottom:12px}
+.req-card h3{font-size:14px;font-weight:600;margin-bottom:8px}.req-card p{font-size:14px;color:var(--text-2);margin-bottom:12px}
 .req-card ul{list-style:none;padding:0}.req-card li{font-size:13px;color:var(--text-2);padding:4px 0;padding-left:20px;position:relative}
 .req-card li::before{content:'✓';position:absolute;left:0;color:var(--success);font-weight:700}
 footer{border-top:1px solid var(--border);padding:32px 24px;text-align:center;color:var(--text-3);font-size:14px}
 footer .links{display:flex;gap:20px;justify-content:center;margin-bottom:12px}footer a{color:var(--accent);text-decoration:none}
-@media(max-width:768px){.nav-links{display:none}.hero h1{font-size:30px}.hero-right{display:none}}
+@media(max-width:768px){.nav-links{display:none}.hero h1{font-size: 18px}.hero-right{display:none}}
+
+/* Mobile responsiveness */
+@media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:44px;padding:10px 16px}.card{padding:16px}h1{font-size:13px}}
+@media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:14px}.container{padding:20px}}
+
+.brand-logo-img { height: 36px; width: 36px; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,255,136,0.35)); } .brand-text { font-family: Poppins, sans-serif; font-weight: 700; font-size: 13px; color: #fff; white-space: nowrap; margin-left: 2px; letter-spacing: -0.3px; text-decoration: none !important; }
+@media(max-width:768px) { .brand-logo-img { height: 40px; } }
+
 </style>
-</head>
+<link rel="icon" type="image/png" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png">
+<style id="nav-brand-no-underline-fix">a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration: none !important; }</style></head>
 <body>
-<nav>
-<a href="/" class="nav-brand"><div class="logo">V</div><span>Validator Incentives</span></a>
-<div class="nav-links"><a href="/">Home</a><a href="/explorer">Explorer</a><a href="/dex">DEX</a><a href="/sale">Sale</a><a href="/validators" class="active">Validators</a><a href="/eco">Eco</a><a href="/wallet">Wallet</a><a href="/faucet">Faucet</a><a href="/docs">Docs</a></div>
+<nav class="std-nav">
+  <a href="/" class="nav-brand"><img src="/assets/verdis-v-icon.png" alt="Verdis Chain" class="brand-logo-img"><span class="brand-text">Verdis Chain</span></a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/explorer/">Explorer</a>
+    <a href="/dex/">DEX</a>
+    <a href="/validators/">Validators</a>
+    <a href="/eco/">Eco</a>
+    <a href="/faucet/">Faucet</a>
+    <a href="/wallet/">Wallet</a>
+    <a href="/sale/">Sale</a>
+    <a href="/docs/">Docs</a>
+    
+  </div>
+  <div class="nav-status"><div class="dot"></div><span class="nav-text">Connected</span></div>
 </nav>
 
 <section class="hero">
@@ -96,15 +118,15 @@ footer .links{display:flex;gap:20px;justify-content:center;margin-bottom:12px}fo
 <h1>Earn rewards as a <span class="accent">validator</span></h1>
 <p>Verdis Chain validators secure the network and earn block rewards. Higher green scores unlock bonus multipliers — eco-friendly staking pays more.</p>
 <div class="hero-stats">
-<div class="hero-stat"><div class="label">Active Validators</div><div class="value">64</div></div>
-<div class="hero-stat"><div class="label">Total Staked</div><div class="value">28M</div></div>
-<div class="hero-stat"><div class="label">Avg Green Score</div><div class="value">87.5</div></div>
+<div class="hero-stat"><div class="label">Active Validators</div><div class="value" id="stat-vals">14</div></div>
+<div class="hero-stat"><div class="label">Total Staked</div><div class="value" id="stat-staked">--</div></div>
+<div class="hero-stat"><div class="label">Avg Green Score</div><div class="value" id="stat-greenscore">--</div></div>
 </div>
 </div>
 <div class="hero-right">
 <div class="float-card fc-main">
 <div style="font-size:13px;color:var(--text-3);margin-bottom:8px">Block Reward Distribution</div>
-<div style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--accent)">2.4k TPS</div>
+<div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent)">2.4k TPS</div>
 <div style="font-size:13px;color:var(--text-2);margin-top:4px">Network throughput</div>
 <div class="mini-row" style="margin-top:16px"><span class="l">Block Time</span><span class="v">6s</span></div>
 <div class="mini-row"><span class="l">Epoch Length</span><span class="v">1,200 blocks</span></div>
@@ -131,10 +153,10 @@ footer .links{display:flex;gap:20px;justify-content:center;margin-bottom:12px}fo
 <h2 class="section-title">Network Validator Stats</h2>
 <p class="section-sub">Real-time overview of the Verdis Chain validator set.</p>
 <div class="stats-grid">
-<div class="stat-card"><div class="icon">🔐</div><div class="label">Active Validators</div><div class="value">64</div><div class="sub">Max: 128</div></div>
-<div class="stat-card"><div class="icon">💰</div><div class="label">Total Staked</div><div class="value">28M</div><div class="sub">28% of supply</div></div>
+<div class="stat-card"><div class="icon">🔐</div><div class="label">Active Validators</div><div class="value" id="stat-vals2">14</div><div class="sub">Max: 128</div></div>
+<div class="stat-card"><div class="icon">💰</div><div class="label">Total Staked</div><div class="value" id="stat-staked2">--</div><div class="sub">28% of supply</div></div>
 <div class="stat-card"><div class="icon">📊</div><div class="label">Average APR</div><div class="value">19.2%</div><div class="sub">Range: 12–24%</div></div>
-<div class="stat-card"><div class="icon">🍃</div><div class="label">Avg Green Score</div><div class="value">87.5</div><div class="sub">Gold tier avg</div></div>
+<div class="stat-card"><div class="icon">🍃</div><div class="label">Avg Green Score</div><div class="value" id="stat-greenscore2">--</div><div class="sub">Gold tier avg</div></div>
 </div>
 </div>
 
@@ -299,5 +321,79 @@ const TOKEN_PRICE=0.025;
 function calcRewards(){const stake=+document.getElementById('calcStake').value||0;const apr=+document.getElementById('calcTier').value/100;const yearly=stake*apr;const monthly=yearly/12;const daily=yearly/365;document.getElementById('calcDaily').textContent=daily.toLocaleString(undefined,{maximumFractionDigits:0})+' VRDX';document.getElementById('calcMonthly').textContent=monthly.toLocaleString(undefined,{maximumFractionDigits:0})+' VRDX';document.getElementById('calcYearly').textContent=yearly.toLocaleString(undefined,{maximumFractionDigits:0})+' VRDX';document.getElementById('calcDailyUSD').textContent='$'+(daily*TOKEN_PRICE).toLocaleString(undefined,{maximumFractionDigits:2});document.getElementById('calcMonthlyUSD').textContent='$'+(monthly*TOKEN_PRICE).toLocaleString(undefined,{maximumFractionDigits:2});document.getElementById('calcYearlyUSD').textContent='$'+(yearly*TOKEN_PRICE).toLocaleString(undefined,{maximumFractionDigits:2})}
 calcRewards();
 </script>
+
+<script>
+async function loadPageMetrics() {
+    try {
+        const res = await fetch('/rpc', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1})
+        });
+        const data = await res.json();
+        const height = parseInt(data.result?.number || '0x0', 16);
+        document.querySelectorAll('[data-block-height]').forEach(el => {
+            el.textContent = '#' + height.toLocaleString();
+        });
+    } catch(e) {}
+}
+loadPageMetrics();
+setInterval(loadPageMetrics, 15000);
+</script>
+
 </body>
+<script>
+// Live RPC data for incentives page
+async function rpc(method, params = []) {
+    const res = await fetch('/rpc', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({jsonrpc: '2.0', method, params, id: Math.random()})
+    });
+    const data = await res.json();
+    return data.result;
+}
+
+async function loadIncentiveStats() {
+    try {
+        // Get active validators count
+        const activeVals = await rpc('dpos_activeValidators', []);
+        const count = activeVals ? activeVals.length : 14;
+        document.querySelectorAll('#stat-vals, #stat-vals2').forEach(el => el.textContent = count);
+
+        // Get all validators and their stakes
+        const allVals = await rpc('dpos_allValidators', []);
+        if (allVals && Array.isArray(allVals)) {
+            let totalStaked = 0;
+            for (const addr of allVals) {
+                try {
+                    const stake = await rpc('dpos_validatorStake', [addr]);
+                    totalStaked += parseInt(stake) || 0;
+                } catch(e) {}
+            }
+            // Convert from Planck (12 decimals) to VRDX
+            const vrdxStaked = totalStaked / 1e12;
+            const stakedStr = vrdxStaked >= 1e9 ? (vrdxStaked / 1e9).toFixed(1) + 'B' :
+                              vrdxStaked >= 1e6 ? (vrdxStaked / 1e6).toFixed(1) + 'M' :
+                              vrdxStaked >= 1e3 ? (vrdxStaked / 1e3).toFixed(1) + 'K' : vrdxStaked.toFixed(0);
+            document.querySelectorAll('#stat-staked, #stat-staked2').forEach(el => el.textContent = stakedStr);
+        }
+
+        // Get block height
+        const header = await rpc('chain_getHeader', []);
+        const blockNum = parseInt(header?.number || '0x0', 16);
+        const blockEl = document.getElementById('stat-block');
+        if (blockEl) blockEl.textContent = '#' + blockNum;
+
+        // Get peers
+        const health = await rpc('system_health', []);
+        const peersEl = document.getElementById('stat-peers');
+        if (peersEl) peersEl.textContent = health?.peers || 8;
+    } catch(e) {
+        console.log('Incentive stats error:', e.message);
+    }
+}
+loadIncentiveStats();
+setInterval(loadIncentiveStats, 15000);
+</script>
 </html>
