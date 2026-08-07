@@ -1,0 +1,44 @@
+{
+  "properties": {
+    "category": {
+      "enum": [
+        "layout",
+        "nav",
+        "card",
+        "chart",
+        "form",
+        "hero",
+        "footer",
+        "table",
+        "misc"
+      ],
+      "type": "string"
+    },
+    "code_ref": {
+      "type": "string"
+    },
+    "framework": {
+      "enum": [
+        "react",
+        "html"
+      ],
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "props_schema": {
+      "type": "string"
+    },
+    "theme_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "category",
+    "framework"
+  ],
+  "type": "object",
+  "name": "ComponentLibrary"
+}
