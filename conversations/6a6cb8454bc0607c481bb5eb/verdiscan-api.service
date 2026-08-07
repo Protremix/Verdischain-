@@ -1,0 +1,26 @@
+[Unit]
+Description=Verdiscan Blockchain REST API Service
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/app/conversations/6a6cb8454bc0607c481bb5eb
+ExecStart=/usr/local/bin/python3 -m uvicorn verdiscan_api:app --host 0.0.0.0 --port 4400 --workers 4
+Restart=always
+RestartSec=5
+KillMode=process
+
+# Environment variables
+Environment=SUBSTRATE_RPC_URL=http://127.0.0.1:9948
+Environment=HOST=0.0.0.0
+Environment=PORT=4400
+Environment=PYTHONUNBUFFERED=1
+
+# Security / Limits
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
