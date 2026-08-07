@@ -49,6 +49,7 @@ export interface User {
   role: string
   is_active: boolean
   created_at: string
+  updated_at: string
 }
 
 export interface AuthTokens {
@@ -161,4 +162,88 @@ export interface DeploymentEnv {
 export const deploy = {
   dashboard: () => apiFetch<DeployDashboard>('/deploy/dashboard'),
   environments: () => apiFetch<DeploymentEnv[]>('/deployment/environments'),
+}
+
+// ===== Projects =====
+export interface Project {
+  id: string
+  name: string
+  type: string
+  status: string
+  description: string
+  repository: string
+  domain: string
+  health_endpoint: string
+  config: Record<string, any>
+  tags: string[]
+  created_at: string
+  updated_at: string
+  health_status: string
+}
+
+export interface ProjectStats {
+  total_projects: number
+  active: number
+  paused: number
+  archived: number
+  by_type: Record<string, number>
+  by_status: Record<string, number>
+}
+
+export const projects = {
+  list: () => apiFetch<Project[]>('/multi-project/projects'),
+  stats: () => apiFetch<ProjectStats>('/multi-project/stats'),
+}
+
+// ===== Knowledge Base =====
+export interface KnowledgeEntry {
+  id: string
+  category: string
+  title: string
+  content: string
+  source: string
+  tags: string[]
+  confidence: number
+  times_referenced: number
+  created_at: string
+  updated_at: string
+}
+
+export interface KnowledgeStats {
+  total_entries: number
+  total_patterns: number
+  categories: Record<string, number>
+  sources: Record<string, number>
+  total_references: number
+  avg_confidence: number
+}
+
+export interface DocsDashboard {
+  stats: {
+    total_docs: number
+    total_manifests: number
+    total_faqs: number
+    total_runbooks: number
+    total_words: number
+    published_docs: number
+    doc_categories: number
+  }
+  recent_docs: Array<{
+    id: string
+    title: string
+    category: string
+    description: string
+    status: string
+    author: string
+    tags: string[]
+    created: string
+    updated: string
+    word_count: number
+  }>
+}
+
+export const knowledge = {
+  list: () => apiFetch<KnowledgeEntry[]>('/knowledge-base/'),
+  stats: () => apiFetch<KnowledgeStats>('/knowledge-base/stats'),
+  docsDashboard: () => apiFetch<DocsDashboard>('/docs/dashboard'),
 }
