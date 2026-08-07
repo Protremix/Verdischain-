@@ -1,0 +1,39 @@
+name: Deploy Web to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "deploy" to confirm'
+        required: true
+        default: ''
+
+jobs:
+  deploy:
+    if: ${{ github.event.inputs.confirm == 'deploy' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          ssh-keyscan -H 91.98.160.145 >> ~/.ssh/known_hosts
+
+      - name: Sync web files
+        run: |
+          rsync -avz --delete web/ root@91.98.160.145:/opt/verdis-repo/dist/web/
+          rsync -avz deploy/nginx.conf root@91.98.160.145:/etc/nginx/nginx.conf
+
+      - name: Reload nginx
+        run: |
+          ssh root@91.98.160.145 "nginx -t && systemctl reload nginx"
+
+      - name: Verify deployment
+        run: |
+          sleep 2
+          curl -sI https://verdischain.com | head -5
