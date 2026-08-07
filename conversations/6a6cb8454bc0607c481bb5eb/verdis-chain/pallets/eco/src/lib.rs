@@ -232,7 +232,7 @@ pub mod pallet {
             project_name: Vec<u8>,
             tons_co2: u64,
         ) -> DispatchResult {
-            let who = ensure_signed(origin)?;
+            let who = ensure_root(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> = id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
             let name_bv: BoundedVec<u8, ConstU32<128>> = project_name.clone().try_into().map_err(|_| Error::<T>::NameTooLong)?;
@@ -347,7 +347,7 @@ pub mod pallet {
             trees_planted: u32,
             location: Vec<u8>,
         ) -> DispatchResult {
-            let _who = ensure_signed(origin)?;
+            let _who = ensure_root(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> = id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
 

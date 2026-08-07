@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  verdis-node:
+    build:
+      context: ..
+      dockerfile: verdis-deploy/Dockerfile
+    container_name: verdis-node
+    ports:
+      - "9944:9944"   # RPC + WebSocket
+      - "30333:30333" # P2P
+    volumes:
+      - verdis-data:/verdis/data
+      - ./chain-spec.json:/verdis/chain-spec.json:ro
+    environment:
+      - RUST_LOG=info
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9944", "-X", "POST", "-H", "Content-Type: application/json", "-d", '{"jsonrpc":"2.0","id":1,"method":"system_health","params":[]}']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  nginx:
+    image: nginx:alpine
+    container_name: verdis-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../web:/usr/share/nginx/html/web:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+    depends_on:
+      verdis-node:
+        condition: service_healthy
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: verdis-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - verdis-redis:/data
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+
+volumes:
+  verdis-data:
+  verdis-redis:

@@ -127,6 +127,7 @@ pub mod pallet {
         SlashingFailed,
         NotValidator,
         InvalidSlashReason,
+        InvalidScore,
     }
 
     // === Config ===
@@ -377,18 +378,19 @@ pub mod pallet {
         /// Update green score (self-reported by validator)
         #[pallet::call_index(5)]
         #[pallet::weight(T::WeightInfo::update_green_score())]
-        pub fn update_green_score(origin: OriginFor<T>, score: u8) -> DispatchResult {
-            let who = ensure_signed(origin)?;
+        pub fn update_green_score(origin: OriginFor<T>, validator: T::AccountId, score: u8) -> DispatchResult {
+            ensure_root(origin)?;
 
-            ensure!(Validators::<T>::contains_key(&who), Error::<T>::NotValidator);
+            ensure!(Validators::<T>::contains_key(&validator), Error::<T>::NotValidator);
+            ensure!(score <= 100, Error::<T>::InvalidScore);
 
-            Validators::<T>::mutate(&who, |v| {
+            Validators::<T>::mutate(&validator, |v| {
                 if let Some(v) = v {
                     v.green_score = score;
                 }
             });
 
-            Self::deposit_event(Event::GreenScoreUpdated { validator: who, score });
+            Self::deposit_event(Event::GreenScoreUpdated { validator, score });
             Ok(())
         }
     }

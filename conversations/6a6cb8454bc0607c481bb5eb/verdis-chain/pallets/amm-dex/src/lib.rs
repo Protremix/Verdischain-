@@ -148,6 +148,7 @@ pub mod pallet {
         AmountTooLow,
         TokenTooLong,
         SwapHistoryFull,
+        PoolEmpty,
     }
 
     // === Config ===
@@ -236,7 +237,7 @@ pub mod pallet {
             );
 
             let pool_id = count;
-            let lp_minted = (amount_a * amount_b).integer_sqrt();
+            let lp_minted = amount_a.checked_mul(amount_b).ok_or(Error::<T>::AmountTooLow)?.integer_sqrt();
             ensure!(lp_minted >= T::MinLiquidity::get(), Error::<T>::AmountTooLow);
 
             T::Currency::reserve(&who, amount_a)?;
@@ -329,6 +330,7 @@ pub mod pallet {
             ensure!(user_lp >= lp_amount, Error::<T>::InsufficientLpBalance);
             ensure!(lp_amount > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
+            ensure!(pool.total_lp > BalanceOf::<T>::zero(), Error::<T>::PoolEmpty);
             let amount_a = pool.reserve_a.saturating_mul(lp_amount) / pool.total_lp;
             let amount_b = pool.reserve_b.saturating_mul(lp_amount) / pool.total_lp;
 
@@ -392,6 +394,7 @@ pub mod pallet {
 
             let numerator = reserve_out.saturating_mul(amount_in_after_fee);
             let denominator = reserve_in.saturating_add(amount_in_after_fee);
+            ensure!(denominator > BalanceOf::<T>::zero(), Error::<T>::InsufficientLiquidity);
             let amount_out = numerator / denominator;
 
             ensure!(amount_out >= min_amount_out, Error::<T>::SlippageExceeded);
