@@ -16,17 +16,17 @@
     :root {
       --canvas: #e8ebee;
       --canvas-light: #f1f5f9;
-      --hero-bg: #0f0f0f;
-      --hero-card: #1e1e1e;
-      --hero-card-dark: #181818;
-      --hero-border: rgba(255,255,255,0.08);
-      --accent: #b4f849;
-      --accent-hover: #a3e041;
-      --accent-2: #84fe87;
+      --hero-bg: #1a1a1a;
+      --hero-card: #2d2d2d;
+      --hero-card-dark: #252525;
+      --hero-border: rgba(255,255,255,0.12);
+      --accent: #caff33;
+      --accent-hover: #bbf82e;
+      --accent-2: #a8e607;
       --accent-3: #00a86b;
-      --accent-glow: rgba(180,248,73,0.35);
-      --accent-light: rgba(180,248,73,0.08);
-      --accent-border: rgba(180,248,73,0.25);
+      --accent-glow: rgba(202,255,51,0.35);
+      --accent-light: rgba(202,255,51,0.08);
+      --accent-border: rgba(202,255,51,0.25);
       --text-white: #ffffff;
       --text-dim: #b8bcc4;
       --text-muted: #6b7080;
@@ -41,43 +41,43 @@
     html { scroll-behavior: smooth; }
     body { font-family: 'Poppins', sans-serif; background: var(--canvas-light); color: var(--text-dark); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
     .mono { font-family: 'JetBrains Mono', monospace; }
-    #scroll-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #b4f849, #84fe87, #00a86b); z-index: 10000; width: 0; transition: width 50ms; box-shadow: 0 0 12px var(--accent-glow); }
-    #cursor-glow { position: fixed; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(180,248,73,0.05) 0%, transparent 70%); pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); opacity: 0; transition: opacity 300ms; }
+    #scroll-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #caff33, #a8e607, #00a86b); z-index: 10000; width: 0; transition: width 50ms; box-shadow: 0 0 12px var(--accent-glow); }
+    #cursor-glow { position: fixed; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(202,255,51,0.05) 0%, transparent 70%); pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); opacity: 0; transition: opacity 300ms; }
     body:hover #cursor-glow { opacity: 1; }
 
     .hero-section { position: relative; background: var(--canvas); padding: 0 24px; overflow: hidden; }
-    .hero-container { max-width: 1300px; margin: 0 auto; background: var(--hero-bg); border-radius: 24px; overflow: hidden; position: relative; min-height: 680px; display: flex; }
-    .hero-container::before { content: ''; position: absolute; top: -30%; right: -15%; width: 700px; height: 700px; background: radial-gradient(circle, var(--accent-glow), transparent 55%); opacity: 0.12; animation: pulse-bg 4s ease-in-out infinite; pointer-events: none; }
-    @keyframes pulse-bg { 0%,100% { opacity: 0.08; transform: scale(1); } 50% { opacity: 0.15; transform: scale(1.1); } }
+    .hero-container { max-width: 1350px; margin: 0 auto; background: var(--hero-bg); border-radius: 24px; overflow: visible; position: relative; min-height: 700px; display: flex; }
+    .hero-container::before { content: ''; position: absolute; top: -30%; right: -15%; width: 700px; height: 700px; background: radial-gradient(circle, var(--accent-glow), transparent 55%); opacity: 0.15; animation: pulse-bg 4s ease-in-out infinite; pointer-events: none; border-radius: 50%; }
+    @keyframes pulse-bg { 0%,100% { opacity: 0.1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(1.1); } }
 
-    .hero-nav { position: absolute; top: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; padding: 28px 48px; }
+    .hero-nav { position: absolute; top: 0; left: 0; right: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: 28px 48px; }
     .nav-brand { font-weight: 800; font-size: 22px; color: var(--text-white); display: flex; align-items: center; gap: 10px; }
     .nav-brand-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px var(--accent-glow); animation: pulse-dot 2s infinite; }
-    @keyframes pulse-dot { 0%,100% { box-shadow: 0 0 16px var(--accent-glow); } 50% { box-shadow: 0 0 28px rgba(180,248,73,0.6); } }
+    @keyframes pulse-dot { 0%,100% { box-shadow: 0 0 16px var(--accent-glow); } 50% { box-shadow: 0 0 28px rgba(202,255,51,0.7); } }
     .nav-links { display: flex; gap: 36px; }
     .nav-links a { color: var(--text-dim); font-size: 14px; font-weight: 500; transition: color 250ms; text-decoration: none; position: relative; }
     .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: var(--accent); border-radius: 2px; transition: width 250ms; }
     .nav-links a:hover { color: var(--text-white); }
     .nav-links a:hover::after { width: 100%; }
     .nav-cta { display: flex; gap: 12px; align-items: center; }
-    .btn-signup { background: var(--accent); color: var(--hero-bg); font-size: 14px; font-weight: 600; padding: 10px 24px; border-radius: var(--radius-pill); border: none; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; }
+    .btn-signup { background: var(--accent); color: var(--hero-bg); font-size: 14px; font-weight: 700; padding: 10px 24px; border-radius: var(--radius-pill); border: none; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; }
     .btn-signup::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transition: left 500ms; }
     .btn-signup:hover::before { left: 100%; }
-    .btn-signup:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--accent-glow); }
+    .btn-signup:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--accent-glow); background: var(--accent-hover); }
 
-    .hero-left { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 120px 56px 60px 56px; position: relative; z-index: 5; }
+    .hero-left { flex: 1.05; display: flex; flex-direction: column; justify-content: center; padding: 120px 48px 60px 48px; position: relative; z-index: 5; }
     .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--accent-light); border: 1px solid var(--accent-border); border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 28px; width: fit-content; opacity: 0; transform: translateY(20px); animation: slideUp 600ms 200ms forwards; }
     .hero-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse-dot 2s infinite; }
     .hero-title { font-size: 48px; font-weight: 900; line-height: 1.05; color: var(--text-white); margin-bottom: 24px; letter-spacing: -0.02em; opacity: 0; transform: translateY(30px); animation: slideUp 800ms 400ms forwards; }
-    .hero-title .gradient { background: linear-gradient(135deg, #b4f849, #84fe87, #00a86b); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-title .gradient { background: linear-gradient(135deg, #caff33, #a8e607); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 
-    .search-bar { display: flex; align-items: center; gap: 12px; padding: 4px 4px 4px 20px; background: var(--hero-card); border: 1px solid var(--hero-border); border-radius: var(--radius-pill); margin-bottom: 28px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 600ms forwards; transition: border-color 250ms; }
+    .search-bar { display: flex; align-items: center; gap: 12px; padding: 4px 4px 4px 20px; background: var(--hero-card); border: 1px solid var(--hero-border); border-radius: var(--radius-pill); margin-bottom: 28px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 600ms forwards; transition: border-color 250ms, box-shadow 250ms; }
     .search-bar:focus-within { border-color: var(--accent-border); box-shadow: 0 0 0 3px var(--accent-light); }
     .search-bar svg { flex-shrink: 0; }
     .search-bar input { flex: 1; background: none; border: none; outline: none; color: var(--text-white); font-family: 'Poppins'; font-size: 15px; padding: 14px 0; }
     .search-bar input::placeholder { color: var(--text-muted); }
-    .search-bar button { background: var(--accent); color: var(--hero-bg); font-weight: 600; padding: 10px 24px; border-radius: var(--radius-pill); border: none; cursor: pointer; font-size: 14px; transition: var(--transition); }
-    .search-bar button:hover { transform: scale(1.05); }
+    .search-bar button { background: var(--accent); color: var(--hero-bg); font-weight: 700; padding: 10px 24px; border-radius: var(--radius-pill); border: none; cursor: pointer; font-size: 14px; transition: var(--transition); }
+    .search-bar button:hover { transform: scale(1.05); background: var(--accent-hover); }
 
     .quick-stats { display: flex; gap: 24px; margin-bottom: 28px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 700ms forwards; flex-wrap: wrap; }
     .quick-stat { display: flex; flex-direction: column; gap: 4px; }
@@ -86,7 +86,7 @@
     .quick-stat-value.green { color: var(--accent); }
 
     .hero-actions { display: flex; gap: 16px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 800ms forwards; }
-    .btn-primary { background: linear-gradient(135deg, #b4f849, #84fe87); color: var(--hero-bg); font-size: 15px; font-weight: 700; padding: 14px 32px; border-radius: var(--radius-pill); border: none; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary { background: linear-gradient(135deg, #caff33, #a8e607); color: var(--hero-bg); font-size: 15px; font-weight: 700; padding: 14px 32px; border-radius: var(--radius-pill); border: none; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 8px; }
     .btn-primary::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent); transition: left 500ms; }
     .btn-primary:hover::before { left: 100%; }
     .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 32px var(--accent-glow); }
@@ -94,135 +94,388 @@
     .btn-secondary:hover { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
     @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
 
-    .hero-right { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; padding: 80px 40px; }
-    .hero-visual { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-    .hero-circle { position: absolute; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(circle, rgba(180,248,73,0.2), rgba(180,248,73,0.04) 60%, transparent); animation: pulse-circle 4s ease-in-out infinite; }
-    @keyframes pulse-circle { 0%,100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.08); opacity: 1; } }
-    #hero-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
+    /* ========================================================= */
+    /* RIGHT SIDE VISUAL — 3D FLOATING UI CLUSTER & LIME CIRCLE */
+    /* ========================================================= */
+    .hero-right { flex: 1.15; position: relative; display: flex; align-items: center; justify-content: center; padding: 60px 20px; z-index: 5; }
+    .hero-visual { position: relative; width: 100%; max-width: 580px; height: 560px; display: flex; align-items: center; justify-content: center; }
 
-    .block-detail { position: absolute; width: 220px; background: var(--hero-card); border: 1px solid var(--hero-border); border-radius: 16px; z-index: 3; padding: 18px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); animation: float-block 6s ease-in-out infinite; }
-    @keyframes float-block { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-14px) rotate(1deg); } }
-    .block-detail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-    .block-detail-title { font-size: 13px; font-weight: 700; color: var(--text-white); display: flex; align-items: center; gap: 6px; }
-    .block-detail-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse-dot 2s infinite; }
-    .block-finalized { font-size: 10px; padding: 3px 8px; background: var(--accent-light); color: var(--accent); border-radius: var(--radius-pill); font-weight: 600; }
-    .block-detail-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--hero-border); }
-    .block-detail-row:last-child { border-bottom: none; }
-    .block-detail-label { font-size: 11px; color: var(--text-muted); }
-    .block-detail-value { font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 600; color: var(--text-dim); }
-    .block-detail-value.green { color: var(--accent); }
+    /* Large Lime Green Circle Backdrop */
+    .hero-lime-circle {
+      position: absolute;
+      width: 440px;
+      height: 440px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #caff33 0%, #a8e607 100%);
+      box-shadow: 0 0 100px rgba(202, 255, 51, 0.45), inset 0 0 30px rgba(255, 255, 255, 0.3);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      animation: pulse-circle 6s ease-in-out infinite;
+    }
+    @keyframes pulse-circle {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 100px rgba(202, 255, 51, 0.45); }
+      50% { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 0 130px rgba(202, 255, 51, 0.6); }
+    }
 
-    .float-card { position: absolute; background: var(--hero-card); border: 1px solid var(--hero-border); border-radius: 14px; padding: 14px 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.4); z-index: 3; backdrop-filter: blur(10px); }
-    .float-card-1 { top: 8%; right: 6%; animation: float-1 6s ease-in-out infinite; }
-    .float-card-2 { bottom: 14%; left: 4%; animation: float-2 7s ease-in-out infinite; }
-    .float-card-3 { top: 42%; right: 2%; animation: float-3 5s ease-in-out infinite; }
-    .float-card-4 { bottom: 4%; right: 24%; animation: float-4 8s ease-in-out infinite; }
-    @keyframes float-1 { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-12px) rotate(1deg); } }
-    @keyframes float-2 { 0%,100% { transform: translateY(0) rotate(2deg); } 50% { transform: translateY(10px) rotate(-1deg); } }
-    @keyframes float-3 { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
-    @keyframes float-4 { 0%,100% { transform: translateY(0) rotate(1deg); } 50% { transform: translateY(6px) rotate(-2deg); } }
-    .fc-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 8px; }
-    .fc-label { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
-    .fc-value { font-size: 17px; font-weight: 700; color: var(--text-white); }
-    .fc-value.green { color: var(--accent); }
-    .fc-bar { width: 100%; height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; margin-top: 8px; overflow: hidden; }
-    .fc-bar-fill { height: 100%; background: linear-gradient(90deg, #b4f849, #84fe87); border-radius: 2px; }
+    #hero-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
 
-    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 700ms cubic-bezier(0.16,1,0.3,1), transform 700ms cubic-bezier(0.16,1,0.3,1); }
+    /* Generic Floating Widget Glassmorphism Style */
+    .floating-widget {
+      position: absolute;
+      background: rgba(45, 45, 45, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+      transition: border-color 300ms, transform 300ms;
+    }
+    .floating-widget:hover {
+      border-color: rgba(202, 255, 51, 0.4);
+    }
+
+    /* 1. Central Monitor / Desktop Frame (Block Explorer Dashboard) */
+    .monitor-frame {
+      width: 380px;
+      top: 18%;
+      left: 10%;
+      z-index: 4;
+      padding: 0;
+      overflow: hidden;
+      animation: float-monitor 6s ease-in-out infinite;
+    }
+    @keyframes float-monitor {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-12px) rotate(0.5deg); }
+    }
+    .monitor-header {
+      background: #252525;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .window-dots { display: flex; gap: 6px; }
+    .window-dots .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+    .dot-red { background: #ff5f56; } .dot-yellow { background: #ffbd2e; } .dot-green { background: #27c93f; }
+    .url-bar { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; background: rgba(0,0,0,0.3); padding: 3px 10px; border-radius: 100px; display: flex; align-items: center; gap: 4px; }
+    .lock-icon { font-size: 10px; }
+    .live-pill { font-size: 10px; font-weight: 700; color: #caff33; background: rgba(202,255,51,0.12); padding: 2px 8px; border-radius: 100px; display: flex; align-items: center; gap: 4px; }
+    .pulse-green { width: 6px; height: 6px; border-radius: 50%; background: #caff33; animation: pulse-dot 1.5s infinite; }
+
+    .monitor-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+    .dashboard-header { display: flex; align-items: center; justify-content: space-between; }
+    .dashboard-title { font-size: 12px; font-weight: 700; color: var(--text-white); display: flex; align-items: center; gap: 6px; }
+    .tps-live { font-size: 11px; font-weight: 700; color: #caff33; }
+
+    .mini-block-feed { display: flex; flex-direction: column; gap: 6px; }
+    .feed-row { display: flex; align-items: center; justify-content: space-between; font-size: 11px; padding: 6px 8px; border-radius: 8px; background: rgba(255,255,255,0.03); border: 1px solid transparent; transition: all 200ms; }
+    .feed-row.active { background: rgba(202,255,51,0.08); border-color: rgba(202,255,51,0.25); }
+    .feed-num { font-weight: 700; color: var(--text-white); }
+    .feed-hash { color: var(--text-dim); font-size: 10px; }
+    .feed-tx { color: #caff33; font-weight: 600; font-size: 10px; }
+    .feed-time { color: var(--text-muted); font-size: 10px; }
+
+    .network-graph-container { background: rgba(0,0,0,0.25); border-radius: 10px; padding: 8px 10px; border: 1px solid rgba(255,255,255,0.05); }
+    .graph-label { font-size: 10px; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .graph-svg { width: 100%; height: 32px; display: block; overflow: visible; }
+
+    /* 2. Mobile Phone Mockup (Mobile Explorer) */
+    .mobile-phone {
+      width: 175px;
+      bottom: 6%;
+      right: -10px;
+      z-index: 7;
+      padding: 10px;
+      background: rgba(37, 37, 37, 0.94);
+      border: 2px solid rgba(255, 255, 255, 0.18);
+      border-radius: 28px;
+      animation: float-phone 5s ease-in-out infinite;
+    }
+    @keyframes float-phone {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-16px) rotate(-1.5deg); }
+    }
+    .phone-speaker { width: 40px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 4px; margin: 0 auto 8px auto; }
+    .phone-screen { background: #1a1a1a; border-radius: 20px; padding: 12px 10px; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .phone-header { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .phone-user { display: flex; align-items: center; gap: 6px; }
+    .avatar-icon { width: 22px; height: 22px; border-radius: 50%; background: rgba(202,255,51,0.15); display: flex; align-items: center; justify-content: center; }
+    .phone-username { font-size: 9px; font-weight: 600; color: var(--text-white); }
+    .phone-status-dot { width: 6px; height: 6px; border-radius: 50%; background: #caff33; }
+    .phone-search { width: 100%; background: rgba(255,255,255,0.05); border-radius: 100px; padding: 4px 8px; display: flex; align-items: center; gap: 6px; font-size: 9px; color: var(--text-muted); }
+
+    /* Circular Progress Ring at 75% */
+    .health-ring-container { position: relative; width: 72px; height: 72px; margin: 4px 0; display: flex; align-items: center; justify-content: center; }
+    .ring-svg { transform: rotate(-90deg); }
+    .ring-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 6; }
+    .ring-fill { fill: none; stroke: #caff33; stroke-width: 6; stroke-linecap: round; filter: drop-shadow(0 0 6px rgba(202,255,51,0.6)); }
+    .ring-text { position: absolute; font-size: 15px; font-weight: 800; color: var(--text-white); }
+    .health-label { font-size: 10px; font-weight: 600; color: var(--text-dim); text-align: center; }
+    .phone-btn { font-size: 9px; font-weight: 700; color: #1a1a1a; background: #caff33; padding: 4px 12px; border-radius: 100px; width: 100%; text-align: center; margin-top: 2px; cursor: pointer; }
+
+    /* 3. Calendar Widget (Block Timeline - 'August') */
+    .calendar-widget {
+      width: 200px;
+      top: 4%;
+      right: 15px;
+      z-index: 5;
+      padding: 12px 14px;
+      border-color: rgba(202, 255, 51, 0.3);
+      animation: float-calendar 7s ease-in-out infinite;
+    }
+    @keyframes float-calendar {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(1deg); }
+    }
+    .calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .cal-title { font-size: 12px; font-weight: 700; color: var(--text-white); }
+    .cal-badge { font-size: 9px; font-weight: 600; color: #caff33; background: rgba(202,255,51,0.12); padding: 2px 6px; border-radius: 4px; }
+    .cal-days-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-size: 9px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-size: 9px; color: var(--text-dim); }
+    .cal-grid span { padding: 3px 0; border-radius: 4px; }
+    .cal-grid span.dim { color: rgba(255,255,255,0.2); }
+    .cal-grid span.highlighted { background: #caff33; color: #1a1a1a; font-weight: 800; box-shadow: 0 0 10px rgba(202,255,51,0.5); }
+    .cal-footer { font-size: 9px; color: var(--text-muted); margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+    .dot-milestone { width: 5px; height: 5px; border-radius: 50%; background: #caff33; display: inline-block; }
+
+    /* 4. Grid of 4 Small Cards (Network stats) */
+    .stats-grid-widget {
+      width: 220px;
+      bottom: 2%;
+      left: -15px;
+      z-index: 6;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      animation: float-stats 5.5s ease-in-out infinite;
+    }
+    @keyframes float-stats {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-14px) rotate(-1deg); }
+    }
+    .grid-card {
+      background: rgba(45, 45, 45, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+      transition: border-color 200ms;
+    }
+    .grid-card:hover { border-color: rgba(202,255,51,0.4); }
+    .gc-icon { width: 28px; height: 28px; border-radius: 8px; background: rgba(202,255,51,0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .gc-info { display: flex; flex-direction: column; overflow: hidden; }
+    .gc-label { font-size: 9px; color: var(--text-muted); font-weight: 500; }
+    .gc-val { font-size: 11px; font-weight: 700; color: var(--text-white); white-space: nowrap; }
+    .gc-val.green { color: #caff33; }
+
+    /* 5. Card with Play Icon + Bar Chart (TPS History chart card) */
+    .tps-chart-card {
+      width: 200px;
+      top: 2%;
+      left: -20px;
+      z-index: 6;
+      padding: 12px 14px;
+      animation: float-tps 4.5s ease-in-out infinite;
+    }
+    @keyframes float-tps {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-15px) rotate(1.2deg); }
+    }
+    .tps-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .play-btn { width: 28px; height: 28px; border-radius: 50%; background: #caff33; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 12px rgba(202,255,51,0.5); flex-shrink: 0; transition: transform 200ms; }
+    .play-btn:hover { transform: scale(1.1); }
+    .tps-card-title { display: flex; flex-direction: column; }
+    .tps-card-title span:first-child { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+    .tps-card-val { font-size: 14px; font-weight: 800; color: #caff33; }
+
+    .tps-bar-chart { height: 38px; display: flex; align-items: flex-end; gap: 5px; padding-top: 4px; }
+    .chart-bar { flex: 1; background: rgba(202,255,51,0.3); border-radius: 4px 4px 0 0; transition: height 300ms; }
+    .chart-bar.active { background: #caff33; box-shadow: 0 0 10px rgba(202,255,51,0.6); }
+
+    /* 6. Vertical Stack of 4 Square Buttons (Quick filters far right) */
+    .quick-filter-stack {
+      width: 48px;
+      top: 30%;
+      right: -35px;
+      z-index: 8;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      animation: float-stack 6.5s ease-in-out infinite;
+    }
+    @keyframes float-stack {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(-0.5deg); }
+    }
+    .stack-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: rgba(45, 45, 45, 0.9);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      transition: all 250ms;
+    }
+    .stack-btn:hover, .stack-btn.active {
+      border-color: #caff33;
+      background: rgba(202,255,51,0.15);
+      transform: translateX(-4px);
+    }
+
+    /* 7. Small Floating Tags */
+    .floating-tag {
+      position: absolute;
+      background: rgba(45, 45, 45, 0.9);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(202, 255, 51, 0.35);
+      color: #caff33;
+      border-radius: 100px;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      z-index: 9;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      animation: float-tag 4s ease-in-out infinite;
+    }
+    @keyframes float-tag {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-10px) scale(1.03); }
+    }
+    .tag-dot { width: 6px; height: 6px; border-radius: 50%; background: #caff33; }
+    .tag-finalized { top: -8px; left: 150px; animation-delay: 0s; }
+    .tag-dpos { top: 16%; right: -25px; animation-delay: 1s; }
+    .tag-peers { bottom: -10px; left: 180px; animation-delay: 2s; }
+    .tag-grandpa { bottom: 18%; right: 150px; animation-delay: 1.5s; }
+
+    /* ========================================================= */
+    /* BODY SECTIONS BELOW HERO */
+    /* ========================================================= */
+    .reveal { opacity: 0; transform: translateY(40px); transition: opacity 800ms cubic-bezier(0.16,1,0.3,1), transform 800ms cubic-bezier(0.16,1,0.3,1); }
     .reveal.visible { opacity: 1; transform: translateY(0); }
-    .reveal-stagger > * { opacity: 0; transform: translateY(40px); transition: opacity 600ms cubic-bezier(0.16,1,0.3,1), transform 600ms cubic-bezier(0.16,1,0.3,1); }
-    .reveal-stagger.visible > *:nth-child(1) { opacity:1; transform:translateY(0); transition-delay:0ms; }
-    .reveal-stagger.visible > *:nth-child(2) { opacity:1; transform:translateY(0); transition-delay:80ms; }
-    .reveal-stagger.visible > *:nth-child(3) { opacity:1; transform:translateY(0); transition-delay:160ms; }
-    .reveal-stagger.visible > *:nth-child(4) { opacity:1; transform:translateY(0); transition-delay:240ms; }
-    .reveal-stagger.visible > *:nth-child(5) { opacity:1; transform:translateY(0); transition-delay:320ms; }
-    .reveal-stagger.visible > *:nth-child(6) { opacity:1; transform:translateY(0); transition-delay:400ms; }
+    .reveal-stagger > * { opacity: 0; transform: translateY(30px); transition: opacity 600ms cubic-bezier(0.16,1,0.3,1), transform 600ms cubic-bezier(0.16,1,0.3,1); }
+    .reveal-stagger.visible > *:nth-child(1) { opacity:1; transform:translateY(0); transition-delay: 100ms; }
+    .reveal-stagger.visible > *:nth-child(2) { opacity:1; transform:translateY(0); transition-delay: 200ms; }
+    .reveal-stagger.visible > *:nth-child(3) { opacity:1; transform:translateY(0); transition-delay: 300ms; }
+    .reveal-stagger.visible > *:nth-child(4) { opacity:1; transform:translateY(0); transition-delay: 400ms; }
+    .reveal-stagger.visible > *:nth-child(5) { opacity:1; transform:translateY(0); transition-delay: 500ms; }
+    .reveal-stagger.visible > *:nth-child(6) { opacity:1; transform:translateY(0); transition-delay: 600ms; }
 
     .section-header { text-align: center; margin-bottom: 48px; }
-    .section-label { font-size: 13px; font-weight: 600; color: #00a86b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: inline-block; padding: 4px 14px; background: rgba(0,168,107,0.08); border-radius: var(--radius-pill); }
-    .section-header h2 { font-size: 36px; font-weight: 800; color: var(--text-dark); margin-bottom: 16px; }
-    .section-header p { font-size: 17px; color: var(--text-dark-muted); max-width: 600px; margin: 0 auto; }
+    .section-label { font-size: 13px; font-weight: 600; color: var(--accent-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; display: inline-block; background: var(--accent-light); padding: 4px 14px; border-radius: var(--radius-pill); }
+    .section-header h2 { font-size: 36px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.02em; margin-bottom: 12px; }
+    .section-header p { font-size: 17px; color: var(--text-dark-muted); max-width: 560px; margin: 0 auto; }
 
     .blocks-section { background: var(--canvas-light); padding: 80px 24px; }
     .blocks-inner { max-width: 1200px; margin: 0 auto; }
-    .blocks-table { width: 100%; border-collapse: collapse; background: var(--text-white); border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .blocks-table thead th { padding: 16px 20px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-dark-muted); text-transform: uppercase; letter-spacing: 0.08em; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+    .blocks-table { width: 100%; border-collapse: collapse; background: var(--text-white); border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; }
+    .blocks-table thead th { padding: 16px 20px; text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dark-muted); background: var(--canvas-light); border-bottom: 1px solid #e2e8f0; }
     .blocks-table tbody tr { transition: background 200ms; cursor: pointer; }
-    .blocks-table tbody tr:hover { background: rgba(180,248,73,0.04); }
-    .blocks-table td { padding: 14px 20px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
-    .blocks-table td.mono { font-family: 'JetBrains Mono'; color: var(--text-dark); }
-    .blocks-table .block-num { font-family: 'JetBrains Mono'; font-weight: 700; color: #00a86b; }
-    .badge-finalized { font-size: 11px; padding: 3px 10px; background: rgba(0,168,107,0.1); color: #00a86b; border-radius: var(--radius-pill); font-weight: 600; }
+    .blocks-table tbody tr:hover { background: rgba(202,255,51,0.06); }
+    .blocks-table td { padding: 14px 20px; border-bottom: 1px solid #f1f5f9; font-size: 14px; color: var(--text-dark); }
+    .blocks-table td.mono { font-family: 'JetBrains Mono'; color: var(--text-dark-muted); font-size: 13px; }
+    .blocks-table .block-num { font-family: 'JetBrains Mono'; font-weight: 700; color: var(--accent-3); }
+    .badge-finalized { font-size: 11px; padding: 3px 10px; background: rgba(0,168,107,0.1); color: var(--accent-3); border-radius: var(--radius-pill); font-weight: 600; }
 
-    .validators-section { background: var(--canvas-light); padding: 60px 24px 80px; }
+    .validators-section { background: var(--canvas-light); padding: 80px 24px; }
     .validators-inner { max-width: 1200px; margin: 0 auto; }
-    .validators-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .validator-card { background: var(--text-white); border: 1px solid #e2e8f0; border-radius: var(--radius-lg); padding: 24px; transition: var(--transition); }
-    .validator-card:hover { border-color: rgba(0,168,107,0.3); box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-4px); }
+    .validators-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+    .validator-card { background: var(--text-white); border: 1px solid #e2e8f0; border-radius: var(--radius-lg); padding: 28px; box-shadow: 0 4px 24px rgba(0,0,0,0.04); transition: var(--transition); }
+    .validator-card:hover { border-color: rgba(0,168,107,0.3); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
     .validator-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-    .validator-name { font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 600; color: var(--text-dark); }
-    .validator-rank { font-size: 12px; padding: 4px 10px; background: #f1f5f9; border-radius: 6px; color: var(--text-dark-muted); font-weight: 600; }
+    .validator-name { font-family: 'JetBrains Mono'; font-size: 15px; font-weight: 700; color: var(--text-dark); }
+    .validator-rank { font-size: 12px; padding: 4px 10px; background: var(--canvas-light); border-radius: var(--radius-pill); color: var(--text-dark-muted); font-weight: 600; }
     .validator-score-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
     .validator-score-label { font-size: 13px; color: var(--text-dark-muted); }
-    .validator-score-value { font-family: 'JetBrains Mono'; font-size: 15px; font-weight: 700; color: #00a86b; }
-    .validator-bar { width: 100%; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; margin-bottom: 16px; }
-    .validator-bar-fill { height: 100%; background: linear-gradient(90deg, #b4f849, #00a86b); border-radius: 3px; transition: width 1000ms cubic-bezier(0.16,1,0.3,1); }
+    .validator-score-value { font-family: 'JetBrains Mono'; font-weight: 700; color: var(--accent-3); font-size: 15px; }
+    .validator-bar { width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; margin-bottom: 16px; }
+    .validator-bar-fill { height: 100%; background: linear-gradient(90deg, #caff33, #00a86b); border-radius: 3px; transition: width 1000ms cubic-bezier(0.16,1,0.3,1); }
     .validator-stats { display: flex; gap: 20px; font-size: 13px; color: var(--text-dark-muted); }
-    .validator-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #00a86b; margin-top: 12px; }
-    .validator-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #00a86b; }
+    .validator-status { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--accent-3); }
+    .validator-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent-3); }
 
     .dex-section { background: var(--hero-bg); padding: 80px 24px; position: relative; overflow: hidden; }
-    .dex-section::before { content: ''; position: absolute; top: 20%; right: -10%; width: 400px; height: 400px; background: radial-gradient(circle, var(--accent-glow), transparent 60%); opacity: 0.08; }
-    .dex-inner { max-width: 1200px; margin: 0 auto; position: relative; }
+    .dex-section::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 80% 20%, rgba(202,255,51,0.06), transparent 50%); pointer-events: none; }
+    .dex-inner { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
     .dex-inner .section-header h2 { color: var(--text-white); }
     .dex-inner .section-header p { color: var(--text-dim); }
     .dex-inner .section-label { color: var(--accent); background: var(--accent-light); }
-    .dex-pools { display: flex; flex-direction: column; gap: 10px; }
-    .dex-pool { display: flex; align-items: center; gap: 20px; padding: 18px 24px; background: var(--hero-card); border: 1px solid var(--hero-border); border-radius: var(--radius); transition: var(--transition); cursor: pointer; }
-    .dex-pool:hover { border-color: var(--accent-border); background: var(--hero-card-dark); transform: translateX(8px); }
-    .dex-pool-num { font-family: 'JetBrains Mono'; font-size: 13px; color: rgba(255,255,255,0.25); min-width: 32px; }
+    .dex-pools { display: flex; flex-direction: column; gap: 16px; }
+    .dex-pool { display: flex; align-items: center; gap: 20px; padding: 20px 28px; background: var(--hero-card); border: 1px solid var(--hero-border); border-radius: var(--radius-lg); transition: var(--transition); }
+    .dex-pool:hover { border-color: var(--accent-border); background: var(--hero-card-dark); transform: translateX(4px); }
+    .dex-pool-num { font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 700; color: var(--text-muted); width: 32px; }
     .dex-pool:hover .dex-pool-num { color: var(--accent); }
-    .dex-pool-name { font-weight: 600; font-size: 16px; color: var(--text-white); min-width: 140px; }
-    .dex-pool-pair { font-family: 'JetBrains Mono'; font-size: 13px; color: var(--text-muted); min-width: 120px; }
-    .dex-pool-tvl { font-family: 'JetBrains Mono'; font-size: 15px; font-weight: 700; color: var(--accent); min-width: 100px; }
-    .dex-pool-vol { font-family: 'JetBrains Mono'; font-size: 14px; color: var(--text-dim); min-width: 100px; }
-    .dex-pool-apr { font-size: 13px; padding: 4px 12px; background: var(--accent-light); color: var(--accent); border-radius: var(--radius-pill); font-weight: 600; }
-    .dex-pool-status { font-size: 12px; padding: 4px 10px; border-radius: var(--radius-pill); font-weight: 600; display: flex; align-items: center; gap: 6px; background: var(--accent-light); color: var(--accent); }
-    .dex-pool-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse-dot 2s infinite; }
+    .dex-pool-name { font-weight: 600; font-size: 16px; color: var(--text-white); flex: 1; }
+    .dex-pool-pair { font-family: 'JetBrains Mono'; font-size: 13px; color: var(--text-dim); }
+    .dex-pool-tvl { font-family: 'JetBrains Mono'; font-size: 14px; color: var(--text-white); font-weight: 600; width: 140px; text-align: right; }
+    .dex-pool-vol { font-family: 'JetBrains Mono'; font-size: 14px; color: var(--text-dim); width: 140px; text-align: right; }
+    .dex-pool-apr { font-size: 13px; padding: 4px 12px; background: var(--accent-light); color: var(--accent); border-radius: var(--radius-pill); font-weight: 600; font-family: 'JetBrains Mono'; }
+    .dex-pool-status { font-size: 12px; padding: 4px 10px; background: rgba(0,168,107,0.15); color: #00a86b; border-radius: var(--radius-pill); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+    .dex-pool-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #00a86b; }
 
     .eco-section { background: var(--canvas-light); padding: 80px 24px; }
     .eco-inner { max-width: 1100px; margin: 0 auto; }
-    .circle-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; }
+    .circle-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 40px; }
     .circle-card { text-align: center; }
     .circle-svg { width: 160px; height: 160px; margin: 0 auto 16px; position: relative; }
     .circle-svg svg { transform: rotate(-90deg); }
-    .circle-bg { fill: none; stroke: #e2e8f0; stroke-width: 8; }
-    .circle-fill { fill: none; stroke: url(#green-grad); stroke-width: 8; stroke-linecap: round; stroke-dasharray: 440; stroke-dashoffset: 440; transition: stroke-dashoffset 1500ms cubic-bezier(0.16,1,0.3,1); }
+    .circle-bg { fill: none; stroke: #e2e8f0; stroke-width: 10; }
+    .circle-fill { fill: none; stroke: url(#green-grad); stroke-width: 10; stroke-linecap: round; stroke-dasharray: 440; stroke-dashoffset: 440; transition: stroke-dashoffset 1500ms cubic-bezier(0.16,1,0.3,1); }
     .circle-card.visible .circle-fill { stroke-dashoffset: var(--offset); }
-    .circle-count { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: 'Poppins'; font-size: 28px; font-weight: 800; color: var(--text-dark); }
-    .circle-label { font-size: 13px; color: var(--text-dark-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+    .circle-count { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: 'JetBrains Mono'; font-size: 28px; font-weight: 800; color: var(--text-dark); }
+    .circle-label { font-size: 13px; color: var(--text-dark-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 
     .cta-section { padding: 60px 24px 80px; }
     .cta-inner { max-width: 1100px; margin: 0 auto; }
-    .cta-card { background: linear-gradient(135deg, #0f0f0f, #1e1e1e); border-radius: var(--radius-lg); padding: 64px 48px; text-align: center; position: relative; overflow: hidden; }
-    .cta-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, var(--accent-glow) 0%, transparent 50%); animation: rotate 20s linear infinite; opacity: 0.12; }
+    .cta-card { background: linear-gradient(135deg, #1a1a1a, #2d2d2d); border-radius: var(--radius-lg); padding: 64px 48px; text-align: center; position: relative; overflow: hidden; }
+    .cta-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(202,255,51,0.1), transparent 60%); animation: rotate 20s linear infinite; pointer-events: none; }
     @keyframes rotate { to { transform: rotate(360deg); } }
     .cta-card > * { position: relative; z-index: 1; }
-    .cta-card h2 { font-size: 32px; font-weight: 800; color: var(--text-white); margin-bottom: 16px; }
-    .cta-card p { font-size: 17px; color: var(--text-dim); max-width: 500px; margin: 0 auto 32px; }
+    .cta-card h2 { font-size: 32px; font-weight: 800; color: var(--text-white); margin-bottom: 12px; }
+    .cta-card p { font-size: 17px; color: var(--text-dim); margin-bottom: 32px; max-width: 500px; margin-left: auto; margin-right: auto; }
     .cta-card .btn-primary { font-size: 16px; padding: 16px 40px; }
 
-    .footer { background: var(--hero-bg); padding: 48px 24px 32px; }
+    .footer { background: var(--hero-bg); padding: 48px 24px 32px; border-top: 1px solid var(--hero-border); }
     .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
-    .footer-brand h4 { font-size: 18px; font-weight: 800; color: var(--text-white); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-    .footer-brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
-    .footer-brand p { font-size: 14px; color: var(--text-muted); max-width: 280px; }
-    .footer-col h5 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 16px; }
-    .footer-col a { display: block; font-size: 14px; color: var(--text-dim); margin-bottom: 10px; transition: var(--transition); text-decoration: none; }
-    .footer-col a:hover { color: var(--accent); transform: translateX(4px); }
-    .footer-bottom { max-width: 1200px; margin: 32px auto 0; padding-top: 24px; border-top: 1px solid var(--hero-border); display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); }
+    .footer-brand h4 { font-size: 18px; font-weight: 800; color: var(--text-white); display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .footer-brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+    .footer-brand p { font-size: 14px; color: var(--text-muted); line-height: 1.6; max-width: 280px; }
+    .footer-col h5 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-white); margin-bottom: 16px; }
+    .footer-col a { display: block; font-size: 14px; color: var(--text-muted); text-decoration: none; margin-bottom: 10px; transition: color 200ms; }
+    .footer-col a:hover { color: var(--accent); transform: translateX(2px); }
+    .footer-bottom { max-width: 1200px; margin: 32px auto 0; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 1100px) {
+      .hero-visual { transform: scale(0.85); transform-origin: center center; }
       .validators-grid { grid-template-columns: repeat(2,1fr); }
       .circle-grid { grid-template-columns: repeat(2,1fr); }
       .footer-inner { grid-template-columns: 1fr 1fr; }
@@ -231,8 +484,9 @@
     @media (max-width: 768px) {
       .nav-links { display: none; }
       .hero-container { flex-direction: column; min-height: auto; }
-      .hero-left { padding: 100px 32px 40px; }
-      .hero-right { padding: 20px; min-height: 400px; }
+      .hero-left { padding: 100px 28px 40px; }
+      .hero-right { padding: 20px; min-height: 480px; }
+      .hero-visual { transform: scale(0.72); height: 480px; }
       .hero-title { font-size: 30px; }
       .quick-stats { gap: 16px; }
       .blocks-table { font-size: 12px; }
@@ -248,12 +502,16 @@
       .footer-inner { grid-template-columns: 1fr; gap: 24px; }
       .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
     }
+    @media (max-width: 480px) {
+      .hero-visual { transform: scale(0.55); height: 400px; }
+    }
   </style>
 </head>
 <body>
   <div id="cursor-glow"></div>
   <div id="scroll-bar"></div>
 
+  <!-- HERO SECTION -->
   <section class="hero-section">
     <div class="hero-container">
       <nav class="hero-nav">
@@ -289,44 +547,221 @@
         </div>
       </div>
 
+      <!-- RIGHT SIDE VISUAL (3D Floating UI Cluster on Large Lime Circle) -->
       <div class="hero-right">
         <div class="hero-visual">
-          <div class="hero-circle"></div>
+          <!-- Large Lime Green Circle Backdrop -->
+          <div class="hero-lime-circle"></div>
+
+          <!-- Ambient Canvas Overlay -->
           <canvas id="hero-canvas"></canvas>
 
-          <div class="block-detail">
-            <div class="block-detail-header">
-              <div class="block-detail-title"><span class="block-detail-dot"></span>Block #1,847,392</div>
-              <div class="block-finalized">Finalized</div>
+          <!-- 1. Central Monitor / Desktop Frame (Block Explorer Dashboard) -->
+          <div class="floating-widget monitor-frame">
+            <div class="monitor-header">
+              <div class="window-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+              </div>
+              <div class="url-bar"><span class="lock-icon">🔒</span> verdiscan.io/dashboard</div>
+              <div class="live-pill"><span class="pulse-green"></span> LIVE</div>
             </div>
-            <div class="block-detail-row"><span class="block-detail-label">Hash</span><span class="block-detail-value">0x4f2a...8b9c</span></div>
-            <div class="block-detail-row"><span class="block-detail-label">Transactions</span><span class="block-detail-value green">47</span></div>
-            <div class="block-detail-row"><span class="block-detail-label">Validator</span><span class="block-detail-value">0x7a1b...3e4f</span></div>
-            <div class="block-detail-row"><span class="block-detail-label">Timestamp</span><span class="block-detail-value">10:42:18</span></div>
-            <div class="block-detail-row"><span class="block-detail-label">Size</span><span class="block-detail-value">12.4 KB</span></div>
+            <div class="monitor-body">
+              <div class="dashboard-header">
+                <div class="dashboard-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#caff33" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                  Block Explorer Dashboard
+                </div>
+                <span class="tps-live mono">1,247 TPS</span>
+              </div>
+              <!-- Real-time Block Feed -->
+              <div class="mini-block-feed">
+                <div class="feed-row active">
+                  <span class="feed-num mono">#1,847,392</span>
+                  <span class="feed-hash mono">0x4f2a...8b9c</span>
+                  <span class="feed-tx mono">47 tx</span>
+                  <span class="feed-time">0.8s</span>
+                </div>
+                <div class="feed-row">
+                  <span class="feed-num mono">#1,847,391</span>
+                  <span class="feed-hash mono">0x9c3d...1a2b</span>
+                  <span class="feed-tx mono">112 tx</span>
+                  <span class="feed-time">3.2s</span>
+                </div>
+                <div class="feed-row">
+                  <span class="feed-num mono">#1,847,390</span>
+                  <span class="feed-hash mono">0x1c88...7f20</span>
+                  <span class="feed-tx mono">84 tx</span>
+                  <span class="feed-time">5.6s</span>
+                </div>
+              </div>
+              <!-- Network Graph Sparkline -->
+              <div class="network-graph-container">
+                <div class="graph-label">Network Throughput (24h)</div>
+                <svg class="graph-svg" viewBox="0 0 300 40">
+                  <defs>
+                    <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#caff33" stop-opacity="0.35"/>
+                      <stop offset="100%" stop-color="#caff33" stop-opacity="0.0"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M0,35 Q30,10 60,25 T120,15 T180,28 T240,8 T300,20 L300,40 L0,40 Z" fill="url(#chartGrad)" />
+                  <path d="M0,35 Q30,10 60,25 T120,15 T180,28 T240,8 T300,20" fill="none" stroke="#caff33" stroke-width="2" />
+                </svg>
+              </div>
+            </div>
           </div>
 
-          <div class="float-card float-card-1">
-            <div class="fc-icon">⛓️</div><div class="fc-label">Latest Block</div><div class="fc-value mono">#1,847,392</div>
-            <div class="fc-bar"><div class="fc-bar-fill" style="width:78%"></div></div>
+          <!-- 2. Mobile Phone Mockup (Mobile Explorer with 75% circular progress ring) -->
+          <div class="floating-widget mobile-phone">
+            <div class="phone-speaker"></div>
+            <div class="phone-screen">
+              <div class="phone-header">
+                <div class="phone-user">
+                  <div class="avatar-icon">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#caff33" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </div>
+                  <span class="phone-username mono">0x7a1b...3e4f</span>
+                </div>
+                <span class="phone-status-dot"></span>
+              </div>
+              <div class="phone-search">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#b8bcc4" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <span>Address lookup...</span>
+              </div>
+              <!-- Circular Progress Ring at 75% -->
+              <div class="health-ring-container">
+                <svg class="ring-svg" width="72" height="72" viewBox="0 0 80 80">
+                  <circle class="ring-bg" cx="40" cy="40" r="32"/>
+                  <circle class="ring-fill" cx="40" cy="40" r="32" style="stroke-dasharray: 201; stroke-dashoffset: 50.25;"/>
+                </svg>
+                <div class="ring-text mono">75%</div>
+              </div>
+              <div class="health-label">Network Health</div>
+              <div class="phone-btn">Explore Mobile</div>
+            </div>
           </div>
-          <div class="float-card float-card-2">
-            <div class="fc-icon">📊</div><div class="fc-label">TPS</div><div class="fc-value green mono">1,247/s</div>
-            <div class="fc-bar"><div class="fc-bar-fill" style="width:85%"></div></div>
+
+          <!-- 3. Calendar Widget (Block Timeline - 'August') -->
+          <div class="floating-widget calendar-widget">
+            <div class="calendar-header">
+              <span class="cal-title">August 2026</span>
+              <span class="cal-badge">Epoch #42</span>
+            </div>
+            <div class="cal-days-header">
+              <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+            </div>
+            <div class="cal-grid">
+              <span class="dim">26</span><span class="dim">27</span><span class="dim">28</span><span class="dim">29</span><span class="dim">30</span><span class="dim">31</span><span>1</span>
+              <span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span class="highlighted">7</span><span>8</span>
+              <span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span class="highlighted">14</span><span>15</span>
+              <span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span class="highlighted">21</span><span>22</span>
+              <span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span class="highlighted">28</span><span>29</span>
+              <span>30</span><span>31</span>
+            </div>
+            <div class="cal-footer">
+              <span class="dot-milestone"></span> Highlighted Milestone Dates
+            </div>
           </div>
-          <div class="float-card float-card-3">
-            <div class="fc-icon">🛡️</div><div class="fc-label">Validators</div><div class="fc-value mono">21 Active</div>
-            <div class="fc-bar"><div class="fc-bar-fill" style="width:95%"></div></div>
+
+          <!-- 4. Grid of 4 Small Cards (Network stats with lime green icons) -->
+          <div class="floating-widget stats-grid-widget">
+            <div class="grid-card">
+              <div class="gc-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#caff33" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              </div>
+              <div class="gc-info">
+                <span class="gc-label">Block Height</span>
+                <span class="gc-val mono">#1.84M</span>
+              </div>
+            </div>
+            <div class="grid-card">
+              <div class="gc-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#caff33" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </div>
+              <div class="gc-info">
+                <span class="gc-label">TPS</span>
+                <span class="gc-val green mono">1,247</span>
+              </div>
+            </div>
+            <div class="grid-card">
+              <div class="gc-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#caff33" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <div class="gc-info">
+                <span class="gc-label">Peers</span>
+                <span class="gc-val mono">14</span>
+              </div>
+            </div>
+            <div class="grid-card">
+              <div class="gc-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#caff33" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+              </div>
+              <div class="gc-info">
+                <span class="gc-label">Gas Price</span>
+                <span class="gc-val green mono">0.001</span>
+              </div>
+            </div>
           </div>
-          <div class="float-card float-card-4">
-            <div class="fc-icon">⚡</div><div class="fc-label">Gas Price</div><div class="fc-value green mono">0.001 VRD</div>
-            <div class="fc-bar"><div class="fc-bar-fill" style="width:30%"></div></div>
+
+          <!-- 5. Card with Play Icon + Bar Chart (TPS History chart card) -->
+          <div class="floating-widget tps-chart-card">
+            <div class="tps-card-header">
+              <button class="play-btn" title="Live Stream">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="#1a1a1a"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </button>
+              <div class="tps-card-title">
+                <span>TPS History</span>
+                <span class="tps-card-val green mono">1,247/s</span>
+              </div>
+            </div>
+            <div class="tps-bar-chart">
+              <div class="chart-bar" style="height: 45%;"></div>
+              <div class="chart-bar" style="height: 65%;"></div>
+              <div class="chart-bar" style="height: 85%;"></div>
+              <div class="chart-bar" style="height: 55%;"></div>
+              <div class="chart-bar" style="height: 95%;"></div>
+              <div class="chart-bar" style="height: 70%;"></div>
+              <div class="chart-bar active" style="height: 100%;"></div>
+            </div>
+          </div>
+
+          <!-- 6. Vertical Stack of 4 Square Buttons (Quick filters far right) -->
+          <div class="floating-widget quick-filter-stack">
+            <button class="stack-btn active" title="Blocks Filter">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#caff33" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </button>
+            <button class="stack-btn" title="Transactions Filter">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b8bcc4" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+            </button>
+            <button class="stack-btn" title="Validators Filter">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b8bcc4" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+            <button class="stack-btn" title="DEX Filter">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b8bcc4" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+            </button>
+          </div>
+
+          <!-- 7. Small Floating Tags -->
+          <div class="floating-tag tag-finalized">
+            <span class="tag-dot"></span> Finalized
+          </div>
+          <div class="floating-tag tag-dpos">
+            ⚡ DPoS
+          </div>
+          <div class="floating-tag tag-peers">
+            🌐 14 peers
+          </div>
+          <div class="floating-tag tag-grandpa">
+            🛡️ GRANDPA
           </div>
         </div>
       </div>
     </div>
   </section>
 
+  <!-- LIVE BLOCKS SECTION -->
   <section class="blocks-section" id="blocks">
     <div class="blocks-inner">
       <div class="section-header reveal">
@@ -339,154 +774,258 @@
           <thead><tr><th>Block</th><th>Hash</th><th>Validator</th><th>Txns</th><th>Timestamp</th><th>Status</th></tr></thead>
           <tbody>
             <tr><td class="block-num" data-label="Block">1847392</td><td class="mono" data-label="Hash">0x4f2a8b9c...</td><td class="mono" data-label="Validator">0x7a1b...3e4f</td><td class="mono" data-label="Txns">47</td><td class="mono" data-label="Time">10:42:18</td><td data-label="Status"><span class="badge-finalized">Finalized</span></td></tr>
-            <tr><td class="block-num" data-label="Block">1847391</td><td class="mono" data-label="Hash">0x9c3d1a2b...</td><td class="mono" data-label="Validator">0x4f2a...8b9c</td><td class="mono" data-label="Txns">32</td><td class="mono" data-label="Time">10:42:12</td><td data-label="Status"><span class="badge-finalized">Finalized</span></td></tr>
-            <tr><td class="block-num" data-label="Block">1847390</td><td class="mono" data-label="Hash">0x2e5f7c8d...</td><td class="mono" data-label="Validator">0x9c3d...1a2b</td><td class="mono" data-label="Txns">58</td><td class="mono" data-label="Time">10:42:06</td><td data-label="Status"><span class="badge-finalized">Finalized</span></td></tr>
-            <tr><td class="block-num" data-label="Block">1847389</td><td class="mono" data-label="Hash">0x8b1c5d6e...</td><td class="mono" data-label="Validator">0x2e5f...7c8d</td><td class="mono" data-label="Txns">19</td><td class="mono" data-label="Time">10:42:00</td><td data-label="Status"><span class="badge-finalized">Finalized</span></td></tr>
-            <tr><td class="block-num" data-label="Block">1847388</td><td class="mono" data-label="Hash">0x6d9e2f3a...</td><td class="mono" data-label="Validator">0x8b1c...5d6e</td><td class="mono" data-label="Txns">41</td><td class="mono" data-label="Time">10:41:54</td><td data-label="Status"><span class="badge-finalized">Finalized</span></td></tr>
-            <tr><td class="block-num" data-label="Block">1847387</td><td class="mono" data-label="Hash">0x1a4b8c9d...</td><td class="mono" data-label="Validator">0x6d9e...2f3a</td><td class="mono" data-label="Txns">67</td><td class="mono" data-label="Time">10:41:48</td><td data-label="Status"><span class="badge-finalized">Finalized</span></td></tr>
-            <tr><td class="block-num" data-label="Block">1847386</td><td class="mono" data-label="Hash">0x3f7a9e1b...</td><td class="mono" data-label="Validator">0x1a4b...8c9d</td><td class="mono" data-label="Txns">24</td><td class="mono" data-label="Time">10:41:42</td><td data-label="Status"><span class="badge-finalized">Finalized</span></td></tr>
-            <tr><td class="block-num" data-label="Block">1847385</td><td class="mono" data-label="Hash">0x5c2d7e8f...</td><td class="mono" data-label="Validator">0x3f7a...9e1b</td><td class="mono" data-label="Txns">53</td><td class="mono" data-label="Time">10:41:36</td><td data-label="Status"><span class="badge-finalized">Finalized</span></td></tr>
-            <tr><td class="block-num" data-label="Block">1847384</td><td class="mono" data-label="Hash">0x9e1b3f7a...</td><td class="mono" data-label="Validator">0x5c2d...7e8f</td><td class="mono" data-label="Txns">38</td><td class="mono" data-label="Time">10:41:30</td><td data-label="Status"><span class="badge-finalized">Finalized</span></td></tr>
-            <tr><td class="block-num" data-label="Block">1847383</td><td class="mono" data-label="Hash">0x7e8f5c2d...</td><td class="mono" data-label="Validator">0x9e1b...3f7a</td><td class="mono" data-label="Txns">29</td><td class="mono" data-label="Time">10:41:24</td><td data-label="Status"><span class="badge-finalized">Finalized</span></td></tr>
+            <tr><td class="block-num" data-label="Block">1847391</td><td class="mono" data-label="Hash">0x9c3d1a2b...</td><td class="mono" data-label="Validator">0x8b2c...4f5a</td><td class="mono" data-label="Txns">112</td><td class="mono" data-label="Time">10:42:12</td><td data-label="Status"><span class="badge-finalized">Finalized</span></td></tr>
+            <tr><td class="block-num" data-label="Block">1847390</td><td class="mono" data-label="Hash">0x1c887f20...</td><td class="mono" data-label="Validator">0x3f4a...1c2b</td><td class="mono" data-label="Txns">84</td><td class="mono" data-label="Time">10:42:06</td><td data-label="Status"><span class="badge-finalized">Finalized</span></td></tr>
+            <tr><td class="block-num" data-label="Block">1847389</td><td class="mono" data-label="Hash">0x7e994a11...</td><td class="mono" data-label="Validator">0x5d6e...8f9a</td><td class="mono" data-label="Txns">63</td><td class="mono" data-label="Time">10:42:00</td><td data-label="Status"><span class="badge-finalized">Finalized</span></td></tr>
+            <tr><td class="block-num" data-label="Block">1847388</td><td class="mono" data-label="Hash">0x3b221d89...</td><td class="mono" data-label="Validator">0x2a3b...4c5d</td><td class="mono" data-label="Txns">95</td><td class="mono" data-label="Time">10:41:54</td><td data-label="Status"><span class="badge-finalized">Finalized</span></td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </section>
 
+  <!-- VALIDATORS SECTION -->
   <section class="validators-section" id="validators">
     <div class="validators-inner">
       <div class="section-header reveal">
-        <div class="section-label">Green Validators</div>
-        <h2>Top validators by green score</h2>
-        <p>Validators ranked by energy efficiency, carbon offset, and uptime.</p>
+        <div class="section-label">Consensus</div>
+        <h2>Top Validators</h2>
+        <p>Active validators securing the DPoS GRANDPA consensus network.</p>
       </div>
       <div class="validators-grid reveal-stagger">
-        <div class="validator-card"><div class="validator-header"><div class="validator-name">0x4f2a...8b9c</div><div class="validator-rank">#1</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">98/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:98%"></div></div><div class="validator-stats"><span>📦 12,847 blocks</span><span>⏱ 99.8% uptime</span></div><div class="validator-status">Active · Elected</div></div>
-        <div class="validator-card"><div class="validator-header"><div class="validator-name">0x7a1b...3e4f</div><div class="validator-rank">#2</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">96/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:96%"></div></div><div class="validator-stats"><span>📦 11,203 blocks</span><span>⏱ 99.5% uptime</span></div><div class="validator-status">Active · Elected</div></div>
-        <div class="validator-card"><div class="validator-header"><div class="validator-name">0x9c3d...1a2b</div><div class="validator-rank">#3</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">94/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:94%"></div></div><div class="validator-stats"><span>📦 10,891 blocks</span><span>⏱ 99.2% uptime</span></div><div class="validator-status">Active · Elected</div></div>
-        <div class="validator-card"><div class="validator-header"><div class="validator-name">0x2e5f...7c8d</div><div class="validator-rank">#4</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">91/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:91%"></div></div><div class="validator-stats"><span>📦 9,447 blocks</span><span>⏱ 98.9% uptime</span></div><div class="validator-status">Active · Elected</div></div>
-        <div class="validator-card"><div class="validator-header"><div class="validator-name">0x8b1c...5d6e</div><div class="validator-rank">#5</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">89/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:89%"></div></div><div class="validator-stats"><span>📦 8,712 blocks</span><span>⏱ 98.5% uptime</span></div><div class="validator-status">Active · Elected</div></div>
-        <div class="validator-card"><div class="validator-header"><div class="validator-name">0x6d9e...2f3a</div><div class="validator-rank">#6</div></div><div class="validator-score-row"><span class="validator-score-label">Green Score</span><span class="validator-score-value">87/100</span></div><div class="validator-bar"><div class="validator-bar-fill" style="width:87%"></div></div><div class="validator-stats"><span>📦 7,895 blocks</span><span>⏱ 97.8% uptime</span></div><div class="validator-status">Active · Elected</div></div>
+        <div class="validator-card">
+          <div class="validator-header"><div class="validator-name">Verdis Core #1</div><span class="validator-rank">Rank #1</span></div>
+          <div class="validator-score-row"><span class="validator-score-label">Self Stake</span><span class="validator-score-value">2,450,000 VRD</span></div>
+          <div class="validator-bar"><div class="validator-bar-fill" style="width:98%"></div></div>
+          <div class="validator-stats"><span>Uptime: 99.99%</span><span class="validator-status">Active</span></div>
+        </div>
+        <div class="validator-card">
+          <div class="validator-header"><div class="validator-name">EcoNode Alpha</div><span class="validator-rank">Rank #2</span></div>
+          <div class="validator-score-row"><span class="validator-score-label">Self Stake</span><span class="validator-score-value">1,890,000 VRD</span></div>
+          <div class="validator-bar"><div class="validator-bar-fill" style="width:92%"></div></div>
+          <div class="validator-stats"><span>Uptime: 99.95%</span><span class="validator-status">Active</span></div>
+        </div>
+        <div class="validator-card">
+          <div class="validator-header"><div class="validator-name">GreenStake Pool</div><span class="validator-rank">Rank #3</span></div>
+          <div class="validator-score-row"><span class="validator-score-label">Self Stake</span><span class="validator-score-value">1,420,000 VRD</span></div>
+          <div class="validator-bar"><div class="validator-bar-fill" style="width:85%"></div></div>
+          <div class="validator-stats"><span>Uptime: 99.91%</span><span class="validator-status">Active</span></div>
+        </div>
       </div>
     </div>
   </section>
 
+  <!-- DEX SECTION -->
   <section class="dex-section" id="dex">
     <div class="dex-inner">
       <div class="section-header reveal">
-        <div class="section-label">Native DEX</div>
-        <h2>AMM Liquidity Pools</h2>
-        <p>Swap tokens directly on-chain without external contracts.</p>
+        <div class="section-label">AMM Pools</div>
+        <h2>Verdis DEX Pools</h2>
+        <p>Real-time liquidity and trading volume across automated market maker pools.</p>
       </div>
       <div class="dex-pools reveal-stagger">
-        <div class="dex-pool"><div class="dex-pool-num">01</div><div class="dex-pool-name">VRD / USDC</div><div class="dex-pool-pair">Stable Pair</div><div class="dex-pool-tvl">$1.2M</div><div class="dex-pool-vol">$340K 24h</div><div class="dex-pool-apr">12.4% APR</div><div class="dex-pool-status">Active</div></div>
-        <div class="dex-pool"><div class="dex-pool-num">02</div><div class="dex-pool-name">VRD / ETH</div><div class="dex-pool-pair">Bridge Pair</div><div class="dex-pool-tvl">$890K</div><div class="dex-pool-vol">$210K 24h</div><div class="dex-pool-apr">9.8% APR</div><div class="dex-pool-status">Active</div></div>
-        <div class="dex-pool"><div class="dex-pool-num">03</div><div class="dex-pool-name">VRD / cARB</div><div class="dex-pool-pair">Carbon Pair</div><div class="dex-pool-tvl">$560K</div><div class="dex-pool-vol">$180K 24h</div><div class="dex-pool-apr">15.2% APR</div><div class="dex-pool-status">Active</div></div>
-        <div class="dex-pool"><div class="dex-pool-num">04</div><div class="dex-pool-name">VRD / ECO</div><div class="dex-pool-pair">Eco Credit</div><div class="dex-pool-tvl">$320K</div><div class="dex-pool-vol">$90K 24h</div><div class="dex-pool-apr">22.1% APR</div><div class="dex-pool-status">Active</div></div>
+        <div class="dex-pool">
+          <div class="dex-pool-num">#1</div>
+          <div class="dex-pool-name">VRD / USDC</div>
+          <div class="dex-pool-pair">Verdis Token · USD Coin</div>
+          <div class="dex-pool-tvl">$14,280,450</div>
+          <div class="dex-pool-vol">$3,840,120 /24h</div>
+          <div class="dex-pool-apr">24.8% APR</div>
+          <div class="dex-pool-status">Active</div>
+        </div>
+        <div class="dex-pool">
+          <div class="dex-pool-num">#2</div>
+          <div class="dex-pool-name">VRD / ETH</div>
+          <div class="dex-pool-pair">Verdis Token · Wrapped Ether</div>
+          <div class="dex-pool-tvl">$8,940,200</div>
+          <div class="dex-pool-vol">$1,920,800 /24h</div>
+          <div class="dex-pool-apr">18.4% APR</div>
+          <div class="dex-pool-status">Active</div>
+        </div>
+        <div class="dex-pool">
+          <div class="dex-pool-num">#3</div>
+          <div class="dex-pool-name">VRD / CARBON</div>
+          <div class="dex-pool-pair">Verdis Token · Carbon Credit</div>
+          <div class="dex-pool-tvl">$5,120,800</div>
+          <div class="dex-pool-vol">$980,400 /24h</div>
+          <div class="dex-pool-apr">32.1% APR</div>
+          <div class="dex-pool-status">Active</div>
+        </div>
       </div>
     </div>
   </section>
 
+  <!-- ECO SECTION -->
   <section class="eco-section" id="eco">
     <div class="eco-inner">
       <div class="section-header reveal">
-        <div class="section-label">Eco Metrics</div>
-        <h2>Environmental Impact</h2>
+        <div class="section-label">Sustainability</div>
+        <h2>Eco Impact</h2>
+        <p>Carbon-negative blockchain architecture powered by verified green energy.</p>
       </div>
       <div class="circle-grid reveal-stagger">
-        <div class="circle-card" style="--offset: 120"><div class="circle-svg"><svg width="160" height="160"><defs><linearGradient id="green-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#b4f849"/><stop offset="100%" stop-color="#00a86b"/></linearGradient></defs><circle class="circle-bg" cx="80" cy="80" r="70"/><circle class="circle-fill" cx="80" cy="80" r="70" style="stroke-dashoffset:120"/></svg><div class="circle-count mono" data-count="8421">0</div></div><div class="circle-label">Carbon Credits</div></div>
-        <div class="circle-card" style="--offset: 60"><div class="circle-svg"><svg width="160" height="160"><circle class="circle-bg" cx="80" cy="80" r="70"/><circle class="circle-fill" cx="80" cy="80" r="70" style="stroke-dashoffset:60"/></svg><div class="circle-count mono" data-count="24580">0</div></div><div class="circle-label">Trees Planted</div></div>
-        <div class="circle-card" style="--offset: 90"><div class="circle-svg"><svg width="160" height="160"><circle class="circle-bg" cx="80" cy="80" r="70"/><circle class="circle-fill" cx="80" cy="80" r="70" style="stroke-dashoffset:90"/></svg><div class="circle-count mono" data-count="12847">0</div></div><div class="circle-label">CO₂ Offset (t)</div></div>
-        <div class="circle-card" style="--offset: 25"><div class="circle-svg"><svg width="160" height="160"><circle class="circle-bg" cx="80" cy="80" r="70"/><circle class="circle-fill" cx="80" cy="80" r="70" style="stroke-dashoffset:25"/></svg><div class="circle-count mono" data-count="94">0</div></div><div class="circle-label">Green Score Avg</div></div>
+        <div class="circle-card" style="--offset: 80">
+          <div class="circle-svg">
+            <svg width="160" height="160">
+              <defs>
+                <linearGradient id="green-grad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#caff33"/>
+                  <stop offset="100%" stop-color="#00a86b"/>
+                </linearGradient>
+              </defs>
+              <circle class="circle-bg" cx="80" cy="80" r="70"/>
+              <circle class="circle-fill" cx="80" cy="80" r="70" style="stroke-dashoffset:80"/>
+            </svg>
+            <div class="circle-count mono" data-count="100">0</div>
+          </div>
+          <div class="circle-label">% Carbon Offset</div>
+        </div>
+        <div class="circle-card" style="--offset: 120">
+          <div class="circle-svg">
+            <svg width="160" height="160">
+              <circle class="circle-bg" cx="80" cy="80" r="70"/>
+              <circle class="circle-fill" cx="80" cy="80" r="70" style="stroke-dashoffset:120"/>
+            </svg>
+            <div class="circle-count mono" data-count="8421">0</div>
+          </div>
+          <div class="circle-label">Carbon Credits</div>
+        </div>
+        <div class="circle-card" style="--offset: 50">
+          <div class="circle-svg">
+            <svg width="160" height="160">
+              <circle class="circle-bg" cx="80" cy="80" r="70"/>
+              <circle class="circle-fill" cx="80" cy="80" r="70" style="stroke-dashoffset:50"/>
+            </svg>
+            <div class="circle-count mono" data-count="0">0</div>
+          </div>
+          <div class="circle-label">Net Emissions</div>
+        </div>
       </div>
     </div>
   </section>
 
+  <!-- CTA SECTION -->
   <section class="cta-section">
     <div class="cta-inner">
       <div class="cta-card reveal">
-        <h2>Explore the full chain</h2>
-        <p>View live blocks, transactions, validators, and DEX pools on the Verdis Chain mainnet.</p>
-        <button class="btn-primary" onclick="window.location.href='/'">Open Verdiscan →</button>
+        <h2>Build on Verdis Chain</h2>
+        <p>Deploy eco-friendly smart contracts with near-zero gas fees and sub-second finality.</p>
+        <button class="btn-primary">Start Building Now →</button>
       </div>
     </div>
   </section>
 
+  <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-inner">
-      <div class="footer-brand"><h4><span class="footer-brand-dot"></span>Verdis Chain</h4><p>The world's first green blockchain. Built in Rust + Substrate with DPoS, AMM DEX, EVM, and carbon credit tracking.</p></div>
-      <div class="footer-col"><h5>Platform</h5><a href="/">Explorer</a><a href="#validators">Validators</a><a href="#dex">DEX</a><a href="#eco">Eco Metrics</a></div>
-      <div class="footer-col"><h5>Developers</h5><a href="/docs">Documentation</a><a href="#">RPC Endpoint</a><a href="https://github.com/Protremix/Verdischain-">GitHub</a><a href="#">Whitepaper</a></div>
-      <div class="footer-col"><h5>Community</h5><a href="#">Twitter</a><a href="#">Discord</a><a href="#">Telegram</a><a href="#">Blog</a></div>
+      <div class="footer-brand">
+        <h4><span class="footer-brand-dot"></span>Verdis Chain</h4>
+        <p>The carbon-negative high-performance layer-1 blockchain for sustainable decentralized applications.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Explorer</h5>
+        <a href="#blocks">Blocks</a>
+        <a href="#validators">Validators</a>
+        <a href="#dex">DEX Pools</a>
+        <a href="#eco">Eco Impact</a>
+      </div>
+      <div class="footer-col">
+        <h5>Developers</h5>
+        <a href="#">Documentation</a>
+        <a href="#">GitHub</a>
+        <a href="#">SDK & API</a>
+        <a href="#">Grants Program</a>
+      </div>
+      <div class="footer-col">
+        <h5>Community</h5>
+        <a href="#">Discord</a>
+        <a href="#">Twitter / X</a>
+        <a href="#">Telegram</a>
+        <a href="#">Governance</a>
+      </div>
     </div>
-    <div class="footer-bottom"><span>© 2026 Verdis Chain · Powered by Protremix</span><span>verdischain.com · 91.98.160.145</span></div>
+    <div class="footer-bottom">
+      <span>© 2026 Verdis Chain Foundation. All rights reserved.</span>
+      <span>Mainnet v2.4.1 · GRANDPA Finality</span>
+    </div>
   </footer>
 
   <script>
+    // Glow and Scrollbar
     const glow = document.getElementById('cursor-glow');
     document.addEventListener('mousemove', e => { glow.style.left = e.clientX + 'px'; glow.style.top = e.clientY + 'px'; });
     const scrollBar = document.getElementById('scroll-bar');
     window.addEventListener('scroll', () => { scrollBar.style.width = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100 + '%'; });
+
+    // Scroll observers
     const observer = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold: 0.15 });
     document.querySelectorAll('.reveal, .reveal-stagger, .circle-card').forEach(el => observer.observe(el));
-    const counterObs = new IntersectionObserver(entries => { entries.forEach(e => { if (!e.isIntersecting) return; const el = e.target, target = parseInt(el.dataset.count); let cur = 0, step = target / 60; const tick = () => { cur += step; if (cur >= target) { el.textContent = target.toLocaleString(); return; } el.textContent = Math.floor(cur).toLocaleString(); requestAnimationFrame(tick); }; tick(); counterObs.unobserve(el); }); }, { threshold: 0.5 });
+
+    const counterObs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const el = e.target, target = parseInt(el.dataset.count);
+        let cur = 0, step = Math.max(1, target / 60);
+        const tick = () => {
+          cur += step;
+          if (cur >= target) { el.textContent = target.toLocaleString(); return; }
+          el.textContent = Math.floor(cur).toLocaleString();
+          requestAnimationFrame(tick);
+        };
+        tick();
+        counterObs.unobserve(el);
+      });
+    }, { threshold: 0.5 });
     document.querySelectorAll('[data-count]').forEach(el => counterObs.observe(el));
 
-    // Canvas — vertical blockchain chain animation
+    // Ambient Canvas background animation overlay
     const canvas = document.getElementById('hero-canvas');
     const ctx = canvas.getContext('2d');
-    let W, H, blocks = [], mouse = { x: -1000, y: -1000 };
+    let W, H, nodes = [];
     function resize() { W = canvas.width = canvas.offsetWidth; H = canvas.height = canvas.offsetHeight; }
     resize(); window.addEventListener('resize', resize);
-    for (let i = 0; i < 8; i++) blocks.push({ y: (H / 8) * i, x: W / 2, hash: '0x' + Math.random().toString(16).substr(2, 8), num: 1847392 - i, opacity: 0, speed: 0.3 + Math.random() * 0.2 });
-    canvas.addEventListener('mousemove', e => { const r = canvas.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; });
-    function animate() {
-      ctx.clearRect(0, 0, W, H);
-      blocks.forEach((b, i) => {
-        b.y += b.speed; b.opacity = Math.min(b.opacity + 0.02, 1);
-        if (b.y > H + 50) { b.y = -50; b.num -= 8; b.hash = '0x' + Math.random().toString(16).substr(2, 8); b.opacity = 0; }
-        const dx = b.x - mouse.x, dy = b.y - mouse.y, dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist < 80) { b.x += dx / dist * 1.5; }
-        // Draw chain link to next block
-        if (i < blocks.length - 1) {
-          ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(blocks[i+1].x, blocks[i+1].y);
-          ctx.strokeStyle = 'rgba(180,248,73,' + (b.opacity * 0.15) + ')'; ctx.lineWidth = 2; ctx.stroke();
-        }
-        // Draw block
-        ctx.beginPath(); ctx.roundRect(b.x - 40, b.y - 15, 80, 30, 6);
-        ctx.fillStyle = 'rgba(30,30,30,' + b.opacity + ')'; ctx.fill();
-        ctx.strokeStyle = 'rgba(180,248,73,' + (b.opacity * 0.4) + ')'; ctx.lineWidth = 1; ctx.stroke();
-        // Block text
-        ctx.fillStyle = 'rgba(180,248,73,' + b.opacity + ')'; ctx.font = '600 10px JetBrains Mono'; ctx.textAlign = 'center';
-        ctx.fillText('#' + b.num, b.x, b.y - 2);
-        ctx.fillStyle = 'rgba(180,180,180,' + (b.opacity * 0.6) + ')'; ctx.font = '400 8px JetBrains Mono';
-        ctx.fillText(b.hash, b.x, b.y + 8);
+
+    for (let i = 0; i < 25; i++) {
+      nodes.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        r: 2 + Math.random() * 2.5,
+        pulse: Math.random() * Math.PI * 2
       });
-      requestAnimationFrame(animate);
     }
-    if (ctx.roundRect) animate(); else {
-      // Fallback for browsers without roundRect — simple nodes
-      for (let i = 0; i < 35; i++) blocks.push({ x: Math.random()*W, y: Math.random()*H, vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4, r: 2+Math.random()*3, pulse: Math.random()*Math.PI*2 });
-      blocks = blocks.slice(8); // remove the 8 chain blocks, keep 35 nodes
-      function nodeAnim() {
-        ctx.clearRect(0,0,W,H);
-        blocks.forEach((n,i) => {
-          n.x += n.vx; n.y += n.vy; n.pulse += 0.03;
-          if (n.x<0||n.x>W) n.vx*=-1; if (n.y<0||n.y>H) n.vy*=-1;
-          const ps = n.r + Math.sin(n.pulse)*1.5;
-          ctx.beginPath(); ctx.arc(n.x, n.y, ps, 0, Math.PI*2);
-          ctx.fillStyle = 'rgba(180,248,73,' + (0.3 + Math.sin(n.pulse)*0.15) + ')'; ctx.fill();
-        });
-        for (let i=0; i<blocks.length; i++) for (let j=i+1; j<blocks.length; j++) {
-          const dx=blocks[i].x-blocks[j].x, dy=blocks[i].y-blocks[j].y, d=Math.sqrt(dx*dx+dy*dy);
-          if (d<130) { ctx.beginPath(); ctx.moveTo(blocks[i].x,blocks[i].y); ctx.lineTo(blocks[j].x,blocks[j].y);
-          ctx.strokeStyle='rgba(180,248,73,'+(1-d/130)*0.12+')'; ctx.lineWidth=1; ctx.stroke(); }
+
+    function animateNodes() {
+      ctx.clearRect(0, 0, W, H);
+      nodes.forEach((n) => {
+        n.x += n.vx; n.y += n.vy; n.pulse += 0.03;
+        if (n.x < 0 || n.x > W) n.vx *= -1;
+        if (n.y < 0 || n.y > H) n.vy *= -1;
+        const ps = n.r + Math.sin(n.pulse) * 1.2;
+        ctx.beginPath(); ctx.arc(n.x, n.y, ps, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(202,255,51,' + (0.35 + Math.sin(n.pulse) * 0.2) + ')'; ctx.fill();
+      });
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y, d = Math.sqrt(dx * dx + dy * dy);
+          if (d < 110) {
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.strokeStyle = 'rgba(202,255,51,' + (1 - d / 110) * 0.15 + ')'; ctx.lineWidth = 1; ctx.stroke();
+          }
         }
-        requestAnimationFrame(nodeAnim);
       }
-      nodeAnim();
+      requestAnimationFrame(animateNodes);
     }
+    animateNodes();
+
+    // Quick filter stack interactions
+    document.querySelectorAll('.stack-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.stack-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
   </script>
 </body>
 </html>
