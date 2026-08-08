@@ -385,7 +385,7 @@ h2{font-size:14px;font-weight:600;margin-bottom:12px;line-height:1.3} h2 .accent
 </footer>
 
 <script>
-const TOKEN_PRICE=0.025;
+const TOKEN_PRICE=0.004;
 function calcRewards(){const stake=+document.getElementById('calcStake').value||0;const apr=+document.getElementById('calcTier').value/100;const yearly=stake*apr;const monthly=yearly/12;const daily=yearly/365;document.getElementById('calcDaily').textContent=daily.toLocaleString(undefined,{maximumFractionDigits:0})+' VRDX';document.getElementById('calcMonthly').textContent=monthly.toLocaleString(undefined,{maximumFractionDigits:0})+' VRDX';document.getElementById('calcYearly').textContent=yearly.toLocaleString(undefined,{maximumFractionDigits:0})+' VRDX';document.getElementById('calcDailyUSD').textContent='$'+(daily*TOKEN_PRICE).toLocaleString(undefined,{maximumFractionDigits:2});document.getElementById('calcMonthlyUSD').textContent='$'+(monthly*TOKEN_PRICE).toLocaleString(undefined,{maximumFractionDigits:2});document.getElementById('calcYearlyUSD').textContent='$'+(yearly*TOKEN_PRICE).toLocaleString(undefined,{maximumFractionDigits:2})}
 calcRewards();
 </script>
