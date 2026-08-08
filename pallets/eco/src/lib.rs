@@ -255,11 +255,13 @@ pub mod pallet {
         #[pallet::weight(T::WeightInfo::mint_carbon_credit())]
         pub fn mint_carbon_credit(
             origin: OriginFor<T>,
+            owner: T::AccountId,
             id: Vec<u8>,
             project_name: Vec<u8>,
             tons_co2: u64,
         ) -> DispatchResult {
-            let who = ensure_signed(origin)?;
+            ensure_root(origin)?;
+            let who = owner;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
                 id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
@@ -380,7 +382,7 @@ pub mod pallet {
             trees_planted: u32,
             location: Vec<u8>,
         ) -> DispatchResult {
-            let _who = ensure_signed(origin)?;
+            ensure_root(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
                 id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
@@ -660,7 +662,8 @@ pub mod tests {
     fn test_mint_carbon_credit() {
         new_test_ext().execute_with(|| {
             assert_ok!(Eco::mint_carbon_credit(
-                RuntimeOrigin::signed(Sr25519Keyring::Alice.to_account_id()),
+                RuntimeOrigin::root(),
+                Sr25519Keyring::Alice.to_account_id(),
                 b"c1".to_vec(),
                 b"Amazon".to_vec(),
                 100,
@@ -673,7 +676,8 @@ pub mod tests {
     fn test_mint_duplicate() {
         new_test_ext().execute_with(|| {
             Eco::mint_carbon_credit(
-                RuntimeOrigin::signed(Sr25519Keyring::Alice.to_account_id()),
+                RuntimeOrigin::root(),
+                Sr25519Keyring::Alice.to_account_id(),
                 b"c1".to_vec(),
                 b"P".to_vec(),
                 50,
@@ -681,7 +685,8 @@ pub mod tests {
             .unwrap();
             assert_noop!(
                 Eco::mint_carbon_credit(
-                    RuntimeOrigin::signed(Sr25519Keyring::Bob.to_account_id()),
+                    RuntimeOrigin::root(),
+                    Sr25519Keyring::Bob.to_account_id(),
                     b"c1".to_vec(),
                     b"P2".to_vec(),
                     30,
@@ -695,7 +700,8 @@ pub mod tests {
     fn test_verify_credit() {
         new_test_ext().execute_with(|| {
             Eco::mint_carbon_credit(
-                RuntimeOrigin::signed(Sr25519Keyring::Alice.to_account_id()),
+                RuntimeOrigin::root(),
+                Sr25519Keyring::Alice.to_account_id(),
                 b"c1".to_vec(),
                 b"P".to_vec(),
                 50,
@@ -722,7 +728,7 @@ pub mod tests {
     fn test_create_reforest() {
         new_test_ext().execute_with(|| {
             assert_ok!(Eco::create_reforest_project(
-                RuntimeOrigin::signed(Sr25519Keyring::Alice.to_account_id()),
+                RuntimeOrigin::root(),
                 b"p1".to_vec(),
                 b"Amazon".to_vec(),
                 5000,

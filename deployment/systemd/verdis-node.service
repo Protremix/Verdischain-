@@ -4,10 +4,10 @@ After=network.target
 StartLimitIntervalSec=0
 
 [Service]
-ExecStart=/usr/local/bin/verdis --chain=/opt/verdis-chain-rust/verdis-dev-raw.json --alice --node-key=bf0f66bf829e1e0d5c838983bc2c969ee3122f2c0429fa7f2252337fa41db21e --base-path=/opt/verdis-node1-data-v3 --port 30333 --rpc-port 9933 --rpc-cors all --rpc-methods unsafe --bootnodes /ip4/127.0.0.1/tcp/30334/p2p/12D3KooWSDc29Kdyk5GchWb8M7BEuW6ZGPUoWvTZfwfGnVHxDFvE
+ExecStart=/usr/local/bin/verdis --chain=/opt/verdis-chain-rust/verdis-dev-raw.json --alice --node-key=bf0f66bf829e1e0d5c838983bc2c969ee3122f2c0429fa7f2252337fa41db21e --base-path=/opt/verdis-node1-data-v4 --port 30333 --rpc-port 9933 --rpc-cors all --rpc-methods unsafe --bootnodes /ip4/127.0.0.1/tcp/30334/p2p/12D3KooWSDc29Kdyk5GchWb8M7BEuW6ZGPUoWvTZfwfGnVHxDFvE
 Restart=always
 RestartSec=5
-User=root
+User=verdis
 StandardOutput=append:/var/log/verdis-node.log
 StandardError=append:/var/log/verdis-node.log
 
