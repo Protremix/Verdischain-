@@ -1,120 +1,81 @@
 import re
 
-with open("/opt/verdis/app/dist/web/wallet.html", "r") as f:
-    c = f.read()
+with open("/var/www/verdiscan/wallet/index.html") as f:
+    content = f.read()
 
-fixes = []
+# Fix 1: Replace the success check to use result.ok instead of result.success
+old_check = """    if (result && result.success) {
+      toast(`Transaction submitted! Hash: ${result.data?.hash?.slice(0, 16) || 'pending'}...`, 'success');
+    } else {
+      // Try author_submitExtrinsic via RPC (for raw extrinsic submission)
+      toast(`Transaction signed (sig: ${sigHex.slice(0, 20)}...) — broadcast to network`, 'success');
+      console.log('Transaction signed:', { payload, signature: sigHex });
+    }"""
 
-# BUG 1: Add missing backupModal
-backup_modal = '''<div class="modal-overlay" id="backupModal" onclick="if(event.target===this)closeModal('backupModal')">
-    <div class="modal" style="max-width:420px;">
-        <div style="text-align:center;margin-bottom:16px;">
-            <div style="width:56px;height:56px;margin:0 auto 12px;border-radius:50%;background:rgba(229,57,53,0.15);display:flex;align-items:center;justify-content:center;">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#e53935" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            </div>
-            <h3 style="font-size:18px;font-weight:700;margin:0 0 4px;">Back Up Your Wallet</h3>
-            <p style="font-size:13px;color:var(--text-dim);margin:0 0 16px;">Save your private key securely. You will need it to recover your wallet.</p>
-        </div>
-        <div id="backupKeyDisplay" style="background:var(--bg-input);border:1px solid var(--border);border-radius:12px;padding:16px;font-family:var(--font-mono);font-size:11px;word-break:break-all;color:var(--text-dim);margin-bottom:16px;text-align:center;">Click reveal to view key</div>
-        <button onclick="revealBackupKey()" style="width:100%;padding:12px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;cursor:pointer;margin-bottom:8px;">Reveal Private Key</button>
-        <button onclick="copyBackupKey()" style="width:100%;padding:12px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;cursor:pointer;margin-bottom:16px;">Copy Private Key</button>
-        <label style="display:flex;align-items:center;gap:8px;margin-bottom:16px;cursor:pointer;font-size:13px;color:var(--text-dim);">
-            <input type="checkbox" id="backupConfirm" onchange="document.getElementById('backupDoneBtn').disabled=!this.checked" style="accent-color:var(--accent-green);width:18px;height:18px;">
-            I have safely stored my private key
-        </label>
-        <button id="backupDoneBtn" disabled onclick="closeModal('backupModal')" style="width:100%;padding:14px;background:var(--accent-green);border:none;border-radius:12px;color:#000;font-weight:600;font-size:14px;cursor:pointer;opacity:0.5;">Done</button>
-    </div>
-</div>
-        '''
+new_check = """    if (result && result.ok) {
+      toast(`Transaction on-chain! Hash: ${result.extrinsic_hash?.slice(0, 20) || 'pending'}...`, 'success');
+      console.log('TX Relay result:', result);
+    } else if (result && result.error) {
+      toast('Relay error: ' + result.error, 'error');
+    } else {
+      toast('Transaction signed (sig: ' + sigHex.slice(0, 20) + '...) — broadcast to network', 'success');
+      console.log('Transaction signed:', { payload, signature: sigHex });
+    }"""
 
-if 'id="backupModal"' not in c:
-    c = c.replace('<div class="modal-overlay" id="settingsModal"', backup_modal + '<div class="modal-overlay" id="settingsModal"')
-    fixes.append("BUG 1: Added backupModal")
+if old_check in content:
+    content = content.replace(old_check, new_check)
+    print("Fixed: ok check replaced")
+else:
+    print("WARNING: old_check not found, trying regex")
+    pattern = r'if \(result && result\.success\).*?console\.log\(\'Transaction signed:\', \{ payload, signature: sigHex \}\);'
+    match = re.search(pattern, content, re.DOTALL)
+    if match:
+        content = content[:match.start()] + new_check + content[match.end():]
+        print("Fixed: ok check replaced via regex")
+    else:
+        print("ERROR: Could not find success check block")
 
-# BUG 2: Fix securitySettingsContent
-if 'id="settingsContent"' in c and 'id="securitySettingsContent"' not in c:
-    c = c.replace('<div id="settingsContent"></div>', '<div id="securitySettingsContent"></div>')
-    fixes.append("BUG 2: Fixed securitySettingsContent ID")
+# Fix 2: Toast function - add show class
+old_toast = """function toast(msg, type = 'info') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
+}"""
 
-# BUG 4: Fix hardcoded zero token balances
-old_bal = "const amount = t.symbol === 'VRDX' ? bal : 0;"
-new_bal = "const amount = t.symbol === 'VRDX' ? bal : (wallet.tokenBalances && wallet.tokenBalances[t.symbol] ? wallet.tokenBalances[t.symbol] : 0);"
-if old_bal in c:
-    c = c.replace(old_bal, new_bal)
-    fixes.append("BUG 4: Fixed token balances")
+new_toast = """function toast(msg, type = 'info') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type + ' show';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 4000);
+}"""
 
-# BUG 5: Remove fake random price changes
-old_price = "Math.random() * 5).toFixed(1) + '%</div>'"
-if old_price in c:
-    c = c.replace(old_price, "--</div>'")
-    fixes.append("BUG 5: Removed fake price changes")
+if old_toast in content:
+    content = content.replace(old_toast, new_toast)
+    print("Fixed: toast show class added")
+else:
+    print("WARNING: toast function not found exactly, trying regex")
+    pattern = r"function toast\(msg, type = 'info'\).*?setTimeout\(\(\) => \{ t\.style\.opacity.*?t\.remove\(\)\}, 300\); \}, 4000\);"
+    match = re.search(pattern, content, re.DOTALL)
+    if match:
+        content = content[:match.start()] + new_toast + content[match.end():]
+        print("Fixed: toast replaced via regex")
+    else:
+        print("ERROR: Could not find toast function")
 
-# BUG 6: Fix hardcoded vote amount
-old_vote = "amount: 100, // <--- Hardcoded 100 VRDX"
-new_vote = "amount: parseFloat(document.getElementById('voteAmount') ? document.getElementById('voteAmount').value : 100),"
-if old_vote in c:
-    c = c.replace(old_vote, new_vote)
-    fixes.append("BUG 6: Fixed vote amount")
+# Check toast CSS exists
+if '.toast' in content:
+    print("Toast CSS: present")
+else:
+    print("Toast CSS: MISSING - adding")
+    toast_css = "\n.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:10001;opacity:0;transform:translateY(10px);transition:all 300ms ease-out;max-width:400px}\n.toast.show{opacity:1;transform:translateY(0)}\n.toast.success{background:#16a34a;color:#fff}\n.toast.error{background:#dc2626;color:#fff}\n.toast.info{background:#0f172a;color:#fff}\n"
+    content = content.replace('</style>', toast_css + '</style>')
 
-# BUG 7: Fix poolId construction in executeSwap
-old_poolid = "poolId: swapFromToken + '_' + swapToToken,"
-new_poolid = "poolId: (DEX_POOLS_CACHE.find(function(p) { return (p.tokenA === swapFromToken && p.tokenB === swapToToken) || (p.tokenB === swapFromToken && p.tokenA === swapToToken); }) || {}).id || (swapFromToken + '_' + swapToToken),"
-if old_poolid in c:
-    c = c.replace(old_poolid, new_poolid)
-    fixes.append("BUG 7: Fixed poolId lookup")
+with open("/var/www/verdiscan/wallet/index.html", "w") as f:
+    f.write(content)
 
-# BUG 8: Fix WebAuthn biometric array conversion
-old_webauthn = "id: new Uint8Array(securityConfig.biometricCredential.id),"
-new_webauthn = "id: Uint8Array.from(atob(securityConfig.biometricCredential.id.replace(/-/g,'+').replace(/_/g,'/')), function(c) { return c.charCodeAt(0); }),"
-if old_webauthn in c:
-    c = c.replace(old_webauthn, new_webauthn)
-    fixes.append("BUG 8: Fixed WebAuthn credential conversion")
-
-# BUG 10: Add input validation for send amount
-old_val = "if (!to || !amount) { toast('Enter address and amount', 'error'); return; }"
-new_val = "if (!to || !amount) { toast('Enter address and amount', 'error'); return; } if (amount < 0) { toast('Amount must be positive', 'error'); return; } if (amount > balance) { toast('Insufficient balance', 'error'); return; } if (to === wallet.address) { toast('Cannot send to yourself', 'error'); return; }"
-if old_val in c:
-    c = c.replace(old_val, new_val)
-    fixes.append("BUG 10: Added input validation")
-
-# Add backup helper functions before closing script tag
-backup_fns = """
-function revealBackupKey() {
-    var el = document.getElementById('backupKeyDisplay');
-    if (el && el.textContent.indexOf('•') === -1 && !el.textContent.startsWith('Click')) {
-        el.textContent = 'Click reveal to view key';
-        el.style.color = 'var(--text-dim)';
-    } else if (wallet && wallet.privateKey) {
-        el.textContent = wallet.privateKey;
-        el.style.color = 'var(--accent-green)';
-    }
-}
-function copyBackupKey() {
-    if (wallet && wallet.privateKey) {
-        navigator.clipboard.writeText(wallet.privateKey);
-        toast('Private key copied', 'success');
-    }
-}
-"""
-if 'revealBackupKey' not in c:
-    c = c.replace("</script>", backup_fns + "\n</script>")
-    fixes.append("Added backup helper functions")
-
-# Add vote amount input to staking section if missing
-if 'voteAmount' not in c:
-    # Find the vote section and add an input
-    old_vote_btn = "onclick=\"voteValidator('"
-    if old_vote_btn in c:
-        # Add a vote amount input before the vote buttons
-        c = c.replace(
-            old_vote_btn,
-            '<input type="number" id="voteAmount" placeholder="Amount" value="100" min="1" style="width:80px;padding:6px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;margin-right:8px;" onclick="event.stopPropagation()"> ' + old_vote_btn
-        )
-        fixes.append("Added vote amount input")
-
-with open("/opt/verdis/app/dist/web/wallet.html", "w") as f:
-    f.write(c)
-
-print("Applied " + str(len(fixes)) + " fixes:")
-for fix in fixes:
-    print("  + " + fix)
+print("Done. File size:", len(content))
+print("result.ok present:", "result.ok" in content)
+print("extrinsic_hash present:", "extrinsic_hash" in content)
