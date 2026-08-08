@@ -1,88 +1,137 @@
 import asyncio
-from playwright.async_api import async_playwright
 import json
+from playwright.async_api import async_playwright
 
-async def audit_visuals():
+async def check_visuals():
+    import os
+    os.environ['PLAYWRIGHT_NODE_JS_PATH'] = '/usr/bin/node'
+
     async with async_playwright() as p:
-        browser = await p.chromium.launch()
+        browser = await p.chromium.launch(headless=True)
         
-        # 1. DESKTOP VIEW AUDIT (1440x900)
-        page_desk = await browser.new_page(viewport={'width': 1440, 'height': 900})
-        await page_desk.goto('https://verdischain.com/tokenomics/?nocache=50006', wait_until='networkidle')
-        
-        # Check IDO grid elements desktop
-        ido_grid_desk = await page_desk.eval_on_selector('#ido-grid', '''el => {
-            const rect = el.getBoundingClientRect();
-            const children = Array.from(el.children).map(c => {
-                const r = c.getBoundingClientRect();
-                return { width: r.width, height: r.height, left: r.left, right: r.right, top: r.top, bottom: r.bottom };
-            });
-            return { gridWidth: rect.width, children };
-        }''')
-        print("DESKTOP IDO GRID:", json.dumps(ido_grid_desk, indent=2))
-        
-        # Check Hero floating cards bounding boxes and potential overlap
-        hero_float = await page_desk.eval_on_selector_all('.float-card', '''cards => {
-            return cards.map(c => {
-                const r = c.getBoundingClientRect();
-                return { class: c.className, left: r.left, top: r.top, width: r.width, height: r.height, right: r.right, bottom: r.bottom };
-            });
-        }''')
-        print("DESKTOP HERO FLOATING CARDS:", json.dumps(hero_float, indent=2))
-        
-        # Check Donut Chart canvas bounding box and visibility
-        chart_info = await page_desk.eval_on_selector('#tokenomicsChart', '''c => {
-            const r = c.getBoundingClientRect();
-            return { width: r.width, height: r.height, left: r.left, top: r.top };
-        }''')
-        print("DESKTOP CHART:", json.dumps(chart_info, indent=2))
+        # Test Desktop (1440x900)
+        page = await browser.new_page(viewport={'width': 1440, 'height': 900})
+        await page.goto('https://verdischain.com/?nocache=50001', wait_until='networkidle')
+        await page.wait_for_timeout(3000)
 
-        # Check for any overflowing elements (horizontal scrollbar)
-        overflow_desk = await page_desk.evaluate('''() => {
+        # 1. Check Image status
+        images = await page.evaluate('''() => {
+            return Array.from(document.querySelectorAll('img')).map(img => ({
+                src: img.src,
+                naturalWidth: img.naturalWidth,
+                naturalHeight: img.naturalHeight,
+                complete: img.complete,
+                alt: img.alt,
+                outer: img.outerHTML
+            }));
+        }''')
+        print("=== IMAGES (Desktop) ===")
+        for img in images:
+            print(img)
+
+        # 2. Check for Horizontal Overflow (X-scrollbar)
+        overflow_x = await page.evaluate('''() => {
             return {
                 scrollWidth: document.documentElement.scrollWidth,
                 clientWidth: document.documentElement.clientWidth,
-                hasHorizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
+                hasOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
             };
         }''')
-        print("DESKTOP OVERFLOW:", overflow_desk)
+        print("\n=== OVERFLOW X (Desktop) ===")
+        print(overflow_x)
 
-        # 2. MOBILE VIEW AUDIT (375x812)
-        page_mob = await browser.new_page(viewport={'width': 375, 'height': 812}, is_mobile=True)
-        await page_mob.goto('https://verdischain.com/tokenomics/?nocache=50006', wait_until='networkidle')
-        
-        ido_grid_mob = await page_mob.eval_on_selector('#ido-grid', '''el => {
-            const rect = el.getBoundingClientRect();
-            const children = Array.from(el.children).map((c, i) => {
-                const r = c.getBoundingClientRect();
-                return { index: i, width: r.width, height: r.height, left: r.left, right: r.right, top: r.top, bottom: r.bottom, scrollWidth: c.scrollWidth };
-            });
-            return { gridWidth: rect.width, children };
-        }''')
-        print("MOBILE IDO GRID:", json.dumps(ido_grid_mob, indent=2))
-        
-        overflow_mob = await page_mob.evaluate('''() => {
-            return {
-                scrollWidth: document.documentElement.scrollWidth,
-                clientWidth: document.documentElement.clientWidth,
-                hasHorizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
-            };
-        }''')
-        print("MOBILE OVERFLOW:", overflow_mob)
-        
-        # Find which elements cause overflow on mobile if any
-        wide_els_mob = await page_mob.evaluate('''() => {
-            const wide = [];
-            document.querySelectorAll('*').forEach(el => {
-                const r = el.getBoundingClientRect();
-                if (r.right > window.innerWidth + 1) {
-                    wide.append || wide.push({ tag: el.tagName, id: el.id, class: el.className, right: r.right, width: r.width });
+        # 3. Check for elements extending beyond viewport
+        offscreen_elements = await page.evaluate('''() => {
+            const width = window.innerWidth;
+            const elements = document.querySelectorAll('*');
+            const bad = [];
+            elements.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                if (rect.right > width + 5 && rect.width > 0) {
+                    bad.append || bad.push({
+                        tag: el.tagName,
+                        id: el.id,
+                        className: el.className,
+                        right: rect.right,
+                        width: rect.width,
+                        text: el.innerText ? el.innerText.substring(0, 30) : ''
+                    });
                 }
             });
-            return wide;
+            return bad;
         }''')
-        print("MOBILE ELEMENTS OVERFLOWING VIEWPORT:", json.dumps(wide_els_mob[:10], indent=2))
+        print(f"\n=== OFFSCREEN/OVERFLOWING ELEMENTS (Desktop: {len(offscreen_elements)}) ===")
+        for el in offscreen_elements[:10]:
+            print(el)
+
+        # 4. Check Mobile (375x812)
+        mobile_page = await browser.new_page(viewport={'width': 375, 'height': 812})
+        await mobile_page.goto('https://verdischain.com/?nocache=50001', wait_until='networkidle')
+        await mobile_page.wait_for_timeout(3000)
+
+        mobile_overflow_x = await mobile_page.evaluate('''() => {
+            return {
+                scrollWidth: document.documentElement.scrollWidth,
+                clientWidth: document.documentElement.clientWidth,
+                hasOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
+            };
+        }''')
+        print("\n=== OVERFLOW X (Mobile) ===")
+        print(mobile_overflow_x)
+
+        mobile_offscreen = await mobile_page.evaluate('''() => {
+            const width = window.innerWidth;
+            const elements = document.querySelectorAll('*');
+            const bad = [];
+            elements.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                if (rect.right > width + 5 && rect.width > 0) {
+                    bad.push({
+                        tag: el.tagName,
+                        id: el.id,
+                        className: el.className,
+                        right: rect.right,
+                        width: rect.width,
+                        text: el.innerText ? el.innerText.substring(0, 30) : ''
+                    });
+                }
+            });
+            return bad;
+        }''')
+        print(f"\n=== OFFSCREEN/OVERFLOWING ELEMENTS (Mobile: {len(mobile_offscreen)}) ===")
+        for el in mobile_offscreen[:10]:
+            print(el)
+
+        # 5. Check Mobile Nav Menu interaction
+        mobile_nav_state = await mobile_page.evaluate('''() => {
+            const hamburger = document.getElementById('navHamburger');
+            const navLinks = document.querySelector('.nav-links');
+            return {
+                hamburgerExists: !!hamburger,
+                hamburgerDisplay: hamburger ? window.getComputedStyle(hamburger).display : null,
+                navLinksDisplay: navLinks ? window.getComputedStyle(navLinks).display : null,
+                navLinksClass: navLinks ? navLinks.className : null
+            };
+        }''')
+        print("\n=== MOBILE NAV MENU STATE ===")
+        print(mobile_nav_state)
+
+        # Click hamburger and check menu display
+        await mobile_page.click('#navHamburger')
+        await mobile_page.wait_for_timeout(500)
+        mobile_nav_after_click = await mobile_page.evaluate('''() => {
+            const navLinks = document.querySelector('.nav-links');
+            const rect = navLinks ? navLinks.getBoundingClientRect() : null;
+            return {
+                navLinksClass: navLinks ? navLinks.className : null,
+                visible: rect ? (rect.width > 0 && rect.height > 0) : false,
+                rect: rect
+            };
+        }''')
+        print("\n=== MOBILE NAV AFTER CLICK ===")
+        print(mobile_nav_after_click)
+        await mobile_page.screenshot(path='mobile_nav_open.png')
 
         await browser.close()
 
-asyncio.run(audit_visuals())
+asyncio.run(check_visuals())

@@ -1,48 +1,50 @@
 import urllib.request
-import urllib.error
+import urllib.parse
+import json
 import ssl
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
-links = [
-    ("Nav logo", "https://verdischain.com/"),
-    ("Nav Verdiscan", "https://verdischain.com/explorer/"),
-    ("Nav DEX", "https://verdischain.com/dex/"),
-    ("Nav Whitepaper", "https://verdischain.com/whitepaper/"),
-    ("Nav Wallet", "https://verdischain.com/wallet/"),
-    ("Nav Sale", "https://verdischain.com/sale/"),
-    ("Nav Tokenomics", "https://verdischain.com/tokenomics/"),
-    ("Nav Faucet", "https://verdischain.com/faucet/"),
-    ("FAQ Verdis Wallet link", "https://verdischain.com/wallet/"),
-    ("Footer Home", "https://verdischain.com/"),
-    ("Footer Verdiscan", "https://verdischain.com/explorer/"),
-    ("Footer DEX", "https://verdischain.com/dex/"),
-    ("Footer Whitepaper", "https://verdischain.com/whitepaper/"),
-    ("Footer Wallet", "https://verdischain.com/wallet/"),
-    ("Footer Sale", "https://verdischain.com/sale/"),
-    ("Footer Tokenomics", "https://verdischain.com/tokenomics/"),
-    ("Footer Faucet", "https://verdischain.com/faucet/"),
-    ("Footer Validators", "https://verdischain.com/validators/"),
-    ("Footer Eco", "https://verdischain.com/eco/"),
-    ("Footer Referral", "https://verdischain.com/referral/"),
-    ("Footer Incentives", "https://verdischain.com/incentives/"),
-    ("Footer Contact", "https://verdischain.com/contact/"),
-    ("Footer API", "https://verdischain.com/api/"),
-    ("Footer Docs", "https://verdischain.com/docs/"),
-    ("Footer GitHub", "https://github.com/Protremix/Verdischain-"),
-]
+with open("links.json") as f:
+    links = json.load(f)
 
-for label, url in links:
+print(f"Testing {len(links)} links...")
+
+results = []
+tested = set()
+
+for item in links:
+    href = item["href"]
+    text = item["text"] or item["raw_href"]
+    if href in tested:
+        continue
+    tested.add(href)
+    
     req = urllib.request.Request(
-        url, 
+        href, 
         headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
     )
     try:
         resp = urllib.request.urlopen(req, context=ctx, timeout=10)
-        print(f"[{resp.status}] SUCCESS: {label} -> {url}")
+        status = resp.status
+        url = resp.geturl()
     except urllib.error.HTTPError as e:
-        print(f"[{e.code}] BROKEN LINK: {label} -> {url}")
+        status = e.code
+        url = href
     except Exception as e:
-        print(f"[ERR] FAILED: {label} -> {url} ({e})")
+        status = f"ERR: {str(e)}"
+        url = href
+        
+    print(f"[{status}] {text} -> {href} (final: {url})")
+    results.append({
+        "text": text,
+        "href": href,
+        "status": status,
+        "final_url": url
+    })
+
+with open("link_results.json", "w") as f:
+    json.dump(results, f, indent=2)
+

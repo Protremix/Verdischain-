@@ -1,0 +1,157 @@
+
+<div id="scroll-bar"></div>
+<div id="cursor-glow"></div>
+
+<nav class="nav">
+<div class="nav-inner">
+<a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain"></a>
+<div class="nav-links" id="navLinks">
+<a href="/explorer/">Verdiscan</a>
+      <a href="/dex/">DEX</a>
+      <a href="/whitepaper/">Whitepaper</a>
+      <a href="/wallet/" class="active">Wallet</a>
+      <a href="/sale/">Sale</a>
+      <a href="/tokenomics/">Tokenomics</a>
+      <a href="/faucet/">Faucet</a>
+</div>
+<div class="nav-status" id="navStatus">Block #349</div>
+<button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')"><span></span><span></span><span></span></button>
+</div>
+</nav>
+
+<div class="wallet-wrap">
+
+<!-- Hero -->
+<div class="wallet-hero">
+<div class="wallet-badge"><span class="wallet-badge-dot"></span> Non-Custodial · secp256k1</div>
+<h1>Verdis <span class="grad">Web3 Wallet</span></h1>
+<p>Create, import, send, and receive VRDX tokens. Your keys, your coins — powered by @noble/secp256k1.</p>
+</div>
+
+<!-- State: No Wallet -->
+<div class="wallet-state active" id="stateAuth">
+<div class="auth-cards" id="authCards">
+<div class="auth-card" onclick="showCreate()">
+<div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00a86b" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg></div>
+<h3>Create New Wallet</h3>
+<p>Generate a new secp256k1 keypair. Your private key never leaves your browser.</p>
+</div>
+<div class="auth-card" onclick="showImport()">
+<div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00a86b" stroke-width="2"><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-7M16 5l4 4-4 4M20 9H4"></path></svg></div>
+<h3>Import Wallet</h3>
+<p>Import an existing wallet using your private key or 12-word mnemonic.</p>
+</div>
+</div>
+
+<div class="import-form" id="createForm" style="display:none">
+<div class="private-key-warning">
+<strong>⚠️ Important:</strong> Save your private key securely. If you lose it, your funds are lost forever. No one can recover it for you.
+</div>
+<div class="form-group">
+<label>Your New Wallet Address (SS58)</label>
+<div class="address-value" id="newAddress">Click "Generate" to create...</div>
+</div>
+<div class="form-group">
+<label>Private Key (store this securely!)</label>
+<div class="private-key-display" id="newPrivKey" onclick="copyToClipboard(this.textContent)">Click "Generate" to create...</div>
+</div>
+<button class="btn-primary" onclick="generateWallet()">Generate New Wallet</button>
+<button class="btn-primary back-btn" style="margin-top:8px" onclick="backToAuth()">Back</button>
+</div>
+
+<div class="import-form" id="importForm" style="display:none">
+<div class="private-key-warning">
+<strong>⚠️ Warning:</strong> Never share your private key or mnemonic with anyone. Verdis Chain staff will never ask for it.
+</div>
+<div class="form-group">
+<label>Private Key (hex) or 12-Word Mnemonic</label>
+<textarea id="importInput" placeholder="0x... or word1 word2 word3... word12" style=""></textarea>
+</div>
+<button class="btn-primary" onclick="importWallet()">Import Wallet</button>
+<button class="btn-primary back-btn" style="margin-top:8px" onclick="backToAuth()">Back</button>
+</div>
+</div>
+
+<!-- State: Dashboard -->
+<div class="wallet-state" id="stateDash">
+<div class="dash-grid">
+<div class="balance-card">
+<div class="balance-label">Total Balance</div>
+<div class="balance-value" id="balanceDisplay">0.000000000<span class="unit">VRDX</span></div>
+<div class="balance-sub" id="balanceSub">Loading balance from chain...</div>
+</div>
+<div class="address-card">
+<div class="address-label">Your Address</div>
+<div class="address-value" id="dashAddress">—</div>
+<div class="address-actions">
+<button class="btn-small" onclick="copyToClipboard(document.getElementById('dashAddress').textContent)">Copy Address</button>
+<button class="btn-small" onclick="showReceive()">Receive</button>
+<button class="btn-small" onclick="exportPrivateKey()">Export Key</button>
+<button class="btn-small" onclick="logout()" style="color:#ef4444;border-color:#fecaca">Logout</button>
+</div>
+</div>
+</div>
+
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('send')">Send</button>
+<button class="tab-btn" onclick="showTab('receive')">Receive</button>
+<button class="tab-btn" onclick="showTab('history')">History</button>
+<button class="tab-btn" onclick="showTab('stake')">Stake</button>
+</div>
+
+<!-- Send Tab -->
+<div class="tab-panel active" id="tab-send">
+<div class="form-card">
+<div class="form-group">
+<label>Recipient Address (SS58 format)</label>
+<input type="text" id="sendTo" class="mono" placeholder="Enter recipient address..." style="">
+</div>
+<div class="form-group">
+<label>Amount (VRDX)</label>
+<input type="number" id="sendAmount" placeholder="0.0" step="0.000000001" min="0" style="">
+</div>
+<div class="form-group">
+<label>Transaction Memo (optional)</label>
+<input type="text" id="sendMemo" placeholder="Optional remark" maxlength="128" style="">
+</div>
+<button class="btn-primary" id="sendBtn" onclick="sendTransaction()">Send Transaction</button>
+</div>
+</div>
+
+<!-- Receive Tab -->
+<div class="tab-panel" id="tab-receive">
+<div class="form-card" style="text-align:center">
+<h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Receive VRDX</h3>
+<div id="qrCode" style="margin:0 auto 16px"></div>
+<div class="address-value" id="receiveAddress" style="max-width:400px;margin:0 auto 16px">—</div>
+<button class="btn-small" style="display:inline-flex" onclick="copyToClipboard(document.getElementById('receiveAddress').textContent)">Copy Address</button>
+<p style="font-size:12px;color:var(--text-muted);margin-top:16px">Share this address with anyone who wants to send you VRDX tokens.</p>
+</div>
+</div>
+
+<!-- History Tab -->
+<div class="tab-panel" id="tab-history">
+<div class="form-card">
+<div id="txHistory">
+<div class="tx-empty">Loading transaction history...</div>
+</div>
+</div>
+</div>
+
+<!-- Stake Tab -->
+<div class="tab-panel" id="tab-stake">
+<div class="form-card">
+<h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Delegate to Validator</h3>
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Stake your VRDX to a validator and earn rewards. You can undelegate at any time.</p>
+<div id="validatorList">
+<div class="tx-empty">Loading validators...</div>
+</div>
+</div>
+</div>
+
+</div>
+
+<!-- Footer -->
+
+</div>
+
