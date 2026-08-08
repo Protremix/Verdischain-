@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://verdischain.com/explorer/">
 <meta name="description" content="Verdiscan — Real-time Verdis Chain blockchain explorer with live blocks, transactions, validators, DEX pools, and eco metrics.">
 <meta property="og:title" content="Verdiscan — Verdis Chain Explorer">
 <meta property="og:description" content="Real-time blockchain explorer for Verdis Chain">
@@ -179,19 +180,6 @@ a{color:inherit;text-decoration:none}
   <div class="nav-inner">
     <a href="/" class="nav-logo"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain"></a>
     <div class="nav-links" id="navLinks">
-<<<<<<< HEAD
-      <a href="/">Home</a>
-      <a href="/explorer/" class="active">Verdiscan</a>
-      <a href="/dex/">DEX</a>
-      <a href="/validators/">Validators</a>
-      <a href="/eco/">Eco</a>
-      <a href="/faucet/">Faucet</a>
-      <a href="/wallet/">Wallet</a>
-      <a href="/sale/">Sale</a>
-      <a href="/contact/">Contact</a>
-      <a href="/api/">API</a>
-      <a href="/docs/">Docs</a>
-=======
       <a href="/explorer/" class="active">Verdiscan</a>
       <a href="/dex/">DEX</a>
       <a href="/whitepaper/">Whitepaper</a>
@@ -199,7 +187,6 @@ a{color:inherit;text-decoration:none}
       <a href="/sale/">Sale</a>
       <a href="/tokenomics/">Tokenomics</a>
       <a href="/faucet/">Faucet</a>
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
     </div>
     <div class="nav-status"><span class="pulse-dot"></span><span>Testnet Live</span></div>
     <button class="nav-menu-btn" onclick="document.getElementById('navLinks').classList.toggle('mobile')"><span></span><span></span><span></span></button>
@@ -329,13 +316,6 @@ a{color:inherit;text-decoration:none}
 <!-- Footer -->
 <footer class="footer">
   <div class="footer-links">
-<<<<<<< HEAD
-    <a href="/">Landing</a>
-    <a href="/explorer/">Verdiscan</a>
-    <a href="/dex/">DEX</a>
-    <a href="/validators/">Validators</a>
-    <a href="/eco/">Eco</a>
-=======
     <a href="/">Home</a>
     <a href="/explorer/">Verdiscan</a>
     <a href="/dex/">DEX</a>
@@ -348,7 +328,6 @@ a{color:inherit;text-decoration:none}
     <a href="/eco/">Eco</a>
     <a href="/referral/">Referral</a>
     <a href="/incentives/">Incentives</a>
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
     <a href="/contact/">Contact</a>
     <a href="/api/">API</a>
     <a href="/docs/">Docs</a>
@@ -483,9 +462,6 @@ async function loadBlocks() {
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="5"><span class="skel" style="width:100%"></span></td></tr>';
   let html = '';
-<<<<<<< HEAD
-  const start = blockNum || 4200;
-=======
   // Fetch current block height if not set
   if (!blockNum || blockNum === 0) {
     const hdr = await rpc('chain_getHeader', []);
@@ -493,7 +469,6 @@ async function loadBlocks() {
   }
   const start = blockNum || 100;
   if (start === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-3)">No blocks yet</td></tr>'; return; }
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
   for (let i = 0; i < 20; i++) {
     const bn = start - i;
     if (bn < 0) break;
