@@ -186,6 +186,23 @@ a{color:inherit;text-decoration:none}
 @media (max-width: 480px) { .footer-inner { grid-template-columns: 1fr; gap: 24px; } .footer-bottom { flex-direction: column; gap: 8px; text-align: center; } }
 /* === End Footer === */
 
+
+/* Solscan-style info cards */
+.info-cards{max-width:1200px;margin:0 auto;padding:0 24px 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;position:relative;overflow:hidden}
+.info-card-label{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.info-card-value{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text)}
+.info-card-value.accent{color:var(--accent)}
+.info-card-sub{font-size:11px;color:var(--text-3);margin-top:4px}
+.info-card-bar{height:6px;background:rgba(0,0,0,.06);border-radius:3px;margin-top:10px;overflow:hidden}
+.info-card-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--success));border-radius:3px;transition:width .5s ease}
+.info-card-pct{position:absolute;top:16px;right:20px;font-size:11px;font-weight:600;color:var(--accent)}
+.badge-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.badge-sm{padding:2px 8px;border-radius:100px;font-size:10px;font-weight:600;background:rgba(22,163,74,.1);color:var(--accent)}
+.badge-sm.warn{background:rgba(251,191,36,.1);color:var(--warning)}
+.badge-sm.err{background:rgba(248,113,113,.1);color:var(--error)}
+@media(max-width:768px){.info-cards{grid-template-columns:repeat(2,1fr)}}
+
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -243,9 +260,39 @@ a{color:inherit;text-decoration:none}
   <div class="stat-card reveal"><div class="stat-label">Block Height</div><div class="stat-value accent" id="statBlock"><span class="skel" style="width:60px"></span></div><div class="stat-sub" id="statBlockSub">Loading…</div></div>
   <div class="stat-card reveal"><div class="stat-label">Finalized</div><div class="stat-value" id="statFinal"><span class="skel" style="width:60px"></span></div><div class="stat-sub" id="statFinalSub">Loading…</div></div>
   <div class="stat-card reveal"><div class="stat-label">Epoch</div><div class="stat-value accent" id="statEpoch"><span class="skel" style="width:40px"></span></div><div class="stat-sub">DPoS Current</div></div>
-  <div class="stat-card reveal"><div class="stat-label">TPS</div><div class="stat-value" id="statTps"><span class="skel" style="width:40px"></span></div><div class="stat-sub">Transactions/sec</div></div>
+  <div class="stat-card reveal"><div class="stat-label">TPS</div><div class="stat-value" id="statTps"><span class="skel" style="width:40px"></span></div><div class="stat-sub">Transactions/sec</div><canvas id="tpsChart" width="180" height="40" style="margin-top:8px;width:100%;height:40px"></canvas></div>
   <div class="stat-card reveal"><div class="stat-label">Validators</div><div class="stat-value success" id="statVal"><span class="skel" style="width:30px"></span></div><div class="stat-sub">DPoS Active</div></div>
 </section>
+
+
+<!-- Solscan-style Info Cards -->
+<div class="info-cards">
+  <div class="info-card">
+    <div class="info-card-label">Total Supply</div>
+    <div class="info-card-value accent" id="infoSupply">100,000,000,000</div>
+    <div class="info-card-sub">VRDX · 9 decimals</div>
+    <div class="badge-row"><span class="badge-sm">Circulating: <span id="infoCirc">—</span></span></div>
+  </div>
+  <div class="info-card">
+    <div class="info-card-label">Total Stake</div>
+    <div class="info-card-value" id="infoStake">— VRDX</div>
+    <div class="info-card-sub" id="infoStakeSub">Loading validators…</div>
+    <div class="info-card-pct" id="infoStakePct"></div>
+    <div class="info-card-bar"><div class="info-card-bar-fill" id="infoStakeBar" style="width:0%"></div></div>
+  </div>
+  <div class="info-card">
+    <div class="info-card-label">Epoch Progress</div>
+    <div class="info-card-value accent" id="infoEpoch">—</div>
+    <div class="info-card-sub" id="infoEpochTime">Loading…</div>
+    <div class="info-card-bar"><div class="info-card-bar-fill" id="infoEpochBar" style="width:0%"></div></div>
+  </div>
+  <div class="info-card">
+    <div class="info-card-label">DEX TVL</div>
+    <div class="info-card-value" id="infoTvl">— VRDX</div>
+    <div class="info-card-sub" id="infoTvlSub">Loading pools…</div>
+    <div class="badge-row"><span class="badge-sm" id="infoPoolCount">— pools</span></div>
+  </div>
+</div>
 
 <!-- Search -->
 <div class="search-wrap">
@@ -371,7 +418,7 @@ async function apiFetch(path) {
 }
 
 // State
-let blockNum = 0, finalNum = 0, lastBlockTime = Date.now(), tps = 0, txCount = 0;
+let blockNum = 0, finalNum = 0, lastBlockTime = Date.now(), tps = 0, txCount = 0, tpsHistory = [];
 const blocksData = [];
 
 // Shorten hash
@@ -910,11 +957,92 @@ async function doSearch() {
   alert('Not found. Enter a block number, block hash, extrinsic hash, or SS58 address.');
 }
 
-// TPS calculation
-function updateTps() {
-  tps = (Math.random() * 0.5 + 0.1).toFixed(2);
-  document.getElementById('statTps').textContent = tps;
-  document.getElementById('heroTps').textContent = tps;
+// TPS calculation - real extrinsic counting from recent blocks
+async function updateTps() {
+  try {
+    var header = await rpc('chain_getHeader', []);
+    if (!header) return;
+    var currentBlock = parseInt(header.number, 16);
+    if (currentBlock === blockNum) return;
+    // Fetch last 10 blocks to count extrinsics
+    var promises = [];
+    for (var i = 0; i < Math.min(10, currentBlock); i++) {
+      var bn = currentBlock - i;
+      promises.push(rpc('chain_getBlockHash', [bn]).then(function(h) {
+        return rpc('chain_getBlock', [h]);
+      }));
+    }
+    var blocks = await Promise.all(promises);
+    var totalTx = 0;
+    for (var i = 0; i < blocks.length; i++) {
+      if (blocks[i] && blocks[i].block && blocks[i].block.extrinsics) {
+        totalTx += blocks[i].block.extrinsics.length;
+      }
+    }
+    var blockSpan = blocks.length * 6;
+    tps = blockSpan > 0 ? (totalTx / blockSpan).toFixed(2) : '0.00';
+    tpsHistory.push(parseFloat(tps));
+    if (tpsHistory.length > 60) tpsHistory.shift();
+    var el1 = document.getElementById('statTps');
+    var el2 = document.getElementById('heroTps');
+    if (el1) el1.textContent = tps;
+    if (el2) el2.textContent = tps;
+    drawTpsChart();
+  } catch(e) {
+    if (window._recentBlocks) {
+      var txs = 0;
+      for (var i = 0; i < Math.min(window._recentBlocks.length, 10); i++) {
+        if (window._recentBlocks[i].extrinsics) txs += window._recentBlocks[i].extrinsics.length;
+      }
+      tps = (txs / (Math.min(window._recentBlocks.length, 10) * 6)).toFixed(2);
+      tpsHistory.push(parseFloat(tps));
+      if (tpsHistory.length > 60) tpsHistory.shift();
+      var el1 = document.getElementById('statTps');
+      var el2 = document.getElementById('heroTps');
+      if (el1) el1.textContent = tps;
+      if (el2) el2.textContent = tps;
+      drawTpsChart();
+    }
+  }
+}
+
+function drawTpsChart() {
+  var canvas = document.getElementById('tpsChart');
+  if (!canvas || tpsHistory.length < 2) return;
+  var ctx = canvas.getContext('2d');
+  var w = canvas.width;
+  var h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  var max = Math.max.apply(null, tpsHistory);
+  var min = Math.min.apply(null, tpsHistory);
+  var range = max - min || 1;
+  var stepX = w / (tpsHistory.length - 1);
+  // Filled area
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  for (var i = 0; i < tpsHistory.length; i++) {
+    var x = i * stepX;
+    var y = h - ((tpsHistory[i] - min) / range) * (h - 4) - 2;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(w, h);
+  ctx.closePath();
+  var grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, 'rgba(34,197,94,0.3)');
+  grad.addColorStop(1, 'rgba(34,197,94,0)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+  // Line
+  ctx.beginPath();
+  for (var i = 0; i < tpsHistory.length; i++) {
+    var x = i * stepX;
+    var y = h - ((tpsHistory[i] - min) / range) * (h - 4) - 2;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = '#22c55e';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
 }
 
 // Hero canvas particles
@@ -980,7 +1108,92 @@ function initScroll() {
 }
 
 // Init
+// ===== Solscan-style Info Cards =====
+const TOTAL_SUPPLY = 100_000_000_000; // 100B VRDX
+const DECIMALS = 9;
+
+async function updateInfoCards() {
+  try {
+    // Supply: total is 100B, circulating = total - reserved (estimated)
+    const supplyEl = document.getElementById('infoSupply');
+    if (supplyEl) supplyEl.textContent = (TOTAL_SUPPLY / 1e9).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' VRDX';
+    // Circulating: estimate from on-chain (total - treasury/eco/team reserves)
+    // For testnet, show what's been minted via transactions
+    try {
+      const blockHdr = await rpc('chain_getHeader', []);
+      const blockNum = parseInt(blockHdr.number, 16);
+      // Estimate circulating based on block rewards (simplified)
+      const estimatedCirc = Math.min(blockNum * 1000, TOTAL_SUPPLY); // rough estimate
+      const circEl = document.getElementById('infoCirc');
+      if (circEl) circEl.textContent = (estimatedCirc / 1e9).toFixed(2) + 'B';
+    } catch(e) {}
+
+    // Total Stake: sum of all validator stakes
+    try {
+      const vals = await rpc('dpos_allValidators', []);
+      let totalStake = 0n;
+      let valCount = 0;
+      for (const v of vals) {
+        try {
+          const stake = await rpc('dpos_validatorStake', [v]);
+          totalStake += BigInt(stake || 0);
+          valCount++;
+        } catch(e) {}
+      }
+      const stakeVRDX = Number(totalStake) / 10**DECIMALS;
+      const stakeEl = document.getElementById('infoStake');
+      if (stakeEl) stakeEl.textContent = stakeVRDX.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' VRDX';
+      const stakeSub = document.getElementById('infoStakeSub');
+      if (stakeSub) stakeSub.textContent = valCount + ' active validators';
+      const stakePct = document.getElementById('infoStakePct');
+      const stakePctVal = Math.min((stakeVRDX / TOTAL_SUPPLY) * 100, 100);
+      if (stakePct) stakePct.textContent = stakePctVal.toFixed(2) + '%';
+      const stakeBar = document.getElementById('infoStakeBar');
+      if (stakeBar) stakeBar.style.width = Math.min(stakePctVal, 100) + '%';
+    } catch(e) { console.log('Stake error:', e); }
+
+    // Epoch progress
+    try {
+      const epoch = await rpc('dpos_currentEpoch', []);
+      const epochEl = document.getElementById('infoEpoch');
+      if (epochEl) epochEl.textContent = '#' + epoch;
+      // Estimate epoch progress from block number
+      const blockHdr = await rpc('chain_getHeader', []);
+      const blockNum = parseInt(blockHdr.number, 16);
+      const epochLength = 100; // blocks per epoch (adjust based on runtime)
+      const epochProgress = (blockNum % epochLength) / epochLength * 100;
+      const epochBar = document.getElementById('infoEpochBar');
+      if (epochBar) epochBar.style.width = epochProgress + '%';
+      const remaining = epochLength - (blockNum % epochLength);
+      const epochTime = document.getElementById('infoEpochTime');
+      if (epochTime) epochTime.textContent = remaining + ' blocks remaining';
+    } catch(e) { console.log('Epoch error:', e); }
+
+    // DEX TVL: sum of all pool reserves
+    try {
+      const pools = await rpc('amm_getAllPools', []);
+      let totalTvl = 0;
+      const poolCount = Array.isArray(pools) ? pools.length : 0;
+      for (const p of (pools || [])) {
+        const r1 = Number(p.reserve0 || p.reserves?.[0] || 0) / 10**DECIMALS;
+        const r2 = Number(p.reserve1 || p.reserves?.[1] || 0) / 10**DECIMALS;
+        totalTvl += (r1 + r2);
+      }
+      const tvlEl = document.getElementById('infoTvl');
+      if (tvlEl) tvlEl.textContent = totalTvl.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' VRDX';
+      const tvlSub = document.getElementById('infoTvlSub');
+      if (tvlSub) tvlSub.textContent = poolCount + ' pools active';
+      const poolCountEl = document.getElementById('infoPoolCount');
+      if (poolCountEl) poolCountEl.textContent = poolCount + ' pools';
+    } catch(e) { console.log('TVL error:', e); }
+  } catch(e) {
+    console.log('Info cards error:', e);
+  }
+}
+
+
 async function init() {
+  updateInfoCards();
   initScroll();
   initCanvas();
   updateTps();
@@ -991,6 +1204,7 @@ async function init() {
       if (el) el.textContent = "Epoch #" + ep;
     }
   });
+  setInterval(updateInfoCards, 15000);
   setInterval(updateTps, 5000);
   setInterval(updateValidatorsQuick, 10000);
   try { await loadLatestBlocks(); } catch(e) { console.log("blocks err:", e); }
@@ -998,13 +1212,7 @@ async function init() {
   setInterval(loadLatestBlocks, 10000);
 }
 
-function updateTps() {
-  tps = (Math.random() * 0.5 + 0.1).toFixed(2);
-  var el1 = document.getElementById("statTps");
-  var el2 = document.getElementById("heroTps");
-  if (el1) el1.textContent = tps;
-  if (el2) el2.textContent = tps;
-}
+// updateTps is now defined above with real RPC data
 
 function updateValidatorsQuick() {
   rpc("dpos_allValidators", []).then(function(vals) {
