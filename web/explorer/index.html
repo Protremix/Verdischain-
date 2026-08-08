@@ -239,9 +239,10 @@ a{color:inherit;text-decoration:none}
 </section>
 
 <!-- Stats -->
-<section class="stats-bar">
+<section class="stats-bar" style="grid-template-columns:repeat(5,1fr)">
   <div class="stat-card reveal"><div class="stat-label">Block Height</div><div class="stat-value accent" id="statBlock"><span class="skel" style="width:60px"></span></div><div class="stat-sub" id="statBlockSub">Loading…</div></div>
   <div class="stat-card reveal"><div class="stat-label">Finalized</div><div class="stat-value" id="statFinal"><span class="skel" style="width:60px"></span></div><div class="stat-sub" id="statFinalSub">Loading…</div></div>
+  <div class="stat-card reveal"><div class="stat-label">Epoch</div><div class="stat-value accent" id="statEpoch"><span class="skel" style="width:40px"></span></div><div class="stat-sub">DPoS Current</div></div>
   <div class="stat-card reveal"><div class="stat-label">TPS</div><div class="stat-value" id="statTps"><span class="skel" style="width:40px"></span></div><div class="stat-sub">Transactions/sec</div></div>
   <div class="stat-card reveal"><div class="stat-label">Validators</div><div class="stat-value success" id="statVal"><span class="skel" style="width:30px"></span></div><div class="stat-sub">DPoS Active</div></div>
 </section>
@@ -302,7 +303,7 @@ a{color:inherit;text-decoration:none}
   <div class="tab-content" id="tab-validators">
     <div class="panel">
       <div class="panel-header"><span class="panel-title">DPoS Validators</span><span style="font-size:12px;color:var(--text-3)" id="valCount"></span></div>
-      <table class="tbl"><thead><tr><th>#</th><th>ADDRESS</th><th>STATUS</th><th>GREEN SCORE</th></tr></thead><tbody id="valList"></tbody></table>
+      <table class="tbl"><thead><tr><th>#</th><th>NAME</th><th>ADDRESS</th><th>STAKE</th><th>STATUS</th></tr></thead><tbody id="valList"></tbody></table>
     </div>
   </div>
 
@@ -466,12 +467,10 @@ function decodeExtrinsic(e, blockHash, blockNum) {
     const scanStart = Math.min(bytes.length - 4, 100);
     for (let start = scanStart; start < bytes.length; start++) {
       let text = '';
-      let valid = true;
       for (let j = start; j < bytes.length; j++) {
         if (bytes[j] >= 32 && bytes[j] <= 126) {
           text += String.fromCharCode(bytes[j]);
         } else {
-          valid = false;
           break;
         }
       }
@@ -487,7 +486,8 @@ function decodeExtrinsic(e, blockHash, blockNum) {
     return {
       type: 'Signed',
       badge: 'badge-signed',
-      signer: signer ? signer.slice(0, 10) + '...' + signer.slice(-4) : '\u2014',
+      signer: signer ? signer.slice(0, 10) + '...' + signer.slice(-4) : '—',
+      signerFull: signer || '—',
       method: 'System.remark',
       remark: remark,
       hash: extHash,
@@ -498,7 +498,8 @@ function decodeExtrinsic(e, blockHash, blockNum) {
     return {
       type: 'Inherent',
       badge: 'badge-inherent',
-      signer: '\u2014',
+      signer: '—',
+      signerFull: '—',
       method: 'Timestamp.set',
       remark: '',
       hash: shortHash(blockHash),
@@ -522,7 +523,9 @@ async function loadLatestExtrinsics() {
       if (!ext) continue;
       if (ext.type !== 'Signed') continue; // Skip inherent/timestamp
       const remarkShort = ext.remark ? ext.remark.substring(0, 35) : '';
-      html += '<tr onclick="showBlock(\''+b.hash+'\')" style="cursor:pointer">' +
+      const safeRemark = (ext.remark || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
+      const safeSigner = (ext.signerFull || ext.signer || '—').replace(/'/g, "\\'");
+      html += '<tr onclick="showExtrinsic(\''+ext.hash+'\', '+b.num+', \''+ext.type+'\', \''+ext.method+'\', \''+safeSigner+'\', \''+safeRemark+'\')" style="cursor:pointer">' +
         '<td><span class="badge '+ext.badge+'">'+ext.type+'</span></td>' +
         '<td>' + ext.method + (remarkShort ? '<br><span style="font-size:11px;color:var(--text-3)">'+remarkShort+'</span>' : '') + '</td>' +
         '<td class="hash">'+ext.hash+'</td>' +
@@ -531,12 +534,26 @@ async function loadLatestExtrinsics() {
       count++;
     }
   }
-  // If no signed extrinsics found, show message
   if (count === 0) {
     tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-3);padding:24px">Waiting for signed transactions...</td></tr>';
   } else {
     tbody.innerHTML = html;
   }
+}
+
+// Show transaction detail modal
+function showExtrinsic(hash, blockNum, type, method, signer, remark) {
+  document.getElementById('modalTitle').textContent = 'Transaction Detail';
+  let html = '<dl>';
+  html += '<dt>Extrinsic Hash</dt><dd>' + (hash || '—') + '</dd>';
+  html += '<dt>Block Number</dt><dd>' + (blockNum ? '#' + blockNum : '—') + '</dd>';
+  html += '<dt>Type</dt><dd><span class="badge ' + (type === 'Signed' ? 'badge-signed' : 'badge-inherent') + '">' + (type || 'Signed') + '</span></dd>';
+  html += '<dt>Method</dt><dd>' + (method || 'System.remark') + '</dd>';
+  html += '<dt>Signer Address</dt><dd>' + (signer || '—') + '</dd>';
+  html += '<dt>Remark Text</dt><dd>' + (remark || '—') + '</dd>';
+  html += '</dl>';
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modal').classList.add('show');
 }
 
 // Load all blocks
@@ -625,75 +642,147 @@ async function loadExtrinsics() {
 async function loadValidators() {
   const tbody = document.getElementById('valList');
   if (!tbody) return;
-  if (!window._blocksLoaded) tbody.innerHTML = '<tr><td colspan="4"><span class="skel" style="width:100%"></span></td></tr>';
+  tbody.innerHTML = '<tr><td colspan="5"><span class="skel" style="width:100%"></span></td></tr>';
   
-  // Try API first, fallback to RPC
-  const apiData = await apiFetch('/validators');
-  let html = '';
-  if (apiData && Array.isArray(apiData) && apiData.length > 0) {
-    apiData.forEach((v, i) => {
-      html += `<tr>
-        <td>${i+1}</td>
-        <td class="hash">${v.address || v.account || '—'}</td>
-        <td><span class="badge badge-signed">Active</span></td>
-        <td>${v.green_score || v.greenScore || Math.floor(60+Math.random()*40)}</td>
-      </tr>`;
-    });
-  } else {
-    // Fallback: show 14 validators
-    for (let i = 0; i < 14; i++) {
-      const hash = await rpc('chain_getBlockHash', [0]);
-      html += `<tr>
-        <td>${i+1}</td>
-        <td class="hash">5D4y…${(i*7).toString(16).padStart(4,'0')}</td>
-        <td><span class="badge badge-signed">Active</span></td>
-        <td>${Math.floor(65+Math.random()*35)}</td>
-      </tr>`;
-    }
+  const valIds = await rpc('dpos_allValidators', []);
+  if (!valIds || !Array.isArray(valIds) || valIds.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-3)">No validators found</td></tr>';
+    return;
   }
+  
+  const valPromises = valIds.map(function(id) {
+    return Promise.all([
+      rpc('dpos_validatorStake', [id]),
+      rpc('dpos_validatorName', [id])
+    ]).then(function(res) {
+      return { id: id, stake: res[0], rawName: res[1] };
+    });
+  });
+  
+  const results = await Promise.all(valPromises);
+  
+  let html = '';
+  results.forEach(function(v, i) {
+    let name = '';
+    if (Array.isArray(v.rawName) && v.rawName.length > 0) {
+      name = String.fromCharCode.apply(null, v.rawName).trim();
+    } else if (typeof v.rawName === 'string') {
+      name = v.rawName.trim();
+    }
+    if (!name || name === 'None') {
+      name = 'Validator-' + (i + 1);
+    }
+    
+    const stakeNum = (v.stake !== null && v.stake !== undefined) ? Number(v.stake) : 0;
+    const stakeFmt = (stakeNum / 1e9).toLocaleString('en-US', {maximumFractionDigits: 4}) + ' VRDX';
+    const addrTrunc = v.id ? v.id.slice(0, 6) + '…' + v.id.slice(-4) : '—';
+    
+    html += '<tr>' +
+      '<td>' + (i + 1) + '</td>' +
+      '<td style="font-weight:600;color:var(--text)">' + name + '</td>' +
+      '<td class="hash" title="' + v.id + '">' + addrTrunc + '</td>' +
+      '<td class="hash hash-accent">' + stakeFmt + '</td>' +
+      '<td><span class="badge badge-signed">Active</span></td>' +
+      '</tr>';
+  });
+  
   tbody.innerHTML = html;
-  document.getElementById('valCount').textContent = '14 active validators';
-  document.getElementById('statVal').textContent = '14';
-  document.getElementById('heroValidators').textContent = '14';
+  
+  const countStr = results.length.toString();
+  const elValCount = document.getElementById('valCount');
+  if (elValCount) elValCount.textContent = countStr + ' active validators';
+  const elStatVal = document.getElementById('statVal');
+  if (elStatVal) elStatVal.textContent = countStr;
+  const elHeroVal = document.getElementById('heroValidators');
+  if (elHeroVal) elHeroVal.textContent = countStr;
 }
 
 // Load DEX
 async function loadDex() {
   const tbody = document.getElementById('dexPools');
   if (!tbody) return;
-  const pools = [
-    {name:'VRDX/USDC', a:'1.25M VRDX', b:'1.0M USDC', fee:'0.3%'},
-    {name:'VRDX/USDT', a:'800K VRDX', b:'640K USDT', fee:'0.3%'},
-    {name:'VRDX/ETH', a:'500K VRDX', b:'125 ETH', fee:'0.3%'},
-    {name:'VRDX/BTC', a:'300K VRDX', b:'3.75 BTC', fee:'0.3%'},
-    {name:'VRDX/DAI', a:'400K VRDX', b:'320K DAI', fee:'0.3%'},
-    {name:'VRDX/GRAM', a:'200K VRDX', b:'100K GRAM', fee:'0.3%'},
-  ];
-  tbody.innerHTML = pools.map(p => `<tr>
-    <td class="hash hash-accent">${p.name}</td>
-    <td class="hash">${p.a}</td>
-    <td class="hash">${p.b}</td>
-    <td>${p.fee}</td>
-  </tr>`).join('');
+  tbody.innerHTML = '<tr><td colspan="4"><span class="skel" style="width:100%"></span></td></tr>';
+  
+  const pools = await rpc('amm_dex_getAllPools', []);
+  if (!pools || !Array.isArray(pools) || pools.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-3)">No liquidity pools found</td></tr>';
+    return;
+  }
+  
+  function bytesToStr(arr) {
+    if (typeof arr === 'string') return arr;
+    if (Array.isArray(arr)) {
+      return String.fromCharCode.apply(null, arr).trim();
+    }
+    return String(arr || '');
+  }
+  
+  function formatRes(amt, symbol) {
+    const val = Number(amt || 0) / 1e9;
+    return val.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' ' + symbol;
+  }
+  
+  let html = '';
+  pools.forEach(function(p) {
+    const symbolA = bytesToStr(p.token_a) || 'TOKEN_A';
+    const symbolB = bytesToStr(p.token_b) || 'TOKEN_B';
+    const poolName = symbolA + '/' + symbolB;
+    const resA = formatRes(p.reserve_a, symbolA);
+    const resB = formatRes(p.reserve_b, symbolB);
+    
+    let feeStr = '0.3%';
+    if (p.fee_numerator !== undefined && p.fee_denominator && p.fee_denominator > 0) {
+      const feePct = (p.fee_numerator / p.fee_denominator) * 100;
+      feeStr = (feePct % 1 === 0 ? feePct.toFixed(0) : feePct.toFixed(1)) + '%';
+    }
+    
+    html += '<tr>' +
+      '<td class="hash hash-accent">' + poolName + '</td>' +
+      '<td class="hash">' + resA + '</td>' +
+      '<td class="hash">' + resB + '</td>' +
+      '<td>' + feeStr + '</td>' +
+      '</tr>';
+  });
+  
+  tbody.innerHTML = html;
 }
 
 // Load Eco
 async function loadEco() {
   const tbody = document.getElementById('ecoData');
   if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="3"><span class="skel" style="width:100%"></span></td></tr>';
+  
+  const [co2, trees, credits, greenVals, reforest, retired] = await Promise.all([
+    rpc('eco_getTotalCO2Offset'),
+    rpc('eco_getTotalTreesPlanted'),
+    rpc('eco_getCarbonCreditCount'),
+    rpc('eco_getGreenValidatorCount'),
+    rpc('eco_getReforestProjectCount'),
+    rpc('eco_getTotalCreditsRetired')
+  ]);
+  
+  function fmt(val) {
+    if (val === null || val === undefined) return '0';
+    return Number(val).toLocaleString('en-US');
+  }
+  
   const data = [
-    {metric:'CO₂ Offset', value:'6,260', unit:'tCO₂e'},
-    {metric:'Trees Planted', value:'242', unit:'trees'},
-    {metric:'Carbon Credits', value:'6', unit:'credits'},
-    {metric:'Green Score Avg', value:'82', unit:'/100'},
-    {metric:'Eco Validators', value:'14', unit:'validators'},
-    {metric:'Reforestation', value:'12', unit:'projects'},
+    {metric: 'CO₂ Offset', value: fmt(co2), unit: 'tCO₂e'},
+    {metric: 'Trees Planted', value: fmt(trees), unit: 'trees'},
+    {metric: 'Carbon Credits', value: fmt(credits), unit: 'credits'},
+    {metric: 'Green Validators', value: fmt(greenVals), unit: 'validators'},
+    {metric: 'Reforestation Projects', value: fmt(reforest), unit: 'projects'},
+    {metric: 'Total Credits Retired', value: fmt(retired), unit: 'retired'}
   ];
-  tbody.innerHTML = data.map(d => `<tr>
-    <td>${d.metric}</td>
-    <td class="hash hash-accent">${d.value}</td>
-    <td>${d.unit}</td>
-  </tr>`).join('');
+  
+  tbody.innerHTML = data.map(function(d) {
+    return '<tr>' +
+      '<td>' + d.metric + '</td>' +
+      '<td class="hash hash-accent">' + d.value + '</td>' +
+      '<td>' + d.unit + '</td>' +
+      '</tr>';
+  }).join('');
 }
 
 // Show block detail
@@ -742,17 +831,83 @@ function closeModal() { document.getElementById('modal').classList.remove('show'
 async function doSearch() {
   const q = document.getElementById('searchInput').value.trim();
   if (!q) return;
-  // Try block number
-  if (/^\d+$/.test(q)) {
-    const hash = await rpc('chain_getBlockHash', [parseInt(q)]);
-    if (hash) { showBlock(hash); return; }
-  }
-  // Try hash
-  if (q.startsWith('0x') && q.length > 20) {
+  
+  // 1. Block Hash: starts with 0x and length 66-68
+  if (q.startsWith('0x') && q.length >= 66 && q.length <= 68) {
     showBlock(q);
     return;
   }
-  alert('Not found. Try a block number or block hash.');
+  
+  // 2. Extrinsic Hash: starts with 0x and length 8-20
+  if (q.startsWith('0x') && q.length >= 8 && q.length <= 20) {
+    // Search loaded blocksData first
+    for (let i = 0; i < blocksData.length; i++) {
+      const b = blocksData[i];
+      const exts = b.exts || [];
+      for (let j = 0; j < exts.length; j++) {
+        const ext = decodeExtrinsic(exts[j], b.hash, b.num);
+        if (ext && ext.hash && ext.hash.toLowerCase() === q.toLowerCase()) {
+          showExtrinsic(ext.hash, b.num, ext.type, ext.method, ext.signerFull || ext.signer, ext.remark);
+          return;
+        }
+      }
+    }
+    // Search recent 30 blocks from node
+    const hdr = await rpc('chain_getHeader', []);
+    if (hdr && hdr.number) {
+      const curr = parseInt(hdr.number, 16);
+      for (let bn = curr; bn >= Math.max(0, curr - 30); bn--) {
+        const hash = await rpc('chain_getBlockHash', [bn]);
+        if (!hash) continue;
+        const block = await rpc('chain_getBlock', [hash]);
+        const exts = (block && block.block && block.block.extrinsics) || [];
+        for (let j = 0; j < exts.length; j++) {
+          const ext = decodeExtrinsic(exts[j], hash, bn);
+          if (ext && ext.hash && ext.hash.toLowerCase() === q.toLowerCase()) {
+            showExtrinsic(ext.hash, bn, ext.type, ext.method, ext.signerFull || ext.signer, ext.remark);
+            return;
+          }
+        }
+      }
+    }
+    alert('Extrinsic not found in recent blocks.');
+    return;
+  }
+  
+  // 3. SS58 Address: starts with 5 and length > 20
+  if (q.startsWith('5') && q.length > 20) {
+    let nonce = 0;
+    let balance = '—';
+    try {
+      const nonceRes = await rpc('system_accountNextIndex', [q]);
+      if (nonceRes !== null && nonceRes !== undefined) nonce = nonceRes;
+      const accRes = await rpc('system_account', [q]);
+      if (accRes && accRes.data) {
+        balance = (Number(accRes.data.free) / 1e9).toLocaleString('en-US') + ' VRDX';
+        if (accRes.nonce !== undefined) nonce = accRes.nonce;
+      }
+    } catch(e) {}
+    
+    document.getElementById('modalTitle').textContent = 'Account Info';
+    let html = '<dl>';
+    html += '<dt>SS58 Address</dt><dd>' + q + '</dd>';
+    html += '<dt>Balance</dt><dd>' + balance + '</dd>';
+    html += '<dt>Nonce</dt><dd>' + nonce + '</dd>';
+    html += '</dl>';
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('modal').classList.add('show');
+    return;
+  }
+  
+  // 4. Block Number: digits or fallback
+  if (/^\d+$/.test(q)) {
+    const hash = await rpc('chain_getBlockHash', [parseInt(q, 10)]);
+    if (hash) { showBlock(hash); return; }
+    alert('Block #' + q + ' not found.');
+    return;
+  }
+  
+  alert('Not found. Enter a block number, block hash, extrinsic hash, or SS58 address.');
 }
 
 // TPS calculation
@@ -830,6 +985,12 @@ async function init() {
   initCanvas();
   updateTps();
   updateValidatorsQuick();
+  rpc("dpos_currentEpoch", []).then(function(ep) {
+    if (ep !== null && ep !== undefined) {
+      var el = document.getElementById("statEpoch");
+      if (el) el.textContent = "Epoch #" + ep;
+    }
+  });
   setInterval(updateTps, 5000);
   setInterval(updateValidatorsQuick, 10000);
   try { await loadLatestBlocks(); } catch(e) { console.log("blocks err:", e); }
@@ -846,10 +1007,15 @@ function updateTps() {
 }
 
 function updateValidatorsQuick() {
-  var el1 = document.getElementById("statVal");
-  var el2 = document.getElementById("heroValidators");
-  if (el1) el1.textContent = "14";
-  if (el2) el2.textContent = "14";
+  rpc("dpos_allValidators", []).then(function(vals) {
+    if (vals && Array.isArray(vals)) {
+      var countStr = vals.length.toString();
+      var el1 = document.getElementById("statVal");
+      var el2 = document.getElementById("heroValidators");
+      if (el1) el1.textContent = countStr;
+      if (el2) el2.textContent = countStr;
+    }
+  });
 }
 
 init();
@@ -876,6 +1042,12 @@ setInterval(function() {
           document.getElementById("statFinal").textContent = "#" + fn;
         }
       });
+    }
+  });
+  rpc("dpos_currentEpoch", []).then(function(ep) {
+    if (ep !== null && ep !== undefined) {
+      var el = document.getElementById("statEpoch");
+      if (el) el.textContent = "Epoch #" + ep;
     }
   });
 }, 6000);
