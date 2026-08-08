@@ -14,7 +14,7 @@
 :root {
   --bg: #f1f5f9; --bg-1: #111; --bg-2: #1a1a1a; --card: #ffffff; --border: #e2e8f0; --border-2: #333;
   --text: #0f172a; --text-2: #475569; --text-3: #334155;
-  --accent: #caff33; --accent-2: #b4f849; --accent-glow: rgba(202,255,51,0.15);
+  --accent: #16a34a; --accent-2: #15803d; --accent-glow: rgba(22,163,74,0.12);
   --success: #4ade80; --warning: #fbbf24; --error: #ef4444;
   --radius: 12px; --radius-sm: 8px;
 }
@@ -131,7 +131,7 @@ footer { background:var(--bg-1); border-top:1px solid var(--border); padding:32p
 
 /* Mobile hamburger menu */
 .nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:40px;height:40px;background:transparent;border:none;cursor:pointer;padding:8px;z-index:1001}
-.nav-hamburger span{display:block;width:22px;height:2px;background:#caff33;border-radius:2px;transition:all 250ms cubic-bezier(0.16,1,0.3,1)}
+.nav-hamburger span{display:block;width:22px;height:2px;background:#16a34a;border-radius:2px;transition:all 250ms cubic-bezier(0.16,1,0.3,1)}
 .nav-hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
 .nav-hamburger.active span:nth-child(2){opacity:0}
 .nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
@@ -155,22 +155,12 @@ thead,tbody{display:table;width:100%}
   <a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain" class="brand-logo-img" style="height:48px;width:auto;display:block;object-fit:contain;flex-shrink:0"></a>
   <button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links">
     <a href="/explorer/">Verdiscan</a>
-<<<<<<< HEAD
-    <a href="/dex/">DEX</a>
-    <a href="/validators/" class="active">Validators</a>
-    <a href="/eco/">Eco</a>
-    <a href="/faucet/">Faucet</a>
-    <a href="/wallet/">Wallet</a>
-    <a href="/sale/">Sale</a>
-    <a href="/contact/">Contact</a><a href="/api/">API</a> <a href="/docs/">Docs</a>
-=======
       <a href="/dex/">DEX</a>
       <a href="/whitepaper/">Whitepaper</a>
       <a href="/wallet/">Wallet</a>
       <a href="/sale/">Sale</a>
       <a href="/tokenomics/">Tokenomics</a>
       <a href="/faucet/">Faucet</a>
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
   </div>
   <div class="nav-status"><div class="dot"></div><span>Connected</span></div>
 </nav>
@@ -295,13 +285,6 @@ thead,tbody{display:table;width:100%}
 
 <footer class="footer">
   <div class="footer-links">
-<<<<<<< HEAD
-    <a href="/">Landing</a>
-    <a href="/explorer/">Verdiscan</a>
-    <a href="/dex/">DEX</a>
-    <a href="/validators/">Validators</a>
-    <a href="/eco/">Eco</a>
-=======
     <a href="/">Home</a>
     <a href="/explorer/">Verdiscan</a>
     <a href="/dex/">DEX</a>
@@ -314,7 +297,6 @@ thead,tbody{display:table;width:100%}
     <a href="/eco/">Eco</a>
     <a href="/referral/">Referral</a>
     <a href="/incentives/">Incentives</a>
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
     <a href="/contact/">Contact</a>
     <a href="/api/">API</a>
     <a href="/docs/">Docs</a>
@@ -361,7 +343,7 @@ async function loadValidators() {
     document.getElementById('valCount').textContent = validators.length + ' validators active';
 
     // Render validator rows
-    const colors = ['#caff33', '#4ade80', '#fbbf24', '#60a5fa', '#f472b6', '#a78bfa', '#fb923c', '#34d399'];
+    const colors = ['#16a34a', '#4ade80', '#fbbf24', '#60a5fa', '#f472b6', '#a78bfa', '#fb923c', '#34d399'];
     const names = ['Alice', 'Bob', 'Charlie', 'Dave', 'Eve', 'Ferdie', 'GreenNode', 'EcoValidator', 'VerdisRanger', 'CarbonNode', 'ForestGuard', 'SolarStake', 'WindValidator', 'HydroNode'];
     
     let html = '';
@@ -370,8 +352,8 @@ async function loadValidators() {
       const initial = name.charAt(0).toUpperCase();
       const color = colors[i % colors.length];
       const score = 94 - (i * 2);
-      const stake = Math.floor(50000 + Math.random() * 80000);
-      const apy = (11 + Math.random() * 2.5).toFixed(1);
+      const stake = (50000 + (i * 7500));
+      const apy = (11 + (i * 0.2)).toFixed(1);
       
       // Handle different validator formats (could be hex string, object, etc.)
       let addr = '';
