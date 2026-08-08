@@ -17,7 +17,9 @@ const VERDIS_NAV_HTML = `
     <li><a href="/wallet/">Wallet</a></li>
     <li><a href="/sale/">Sale</a></li>
     <li><a href="/tokenomics/">Tokenomics</a></li>
-    <li><a href="/faucet/">Faucet</a></li>
+    <li><a href="/faucet/">Faucet</a>
+      <a href="/governance/">Governance</a></li>
+    <li><a href="/governance/">Governance</a></li>
   </ul>
   <div class="verdis-nav-cta">
     <a href="/wallet/" class="btn btn-primary btn-sm">Launch Wallet</a>
@@ -46,6 +48,7 @@ const VERDIS_FOOTER_HTML = `
       <a href="/sale/">Sale</a>
       <a href="/tokenomics/">Tokenomics</a>
       <a href="/faucet/">Faucet</a>
+      <a href="/governance/">Governance</a>
     </div>
     <div class="verdis-footer-col">
       <h4>Resources</h4>
