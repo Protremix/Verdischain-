@@ -371,7 +371,8 @@ pub mod pallet {
             ensure!(amount_a > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
             ensure!(amount_b > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
-            let ta: BoundedVec<u8, ConstU32<32>> = token_a
+            ensure!(token_a.len() <= 32 && token_b.len() <= 32, Error::<T>::TokenTooLong);
+			let ta: BoundedVec<u8, ConstU32<32>> = token_a
                 .clone()
                 .try_into()
                 .map_err(|_| Error::<T>::TokenTooLong)?;
@@ -553,7 +554,8 @@ pub mod pallet {
 
             ensure!(amount_in > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
-            let token_in_bv: BoundedVec<u8, ConstU32<32>> = token_in
+            ensure!(token_in.len() <= 32, Error::<T>::TokenTooLong);
+			let token_in_bv: BoundedVec<u8, ConstU32<32>> = token_in
                 .clone()
                 .try_into()
                 .map_err(|_| Error::<T>::TokenTooLong)?;

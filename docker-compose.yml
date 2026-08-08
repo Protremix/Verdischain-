@@ -1,0 +1,43 @@
+services:
+  verdis-node:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: verdis:latest
+    container_name: verdis-node
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 100
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4G
+          pids: 100
+    ports:
+      - "0.0.0.0:30333:30333"
+      - "127.0.0.1:9944:9944"
+      - "127.0.0.1:9615:9615"
+    volumes:
+      - verdis-data:/data
+    networks:
+      - verdis-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  verdis-data:
+    driver: local
+
+networks:
+  verdis-network:
+    driver: bridge

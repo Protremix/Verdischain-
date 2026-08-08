@@ -193,6 +193,7 @@ pub mod pallet {
         SlashingFailed,
         NotValidator,
         NameTooLong,
+		ReasonTooLong,
         NameUpdated,
         InvalidSlashReason,
         RewardPoolDepleted,
@@ -302,6 +303,7 @@ pub mod pallet {
             green_score: u8,
             energy_source: Vec<u8>,
         ) -> DispatchResult {
+		ensure!(energy_source.len() <= 64, Error::<T>::ReasonTooLong);
             let who = ensure_signed(origin)?;
 
             ensure!(
@@ -315,7 +317,7 @@ pub mod pallet {
                 Error::<T>::InsufficientFunds
             );
 
-            let validator_count = ValidatorList::<T>::get().len() as u32;
+            let validator_count = u32::try_from(ValidatorList::<T>::get().len()).unwrap_or(0);
             ensure!(
                 validator_count < T::MaxValidators::get(),
                 Error::<T>::MaxValidatorsReached
@@ -534,6 +536,7 @@ pub mod pallet {
             penalty: BalanceOf<T>,
             reason: Vec<u8>,
         ) -> DispatchResult {
+		ensure!(reason.len() <= 128, Error::<T>::ReasonTooLong);
             ensure_root(origin)?;
 
             let val = Validators::<T>::get(&validator).ok_or(Error::<T>::ValidatorNotFound)?;
@@ -641,7 +644,7 @@ pub mod pallet {
             // Sort by votes descending
             all_validators.sort_by(|a, b| b.1.cmp(&a.1));
 
-            let active_count = T::ActiveValidatorCount::get() as usize;
+            let active_count = usize::try_from(T::ActiveValidatorCount::get()).unwrap_or(usize::MAX);
             let new_active: Vec<T::AccountId> = all_validators
                 .into_iter()
                 .take(active_count)

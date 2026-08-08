@@ -62,10 +62,10 @@ pub mod pallet {
             ensure!(compute_units <= T::MaxComputeUnits::get(), Error::<T>::ComputeBudgetExceeded);
             let parallel = BatchParallel::<T>::get(batch_id);
             BatchComputeUnits::<T>::insert(batch_id, compute_units);
-            SealevelTotalTxs::<T>::mutate(|t| *t += tx_count as u64);
+            SealevelTotalTxs::<T>::mutate(|t| *t += u64::try_from(tx_count).unwrap_or(u64::MAX));
             let total_txs = SealevelTotalTxs::<T>::get();
             if total_txs > 0 {
-                let avg = (SealevelAvgComputeUnits::<T>::get() * (total_txs - tx_count as u64) + compute_units) / total_txs;
+                let avg = (SealevelAvgComputeUnits::<T>::get() * (total_txs - u64::try_from(tx_count).unwrap_or(u64::MAX)) + compute_units) / total_txs;
                 SealevelAvgComputeUnits::<T>::put(avg);
             }
             Self::deposit_event(Event::BatchExecuted { batch_id, compute_units, parallel });

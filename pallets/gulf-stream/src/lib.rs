@@ -149,7 +149,7 @@ pub mod pallet {
             stats.current_pending = stats.current_pending.saturating_sub(1);
             let total = stats.total_included + stats.total_expired;
             if total > 0 {
-                stats.success_rate = (stats.total_included * 100 / total) as u32;
+                stats.success_rate = u32::try_from(stats.total_included * 100 / total).unwrap_or(u32::MAX);
             }
             let new_avg = if stats.total_included == 1 {
                 forward_time_ms
@@ -177,7 +177,7 @@ pub mod pallet {
             stats.current_pending = stats.current_pending.saturating_sub(1);
             let total = stats.total_included + stats.total_expired;
             if total > 0 {
-                stats.success_rate = (stats.total_included * 100 / total) as u32;
+                stats.success_rate = u32::try_from(stats.total_included * 100 / total).unwrap_or(u32::MAX);
             }
             GulfStreamStatsStorage::<T>::put(stats);
 
@@ -192,7 +192,7 @@ pub mod pallet {
         }
 
         pub fn get_pending_count() -> u32 {
-            PendingForwards::<T>::iter().count() as u32
+            u32::try_from(PendingForwards::<T>::iter().count()).unwrap_or(u32::MAX)
         }
     }
 }

@@ -191,9 +191,9 @@ pub mod pallet {
             let who = ensure_signed(origin)?;
             ensure!(!name.is_empty(), Error::<T>::EmptyName);
             ensure!(!symbol.is_empty(), Error::<T>::EmptySymbol);
-            ensure!(name.len() as u32 <= MAX_TOKEN_NAME, Error::<T>::NameTooLong);
+            ensure!(u32::try_from(name.len()).unwrap_or(u32::MAX) <= MAX_TOKEN_NAME, Error::<T>::NameTooLong);
             ensure!(
-                symbol.len() as u32 <= MAX_TOKEN_SYMBOL,
+                u32::try_from(symbol.len()).unwrap_or(u32::MAX) <= MAX_TOKEN_SYMBOL,
                 Error::<T>::SymbolTooLong
             );
 

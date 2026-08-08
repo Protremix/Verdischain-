@@ -275,7 +275,7 @@ pub mod pallet {
                 Error::<T>::CreditAlreadyExists
             );
             ensure!(
-                (CarbonCredits::<T>::iter().count() as u32) < T::MaxCarbonCredits::get(),
+                u32::try_from(CarbonCredits::<T>::iter().count()).unwrap_or(u32::MAX) < T::MaxCarbonCredits::get(),
                 Error::<T>::MaxCarbonCreditsReached
             );
 
@@ -304,6 +304,7 @@ pub mod pallet {
         #[pallet::call_index(1)]
         #[pallet::weight(T::WeightInfo::verify_carbon_credit())]
         pub fn verify_carbon_credit(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
+		ensure!(id.len() <= 64, Error::<T>::IdTooLong);
             ensure_root(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
@@ -324,6 +325,7 @@ pub mod pallet {
         #[pallet::call_index(2)]
         #[pallet::weight(T::WeightInfo::retire_carbon_credit())]
         pub fn retire_carbon_credit(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
+		ensure!(id.len() <= 64, Error::<T>::IdTooLong);
             let who = ensure_signed(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
@@ -392,7 +394,7 @@ pub mod pallet {
                 Error::<T>::ProjectAlreadyExists
             );
             ensure!(
-                (ReforestProjects::<T>::iter().count() as u32) < T::MaxReforestProjects::get(),
+                u32::try_from(ReforestProjects::<T>::iter().count()).unwrap_or(u32::MAX) < T::MaxReforestProjects::get(),
                 Error::<T>::MaxReforestProjectsReached
             );
 
@@ -489,7 +491,7 @@ pub mod pallet {
             ensure!(score >= T::MinGreenScore::get(), Error::<T>::InvalidScore);
             ensure!(score <= T::MaxGreenScore::get(), Error::<T>::InvalidScore);
             ensure!(
-                (GreenValidators::<T>::iter().count() as u32) < T::MaxGreenValidators::get(),
+                u32::try_from(GreenValidators::<T>::iter().count()).unwrap_or(u32::MAX) < T::MaxGreenValidators::get(),
                 Error::<T>::MaxGreenValidatorsReached
             );
 
