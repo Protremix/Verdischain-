@@ -11,7 +11,7 @@
 <title>Verdiscan — Verdis Chain Explorer</title>
 <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
 <style>
-:root{--bg:#f1f5f9;--bg-1:#111111;--card:#ffffff;--border:#e2e8f0;--text:#0f172a;--text-2:#475569;--text-3:#94a3b8;--accent:#16a34a;--accent-2:#15803d;--accent-glow:rgba(22,163,74,0.15);--success:#4ade80;--warning:#fbbf24;--error:#f87171;--radius:12px;--radius-sm:8px;--mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;--display:'Space Grotesk',sans-serif
+:root{--bg:#f1f5f9;--bg-1:#f8fafc;--card:#ffffff;--border:#e2e8f0;--text:#0f172a;--text-2:#475569;--text-3:#94a3b8;--accent:#16a34a;--accent-2:#15803d;--accent-glow:rgba(22,163,74,0.15);--success:#4ade80;--warning:#fbbf24;--error:#f87171;--radius:12px;--radius-sm:8px;--mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;--display:'Space Grotesk',sans-serif
 --hero-bg: #1a1a1a;}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -924,6 +924,12 @@ a{color:inherit;text-decoration:none}
 <div class="footer-bottom"><span>&copy; 2026 Verdis Chain &middot; Protremix &middot; Open-source under MIT License</span><span><a href="/privacy/" style="color:#64748b;text-decoration:none">GDPR Compliant</a> &middot; <a href="/security/" style="color:#64748b;text-decoration:none">Security</a></span></div>
 </footer>
 
+<script type="module">
+import { blake2b } from 'https://esm.sh/@noble/hashes@1.5.0/blake2b';
+import { base58 } from 'https://esm.sh/@scure/base@1.1.5';
+window.blake2b = blake2b;
+window.base58Decode = base58.decode;
+</script>
 <script>
 // RPC helper
 const RPC = '/rpc';
@@ -932,6 +938,43 @@ async function rpc(method, params=[]) {
     const r = await fetch(RPC, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method,params,id:1})});
     const j = await r.json();
     return j.result;
+  } catch(e) { return null; }
+}
+
+// SS58 decode: extract 32-byte AccountId from SS58 address
+function ss58ToAccountId(ss58) {
+  try {
+    const d = window.base58Decode(ss58);
+    if (d.length === 35) return d.slice(1, 33); // 1-byte prefix
+    if (d.length === 36) return d.slice(2, 34); // 2-byte prefix
+    return null;
+  } catch(e) { return null; }
+}
+
+// System::Account storage key prefix (twox_128("System") + twox_128("Account"))
+const SYS_ACCT_PREFIX = '0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9';
+
+// Query account info via state_getStorage (replaces missing system_account RPC)
+async function getAccountInfo(ss58Address) {
+  try {
+    const acctBytes = ss58ToAccountId(ss58Address);
+    if (!acctBytes) return null;
+    const blakeHash = window.blake2b(acctBytes, { dkLen: 16 });
+    const blakeHex = Array.from(blakeHash).map(b => ('0' + b.toString(16)).slice(-2)).join('');
+    const acctHex = Array.from(acctBytes).map(b => ('0' + b.toString(16)).slice(-2)).join('');
+    const storageKey = SYS_ACCT_PREFIX + blakeHex + acctHex;
+    const result = await rpc('state_getStorage', [storageKey]);
+    if (!result || result === '0x' || result.length < 10) return null;
+    const hex = result.slice(2);
+    const bytes = new Uint8Array(hex.match(/.{2}/g).map(b => parseInt(b, 16)));
+    const nonce = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
+    function decodeU128LE(offset) {
+      let val = 0n;
+      for (let i = 0; i < 16; i++) { val += BigInt(bytes[offset + i]) << (8n * BigInt(i)); }
+      return val;
+    }
+    const free = decodeU128LE(16);
+    return { nonce, data: { free: free.toString() } };
   } catch(e) { return null; }
 }
 
@@ -1524,9 +1567,10 @@ async function doSearch() {
     try {
       const nonceRes = await rpc('system_accountNextIndex', [q]);
       if (nonceRes !== null && nonceRes !== undefined) nonce = nonceRes;
-      const accRes = await rpc('system_account', [q]);
+      const accRes = await getAccountInfo(q);
       if (accRes && accRes.data) {
-        balance = (Number(accRes.data.free) / 1e9).toLocaleString('en-US') + ' VRDX';
+        const freeBal = BigInt(accRes.data.free) / BigInt(1000000000);
+        balance = Number(freeBal).toLocaleString('en-US') + ' VRDX';
         if (accRes.nonce !== undefined) nonce = accRes.nonce;
       }
     } catch(e) {}
