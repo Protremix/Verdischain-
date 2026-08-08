@@ -15,11 +15,15 @@ async def detailed_test():
         page_errors = []
         page.on("pageerror", lambda err: page_errors.append(str(err)))
 
+        # Catch alerts
+        dialog_text = []
+        page.on("dialog", lambda dialog: (dialog_text.append(dialog.message), asyncio.create_task(dialog.accept())))
+
         await page.goto("https://verdischain.com/explorer/", wait_until="networkidle")
         await asyncio.sleep(2)
 
         # Test tabs on desktop
-        tabs = ["blocks", "extrinsics", "validators", "dex", "eco", "overview"]
+        tabs = ["overview", "blocks", "extrinsics", "validators", "dex", "eco"]
         tab_screenshots = {}
         for tab in tabs:
             tab_selector = f".tab[data-t='{tab}']"
@@ -28,8 +32,6 @@ async def detailed_test():
                 await asyncio.sleep(1)
                 await page.screenshot(path=f"desktop_tab_{tab}.png", full_page=True)
                 tab_screenshots[tab] = f"desktop_tab_{tab}.png"
-            else:
-                print(f"Tab selector {tab_selector} not found")
 
         # Test block modal by searching block 1
         await page.fill("#searchInput", "1")
@@ -43,12 +45,10 @@ async def detailed_test():
 
         # Close modal
         if modal_visible:
-            await page.click("text=Close") or await page.click(".modal-close") or await page.keyboard.press("Escape")
+            await page.click(".modal-close")
+            await asyncio.sleep(0.5)
 
-        # Test search with address
-        dialog_text = []
-        page.on("dialog", lambda dialog: (dialog_text.append(dialog.message), asyncio.create_task(dialog.accept())))
-        
+        # Test search with non-existent hash / address
         await page.fill("#searchInput", "5D4y11111111111111111111111111111111111111111111")
         await page.keyboard.press("Enter")
         await asyncio.sleep(1)
@@ -61,14 +61,14 @@ async def detailed_test():
         await asyncio.sleep(2)
         await mobile_page.screenshot(path="mobile_overview.png", full_page=True)
 
-        for tab in ["blocks", "validators", "dex"]:
+        for tab in ["overview", "blocks", "validators", "dex", "eco"]:
             tab_selector = f".tab[data-t='{tab}']"
             if await mobile_page.query_selector(tab_selector):
                 await mobile_page.click(tab_selector)
                 await asyncio.sleep(1)
                 await mobile_page.screenshot(path=f"mobile_tab_{tab}.png", full_page=True)
 
-        # Check mobile elements layout & bounding boxes
+        # Check mobile elements layout & bounding boxes / horizontal scroll
         mobile_layout_issues = await mobile_page.evaluate("""() => {
             const issues = [];
             const vw = window.innerWidth;
@@ -81,7 +81,7 @@ async def detailed_test():
                         id: el.id,
                         width: rect.width,
                         right: rect.right,
-                        text: el.innerText ? el.innerText.slice(0, 30) : ''
+                        text: el.innerText ? el.innerText.slice(0, 30).replace(/\\n/g, ' ') : ''
                     });
                 }
             });

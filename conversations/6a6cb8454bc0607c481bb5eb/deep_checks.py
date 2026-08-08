@@ -1,105 +1,152 @@
 import asyncio
+import json
 from playwright.async_api import async_playwright
 
-async def audit():
+async def deep_check():
     async with async_playwright() as p:
-        browser = await p.chromium.launch()
+        browser = await p.chromium.launch(headless=True)
 
-        # Mobile viewport
-        mobile_page = await browser.new_page(viewport={'width': 375, 'height': 812}, is_mobile=True, user_agent='Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1')
-        await mobile_page.goto('https://verdischain.com/whitepaper/', wait_until='networkidle')
+        # ----------------------------------------------------
+        # 1. FAUCET DEEP CHECK
+        # ----------------------------------------------------
+        print("=== 1. FAUCET PAGE ===")
+        page = await browser.new_page(viewport={"width": 1280, "height": 800})
+        responses = []
+        page.on("response", lambda r: responses.append((r.status, r.url)))
+        await page.goto("https://verdischain.com/faucet/", wait_until="networkidle")
+        
+        print("Faucet subresource responses:", [r for r in responses if r[0] >= 400])
+        
+        # Test Faucet Form submission
+        try:
+            await page.fill("#faucetAddr", "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+            # captcha question text
+            captcha_label = await page.evaluate("() => document.querySelector('label[for=\"captchaA\"]') ? document.querySelector('label[for=\"captchaA\"]').innerText : ''")
+            print("Captcha label:", captcha_label)
+            # Fill captcha answer
+            await page.fill("#captchaA", "4") # assume or calculate
+            
+            # Click button
+            click_resp = []
+            page.on("response", lambda r: click_resp.append((r.status, r.url)))
+            await page.click("#faucetBtn")
+            await page.wait_for_timeout(2000)
+            
+            # Check alert or message
+            msg = await page.evaluate("() => document.querySelector('.alert, .message, #faucetResult, #result, p.text-red-500, p.text-green-500') ? document.querySelector('.alert, .message, #faucetResult, #result, p.text-red-500, p.text-green-500').innerText : ''")
+            print("Faucet submit result message:", msg)
+            print("Click network responses:", click_resp)
+        except Exception as e:
+            print("Faucet interaction error:", e)
+        await page.close()
 
-        print("=== MOBILE OVERFLOW / LAYOUT CHECKS ===")
-        overflow_elements = await mobile_page.evaluate("""
-            () => {
-                const docWidth = document.documentElement.offsetWidth;
-                const elements = document.querySelectorAll('*');
-                const overflowing = [];
-                elements.forEach(el => {
-                    const rect = el.getBoundingClientRect();
-                    if (rect.right > docWidth + 2) {
-                        overflowing.push({
-                            tag: el.tagName,
-                            class: el.className,
-                            id: el.id,
-                            right: rect.right,
-                            docWidth: docWidth,
-                            text: el.innerText ? el.innerText.substring(0, 50) : ''
-                        });
-                    }
-                });
-                return overflowing;
+        # ----------------------------------------------------
+        # 2. REFERRAL DEEP CHECK
+        # ----------------------------------------------------
+        print("\n=== 2. REFERRAL PAGE ===")
+        page = await browser.new_page(viewport={"width": 1280, "height": 800})
+        await page.goto("https://verdischain.com/referral/", wait_until="networkidle")
+        
+        # Check referral calculator math
+        # Inputs: calcT1 (50), calcAvg (500), calcT2 (100), calcT3 (200)
+        # Rates mentioned on page: Tier 1: 10%, Tier 2: 5%, Tier 3: 2.5%
+        # Let's see displayed results on page
+        calc_results = await page.evaluate("""() => {
+            const elems = document.querySelectorAll('*');
+            let text = document.body.innerText;
+            return {
+                t1: document.querySelector('#calcT1') ? document.querySelector('#calcT1').value : null,
+                avg: document.querySelector('#calcAvg') ? document.querySelector('#calcAvg').value : null,
+                t2: document.querySelector('#calcT2') ? document.querySelector('#calcT2').value : null,
+                t3: document.querySelector('#calcT3') ? document.querySelector('#calcT3').value : null,
+                outputs: Array.from(document.querySelectorAll('.calculator-result, .result, span, div'))
+                    .map(e => e.innerText)
+                    .filter(t => t && (t.includes('$') or t.includes('VRDX') or t.includes('%')))
             }
-        """)
-        print(f"Total elements exceeding viewport width on mobile ({len(overflow_elements)}):")
-        for o in overflow_elements[:15]:
-            print(o)
+        }""")
+        print("Referral Calc initial state:", calc_results['t1'], calc_results['avg'], calc_results['t2'], calc_results['t3'])
+        
+        # Get full text around calculator
+        calc_section = await page.evaluate("() => document.querySelector('#calculator, .calculator, section:nth-of-type(3), main') ? document.querySelector('#calculator, .calculator, section:nth-of-type(3), main').innerText : document.body.innerText")
+        print("Referral page body text snippet:\n", calc_section[:1000])
+        await page.close()
 
-        print("\n=== MOBILE FONT SIZE CHECKS ===")
-        font_sizes = await mobile_page.evaluate("""
-            () => {
-                const elements = document.querySelectorAll('p, span, div, a, li, h1, h2, h3, h4, th, td');
-                const smallFonts = [];
-                elements.forEach(el => {
-                    if (el.children.length === 0 && el.innerText.trim().length > 0) {
-                        const style = window.getComputedStyle(el);
-                        const fontSize = parseFloat(style.fontSize);
-                        if (fontSize < 12) {
-                            smallFonts.push({
-                                tag: el.tagName,
-                                class: el.className,
-                                text: el.innerText.substring(0, 60),
-                                fontSize: style.fontSize,
-                                parentClass: el.parentElement ? el.parentElement.className : ''
-                            });
-                        }
-                    }
-                });
-                return smallFonts;
-            }
-        """)
-        print(f"Elements with font-size < 12px on mobile ({len(font_sizes)}):")
-        for f in font_sizes[:20]:
-            print(f)
+        # ----------------------------------------------------
+        # 3. INCENTIVES DEEP CHECK
+        # ----------------------------------------------------
+        print("\n=== 3. INCENTIVES PAGE ===")
+        page = await browser.new_page(viewport={"width": 1280, "height": 800})
+        await page.goto("https://verdischain.com/incentives/", wait_until="networkidle")
+        inc_text = await page.evaluate("() => document.body.innerText")
+        print("Incentives body snippet:\n", inc_text[:1000])
+        await page.close()
 
-        # Let's inspect all headings and key text font sizes on mobile and desktop
-        print("\n=== FONT SIZE DISTRIBUTION (MOBILE) ===")
-        all_font_summary = await mobile_page.evaluate("""
-            () => {
-                const elements = document.querySelectorAll('*');
-                const fontCounts = {};
-                elements.forEach(el => {
-                    if (el.children.length === 0 && el.innerText.trim().length > 0) {
-                        const style = window.getComputedStyle(el);
-                        const fs = style.fontSize;
-                        fontCounts[fs] = (fontCounts[fs] || 0) + 1;
-                    }
-                });
-                return fontCounts;
-            }
-        """)
-        print("Font sizes used on mobile:", all_font_summary)
+        # ----------------------------------------------------
+        # 4. DOCS DEEP CHECK
+        # ----------------------------------------------------
+        print("\n=== 4. DOCS PAGE ===")
+        page = await browser.new_page(viewport={"width": 1280, "height": 800})
+        await page.goto("https://verdischain.com/docs/", wait_until="networkidle")
+        docs_text = await page.evaluate("() => document.body.innerText")
+        print("Docs body snippet:\n", docs_text[:1000])
+        
+        # Check all sidebar links or anchors
+        doc_links = await page.eval_on_selector_all("a", "elems => elems.map(e => ({href: e.getAttribute('href'), text: e.innerText.trim()}))")
+        print("Docs link sample:", doc_links[:10])
+        await page.close()
 
-        # Desktop font sizes
-        desktop_page = await browser.new_page(viewport={'width': 1440, 'height': 900})
-        await desktop_page.goto('https://verdischain.com/whitepaper/', wait_until='networkidle')
+        # ----------------------------------------------------
+        # 5. CONTACT DEEP CHECK
+        # ----------------------------------------------------
+        print("\n=== 5. CONTACT PAGE ===")
+        page = await browser.new_page(viewport={"width": 1280, "height": 800})
+        await page.goto("https://verdischain.com/contact/", wait_until="networkidle")
+        
+        # Fill form and submit
+        await page.select_option("#subject", index=1)
+        await page.fill("#name", "Test User")
+        await page.fill("#email", "test@example.com")
+        await page.fill("#message", "Testing contact form functionality.")
+        
+        contact_res = []
+        page.on("response", lambda r: contact_res.append((r.status, r.url)))
+        await page.click("button[type='submit']")
+        await page.wait_for_timeout(2000)
+        print("Contact form submission network responses:", contact_res)
+        contact_msg = await page.evaluate("() => document.body.innerText")
+        print("Contact body after submit snippet:\n", contact_msg[-500:])
+        await page.close()
 
-        desktop_font_summary = await desktop_page.evaluate("""
-            () => {
-                const elements = document.querySelectorAll('*');
-                const fontCounts = {};
-                elements.forEach(el => {
-                    if (el.children.length === 0 && el.innerText.trim().length > 0) {
-                        const style = window.getComputedStyle(el);
-                        const fs = style.fontSize;
-                        fontCounts[fs] = (fontCounts[fs] || 0) + 1;
-                    }
-                });
-                return fontCounts;
-            }
-        """)
-        print("Font sizes used on desktop:", desktop_font_summary)
+        # ----------------------------------------------------
+        # 6. API DEEP CHECK
+        # ----------------------------------------------------
+        print("\n=== 6. API PAGE ===")
+        page = await browser.new_page(viewport={"width": 1280, "height": 800})
+        await page.goto("https://verdischain.com/api/", wait_until="networkidle")
+        api_text = await page.evaluate("() => document.body.innerText")
+        print("API body snippet:\n", api_text[:1000])
+        await page.close()
+
+        # ----------------------------------------------------
+        # 7. TERMS DEEP CHECK
+        # ----------------------------------------------------
+        print("\n=== 7. TERMS PAGE ===")
+        page = await browser.new_page(viewport={"width": 1280, "height": 800})
+        await page.goto("https://verdischain.com/terms/", wait_until="networkidle")
+        terms_text = await page.evaluate("() => document.body.innerText")
+        print("Terms snippet:\n", terms_text[:1000])
+        await page.close()
+
+        # ----------------------------------------------------
+        # 8. PRIVACY DEEP CHECK
+        # ----------------------------------------------------
+        print("\n=== 8. PRIVACY PAGE ===")
+        page = await browser.new_page(viewport={"width": 1280, "height": 800})
+        await page.goto("https://verdischain.com/privacy/", wait_until="networkidle")
+        priv_text = await page.evaluate("() => document.body.innerText")
+        print("Privacy snippet:\n", priv_text[:1000])
+        await page.close()
 
         await browser.close()
 
-asyncio.run(audit())
+asyncio.run(deep_check())
