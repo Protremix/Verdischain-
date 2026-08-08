@@ -4,7 +4,7 @@ After=network.target
 StartLimitIntervalSec=0
 
 [Service]
-ExecStart=/usr/local/bin/verdis --chain=/opt/verdis-chain-rust/verdis-dev-raw.json --base-path=/opt/verdis-node2-data --rpc-port 9934 --port 30334 --bootnodes /ip4/127.0.0.1/tcp/30333/p2p/12D3KooWRkLjmwC7mRjaQqWv9jhaFytqryCK3Md6UvrVwbhZPhYH --rpc-cors all --unsafe-rpc-external --rpc-methods unsafe --no-mdns
+ExecStart=/usr/local/bin/verdis --chain=/opt/verdis-chain-rust/verdis-dev-raw.json --base-path=/opt/verdis-node2-data-v2 --rpc-port 9934 --port 30334 --bootnodes /ip4/127.0.0.1/tcp/30333/p2p/12D3KooWG2kLcHKbLmHyUKiEUQFePjmyA9K711ffLPN3FhQMgLKu --rpc-cors all --rpc-methods unsafe --no-mdns
 Restart=always
 RestartSec=5
 User=root
