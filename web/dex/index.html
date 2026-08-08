@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Verdis DEX — Protocol-Level AMM Exchange</title>
-  <meta name="description" content="Verdis Chain Native AMM DEX Interface. Substrate-powered automated market maker with real price calculations, live pools, and instant swaps." />
+  <meta property="og:title" content="Verdis Chain DEX — AMM Swap Interface">
+<meta property="og:type" content="website">
+<meta name="description" content="Verdis Chain Native AMM DEX Interface. Substrate-powered automated market maker with real price calculations, live pools, and instant swaps." />
   <link rel="icon" type="image/png" href="/assets/verdis-logo-black.png" />
   
   <!-- Fonts -->
@@ -949,19 +951,6 @@
   <div class="nav-inner">
     <a href="/" class="nav-logo"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain"></a>
     <div class="nav-links" id="navLinks">
-<<<<<<< HEAD
-      <a href="/">Home</a>
-      <a href="/explorer/">Verdiscan</a>
-      <a href="/dex/" class="active">DEX</a>
-      <a href="/validators/">Validators</a>
-      <a href="/eco/">Eco</a>
-      <a href="/faucet/">Faucet</a>
-      <a href="/wallet/">Wallet</a>
-      <a href="/sale/">Sale</a>
-      <a href="/contact/">Contact</a>
-      <a href="/api/">API</a>
-      <a href="/docs/">Docs</a>
-=======
       <a href="/explorer/">Verdiscan</a>
       <a href="/dex/" class="active">DEX</a>
       <a href="/whitepaper/">Whitepaper</a>
@@ -969,7 +958,6 @@
       <a href="/sale/">Sale</a>
       <a href="/tokenomics/">Tokenomics</a>
       <a href="/faucet/">Faucet</a>
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
     </div>
     <div class="nav-status"><span class="pulse-dot"></span><span>Testnet Live</span></div>
     <button class="nav-menu-btn" onclick="document.getElementById('navLinks').classList.toggle('mobile')"><span></span><span></span><span></span></button>
@@ -1153,11 +1141,7 @@
           <div class="swap-details">
             <div class="detail-row">
               <span>Exchange Rate</span>
-<<<<<<< HEAD
-              <span class="detail-value mono" id="swapRate">1 VRDX = 1.2500 USDC</span>
-=======
               <span class="detail-value mono" id="swapRate">1 VRDX = 1.0000 ECO</span>
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
             </div>
             <div class="detail-row">
               <span>Price Impact</span>
@@ -1186,11 +1170,7 @@
         <div style="display:flex; flex-direction:column; gap:1.5rem;">
           <div class="card">
             <div class="card-header">
-<<<<<<< HEAD
-              <div class="card-title">Pool Overview (<span id="activePoolPair">VRDX/USDC</span>)</div>
-=======
               <div class="card-title">Pool Overview (<span id="activePoolPair">VRDX/ECO</span>)</div>
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
               <span class="badge-primary">PRIMARY POOL</span>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:0.5rem;">
@@ -1210,29 +1190,9 @@
 
           <div class="card">
             <div class="card-title" style="margin-bottom:1rem;">Top Liquidity Pools</div>
-<<<<<<< HEAD
-            <div style="display:flex; flex-direction:column; gap:10px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#f8fafc; border-radius:10px;">
-                <div style="font-weight:600; display:flex; align-items:center; gap:8px;">⚡ VRDX / 💵 USDC</div>
-                <div class="mono" style="font-weight:700;">$12.5M TVL</div>
-              </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#f8fafc; border-radius:10px;">
-                <div style="font-weight:600; display:flex; align-items:center; gap:8px;">⚡ VRDX / ₮ USDT</div>
-                <div class="mono" style="font-weight:700;">$8.0M TVL</div>
-              </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#f8fafc; border-radius:10px;">
-                <div style="font-weight:600; display:flex; align-items:center; gap:8px;">⚡ VRDX / ₿ BTC</div>
-                <div class="mono" style="font-weight:700;">$6.5M TVL</div>
-              </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#f8fafc; border-radius:10px;">
-                <div style="font-weight:600; display:flex; align-items:center; gap:8px;">⚡ VRDX / Ξ ETH</div>
-                <div class="mono" style="font-weight:700;">$5.0M TVL</div>
-              </div>
-=======
             <div id="topPoolsList" style="display:flex; flex-direction:column; gap:10px;">
               <div style="text-align:center;padding:20px;color:#666;font-size:13px;">Loading on-chain pools...</div>
             </div>
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
             </div>
           </div>
         </div>
@@ -1286,19 +1246,12 @@
           <div class="input-group">
             <div class="input-label">Select Pair</div>
             <select class="token-input" id="addPairSelect" onchange="updateAddLiquidityForm()" style="font-size:1rem; cursor:pointer;">
-<<<<<<< HEAD
-              <option value="VRDX/USDC">VRDX / USDC (Primary)</option>
-              <option value="VRDX/USDT">VRDX / USDT</option>
-              <option value="VRDX/BTC">VRDX / BTC</option>
-              <option value="VRDX/ETH">VRDX / ETH</option>
-=======
               <option value="VRDX/ECO">VRDX / ECO (Primary)</option>
               <option value="VRDX/CARBON">VRDX / CARBON</option>
               <option value="VRDX/TREE">VRDX / TREE</option>
               <option value="VRDX/GREEN">VRDX / GREEN</option>
               <option value="ECO/CARBON">ECO / CARBON</option>
               <option value="VRDX/REDD">VRDX / REDD</option>
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
             </select>
           </div>
 
@@ -1345,19 +1298,12 @@
           <div class="input-group">
             <div class="input-label">Select LP Pool</div>
             <select class="token-input" id="removePairSelect" style="font-size:1rem; cursor:pointer;">
-<<<<<<< HEAD
-              <option value="VRDX/USDC">VRDX / USDC LP (Balance: 2,500 VLP)</option>
-              <option value="VRDX/USDT">VRDX / USDT LP (Balance: 0 VLP)</option>
-              <option value="VRDX/BTC">VRDX / BTC LP (Balance: 0 VLP)</option>
-              <option value="VRDX/ETH">VRDX / ETH LP (Balance: 0 VLP)</option>
-=======
               <option value="VRDX/ECO">VRDX / ECO LP (Balance: 2,500 VLP)</option>
               <option value="VRDX/CARBON">VRDX / CARBON LP (Balance: 0 VLP)</option>
               <option value="VRDX/TREE">VRDX / TREE LP (Balance: 0 VLP)</option>
               <option value="VRDX/GREEN">VRDX / GREEN LP (Balance: 0 VLP)</option>
               <option value="ECO/CARBON">ECO / CARBON LP (Balance: 0 VLP)</option>
               <option value="VRDX/REDD">VRDX / REDD LP (Balance: 0 VLP)</option>
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
             </select>
           </div>
 
@@ -1394,19 +1340,12 @@
         <div class="chart-header">
           <div class="chart-pair-info">
             <select id="chartPoolSelect" onchange="drawPriceChart()" style="font-size:1.1rem; font-weight:700; border:1px solid #cbd5e1; padding:6px 12px; border-radius:8px; cursor:pointer;">
-<<<<<<< HEAD
-              <option value="VRDX/USDC">VRDX / USDC</option>
-              <option value="VRDX/USDT">VRDX / USDT</option>
-              <option value="VRDX/BTC">VRDX / BTC</option>
-              <option value="VRDX/ETH">VRDX / ETH</option>
-=======
               <option value="VRDX/ECO">VRDX / ECO</option>
               <option value="VRDX/CARBON">VRDX / CARBON</option>
               <option value="VRDX/TREE">VRDX / TREE</option>
               <option value="VRDX/GREEN">VRDX / GREEN</option>
               <option value="ECO/CARBON">ECO / CARBON</option>
               <option value="VRDX/REDD">VRDX / REDD</option>
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
             </select>
             <div class="chart-price" id="chartPriceVal">$1.2500</div>
             <div class="chart-change">+4.20%</div>
@@ -1472,13 +1411,6 @@
   <!-- FOOTER -->
   <footer class="footer">
   <div class="footer-links">
-<<<<<<< HEAD
-    <a href="/">Landing</a>
-    <a href="/explorer/">Verdiscan</a>
-    <a href="/dex/">DEX</a>
-    <a href="/validators/">Validators</a>
-    <a href="/eco/">Eco</a>
-=======
     <a href="/">Home</a>
     <a href="/explorer/">Verdiscan</a>
     <a href="/dex/">DEX</a>
@@ -1491,7 +1423,6 @@
     <a href="/eco/">Eco</a>
     <a href="/referral/">Referral</a>
     <a href="/incentives/">Incentives</a>
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
     <a href="/contact/">Contact</a>
     <a href="/api/">API</a>
     <a href="/docs/">Docs</a>
@@ -1507,103 +1438,6 @@
     
     const TOKENS = [
       { symbol: "VRDX", name: "Verdis Native Token", icon: "⚡", decimals: 9, priceUsd: 1.25 },
-<<<<<<< HEAD
-      { symbol: "USDC", name: "USD Coin", icon: "💵", decimals: 6, priceUsd: 1.00 },
-      { symbol: "USDT", name: "Tether USD", icon: "₮", decimals: 6, priceUsd: 1.00 },
-      { symbol: "BTC",  name: "Bitcoin", icon: "₿", decimals: 8, priceUsd: 65000.00 },
-      { symbol: "ETH",  name: "Ethereum", icon: "Ξ", decimals: 18, priceUsd: 3400.00 }
-    ];
-
-    let poolsData = [
-      {
-        id: 0,
-        pair: "VRDX/USDC",
-        tokenA: "VRDX",
-        tokenB: "USDC",
-        reserveA: 5000000,
-        reserveB: 6250000,
-        price: 1.25,
-        tvl: 12500000,
-        volume24h: 1845000,
-        apy: 24.5,
-        isPrimary: true
-      },
-      {
-        id: 1,
-        pair: "VRDX/USDT",
-        tokenA: "VRDX",
-        tokenB: "USDT",
-        reserveA: 3200000,
-        reserveB: 4000000,
-        price: 1.25,
-        tvl: 8000000,
-        volume24h: 1120000,
-        apy: 21.8
-      },
-      {
-        id: 2,
-        pair: "VRDX/BTC",
-        tokenA: "VRDX",
-        tokenB: "BTC",
-        reserveA: 2600000,
-        reserveB: 50,
-        price: 0.00001923,
-        tvl: 6500000,
-        volume24h: 890000,
-        apy: 19.2
-      },
-      {
-        id: 3,
-        pair: "VRDX/ETH",
-        tokenA: "VRDX",
-        tokenB: "ETH",
-        reserveA: 2000000,
-        reserveB: 735.29,
-        price: 0.0003676,
-        tvl: 5000000,
-        volume24h: 640000,
-        apy: 18.4
-      }
-    ];
-
-    let userBalances = {
-      VRDX: 10000.0,
-      USDC: 5000.0,
-      USDT: 5000.0,
-      BTC: 0.5,
-      ETH: 3.0
-    };
-
-    let recentSwaps = [
-      {
-        hash: "0x8a92f3...b411",
-        type: "Swap",
-        details: "1,000 VRDX → 1,250 USDC",
-        account: "5GrwvaEF...HG35",
-        time: "12s ago",
-        status: "Confirmed"
-      },
-      {
-        hash: "0x3e19a4...c890",
-        type: "Add Liquidity",
-        details: "+5,000 VRDX / +6,250 USDC",
-        account: "5FHneW46...9K21",
-        time: "1m ago",
-        status: "Confirmed"
-      },
-      {
-        hash: "0x7c41b8...f102",
-        type: "Swap",
-        details: "0.10 BTC → 5,200 VRDX",
-        account: "5FLSigC9...4L90",
-        time: "3m ago",
-        status: "Confirmed"
-      }
-    ];
-
-    let currentTokenIn = "VRDX";
-    let currentTokenOut = "USDC";
-=======
       { symbol: "ECO", name: "Eco Token", icon: "🌱", decimals: 9, priceUsd: 0.85 },
       { symbol: "CARBON", name: "Carbon Credit Token", icon: "♻", decimals: 9, priceUsd: 2.50 },
       { symbol: "TREE", name: "Tree Token", icon: "🌳", decimals: 9, priceUsd: 0.15 },
@@ -1663,7 +1497,6 @@
 
     let currentTokenIn = "VRDX";
     let currentTokenOut = "ECO";
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
     let slippagePercent = 0.5;
     let selectedModalSide = "in";
     let activeChartTimeframe = "24H";
@@ -1678,25 +1511,17 @@
     window.addEventListener("DOMContentLoaded", () => {
       fetchNetworkRPC();
       renderPoolsTable();
-<<<<<<< HEAD
-=======
       renderTopPoolsList();
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
       renderHistoryTable();
       updateSwapCalculation();
       updateAddLiquidityForm();
       drawPriceChart();
 
-<<<<<<< HEAD
-      // Poll RPC every 6s
-      setInterval(fetchNetworkRPC, 6000);
-=======
       // Load on-chain pools
       loadOnChainPools();
       // Poll RPC every 6s
       setInterval(fetchNetworkRPC, 6000);
       setInterval(loadOnChainPools, 15000);
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
     });
 
     // 1. SUBSTRATE RPC CALLS
@@ -1921,8 +1746,6 @@ Tx Hash: ${txHash}`);
     }
 
     // Pools Table Renderer
-<<<<<<< HEAD
-=======
     function renderTopPoolsList() {
       var container = document.getElementById('topPoolsList');
       if (!container) return;
@@ -1941,7 +1764,6 @@ Tx Hash: ${txHash}`);
       }).join('');
     }
 
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
     function renderPoolsTable() {
       const tbody = document.getElementById("poolsTableBody");
       tbody.innerHTML = "";
