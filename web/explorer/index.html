@@ -374,6 +374,14 @@ a{color:inherit;text-decoration:none}
         <table class="tbl"><thead><tr><th>TYPE</th><th>METHOD / DATA</th><th>HASH</th><th>BLOCK</th></tr></thead><tbody id="latestExts"></tbody></table>
       </div>
     </div>
+    <!-- Latest Transactions -->
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-header">
+        <span class="panel-title">Latest Transactions</span>
+        <a class="panel-link" onclick="window.location.href='/transactions/'">View all →</a>
+      </div>
+      <table class="tbl"><thead><tr><th>BLOCK</th><th>HASH</th><th>METHOD</th><th>SIGNER</th><th>VALUE</th></tr></thead><tbody id="latestTxs"></tbody></table>
+    </div>
   </div>
 
   <!-- Blocks -->
@@ -1686,7 +1694,16 @@ async function loadLatestBlocks() {
     if (!r || !r.block) continue;
     var exts = (r.block.block && r.block.block.extrinsics) || [];
     html += '<tr onclick="showBlock(\''+r.hash+'\')"><td class="hash hash-accent">#'+r.bn+'</td><td>'+(i===0?'0s ago':(i*6)+'s ago')+'</td><td>'+exts.length+'</td><td class="hash">'+shortHash(r.hash)+'</td></tr>';
-    blocksData.push({num:r.bn, hash:r.hash, exts:exts, time:Date.now()-i*6000});
+    var extBytes = exts.map(function(e) {
+      if (typeof e === 'string') {
+        var hex = e.replace(/^0x/, '');
+        var arr = [];
+        for (var k = 0; k < hex.length; k += 2) arr.push(parseInt(hex.substr(k, 2), 16));
+        return arr;
+      }
+      return e;
+    });
+    blocksData.push({num:r.bn, hash:r.hash, exts:extBytes, time:Date.now()-i*6000});
   }
   tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center;color:var(--text-3)">No blocks</td></tr>';
   window._blocksLoaded = true;
@@ -1753,7 +1770,7 @@ function decodeExtrinsic(e, blockHash, blockNum) {
 }
 
 // Load latest extrinsics (SIGNED only - real transactions)
-async function loadLatestExtrinsics() {
+function loadLatestExtrinsics() {
   const tbody = document.getElementById('latestExts');
   if (!tbody) return;
   let html = '';
@@ -1762,16 +1779,21 @@ async function loadLatestExtrinsics() {
     const b = blocksData[i];
     const exts = b.exts || [];
     for (let j = 0; j < exts.length && count < 8; j++) {
-      const ext = decodeExtrinsic(exts[j], b.hash, b.num);
-      if (!ext) continue;
-      if (ext.type !== 'Signed') continue; // Skip inherent/timestamp
-      const remarkShort = ext.remark ? ext.remark.substring(0, 35) : '';
-      const safeRemark = (ext.remark || '').replace(/'/g, "\\'").replace(/"/g, "&quot;");
-      const safeSigner = (ext.signerFull || ext.signer || '—').replace(/'/g, "\\'");
-      html += '<tr onclick="showExtrinsic(\''+ext.hash+'\', '+b.num+', \''+ext.type+'\', \''+ext.method+'\', \''+safeSigner+'\', \''+safeRemark+'\')" style="cursor:pointer">' +
-        '<td><span class="badge '+ext.badge+'">'+ext.type+'</span></td>' +
-        '<td>' + ext.method + (remarkShort ? '<br><span style="font-size:11px;color:var(--text-3)">'+remarkShort+'</span>' : '') + '</td>' +
-        '<td class="hash">'+ext.hash+'</td>' +
+      const ext = decodeExtrinsic(exts[j]);
+      if (!ext || !ext.signer) continue;
+      const signerDisplay = accountIdToSS58(ext.signer);
+      const safeMethod = (ext.method || 'unknown').replace(/'/g, '');
+      let remarkText = '';
+      if (ext.remark && ext.remark.length) {
+        for (var ri = 0; ri < Math.min(ext.remark.length, 35); ri++) {
+          if (ext.remark[ri] >= 32 && ext.remark[ri] <= 126) remarkText += String.fromCharCode(ext.remark[ri]);
+        }
+      }
+      const safeRemark = remarkText.replace(/'/g, '').replace(/"/g, '&quot;');
+      html += '<tr onclick="showExtrinsic(\''+safeMethod+'\', '+b.num+', \''+signerDisplay+'\', \''+safeRemark+'\')" style="cursor:pointer">' +
+        '<td><span class="badge badge-signed">Signed</span></td>' +
+        '<td>' + (ext.method || 'unknown') + (remarkText ? '<br><span style="font-size:11px;color:var(--text-3)">'+remarkText+'</span>' : '') + '</td>' +
+        '<td class="hash">'+shortHash(b.hash)+'</td>' +
         '<td class="hash hash-accent">#'+b.num+'</td>' +
         '</tr>';
       count++;
@@ -1784,14 +1806,44 @@ async function loadLatestExtrinsics() {
   }
 }
 
+// Load latest transactions into overview
+function loadLatestTxs() {
+  const tbody = document.getElementById('latestTxs');
+  if (!tbody) return;
+  let html = '';
+  let count = 0;
+  for (let i = 0; i < blocksData.length && count < 10; i++) {
+    const b = blocksData[i];
+    const exts = b.exts || [];
+    for (let j = 0; j < exts.length && count < 10; j++) {
+      const ext = decodeExtrinsic(exts[j]);
+      if (!ext || !ext.signer) continue;
+      const signerDisplay = accountIdToSS58(ext.signer);
+      const valStr = ext.value ? (ext.value / 1e9).toFixed(4) : '0';
+      const safeMethod = (ext.method || 'unknown').replace(/'/g, '');
+      html += '<tr style="cursor:pointer" onclick="showExtrinsic(\''+safeMethod+'\', '+b.num+', \''+signerDisplay+'\', \''+'\')">' +
+        '<td class="hash hash-accent">#' + b.num + '</td>' +
+        '<td class="hash">' + shortHash(b.hash) + '</td>' +
+        '<td><span class="badge badge-signed">' + (ext.method || 'unknown') + '</span></td>' +
+        '<td class="hash">' + signerDisplay + '</td>' +
+        '<td>' + valStr + '</td>' +
+        '</tr>';
+      count++;
+    }
+  }
+  if (count === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-3);padding:24px">Waiting for signed transactions...</td></tr>';
+  } else {
+    tbody.innerHTML = html;
+  }
+}
+
 // Show transaction detail modal
-function showExtrinsic(hash, blockNum, type, method, signer, remark) {
+function showExtrinsic(method, blockNum, signer, remark) {
   document.getElementById('modalTitle').textContent = 'Transaction Detail';
   let html = '<dl>';
-  html += '<dt>Extrinsic Hash</dt><dd>' + (hash || '—') + '</dd>';
   html += '<dt>Block Number</dt><dd>' + (blockNum ? '#' + blockNum : '—') + '</dd>';
-  html += '<dt>Type</dt><dd><span class="badge ' + (type === 'Signed' ? 'badge-signed' : 'badge-inherent') + '">' + (type || 'Signed') + '</span></dd>';
-  html += '<dt>Method</dt><dd>' + (method || 'System.remark') + '</dd>';
+  html += '<dt>Method</dt><dd>' + (method || 'unknown') + '</dd>';
   html += '<dt>Signer Address</dt><dd>' + (signer || '—') + '</dd>';
   html += '<dt>Remark Text</dt><dd>' + (remark || '—') + '</dd>';
   html += '</dl>';
@@ -3240,10 +3292,10 @@ async function init() {
   setInterval(updateInfoCards, 15000);
   setInterval(updateTps, 5000);
   setInterval(updateValidatorsQuick, 10000);
-  try { await loadLatestBlocks(); } catch(e) { console.log("blocks err:", e); }
+  try { await loadLatestBlocks(); loadLatestTxs(); } catch(e) { console.log("blocks err:", e); }
   try { await loadValidators(); } catch(e) { console.log("val err:", e); }
   try { await loadMarketTicker(); } catch(e) { console.log("ticker err:", e); }
-  setInterval(loadLatestBlocks, 10000);
+  setInterval(function() { loadLatestBlocks(); loadLatestTxs(); }, 10000);
 }
 
 // updateTps is now defined above with real RPC data
@@ -3265,6 +3317,7 @@ init();
 // Auto-refresh every 12 seconds
 setInterval(function() {
   loadLatestBlocks();
+  loadLatestTxs();
 }, 12000);
 
 // Also refresh stats every 6 seconds
