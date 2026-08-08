@@ -8,7 +8,7 @@
 <meta name="description" content="Participate in the VERDIS token sale. 100B max supply, 4-round fundraising: Seed $0.0015, Community $0.003, Presale $0.004, TGE $0.005. Total raised: $18M.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="VRDX Token Sale — Verdis Chain">
-<meta property="og:description" content="Purchase VRDX tokens at presale rates before public listing.">
+<meta property="og:description" content="Participate in VERDIS token sale. 4 rounds: Seed $0.0015, Community $0.003, Presale $0.004, TGE $0.005. Total raised: $18M.">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -532,8 +532,8 @@ thead,tbody{display:table;width:100%}
     <div class="faq-a"><div class="faq-a-inner">Provide your Verdis Chain wallet address when purchasing. Tokens will be sent to this address at TGE. You can create a wallet at our <a href="/wallet/" style="color:var(--accent)">Verdis Wallet</a> page.</div></div>
   </div>
   <div class="faq-item">
-    <div class="faq-q" onclick="toggleFAQ(this)">What is the 30% bonus? <span class="arrow">▾</span></div>
-    <div class="faq-a"><div class="faq-a-inner">During Phase 1 IDO, every purchase includes a 30% bonus in VRDX tokens. For example, if you buy 600,000 VRDX for $300, you receive 780,000 VRDX total. This bonus is in addition to the already discounted IDO price of $0.0005 (vs $0.10 listing price).</div></div>
+    <div class="faq-q" onclick="toggleFAQ(this)">Is there a bonus for early investors? <span class="arrow">▾</span></div>
+    <div class="faq-a"><div class="faq-a-inner">No bonus tokens are offered. Instead, early investors receive a discount to TGE price: Seed at 70% discount ($0.0015), Community at 40% discount ($0.003), and Presale at 20% discount ($0.004). The TGE/IDO price is $0.005. This structure is more transparent and sustainable than bonus schemes.</div></div>
   </div>
   <div class="faq-item">
     <div class="faq-q" onclick="toggleFAQ(this)">Is there a lock-up period? <span class="arrow">▾</span></div>
@@ -565,9 +565,9 @@ thead,tbody{display:table;width:100%}
 // Sale configuration
 const SALE_CONFIG = {
   phase: 1,
-  pricePerToken: 0.0005,
-  listingPrice: 0.10,
-  bonus: 0.30, // 30%
+  pricePerToken: 0.0015,
+  listingPrice: 0.005,
+  bonus: 0.0, // No bonus in new model
   hardCap: 17500000, // $17.5M total across all 4 phases
   raised: 0, // $0 - IDO not started
   sold: 0, // 0 VRDX sold
