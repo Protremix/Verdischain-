@@ -1,31 +1,29 @@
 import re
 from bs4 import BeautifulSoup
 
-with open("whitepaper.html", "r", encoding="utf-8") as f:
+with open('page_source.html', 'r', encoding='utf-8') as f:
     html = f.read()
 
 soup = BeautifulSoup(html, 'html.parser')
 
-print("=== CHECKING ALL TECHNICAL CLAIMS AND NUMBERS ===")
+text_content = soup.get_text()
 
-# Extract all text
-text = soup.get_text()
+print("=== SEARCHING TICKERS AND NAMES ===")
+tickers = set(re.findall(r'\b[A-Z]{3,5}\b', text_content))
+print("All uppercase 3-5 letter words/tickers found:", sorted(list(tickers)))
 
-# Search for validator counts
-validators = re.findall(r'.{0,50}\b(?:validator|validators|node|nodes)\b.{0,50}', text, re.IGNORECASE)
-print("\n--- VALIDATOR CLAIMS ---")
-for v in set(validators):
-    print(" ", v.strip().replace('\n', ' '))
+print("\n=== SPECIFIC TICKER MENTIONS ===")
+for match in re.finditer(r'(.{0,30}(VRD|VRDX|VERDIS|Substrate|BABE|GRANDPA).{0,30})', text_content):
+    print(match.group(0).strip())
 
-# Search for DPoS, Consensus claims
-consensus = re.findall(r'.{0,50}\b(?:DPoS|BABE|GRANDPA|consensus|PoH|Solana|Substrate)\b.{0,50}', text, re.IGNORECASE)
-print("\n--- CONSENSUS / ARCHITECTURE CLAIMS ---")
-for c in set(consensus)[:20]:
-    print(" ", c.strip().replace('\n', ' '))
-
-# Search for Token Supply numbers across text
-supplies = re.findall(r'.{0,50}\b(?:supply|total supply|100B|100,000,000,000|VRDX|billion|million|B|M)\b.{0,50}', text, re.IGNORECASE)
-print("\n--- SUPPLY CLAIMS ---")
-for s in set(supplies)[:30]:
-    print(" ", s.strip().replace('\n', ' '))
+print("\n=== PLACEHOLDER / HARDCODED DEMO TEXT ===")
+placeholder_words = ['lorem', 'ipsum', 'todo', 'test', 'alex', 'vance', '0x7f', 'example', 'placeholder', 'demo']
+for p in placeholder_words:
+    matches = list(re.finditer(re.escape(p), text_content, re.IGNORECASE))
+    if matches:
+        print(f"Found placeholder word '{p}': {len(matches)} occurrences")
+        for m in matches[:5]:
+            start = max(0, m.start() - 30)
+            end = min(len(text_content), m.end() + 30)
+            print("  Context:", text_content[start:end].replace('\n', ' '))
 
