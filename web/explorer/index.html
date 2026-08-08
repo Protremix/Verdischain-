@@ -339,6 +339,7 @@ a{color:inherit;text-decoration:none}
     <button class="tab" data-t="dex" onclick="switchTab('dex')">DEX</button>
     <button class="tab" data-t="eco" onclick="switchTab('eco')">Eco</button>
     <button class="tab" data-t="accounts" onclick="switchTab('accounts')">Accounts</button>
+    <button class="tab" data-t="topaccounts" onclick="switchTab('topaccounts')">Top Accounts</button>
   </div>
 </div>
 
@@ -480,6 +481,22 @@ a{color:inherit;text-decoration:none}
     </div>
   </div>
 
+  <!-- Top Accounts -->
+  <div class="tab-content" id="tab-topaccounts">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Top Accounts by Stake</span>
+        <span class="panel-link" id="topAcctCount">Loading...</span>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>RANK</th><th>ADDRESS</th><th>NAME</th><th>STAKE (VRDX)</th><th>GREEN SCORE</th><th>VALIDATOR</th></tr></thead>
+        <tbody id="topAccountsTable">
+          <tr><td colspan="6" style="text-align:center;padding:20px"><span class="skel" style="width:100%"></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 <!-- Modal -->
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card">
@@ -552,6 +569,7 @@ function switchTab(t) {
   if (t==='validators') loadValidators();
   if (t==='dex') loadDex();
   if (t==='eco') loadEco();
+  if (t==='topaccounts') loadTopAccounts();
 }
 
 // Load latest blocks
@@ -1453,6 +1471,68 @@ async function loadAccountHistory(addr) {
   }
 }
 
+
+// ===== Top Accounts =====
+async function loadTopAccounts() {
+  const tbody = document.getElementById('topAccountsTable');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-3)">Loading accounts...</td></tr>';
+
+  try {
+    const vals = await rpc('dpos_allValidators', []);
+    if (!vals || !Array.isArray(vals) || vals.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-3)">No accounts found</td></tr>';
+      return;
+    }
+
+    // Fetch stake, name, and green score for each validator in parallel
+    const accountData = await Promise.all(vals.map(async (addr, i) => {
+      let stake = 0, name = 'Validator ' + (i + 1), greenScore = 0;
+      try { const s = await rpc('dpos_validatorStake', [addr]); stake = BigInt(s || 0); } catch(e) {}
+      try {
+        const n = await rpc('dpos_validatorName', [addr]);
+        if (n) {
+          if (Array.isArray(n)) {
+            name = String.fromCharCode.apply(null, n).trim();
+          } else if (typeof n === 'string') {
+            name = n.trim();
+          }
+        }
+      } catch(e) {}
+      try { const gs = await rpc('eco_getGreenScore', [addr]); greenScore = gs || 0; } catch(e) {}
+      return { addr, stake, name, greenScore };
+    }));
+
+    // Sort by stake descending
+    accountData.sort((a, b) => b.stake > a.stake ? 1 : b.stake < a.stake ? -1 : 0);
+
+    // Update count
+    const countEl = document.getElementById('topAcctCount');
+    if (countEl) countEl.textContent = accountData.length + ' accounts';
+
+    tbody.innerHTML = accountData.map((a, i) => {
+      const stakeVRDX = (Number(a.stake) / 10**9).toLocaleString(undefined, {maximumFractionDigits: 2});
+      const shortAddr = a.addr.slice(0, 8) + '...' + a.addr.slice(-6);
+      const rank = i + 1;
+      const rankBadge = rank <= 3 ? '<span style="color:#f59e0b;font-weight:700">#' + rank + '</span>' : '#' + rank;
+      const valBadge = '<span class="badge badge-sm" style="background:#dcfce7;color:#15803d">Validator</span>';
+      const greenBadge = a.greenScore > 0
+        ? '<span class="badge badge-sm" style="background:#dcfce7;color:#16a34a">Green ' + a.greenScore + '</span>'
+        : '<span style="color:var(--text-3)">-</span>';
+      return '<tr style="cursor:pointer" onclick="switchTab(\'accounts\');searchAccount(\'' + a.addr + '\')">' +
+        '<td style="font-family:var(--mono);font-weight:600">' + rankBadge + '</td>' +
+        '<td style="font-family:var(--mono);font-size:13px">' + shortAddr + '</td>' +
+        '<td style="font-weight:500">' + a.name + '</td>' +
+        '<td style="font-family:var(--mono);font-weight:600">' + stakeVRDX + '</td>' +
+        '<td>' + greenBadge + '</td>' +
+        '<td>' + valBadge + '</td>' +
+        '</tr>';
+    }).join('');
+  } catch(e) {
+    console.log('Top accounts error:', e);
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#dc2626">Error loading accounts</td></tr>';
+  }
+}
 
 async function init() {
   updateInfoCards();
