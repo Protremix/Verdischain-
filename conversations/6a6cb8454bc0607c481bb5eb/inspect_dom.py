@@ -1,43 +1,20 @@
-from playwright.sync_api import sync_playwright
-import json
+import urllib.request
+from bs4 import BeautifulSoup
 
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
-    page = browser.new_page(viewport={'width': 1440, 'height': 900})
-    page.goto('https://verdischain.com/eco/', wait_until='networkidle')
-    page.wait_for_timeout(4000)
+url = 'https://verdischain.com/validators/'
+req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+html = urllib.request.urlopen(req).read().decode('utf-8')
+soup = BeautifulSoup(html, 'html.parser')
 
-    # Gather key metrics and text from rendered DOM
-    dom_info = page.evaluate('''() => {
-        const getTxt = (id) => {
-            const el = document.getElementById(id);
-            return el ? el.textContent.trim() : null;
-        };
+print("--- IMAGES ---")
+for img in soup.find_all('img'):
+    print(img.get('src'), img.get('alt'))
 
-        const getSelectorTxt = (sel) => {
-            const els = document.querySelectorAll(sel);
-            return Array.from(els).map(e => e.textContent.trim());
-        };
+print("\n--- NAV LINKS ---")
+for a in soup.find_all('a'):
+    print(a.get('href'), a.text.strip())
 
-        return {
-            stat_block: getTxt('stat-block'),
-            hero_block_num: getTxt('hero-block-num'),
-            stat_validators: getTxt('stat-validators'),
-            stat_peers: getTxt('stat-peers'),
-            nav_network: getTxt('nav-network'),
-            data_eco_co2: getSelectorTxt('[data-eco-co2]'),
-            data_eco_trees: getSelectorTxt('[data-eco-trees]'),
-            data_eco_retired: getSelectorTxt('[data-eco-retired]'),
-            hero_badge: getSelectorTxt('.hero-badge'),
-            stat_cards: getSelectorTxt('.stat-card'),
-            impact_section: getTxt('impact'),
-            reforestation_section: getTxt('reforestation'),
-            marketplace_section: getTxt('marketplace'),
-            certificate_section: getTxt('certificate'),
-        };
-    }''')
+print("\n--- INPUTS & SELECTS ---")
+for inp in soup.find_all(['input', 'select', 'button']):
+    print(inp.name, inp.get('id'), inp.get('type'), inp.get('value'))
 
-    print("=== RENDERED DOM INFO ===")
-    print(json.dumps(dom_info, indent=2))
-
-    browser.close()

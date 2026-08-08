@@ -1,111 +1,101 @@
 import asyncio
+import json
 from playwright.async_api import async_playwright
+
+PAGES = [
+    ("faucet", "https://verdischain.com/faucet/"),
+    ("referral", "https://verdischain.com/referral/"),
+    ("incentives", "https://verdischain.com/incentives/"),
+    ("docs", "https://verdischain.com/docs/"),
+    ("contact", "https://verdischain.com/contact/"),
+    ("api", "https://verdischain.com/api/"),
+    ("terms", "https://verdischain.com/terms/"),
+    ("privacy", "https://verdischain.com/privacy/")
+]
 
 async def inspect():
     async with async_playwright() as p:
-        browser = await p.chromium.launch()
-        page = await browser.new_page(viewport={'width': 1440, 'height': 900})
-        await page.goto('https://verdischain.com/whitepaper/', wait_until='networkidle')
+        browser = await p.chromium.launch(headless=True)
+        
+        for name, url in PAGES:
+            print(f"==================================================")
+            print(f"PAGE: {name} - {url}")
+            
+            # Context for mobile and desktop
+            page = await browser.new_page(viewport={"width": 1280, "height": 800})
+            
+            requests_log = []
+            page.on("response", lambda res: requests_log.append((res.status, res.url)))
+            
+            await page.goto(url, wait_until="networkidle")
+            
+            # Check 502s or non-200 subresources
+            bad_subresources = [r for r in requests_log if r[0] >= 400]
+            if bad_subresources:
+                print("  Failed Subresources:", bad_subresources)
+                
+            # Get full html
+            html = await page.content()
+            
+            # Check all links on the page (all <a> tags)
+            all_links = await page.eval_on_selector_all("a", "elems => elems.map(e => ({href: e.getAttribute('href'), text: (e.innerText || e.textContent || '').trim(), outer: e.outerHTML}))")
+            print(f"  Total <a> links on page: {len(all_links)}")
+            
+            # Check form / input elements
+            forms = await page.eval_on_selector_all("form, input, button, select, textarea", "elems => elems.map(e => ({tag: e.tagName, type: e.getAttribute('type'), id: e.id, name: e.getAttribute('name'), placeholder: e.getAttribute('placeholder'), text: (e.innerText || e.value || '').trim()}))")
+            print(f"  Interactive Elements ({len(forms)}):", json.dumps(forms, indent=2))
+            
+            # Check text
+            text = await page.evaluate("() => document.body.innerText")
+            print(f"  Text Snippet (first 300 chars): {text[:300]}...")
+            
+            # Test interactivity or forms if any
+            if name == "faucet":
+                # Check what happens when clicking faucet button or submitting address
+                print("  Faucet page details:")
+                # Look for input or button
+                input_box = await page.query_selector("input")
+                button = await page.query_selector("button")
+                print("  Input present:", bool(input_box), "Button present:", bool(button))
+                if button:
+                    btn_text = await button.inner_text()
+                    print("  Button text:", btn_text)
 
-        # 1. Allocation table / cards
-        print("=== 1. ALLOCATION TABLE / CARDS ===")
-        alloc_cards = await page.eval_on_selector_all('.token-card, [class*="alloc"], [class*="tokenom"], tr, .distribution-item', """
-            elements => elements.map(el => ({
-                text: el.innerText,
-                className: el.className
-            }))
-        """)
-        for c in alloc_cards:
-            if any(k in c['text'] for k in ['Community', 'Eco', 'Team', 'DEX', 'Treasury', 'Investors', '25%', '18%', '15%', '12%']):
-                print("---")
-                print(c['text'])
+            if name == "contact":
+                print("  Contact form inputs:", forms)
 
-        # Let's get full text of Tokenomics section
-        print("\n=== TOKENOMICS SECTION FULL TEXT ===")
-        tok_section = await page.eval_on_selector('#tokenomics, [id*="token"]', "el => el ? el.innerText : 'NOT FOUND'")
-        print(tok_section if tok_section != 'NOT FOUND' else "No #tokenomics element")
-
-        # Check all text containing percentages or token allocations
-        print("\n=== ALL PERCENTAGES ON PAGE ===")
-        percentages = await page.evaluate("""
-            () => {
-                const nodes = [];
-                const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-                let node;
-                while (node = walker.nextNode()) {
-                    if (node.nodeValue.includes('%')) {
-                        nodes.push(node.parentElement.innerText);
+            if name == "referral":
+                print("  Referral elements:", forms)
+                
+            # Check mobile layout element overflow specifics
+            m_page = await browser.new_page(viewport={"width": 375, "height": 812})
+            await m_page.goto(url, wait_until="networkidle")
+            
+            overflowing_elements = await m_page.evaluate("""() => {
+                const elems = document.querySelectorAll('*');
+                const overflowing = [];
+                for (let el of elems) {
+                    if (el.scrollWidth > el.clientWidth && el.clientWidth > 0) {
+                        overflowing.append ? overflowing.push({
+                            tag: el.tagName,
+                            class: el.className,
+                            id: el.id,
+                            scrollWidth: el.scrollWidth,
+                            clientWidth: el.clientWidth,
+                            text: el.innerText ? el.innerText.substring(0, 50) : ''
+                        }) : null;
                     }
                 }
-                return [...new Set(nodes)];
-            }
-        """)
-        for p_text in percentages:
-            print("PCT:", p_text.replace('\n', ' | '))
-
-        # 2. Pie chart
-        print("\n=== 2. PIE CHART / CANVAS / SVG ===")
-        charts = await page.eval_on_selector_all('canvas, svg, chart, .pie-chart, #chart, [id*="chart"]', """
-            elements => elements.map(el => ({
-                tag: el.tagName,
-                id: el.id,
-                className: el.className,
-                outerHTML: el.outerHTML.substring(0, 300)
-            }))
-        """)
-        print("Chart elements found:", len(charts))
-        for ch in charts:
-            print(ch)
-
-        # Let's check chart data or canvas script
-        chart_scripts = await page.evaluate("""
-            () => {
-                const scripts = Array.from(document.querySelectorAll('script'));
-                return scripts.map(s => s.innerText).filter(t => t.includes('Chart') || t.includes('pie') || t.includes('25') || t.includes('Community'));
-            }
-        """)
-        print("Chart scripts found:", len(chart_scripts))
-        for s in chart_scripts:
-            print("SCRIPT SNIPPET:", s[:500])
-
-        # 3. Roadmap section
-        print("\n=== 3. ROADMAP SECTION ===")
-        roadmap = await page.evaluate("""
-            () => {
-                const el = document.querySelector('#roadmap, [id*="roadmap"]') || document.body;
-                return el.innerText;
-            }
-        """)
-        # Search roadmap text for Phase 3, Q3 2026, 6-month cliff
-        print("Roadmap text snippet:")
-        for line in roadmap.split('\n'):
-            if any(k in line.lower() for k in ['phase', 'q1', 'q2', 'q3', 'q4', 'cliff', '2026', 'roadmap']):
-                print("RM:", line)
-
-        # 4. Vesting card
-        print("\n=== 4. VESTING CARD ===")
-        vesting = await page.evaluate("""
-            () => {
-                const el = document.querySelector('#vesting, [id*="vesting"]') || document.body;
-                return el.innerText;
-            }
-        """)
-        for line in vesting.split('\n'):
-            if any(k in line.lower() for k in ['vesting', 'ido', 'phase', 'cliff', 'month', 'investor']):
-                print("VEST:", line)
-
-        # 5 & 6. Story timeline / Q1/Q2/Q3 2026
-        print("\n=== 5 & 6. STORY TIMELINE / TIMELINE SECTIONS ===")
-        timeline = await page.evaluate("""
-            () => {
-                const els = Array.from(document.querySelectorAll('.timeline, [class*="timeline"], [class*="story"], #timeline, #story, .history'));
-                return els.map(e => e.innerText);
-            }
-        """)
-        print("Timeline elements found:", len(timeline))
-        for t in timeline:
-            print("TIMELINE ITEM:\n", t)
-
+                return overflowing;
+            }""")
+            if overflowing_elements:
+                print("  Mobile Overflowing Elements:", len(overflowing_elements))
+                for oe in overflowing_elements[:5]:
+                    print("   -", oe)
+                    
+            await page.close()
+            await m_page.close()
+            
         await browser.close()
 
 asyncio.run(inspect())

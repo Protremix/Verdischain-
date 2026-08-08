@@ -6,9 +6,7 @@ req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
 html = urllib.request.urlopen(req).read().decode('utf-8')
 
 soup = BeautifulSoup(html, 'html.parser')
-styles = soup.find_all('style')
-
-for i, st in enumerate(styles):
-    print(f"=== STYLE {i} ===")
+for i, st in enumerate(soup.find_all('style')):
+    print(f"--- STYLE TAG {i} ---")
     print(st.string)
 
