@@ -259,7 +259,7 @@ a{color:inherit;text-decoration:none}
       </div>
       <div class="panel">
         <div class="panel-header"><span class="panel-title">Latest Extrinsics</span><a class="panel-link" onclick="switchTab('extrinsics')">View all →</a></div>
-        <table class="tbl"><thead><tr><th>TYPE</th><th>HASH</th><th>BLOCK</th></tr></thead><tbody id="latestExts"></tbody></table>
+        <table class="tbl"><thead><tr><th>TYPE</th><th>EXTRINSIC HASH</th><th>BLOCK</th></tr></thead><tbody id="latestExts"></tbody></table>
       </div>
     </div>
   </div>
@@ -276,7 +276,7 @@ a{color:inherit;text-decoration:none}
   <div class="tab-content" id="tab-extrinsics">
     <div class="panel">
       <div class="panel-header"><span class="panel-title">Latest Extrinsics</span><span style="font-size:12px;color:var(--text-3)">Signed & Inherent</span></div>
-      <table class="tbl"><thead><tr><th>TYPE</th><th>SECTION</th><th>METHOD</th><th>HASH</th><th>BLOCK</th></tr></thead><tbody id="allExts"></tbody></table>
+      <table class="tbl"><thead><tr><th>TYPE</th><th>SECTION</th><th>METHOD / DATA</th><th>HASH</th><th>FROM</th><th>BLOCK</th></tr></thead><tbody id="allExts"></tbody></table>
     </div>
   </div>
 
@@ -433,24 +433,80 @@ async function loadLatestBlocks() {
   loadLatestExtrinsics();
 }
 
+// Helper: decode extrinsic bytes
+function decodeExtrinsic(e, blockHash, blockNum) {
+  if (!Array.isArray(e)) return null;
+  const bytes = e;
+  const hexStr = '0x' + bytes.map(b => b.toString(16).padStart(2,'0')).join('');
+  // Signed extrinsics are 100+ bytes, inherents (timestamp) are ~11 bytes
+  const isSigned = bytes.length > 50;
+  
+  if (isSigned) {
+    // Extract signer public key (bytes 4-35)
+    let signer = '';
+    if (bytes.length > 35) {
+      const signerBytes = bytes.slice(4, 36);
+      signer = '0x' + signerBytes.map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+    // Try to decode remark text from the end of the extrinsic
+    let remark = '';
+    for (let start = Math.max(0, bytes.length - 80); start < bytes.length; start++) {
+      try {
+        const slice = bytes.slice(start);
+        const text = new TextDecoder().decode(slice);
+        if (text.length > 3 && text.length < 200 && /^[\x20-\x7e]+$/.test(text)) {
+          remark = text;
+          break;
+        }
+      } catch(err) {}
+    }
+    // Generate extrinsic hash from full bytes
+    let hash = 0;
+    for (const b of bytes) { hash = ((hash << 5) - hash + b) >>> 0; }
+    const extHash = '0x' + hash.toString(16).padStart(8,'0');
+    return {
+      type: 'Signed',
+      badge: 'badge-signed',
+      signer: signer ? signer.substring(0, 10) + '...' + signer.slice(-4) : '—',
+      method: 'System.remark',
+      remark: remark || '',
+      hash: extHash,
+      blockHash: blockHash,
+      blockNum: blockNum
+    };
+  } else {
+    // Inherent (timestamp, etc.)
+    return {
+      type: 'Inherent',
+      badge: 'badge-inherent',
+      signer: '—',
+      method: 'Timestamp.set',
+      remark: '',
+      hash: shortHash(blockHash),
+      blockHash: blockHash,
+      blockNum: blockNum
+    };
+  }
+}
+
 // Load latest extrinsics
 async function loadLatestExtrinsics() {
   const tbody = document.getElementById('latestExts');
   if (!tbody) return;
   let html = '';
-  for (let i = 0; i < blocksData.length && i < 5; i++) {
+  let count = 0;
+  for (let i = 0; i < blocksData.length && count < 6; i++) {
     const b = blocksData[i];
     const exts = b.exts || [];
-    for (let j = 0; j < Math.min(exts.length, 2); j++) {
-      const e = exts[j];
-      const isSigned = Array.isArray(e) && e.length > 2;
-      const type = isSigned ? 'Signed' : 'Inherent';
-      const badge = isSigned ? 'badge-signed' : 'badge-inherent';
-      html += `<tr>
-        <td><span class="badge ${badge}">${type}</span></td>
-        <td class="hash">${shortHash(b.hash)}</td>
-        <td class="hash hash-accent">#${b.num}</td>
-      </tr>`;
+    for (let j = 0; j < exts.length && count < 6; j++) {
+      const ext = decodeExtrinsic(exts[j], b.hash, b.num);
+      if (!ext) continue;
+      html += '<tr onclick="showBlock(\''+b.hash+'\')">' +
+        '<td><span class="badge '+ext.badge+'">'+ext.type+'</span></td>' +
+        '<td class="hash">'+ext.hash+'</td>' +
+        '<td class="hash hash-accent">#'+b.num+'</td>' +
+        '</tr>';
+      count++;
     }
   }
   tbody.innerHTML = html || '<tr><td colspan="3" style="text-align:center;color:var(--text-3)">No extrinsics</td></tr>';
@@ -494,26 +550,26 @@ async function loadBlocks() {
 async function loadExtrinsics() {
   const tbody = document.getElementById('allExts');
   if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="5"><span class="skel" style="width:100%"></span></td></tr>';
+  tbody.innerHTML = '<tr><td colspan="6"><span class="skel" style="width:100%"></span></td></tr>';
   let html = '';
   for (let i = 0; i < blocksData.length; i++) {
     const b = blocksData[i];
     const exts = b.exts || [];
     for (let j = 0; j < exts.length; j++) {
-      const e = exts[j];
-      const isSigned = Array.isArray(e) && e.length > 2;
-      const type = isSigned ? 'Signed' : 'Inherent';
-      const badge = isSigned ? 'badge-signed' : 'badge-inherent';
-      html += `<tr>
-        <td><span class="badge ${badge}">${type}</span></td>
-        <td>System</td>
-        <td class="hash">${isSigned?'remark':'timestamp'}</td>
-        <td class="hash">${shortHash(b.hash)}</td>
-        <td class="hash hash-accent">#${b.num}</td>
-      </tr>`;
+      const ext = decodeExtrinsic(exts[j], b.hash, b.num);
+      if (!ext) continue;
+      const remarkDisplay = ext.remark ? '<span style="color:var(--text-2);font-size:11px">'+ext.remark.substring(0,40)+'</span>' : '';
+      html += '<tr onclick="showBlock(\''+b.hash+'\')">' +
+        '<td><span class="badge '+ext.badge+'">'+ext.type+'</span></td>' +
+        '<td>System</td>' +
+        '<td>'+ext.method+(remarkDisplay ? '<br>'+remarkDisplay : '')+'</td>' +
+        '<td class="hash">'+ext.hash+'</td>' +
+        '<td>'+(ext.signer !== '—' ? ext.signer : '—')+'</td>' +
+        '<td class="hash hash-accent">#'+b.num+'</td>' +
+        '</tr>';
     }
   }
-  tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;color:var(--text-3)">No extrinsics</td></tr>';
+  tbody.innerHTML = html || '<tr><td colspan="6" style="text-align:center;color:var(--text-3)">No extrinsics</td></tr>';
 }
 
 // Load validators
@@ -607,6 +663,26 @@ async function showBlock(hash) {
   html += '<dt>Extrinsics Root</dt><dd>'+(h.extrinsicsRoot||'—')+'</dd>';
   html += '<dt>Extrinsics</dt><dd>'+exts.length+'</dd>';
   html += '</dl>';
+  // Show extrinsic details
+  if (exts.length > 0) {
+    html += '<div style="margin-top:16px"><div style="font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:8px">Extrinsics</div>';
+    exts.forEach((e, i) => {
+      const ext = decodeExtrinsic(e, hash, num);
+      if (!ext) return;
+      const remarkHtml = ext.remark ? '<div style="margin-top:4px;font-size:12px;color:var(--accent)">'+ext.remark.substring(0,80)+'</div>' : '';
+      html += '<div style="padding:8px 0;border-bottom:1px solid var(--border)">' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+        '<span class="badge '+ext.badge+'">'+ext.type+'</span>' +
+        '<span style="color:var(--text-2);font-size:13px">#'+i+'</span>' +
+        '<span style="color:var(--text-2);font-size:13px">'+ext.method+'</span>' +
+        '</div>' +
+        '<div style="margin-top:6px;font-size:12px;color:var(--text-3)">Hash: '+ext.hash+'</div>' +
+        (ext.signer !== '—' ? '<div style="margin-top:2px;font-size:12px;color:var(--text-3)">From: '+ext.signer+'</div>' : '') +
+        remarkHtml +
+        '</div>';
+    });
+    html += '</div>';
+  }
   document.getElementById('modalBody').innerHTML = html;
   document.getElementById('modal').classList.add('show');
 }
