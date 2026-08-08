@@ -342,6 +342,7 @@ a{color:inherit;text-decoration:none}
     <button class="tab" data-t="topaccounts" onclick="switchTab('topaccounts')">Top Accounts</button>
     <button class="tab" data-t="holders" onclick="switchTab('holders')">Token Holders</button>
     <button class="tab" data-t="analytics" onclick="switchTab('analytics')">Analytics</button>
+    <button class="tab" data-t="transfers" onclick="switchTab('transfers')">Transfers</button>
   </div>
 </div>
 
@@ -552,6 +553,22 @@ a{color:inherit;text-decoration:none}
     </div>
   </div>
 
+  <!-- Token Transfers -->
+  <div class="tab-content" id="tab-transfers">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">VRDX Token Transfers</span>
+        <span class="panel-link" id="transfersCount">Loading...</span>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>TX HASH</th><th>BLOCK</th><th>FROM</th><th>TO</th><th>AMOUNT (VRDX)</th><th>TYPE</th></tr></thead>
+        <tbody id="transfersTable">
+          <tr><td colspan="6" style="text-align:center;padding:20px"><span class="skel" style="width:100%"></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 <!-- Modal -->
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-card">
@@ -627,6 +644,7 @@ function switchTab(t) {
   if (t==='topaccounts') loadTopAccounts();
   if (t==='holders') loadHolders();
   if (t==='analytics') loadAnalytics();
+  if (t==='transfers') loadTransfers();
 }
 
 // Load latest blocks
@@ -1633,6 +1651,322 @@ async function loadHolders() {
     console.error('Holders error:', e);
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#dc2626">Failed to load: ' + e.message + '</td></tr>';
   }
+}
+
+// ===== Token Transfers =====
+async function loadTransfers() {
+  var tbody = document.getElementById('transfersTable');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-3)">Scanning recent blocks...</td></tr>';
+  try {
+    var header = await rpc('chain_getHeader', []);
+    if (!header) return;
+    var current = parseInt(header.number, 16);
+    var transfers = [];
+
+    // Fetch last 50 blocks in parallel batches of 10
+    for (var batch = 0; batch < 5; batch++) {
+      var promises = [];
+      for (var i = 0; i < 10; i++) {
+        var blockNum = current - (batch * 10 + i);
+        if (blockNum < 0) break;
+        promises.push(scanBlockForTransfers(blockNum));
+      }
+      var results = await Promise.all(promises);
+      for (var j = 0; j < results.length; j++) {
+        if (results[j] && results[j].length > 0) {
+          transfers = transfers.concat(results[j]);
+        }
+      }
+      if (transfers.length >= 50) break;
+    }
+
+    transfers.sort(function(a, b) { return b.block - a.block; });
+    transfers = transfers.slice(0, 50);
+
+    document.getElementById('transfersCount').textContent = transfers.length + ' transfers found';
+
+    if (transfers.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-3)">No token transfers found in recent blocks</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = transfers.map(function(t) {
+      var hashShort = t.hash.slice(0, 10) + '...' + t.hash.slice(-6);
+      var fromShort = t.from && t.from.length > 15 ? t.from.slice(0, 8) + '...' + t.from.slice(-6) : t.from;
+      var toShort = t.to && t.to.length > 15 ? t.to.slice(0, 8) + '...' + t.to.slice(-6) : t.to;
+      var amountDisplay = t.amount > 0 ? (Number(t.amount) / 10**9).toLocaleString(undefined, {maximumFractionDigits: 4}) : '—';
+      var typeBadge;
+      if (t.type === 'system.remark') {
+        typeBadge = '<span style="background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:4px;font-size:11px">Remark</span>';
+      } else {
+        typeBadge = '<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:4px;font-size:11px">Transfer</span>';
+      }
+      return '<tr style="cursor:pointer" onclick="showBlockDetail(' + t.block + ')">' +
+        '<td style="font-family:var(--mono);font-size:12px">' + hashShort + '</td>' +
+        '<td style="font-weight:600">#' + t.block + '</td>' +
+        '<td style="font-family:var(--mono);font-size:12px">' + fromShort + '</td>' +
+        '<td style="font-family:var(--mono);font-size:12px">' + toShort + '</td>' +
+        '<td style="font-family:var(--mono);font-weight:600">' + amountDisplay + '</td>' +
+        '<td>' + typeBadge + '</td>' +
+        '</tr>';
+    }).join('');
+  } catch(e) {
+    console.error('Transfers error:', e);
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#dc2626">Error loading transfers</td></tr>';
+  }
+}
+
+// SCALE compact decoder
+function decodeCompact(bytes, offset) {
+  var b0 = bytes[offset];
+  if ((b0 & 0x03) === 0) return { value: b0 >> 2, next: offset + 1 };
+  if ((b0 & 0x03) === 1) return { value: (b0 >> 2) + (bytes[offset+1] << 6), next: offset + 2 };
+  if ((b0 & 0x03) === 2) {
+    var val = (b0 >> 2) + (bytes[offset+1] << 6) + (bytes[offset+2] << 14) + (bytes[offset+3] << 22);
+    return { value: val, next: offset + 4 };
+  }
+  var nBytes = b0 >> 2;
+  var val = 0;
+  for (var i = 0; i < nBytes; i++) val += bytes[offset + 1 + i] << (8 * i);
+  return { value: val, next: offset + 1 + nBytes };
+}
+
+// Convert 32-byte AccountId to SS58 address (prefix 42)
+function accountIdToSS58(accountId) {
+  // Simple SS58 encoding: prefix + accountId + checksum
+  var prefix = 42;
+  var data = [prefix].concat(accountId);
+  // Simple checksum: first 2 bytes of blake2b256(data) — use a simplified approach
+  // For display, just show hex if we can't compute blake2b
+  var hex = accountId.map(function(b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+  return '0x' + hex.slice(0, 8) + '...' + hex.slice(-8);
+}
+
+// Decode extrinsic from byte array
+function decodeExtrinsic(extBytes) {
+  if (!extBytes || !extBytes.length) return null;
+  var offset = 0;
+
+  // Parse compact length
+  var lenResult = decodeCompact(extBytes, offset);
+  offset = lenResult.next;
+
+  // Version byte
+  var versionByte = extBytes[offset];
+  var isSigned = (versionByte & 0x80) !== 0;
+  var version = versionByte & 0x7f;
+  offset++;
+
+  var signer = null;
+
+  if (isSigned) {
+    // MultiAddress enum
+    var addrType = extBytes[offset];
+    offset++;
+    if (addrType === 0) {
+      // AccountId32
+      signer = extBytes.slice(offset, offset + 32);
+      offset += 32;
+    } else {
+      // Other address types — skip what we can
+      if (addrType === 1) { offset += 4; } // AccountIndex
+      else if (addrType === 2) { offset += 32; } // Account20
+      else if (addrType === 3) { offset += 32; } // Account32 (same as Id)
+      else { return { signer: null, pallet: -1, call: -1, method: 'unknown' }; }
+    }
+
+    // Signature (64 bytes for Sr25519, 65 for Ed25519) — check signature type
+    // MultiSignature enum: 0 = Ed25519(64), 1 = Sr25519(64), 2 = Ecdsa(65)
+    var sigType = extBytes[offset];
+    offset++;
+    if (sigType === 0 || sigType === 1) offset += 64;
+    else if (sigType === 2) offset += 65;
+    else offset += 64; // assume 64
+
+    // Signed extras: era, nonce, tip
+    // Era: 1 byte for immortal (0x00), or 2 bytes for mortal
+    var eraByte = extBytes[offset];
+    if (eraByte === 0) offset += 1; // immortal era
+    else offset += 2; // mortal era
+
+    // Nonce (compact-encoded u32)
+    var nonceResult = decodeCompact(extBytes, offset);
+    var nonce = nonceResult.value;
+    offset = nonceResult.next;
+
+    // Tip (compact-encoded u128 — might be compact)
+    var tipResult = decodeCompact(extBytes, offset);
+    offset = tipResult.next;
+  }
+
+  // Call data: pallet_index + call_index + args
+  if (offset + 1 >= extBytes.length) return { signer: signer, pallet: -1, call: -1, method: 'unknown', nonce: nonce };
+  var palletIndex = extBytes[offset];
+  var callIndex = extBytes[offset + 1];
+  offset += 2;
+
+  var result = { signer: signer, pallet: palletIndex, call: callIndex, nonce: nonce || 0, args: extBytes.slice(offset), method: '' };
+
+  // Known pallet + call mappings
+  var palletNames = {0:'system',1:'timestamp',2:'babe',3:'grandpa',4:'balances',5:'tx_payment',6:'sudo',7:'session',8:'scheduler',9:'preimage',
+    20:'contracts',30:'dpos',31:'ammDex',32:'eco',33:'tokenomics',34:'vesting',35:'storage',36:'utility',
+    38:'multisig',39:'proxy',41:'nfts',42:'authorship',43:'council',44:'democracy',45:'historical',46:'offences',47:'treasury',
+    50:'fungible_tokens',51:'poh',52:'gulf_stream',53:'turbine',54:'zk_compression',55:'alt',56:'sealevel',57:'ibc'};
+  var palletName = palletNames[palletIndex] || ('pallet_' + palletIndex);
+
+  var callNames = {
+    'system': {0:'remark', 1:'set_heap_pages', 2:'set_code', 3:'set_code_without_checks'},
+    'timestamp': {0:'set'},
+    'balances': {0:'transfer', 1:'set_balance', 2:'force_transfer', 3:'transfer_keep_alive', 4:'transfer_all', 5:'force_unreserve', 6:'upgrade_pallets', 7:'transfer_allow_death'},
+    'dpos': {0:'join_candidates', 1:'leave_candidates', 2:'vote', 3:'update_validator_name', 4:'set_validator_name'},
+    'ammDex': {0:'add_liquidity', 1:'remove_liquidity', 2:'swap', 3:'create_pool'},
+    'eco': {0:'mint_carbon_credit', 1:'log_reforestation', 2:'update_green_score'},
+    'tokenomics': {0:'mint', 1:'burn'},
+    'vesting': {0:'vest', 1:'vest_other'},
+    'utility': {0:'batch', 1:'batch_all', 2:'dispatch_as'},
+    'fungible_tokens': {0:'transfer', 1:'mint', 2:'burn'},
+    'session': {0:'set_keys', 1:'purge_keys'},
+    'sudo': {0:'sudo', 1:'sudo_as'},
+    'treasury': {0:'propose_spend', 1:'reject_proposal', 2:'approve_proposal'},
+    'democracy': {0:'propose', 1:'second', 2:'vote'},
+    'council': {0:'propose', 1:'vote', 2:'close'},
+    'multisig': {0:'as_multi', 1:'approve_as_multi'},
+    'proxy': {0:'proxy', 1:'add_proxy', 2:'remove_proxy'},
+    'nfts': {0:'mint', 1:'transfer', 2:'burn'},
+    'contracts': {0:'call', 1:'instantiate_with_code', 2:'instantiate'},
+  };
+
+  var callName = (callNames[palletName] && callNames[palletName][callIndex]) || ('call_' + callIndex);
+  result.method = palletName + '.' + callName;
+
+  // Decode transfer args for balances.transfer (pallet 4, call 0)
+  if (palletIndex === 4 && (callIndex === 0 || callIndex === 3 || callIndex === 7)) {
+    // dest: MultiAddress (enum + 32 bytes)
+    var destType = extBytes[offset];
+    offset++;
+    if (destType === 0) {
+      result.dest = extBytes.slice(offset, offset + 32);
+      offset += 32;
+      // value: compact-encoded u128
+      var valResult = decodeCompact(extBytes, offset);
+      result.value = valResult.value;
+    }
+  }
+
+  // Decode remark args for system.remark (pallet 0, call 0)
+  if (palletIndex === 0 && callIndex === 0) {
+    // remark: Vec<u8> — compact length + bytes
+    var remarkLen = decodeCompact(extBytes, offset);
+    result.remark = extBytes.slice(remarkLen.next, remarkLen.next + Math.min(remarkLen.value, 100));
+  }
+
+  // Decode transfer for fungible_tokens.transfer (pallet 50, call 0)
+  if (palletIndex === 50 && callIndex === 0) {
+    // token_id (compact) + dest (MultiAddress) + value (compact)
+    var tokenId = decodeCompact(extBytes, offset);
+    offset = tokenId.next;
+    var destType2 = extBytes[offset];
+    offset++;
+    if (destType2 === 0) {
+      result.dest = extBytes.slice(offset, offset + 32);
+      offset += 32;
+      var valResult2 = decodeCompact(extBytes, offset);
+      result.value = valResult2.value;
+    }
+  }
+
+  // Decode swap for ammDex.swap (pallet 31, call 2)
+  if (palletIndex === 31 && callIndex === 2) {
+    result.isSwap = true;
+  }
+
+  // Decode DEX operations
+  if (palletIndex === 31) {
+    result.isDexOp = true;
+  }
+
+  return result;
+}
+
+async function scanBlockForTransfers(blockNum) {
+  try {
+    var hash = await rpc('chain_getBlockHash', [blockNum]);
+    if (!hash) return [];
+    var block = await rpc('chain_getBlock', [hash]);
+    if (!block || !block.block || !block.block.extrinsics) return [];
+    var results = [];
+    for (var i = 0; i < block.block.extrinsics.length; i++) {
+      var extBytes = block.block.extrinsics[i];
+      if (typeof extBytes === 'string') {
+        // Hex string format — convert to byte array
+        var hex = extBytes.replace(/^0x/, '');
+        extBytes = [];
+        for (var j = 0; j < hex.length; j += 2) extBytes.push(parseInt(hex.substr(j, 2), 16));
+      }
+      var decoded = decodeExtrinsic(extBytes);
+      if (!decoded) continue;
+
+      var signerDisplay = decoded.signer ? accountIdToSS58(decoded.signer) : '—';
+
+      // Skip timestamp (pallet 1)
+      if (decoded.pallet === 1) continue;
+
+      var entry = {
+        hash: hash,
+        block: blockNum,
+        from: signerDisplay,
+        to: '—',
+        amount: 0,
+        type: decoded.method
+      };
+
+      // Balance transfers
+      if (decoded.pallet === 4 && decoded.dest) {
+        entry.to = accountIdToSS58(decoded.dest);
+        entry.amount = decoded.value || 0;
+      }
+
+      // Token transfers (fungible_tokens)
+      if (decoded.pallet === 50 && decoded.dest) {
+        entry.to = accountIdToSS58(decoded.dest);
+        entry.amount = decoded.value || 0;
+        entry.type = 'tokens.transfer';
+      }
+
+      // System remarks
+      if (decoded.pallet === 0 && decoded.call === 0) {
+        entry.type = 'system.remark';
+        if (decoded.remark && decoded.remark.length > 0) {
+          var remarkText = '';
+          for (var k = 0; k < Math.min(decoded.remark.length, 20); k++) {
+            var ch = decoded.remark[k];
+            remarkText += (ch >= 32 && ch < 127) ? String.fromCharCode(ch) : '.';
+          }
+          entry.to = 'Memo: ' + remarkText;
+        }
+      }
+
+      // DEX operations
+      if (decoded.isDexOp) {
+        entry.to = 'AMM Pool';
+        if (decoded.isSwap) entry.type = 'amm.swap';
+      }
+
+      // Validator operations (Dpos)
+      if (decoded.pallet === 30) {
+        entry.to = 'DPoS';
+      }
+
+      // Eco operations
+      if (decoded.pallet === 32) {
+        entry.to = 'Eco';
+      }
+
+      results.push(entry);
+    }
+    return results;
+  } catch(e) { console.error('scanBlock error:', e); return []; }
 }
 
 // Analytics data collectors
