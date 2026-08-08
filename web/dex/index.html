@@ -1479,7 +1479,14 @@
           renderPoolsTable();
           renderTopPoolsList();
           updateSwapCalculation();
-          console.log("Loaded " + onChainPools.length + " on-chain pools");
+          // Update hero stats from real on-chain pool data
+          const realTvl = onChainPools.reduce((sum, p) => sum + p.tvl, 0);
+          const realVol = onChainPools.reduce((sum, p) => sum + p.volume24h, 0);
+          const tvlEl = document.getElementById("heroTvl");
+          const volEl = document.getElementById("heroVol");
+          if (tvlEl) tvlEl.textContent = "$" + realTvl.toLocaleString("en-US", {maximumFractionDigits: 0});
+          if (volEl) volEl.textContent = "$" + realVol.toLocaleString("en-US", {maximumFractionDigits: 0});
+          console.log("Loaded " + onChainPools.length + " on-chain pools, TVL: $" + realTvl.toFixed(0));
         }
       } catch(e) {
         console.error("Failed to load on-chain pools:", e);

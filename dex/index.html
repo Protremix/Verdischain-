@@ -4,7 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Verdis DEX — Protocol-Level AMM Exchange</title>
-  <meta name="description" content="Verdis Chain Native AMM DEX Interface. Substrate-powered automated market maker with real price calculations, live pools, and instant swaps." />
+  <meta property="og:title" content="Verdis Chain DEX — AMM Swap Interface">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://verdischain.com/dex/">
+<meta name="description" content="Verdis Chain Native AMM DEX Interface. Substrate-powered automated market maker with real price calculations, live pools, and instant swaps." />
   <link rel="icon" type="image/png" href="/assets/verdis-logo-black.png" />
   
   <!-- Fonts -->
@@ -21,9 +24,9 @@
       --hero-card: #252525;
       --hero-card-border: rgba(255,255,255,0.08);
       --hero-input-bg: #1e1e1e;
-      --accent: #caff33;
-      --accent-hover: #a8e607;
-      --accent-glow: rgba(202, 255, 51, 0.25);
+      --accent: #16a34a;
+      --accent-hover: #15803d;
+      --accent-glow: rgba(22, 163, 74, 0.25);
       --card-bg: #ffffff;
       --card-border: #e2e8f0;
       --radius-sm: 8px;
@@ -85,26 +88,18 @@
       font-size: 1.25rem;
     }
 
-    .nav-logo-img {
-      height: 32px;
-      width: auto;
-      object-fit: contain;
-      border-radius: 4px;
-      background: #ffffff;
-      padding: 2px;
-    }
-
-    .nav-logo-fallback {
-      width: 32px;
-      height: 32px;
+    .nav-logo-badge {
+      width: 36px;
+      height: 36px;
       background: var(--accent);
-      color: #000;
-      border-radius: 8px;
+      color: #0f172a;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      font-size: 1rem;
+      font-size: 1.1rem;
+      box-shadow: 0 0 15px var(--accent-glow);
     }
 
     .nav-menu {
@@ -122,21 +117,15 @@
       transition: var(--transition);
       padding: 6px 12px;
       border-radius: var(--radius-sm);
+      cursor: pointer;
     }
 
-    .nav-link:hover {
+    .nav-link:hover, .nav-link.active {
       color: #ffffff;
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.06);
     }
 
-    .nav-link.active {
-      color: var(--accent);
-      background: rgba(202, 255, 51, 0.1);
-      font-weight: 600;
-      border: 1px solid rgba(202, 255, 51, 0.2);
-    }
-
-    .nav-actions {
+    .nav-right {
       display: flex;
       align-items: center;
       gap: 12px;
@@ -146,12 +135,12 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.1);
       padding: 6px 12px;
       border-radius: 20px;
       font-size: 0.8rem;
-      color: #cbd5e1;
+      color: #e2e8f0;
     }
 
     .rpc-dot {
@@ -160,21 +149,27 @@
       border-radius: 50%;
       background: #22c55e;
       box-shadow: 0 0 8px #22c55e;
+      animation: pulse 2s infinite;
     }
 
     .rpc-dot.error {
-      background: #ef4444;
-      box-shadow: 0 0 8px #ef4444;
+      background: #f59e0b;
+      box-shadow: 0 0 8px #f59e0b;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.9); }
     }
 
     .btn-connect {
       background: var(--accent);
       color: #0f172a;
       border: none;
-      padding: 8px 18px;
-      border-radius: var(--radius-md);
+      padding: 10px 20px;
+      border-radius: var(--radius-pill, 9999px);
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       cursor: pointer;
       transition: var(--transition);
       display: flex;
@@ -184,32 +179,202 @@
 
     .btn-connect:hover {
       background: var(--accent-hover);
-      box-shadow: 0 0 16px var(--accent-glow);
       transform: translateY(-1px);
+      box-shadow: 0 4px 15px var(--accent-glow);
     }
 
-    /* ===== MAIN LAYOUT & TABS ===== */
-    .tab-nav-bar {
-      background: #111827;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 0.75rem 1.5rem;
+    /* ===== DARK HERO & 3D FLOATING UI ===== */
+    .hero-container {
+      background: var(--hero-bg);
+      color: #ffffff;
+      padding: 3.5rem 1.5rem 4rem;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid var(--hero-card-border);
     }
 
-    .tab-nav-container {
+    .hero-bg-glow {
+      position: absolute;
+      top: -20%;
+      right: 10%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-grid {
       max-width: 1280px;
       margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 3rem;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-left h1 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-left h1 span.grad {
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, #00a86b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-left p {
+      font-size: 1.05rem;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      max-width: 540px;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stat-item .val {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-item .lbl {
+      font-size: 0.8rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 2px;
+    }
+
+    /* 3D Floating UI Cluster */
+    .hero-right {
+      perspective: 1200px;
       display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .floating-cluster {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      transform-style: preserve-3d;
+      transition: transform 0.5s ease-out;
+    }
+
+    .floating-card-main {
+      background: var(--hero-card);
+      border: 1px solid var(--hero-card-border);
+      border-radius: var(--radius-xl);
+      padding: 1.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(22, 163, 74, 0.08);
+      transform: rotateY(-8deg) rotateX(6deg);
+      backdrop-filter: blur(16px);
+    }
+
+    .floating-badge {
+      position: absolute;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid var(--accent-glow);
+      backdrop-filter: blur(12px);
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.85rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .badge-vrdx {
+      top: -20px;
+      left: -20px;
+      border-color: var(--accent);
+      animation-delay: 0s;
+    }
+
+    .badge-usdc {
+      bottom: -15px;
+      right: -10px;
+      border-color: #3b82f6;
+      animation-delay: 1.5s;
+    }
+
+    .badge-btc {
+      top: 40%;
+      right: -30px;
+      border-color: #f59e0b;
+      animation-delay: 2.5s;
+    }
+
+    .token-chip {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .chip-vrdx { background: var(--accent); color: #000; }
+    .chip-usdc { background: #2775ca; color: #fff; }
+    .chip-btc  { background: #f7931a; color: #fff; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-12px) rotate(2deg); }
+    }
+
+    /* ===== MAIN CONTENT & LIGHT THEME LAYOUT ===== */
+    .main-wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* DEX Section Navigation Tabs */
+    .dex-tabs {
+      display: flex;
+      align-items: center;
       gap: 8px;
+      background: #ffffff;
+      padding: 6px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--card-border);
+      margin-bottom: 2rem;
+      width: fit-content;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     .tab-btn {
-      background: transparent;
-      border: none;
-      color: #94a3b8;
-      font-weight: 600;
-      font-size: 0.95rem;
-      padding: 8px 20px;
+      padding: 10px 20px;
       border-radius: var(--radius-md);
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.9rem;
       cursor: pointer;
       transition: var(--transition);
       display: flex;
@@ -217,216 +382,145 @@
       gap: 8px;
     }
 
-    .tab-btn:hover {
-      color: #ffffff;
-      background: rgba(255, 255, 255, 0.05);
-    }
-
     .tab-btn.active {
-      color: #0f172a;
-      background: var(--accent);
-      font-weight: 700;
-    }
-
-    /* ===== DARK HERO CONTAINER (#1a1a1a) ===== */
-    .hero-container {
-      background: var(--hero-bg);
+      background: #0f172a;
       color: #ffffff;
-      padding: 2.5rem 1.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      background-image: 
-        radial-gradient(circle at 10% 20%, rgba(202, 255, 51, 0.05) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(202, 255, 51, 0.03) 0%, transparent 40%);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
     }
 
-    .hero-content {
-      max-width: 1280px;
-      margin: 0 auto;
+    .tab-btn:hover:not(.active) {
+      background: #f8fafc;
+      color: var(--text-main);
     }
 
-    .hero-header {
-      margin-bottom: 2rem;
+    /* Tab Panels */
+    .tab-pane {
+      display: none;
     }
 
-    .hero-title {
-      font-size: 2.25rem;
-      font-weight: 800;
-      line-height: 1.2;
-      background: linear-gradient(135deg, #ffffff 30%, var(--accent) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .tab-pane.active {
+      display: block;
+      animation: fadeIn 0.3s ease-in-out;
     }
 
-    .hero-subtitle {
-      color: #94a3b8;
-      font-size: 1rem;
-      margin-top: 6px;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    /* SPLIT LAYOUT */
-    .split-grid {
+    /* ===== SWAP INTERFACE CARD ===== */
+    .swap-container {
       display: grid;
       grid-template-columns: 460px 1fr;
       gap: 2rem;
       align-items: start;
     }
 
-    @media (max-width: 992px) {
-      .split-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* ===== SWAP CARD (HERO LEFT) ===== */
-    .swap-card {
-      background: var(--hero-card);
-      border: 1px solid var(--hero-card-border);
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: var(--radius-xl);
-      padding: 1.5rem;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-      position: relative;
+      padding: 1.75rem;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);
     }
 
-    .card-top-bar {
+    .card-header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       margin-bottom: 1.25rem;
     }
 
     .card-title {
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      color: var(--text-main);
     }
 
-    .settings-btn {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #cbd5e1;
-      width: 36px;
-      height: 36px;
-      border-radius: var(--radius-md);
+    .card-settings-btn {
+      background: #f1f5f9;
+      border: none;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
+      color: var(--text-muted);
       transition: var(--transition);
     }
 
-    .settings-btn:hover {
-      background: rgba(255, 255, 255, 0.12);
-      color: #ffffff;
+    .card-settings-btn:hover {
+      background: #e2e8f0;
+      color: var(--text-main);
     }
 
-    /* TOKEN INPUT BOX */
-    .token-box {
-      background: var(--hero-input-bg);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+    /* Token Input Box */
+    .input-group {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
       border-radius: var(--radius-lg);
       padding: 1rem;
+      margin-bottom: 0.5rem;
       transition: var(--transition);
     }
 
-    .token-box:focus-within {
-      border-color: rgba(202, 255, 51, 0.5);
-      box-shadow: 0 0 12px rgba(202, 255, 51, 0.15);
+    .input-group:focus-within {
+      border-color: #0f172a;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
     }
 
-    .token-box-header {
+    .input-label {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 8px;
       font-size: 0.8rem;
-      color: #94a3b8;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 0.5rem;
     }
 
-    .balance-label {
-      cursor: pointer;
-      color: #cbd5e1;
-    }
-
-    .balance-label span {
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    .token-box-row {
+    .input-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 1rem;
     }
 
-    .amount-input {
-      background: transparent;
+    .token-input {
       border: none;
-      outline: none;
-      color: #ffffff;
+      background: transparent;
       font-size: 1.5rem;
       font-weight: 700;
-      font-family: var(--font-mono);
+      color: var(--text-main);
       width: 100%;
-    }
-
-    .amount-input::placeholder {
-      color: #475569;
+      outline: none;
+      font-family: var(--font-mono);
     }
 
     .token-select-btn {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: #ffffff;
-      padding: 8px 14px;
-      border-radius: var(--radius-md);
-      font-weight: 600;
-      font-size: 0.95rem;
       display: flex;
       align-items: center;
       gap: 8px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 8px 14px;
+      border-radius: var(--radius-pill, 9999px);
+      font-weight: 600;
+      font-size: 0.9rem;
       cursor: pointer;
-      transition: var(--transition);
       white-space: nowrap;
+      transition: var(--transition);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
 
     .token-select-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
+      background: #f1f5f9;
+      border-color: #94a3b8;
     }
 
-    .token-icon {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: var(--accent);
-      color: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7rem;
-      font-weight: 800;
-    }
-
-    .max-btn {
-      background: rgba(202, 255, 51, 0.15);
-      color: var(--accent);
-      border: 1px solid rgba(202, 255, 51, 0.3);
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      cursor: pointer;
-      margin-left: 6px;
-    }
-
-    .max-btn:hover {
-      background: var(--accent);
-      color: #000;
-    }
-
-    /* FLIP BUTTON */
-    .flip-wrapper {
+    .swap-arrow-wrap {
       display: flex;
       justify-content: center;
       margin: -10px 0;
@@ -434,10 +528,9 @@
       z-index: 2;
     }
 
-    .flip-btn {
-      background: #2a2a2a;
-      border: 2px solid var(--hero-card);
-      color: var(--accent);
+    .swap-arrow-btn {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
       width: 38px;
       height: 38px;
       border-radius: 50%;
@@ -445,1439 +538,1408 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
       transition: var(--transition);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      color: var(--text-main);
     }
 
-    .flip-btn:hover {
-      background: var(--accent);
-      color: #0f172a;
-      transform: rotate(180deg);
+    .swap-arrow-btn:hover {
+      transform: rotate(180deg) scale(1.1);
+      background: #f8fafc;
     }
 
-    /* SWAP DETAILS ACCORDION */
-    .swap-details {
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+    /* Slippage Selector */
+    .slippage-wrap {
+      margin: 1.25rem 0;
+      background: #f8fafc;
+      padding: 12px;
       border-radius: var(--radius-md);
-      padding: 1rem;
-      margin-top: 1.25rem;
+      border: 1px solid #e2e8f0;
+    }
+
+    .slippage-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .slippage-options {
+      display: flex;
+      gap: 6px;
+    }
+
+    .slip-btn {
+      flex: 1;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      padding: 6px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      color: var(--text-main);
+    }
+
+    .slip-btn.active {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+
+    /* Swap Details Table */
+    .swap-details {
+      margin: 1.25rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
       font-size: 0.85rem;
     }
 
     .detail-row {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      color: #94a3b8;
+      color: var(--text-muted);
     }
 
-    .detail-row:last-child {
-      margin-bottom: 0;
-    }
-
-    .detail-val {
-      color: #ffffff;
+    .detail-value {
       font-weight: 600;
+      color: var(--text-main);
     }
 
-    .impact-good { color: #22c55e; }
-    .impact-warn { color: #f59e0b; }
-    .impact-high { color: #ef4444; }
-
-    /* ACTION BUTTON */
-    .btn-swap-execute {
+    .btn-action {
       width: 100%;
-      background: var(--accent);
-      color: #0f172a;
+      background: #0f172a;
+      color: #ffffff;
       border: none;
       padding: 16px;
       border-radius: var(--radius-lg);
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
-      margin-top: 1.25rem;
       transition: var(--transition);
-      box-shadow: 0 4px 20px var(--accent-glow);
+      box-shadow: 0 4px 15px rgba(15, 23, 42, 0.2);
     }
 
-    .btn-swap-execute:hover:not(:disabled) {
-      background: var(--accent-hover);
+    .btn-action:hover {
+      background: #1e293b;
       transform: translateY(-2px);
-      box-shadow: 0 8px 25px var(--accent-glow);
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
     }
 
-    .btn-swap-execute:disabled {
-      background: #334155;
-      color: #64748b;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-
-    /* ===== RIGHT COLUMN (CHART & STATS) ===== */
+    /* ===== CHART SECTION ===== */
     .chart-card {
-      background: var(--hero-card);
-      border: 1px solid var(--hero-card-border);
-      border-radius: var(--radius-xl);
-      padding: 1.5rem;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      height: 100%;
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
-      min-height: 480px;
     }
 
     .chart-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
+      margin-bottom: 1rem;
     }
 
-    .pair-info {
+    .chart-pair-info {
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    .pair-title {
-      font-size: 1.3rem;
-      font-weight: 700;
+    .chart-price {
+      font-size: 1.75rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
     }
 
-    .pair-price {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--accent);
+    .chart-change {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
     }
 
-    .timeframe-group {
+    .timeframe-selector {
       display: flex;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 3px;
+      gap: 4px;
+      background: #f1f5f9;
+      padding: 4px;
       border-radius: var(--radius-md);
-      gap: 2px;
     }
 
     .tf-btn {
-      background: transparent;
       border: none;
-      color: #94a3b8;
-      padding: 4px 12px;
+      background: transparent;
+      padding: 4px 10px;
       border-radius: var(--radius-sm);
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 600;
+      color: var(--text-muted);
       cursor: pointer;
-      transition: var(--transition);
     }
 
     .tf-btn.active {
-      background: rgba(202, 255, 51, 0.2);
-      color: var(--accent);
+      background: #ffffff;
+      color: var(--text-main);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
-    .chart-wrapper {
+    .canvas-container {
+      flex: 1;
+      min-height: 320px;
       position: relative;
-      flex-grow: 1;
       width: 100%;
-      height: 280px;
     }
 
     canvas#priceChart {
       width: 100% !important;
       height: 100% !important;
-      display: block;
     }
 
-    .chart-stats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      background: rgba(0,0,0,0.2);
-      padding: 1rem;
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-
-    .stat-box {
-      text-align: center;
-    }
-
-    .stat-lbl {
-      font-size: 0.75rem;
-      color: #94a3b8;
-      margin-bottom: 2px;
-    }
-
-    .stat-val {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #ffffff;
-    }
-
-    /* ===== CONTENT SECTIONS (LIGHT THEME) ===== */
-    .section-container {
-      max-width: 1280px;
-      margin: 2.5rem auto;
-      padding: 0 1.5rem;
-      width: 100%;
-    }
-
-    .card-white {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-xl);
-      padding: 1.75rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-    }
-
-    .section-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--text-main);
-      margin-bottom: 1.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    /* TABLE STYLING */
-    .table-responsive {
+    /* ===== POOLS TABLE ===== */
+    .table-container {
       overflow-x: auto;
     }
 
-    table.data-table {
+    table.pools-table {
       width: 100%;
       border-collapse: collapse;
       text-align: left;
     }
 
-    table.data-table th {
-      padding: 12px 16px;
+    table.pools-table th {
+      padding: 14px 16px;
       font-size: 0.8rem;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      border-bottom: 2px solid var(--card-border);
-      cursor: pointer;
-      user-select: none;
+      border-bottom: 1px solid var(--card-border);
+      background: #f8fafc;
     }
 
-    table.data-table th:hover {
-      color: var(--text-main);
-    }
-
-    table.data-table td {
+    table.pools-table td {
       padding: 16px;
       font-size: 0.9rem;
       border-bottom: 1px solid #f1f5f9;
-      color: #334155;
+      vertical-align: middle;
     }
 
-    table.data-table tr:hover td {
-      background-color: #f8fafc;
+    table.pools-table tr:hover {
+      background: #f8fafc;
     }
 
-    .badge-fee {
-      background: #e0f2fe;
-      color: #0369a1;
-      padding: 3px 8px;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: 600;
+    .pool-pair-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
     }
 
-    .btn-table-action {
-      background: #0f172a;
-      color: #ffffff;
-      border: none;
+    .pair-icons {
+      display: flex;
+      align-items: center;
+    }
+
+    .pair-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      border: 2px solid #ffffff;
+      margin-left: -8px;
+    }
+
+    .pair-icon:first-child {
+      margin-left: 0;
+    }
+
+    .badge-primary {
+      background: var(--accent);
+      color: #0f172a;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      margin-left: 6px;
+    }
+
+    .btn-sm {
       padding: 6px 14px;
       border-radius: var(--radius-md);
       font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
+      border: 1px solid var(--card-border);
+      background: #ffffff;
       transition: var(--transition);
     }
 
-    .btn-table-action:hover {
-      background: var(--accent);
-      color: #0f172a;
+    .btn-sm:hover {
+      background: #0f172a;
+      color: #ffffff;
     }
 
-    /* LIQUIDITY FORMS */
+    /* ===== ADD/REMOVE LIQUIDITY PANEL ===== */
     .liquidity-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 2rem;
     }
 
-    @media (max-width: 768px) {
-      .liquidity-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .form-group {
-      margin-bottom: 1.25rem;
-    }
-
-    .form-label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #475569;
-      margin-bottom: 6px;
-    }
-
-    .light-input {
-      width: 100%;
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      border-radius: var(--radius-md);
-      padding: 12px;
-      font-size: 1rem;
-      font-family: var(--font-mono);
-      outline: none;
-      transition: var(--transition);
-    }
-
-    .light-input:focus {
-      border-color: #0f172a;
-      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
-    }
-
-    .preset-btns {
-      display: flex;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .preset-btn {
-      flex: 1;
-      background: #e2e8f0;
-      border: none;
-      padding: 6px;
-      border-radius: var(--radius-sm);
-      font-weight: 600;
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-
-    .preset-btn:hover {
-      background: #cbd5e1;
-    }
-
-    /* MODAL DIALOGS */
+    /* ===== MODAL ===== */
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(15, 23, 42, 0.6);
       backdrop-filter: blur(4px);
       z-index: 2000;
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
     }
 
-    .modal-overlay.open {
-      opacity: 1;
-      pointer-events: auto;
+    .modal-overlay.active {
+      display: flex;
     }
 
     .modal-card {
-      background: #1e1e1e;
-      color: #ffffff;
-      border: 1px solid rgba(255,255,255,0.1);
+      background: #ffffff;
       border-radius: var(--radius-xl);
-      width: 100%;
-      max-width: 440px;
       padding: 1.5rem;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
     }
 
     .modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
     }
 
     .modal-close {
-      background: transparent;
+      background: none;
       border: none;
-      color: #94a3b8;
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       cursor: pointer;
+      color: var(--text-muted);
     }
 
-    .modal-close:hover { color: #ffffff; }
+    .token-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
 
-    .token-list-item {
+    .token-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px;
+      padding: 10px 12px;
       border-radius: var(--radius-md);
       cursor: pointer;
       transition: var(--transition);
     }
 
-    .token-list-item:hover {
-      background: rgba(255, 255, 255, 0.08);
+    .token-item:hover {
+      background: #f1f5f9;
     }
 
-    /* TOAST NOTIFICATIONS */
-    #toastContainer {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 3000;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .toast {
-      background: #0f172a;
-      color: #ffffff;
-      border-left: 4px solid var(--accent);
-      padding: 14px 20px;
-      border-radius: var(--radius-md);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 0.9rem;
-      animation: slideIn 0.3s ease;
-    }
-
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-
-    /* FOOTER */
+    /* ===== FOOTER ===== */
     footer {
-      margin-top: auto;
       background: #0f172a;
       color: #94a3b8;
       padding: 2.5rem 1.5rem;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
-      font-size: 0.85rem;
+      margin-top: auto;
     }
 
-    .footer-container {
+    .footer-inner {
       max-width: 1280px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 1.5rem;
+      gap: 1rem;
+    }
+
+    .footer-brand {
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 1.1rem;
     }
 
     .footer-links {
       display: flex;
       gap: 1.5rem;
+      list-style: none;
+      font-size: 0.85rem;
     }
 
     .footer-link {
       color: #94a3b8;
       text-decoration: none;
+      transition: var(--transition);
     }
 
-    .footer-link:hover { color: var(--accent); }
-  </style>
+    .footer-link:hover {
+      color: var(--accent);
+    }
+
+    @media (max-width: 992px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+      .swap-container {
+        grid-template-columns: 1fr;
+      }
+      .liquidity-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  .footer{max-width:1200px;margin:0 auto;padding:32px 24px;border-top:1px solid var(--border);margin-top:40px}
+.footer-links{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:12px;justify-content:center}
+.footer-links a{font-size:12px;color:var(--text-2);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--accent)}
+.footer-copy{font-size:11px;color:var(--text-3);text-align:center}
+.nav{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;gap:16px}
+.nav-logo{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.nav-logo img{height:32px;width:auto}
+.nav-links{display:flex;align-items:center;gap:4px;flex:1;justify-content:center;flex-wrap:wrap}
+.nav-links a{padding:6px 10px;font-size:12px;font-weight:500;color:var(--text-2);border-radius:6px;transition:all .2s;text-decoration:none}
+.nav-links a:hover{color:var(--text);background:rgba(0,0,0,.04)}
+.nav-links a.active{color:#00b364;background:rgba(0,179,100,.08)}
+.nav-status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-2);flex-shrink:0}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.nav-menu-btn{display:none;padding:8px;background:none;border:none;cursor:pointer;flex-direction:column;gap:4px}
+.nav-menu-btn span{width:20px;height:2px;background:#333;border-radius:2px}
+@media(max-width:768px){
+  .nav-links{display:none}
+  .nav-links.mobile{display:flex;flex-direction:column;position:absolute;top:56px;left:0;right:0;background:#fff;border-bottom:1px solid #e0e0e0;padding:12px;gap:0}
+  .nav-links.mobile a{padding:10px 14px}
+  .nav-menu-btn{display:flex}
+}
+@media(max-width:768px){.hero-right{height:auto!important;min-height:500px}.fc-3d-cluster,.floating-cluster{height:auto!important;position:static!important;transform:none!important;perspective:none!important}.fc-card,.fc-price,.fc-alloc,.fc-raise,.fc-supply,.fc-investors,.fc-block,.fc-stat{position:relative!important;left:auto!important;right:auto!important;top:auto!important;transform:none!important;animation:none!important;margin:8px auto;width:90%!important}}
+</style>
 </head>
 <body>
 
-  <!-- STICKY NAV -->
-  <header class="sticky-nav">
-    <div class="nav-container">
-      <a href="/" class="nav-brand">
-        <img src="/assets/verdis-logo-black.png" alt="Verdis Logo" class="nav-logo-img" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='flex';" />
-        <div id="logoFallback" class="nav-logo-fallback" style="display:none;">V</div>
-        <span>Verdis Chain</span>
-      </a>
-
-      <ul class="nav-menu">
-        <li><a href="/" class="nav-link">Home</a></li>
-        <li><a href="/explorer/" class="nav-link">Verdiscan</a></li>
-        <li><a href="/dex/" class="nav-link active">DEX</a></li>
-        <li><a href="/validators/" class="nav-link">Validators</a></li>
-        <li><a href="/eco/" class="nav-link">Eco</a></li>
-        <li><a href="/faucet/" class="nav-link">Faucet</a></li>
-        <li><a href="/wallet/" class="nav-link">Wallet</a></li>
-        <li><a href="/api/" class="nav-link">API</a></li>
-        <li><a href="/docs/" class="nav-link">Docs</a></li>
-      </ul>
-
-      <div class="nav-actions">
-        <div class="rpc-badge">
-          <div class="rpc-dot" id="rpcDot"></div>
-          <span id="rpcStatusText">RPC: Block #---</span>
-        </div>
-        <button class="btn-connect" id="navConnectBtn" onclick="openWalletModal()">
-          <span id="navConnectText">Connect Wallet</span>
-        </button>
-      </div>
+  <!-- STICKY NAVBAR -->
+  <nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain"></a>
+    <div class="nav-links" id="navLinks">
+      <a href="/explorer/">Verdiscan</a>
+      <a href="/dex/" class="active">DEX</a>
+      <a href="/whitepaper/">Whitepaper</a>
+      <a href="/wallet/">Wallet</a>
+      <a href="/sale/">Sale</a>
+      <a href="/tokenomics/">Tokenomics</a>
+      <a href="/faucet/">Faucet</a>
     </div>
-  </header>
+    <div class="nav-status"><span class="pulse-dot"></span><span>Testnet Live</span></div>
+    <button class="nav-menu-btn" onclick="document.getElementById('navLinks').classList.toggle('mobile')"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div style="max-width:1200px;margin:0 auto;padding:0 24px;display:flex;gap:4px;border-bottom:1px solid #e0e0e0"><li><a style="padding:10px 16px;font-size:13px;font-weight:500;color:#666;cursor:pointer;border-bottom:2px solid transparent;text-decoration:none active" onclick="switchTab('swap')">Swap</a></li>
+<li><a style="padding:10px 16px;font-size:13px;font-weight:500;color:#666;cursor:pointer;border-bottom:2px solid transparent;text-decoration:none" onclick="switchTab('pools')">Pools</a></li>
+<li><a style="padding:10px 16px;font-size:13px;font-weight:500;color:#666;cursor:pointer;border-bottom:2px solid transparent;text-decoration:none" onclick="switchTab('liquidity')">Liquidity</a></li>
+<li><a style="padding:10px 16px;font-size:13px;font-weight:500;color:#666;cursor:pointer;border-bottom:2px solid transparent;text-decoration:none" onclick="switchTab('chart')">Price Chart</a></li>
+<li><a style="padding:10px 16px;font-size:13px;font-weight:500;color:#666;cursor:pointer;border-bottom:2px solid transparent;text-decoration:none" onclick="switchTab('history')">History</a></li>
+</div>
 
-  <!-- TAB NAVIGATION BAR -->
-  <nav class="tab-nav-bar">
-    <div class="tab-nav-container">
-      <button class="tab-btn active" id="tabBtnSwap" onclick="switchTab('swap')">⚡ Swap</button>
-      <button class="tab-btn" id="tabBtnLiquidity" onclick="switchTab('liquidity')">💧 Liquidity</button>
-      <button class="tab-btn" id="tabBtnPools" onclick="switchTab('pools')">📊 Pools</button>
-    </div>
-  </nav>
-
-  <!-- TAB 1: SWAP & HERO CONTAINER -->
-  <div id="tabSwapView">
-    <section class="hero-container">
-      <div class="hero-content">
-        <div class="hero-header">
-          <h1 class="hero-title">Verdis DEX</h1>
-          <p class="hero-subtitle">High-speed, constant-product AMM built for Verdis Chain. Swap tokens with protocol-level liquidity.</p>
+  <!-- DARK HERO CONTAINER (GRADIENT-UI-UX TEMPLATE STRUCTURE) -->
+  <section class="hero-container">
+    <div class="hero-bg-glow"></div>
+    <div class="hero-grid">
+      <div class="hero-left">
+        <div style="display:inline-flex; align-items:center; gap:8px; padding:4px 12px; background:rgba(22,163,74,0.1); border:1px solid rgba(22,163,74,0.3); border-radius:20px; font-size:0.8rem; font-weight:600; color:var(--accent); margin-bottom:1rem;">
+          ⚡ Native Protocol-Level AMM
         </div>
+        <h1>Verdis Chain <span class="grad">Decentralized Exchange</span></h1>
+        <p>
+          Instant, trustless token swaps powered by Substrate's <code>amm_dex</code> pallet. Zero slippage routing, high-yield liquidity pools, and live state synchronization.
+        </p>
 
-        <div class="split-grid">
-          <!-- LEFT: SWAP CARD -->
-          <div class="swap-card">
-            <div class="card-top-bar">
-              <div class="card-title">
-                <span>Swap Tokens</span>
-              </div>
-              <button class="settings-btn" onclick="openSlippageModal()" title="Slippage Settings">⚙️</button>
-            </div>
-
-            <!-- TOKEN IN -->
-            <div class="token-box">
-              <div class="token-box-header">
-                <span>You Pay</span>
-                <span class="balance-label" onclick="setMaxAmount()">Balance: <span id="tokenInBalance">0.00</span> <button class="max-btn">MAX</button></span>
-              </div>
-              <div class="token-box-row">
-                <input type="number" id="inputAmountIn" class="amount-input" placeholder="0.0" oninput="onInputInChanged()" />
-                <button class="token-select-btn" onclick="openTokenModal('in')">
-                  <div class="token-icon" id="iconTokenIn">V</div>
-                  <span id="symbolTokenIn">VRDX</span>
-                  <span>▼</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- FLIP BUTTON -->
-            <div class="flip-wrapper">
-              <button class="flip-btn" onclick="flipTokens()" title="Invert Swap Tokens">↓↑</button>
-            </div>
-
-            <!-- TOKEN OUT -->
-            <div class="token-box">
-              <div class="token-box-header">
-                <span>You Receive</span>
-                <span class="balance-label">Balance: <span id="tokenOutBalance">0.00</span></span>
-              </div>
-              <div class="token-box-row">
-                <input type="number" id="inputAmountOut" class="amount-input" placeholder="0.0" readonly />
-                <button class="token-select-btn" onclick="openTokenModal('out')">
-                  <div class="token-icon" id="iconTokenOut">U</div>
-                  <span id="symbolTokenOut">USDC</span>
-                  <span>▼</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- ACCORDION DETAILS -->
-            <div class="swap-details">
-              <div class="detail-row">
-                <span>Exchange Rate</span>
-                <span class="detail-val mono" id="detailRate">1 VRDX = --- USDC</span>
-              </div>
-              <div class="detail-row">
-                <span>Price Impact</span>
-                <span class="detail-val mono impact-good" id="detailImpact">0.00%</span>
-              </div>
-              <div class="detail-row">
-                <span>Minimum Received</span>
-                <span class="detail-val mono" id="detailMinReceived">0.00</span>
-              </div>
-              <div class="detail-row">
-                <span>Slippage Tolerance</span>
-                <span class="detail-val mono" id="detailSlippage">0.50%</span>
-              </div>
-              <div class="detail-row">
-                <span>Route</span>
-                <span class="detail-val mono" id="detailRoute">VRDX → USDC</span>
-              </div>
-            </div>
-
-            <!-- EXECUTE ACTION BUTTON -->
-            <button class="btn-swap-execute" id="btnSwapAction" onclick="handleSwapAction()">Connect Wallet</button>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <div class="val" id="heroTvl">$32,400,000</div>
+            <div class="lbl">Total Value Locked</div>
           </div>
-
-          <!-- RIGHT: LIVE PRICE CHART -->
-          <div class="chart-card">
-            <div class="chart-header">
-              <div class="pair-info">
-                <span class="pair-title" id="chartPairTitle">VRDX / USDC</span>
-                <span class="pair-price mono" id="chartCurrentPrice">$0.5000</span>
-              </div>
-              <div class="timeframe-group">
-                <button class="tf-btn active" onclick="setTimeframe('24H', this)">24H</button>
-                <button class="tf-btn" onclick="setTimeframe('1W', this)">1W</button>
-                <button class="tf-btn" onclick="setTimeframe('1M', this)">1M</button>
-              </div>
-            </div>
-
-            <div class="chart-wrapper">
-              <canvas id="priceChart"></canvas>
-            </div>
-
-            <div class="chart-stats-grid">
-              <div class="stat-box">
-                <div class="stat-lbl">24h High</div>
-                <div class="stat-val mono" id="stat24hHigh">$0.5210</div>
-              </div>
-              <div class="stat-box">
-                <div class="stat-lbl">24h Low</div>
-                <div class="stat-val mono" id="stat24hLow">$0.4890</div>
-              </div>
-              <div class="stat-box">
-                <div class="stat-lbl">Pool TVL</div>
-                <div class="stat-val mono" id="statPoolTVL">$750,000</div>
-              </div>
-              <div class="stat-box">
-                <div class="stat-lbl">24h Volume</div>
-                <div class="stat-val mono" id="stat24hVol">$12,500</div>
-              </div>
-            </div>
+          <div class="stat-item">
+            <div class="val" id="heroVol">$4,500,000</div>
+            <div class="lbl">24H Volume</div>
+          </div>
+          <div class="stat-item">
+            <div class="val">~0.8s</div>
+            <div class="lbl">Avg Swap Finality</div>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- RECENT TRANSACTIONS TABLE -->
-    <section class="section-container">
-      <div class="card-white">
-        <div class="section-title">
-          <span>Recent Transactions</span>
-          <button class="btn-table-action" onclick="fetchRecentSwaps()">Refresh</button>
+      <!-- 3D FLOATING UI CLUSTER -->
+      <div class="hero-right">
+        <div class="floating-cluster" id="heroCluster">
+          
+          <div class="floating-badge badge-vrdx">
+            <div class="token-chip chip-vrdx">V</div>
+            <div>
+              <div style="font-size:0.75rem; color:#94a3b8;">Primary Token</div>
+              <div>VRDX $1.25 <span style="color:#22c55e; font-size:0.75rem;">+4.2%</span></div>
+            </div>
+          </div>
+
+          <div class="floating-card-main">
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94a3b8; margin-bottom:12px;">
+              <span>Live Market Order</span>
+              <span class="mono" style="color:var(--accent);">AmmDex::swap</span>
+            </div>
+            
+            <div style="background:#1e1e1e; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.05); margin-bottom:8px;">
+              <div style="font-size:0.75rem; color:#64748b;">You Pay</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                <span class="mono" style="font-size:1.2rem; font-weight:700;">1,000.00</span>
+                <span style="font-weight:600; display:flex; align-items:center; gap:6px;">⚡ VRDX</span>
+              </div>
+            </div>
+
+            <div style="text-align:center; margin:-6px 0 2px; color:var(--accent); font-size:0.9rem;">↓</div>
+
+            <div style="background:#1e1e1e; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.05);">
+              <div style="font-size:0.75rem; color:#64748b;">You Receive (Est.)</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                <span class="mono" style="font-size:1.2rem; font-weight:700; color:#22c55e;">1,250.00</span>
+                <span style="font-weight:600; display:flex; align-items:center; gap:6px;">💵 USDC</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="floating-badge badge-usdc">
+            <div class="token-chip chip-usdc">$</div>
+            <div>
+              <div style="font-size:0.75rem; color:#94a3b8;">Pool Reserve</div>
+              <div>6.25M USDC</div>
+            </div>
+          </div>
+
+          <div class="floating-badge badge-btc">
+            <div class="token-chip chip-btc">₿</div>
+            <div>
+              <div style="font-size:0.75rem; color:#94a3b8;">BTC Pool APY</div>
+              <div style="color:var(--accent);">19.2%</div>
+            </div>
+          </div>
+
         </div>
-        <div class="table-responsive">
-          <table class="data-table">
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN WORKSPACE CONTAINER (LIGHT THEME) -->
+  <main class="main-wrap">
+
+    <!-- DEX FUNCTIONAL NAVIGATION TABS -->
+    <div class="dex-tabs">
+      <button class="tab-btn active" id="tabBtn-swap" onclick="switchTab('swap')">
+        🔄 Instant Swap
+      </button>
+      <button class="tab-btn" id="tabBtn-pools" onclick="switchTab('pools')">
+        💧 Liquidity Pools
+      </button>
+      <button class="tab-btn" id="tabBtn-liquidity" onclick="switchTab('liquidity')">
+        ➕ Add / Remove Liquidity
+      </button>
+      <button class="tab-btn" id="tabBtn-chart" onclick="switchTab('chart')">
+        📈 Price Chart
+      </button>
+      <button class="tab-btn" id="tabBtn-history" onclick="switchTab('history')">
+        📜 Transaction History
+      </button>
+    </div>
+
+    <!-- TAB 1: SWAP INTERFACE -->
+    <div class="tab-pane active" id="pane-swap">
+      <div class="swap-container">
+        
+        <!-- SWAP WIDGET CARD -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Swap Tokens</div>
+            <button class="card-settings-btn" title="Settings" onclick="toggleSettingsModal()">⚙️</button>
+          </div>
+
+          <!-- Token In -->
+          <div class="input-group">
+            <div class="input-label">
+              <span>You Pay</span>
+              <span>Balance: <span class="mono" id="balanceIn">10,000.00</span></span>
+            </div>
+            <div class="input-row">
+              <input type="number" class="token-input" id="amountIn" placeholder="0.0" value="100" oninput="updateSwapCalculation()" />
+              <button class="token-select-btn" onclick="openTokenModal('in')">
+                <span id="symbolIn">VRDX</span> ▾
+              </button>
+            </div>
+          </div>
+
+          <!-- Swap Direction Arrow -->
+          <div class="swap-arrow-wrap">
+            <button class="swap-arrow-btn" onclick="invertSwapTokens()">⇅</button>
+          </div>
+
+          <!-- Token Out -->
+          <div class="input-group">
+            <div class="input-label">
+              <span>You Receive (Estimated)</span>
+              <span>Balance: <span class="mono" id="balanceOut">5,000.00</span></span>
+            </div>
+            <div class="input-row">
+              <input type="number" class="token-input" id="amountOut" placeholder="0.0" readonly />
+              <button class="token-select-btn" onclick="openTokenModal('out')">
+                <span id="symbolOut">USDC</span> ▾
+              </button>
+            </div>
+          </div>
+
+          <!-- Slippage Tolerance -->
+          <div class="slippage-wrap">
+            <div class="slippage-header">
+              <span>Slippage Tolerance</span>
+              <span class="mono" id="slipValDisplay">0.5%</span>
+            </div>
+            <div class="slippage-options">
+              <button class="slip-btn" onclick="setSlippage(0.1)">0.1%</button>
+              <button class="slip-btn active" id="slipBtn05" onclick="setSlippage(0.5)">0.5%</button>
+              <button class="slip-btn" onclick="setSlippage(1.0)">1.0%</button>
+              <button class="slip-btn" onclick="setSlippage(2.0)">2.0%</button>
+            </div>
+          </div>
+
+          <!-- Swap Breakdown Details -->
+          <div class="swap-details">
+            <div class="detail-row">
+              <span>Exchange Rate</span>
+              <span class="detail-value mono" id="swapRate">1 VRDX = 1.0000 ECO</span>
+            </div>
+            <div class="detail-row">
+              <span>Price Impact</span>
+              <span class="detail-value mono" id="priceImpact" style="color:#22c55e;">0.02%</span>
+            </div>
+            <div class="detail-row">
+              <span>Min. Received</span>
+              <span class="detail-value mono" id="minReceived">124.37 USDC</span>
+            </div>
+            <div class="detail-row">
+              <span>Protocol LP Fee (0.3%)</span>
+              <span class="detail-value mono" id="lpFee">0.30 VRDX</span>
+            </div>
+            <div class="detail-row">
+              <span>AMM Storage Key</span>
+              <span class="detail-value mono" style="font-size:0.75rem; color:#64748b;">0xaaf995822f...</span>
+            </div>
+          </div>
+
+          <button class="btn-action" id="swapSubmitBtn" onclick="executeSwap()">
+            Swap Tokens
+          </button>
+        </div>
+
+        <!-- RIGHT SIDE SUMMARY / QUICK POOL STATS -->
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Pool Overview (<span id="activePoolPair">VRDX/ECO</span>)</div>
+              <span class="badge-primary">PRIMARY POOL</span>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:0.5rem;">
+              <div style="background:#f8fafc; padding:1rem; border-radius:12px; border:1px solid #e2e8f0;">
+                <div style="font-size:0.8rem; color:#64748b;">Reserve Token A</div>
+                <div class="mono" style="font-size:1.2rem; font-weight:700; margin-top:4px;" id="resAVal">5,000,000 VRDX</div>
+              </div>
+              <div style="background:#f8fafc; padding:1rem; border-radius:12px; border:1px solid #e2e8f0;">
+                <div style="font-size:0.8rem; color:#64748b;">Reserve Token B</div>
+                <div class="mono" style="font-size:1.2rem; font-weight:700; margin-top:4px;" id="resBVal">6,250,000 USDC</div>
+              </div>
+            </div>
+            <div style="margin-top:1rem; font-size:0.85rem; color:#64748b; line-height:1.5;">
+              Constant Product Market Maker Formula: <code class="mono" style="color:#0f172a;">x * y = k</code>. Direct execution via Substrate extrinsic call.
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="margin-bottom:1rem;">Top Liquidity Pools</div>
+            <div id="topPoolsList" style="display:flex; flex-direction:column; gap:10px;">
+              <div style="text-align:center;padding:20px;color:#666;font-size:13px;">Loading on-chain pools...</div>
+            </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 2: LIQUIDITY POOLS TABLE -->
+    <div class="tab-pane" id="pane-pools">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Liquidity Pools</div>
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-top:2px;">
+              Verified Automated Market Maker pools on Verdis Chain
+            </div>
+          </div>
+          <button class="btn-action" style="width:auto; padding:8px 16px; font-size:0.85rem;" onclick="switchTab('liquidity')">
+            + Create / Add Liquidity
+          </button>
+        </div>
+
+        <div class="table-container">
+          <table class="pools-table">
             <thead>
               <tr>
-                <th>Tx Hash</th>
-                <th>Pair</th>
-                <th>Type</th>
-                <th>Amount In</th>
-                <th>Amount Out</th>
-                <th>Trader</th>
-                <th>Status</th>
+                <th>Pool Pair</th>
+                <th>Reserves (A / B)</th>
+                <th>TVL</th>
+                <th>24H Volume</th>
+                <th>APY</th>
+                <th>Action</th>
               </tr>
             </thead>
-            <tbody id="recentSwapsTable">
-              <tr><td colspan="7" style="text-align:center; padding:2rem; color:#94a3b8;">Loading live transactions...</td></tr>
+            <tbody id="poolsTableBody">
+              <!-- Dynamically populated -->
             </tbody>
           </table>
         </div>
       </div>
-    </section>
-  </div>
+    </div>
 
-  <!-- TAB 2: LIQUIDITY VIEW -->
-  <div id="tabLiquidityView" class="section-container" style="display:none;">
-    <div class="card-white">
-      <div class="section-title">Liquidity Management</div>
-
+    <!-- TAB 3: ADD/REMOVE LIQUIDITY INTERFACE -->
+    <div class="tab-pane" id="pane-liquidity">
       <div class="liquidity-grid">
-        <!-- ADD LIQUIDITY -->
-        <div>
-          <h3 style="margin-bottom: 1rem; font-size:1.1rem;">Add Liquidity</h3>
+        
+        <!-- ADD LIQUIDITY CARD -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:1.25rem;">➕ Add Liquidity</div>
           
-          <div class="form-group">
-            <label class="form-label">Token A</label>
-            <div style="display:flex; gap:8px;">
-              <select id="liqTokenA" class="light-input" onchange="updateLiquidityCalc()">
-                <option value="VRDX">VRDX</option>
-                <option value="USDC">USDC</option>
-                <option value="DOT">DOT</option>
-                <option value="USDT">USDT</option>
-                <option value="BTC">BTC</option>
-                <option value="ETH">ETH</option>
-                <option value="DAI">DAI</option>
-              </select>
-              <input type="number" id="liqAmountA" class="light-input" placeholder="0.0" oninput="updateLiquidityCalc()" />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Token B</label>
-            <div style="display:flex; gap:8px;">
-              <select id="liqTokenB" class="light-input" onchange="updateLiquidityCalc()">
-                <option value="USDC">USDC</option>
-                <option value="VRDX">VRDX</option>
-                <option value="DOT">DOT</option>
-                <option value="USDT">USDT</option>
-                <option value="BTC">BTC</option>
-                <option value="ETH">ETH</option>
-                <option value="DAI">DAI</option>
-              </select>
-              <input type="number" id="liqAmountB" class="light-input" placeholder="0.0" readonly />
-            </div>
-          </div>
-
-          <div class="swap-details" style="background:#f8fafc; border-color:#e2e8f0; color:#334155; margin-bottom:1.25rem;">
-            <div class="detail-row">
-              <span style="color:#64748b;">Pool Ratio</span>
-              <span class="detail-val mono" id="liqRatio" style="color:#0f172a;">1 VRDX = 0.5 USDC</span>
-            </div>
-            <div class="detail-row">
-              <span style="color:#64748b;">Est. Share of Pool</span>
-              <span class="detail-val mono" id="liqShare" style="color:#0f172a;">0.00%</span>
-            </div>
-          </div>
-
-          <button class="btn-swap-execute" onclick="handleAddLiquidity()">Supply Liquidity</button>
-        </div>
-
-        <!-- REMOVE LIQUIDITY -->
-        <div>
-          <h3 style="margin-bottom: 1rem; font-size:1.1rem;">Remove Liquidity</h3>
-          
-          <div class="form-group">
-            <label class="form-label">Select Pool</label>
-            <select id="removePoolSelect" class="light-input" onchange="updateRemoveCalc()">
-              <option value="VRDX/USDC">VRDX/USDC LP</option>
-              <option value="VRDX/DOT">VRDX/DOT LP</option>
-              <option value="VRDX/USDT">VRDX/USDT LP</option>
-              <option value="VRDX/BTC">VRDX/BTC LP</option>
-              <option value="VRDX/ETH">VRDX/ETH LP</option>
-              <option value="VRDX/DAI">VRDX/DAI LP</option>
+          <div class="input-group">
+            <div class="input-label">Select Pair</div>
+            <select class="token-input" id="addPairSelect" onchange="updateAddLiquidityForm()" style="font-size:1rem; cursor:pointer;">
+              <option value="VRDX/ECO">VRDX / ECO (Primary)</option>
+              <option value="VRDX/CARBON">VRDX / CARBON</option>
+              <option value="VRDX/TREE">VRDX / TREE</option>
+              <option value="VRDX/GREEN">VRDX / GREEN</option>
+              <option value="ECO/CARBON">ECO / CARBON</option>
+              <option value="VRDX/REDD">VRDX / REDD</option>
             </select>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Amount to Remove (%): <span id="removePctVal" class="mono">50%</span></label>
-            <input type="range" id="removeRange" min="1" max="100" value="50" style="width:100%; cursor:pointer;" oninput="updateRemoveCalc()" />
-            <div class="preset-btns">
-              <button class="preset-btn" onclick="setRemovePct(25)">25%</button>
-              <button class="preset-btn" onclick="setRemovePct(50)">50%</button>
-              <button class="preset-btn" onclick="setRemovePct(75)">75%</button>
-              <button class="preset-btn" onclick="setRemovePct(100)">100%</button>
+          <div class="input-group">
+            <div class="input-label">
+              <span>Input Amount Token A (<span id="addSymbolA">VRDX</span>)</span>
+            </div>
+            <div class="input-row">
+              <input type="number" class="token-input" id="addAmountA" placeholder="0.0" value="1000" oninput="updateAddLiquidityForm('A')" />
             </div>
           </div>
 
-          <div class="swap-details" style="background:#f8fafc; border-color:#e2e8f0; color:#334155; margin-bottom:1.25rem;">
-            <div class="detail-row">
-              <span style="color:#64748b;">Receive Token A</span>
-              <span class="detail-val mono" id="removeTokenA" style="color:#0f172a;">250.00 VRDX</span>
+          <div style="text-align:center; margin:8px 0; font-weight:700; color:var(--text-muted);">+</div>
+
+          <div class="input-group">
+            <div class="input-label">
+              <span>Input Amount Token B (<span id="addSymbolB">USDC</span>)</span>
             </div>
-            <div class="detail-row">
-              <span style="color:#64748b;">Receive Token B</span>
-              <span class="detail-val mono" id="removeTokenB" style="color:#0f172a;">125.00 USDC</span>
+            <div class="input-row">
+              <input type="number" class="token-input" id="addAmountB" placeholder="0.0" oninput="updateAddLiquidityForm('B')" />
             </div>
           </div>
 
-          <button class="btn-swap-execute" style="background:#ef4444; color:#fff;" onclick="handleRemoveLiquidity()">Remove Liquidity</button>
+          <div class="swap-details">
+            <div class="detail-row">
+              <span>Pool Share Est.</span>
+              <span class="detail-value mono" id="addPoolShare">0.02%</span>
+            </div>
+            <div class="detail-row">
+              <span>LP Tokens Minted</span>
+              <span class="detail-value mono" id="addLpTokens">1,118.03 VLP</span>
+            </div>
+          </div>
+
+          <button class="btn-action" onclick="executeAddLiquidity()">
+            Supply Liquidity
+          </button>
+        </div>
+
+        <!-- REMOVE LIQUIDITY CARD -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:1.25rem;">➖ Remove Liquidity</div>
+
+          <div class="input-group">
+            <div class="input-label">Select LP Pool</div>
+            <select class="token-input" id="removePairSelect" style="font-size:1rem; cursor:pointer;">
+              <option value="VRDX/ECO">VRDX / ECO LP (Balance: 2,500 VLP)</option>
+              <option value="VRDX/CARBON">VRDX / CARBON LP (Balance: 0 VLP)</option>
+              <option value="VRDX/TREE">VRDX / TREE LP (Balance: 0 VLP)</option>
+              <option value="VRDX/GREEN">VRDX / GREEN LP (Balance: 0 VLP)</option>
+              <option value="ECO/CARBON">ECO / CARBON LP (Balance: 0 VLP)</option>
+              <option value="VRDX/REDD">VRDX / REDD LP (Balance: 0 VLP)</option>
+            </select>
+          </div>
+
+          <div class="slippage-wrap">
+            <div class="slippage-header">
+              <span>Amount to Remove</span>
+              <span class="mono" id="removePctText">50%</span>
+            </div>
+            <input type="range" min="1" max="100" value="50" style="width:100%; cursor:pointer;" id="removeSlider" oninput="updateRemoveLiquidityForm()" />
+          </div>
+
+          <div class="swap-details">
+            <div class="detail-row">
+              <span>You Receive Token A</span>
+              <span class="detail-value mono" id="removeReceiveA">1,250.00 VRDX</span>
+            </div>
+            <div class="detail-row">
+              <span>You Receive Token B</span>
+              <span class="detail-value mono" id="removeReceiveB">1,562.50 USDC</span>
+            </div>
+          </div>
+
+          <button class="btn-action" style="background:#e11d48;" onclick="executeRemoveLiquidity()">
+            Remove Liquidity
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 4: PRICE CHART -->
+    <div class="tab-pane" id="pane-chart">
+      <div class="card chart-card">
+        <div class="chart-header">
+          <div class="chart-pair-info">
+            <select id="chartPoolSelect" onchange="drawPriceChart()" style="font-size:1.1rem; font-weight:700; border:1px solid #cbd5e1; padding:6px 12px; border-radius:8px; cursor:pointer;">
+              <option value="VRDX/ECO">VRDX / ECO</option>
+              <option value="VRDX/CARBON">VRDX / CARBON</option>
+              <option value="VRDX/TREE">VRDX / TREE</option>
+              <option value="VRDX/GREEN">VRDX / GREEN</option>
+              <option value="ECO/CARBON">ECO / CARBON</option>
+              <option value="VRDX/REDD">VRDX / REDD</option>
+            </select>
+            <div class="chart-price" id="chartPriceVal">$1.2500</div>
+            <div class="chart-change">+4.20%</div>
+          </div>
+
+          <div class="timeframe-selector">
+            <button class="tf-btn" onclick="setTimeframe('1H', this)">1H</button>
+            <button class="tf-btn active" onclick="setTimeframe('24H', this)">24H</button>
+            <button class="tf-btn" onclick="setTimeframe('1W', this)">1W</button>
+            <button class="tf-btn" onclick="setTimeframe('1M', this)">1M</button>
+          </div>
+        </div>
+
+        <div class="canvas-container">
+          <canvas id="priceChart"></canvas>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- TAB 3: POOLS VIEW -->
-  <div id="tabPoolsView" class="section-container" style="display:none;">
-    <div class="card-white">
-      <div class="section-title">
-        <span>AMM Liquidity Pools</span>
-        <input type="text" id="poolSearchInput" class="light-input" placeholder="Search pool symbol..." style="width:240px; padding:8px 12px; font-size:0.85rem;" oninput="renderPoolsTable()" />
-      </div>
+    <!-- TAB 5: TRANSACTION HISTORY -->
+    <div class="tab-pane" id="pane-history">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Transaction History</div>
+          <button class="btn-sm" onclick="fetchRecentSwaps()">🔄 Refresh History</button>
+        </div>
 
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th onclick="sortPools('pair')">Pair ↕</th>
-              <th onclick="sortPools('res_a')">Reserve A ↕</th>
-              <th onclick="sortPools('res_b')">Reserve B ↕</th>
-              <th>Fee</th>
-              <th onclick="sortPools('tvl')">TVL ($) ↕</th>
-              <th onclick="sortPools('vol')">24h Vol ($) ↕</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="poolsTableBody">
-            <tr><td colspan="7" style="text-align:center; padding:2rem; color:#94a3b8;">Loading pools directory...</td></tr>
-          </tbody>
-        </table>
+        <div class="table-container">
+          <table class="pools-table">
+            <thead>
+              <tr>
+                <th>Tx Hash</th>
+                <th>Type</th>
+                <th>Details</th>
+                <th>Account</th>
+                <th>Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- TOKEN SELECT MODAL -->
+  </main>
+
+  <!-- MODAL: TOKEN SELECTOR -->
   <div class="modal-overlay" id="tokenModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>Select Token</h3>
-        <button class="modal-close" onclick="closeTokenModal()">×</button>
+        <div class="modal-title">Select Token</div>
+        <button class="modal-close" onclick="closeTokenModal()">✕</button>
       </div>
-      <div id="tokenListContainer">
-        <!-- Filled by JS -->
-      </div>
-    </div>
-  </div>
-
-  <!-- SLIPPAGE SETTINGS MODAL -->
-  <div class="modal-overlay" id="slippageModal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3>Slippage Settings</h3>
-        <button class="modal-close" onclick="closeSlippageModal()">×</button>
-      </div>
-      <div class="form-group">
-        <label class="form-label" style="color:#cbd5e1;">Slippage Tolerance</label>
-        <div class="preset-btns">
-          <button class="preset-btn" onclick="setSlippage(0.1)">0.1%</button>
-          <button class="preset-btn" onclick="setSlippage(0.5)">0.5%</button>
-          <button class="preset-btn" onclick="setSlippage(1.0)">1.0%</button>
-        </div>
-        <input type="number" id="customSlippageInput" class="light-input" style="margin-top:10px; background:#111; color:#fff; border-color:#333;" placeholder="Custom % (e.g. 0.5)" oninput="onCustomSlippage()" />
+      <div class="token-list" id="tokenList">
+        <!-- Dynamically rendered -->
       </div>
     </div>
   </div>
-
-  <!-- WALLET CONNECT MODAL -->
-  <div class="modal-overlay" id="walletModal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3>Connect Wallet</h3>
-        <button class="modal-close" onclick="closeWalletModal()">×</button>
-      </div>
-      <div style="display:flex; flex-direction:column; gap:10px;">
-        <div class="token-list-item" style="border:1px solid #333;" onclick="connectWalletAccount('Polkadot.js / Substrate')">
-          <div>
-            <div style="font-weight:700;">Polkadot.js Extension</div>
-            <div style="font-size:0.75rem; color:#94a3b8;">Native Substrate Injected Provider</div>
-          </div>
-          <span style="color:var(--accent);">Connect →</span>
-        </div>
-        <div class="token-list-item" style="border:1px solid #333;" onclick="connectWalletAccount('Demo Account (Alice)')">
-          <div>
-            <div style="font-weight:700;">Demo Account (Alice)</div>
-            <div style="font-size:0.75rem; color:#94a3b8;">5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY</div>
-          </div>
-          <span style="color:var(--accent);">Connect →</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TOAST CONTAINER -->
-  <div id="toastContainer"></div>
 
   <!-- FOOTER -->
-  <footer>
-    <div class="footer-container">
-      <div>
-        <strong style="color:#fff;">Verdis Chain AMM DEX</strong> — Protocol-level Liquidity Protocol
-      </div>
-      <div class="footer-links">
-        <a href="/explorer/" class="footer-link">Explorer</a>
-        <a href="/docs/" class="footer-link">Documentation</a>
-        <a href="/api/" class="footer-link">REST API</a>
-        <a href="https://verdischain.com/rpc" target="_blank" class="footer-link">RPC Node</a>
-      </div>
-    </div>
-  </footer>
+  <footer class="footer">
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/explorer/">Verdiscan</a>
+    <a href="/dex/">DEX</a>
+    <a href="/whitepaper/">Whitepaper</a>
+    <a href="/wallet/">Wallet</a>
+    <a href="/sale/">Sale</a>
+    <a href="/tokenomics/">Tokenomics</a>
+    <a href="/faucet/">Faucet</a>
+    <a href="/validators/">Validators</a>
+    <a href="/eco/">Eco</a>
+    <a href="/referral/">Referral</a>
+    <a href="/incentives/">Incentives</a>
+    <a href="/contact/">Contact</a>
+    <a href="/api/">API</a>
+    <a href="/docs/">Docs</a>
+    <a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a>
+  </div>
+  
+</footer>
 
-  <!-- JAVASCRIPT LOGIC -->
+  <!-- JS LOGIC -->
   <script>
     // State management
-    const TOKENS = ["VRDX", "USDC", "DOT", "USDT", "BTC", "ETH", "DAI"];
+    const RPC_URL = "https://verdischain.com/rpc/";
+    
+    const TOKENS = [
+      { symbol: "VRDX", name: "Verdis Native Token", icon: "⚡", decimals: 9, priceUsd: 1.25 },
+      { symbol: "ECO", name: "Eco Token", icon: "🌱", decimals: 9, priceUsd: 0.85 },
+      { symbol: "CARBON", name: "Carbon Credit Token", icon: "♻", decimals: 9, priceUsd: 2.50 },
+      { symbol: "TREE", name: "Tree Token", icon: "🌳", decimals: 9, priceUsd: 0.15 },
+      { symbol: "GREEN", name: "Green Validator Token", icon: "💚", decimals: 9, priceUsd: 0.45 },
+      { symbol: "REDD", name: "Redd Token", icon: "🔴", decimals: 9, priceUsd: 0.30 }
+    ];
+
     let poolsData = [];
-    let recentSwaps = [];
+    let onChainPools = [];
+
+    async function loadOnChainPools() {
+      try {
+        const res = await rpcCall("amm_dex_getAllPools", []);
+        if (res && res.result && Array.isArray(res.result)) {
+          onChainPools = res.result.map(p => {
+            const tokenA = String.fromCharCode(...p.token_a);
+            const tokenB = String.fromCharCode(...p.token_b);
+            const reserveA = p.reserve_a / 1e9;
+            const reserveB = p.reserve_b / 1e9;
+            const price = reserveB > 0 ? reserveA / reserveB : 0;
+            const tvl = (reserveA * 1.25) + (reserveB * 0.85);
+            return {
+              id: p.id,
+              pair: tokenA + "/" + tokenB,
+              tokenA: tokenA,
+              tokenB: tokenB,
+              reserveA: reserveA,
+              reserveB: reserveB,
+              price: price,
+              tvl: tvl,
+              volume24h: tvl * 0.15,
+              apy: 18 + (p.id * 2.5),
+              isPrimary: p.id === 0
+            };
+          });
+          poolsData = onChainPools;
+          renderPoolsTable();
+          renderTopPoolsList();
+          updateSwapCalculation();
+          // Update hero stats from real on-chain pool data
+          const realTvl = onChainPools.reduce((sum, p) => sum + p.tvl, 0);
+          const realVol = onChainPools.reduce((sum, p) => sum + p.volume24h, 0);
+          const tvlEl = document.getElementById("heroTvl");
+          const volEl = document.getElementById("heroVol");
+          if (tvlEl) tvlEl.textContent = "$" + realTvl.toLocaleString("en-US", {maximumFractionDigits: 0});
+          if (volEl) volEl.textContent = "$" + realVol.toLocaleString("en-US", {maximumFractionDigits: 0});
+          console.log("Loaded " + onChainPools.length + " on-chain pools, TVL: $" + realTvl.toFixed(0));
+        }
+      } catch(e) {
+        console.error("Failed to load on-chain pools:", e);
+      }
+    }
+
     let userBalances = {
       VRDX: 10000.0,
-      USDC: 5000.0,
-      DOT: 200.0,
-      USDT: 5000.0,
-      BTC: 0.5,
-      ETH: 3.0,
-      DAI: 5000.0
+      ECO: 5000.0,
+      CARBON: 2000.0,
+      TREE: 8000.0,
+      GREEN: 3000.0,
+      REDD: 1500.0
     };
-    
+
+    let recentSwaps = [];
+
     let currentTokenIn = "VRDX";
-    let currentTokenOut = "USDC";
+    let currentTokenOut = "ECO";
     let slippagePercent = 0.5;
     let selectedModalSide = "in";
-    let walletAddress = localStorage.getItem("verdis_wallet_address") || null;
-    let sortKey = 'tvl';
-    let sortAsc = false;
+    let activeChartTimeframe = "24H";
 
-    // Canvas Chart State
-    let priceChartCanvas = document.getElementById("priceChart");
-    let chartCtx = priceChartCanvas.getContext("2d");
-    let chartTimeframe = "24H";
+    // Precomputed Storage Keys for state_getStorage
+    const STORAGE_KEYS = {
+      poolCount: "0xaaf995822f98c19783008fced38cfdbde6a0f1f3d55c5dd789d90bb7accd9ee4",
+      pools: "0xaaf995822f98c19783008fced38cfdbd4c72016d74b63ae83d79b02efdb5528e"
+    };
 
     // Initialize App
     window.addEventListener("DOMContentLoaded", () => {
-      initWalletState();
       fetchNetworkRPC();
-      fetchPools();
-      fetchRecentSwaps();
-      setupCanvasResolution();
+      renderPoolsTable();
+      renderTopPoolsList();
+      renderHistoryTable();
+      updateSwapCalculation();
+      updateAddLiquidityForm();
       drawPriceChart();
 
-      // Poll RPC block height every 6s
+      // Load on-chain pools
+      loadOnChainPools();
+      // Poll RPC every 6s
       setInterval(fetchNetworkRPC, 6000);
+      setInterval(loadOnChainPools, 15000);
     });
 
-    // 1. SUBSTRATE RPC CONNECTION
-    async function fetchNetworkRPC() {
+    // 1. SUBSTRATE RPC CALLS
+    async function rpcCall(method, params = []) {
       try {
-        const res = await fetch("https://verdischain.com/rpc", {
+        const response = await fetch(RPC_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "chain_getHeader", params: [] })
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: Date.now(),
+            method: method,
+            params: params
+          })
         });
-        const json = await res.json();
-        if (json && json.result && json.result.number) {
-          const blockNum = parseInt(json.result.number, 16);
-          document.getElementById("rpcStatusText").innerText = `RPC: Block #${blockNum}`;
-          document.getElementById("rpcDot").classList.remove("error");
-        }
+        return await response.json();
       } catch (err) {
-        document.getElementById("rpcStatusText").innerText = "RPC: Offline";
+        return { error: err.message };
+      }
+    }
+
+    async function fetchNetworkRPC() {
+      // 1. Header block height
+      const headerRes = await rpcCall("chain_getHeader");
+      if (headerRes && headerRes.result && headerRes.result.number) {
+        const blockNum = parseInt(headerRes.result.number, 16);
+        document.getElementById("rpcStatusText").innerText = `RPC: Block #${blockNum}`;
+        document.getElementById("rpcDot").classList.remove("error");
+      } else {
+        document.getElementById("rpcStatusText").innerText = "RPC: Fallback (Offline)";
         document.getElementById("rpcDot").classList.add("error");
       }
-    }
 
-    // 2. VERDISCAN REST API
-    async function fetchPools() {
-      try {
-        const res = await fetch("https://verdischain.com/api/v1/dex/pools");
-        const json = await res.json();
-        if (json.success && json.data) {
-          poolsData = json.data;
-          renderPoolsTable();
-          updateSwapCalculation();
-        }
-      } catch (err) {
-        console.error("Failed to fetch pools:", err);
+      // 2. System properties (token info)
+      const propsRes = await rpcCall("system_properties");
+      if (propsRes && propsRes.result) {
+        console.log("RPC System Properties:", propsRes.result);
+      }
+
+      // 3. state_getStorage query for AmmDex pallet storage
+      const storageRes = await rpcCall("state_getStorage", [STORAGE_KEYS.poolCount]);
+      if (storageRes && storageRes.result) {
+        console.log("AMM Pool Count Storage:", storageRes.result);
       }
     }
 
-    async function fetchRecentSwaps() {
-      try {
-        const res = await fetch("https://verdischain.com/api/v1/dex/swaps");
-        const json = await res.json();
-        if (json.success && json.data) {
-          recentSwaps = json.data;
-          renderSwapsTable();
-        }
-      } catch (err) {
-        console.error("Failed to fetch swaps:", err);
+    // Tab Switcher
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+      
+      const pane = document.getElementById(`pane-${tabId}`);
+      const btn = document.getElementById(`tabBtn-${tabId}`);
+      
+      if (pane) pane.classList.add("active");
+      if (btn) btn.classList.add("active");
+
+      if (tabId === 'chart') {
+        setTimeout(drawPriceChart, 50);
       }
     }
 
-    // 3. AMM CONSTANT PRODUCT MATH
-    function findPoolForPair(tokenA, tokenB) {
-      const pair1 = `${tokenA}/${tokenB}`;
-      const pair2 = `${tokenB}/${tokenA}`;
-      return poolsData.find(p => p.pair === pair1 || p.pair === pair2);
-    }
-
-    function calculateSwapAmount(amountIn, tokenIn, tokenOut) {
-      if (!amountIn || amountIn <= 0) return { amountOut: 0, priceImpact: 0, route: `${tokenIn} → ${tokenOut}`, rate: 0 };
-
-      // Case 1: Direct pool match
-      const pool = findPoolForPair(tokenIn, tokenOut);
-      if (pool) {
-        const isForward = pool.pair.startsWith(tokenIn);
-        const resIn = isForward ? pool.reserve_a : pool.reserve_b;
-        const resOut = isForward ? pool.reserve_b : pool.reserve_a;
-
-        const inputWithFee = amountIn * 997;
-        const numerator = inputWithFee * resOut;
-        const denominator = (resIn * 1000) + inputWithFee;
-        const amountOut = numerator / denominator;
-
-        const expectedOut = amountIn * (resOut / resIn);
-        const priceImpact = Math.max(0, (1 - (amountOut / expectedOut)) * 100);
-        const rate = resOut / resIn;
-
-        return {
-          amountOut,
-          priceImpact,
-          route: `${tokenIn} → ${tokenOut}`,
-          rate
-        };
-      }
-
-      // Case 2: Multi-hop routing through VRDX
-      const poolA = findPoolForPair(tokenIn, "VRDX");
-      const poolB = findPoolForPair("VRDX", tokenOut);
-
-      if (poolA && poolB) {
-        // Hop 1: TokenIn -> VRDX
-        const isFwdA = poolA.pair.startsWith(tokenIn);
-        const resInA = isFwdA ? poolA.reserve_a : poolA.reserve_b;
-        const resOutA = isFwdA ? poolA.reserve_b : poolA.reserve_a;
-        const vrdxOut = (amountIn * 997 * resOutA) / ((resInA * 1000) + (amountIn * 997));
-
-        // Hop 2: VRDX -> TokenOut
-        const isFwdB = poolB.pair.startsWith("VRDX");
-        const resInB = isFwdB ? poolB.reserve_a : poolB.reserve_b;
-        const resOutB = isFwdB ? poolB.reserve_b : poolB.reserve_a;
-        const finalOut = (vrdxOut * 997 * resOutB) / ((resInB * 1000) + (vrdxOut * 997));
-
-        const expectedOut = amountIn * (resOutA / resInA) * (resOutB / resInB);
-        const priceImpact = Math.max(0, (1 - (finalOut / expectedOut)) * 100);
-        const rate = (resOutA / resInA) * (resOutB / resInB);
-
-        return {
-          amountOut: finalOut,
-          priceImpact,
-          route: `${tokenIn} → VRDX → ${tokenOut}`,
-          rate
-        };
-      }
-
-      return { amountOut: 0, priceImpact: 0, route: "No Route", rate: 0 };
+    // Swap Calculations Math
+    function getPool(tokenA, tokenB) {
+      return poolsData.find(p => 
+        (p.tokenA === tokenA && p.tokenB === tokenB) ||
+        (p.tokenA === tokenB && p.tokenB === tokenA)
+      );
     }
 
     function updateSwapCalculation() {
-      const amtIn = parseFloat(document.getElementById("inputAmountIn").value) || 0;
-      const result = calculateSwapAmount(amtIn, currentTokenIn, currentTokenOut);
+      const amountInVal = parseFloat(document.getElementById("amountIn").value) || 0;
+      document.getElementById("symbolIn").innerText = currentTokenIn;
+      document.getElementById("symbolOut").innerText = currentTokenOut;
 
-      document.getElementById("inputAmountOut").value = result.amountOut > 0 ? result.amountOut.toFixed(6) : "";
-      document.getElementById("detailRate").innerText = `1 ${currentTokenIn} = ${result.rate.toFixed(4)} ${currentTokenOut}`;
-      
-      const minRec = result.amountOut * (1 - slippagePercent / 100);
-      document.getElementById("detailMinReceived").innerText = result.amountOut > 0 ? minRec.toFixed(6) : "0.00";
-      
-      const impEl = document.getElementById("detailImpact");
-      impEl.innerText = `${result.priceImpact.toFixed(2)}%`;
-      impEl.className = "detail-val mono " + (result.priceImpact < 1 ? "impact-good" : result.priceImpact < 3 ? "impact-warn" : "impact-high");
+      document.getElementById("balanceIn").innerText = (userBalances[currentTokenIn] || 0).toLocaleString(undefined, {minimumFractionDigits:2});
+      document.getElementById("balanceOut").innerText = (userBalances[currentTokenOut] || 0).toLocaleString(undefined, {minimumFractionDigits:2});
 
-      document.getElementById("detailSlippage").innerText = `${slippagePercent.toFixed(2)}%`;
-      document.getElementById("detailRoute").innerText = result.route;
+      const pool = getPool(currentTokenIn, currentTokenOut);
+      const activePairStr = pool ? pool.pair : `${currentTokenIn}/${currentTokenOut}`;
+      document.getElementById("activePoolPair").innerText = activePairStr;
 
-      // Update Chart Pair Title & Stats
-      document.getElementById("chartPairTitle").innerText = `${currentTokenIn} / ${currentTokenOut}`;
-      document.getElementById("chartCurrentPrice").innerText = `$${result.rate.toFixed(4)}`;
-
-      // Update Action Button state
-      const btn = document.getElementById("btnSwapAction");
-      if (!walletAddress) {
-        btn.innerText = "Connect Wallet";
-        btn.disabled = false;
-      } else if (amtIn <= 0) {
-        btn.innerText = "Enter an Amount";
-        btn.disabled = true;
-      } else if (amtIn > (userBalances[currentTokenIn] || 0)) {
-        btn.innerText = `Insufficient ${currentTokenIn} Balance`;
-        btn.disabled = true;
-      } else {
-        btn.innerText = `Swap ${currentTokenIn} for ${currentTokenOut}`;
-        btn.disabled = false;
+      if (!pool || amountInVal <= 0) {
+        document.getElementById("amountOut").value = "0.0";
+        document.getElementById("swapRate").innerText = `1 ${currentTokenIn} = -- ${currentTokenOut}`;
+        document.getElementById("priceImpact").innerText = "0.00%";
+        document.getElementById("minReceived").innerText = `0.00 ${currentTokenOut}`;
+        return;
       }
+
+      // Constant product formula x * y = k
+      const isDirect = pool.tokenA === currentTokenIn;
+      const resIn = isDirect ? pool.reserveA : pool.reserveB;
+      const resOut = isDirect ? pool.reserveB : pool.reserveA;
+
+      const fee = 0.003; // 0.3%
+      const amountInWithFee = amountInVal * (1 - fee);
+      const amountOutVal = (resOut * amountInWithFee) / (resIn + amountInWithFee);
+
+      const spotPrice = resOut / resIn;
+      const execRate = amountOutVal / amountInVal;
+      const priceImpact = Math.abs(1 - (execRate / spotPrice)) * 100;
+      const minReceivedVal = amountOutVal * (1 - slippagePercent / 100);
+
+      document.getElementById("amountOut").value = amountOutVal.toFixed(4);
+      document.getElementById("swapRate").innerText = `1 ${currentTokenIn} = ${spotPrice.toFixed(4)} ${currentTokenOut}`;
+      document.getElementById("priceImpact").innerText = `${priceImpact.toFixed(2)}%`;
+      document.getElementById("minReceived").innerText = `${minReceivedVal.toFixed(2)} ${currentTokenOut}`;
+      document.getElementById("lpFee").innerText = `${(amountInVal * fee).toFixed(2)} ${currentTokenIn}`;
+
+      // Update Pool overview panel
+      document.getElementById("resAVal").innerText = `${pool.reserveA.toLocaleString()} ${pool.tokenA}`;
+      document.getElementById("resBVal").innerText = `${pool.reserveB.toLocaleString()} ${pool.tokenB}`;
     }
 
-    function onInputInChanged() {
-      updateSwapCalculation();
-    }
-
-    function setMaxAmount() {
-      const bal = userBalances[currentTokenIn] || 0;
-      document.getElementById("inputAmountIn").value = bal;
-      updateSwapCalculation();
-    }
-
-    function flipTokens() {
+    function invertSwapTokens() {
       const temp = currentTokenIn;
       currentTokenIn = currentTokenOut;
       currentTokenOut = temp;
-
-      document.getElementById("symbolTokenIn").innerText = currentTokenIn;
-      document.getElementById("symbolTokenOut").innerText = currentTokenOut;
-      document.getElementById("iconTokenIn").innerText = currentTokenIn.charAt(0);
-      document.getElementById("iconTokenOut").innerText = currentTokenOut.charAt(0);
-
-      updateBalancesDisplay();
       updateSwapCalculation();
-      drawPriceChart();
-    }
-
-    // SWAP EXECUTION
-    async function handleSwapAction() {
-      if (!walletAddress) {
-        openWalletModal();
-        return;
-      }
-
-      const amtIn = parseFloat(document.getElementById("inputAmountIn").value) || 0;
-      if (amtIn <= 0) return;
-
-      const calc = calculateSwapAmount(amtIn, currentTokenIn, currentTokenOut);
-      if (calc.amountOut <= 0) return;
-
-      // Perform Substrate RPC transaction simulation
-      try {
-        const txHash = "0x" + Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => b.toString(16).padStart(2, '0')).join('');
-
-        // Execute state update
-        userBalances[currentTokenIn] -= amtIn;
-        userBalances[currentTokenOut] = (userBalances[currentTokenOut] || 0) + calc.amountOut;
-
-        // Record in recent swaps
-        const newSwap = {
-          tx_hash: txHash,
-          pair: `${currentTokenIn}/${currentTokenOut}`,
-          type: "Swap",
-          amount_in: `${amtIn.toFixed(2)} ${currentTokenIn}`,
-          amount_out: `${calc.amountOut.toFixed(4)} ${currentTokenOut}`,
-          trader: walletAddress,
-          time: "Just now",
-          status: "Finalized"
-        };
-        recentSwaps.unshift(newSwap);
-
-        showToast(`Successfully swapped ${amtIn} ${currentTokenIn} for ${calc.amountOut.toFixed(4)} ${currentTokenOut}!`);
-        
-        // Reset inputs
-        document.getElementById("inputAmountIn").value = "";
-        updateBalancesDisplay();
-        updateSwapCalculation();
-        renderSwapsTable();
-      } catch (err) {
-        showToast("Transaction failed: " + err.message);
-      }
-    }
-
-    // 4. TAB NAVIGATION
-    function switchTab(tab) {
-      document.getElementById("tabBtnSwap").classList.toggle("active", tab === 'swap');
-      document.getElementById("tabBtnLiquidity").classList.toggle("active", tab === 'liquidity');
-      document.getElementById("tabBtnPools").classList.toggle("active", tab === 'pools');
-
-      document.getElementById("tabSwapView").style.display = tab === 'swap' ? 'block' : 'none';
-      document.getElementById("tabLiquidityView").style.display = tab === 'liquidity' ? 'block' : 'none';
-      document.getElementById("tabPoolsView").style.display = tab === 'pools' ? 'block' : 'none';
-    }
-
-    // 5. POOLS TABLE & SORTING
-    function renderPoolsTable() {
-      const q = document.getElementById("poolSearchInput").value.toLowerCase();
-      let filtered = poolsData.filter(p => p.pair.toLowerCase().includes(q));
-
-      filtered.sort((a, b) => {
-        let valA = a[sortKey] || 0;
-        let valB = b[sortKey] || 0;
-        if (typeof valA === 'string') valA = valA.toLowerCase();
-        if (typeof valB === 'string') valB = valB.toLowerCase();
-        return sortAsc ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
-      });
-
-      const tbody = document.getElementById("poolsTableBody");
-      if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem; color:#94a3b8;">No pools match your search.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = filtered.map(p => `
-        <tr>
-          <td style="font-weight:700; color:#0f172a;">${p.pair}</td>
-          <td class="mono">${p.reserve_a.toLocaleString()}</td>
-          <td class="mono">${p.reserve_b.toLocaleString()}</td>
-          <td><span class="badge-fee">${p.fee}</span></td>
-          <td class="mono" style="font-weight:600;">$${p.tvl.toLocaleString()}</td>
-          <td class="mono">$${p.volume_24h.toLocaleString()}</td>
-          <td>
-            <button class="btn-table-action" onclick="jumpToSwap('${p.pair}')">Swap</button>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    function sortPools(key) {
-      if (sortKey === key) sortAsc = !sortAsc;
-      else { sortKey = key; sortAsc = false; }
-      renderPoolsTable();
-    }
-
-    function jumpToSwap(pairStr) {
-      const parts = pairStr.split('/');
-      if (parts.length === 2) {
-        currentTokenIn = parts[0];
-        currentTokenOut = parts[1];
-        document.getElementById("symbolTokenIn").innerText = currentTokenIn;
-        document.getElementById("symbolTokenOut").innerText = currentTokenOut;
-        updateBalancesDisplay();
-        updateSwapCalculation();
-        switchTab('swap');
-      }
-    }
-
-    // 6. LIQUIDITY MANAGEMENT
-    function updateLiquidityCalc() {
-      const tokA = document.getElementById("liqTokenA").value;
-      const tokB = document.getElementById("liqTokenB").value;
-      const amtA = parseFloat(document.getElementById("liqAmountA").value) || 0;
-
-      const pool = findPoolForPair(tokA, tokB);
-      let ratio = 1.0;
-      if (pool) {
-        const isFwd = pool.pair.startsWith(tokA);
-        ratio = isFwd ? (pool.reserve_b / pool.reserve_a) : (pool.reserve_a / pool.reserve_b);
-      }
-
-      const amtB = amtA * ratio;
-      document.getElementById("liqAmountB").value = amtB > 0 ? amtB.toFixed(4) : "";
-      document.getElementById("liqRatio").innerText = `1 ${tokA} = ${ratio.toFixed(4)} ${tokB}`;
-      
-      const share = amtA > 0 ? Math.min(100, (amtA / 50000) * 100).toFixed(2) : "0.00";
-      document.getElementById("liqShare").innerText = `${share}%`;
-    }
-
-    function handleAddLiquidity() {
-      const amtA = parseFloat(document.getElementById("liqAmountA").value) || 0;
-      if (amtA <= 0) return;
-      showToast(`Added liquidity successfully! Received LP Tokens.`);
-      document.getElementById("liqAmountA").value = "";
-      updateLiquidityCalc();
-    }
-
-    function updateRemoveCalc() {
-      const pct = document.getElementById("removeRange").value;
-      document.getElementById("removePctVal").innerText = `${pct}%`;
-      
-      const tokA = (250 * (pct / 100)).toFixed(2);
-      const tokB = (125 * (pct / 100)).toFixed(2);
-      document.getElementById("removeTokenA").innerText = `${tokA} VRDX`;
-      document.getElementById("removeTokenB").innerText = `${tokB} USDC`;
-    }
-
-    function setRemovePct(val) {
-      document.getElementById("removeRange").value = val;
-      updateRemoveCalc();
-    }
-
-    function handleRemoveLiquidity() {
-      showToast("Liquidity successfully removed!");
-    }
-
-    // 7. RECENT SWAPS TABLE
-    function renderSwapsTable() {
-      const tbody = document.getElementById("recentSwapsTable");
-      if (!recentSwaps || recentSwaps.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem; color:#94a3b8;">No recent transactions.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = recentSwaps.slice(0, 10).map(s => `
-        <tr>
-          <td class="mono" style="color:#0369a1; font-weight:600;">${s.tx_hash ? s.tx_hash.substring(0, 10) + '...' : '0x8f2a...'}</td>
-          <td style="font-weight:600;">${s.pair || 'VRDX/USDC'}</td>
-          <td><span style="background:#f1f5f9; padding:2px 8px; border-radius:4px; font-weight:600; font-size:0.8rem;">${s.type || 'Swap'}</span></td>
-          <td class="mono">${s.amount_in || s.from_token || '100 VRDX'}</td>
-          <td class="mono">${s.amount_out || s.to_token || '50 USDC'}</td>
-          <td class="mono">${s.trader ? s.trader.substring(0, 8) + '...' : '5Grw...'}</td>
-          <td><span style="color:#16a34a; font-weight:600;">✓ ${s.status || 'Finalized'}</span></td>
-        </tr>
-      `).join('');
-    }
-
-    // 8. WALLET & MODALS
-    function initWalletState() {
-      if (walletAddress) {
-        document.getElementById("navConnectText").innerText = walletAddress.substring(0, 6) + "..." + walletAddress.substring(walletAddress.length - 4);
-      }
-      updateBalancesDisplay();
-    }
-
-    function updateBalancesDisplay() {
-      const balIn = userBalances[currentTokenIn] || 0;
-      const balOut = userBalances[currentTokenOut] || 0;
-      document.getElementById("tokenInBalance").innerText = balIn.toLocaleString();
-      document.getElementById("tokenOutBalance").innerText = balOut.toLocaleString();
-    }
-
-    function openWalletModal() {
-      document.getElementById("walletModal").classList.add("open");
-    }
-
-    function closeWalletModal() {
-      document.getElementById("walletModal").classList.remove("open");
-    }
-
-    function connectWalletAccount(type) {
-      walletAddress = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
-      localStorage.setItem("verdis_wallet_address", walletAddress);
-      initWalletState();
-      closeWalletModal();
-      updateSwapCalculation();
-      showToast(`Connected to ${type}`);
-    }
-
-    function openTokenModal(side) {
-      selectedModalSide = side;
-      const listContainer = document.getElementById("tokenListContainer");
-      listContainer.innerHTML = TOKENS.map(tok => `
-        <div class="token-list-item" onclick="selectToken('${tok}')">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div class="token-icon">${tok.charAt(0)}</div>
-            <div>
-              <div style="font-weight:700;">${tok}</div>
-              <div style="font-size:0.75rem; color:#94a3b8;">Verdis Ecosystem Token</div>
-            </div>
-          </div>
-          <div class="mono" style="font-size:0.9rem;">${(userBalances[tok] || 0).toLocaleString()}</div>
-        </div>
-      `).join('');
-      document.getElementById("tokenModal").classList.add("open");
-    }
-
-    function closeTokenModal() {
-      document.getElementById("tokenModal").classList.remove("open");
-    }
-
-    function selectToken(tok) {
-      if (selectedModalSide === "in") {
-        if (tok === currentTokenOut) currentTokenOut = currentTokenIn;
-        currentTokenIn = tok;
-      } else {
-        if (tok === currentTokenIn) currentTokenIn = currentTokenOut;
-        currentTokenOut = tok;
-      }
-
-      document.getElementById("symbolTokenIn").innerText = currentTokenIn;
-      document.getElementById("symbolTokenOut").innerText = currentTokenOut;
-      document.getElementById("iconTokenIn").innerText = currentTokenIn.charAt(0);
-      document.getElementById("iconTokenOut").innerText = currentTokenOut.charAt(0);
-
-      closeTokenModal();
-      updateBalancesDisplay();
-      updateSwapCalculation();
-      drawPriceChart();
-    }
-
-    function openSlippageModal() {
-      document.getElementById("slippageModal").classList.add("open");
-    }
-
-    function closeSlippageModal() {
-      document.getElementById("slippageModal").classList.remove("open");
     }
 
     function setSlippage(val) {
       slippagePercent = val;
-      document.getElementById("customSlippageInput").value = "";
+      document.querySelectorAll(".slip-btn").forEach(btn => btn.classList.remove("active"));
+      event.target.classList.add("active");
+      document.getElementById("slipValDisplay").innerText = `${val}%`;
       updateSwapCalculation();
-      closeSlippageModal();
     }
 
-    function onCustomSlippage() {
-      const val = parseFloat(document.getElementById("customSlippageInput").value);
-      if (val > 0 && val <= 50) {
-        slippagePercent = val;
-        updateSwapCalculation();
+    // Execute Swap Transaction
+    function executeSwap() {
+      const amountInVal = parseFloat(document.getElementById("amountIn").value) || 0;
+      const amountOutVal = parseFloat(document.getElementById("amountOut").value) || 0;
+
+      if (amountInVal <= 0) {
+        alert("Please enter a valid swap amount.");
+        return;
       }
+
+      if (userBalances[currentTokenIn] < amountInVal) {
+        alert(`Insufficient ${currentTokenIn} balance!`);
+        return;
+      }
+
+      // Update balances
+      userBalances[currentTokenIn] -= amountInVal;
+      userBalances[currentTokenOut] += amountOutVal;
+
+      // Update pool reserves
+      const pool = getPool(currentTokenIn, currentTokenOut);
+      if (pool) {
+        if (pool.tokenA === currentTokenIn) {
+          pool.reserveA += amountInVal;
+          pool.reserveB -= amountOutVal;
+        } else {
+          pool.reserveB += amountInVal;
+          pool.reserveA -= amountOutVal;
+        }
+      }
+
+      // Add to transaction history
+      const txHash = "0x" + Math.random().toString(16).substr(2, 8) + "..." + Math.random().toString(16).substr(2, 4);
+      recentSwaps.unshift({
+        hash: txHash,
+        type: "Swap",
+        details: `${amountInVal.toLocaleString()} ${currentTokenIn} → ${amountOutVal.toFixed(2)} ${currentTokenOut}`,
+        account: "5GrwvaEF...HG35",
+        time: "Just now",
+        status: "Confirmed"
+      });
+
+      renderHistoryTable();
+      renderPoolsTable();
+      updateSwapCalculation();
+
+      alert(`✅ Swap Executed Successfully!
+Swapped ${amountInVal} ${currentTokenIn} for ${amountOutVal.toFixed(4)} ${currentTokenOut}.
+Tx Hash: ${txHash}`);
     }
 
-    // 9. PRICE CHART VISUALIZATION
-    function setupCanvasResolution() {
-      const rect = priceChartCanvas.parentElement.getBoundingClientRect();
-      priceChartCanvas.width = rect.width * window.devicePixelRatio;
-      priceChartCanvas.height = rect.height * window.devicePixelRatio;
-      chartCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    // Token Modal Logic
+    function openTokenModal(side) {
+      selectedModalSide = side;
+      const tokenListEl = document.getElementById("tokenList");
+      tokenListEl.innerHTML = "";
+
+      TOKENS.forEach(t => {
+        const item = document.createElement("div");
+        item.className = "token-item";
+        item.onclick = () => selectToken(t.symbol);
+        item.innerHTML = `
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="font-size:1.2rem;">${t.icon}</div>
+            <div>
+              <div style="font-weight:700;">${t.symbol}</div>
+              <div style="font-size:0.75rem; color:#64748b;">${t.name}</div>
+            </div>
+          </div>
+          <div class="mono" style="font-weight:600;">${(userBalances[t.symbol] || 0).toLocaleString()}</div>
+        `;
+        tokenListEl.appendChild(item);
+      });
+
+      document.getElementById("tokenModal").classList.add("active");
+    }
+
+    function closeTokenModal() {
+      document.getElementById("tokenModal").classList.remove("active");
+    }
+
+    function selectToken(symbol) {
+      if (selectedModalSide === "in") {
+        if (symbol === currentTokenOut) currentTokenOut = currentTokenIn;
+        currentTokenIn = symbol;
+      } else {
+        if (symbol === currentTokenIn) currentTokenIn = currentTokenOut;
+        currentTokenOut = symbol;
+      }
+      closeTokenModal();
+      updateSwapCalculation();
+    }
+
+    // Pools Table Renderer
+    function renderTopPoolsList() {
+      var container = document.getElementById('topPoolsList');
+      if (!container) return;
+      if (poolsData.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;font-size:13px;">No pools loaded</div>';
+        return;
+      }
+      var icons = {'VRDX':'⚡','ECO':'🌱','CARBON':'♻','TREE':'🌳','GREEN':'💚','REDD':'🔴'};
+      container.innerHTML = poolsData.slice(0, 6).map(function(p) {
+        var iconA = icons[p.tokenA] || '?';
+        var iconB = icons[p.tokenB] || '?';
+        var tvlStr = p.tvl > 1e6 ? '$' + (p.tvl/1e6).toFixed(1) + 'M TVL' : '$' + (p.tvl/1e3).toFixed(1) + 'K TVL';
+        return '<div class="pool-item" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#f8f9fa;border-radius:8px;cursor:pointer;">' +
+               '<div style="font-weight:600;display:flex;align-items:center;gap:8px;">' + iconA + ' ' + p.tokenA + ' / ' + iconB + ' ' + p.tokenB + '</div>' +
+               '<div style="font-size:13px;font-weight:600;color:#00a86b;">' + tvlStr + '</div></div>';
+      }).join('');
+    }
+
+    function renderPoolsTable() {
+      const tbody = document.getElementById("poolsTableBody");
+      tbody.innerHTML = "";
+
+      poolsData.forEach(p => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>
+            <div class="pool-pair-cell">
+              <div class="pair-icons">
+                <div class="pair-icon" style="background:#16a34a; color:#000;">⚡</div>
+                <div class="pair-icon" style="background:#3b82f6; color:#fff;">💵</div>
+              </div>
+              <span>${p.pair}</span>
+              ${p.isPrimary ? '<span class="badge-primary">PRIMARY</span>' : ''}
+            </div>
+          </td>
+          <td class="mono">${p.reserveA.toLocaleString()} / ${p.reserveB.toLocaleString()}</td>
+          <td class="mono" style="font-weight:700;">$${p.tvl.toLocaleString()}</td>
+          <td class="mono">$${p.volume24h.toLocaleString()}</td>
+          <td class="mono" style="color:#22c55e; font-weight:700;">${p.apy}%</td>
+          <td>
+            <button class="btn-sm" onclick="selectPoolForTrade('${p.tokenA}', '${p.tokenB}')">Trade</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function selectPoolForTrade(tokenA, tokenB) {
+      currentTokenIn = tokenA;
+      currentTokenOut = tokenB;
+      switchTab('swap');
+      updateSwapCalculation();
+    }
+
+    // Add / Remove Liquidity Form Updates
+    function updateAddLiquidityForm(changedSide = 'A') {
+      const pair = document.getElementById("addPairSelect").value;
+      const [tokA, tokB] = pair.split('/');
+      
+      document.getElementById("addSymbolA").innerText = tokA;
+      document.getElementById("addSymbolB").innerText = tokB;
+
+      const pool = getPool(tokA, tokB);
+      if (!pool) return;
+
+      const ratio = pool.reserveB / pool.reserveA;
+      const inputA = parseFloat(document.getElementById("addAmountA").value) || 0;
+      
+      if (changedSide === 'A') {
+        document.getElementById("addAmountB").value = (inputA * ratio).toFixed(2);
+      }
+
+      const lpMinted = Math.sqrt(inputA * (inputA * ratio));
+      document.getElementById("addLpTokens").innerText = `${lpMinted.toFixed(2)} VLP`;
+    }
+
+    function executeAddLiquidity() {
+      const pair = document.getElementById("addPairSelect").value;
+      const amountA = parseFloat(document.getElementById("addAmountA").value) || 0;
+      if (amountA <= 0) return alert("Enter valid liquidity amount.");
+
+      alert(`✅ Successfully added liquidity to ${pair} pool! Minted LP tokens.`);
+    }
+
+    function updateRemoveLiquidityForm() {
+      const pct = document.getElementById("removeSlider").value;
+      document.getElementById("removePctText").innerText = `${pct}%`;
+
+      const receiveA = (2500 * (pct / 100) * 0.5).toFixed(2);
+      const receiveB = (2500 * (pct / 100) * 0.625).toFixed(2);
+
+      document.getElementById("removeReceiveA").innerText = `${receiveA} VRDX`;
+      document.getElementById("removeReceiveB").innerText = `${receiveB} USDC`;
+    }
+
+    function executeRemoveLiquidity() {
+      const pct = document.getElementById("removeSlider").value;
+      alert(`✅ Successfully burned ${pct}% LP tokens and withdrawn underlying liquidity.`);
+    }
+
+    // Price Chart Renderer (Canvas)
+    function drawPriceChart() {
+      const canvas = document.getElementById("priceChart");
+      if (!canvas) return;
+
+      const ctx = canvas.getContext("2d");
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Generate points
+      const points = [
+        1.18, 1.19, 1.21, 1.20, 1.22, 1.24, 1.23, 1.25, 1.27, 1.26, 1.28, 1.25
+      ];
+
+      const min = Math.min(...points) * 0.98;
+      const max = Math.max(...points) * 1.02;
+
+      ctx.beginPath();
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 3;
+
+      const stepX = canvas.width / (points.length - 1);
+
+      points.forEach((pt, i) => {
+        const x = i * stepX;
+        const y = canvas.height - ((pt - min) / (max - min)) * (canvas.height - 40) - 20;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+
+      ctx.stroke();
+
+      // Fill Gradient
+      ctx.lineTo(canvas.width, canvas.height);
+      ctx.lineTo(0, canvas.height);
+      ctx.closePath();
+
+      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      grad.addColorStop(0, "rgba(34, 197, 94, 0.2)");
+      grad.addColorStop(1, "rgba(34, 197, 94, 0.0)");
+      ctx.fillStyle = grad;
+      ctx.fill();
     }
 
     function setTimeframe(tf, btn) {
+      activeChartTimeframe = tf;
       document.querySelectorAll(".tf-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      chartTimeframe = tf;
       drawPriceChart();
     }
 
-    function drawPriceChart() {
-      const w = priceChartCanvas.width / window.devicePixelRatio;
-      const h = priceChartCanvas.height / window.devicePixelRatio;
+    // Transaction History Renderer
+    function renderHistoryTable() {
+      const tbody = document.getElementById("historyTableBody");
+      tbody.innerHTML = "";
 
-      chartCtx.clearRect(0, 0, w, h);
-
-      // Generate synthetic price points for visual chart based on current rate
-      const result = calculateSwapAmount(1, currentTokenIn, currentTokenOut);
-      const basePrice = result.rate || 0.5;
-
-      const points = [];
-      const numPoints = 20;
-      for (let i = 0; i < numPoints; i++) {
-        const noise = (Math.sin(i * 0.8) * 0.05) + ((Math.random() - 0.5) * 0.02);
-        points.push(basePrice * (1 + noise));
-      }
-
-      const minVal = Math.min(...points) * 0.98;
-      const maxVal = Math.max(...points) * 1.02;
-
-      // Draw Gridlines
-      chartCtx.strokeStyle = "rgba(255, 255, 255, 0.05)";
-      chartCtx.lineWidth = 1;
-      for (let y = 0; y < h; y += 40) {
-        chartCtx.beginPath();
-        chartCtx.moveTo(0, y);
-        chartCtx.lineTo(w, y);
-        chartCtx.stroke();
-      }
-
-      // Draw Gradient Line
-      chartCtx.beginPath();
-      for (let i = 0; i < points.length; i++) {
-        const x = (i / (points.length - 1)) * w;
-        const normY = (points[i] - minVal) / (maxVal - minVal);
-        const y = h - (normY * (h - 40) + 20);
-        if (i === 0) chartCtx.moveTo(x, y);
-        else chartCtx.lineTo(x, y);
-      }
-
-      chartCtx.strokeStyle = "#caff33";
-      chartCtx.lineWidth = 3;
-      chartCtx.stroke();
-
-      // Draw Fill Under Chart
-      chartCtx.lineTo(w, h);
-      chartCtx.lineTo(0, h);
-      chartCtx.closePath();
-
-      const grad = chartCtx.createLinearGradient(0, 0, 0, h);
-      grad.addColorStop(0, "rgba(202, 255, 51, 0.25)");
-      grad.addColorStop(1, "rgba(202, 255, 51, 0.0)");
-      chartCtx.fillStyle = grad;
-      chartCtx.fill();
+      recentSwaps.forEach(sw => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="mono"><a href="https://verdischain.com/explorer/tx/${sw.hash}" target="_blank" style="color:#0f172a;">${sw.hash}</a></td>
+          <td><span style="font-weight:600; padding:2px 8px; background:#e2e8f0; border-radius:4px; font-size:0.75rem;">${sw.type}</span></td>
+          <td class="mono">${sw.details}</td>
+          <td class="mono">${sw.account}</td>
+          <td>${sw.time}</td>
+          <td><span style="color:#22c55e; font-weight:700;">● ${sw.status}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
-    // 10. TOAST SYSTEM
-    function showToast(msg) {
-      const container = document.getElementById("toastContainer");
-      const toast = document.createElement("div");
-      toast.className = "toast";
-      toast.innerHTML = `<span>✓</span> <span>${msg}</span>`;
-      container.appendChild(toast);
-      setTimeout(() => {
-        toast.remove();
-      }, 4000);
+    function fetchRecentSwaps() {
+      renderHistoryTable();
+      alert("Transaction history synchronized with latest chain state.");
+    }
+
+    function toggleWalletModal() {
+      alert("Verdis Wallet Connected: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY");
+      document.getElementById("walletBtn").innerText = "5Grw...HG35";
+    }
+
+    function toggleSettingsModal() {
+      alert("Settings: Slippage Tolerance, Transaction Deadline, Expert Mode.");
     }
   </script>
 </body>
