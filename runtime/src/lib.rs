@@ -507,7 +507,7 @@ parameter_types! {
     pub const MaxStakePerValidator: Balance = 10_000_000_000 * UNITS; // 10B VRDX (10% of total supply)
     pub const MinValidatorStake: Balance = 10_000 * UNITS;
     pub const MaxValidators: u32 = 101;
-    pub const ValidatorCount: u32 = 5;
+    pub const ValidatorCount: u32 = 15;
     pub const BlockReward: Balance = 16 * UNITS;
     pub const EpochLength: BlockNumber = 600;
     pub const UnbondingPeriod: u32 = 201600; // 14 days at 6s blocks (14*24*3600/6)
