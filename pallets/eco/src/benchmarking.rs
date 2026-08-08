@@ -210,7 +210,7 @@ mod benches {
         let new_score = 95u8;
 
         #[extrinsic_call]
-        update_green_score(RawOrigin::Signed(caller.clone()), new_score);
+        update_green_score(RawOrigin::Root, caller.clone(), new_score);
 
         let gv = GreenValidators::<T>::get(&caller).expect("Validator should exist");
         assert_eq!(gv.score, new_score);

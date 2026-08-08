@@ -514,8 +514,9 @@ pub mod pallet {
         /// Update green score
         #[pallet::call_index(8)]
         #[pallet::weight(T::WeightInfo::update_green_score())]
-        pub fn update_green_score(origin: OriginFor<T>, score: u8) -> DispatchResult {
-            let who = ensure_signed(origin)?;
+        pub fn update_green_score(origin: OriginFor<T>, validator: T::AccountId, score: u8) -> DispatchResult {
+            ensure_root(origin)?;
+            let who = validator;
 
             ensure!(
                 GreenValidators::<T>::contains_key(&who),
@@ -759,7 +760,8 @@ pub mod tests {
             )
             .unwrap();
             assert_ok!(Eco::update_green_score(
-                RuntimeOrigin::signed(alice.clone()),
+                RuntimeOrigin::root(),
+                alice.clone(),
                 95
             ));
             assert_eq!(GreenValidators::<Test>::get(&alice).unwrap().score, 95);

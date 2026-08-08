@@ -903,6 +903,7 @@ mod tests {
             ],
             validator_count: 2,
             block_reward: 100,
+            validator_names: vec![],
         }
         .assimilate_storage(&mut t)
         .unwrap();
