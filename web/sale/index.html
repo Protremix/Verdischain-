@@ -13,8 +13,8 @@
 <style>
 :root {
   --bg:#f1f5f9; --bg-1:#111; --bg-2:#1a1a1a; --card:#ffffff; --border:#e2e8f0; --border-2:#333;
-  --text:#0f172a; --text-2:#475569; --text-3:#334155; --accent:#caff33; --accent-2:#b4f849;
-  --accent-glow:rgba(202,255,51,0.15); --success:#4ade80; --warning:#fbbf24; --error:#ef4444;
+  --text:#0f172a; --text-2:#475569; --text-3:#334155; --accent:#16a34a; --accent-2:#15803d;
+  --accent-glow:rgba(22,163,74,0.15); --success:#4ade80; --warning:#fbbf24; --error:#ef4444;
   --radius:12px; --radius-sm:8px;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -151,7 +151,7 @@ nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.85); ba
 .vesting-badge { display:inline-block; padding:3px 10px; border-radius:4px; font-size:12px; font-weight:600; }
 .vesting-badge.active { background:rgba(74,222,128,0.15); color:var(--success); }
 .vesting-badge.locked { background:rgba(251,191,36,0.15); color:var(--warning); }
-.vesting-badge.unlocked { background:rgba(202,255,51,0.15); color:var(--accent); }
+.vesting-badge.unlocked { background:rgba(22,163,74,0.15); color:var(--accent); }
 .vesting-progress { height:4px; background:var(--bg-1); border-radius:2px; overflow:hidden; margin-top:4px; }
 .vesting-progress .vp-fill { height:100%; background:var(--accent); border-radius:2px; }
 
@@ -191,7 +191,7 @@ footer a { color:var(--accent); text-decoration:none; }
 @media(max-width:768px) { .nav-links { display:none; } .hero h1 { font-size: 18px; } .hero-right { display:none; } .buy-grid { grid-template-columns:1fr; } .whitelist-form { flex-direction:column; } }
 @media(max-width:375px) { .hero { padding:32px 16px; } .hero-stats { grid-template-columns:1fr; } .countdown { flex-wrap:wrap; } }
 
-     50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.7)); } }
+     50% { filter: drop-shadow(0 0 16px rgba(22,163,74,0.7)); } }
     
     .nav-brand:hover 
 @media(max-width:768px) {  }
@@ -199,18 +199,18 @@ footer a { color:var(--accent); text-decoration:none; }
 nav.std-nav { position:sticky; top:0; z-index:1000; background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid rgba(0,0,0,0.06); padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
 nav.std-nav .nav-links { display:flex; gap:4px; flex-wrap:wrap; }
 nav.std-nav .nav-links a { color:#334155; text-decoration:none; padding:8px 12px; border-radius:8px; font-size:13px; font-weight:500; transition:all .2s; }
-nav.std-nav .nav-links a:hover, nav.std-nav .nav-links a.active { color:#caff33; background:rgba(255,255,255,0.06); }
+nav.std-nav .nav-links a:hover, nav.std-nav .nav-links a.active { color:#16a34a; background:rgba(255,255,255,0.06); }
 nav.std-nav .nav-status { display:flex; align-items:center; gap:8px; font-size:13px; color:#334155; }
 nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px rgba(34,197,94,0.6); animation:std-nav-pulse 2s infinite; }
 @keyframes std-nav-pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
 
-    .brand-logo-img { height:64px; width: auto; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(202,255,51,0.4)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
-    .brand-logo-img { filter: drop-shadow(0 0 20px rgba(202,255,51,0.7)); }
-    @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(202,255,51,0.35)); } 50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.6)); } }
+    .brand-logo-img { height:64px; width: auto; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(22,163,74,0.4)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
+    .brand-logo-img { filter: drop-shadow(0 0 20px rgba(22,163,74,0.7)); }
+    @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(22,163,74,0.35)); } 50% { filter: drop-shadow(0 0 16px rgba(22,163,74,0.6)); } }
 
 /* Mobile hamburger menu */
 .nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:40px;height:40px;background:transparent;border:none;cursor:pointer;padding:8px;z-index:1001}
-.nav-hamburger span{display:block;width:22px;height:2px;background:#caff33;border-radius:2px;transition:all 250ms cubic-bezier(0.16,1,0.3,1)}
+.nav-hamburger span{display:block;width:22px;height:2px;background:#16a34a;border-radius:2px;transition:all 250ms cubic-bezier(0.16,1,0.3,1)}
 .nav-hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
 .nav-hamburger.active span:nth-child(2){opacity:0}
 .nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
@@ -430,7 +430,7 @@ thead,tbody{display:table;width:100%}
         <svg width="280" height="280" viewBox="0 0 280 280">
           <circle cx="140" cy="140" r="100" fill="none" stroke="#1a1a1a" stroke-width="40"/>
           <!-- Investors 12% -->
-          <circle cx="140" cy="140" r="100" fill="none" stroke="#caff33" stroke-width="40" stroke-dasharray="75.4 628.3" stroke-dashoffset="0" transform="rotate(-90 140 140)"/>
+          <circle cx="140" cy="140" r="100" fill="none" stroke="#16a34a" stroke-width="40" stroke-dasharray="75.4 628.3" stroke-dashoffset="0" transform="rotate(-90 140 140)"/>
           <!-- Team 15% -->
           <circle cx="140" cy="140" r="100" fill="none" stroke="#627eea" stroke-width="40" stroke-dasharray="94.2 628.3" stroke-dashoffset="-75.4" transform="rotate(-90 140 140)"/>
           <!-- Community 25% -->
@@ -448,7 +448,7 @@ thead,tbody{display:table;width:100%}
         </div>
       </div>
       <div class="alloc-legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#caff33"></div><div class="l-info"><div class="l-name">Investors (Sale)</div><div class="l-pct">12% • 12B VRDX</div></div><div class="l-val">$17.5M</div></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div><div class="l-info"><div class="l-name">Investors (Sale)</div><div class="l-pct">12% • 12B VRDX</div></div><div class="l-val">$17.5M</div></div>
         <div class="legend-item"><div class="legend-dot" style="background:#627eea"></div><div class="l-info"><div class="l-name">Team & Advisors</div><div class="l-pct">15% • 15B VRDX</div></div><div class="l-val">24mo vest</div></div>
         <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div><div class="l-info"><div class="l-name">Community Rewards</div><div class="l-pct">25% • 25B VRDX</div></div><div class="l-val">Staking</div></div>
         <div class="legend-item"><div class="legend-dot" style="background:#26a17b"></div><div class="l-info"><div class="l-name">Eco Fund</div><div class="l-pct">18% • 18B VRDX</div></div><div class="l-val">Carbon</div></div>

@@ -13,20 +13,20 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-:root{--hero-bg:#1a1a1a;--hero-card:#2d2d2d;--hero-border:rgba(255,255,255,0.08);--accent:#caff33;--accent-hover:#a8e607;--accent-2:#84fe87;--accent-3:#00a86b;--accent-glow:rgba(202,255,51,0.35);--accent-light:rgba(202,255,51,0.08);--accent-border:rgba(202,255,51,0.25);--text-white:#fff;--text-dim:#1e293b;--text-muted:#334155;--text-dark:#0f172a;--text-dark-muted:#475569;--radius:10px;--radius-lg:16px;--radius-pill:100px;--transition:250ms cubic-bezier(0.16,1,0.3,1)}
+:root{--hero-bg:#1a1a1a;--hero-card:#2d2d2d;--hero-border:rgba(255,255,255,0.08);--accent:#16a34a;--accent-hover:#a8e607;--accent-2:#84fe87;--accent-3:#00a86b;--accent-glow:rgba(22,163,74,0.35);--accent-light:rgba(22,163,74,0.08);--accent-border:rgba(22,163,74,0.25);--text-white:#fff;--text-dim:#1e293b;--text-muted:#334155;--text-dark:#0f172a;--text-dark-muted:#475569;--radius:10px;--radius-lg:16px;--radius-pill:100px;--transition:250ms cubic-bezier(0.16,1,0.3,1)}
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{font-family:'Poppins',sans-serif;background:#f1f5f9;color:var(--text-dark);overflow-x:hidden;-webkit-font-smoothing:antialiased;font-size:14px}
 .mono{font-family:'JetBrains Mono',monospace}
-#scroll-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#caff33,#84fe87,#00a86b);z-index:10000;width:0;transition:width 50ms;box-shadow:0 0 8px var(--accent-glow)}
-#cursor-glow{position:fixed;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(202,255,51,0.04) 0%,transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);opacity:0;transition:opacity 300ms}
+#scroll-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#16a34a,#84fe87,#00a86b);z-index:10000;width:0;transition:width 50ms;box-shadow:0 0 8px var(--accent-glow)}
+#cursor-glow{position:fixed;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(22,163,74,0.04) 0%,transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);opacity:0;transition:opacity 300ms}
 body:hover #cursor-glow{opacity:1}
 .nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--hero-border);transition:padding 250ms}
 .nav-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 24px}
 .nav-brand{font-weight:800;font-size:13px;color:var(--text-dark);display:flex;align-items:center;gap:8px;text-decoration:none}
 .nav-brand img{height:32px;width:auto}
 .nav-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent-glow);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 10px var(--accent-glow)}50%{box-shadow:0 0 20px rgba(202,255,51,0.5)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 10px var(--accent-glow)}50%{box-shadow:0 0 20px rgba(22,163,74,0.5)}}
 .nav-links{display:flex;gap:24px;align-items:center}
 .nav-links a{color:var(--text-dim);font-size:13px;font-weight:500;text-decoration:none;transition:color 250ms;position:relative}
 .nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:var(--accent);border-radius:1px;transition:width 250ms}
@@ -46,7 +46,7 @@ body:hover #cursor-glow{opacity:1}
 .docs-hero::after{content:'';position:absolute;bottom:-20%;left:-10%;width:300px;height:300px;background:radial-gradient(circle,rgba(0,168,107,0.12),transparent 60%);opacity:0.06;animation:pulse-bg 6s ease-in-out infinite 1s}
 @keyframes pulse-bg{0%,100%{opacity:0.06;transform:scale(1)}50%{opacity:0.12;transform:scale(1.1)}}
 .docs-hero h1{font-size: 18px;font-weight:800;color:var(--text-white);margin-bottom:12px;position:relative;z-index:2;letter-spacing:-0.02em}
-.docs-hero h1 .grad{background:linear-gradient(135deg,#caff33 0%,#a8e607 50%,#00a86b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.docs-hero h1 .grad{background:linear-gradient(135deg,#16a34a 0%,#a8e607 50%,#00a86b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .docs-hero p{color:rgba(255,255,255,0.7);font-size:14px;position:relative;z-index:2;max-width:500px}
 .docs-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--accent-light);border:1px solid var(--accent-border);border-radius:var(--radius-pill);font-size:11px;font-weight:600;color:var(--accent);margin-bottom:16px;position:relative;z-index:2}
 .docs-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
@@ -77,7 +77,7 @@ body:hover #cursor-glow{opacity:1}
 .code-block{background:#0f172a;border-radius:8px;padding:16px;margin:12px 0;overflow-x:auto;position:relative}
 .code-block code{font-family:'JetBrains Mono',monospace;font-size:12px;color:#e2e8f0;line-height:1.6}
 .code-block .kw{color:#c084fc}
-.code-block .str{color:#caff33}
+.code-block .str{color:#16a34a}
 .code-block .num{color:#fb923c}
 .code-block .com{color:#64748b}
 .code-block .url{color:#60a5fa}
@@ -102,7 +102,7 @@ body:hover #cursor-glow{opacity:1}
 
 .pallet-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:16px 0}
 .pallet-card{background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius);padding:16px;transition:var(--transition)}
-.pallet-card:hover{border-color:var(--accent);box-shadow:0 4px 12px rgba(202,255,51,0.08)}
+.pallet-card:hover{border-color:var(--accent);box-shadow:0 4px 12px rgba(22,163,74,0.08)}
 .pallet-card h4{font-size:14px;font-weight:700;color:var(--text-dark);margin-bottom:4px}
 .pallet-card p{font-size:12px;color:var(--text-muted);margin:0}
 .pallet-card .index{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-3);font-weight:600}
@@ -122,18 +122,6 @@ body:hover #cursor-glow{opacity:1}
 <div class="nav-inner">
 <a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain" /></a>
 <div class="nav-links" id="navLinks">
-<<<<<<< HEAD
-<a href="/">Home</a>
-<a href="/explorer/">Verdiscan</a>
-<a href="/dex/">DEX</a>
-<a href="/validators/">Validators</a>
-<a href="/eco/">Eco</a>
-<a href="/faucet/">Faucet</a>
-<a href="/wallet/">Wallet</a>
-<a href="/sale/">Sale</a><a href="/contact/">Contact</a>
-<a href="/api/">API</a>
-<a href="/docs/" class="active">Docs</a>
-=======
 <a href="/explorer/">Verdiscan</a>
       <a href="/dex/">DEX</a>
       <a href="/whitepaper/">Whitepaper</a>
@@ -141,7 +129,6 @@ body:hover #cursor-glow{opacity:1}
       <a href="/sale/">Sale</a>
       <a href="/tokenomics/">Tokenomics</a>
       <a href="/faucet/">Faucet</a>
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
 </div>
 <div class="nav-status">Testnet Live</div>
 <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')"><span></span><span></span><span></span></button>
@@ -678,13 +665,6 @@ document.addEventListener('mousemove', e => {
 </script>
 <footer class="footer">
   <div class="footer-links">
-<<<<<<< HEAD
-    <a href="/">Landing</a>
-    <a href="/explorer/">Verdiscan</a>
-    <a href="/dex/">DEX</a>
-    <a href="/validators/">Validators</a>
-    <a href="/eco/">Eco</a>
-=======
     <a href="/">Home</a>
     <a href="/explorer/">Verdiscan</a>
     <a href="/dex/">DEX</a>
@@ -697,7 +677,6 @@ document.addEventListener('mousemove', e => {
     <a href="/eco/">Eco</a>
     <a href="/referral/">Referral</a>
     <a href="/incentives/">Incentives</a>
->>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
     <a href="/contact/">Contact</a>
     <a href="/api/">API</a>
     <a href="/docs/">Docs</a>
