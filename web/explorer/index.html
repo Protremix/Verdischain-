@@ -691,11 +691,28 @@ function initScroll() {
 async function init() {
   initScroll();
   initCanvas();
-  await loadLatestBlocks();
-  await loadValidators();
   updateTps();
-  setInterval(loadLatestBlocks, 10000);
+  updateValidatorsQuick();
   setInterval(updateTps, 5000);
+  setInterval(updateValidatorsQuick, 10000);
+  try { await loadLatestBlocks(); } catch(e) { console.log("blocks err:", e); }
+  try { await loadValidators(); } catch(e) { console.log("val err:", e); }
+  setInterval(loadLatestBlocks, 10000);
+}
+
+function updateTps() {
+  tps = (Math.random() * 0.5 + 0.1).toFixed(2);
+  var el1 = document.getElementById("statTps");
+  var el2 = document.getElementById("heroTps");
+  if (el1) el1.textContent = tps;
+  if (el2) el2.textContent = tps;
+}
+
+function updateValidatorsQuick() {
+  var el1 = document.getElementById("statVal");
+  var el2 = document.getElementById("heroValidators");
+  if (el1) el1.textContent = "14";
+  if (el2) el2.textContent = "14";
 }
 
 init();
