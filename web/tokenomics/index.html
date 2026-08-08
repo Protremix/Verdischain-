@@ -1,305 +1,454 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VRDX Tokenomics — Verdis Chain</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VRDX Tokenomics — Verdis Chain</title>
 <link rel="canonical" href="https://verdischain.com/tokenomics/">
+<meta name="description" content="VRDX token economics: 100B total supply, 12B investor allocation, 6-category distribution model, vesting schedules, and ecosystem incentives.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="VRDX Tokenomics — Verdis Chain">
-<meta property="og:description" content="VRDX token economics: 100B total supply, 12B investor allocation, distribution model, and vesting schedule.">
+<meta property="og:description" content="100B total supply distributed across 6 categories for long-term decentralization and sustainability.">
 <meta property="og:url" content="https://verdischain.com/tokenomics/">
 <meta property="og:image" content="https://verdischain.com/assets/verdis-logo-black.png">
-    <meta name="description" content="VRDX token economics: 100B total supply, 12B investor allocation, distribution model, and vesting schedule.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/verdis.css?v=3">
-    <script src="/js/verdis.js?v=3"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .chart-container { position: relative; max-width: 450px; margin: 0 auto; }
-        .tokenomics-hero { text-align: center; padding-top: 100px; margin-bottom: 48px; }
-        .max-supply-badge { background: var(--bg-card); border: 1px solid var(--border-accent); border-radius: 20px; padding: 24px 32px; display: inline-block; box-shadow: var(--shadow-glow); margin-top: 20px; }
-        .cat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
-        .cat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .cat-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
-        .cat-pct { font-size: 14px; font-weight: 800; color: var(--accent); font-family: var(--font-mono); }
-        .cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 13px; margin-top: 12px; background: var(--bg-input); padding: 12px; border-radius: 8px; }
-    
-/* Mobile responsiveness */
-@media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:64px;padding:10px 16px}.card{padding:16px}h1{font-size:13px}}
-@media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:14px}.container{padding:20px}}
-
-
-/* Responsive tables - prevent viewport expansion */
-html{overflow-x:hidden;max-width:100vw}
-table{width:100%!important;max-width:100%!important;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
-thead,tbody{display:table;width:100%}
-</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32"/>
 <link rel="icon" type="image/png" href="/favicon-16.png" sizes="16x16"/>
 <link rel="apple-touch-icon" href="/favicon-192.png"/>
-<link rel="manifest" href="/site.webmanifest"/>
+<style>
+:root {
+  --bg:#f1f5f9; --bg-1:#f8fafc; --card:#ffffff; --border:#e2e8f0; --border-2:#cbd5e1;
+  --text:#0f172a; --text-2:#475569; --text-3:#64748b;
+  --accent:#caff33; --accent-2:#b4f849; --accent-glow:rgba(202,255,51,0.15);
+  --success:#4ade80; --warning:#fbbf24; --error:#ef4444;
+  --radius:12px; --radius-sm:8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; overflow-x:hidden; }
+.mono { font-family:'JetBrains Mono',monospace; }
+
+/* NAV */
+nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
+.nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); }
+.nav-brand .logo { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#000; font-size:14px; }
+.nav-brand span { font-weight:600; font-size:14px; }
+.nav-links { display:flex; gap:4px; }
+.nav-links a { color:var(--text-2); text-decoration:none; padding:8px 14px; border-radius:var(--radius-sm); font-size:14px; font-weight:500; transition:all .2s; }
+.nav-links a:hover, .nav-links a.active { color:var(--accent); background:#f8fafc; }
+.nav-status { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-2); }
+.nav-status .dot { width:8px; height:8px; border-radius:50%; background:var(--success); }
+.nav-hamburger { display:none; flex-direction:column; gap:4px; cursor:pointer; padding:8px; }
+.nav-hamburger span { width:20px; height:2px; background:var(--text); border-radius:2px; transition:.3s; }
+@media(max-width:900px) {
+  .nav-links { display:none; position:absolute; top:76px; left:0; right:0; background:#fff; flex-direction:column; padding:16px; border-bottom:1px solid var(--border); gap:0; }
+  .nav-links.open { display:flex; }
+  .nav-links a { padding:12px 16px; }
+  .nav-hamburger { display:flex; }
+  .nav-status { display:none; }
+}
+
+/* HERO */
+.hero { padding:56px 24px 40px; max-width:1280px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center; }
+@media(max-width:900px) { .hero { grid-template-columns:1fr; } }
+.hero-left .badge { display:inline-flex; align-items:center; gap:8px; background:var(--accent-glow); border:1px solid var(--accent); border-radius:100px; padding:6px 16px; font-size:13px; color:var(--accent); font-weight:600; margin-bottom:16px; }
+.hero-left .badge .dot { width:8px; height:8px; border-radius:50%; background:var(--accent); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
+.hero-left h1 { font-family:'Space Grotesk',sans-serif; font-size:20px; font-weight:700; margin-bottom:12px; line-height:1.1; }
+.hero-left h1 .accent { color:var(--accent); }
+.hero-left p { color:var(--text-2); font-size:14px; margin-bottom:16px; max-width:520px; }
+.hero-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; max-width:480px; }
+.hero-stat { background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:14px; }
+.hero-stat .label { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3); }
+.hero-stat .value { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; color:var(--accent); margin-top:4px; }
+
+/* 3D FLOATING CLUSTER */
+.hero-right { position:relative; height:440px; perspective:1000px; }
+.float-card { position:absolute; background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:0 20px 60px rgba(0,0,0,0.08); animation:float 6s ease-in-out infinite; }
+@keyframes float { 0%,100% { transform:translateY(0) rotate(-1deg); } 50% { transform:translateY(-12px) rotate(1deg); } }
+.fc-main { top:20px; left:5%; width:80%; z-index:3; }
+.fc-supply { top:50%; right:0%; width:50%; z-index:2; animation-delay:1.5s; }
+.fc-investors { bottom:10%; left:8%; width:55%; z-index:1; animation-delay:3s; }
+.price-big { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--accent); }
+.mini-row { display:flex; justify-content:space-between; font-size:12px; margin-top:6px; }
+.mini-row .l { color:var(--text-3); }
+.mini-row .v { font-family:'JetBrains Mono',monospace; color:var(--text-2); }
+.alloc-bar { height:8px; background:var(--bg); border-radius:4px; overflow:hidden; margin-top:8px; }
+.alloc-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); border-radius:4px; }
+
+/* SECTIONS */
+.section { max-width:1280px; margin:0 auto 48px; padding:0 24px; }
+.section-title { font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; margin-bottom:8px; }
+.section-sub { color:var(--text-2); font-size:13px; margin-bottom:32px; }
+.section-eyebrow { display:block; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); font-weight:600; margin-bottom:8px; }
+
+/* DISTRIBUTION */
+.dist-grid { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center; margin-bottom:48px; }
+@media(max-width:900px) { .dist-grid { grid-template-columns:1fr; } }
+.chart-container { position:relative; max-width:400px; margin:0 auto; }
+.dist-table { width:100%; border-collapse:collapse; font-size:13px; }
+.dist-table th { text-align:left; padding:10px 12px; font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3); border-bottom:1px solid var(--border); }
+.dist-table td { padding:10px 12px; border-bottom:1px solid var(--border); }
+.dist-table .cat-dot { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:8px; vertical-align:middle; }
+
+/* CATEGORY CARDS */
+.cat-card { background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px; transition:all .2s; }
+.cat-card:hover { border-color:var(--accent); box-shadow:0 4px 24px rgba(0,0,0,0.06); }
+.cat-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.cat-title { font-size:13px; font-weight:600; }
+.cat-pct { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; color:var(--accent); }
+.cat-body { color:var(--text-2); font-size:13px; line-height:1.7; margin-bottom:12px; }
+.cat-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; background:var(--bg); border-radius:var(--radius-sm); padding:12px; margin-top:12px; }
+.cat-grid > div { font-size:12px; color:var(--text-3); }
+.cat-grid > div strong { color:var(--text-2); display:block; margin-bottom:2px; }
+
+/* VESTING TABLE */
+.vesting-table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+.vesting-table th { text-align:left; padding:12px 16px; font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3); background:var(--bg-1); border-bottom:1px solid var(--border); }
+.vesting-table td { padding:12px 16px; font-size:13px; border-bottom:1px solid var(--border); }
+.vesting-table tr:last-child td { border-bottom:none; }
+.badge { display:inline-block; padding:3px 10px; border-radius:100px; font-size:11px; font-weight:600; }
+.badge-success { background:rgba(74,222,128,0.15); color:var(--success); }
+.badge-warning { background:rgba(251,191,36,0.15); color:var(--warning); }
+.badge-info { background:rgba(202,255,51,0.15); color:var(--accent); }
+.badge-locked { background:rgba(100,116,139,0.15); color:var(--text-3); }
+
+/* METRICS CARDS */
+.metrics-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:48px; }
+@media(max-width:768px) { .metrics-grid { grid-template-columns:repeat(2,1fr); } }
+.metric-card { background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+.metric-card .label { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-3); }
+.metric-card .value { font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:700; color:var(--text); margin-top:4px; }
+.metric-card .sub { font-size:12px; color:var(--text-3); margin-top:2px; }
+
+/* FOOTER */
+.footer { max-width:1200px; margin:0 auto; padding:32px 24px; border-top:1px solid var(--border); margin-top:40px; }
+.footer-links { display:flex; flex-wrap:wrap; gap:16px; justify-content:center; }
+.footer-links a { color:var(--text-3); text-decoration:none; font-size:13px; transition:color .2s; }
+.footer-links a:hover { color:var(--accent); }
+
+a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration:none !important; }
+</style>
 </head>
 <body>
-<!-- Verdis V Logo Splash -->
-<div class="verdis-splash-overlay" id="verdis-splash">
-  <div class="verdis-splash-logo">
-    <svg class="verdis-anim-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:120px;height:120px">
-      <path class="hex-path" d="M20 3L34 11V27L20 35L6 27V11L20 3Z" stroke="#00ff88" stroke-width="2" fill="rgba(0,255,136,0.03)" stroke-linecap="round" stroke-linejoin="round"/>
-      <path class="v-path" d="M13 13L20 27M27 13L20 27" stroke="#00ff88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <path class="leaf-accent" d="M20 18C17 18 15 20 15 23C15 26 17 28 20 28C23 28 25 26 25 23C25 20 23 18 20 18Z" fill="#00ff88" opacity="0.3"/>
-    </svg>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-brand">
+    <div class="logo">V</div>
+    <span>Verdis</span>
+  </a>
+  <div class="nav-links">
+    <a href="/explorer/">Verdiscan</a>
+    <a href="/dex/">DEX</a>
+    <a href="/whitepaper/">Whitepaper</a>
+    <a href="/wallet/">Wallet</a>
+    <a href="/sale/">Sale</a>
+    <a href="/tokenomics/" class="active">Tokenomics</a>
+    <a href="/faucet/">Faucet</a>
   </div>
-  <div class="verdis-splash-text">VERDIS</div>
-  <div class="verdis-splash-spinner"></div>
-</div>
-<!-- End Verdis Splash -->
+  <div class="nav-status"><div class="dot"></div><span>Testnet Live</span></div>
+  <div class="nav-hamburger"><span></span><span></span><span></span></div>
+</nav>
 
-
-<div id="verdis-nav"></div>
-
-<section class="section">
-    <div class="tokenomics-hero reveal">
-        <span class="section-eyebrow">Economic Architecture</span>
-        <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px"><span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:#f1f5f9;border:1px solid rgba(0,255,136,0.3);flex-shrink:0"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:24px;height:24px"><path d="M20 3L34 11V27L20 35L6 27V11L20 3Z" stroke="#00ff88" stroke-width="2" fill="rgba(0,255,136,0.03)" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 13L20 27M27 13L20 27" stroke="#00ff88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 18C17 18 15 20 15 23C15 26 17 28 20 28C23 28 25 26 25 23C25 20 23 18 20 18Z" fill="#00ff88" opacity="0.3"/></svg></span><h1 class="section-title" style="margin:0">VRDX Tokenomics</h1></div>
-        <p class="section-subtitle">
-            A balanced 100-billion supply distribution engineered for long-term decentralization, ecosystem liquidity, and sustainable validator incentives.
-        </p>
-        
-        <div class="max-supply-badge">
-            <div style="font-size:12px; text-transform:uppercase; color:var(--text-muted); font-weight:600;">Max Supply Counter</div>
-            <div style="font-size:13px; font-weight:800; color:var(--accent); font-family:var(--font-mono); margin-top:4px;">
-                100,000,000,000 VRDX
-            </div>
-            <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">Fixed Protocol Hard Cap</div>
-        </div>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="badge"><div class="dot"></div> Tokenomics</div>
+    <h1>VRDX <span class="accent">Tokenomics</span></h1>
+    <p>A balanced 100-billion supply distribution engineered for long-term decentralization, ecosystem liquidity, and sustainable validator incentives. 12B allocated to investors across 3 IDO phases.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="label">Total Supply</div><div class="value">100,000,000,000</div></div>
+      <div class="hero-stat"><div class="label">Investor Alloc.</div><div class="value">12,000,000,000</div></div>
+      <div class="hero-stat"><div class="label">Categories</div><div class="value">6</div></div>
     </div>
-
-    <!-- CHART & SUMMARY TABLE -->
-    <div class="grid-2 reveal" style="margin-bottom:64px; align-items:center;">
-        <div class="chart-container">
-            <canvas id="tokenomicsChart"></canvas>
-        </div>
-        <div>
-            <h3 style="font-size:13px; margin-bottom:16px;">8-Category Distribution Model</h3>
-            <p style="color:var(--text-secondary); line-height:1.6; margin-bottom:20px;">
-                The VRDX supply is split across 8 dedicated categories to maintain network security, incentivize validators, fund grants, and maintain liquidity.
-            </p>
-            <div class="table-wrap">
-                <table class="verdis-table">
-                    <thead>
-                        <tr><th>Category</th><th>Share</th><th>Amount (VRDX)</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><span style="color:#00ff88;">&#9632;</span> Community</td><td>35%</td><td>35,000,000,000</td></tr>
-                        <tr><td><span style="color:#00cc6a;">&#9632;</span> Ecosystem Treasury</td><td>20%</td><td>20,000,000,000</td></tr>
-                        <tr><td><span style="color:#00aa55;">&#9632;</span> Core Team</td><td>15%</td><td>15,000,000,000</td></tr>
-                        <tr><td><span style="color:#008844;">&#9632;</span> Strategic Investors</td><td>10%</td><td>10,000,000,000</td></tr>
-                        <tr><td><span style="color:#66ffaa;">&#9632;</span> Staking Rewards</td><td>10%</td><td>10,000,000,000</td></tr>
-                        <tr><td><span style="color:#00dd77;">&#9632;</span> Exchange Liquidity</td><td>5%</td><td>5,000,000,000</td></tr>
-                        <tr><td><span style="color:#44cc88;">&#9632;</span> Advisors</td><td>3%</td><td>3,000,000,000</td></tr>
-                        <tr><td><span style="color:#008844;">&#9632;</span> Airdrop & Grants</td><td>2%</td><td>2,000,000,000</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+  </div>
+  <div class="hero-right">
+    <div class="float-card fc-main">
+      <div style="font-size:13px;color:var(--text-3);margin-bottom:8px">Max Supply</div>
+      <div class="price-big">100,000,000,000 VRDX</div>
+      <div style="font-size:12px;color:var(--text-3);margin-top:4px">Fixed Protocol Hard Cap</div>
+      <div class="alloc-bar" style="margin-top:16px"><div class="alloc-fill" style="width:100%"></div></div>
+      <div class="mini-row"><span class="l">Distributed</span><span class="v">100B VRDX</span></div>
     </div>
-
-    <!-- CATEGORY DETAILS (ALL 8) -->
-    <div class="section-header reveal">
-        <span class="section-eyebrow">Category Breakdown</span>
-        <h2 class="section-title">Detailed Category Analysis</h2>
+    <div class="float-card fc-supply">
+      <div style="font-size:12px;color:var(--text-3);margin-bottom:6px">Investor Allocation</div>
+      <div class="price-big" style="font-size:14px">12B VRDX (12%)</div>
+      <div class="mini-row" style="margin-top:8px"><span class="l">Phase 1 (Private)</span><span class="v">3.6B</span></div>
+      <div class="mini-row"><span class="l">Phase 2 (Presale)</span><span class="v">6.0B</span></div>
+      <div class="mini-row"><span class="l">Phase 3 (Public)</span><span class="v">2.4B</span></div>
     </div>
-
-    <div class="reveal">
-        <!-- 1. Community -->
-        <div class="cat-card">
-            <div class="cat-header">
-                <div class="cat-title">1. Community Allocation</div>
-                <div class="cat-pct">35% (35B VRDX)</div>
-            </div>
-            <p style="color:var(--text-secondary); font-size:14px; line-height:1.6;">
-                <strong>Purpose:</strong> Drives user onboarding, ecosystem growth, public presale rounds, and community initiatives.<br>
-                <strong>Vesting:</strong> Seed/Private rounds: 60-day linear vesting; Public round: 30-day linear vesting; Community incentives: TBD based on governance.<br>
-                <strong>Economic Reasoning:</strong> Maximizes token distribution breadth to prevent concentrated whale control.
-            </p>
-            <div class="cat-grid">
-                <div><strong>Governance Impact:</strong> High (Direct voting rights)</div>
-                <div><strong>Unlock Schedule:</strong> Phased via presale terms & governance</div>
-            </div>
-        </div>
-
-        <!-- 2. Treasury -->
-        <div class="cat-card">
-            <div class="cat-header">
-                <div class="cat-title">2. Ecosystem Treasury</div>
-                <div class="cat-pct">20% (20B VRDX)</div>
-            </div>
-            <p style="color:var(--text-secondary); font-size:14px; line-height:1.6;">
-                <strong>Purpose:</strong> Funds protocol development, ecosystem dApp grants, carbon credit verification partnerships, and security maintenance.<br>
-                <strong>Vesting:</strong> TBD governance-controlled release schedule.<br>
-                <strong>Economic Reasoning:</strong> Provides long-term capital runway managed transparently via on-chain DAO proposals.
-            </p>
-            <div class="cat-grid">
-                <div><strong>Governance Impact:</strong> Subject to Council & Referenda</div>
-                <div><strong>Unlock Schedule:</strong> TBD milestone-based releases</div>
-            </div>
-        </div>
-
-        <!-- 3. Core Team -->
-        <div class="cat-card">
-            <div class="cat-header">
-                <div class="cat-title">3. Core Team & Founders</div>
-                <div class="cat-pct">15% (15B VRDX)</div>
-            </div>
-            <p style="color:var(--text-secondary); font-size:14px; line-height:1.6;">
-                <strong>Purpose:</strong> Aligns founding engineers, Substrate core developers, and contributors with long-term network success.<br>
-                <strong>Vesting:</strong> TBD cliff + multi-year linear vesting.<br>
-                <strong>Economic Reasoning:</strong> Extended lockup prevents founder dump risk and ensures long-term commitment to Verdis chain architecture.
-            </p>
-            <div class="cat-grid">
-                <div><strong>Governance Impact:</strong> Standard voting power</div>
-                <div><strong>Unlock Schedule:</strong> TBD long-term lockup</div>
-            </div>
-        </div>
-
-        <!-- 4. Strategic Investors -->
-        <div class="cat-card">
-            <div class="cat-header">
-                <div class="cat-title">4. Strategic Investors</div>
-                <div class="cat-pct">10% (10B VRDX)</div>
-            </div>
-            <p style="color:var(--text-secondary); font-size:14px; line-height:1.6;">
-                <strong>Purpose:</strong> Capital backing for early infrastructure deployment, multi-node testing, and institutional ecosystem ties.<br>
-                <strong>Vesting:</strong> Seed/Private tier vesting (60-day linear following initial lockup).<br>
-                <strong>Economic Reasoning:</strong> Secures foundational liquidity and strategic validation.
-            </p>
-            <div class="cat-grid">
-                <div><strong>Governance Impact:</strong> Standard voting rights</div>
-                <div><strong>Unlock Schedule:</strong> 60-day vesting</div>
-            </div>
-        </div>
-
-        <!-- 5. Staking Rewards -->
-        <div class="cat-card">
-            <div class="cat-header">
-                <div class="cat-title">5. Staking & Validator Incentives</div>
-                <div class="cat-pct">10% (10B VRDX)</div>
-            </div>
-            <p style="color:var(--text-secondary); font-size:14px; line-height:1.6;">
-                <strong>Purpose:</strong> Rewards active Green DPoS validators and nominators securing BABE/GRANDPA consensus.<br>
-                <strong>Vesting:</strong> Emitted continuously via Substrate runtime block reward pallets.<br>
-                <strong>Economic Reasoning:</strong> Sustains network cryptoeconomic security over decades.
-            </p>
-            <div class="cat-grid">
-                <div><strong>Governance Impact:</strong> Rewards active nominators</div>
-                <div><strong>Unlock Schedule:</strong> Per-block epoch emissions</div>
-            </div>
-        </div>
-
-        <!-- 6. Liquidity -->
-        <div class="cat-card">
-            <div class="cat-header">
-                <div class="cat-title">6. Exchange Liquidity</div>
-                <div class="cat-pct">5% (5B VRDX)</div>
-            </div>
-            <p style="color:var(--text-secondary); font-size:14px; line-height:1.6;">
-                <strong>Purpose:</strong> Provides seed liquidity for native AMM DEX pools and automated market making.<br>
-                <strong>Vesting:</strong> Unlocked at Mainnet launch to guarantee orderbook depth.<br>
-                <strong>Economic Reasoning:</strong> Prevents price slippage and supports seamless user swaps.
-            </p>
-            <div class="cat-grid">
-                <div><strong>Governance Impact:</strong> Non-voting liquidity reserve</div>
-                <div><strong>Unlock Schedule:</strong> Available at DEX deployment</div>
-            </div>
-        </div>
-
-        <!-- 7. Advisors -->
-        <div class="cat-card">
-            <div class="cat-header">
-                <div class="cat-title">7. Ecosystem Advisors</div>
-                <div class="cat-pct">3% (3B VRDX)</div>
-            </div>
-            <p style="color:var(--text-secondary); font-size:14px; line-height:1.6;">
-                <strong>Purpose:</strong> Compensates legal, technical, compliance, and environmental carbon standards advisors.<br>
-                <strong>Vesting:</strong> TBD structured vesting.<br>
-                <strong>Economic Reasoning:</strong> Incentivizes ongoing strategic counsel.
-            </p>
-            <div class="cat-grid">
-                <div><strong>Governance Impact:</strong> Standard voting power</div>
-                <div><strong>Unlock Schedule:</strong> TBD periodic releases</div>
-            </div>
-        </div>
-
-        <!-- 8. Airdrop -->
-        <div class="cat-card">
-            <div class="cat-header">
-                <div class="cat-title">8. Eco-Airdrop & Early Adopter Grants</div>
-                <div class="cat-pct">2% (2B VRDX)</div>
-            </div>
-            <p style="color:var(--text-secondary); font-size:14px; line-height:1.6;">
-                <strong>Purpose:</strong> Rewards testnet participants, open-source contributors, and early eco-dApp builders.<br>
-                <strong>Vesting:</strong> Distributed upon verified testnet interaction milestone completions.<br>
-                <strong>Economic Reasoning:</strong> Boosts early network participation and grassroots adoption.
-            </p>
-            <div class="cat-grid">
-                <div><strong>Governance Impact:</strong> Grassroots community voting</div>
-                <div><strong>Unlock Schedule:</strong> Testnet milestone events</div>
-            </div>
-        </div>
+    <div class="float-card fc-investors">
+      <div style="font-size:12px;color:var(--text-3);margin-bottom:8px">Key Metrics</div>
+      <div class="mini-row"><span class="l">Listing Price</span><span class="v" style="color:var(--accent)">$0.10</span></div>
+      <div class="mini-row"><span class="l">IDO Price (Ph1)</span><span class="v">$0.010</span></div>
+      <div class="mini-row"><span class="l">Hard Cap</span><span class="v">$300M</span></div>
     </div>
-
-    <!-- IMPLEMENTATION MATRIX -->
-    <div class="card-glass reveal" style="margin-top:48px;">
-        <h3 style="font-size:13px; color:var(--accent); margin-bottom:16px;">Implementation Status Matrix</h3>
-        <p style="color:var(--text-secondary); margin-bottom:20px;">
-            To maintain complete operational clarity, protocol parameters are categorized by their implementation status:
-        </p>
-        <div class="table-wrap">
-            <table class="verdis-table">
-                <thead>
-                    <tr><th>Parameter / Item</th><th>Classification Status</th><th>Details</th></tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Max Supply (100B VRDX)</strong></td>
-                        <td><span class="badge badge-success">Current Implementation</span></td>
-                        <td>Hardcoded in Substrate genesis configuration.</td>
-                    </tr>
-                    <tr>
-                        <td><strong>BABE / GRANDPA Consensus</strong></td>
-                        <td><span class="badge badge-success">Current Implementation</span></td>
-                        <td>Active on 10-node testnet cluster.</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Seed / Private Vesting (60-day)</strong></td>
-                        <td><span class="badge badge-success">Current Implementation</span></td>
-                        <td>Configured in presale smart contract pallets.</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Public Vesting (30-day)</strong></td>
-                        <td><span class="badge badge-success">Current Implementation</span></td>
-                        <td>Configured in public sale logic.</td>
-                    </tr>
-                    <tr>
-                        <td><strong>8-Category Distribution Model</strong></td>
-                        <td><span class="badge badge-info">Recommended Allocation</span></td>
-                        <td>Proposed genesis target for community tokenomics.</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Treasury Release Parameters</strong></td>
-                        <td><span class="badge badge-warning">Future Governance</span></td>
-                        <td>To be decided by on-chain DAO referenda.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+  </div>
 </section>
 
-<div id="verdis-footer"></div>
+<!-- METRICS -->
+<div class="section">
+  <div class="metrics-grid">
+    <div class="metric-card"><div class="label">Total Supply</div><div class="value">100B</div><div class="sub">VRDX tokens</div></div>
+    <div class="metric-card"><div class="label">Investor Allocation</div><div class="value">12B (12%)</div><div class="sub">3 IDO phases</div></div>
+    <div class="metric-card"><div class="label">Community & Staking</div><div class="value">25B (25%)</div><div class="sub">Validator rewards</div></div>
+    <div class="metric-card"><div class="label">Eco Fund</div><div class="value">18B (18%)</div><div class="sub">Carbon credits</div></div>
+  </div>
+</div>
+
+<!-- DISTRIBUTION CHART + TABLE -->
+<div class="section">
+  <span class="section-eyebrow">Distribution Model</span>
+  <h2 class="section-title">6-Category Token Allocation</h2>
+  <p class="section-sub">The VRDX supply is distributed across 6 dedicated categories to maintain network security, incentivize validators, fund ecosystem growth, and ensure liquidity.</p>
+  <div class="dist-grid">
+    <div class="chart-container">
+      <canvas id="tokenomicsChart"></canvas>
+    </div>
+    <div>
+      <table class="dist-table">
+        <thead>
+          <tr><th>Category</th><th>Share</th><th>Amount (VRDX)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="cat-dot" style="background:#caff33"></span>Community Rewards</td><td>25%</td><td class="mono">25,000,000,000</td></tr>
+          <tr><td><span class="cat-dot" style="background:#26a17b"></span>Eco Fund</td><td>18%</td><td class="mono">18,000,000,000</td></tr>
+          <tr><td><span class="cat-dot" style="background:#627eea"></span>Team &amp; Advisors</td><td>15%</td><td class="mono">15,000,000,000</td></tr>
+          <tr><td><span class="cat-dot" style="background:#fbbf24"></span>DEX Liquidity</td><td>15%</td><td class="mono">15,000,000,000</td></tr>
+          <tr><td><span class="cat-dot" style="background:#a855f7"></span>Treasury Reserve</td><td>15%</td><td class="mono">15,000,000,000</td></tr>
+          <tr><td><span class="cat-dot" style="background:#4ade80"></span>Investors (IDO)</td><td>12%</td><td class="mono">12,000,000,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY BREAKDOWN -->
+<div class="section">
+  <span class="section-eyebrow">Category Breakdown</span>
+  <h2 class="section-title">Detailed Category Analysis</h2>
+  <p class="section-sub">Each allocation serves a specific purpose in the Verdis Chain ecosystem.</p>
+
+  <div class="cat-card">
+    <div class="cat-header">
+      <div class="cat-title">1. Community Rewards</div>
+      <div class="cat-pct">25% (25B VRDX)</div>
+    </div>
+    <div class="cat-body">
+      <strong>Purpose:</strong> Rewards for DPoS validators, nominators, and community contributors securing the network via BABE/GRANDPA consensus.<br>
+      <strong>Distribution:</strong> Emitted continuously via Substrate runtime block reward pallets. Staking rewards distributed per epoch.<br>
+      <strong>Economic Reasoning:</strong> Sustains network cryptoeconomic security over decades. Incentivizes long-term participation and honest validator behavior.
+    </div>
+    <div class="cat-grid">
+      <div><strong>Vesting</strong>Per-block epoch emissions</div>
+      <div><strong>Governance</strong>Rewards active nominators</div>
+    </div>
+  </div>
+
+  <div class="cat-card">
+    <div class="cat-header">
+      <div class="cat-title">2. Eco Fund</div>
+      <div class="cat-pct">18% (18B VRDX)</div>
+    </div>
+    <div class="cat-body">
+      <strong>Purpose:</strong> Funds carbon credit minting, reforestation logging, green validator scoring, and environmental verification partnerships.<br>
+      <strong>Distribution:</strong> Released via on-chain governance proposals for verified eco-projects and carbon offset initiatives.<br>
+      <strong>Economic Reasoning:</strong> Ensures Verdis Chain remains carbon-negative. Ties token utility to real-world environmental impact.
+    </div>
+    <div class="cat-grid">
+      <div><strong>Vesting</strong>Governance-controlled</div>
+      <div><strong>Governance</strong>DAO eco-proposals</div>
+    </div>
+  </div>
+
+  <div class="cat-card">
+    <div class="cat-header">
+      <div class="cat-title">3. Team &amp; Advisors</div>
+      <div class="cat-pct">15% (15B VRDX)</div>
+    </div>
+    <div class="cat-body">
+      <strong>Purpose:</strong> Aligns founding engineers, Substrate core developers, advisors, and contributors with long-term network success.<br>
+      <strong>Distribution:</strong> 12-month cliff, then linear monthly vesting over 24 months.<br>
+      <strong>Economic Reasoning:</strong> Extended lockup prevents founder dump risk and ensures long-term commitment to the Verdis Chain architecture.
+    </div>
+    <div class="cat-grid">
+      <div><strong>Vesting</strong>12mo cliff + 24mo linear</div>
+      <div><strong>Governance</strong>Standard voting power</div>
+    </div>
+  </div>
+
+  <div class="cat-card">
+    <div class="cat-header">
+      <div class="cat-title">4. DEX Liquidity</div>
+      <div class="cat-pct">15% (15B VRDX)</div>
+    </div>
+    <div class="cat-body">
+      <strong>Purpose:</strong> Provides seed liquidity for native AMM DEX pools (VRDX/ECO, VRDX/CARBON, VRDX/TREE, and additional pairs).<br>
+      <strong>Distribution:</strong> Unlocked at mainnet launch to guarantee AMM pool depth and minimize slippage.<br>
+      <strong>Economic Reasoning:</strong> Prevents price slippage, supports seamless user swaps, and ensures healthy market formation from day one.
+    </div>
+    <div class="cat-grid">
+      <div><strong>Vesting</strong>Unlocked at DEX launch</div>
+      <div><strong>Governance</strong>Non-voting liquidity</div>
+    </div>
+  </div>
+
+  <div class="cat-card">
+    <div class="cat-header">
+      <div class="cat-title">5. Treasury Reserve</div>
+      <div class="cat-pct">15% (15B VRDX)</div>
+    </div>
+    <div class="cat-body">
+      <strong>Purpose:</strong> Funds protocol development, security audits, ecosystem grants, and emergency response. Managed transparently via on-chain DAO.<br>
+      <strong>Distribution:</strong> Governance-controlled release schedule. All expenditures require on-chain referendum approval.<br>
+      <strong>Economic Reasoning:</strong> Provides long-term capital runway with full transparency. Community controls allocation through governance.
+    </div>
+    <div class="cat-grid">
+      <div><strong>Vesting</strong>DAO referendum releases</div>
+      <div><strong>Governance</strong>Community-controlled</div>
+    </div>
+  </div>
+
+  <div class="cat-card">
+    <div class="cat-header">
+      <div class="cat-title">6. Investors (IDO)</div>
+      <div class="cat-pct">12% (12B VRDX)</div>
+    </div>
+    <div class="cat-body">
+      <strong>Purpose:</strong> Capital backing for infrastructure deployment, security audits, and institutional ecosystem partnerships.<br>
+      <strong>Distribution:</strong> 3 IDO phases — Phase 1 (Private, 3.6B at $0.010), Phase 2 (Presale, 6.0B at $0.025), Phase 3 (Public, 2.4B at $0.05).<br>
+      <strong>Economic Reasoning:</strong> Secures foundational liquidity and strategic validation. Discounted pricing rewards early supporters. Hard cap $300M.
+    </div>
+    <div class="cat-grid">
+      <div><strong>Vesting</strong>Phase-dependent (see below)</div>
+      <div><strong>Governance</strong>Standard voting rights</div>
+    </div>
+  </div>
+</div>
+
+<!-- VESTING SCHEDULE -->
+<div class="section">
+  <span class="section-eyebrow">Token Release</span>
+  <h2 class="section-title">Vesting Schedule</h2>
+  <p class="section-sub">Tokens are released according to the vesting schedule for each allocation category.</p>
+  <table class="vesting-table">
+    <thead>
+      <tr><th>Category</th><th>TGE Unlock</th><th>Cliff</th><th>Vesting Period</th><th>Monthly Release</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Private Sale (Phase 1)</strong></td>
+        <td>0%</td><td>12 months</td><td>24 months</td><td class="mono">1.5B / month</td>
+        <td><span class="badge badge-info">IDO Active</span></td>
+      </tr>
+      <tr>
+        <td><strong>Presale (Phase 2)</strong></td>
+        <td>25%</td><td>3 months</td><td>12 months</td><td class="mono">6.25% / month</td>
+        <td><span class="badge badge-locked">Upcoming</span></td>
+      </tr>
+      <tr>
+        <td><strong>Public Sale (Phase 3)</strong></td>
+        <td>40%</td><td>1 month</td><td>6 months</td><td class="mono">10% / month</td>
+        <td><span class="badge badge-locked">Upcoming</span></td>
+      </tr>
+      <tr>
+        <td><strong>Team &amp; Advisors</strong></td>
+        <td>0%</td><td>12 months</td><td>36 months</td><td class="mono">2.78% / month</td>
+        <td><span class="badge badge-locked">Locked</span></td>
+      </tr>
+      <tr>
+        <td><strong>Community Rewards</strong></td>
+        <td colspan="4" style="color:var(--text-3)">No vesting — distributed via staking rewards and ecosystem incentives</td>
+        <td><span class="badge badge-success">Unlocked</span></td>
+      </tr>
+      <tr>
+        <td><strong>DEX Liquidity</strong></td>
+        <td>100%</td><td>None</td><td>Immediate</td><td class="mono">At launch</td>
+        <td><span class="badge badge-warning">At Launch</span></td>
+      </tr>
+      <tr>
+        <td><strong>Eco Fund</strong></td>
+        <td colspan="4" style="color:var(--text-3)">Governance-controlled — released per approved eco-project proposals</td>
+        <td><span class="badge badge-locked">Governance</span></td>
+      </tr>
+      <tr>
+        <td><strong>Treasury Reserve</strong></td>
+        <td colspan="4" style="color:var(--text-3)">Governance-controlled — released per DAO referendum</td>
+        <td><span class="badge badge-locked">Governance</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- IDO DETAILS -->
+<div class="section">
+  <span class="section-eyebrow">IDO Phases</span>
+  <h2 class="section-title">Investor Allocation Breakdown</h2>
+  <p class="section-sub">12B VRDX allocated to investors across 3 IDO phases. Each phase offers different pricing and vesting terms.</p>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+    <div class="cat-card" style="border-color:var(--accent);box-shadow:0 0 24px var(--accent-glow)">
+      <div class="cat-header">
+        <div class="cat-title">Phase 1 — Private Sale</div>
+        <span class="badge badge-info">Live Now</span>
+      </div>
+      <div class="cat-pct" style="margin:8px 0">$0.010 / VRDX</div>
+      <div class="cat-body" style="font-size:12px">3.6B VRDX allocation. Minimum $25,000. 12-month cliff, 24-month vest. 20% bonus tokens.</div>
+      <div class="cat-grid">
+        <div><strong>Allocation</strong>3.6B VRDX</div>
+        <div><strong>Hard Cap</strong>$36M</div>
+      </div>
+    </div>
+    <div class="cat-card">
+      <div class="cat-header">
+        <div class="cat-title">Phase 2 — Presale</div>
+        <span class="badge badge-locked">Upcoming</span>
+      </div>
+      <div class="cat-pct" style="margin:8px 0">$0.025 / VRDX</div>
+      <div class="cat-body" style="font-size:12px">6.0B VRDX allocation. Minimum $100. 25% at TGE, 3-month cliff, 12-month vest. 20% bonus.</div>
+      <div class="cat-grid">
+        <div><strong>Allocation</strong>6.0B VRDX</div>
+        <div><strong>Hard Cap</strong>$150M</div>
+      </div>
+    </div>
+    <div class="cat-card">
+      <div class="cat-header">
+        <div class="cat-title">Phase 3 — Public Sale</div>
+        <span class="badge badge-locked">Upcoming</span>
+      </div>
+      <div class="cat-pct" style="margin:8px 0">$0.05 / VRDX</div>
+      <div class="cat-body" style="font-size:12px">2.4B VRDX allocation. No minimum. 40% at TGE, 1-month cliff, 6-month vest. First-come, first-served.</div>
+      <div class="cat-grid">
+        <div><strong>Allocation</strong>2.4B VRDX</div>
+        <div><strong>Hard Cap</strong>$120M</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/explorer/">Verdiscan</a>
+    <a href="/dex/">DEX</a>
+    <a href="/whitepaper/">Whitepaper</a>
+    <a href="/wallet/">Wallet</a>
+    <a href="/sale/">Sale</a>
+    <a href="/tokenomics/">Tokenomics</a>
+    <a href="/faucet/">Faucet</a>
+    <a href="/validators/">Validators</a>
+    <a href="/eco/">Eco</a>
+    <a href="/referral/">Referral</a>
+    <a href="/incentives/">Incentives</a>
+    <a href="/contact/">Contact</a>
+    <a href="/api/">API</a>
+    <a href="/docs/">Docs</a>
+    <a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a>
+  </div>
+</footer>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -308,28 +457,24 @@ document.addEventListener('DOMContentLoaded', function() {
         type: 'doughnut',
         data: {
             labels: [
-                'Community (35%)',
-                'Ecosystem Treasury (20%)',
-                'Core Team (15%)',
-                'Strategic Investors (10%)',
-                'Staking Rewards (10%)',
-                'Exchange Liquidity (5%)',
-                'Advisors (3%)',
-                'Airdrop (2%)'
+                'Community Rewards (25%)',
+                'Eco Fund (18%)',
+                'Team & Advisors (15%)',
+                'DEX Liquidity (15%)',
+                'Treasury Reserve (15%)',
+                'Investors / IDO (12%)'
             ],
             datasets: [{
-                data: [35, 20, 15, 10, 10, 5, 3, 2],
+                data: [25, 18, 15, 15, 15, 12],
                 backgroundColor: [
-                    '#00ff88',
-                    '#00cc6a',
-                    '#00aa55',
-                    '#008844',
-                    '#66ffaa',
-                    '#00dd77',
-                    '#44cc88',
-                    '#008844'
+                    '#caff33',
+                    '#26a17b',
+                    '#627eea',
+                    '#fbbf24',
+                    '#a855f7',
+                    '#4ade80'
                 ],
-                borderColor: '#0a0e0a',
+                borderColor: '#ffffff',
                 borderWidth: 3
             }]
         },
@@ -337,7 +482,14 @@ document.addEventListener('DOMContentLoaded', function() {
             responsive: true,
             plugins: {
                 legend: {
-                    display: false
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 11, family: 'Inter' },
+                        padding: 12,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
                 }
             },
             cutout: '65%'
@@ -346,5 +498,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<footer style="text-align:center;padding:24px;border-top:1px solid #222"><a href="https://evolvixos.com" style="color:#818cf8;text-decoration:none;font-size:14px">EvolvixOS — AI Engineering OS</a></footer></body>
+<script>
+(function(){var h=document.querySelector('.nav-hamburger'),l=document.querySelector('.nav-links');if(!h||!l)return;h.addEventListener('click',function(){h.classList.toggle('active');l.classList.toggle('open');});l.addEventListener('click',function(e){if(e.target.tagName==='A'){h.classList.remove('active');l.classList.remove('open');}});})();
+</script>
+
+</body>
 </html>
