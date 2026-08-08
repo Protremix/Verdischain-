@@ -20,7 +20,7 @@ use frame_support::{
 use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
 use sp_arithmetic::traits::IntegerSquareRoot;
-use sp_runtime::traits::{AccountIdConversion, Saturating};
+use sp_runtime::traits::{AccountIdConversion, CheckedAdd, CheckedMul, CheckedSub, Saturating};
 use sp_std::prelude::*;
 
 pub use pallet::*;
@@ -287,6 +287,8 @@ pub mod pallet {
         TokenTooLong,
         SwapHistoryFull,
         PriceImpactTooHigh,
+        ArithmeticOverflow,
+        ArithmeticUnderflow,
     }
 
     // === Config ===
@@ -437,8 +439,14 @@ pub mod pallet {
             ensure!(amount_a > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
             ensure!(amount_b > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
-            let lp_a = pool.total_lp.saturating_mul(amount_a) / pool.reserve_a;
-            let lp_b = pool.total_lp.saturating_mul(amount_b) / pool.reserve_b;
+            ensure!(pool.reserve_a > BalanceOf::<T>::zero(), Error::<T>::InsufficientLiquidity);
+            ensure!(pool.reserve_b > BalanceOf::<T>::zero(), Error::<T>::InsufficientLiquidity);
+            let lp_a = pool.total_lp.checked_mul(&amount_a)
+                .ok_or(Error::<T>::ArithmeticOverflow)?
+                / pool.reserve_a;
+            let lp_b = pool.total_lp.checked_mul(&amount_b)
+                .ok_or(Error::<T>::ArithmeticOverflow)?
+                / pool.reserve_b;
             let lp_minted = lp_a.min(lp_b);
 
             ensure!(
@@ -449,9 +457,12 @@ pub mod pallet {
             T::Currency::reserve(&who, amount_a)?;
             T::Currency::reserve(&who, amount_b)?;
 
-            pool.reserve_a = pool.reserve_a.saturating_add(amount_a);
-            pool.reserve_b = pool.reserve_b.saturating_add(amount_b);
-            pool.total_lp = pool.total_lp.saturating_add(lp_minted);
+            pool.reserve_a = pool.reserve_a.checked_add(&amount_a)
+                .ok_or(Error::<T>::ArithmeticOverflow)?;
+            pool.reserve_b = pool.reserve_b.checked_add(&amount_b)
+                .ok_or(Error::<T>::ArithmeticOverflow)?;
+            pool.total_lp = pool.total_lp.checked_add(&lp_minted)
+                .ok_or(Error::<T>::ArithmeticOverflow)?;
 
             Pools::<T>::insert(pool_id, pool.clone());
 
@@ -489,15 +500,23 @@ pub mod pallet {
             ensure!(user_lp >= lp_amount, Error::<T>::InsufficientLpBalance);
             ensure!(lp_amount > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
-            let amount_a = pool.reserve_a.saturating_mul(lp_amount) / pool.total_lp;
-            let amount_b = pool.reserve_b.saturating_mul(lp_amount) / pool.total_lp;
+            ensure!(pool.total_lp > BalanceOf::<T>::zero(), Error::<T>::NoLiquidityInPool);
+            let amount_a = pool.reserve_a.checked_mul(&lp_amount)
+                .ok_or(Error::<T>::ArithmeticOverflow)?
+                / pool.total_lp;
+            let amount_b = pool.reserve_b.checked_mul(&lp_amount)
+                .ok_or(Error::<T>::ArithmeticOverflow)?
+                / pool.total_lp;
 
             T::Currency::unreserve(&who, amount_a);
             T::Currency::unreserve(&who, amount_b);
 
-            pool.reserve_a = pool.reserve_a.saturating_sub(amount_a);
-            pool.reserve_b = pool.reserve_b.saturating_sub(amount_b);
-            pool.total_lp = pool.total_lp.saturating_sub(lp_amount);
+            pool.reserve_a = pool.reserve_a.checked_sub(&amount_a)
+                .ok_or(Error::<T>::ArithmeticUnderflow)?;
+            pool.reserve_b = pool.reserve_b.checked_sub(&amount_b)
+                .ok_or(Error::<T>::ArithmeticUnderflow)?;
+            pool.total_lp = pool.total_lp.checked_sub(&lp_amount)
+                .ok_or(Error::<T>::ArithmeticUnderflow)?;
 
             Pools::<T>::insert(pool_id, pool.clone());
 
@@ -553,17 +572,24 @@ pub mod pallet {
                 (pool.reserve_b, pool.reserve_a)
             };
 
-            let fee = amount_in.saturating_mul(T::FeeNumerator::get().into())
+            let fee_num: BalanceOf<T> = T::FeeNumerator::get().into();
+            let fee = amount_in.checked_mul(&fee_num)
+                .ok_or(Error::<T>::ArithmeticOverflow)?
                 / T::FeeDenominator::get().into();
-            let amount_in_after_fee = amount_in.saturating_sub(fee);
+            let amount_in_after_fee = amount_in.checked_sub(&fee)
+                .ok_or(Error::<T>::ArithmeticUnderflow)?;
 
-            let numerator = reserve_out.saturating_mul(amount_in_after_fee);
-            let denominator = reserve_in.saturating_add(amount_in_after_fee);
+            let numerator = reserve_out.checked_mul(&amount_in_after_fee)
+                .ok_or(Error::<T>::ArithmeticOverflow)?;
+            let denominator = reserve_in.checked_add(&amount_in_after_fee)
+                .ok_or(Error::<T>::ArithmeticOverflow)?;
             let amount_out = numerator / denominator;
 
             // Circuit breaker: limit single swap size to MaxPriceImpact of pool reserves
+            let max_impact: BalanceOf<T> = T::MaxPriceImpact::get().deconstruct().into();
             let max_swap_in = reserve_in
-                .saturating_mul(T::MaxPriceImpact::get().deconstruct().into())
+                .checked_mul(&max_impact)
+                .ok_or(Error::<T>::ArithmeticOverflow)?
                 / 1_000_000u32.into();
             ensure!(
                 amount_in_after_fee <= max_swap_in,
@@ -577,11 +603,15 @@ pub mod pallet {
             );
 
             if is_a_to_b {
-                pool.reserve_a = pool.reserve_a.saturating_add(amount_in);
-                pool.reserve_b = pool.reserve_b.saturating_sub(amount_out);
+                pool.reserve_a = pool.reserve_a.checked_add(&amount_in)
+                    .ok_or(Error::<T>::ArithmeticOverflow)?;
+                pool.reserve_b = pool.reserve_b.checked_sub(&amount_out)
+                    .ok_or(Error::<T>::ArithmeticUnderflow)?;
             } else {
-                pool.reserve_b = pool.reserve_b.saturating_add(amount_in);
-                pool.reserve_a = pool.reserve_a.saturating_sub(amount_out);
+                pool.reserve_b = pool.reserve_b.checked_add(&amount_in)
+                    .ok_or(Error::<T>::ArithmeticOverflow)?;
+                pool.reserve_a = pool.reserve_a.checked_sub(&amount_out)
+                    .ok_or(Error::<T>::ArithmeticUnderflow)?;
             }
 
             T::Currency::reserve(&who, amount_in)?;
@@ -687,8 +717,14 @@ pub mod pallet {
             ensure!(amount_a > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
             ensure!(amount_b > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
-            let lp_a = pool.total_lp.saturating_mul(amount_a) / pool.reserve_a;
-            let lp_b = pool.total_lp.saturating_mul(amount_b) / pool.reserve_b;
+            ensure!(pool.reserve_a > BalanceOf::<T>::zero(), Error::<T>::InsufficientLiquidity);
+            ensure!(pool.reserve_b > BalanceOf::<T>::zero(), Error::<T>::InsufficientLiquidity);
+            let lp_a = pool.total_lp.checked_mul(&amount_a)
+                .ok_or(Error::<T>::ArithmeticOverflow)?
+                / pool.reserve_a;
+            let lp_b = pool.total_lp.checked_mul(&amount_b)
+                .ok_or(Error::<T>::ArithmeticOverflow)?
+                / pool.reserve_b;
             let lp_minted = lp_a.min(lp_b);
             ensure!(
                 lp_minted > BalanceOf::<T>::zero(),
@@ -708,9 +744,12 @@ pub mod pallet {
             T::TokenHandler::transfer(&pool.asset_a, &who, &dex_account, amount_a)?;
             T::TokenHandler::transfer(&pool.asset_b, &who, &dex_account, amount_b)?;
 
-            pool.reserve_a = pool.reserve_a.saturating_add(amount_a);
-            pool.reserve_b = pool.reserve_b.saturating_add(amount_b);
-            pool.total_lp = pool.total_lp.saturating_add(lp_minted);
+            pool.reserve_a = pool.reserve_a.checked_add(&amount_a)
+                .ok_or(Error::<T>::ArithmeticOverflow)?;
+            pool.reserve_b = pool.reserve_b.checked_add(&amount_b)
+                .ok_or(Error::<T>::ArithmeticOverflow)?;
+            pool.total_lp = pool.total_lp.checked_add(&lp_minted)
+                .ok_or(Error::<T>::ArithmeticOverflow)?;
 
             TokenPools::<T>::insert(pool_id, pool);
             TokenLiquidityProviders::<T>::mutate(pool_id, &who, |lp| {
@@ -746,16 +785,24 @@ pub mod pallet {
             ensure!(user_lp >= lp_amount, Error::<T>::InsufficientLpBalance);
             ensure!(lp_amount > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
-            let amount_a = pool.reserve_a.saturating_mul(lp_amount) / pool.total_lp;
-            let amount_b = pool.reserve_b.saturating_mul(lp_amount) / pool.total_lp;
+            ensure!(pool.total_lp > BalanceOf::<T>::zero(), Error::<T>::NoLiquidityInPool);
+            let amount_a = pool.reserve_a.checked_mul(&lp_amount)
+                .ok_or(Error::<T>::ArithmeticOverflow)?
+                / pool.total_lp;
+            let amount_b = pool.reserve_b.checked_mul(&lp_amount)
+                .ok_or(Error::<T>::ArithmeticOverflow)?
+                / pool.total_lp;
 
             let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
             T::TokenHandler::transfer(&pool.asset_a, &dex_account, &who, amount_a)?;
             T::TokenHandler::transfer(&pool.asset_b, &dex_account, &who, amount_b)?;
 
-            pool.reserve_a = pool.reserve_a.saturating_sub(amount_a);
-            pool.reserve_b = pool.reserve_b.saturating_sub(amount_b);
-            pool.total_lp = pool.total_lp.saturating_sub(lp_amount);
+            pool.reserve_a = pool.reserve_a.checked_sub(&amount_a)
+                .ok_or(Error::<T>::ArithmeticUnderflow)?;
+            pool.reserve_b = pool.reserve_b.checked_sub(&amount_b)
+                .ok_or(Error::<T>::ArithmeticUnderflow)?;
+            pool.total_lp = pool.total_lp.checked_sub(&lp_amount)
+                .ok_or(Error::<T>::ArithmeticUnderflow)?;
 
             TokenPools::<T>::insert(pool_id, pool);
             TokenLiquidityProviders::<T>::mutate(pool_id, &who, |lp| {
@@ -803,16 +850,23 @@ pub mod pallet {
                 (pool.reserve_b, pool.reserve_a)
             };
 
-            let fee = amount_in.saturating_mul(T::FeeNumerator::get().into())
+            let fee_num: BalanceOf<T> = T::FeeNumerator::get().into();
+            let fee = amount_in.checked_mul(&fee_num)
+                .ok_or(Error::<T>::ArithmeticOverflow)?
                 / T::FeeDenominator::get().into();
-            let amount_in_after_fee = amount_in.saturating_sub(fee);
-            let numerator = reserve_out.saturating_mul(amount_in_after_fee);
-            let denominator = reserve_in.saturating_add(amount_in_after_fee);
+            let amount_in_after_fee = amount_in.checked_sub(&fee)
+                .ok_or(Error::<T>::ArithmeticUnderflow)?;
+            let numerator = reserve_out.checked_mul(&amount_in_after_fee)
+                .ok_or(Error::<T>::ArithmeticOverflow)?;
+            let denominator = reserve_in.checked_add(&amount_in_after_fee)
+                .ok_or(Error::<T>::ArithmeticOverflow)?;
             let amount_out = numerator / denominator;
 
             // Circuit breaker: limit single swap size to MaxPriceImpact of pool reserves
+            let max_impact: BalanceOf<T> = T::MaxPriceImpact::get().deconstruct().into();
             let max_swap_in = reserve_in
-                .saturating_mul(T::MaxPriceImpact::get().deconstruct().into())
+                .checked_mul(&max_impact)
+                .ok_or(Error::<T>::ArithmeticOverflow)?
                 / 1_000_000u32.into();
             ensure!(
                 amount_in_after_fee <= max_swap_in,
@@ -834,11 +888,15 @@ pub mod pallet {
             T::TokenHandler::transfer(&asset_out, &dex_account, &who, amount_out)?;
 
             if is_a_to_b {
-                pool.reserve_a = pool.reserve_a.saturating_add(amount_in);
-                pool.reserve_b = pool.reserve_b.saturating_sub(amount_out);
+                pool.reserve_a = pool.reserve_a.checked_add(&amount_in)
+                    .ok_or(Error::<T>::ArithmeticOverflow)?;
+                pool.reserve_b = pool.reserve_b.checked_sub(&amount_out)
+                    .ok_or(Error::<T>::ArithmeticUnderflow)?;
             } else {
-                pool.reserve_b = pool.reserve_b.saturating_add(amount_in);
-                pool.reserve_a = pool.reserve_a.saturating_sub(amount_out);
+                pool.reserve_b = pool.reserve_b.checked_add(&amount_in)
+                    .ok_or(Error::<T>::ArithmeticOverflow)?;
+                pool.reserve_a = pool.reserve_a.checked_sub(&amount_out)
+                    .ok_or(Error::<T>::ArithmeticUnderflow)?;
             }
 
             TokenPools::<T>::insert(pool_id, pool);
