@@ -647,6 +647,7 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
                     b"solar".to_vec(),
                     5000,
                     3,
+                    3,
                 ),
                 (
                     AccountId::from(hex_literal::hex!(
@@ -655,6 +656,7 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
                     true,
                     b"solar".to_vec(),
                     5000,
+                    3,
                     3,
                 ),
                 (
@@ -665,6 +667,7 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
                     b"solar".to_vec(),
                     5000,
                     3,
+                    3,
                 ),
                 (
                     AccountId::from(hex_literal::hex!(
@@ -673,6 +676,7 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
                     true,
                     b"solar".to_vec(),
                     5000,
+                    3,
                     3,
                 ),
             ],
