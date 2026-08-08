@@ -424,7 +424,7 @@ async function loadLatestBlocks() {
   
   blocksData.length = 0;
   const blockNums = [];
-  for (let i = 0; i < 6; i++) { if (current - i >= 0) blockNums.push(current - i); }
+  for (let i = 0; i < 10; i++) { if (current - i >= 0) blockNums.push(current - i); }
   
   const blockPromises = blockNums.map(function(bn) {
     return rpc('chain_getBlockHash', [bn]).then(function(h) {
@@ -853,6 +853,33 @@ function updateValidatorsQuick() {
 }
 
 init();
+
+// Auto-refresh every 12 seconds
+setInterval(function() {
+  loadLatestBlocks();
+}, 12000);
+
+// Also refresh stats every 6 seconds
+setInterval(function() {
+  rpc("chain_getHeader", []).then(function(h) {
+    if (h && h.number) {
+      var num = parseInt(h.number, 16);
+      document.getElementById("statBlock").textContent = "#" + num;
+      document.getElementById("heroBlock").textContent = "#" + num;
+    }
+  });
+  rpc("chain_getFinalizedHead", []).then(function(fh) {
+    if (fh) {
+      rpc("chain_getHeader", [fh]).then(function(h) {
+        if (h && h.number) {
+          var fn = parseInt(h.number, 16);
+          document.getElementById("statFinal").textContent = "#" + fn;
+        }
+      });
+    }
+  });
+}, 6000);
+
 </script>
 </body>
 </html>
