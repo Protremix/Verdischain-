@@ -953,8 +953,8 @@ h2{font-size:16px;font-weight:600;margin-bottom:12px;line-height:1.3} h3{font-si
 <nav class="std-nav">
   <a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain" class="brand-logo-img" style="height:48px;width:auto;display:block;object-fit:contain;flex-shrink:0"></a>
   <button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links">
-    <a href="/">Home</a>
     <a href="/explorer/">Verdiscan</a>
+<<<<<<< HEAD
     <a href="/dex/">DEX</a>
     <a href="/validators/">Validators</a>
     <a href="/eco/" class="active">Eco</a>
@@ -962,6 +962,14 @@ h2{font-size:16px;font-weight:600;margin-bottom:12px;line-height:1.3} h3{font-si
     <a href="/wallet/">Wallet</a>
     <a href="/sale/">Sale</a>
     <a href="/contact/">Contact</a><a href="/api/">API</a> <a href="/docs/">Docs</a>
+=======
+      <a href="/dex/">DEX</a>
+      <a href="/whitepaper/">Whitepaper</a>
+      <a href="/wallet/">Wallet</a>
+      <a href="/sale/">Sale</a>
+      <a href="/tokenomics/">Tokenomics</a>
+      <a href="/faucet/">Faucet</a>
+>>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
   </div>
   <div class="nav-status"><div class="dot"></div><span>Connected</span></div>
 </nav>
@@ -1613,11 +1621,25 @@ h2{font-size:16px;font-weight:600;margin-bottom:12px;line-height:1.3} h3{font-si
 <!-- FOOTER -->
 <footer class="footer">
   <div class="footer-links">
+<<<<<<< HEAD
     <a href="/">Landing</a>
+=======
+    <a href="/">Home</a>
+>>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
     <a href="/explorer/">Verdiscan</a>
     <a href="/dex/">DEX</a>
+    <a href="/whitepaper/">Whitepaper</a>
+    <a href="/wallet/">Wallet</a>
+    <a href="/sale/">Sale</a>
+    <a href="/tokenomics/">Tokenomics</a>
+    <a href="/faucet/">Faucet</a>
     <a href="/validators/">Validators</a>
     <a href="/eco/">Eco</a>
+<<<<<<< HEAD
+=======
+    <a href="/referral/">Referral</a>
+    <a href="/incentives/">Incentives</a>
+>>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
     <a href="/contact/">Contact</a>
     <a href="/api/">API</a>
     <a href="/docs/">Docs</a>
@@ -1724,7 +1746,7 @@ async function loadLiveRPC() {
 
     // 4. Try eco-specific RPC calls
     try {
-      const credits = await rpc('eco_getCarbonCredits');
+      const credits = await rpc('eco_getCarbonCreditCount');
       if (credits && credits.totalOffset) {
         }
     } catch (e) {
@@ -1734,7 +1756,7 @@ async function loadLiveRPC() {
     }
 
     try {
-      const reforest = await rpc('eco_getReforestationLog');
+      const reforest = await rpc('eco_getReforestProjectCount');
       if (reforest) } catch (e) {
       try {
         const reforestAlt = await rpc('eco_reforestationLog');

@@ -630,8 +630,8 @@ input:focus{outline:none;border-color:#caff33;box-shadow:0 0 0 3px rgba(202,255,
       <nav class="std-nav">
   <a href="/" class="nav-brand"><img src="/assets/verdis-logo-full.png" alt="Verdis Chain" class="brand-logo-img" style="height:48px;width:auto;display:block;object-fit:contain;flex-shrink:0"></a>
   <button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links">
-    <a href="/">Home</a>
     <a href="/explorer/">Verdiscan</a>
+<<<<<<< HEAD
     <a href="/dex/">DEX</a>
     <a href="/validators/">Validators</a>
     <a href="/eco/">Eco</a>
@@ -639,6 +639,14 @@ input:focus{outline:none;border-color:#caff33;box-shadow:0 0 0 3px rgba(202,255,
     <a href="/wallet/">Wallet</a>
     <a href="/sale/">Sale</a>
     <a href="/contact/">Contact</a><a href="/api/">API</a> <a href="/docs/">Docs</a>
+=======
+      <a href="/dex/">DEX</a>
+      <a href="/whitepaper/">Whitepaper</a>
+      <a href="/wallet/">Wallet</a>
+      <a href="/sale/">Sale</a>
+      <a href="/tokenomics/">Tokenomics</a>
+      <a href="/faucet/">Faucet</a>
+>>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
     
   </div>
   <div class="nav-status"><div class="dot"></div><span class="nav-text">Connected</span></div>
@@ -677,7 +685,7 @@ input:focus{outline:none;border-color:#caff33;box-shadow:0 0 0 3px rgba(202,255,
             </div>
             <div class="dex-val-row">
               <span class="dex-value mono" data-dex-volume>--</span>
-              <span class="dex-sub">7 Pools Live</span>
+              <span class="dex-sub">6 Pools Live</span>
             </div>
             <div class="dex-bars">
               <div class="dex-bar" style="--h: 40%"></div>
@@ -1062,11 +1070,26 @@ input:focus{outline:none;border-color:#caff33;box-shadow:0 0 0 3px rgba(202,255,
 
 <footer class="footer">
   <div class="footer-links">
+<<<<<<< HEAD
     <a href="/">Landing</a>
     <a href="/explorer/">Verdiscan</a>
     <a href="/dex/">DEX</a>
     <a href="/validators/">Validators</a>
     <a href="/eco/">Eco</a>
+=======
+    <a href="/">Home</a>
+    <a href="/explorer/">Verdiscan</a>
+    <a href="/dex/">DEX</a>
+    <a href="/whitepaper/">Whitepaper</a>
+    <a href="/wallet/">Wallet</a>
+    <a href="/sale/">Sale</a>
+    <a href="/tokenomics/">Tokenomics</a>
+    <a href="/faucet/">Faucet</a>
+    <a href="/validators/">Validators</a>
+    <a href="/eco/">Eco</a>
+    <a href="/referral/">Referral</a>
+    <a href="/incentives/">Incentives</a>
+>>>>>>> 734e97c (Phase 137: Standardize nav (Verdiscan, DEX, Whitepaper, Wallet, Sale, Tokenomics, Faucet) + comprehensive footer on all 14 pages. Fix nginx conflicting server name (.bak removed). Fix landing footer CSS for dark background.)
     <a href="/contact/">Contact</a>
     <a href="/api/">API</a>
     <a href="/docs/">Docs</a>
@@ -1172,6 +1195,8 @@ input:focus{outline:none;border-color:#caff33;box-shadow:0 0 0 3px rgba(202,255,
 // LIVE BLOCKCHAIN METRICS
 async function updateLiveMetrics() {
   const RPC = '/rpc';
+  let blockHeight = 0;
+  let peers = 0;
   try {
     // Get block height
     const blockRes = await fetch(RPC, {
@@ -1180,7 +1205,7 @@ async function updateLiveMetrics() {
       body: JSON.stringify({jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1})
     });
     const blockData = await blockRes.json();
-    const blockHeight = parseInt(blockData.result?.number || '0x0', 16);
+    blockHeight = parseInt(blockData.result?.number || '0x0', 16);
     
     // Get peer count
     const healthRes = await fetch(RPC, {
@@ -1189,7 +1214,7 @@ async function updateLiveMetrics() {
       body: JSON.stringify({jsonrpc: '2.0', method: 'system_health', params: [], id: 2})
     });
     const healthData = await healthRes.json();
-    const peers = healthData.result?.peers || 0;
+    peers = healthData.result?.peers || 0;
     
     // Update any element with data-block-height
     document.querySelectorAll('[data-block-height]').forEach(el => {
@@ -1264,7 +1289,7 @@ async function fetchDexPools() {
     const res = await fetch(RPC, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({jsonrpc: '2.0', method: 'amm_getPools', params: [], id: 3})
+      body: JSON.stringify({jsonrpc: '2.0', method: 'amm_dex_getAllPools', params: [], id: 3})
     });
     const data = await res.json();
     const pools = data.result?.pools || data.result || [];
@@ -1276,7 +1301,7 @@ async function fetchDexPools() {
       el.textContent = '$' + (poolCount * 0.34).toFixed(1) + 'K';
     });
   } catch(e) {
-    document.querySelectorAll('[data-dex-pools]').forEach(el => { el.textContent = '7 Pools'; });
+    document.querySelectorAll('[data-dex-pools]').forEach(el => { el.textContent = '6 Pools'; });
     document.querySelectorAll('[data-dex-volume]').forEach(el => { el.textContent = '--'; });
   }
 }
