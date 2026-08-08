@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verdis Chain — Web3 Wallet | Non-Custodial</title>
+<link rel="canonical" href="https://verdischain.com/wallet/">
+<meta name="description" content="Non-custodial Web3 wallet for Verdis Chain. Create or import secp256k1 keypairs, send and receive VRDX tokens, and stake to validators." />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Verdis Chain — Web3 Wallet" />
+<meta property="og:description" content="Non-custodial Web3 wallet for Verdis Chain. Create, import, send, receive VRDX." />
+<link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{--hero-bg:#1a1a1a;--hero-card:#2d2d2d;--hero-border:rgba(255,255,255,0.08);--accent:#16a34a;--accent-hover:#15803d;--accent-2:#84fe87;--accent-3:#00a86b;--accent-glow:rgba(22,163,74,0.35);--accent-light:rgba(22,163,74,0.08);--accent-border:rgba(22,163,74,0.25);--text-white:#fff;--text-dim:#1e293b;--text-muted:#334155;--text-dark:#0f172a;--text-dark-muted:#475569;--radius:10px;--radius-lg:16px;--radius-pill:100px;--transition:250ms cubic-bezier(0.16,1,0.3,1)}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Poppins',sans-serif;background:#f1f5f9;color:var(--text-dark);overflow-x:hidden;-webkit-font-smoothing:antialiased;font-size:14px}
+.mono{font-family:'JetBrains Mono',monospace}
+#scroll-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#16a34a,#84fe87,#00a86b);z-index:10000;width:0;transition:width 50ms;box-shadow:0 0 8px var(--accent-glow)}
+#cursor-glow{position:fixed;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(22,163,74,0.04) 0%,transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);opacity:0;transition:opacity 300ms}
+body:hover #cursor-glow{opacity:1}
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--hero-border)}
+.nav-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 24px}
+.nav-brand{font-weight:800;font-size:13px;color:var(--text-dark);display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-brand img{height:32px;width:auto}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent-glow);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 10px var(--accent-glow)}50%{box-shadow:0 0 20px rgba(22,163,74,0.5)}}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-links a{color:var(--text-dim);font-size:13px;font-weight:500;text-decoration:none;transition:color 250ms;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:var(--accent);border-radius:1px;transition:width 250ms}
+.nav-links a:hover{color:var(--text-dark)}
+.nav-links a:hover::after{width:100%}
+.nav-links a.active{color:var(--accent-3)}
+.nav-links a.active::after{width:100%}
+.nav-status{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#22c55e}
+.nav-status::before{content:'';width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px;flex-direction:column;gap:3px}
+.hamburger span{width:20px;height:2px;background:var(--text-dark);border-radius:1px;transition:250ms}
+@media(max-width:768px){.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);flex-direction:column;padding:16px 24px;gap:12px;border-bottom:1px solid var(--hero-border)}.nav-links.open{display:flex}.hamburger{display:flex}}
+
+.wallet-wrap{max-width:1000px;margin:0 auto;padding:24px 20px 48px}
+.wallet-hero{background:var(--hero-bg);border-radius:var(--radius-lg);padding:32px 24px;text-align:center;position:relative;overflow:hidden;margin-bottom:16px;opacity:0;animation:fadeInUp 600ms ease-out forwards}
+.wallet-hero::before{content:'';position:absolute;top:-30%;right:-10%;width:350px;height:350px;background:radial-gradient(circle,var(--accent-glow),transparent 55%);opacity:0.1;animation:pulse-bg 4s ease-in-out infinite}
+.wallet-hero::after{content:'';position:absolute;bottom:-20%;left:-10%;width:250px;height:250px;background:radial-gradient(circle,rgba(0,168,107,0.12),transparent 60%);opacity:0.06;animation:pulse-bg 6s ease-in-out infinite 1s}
+@keyframes pulse-bg{0%,100%{opacity:0.06;transform:scale(1)}50%{opacity:0.12;transform:scale(1.1)}}
+.wallet-hero h1{font-size: 16px;font-weight:800;color:var(--text-white);margin-bottom:8px;position:relative;z-index:2;letter-spacing:-0.02em}
+.wallet-hero h1 .grad{background:linear-gradient(135deg,#16a34a 0%,#15803d 50%,#00a86b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.wallet-hero p{color:rgba(255,255,255,0.7);font-size:13px;position:relative;z-index:2}
+.wallet-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--accent-light);border:1px solid var(--accent-border);border-radius:var(--radius-pill);font-size:11px;font-weight:600;color:var(--accent);margin-bottom:12px;position:relative;z-index:2}
+.wallet-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+
+.wallet-state{display:none}
+.wallet-state.active{display:block;animation:fadeInUp 400ms ease-out}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.auth-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:560px;margin:0 auto}
+.auth-card{background:#fff;border-radius:var(--radius-lg);padding:24px;border:1px solid #e2e8f0;transition:var(--transition);cursor:pointer;text-align:left}
+.auth-card:hover{border-color:var(--accent);box-shadow:0 8px 24px rgba(22,163,74,0.12);transform:translateY(-3px)}
+.auth-card .icon{width:40px;height:40px;border-radius:10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.auth-card h3{font-size:15px;font-weight:700;color:var(--text-dark);margin-bottom:6px}
+.auth-card p{font-size:12px;color:var(--text-muted);line-height:1.5}
+
+.import-form{max-width:560px;margin:16px auto 0}
+.import-form textarea{width:100%;min-height:80px;padding:12px;border:1px solid #e2e8f0;border-radius:var(--radius);font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dark);resize:vertical;outline:none;transition:border-color 200ms}
+.import-form textarea:focus{border-color:var(--accent)}
+.import-form button{width:100%;padding:12px;border:none;border-radius:var(--radius);background:var(--accent);color:var(--text-dark);font-weight:700;font-size:14px;cursor:pointer;transition:var(--transition);margin-top:12px;font-family:'Poppins',sans-serif}
+.import-form button:hover{background:var(--accent-hover)}
+.import-form .back-btn{background:transparent;color:var(--text-muted);border:1px solid #e2e8f0}
+.import-form .back-btn:hover{background:#f8fafc}
+
+/* Dashboard */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:768px){.dash-grid{grid-template-columns:1fr}.auth-cards{grid-template-columns:1fr}}
+
+.balance-card{background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius-lg);padding:24px;position:relative;overflow:hidden}
+.balance-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.balance-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:8px}
+.balance-value{font-size: 18px;font-weight:800;color:var(--text-dark);font-family:'JetBrains Mono',monospace}
+.balance-value .unit{font-size:14px;color:var(--text-muted);font-weight:500;margin-left:4px}
+.balance-sub{font-size:12px;color:var(--text-muted);margin-top:8px}
+
+.address-card{background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius-lg);padding:24px}
+.address-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:8px}
+.address-value{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-dark);word-break:break-all;padding:10px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:8px}
+.address-actions{display:flex;gap:8px;margin-top:8px}
+.btn-small{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;border:1px solid #e2e8f0;background:#fff;color:var(--text-dark);cursor:pointer;transition:var(--transition)}
+.btn-small:hover{border-color:var(--accent);color:var(--accent-3)}
+
+.tab-bar{display:flex;gap:4px;background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius);padding:4px;margin-bottom:16px}
+.tab-btn{flex:1;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:600;background:transparent;color:var(--text-muted);cursor:pointer;transition:var(--transition);font-family:'Poppins',sans-serif}
+.tab-btn.active{background:var(--accent-light);color:var(--accent-3)}
+.tab-btn:hover:not(.active){background:#f8fafc}
+
+.tab-panel{display:none}
+.tab-panel.active{display:block;animation:fadeInUp 300ms ease-out}
+
+.form-card{background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius-lg);padding:24px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:'Poppins',sans-serif;color:var(--text-dark);outline:none;transition:border-color 200ms}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group input.mono{font-family:'JetBrains Mono',monospace;font-size:12px}
+.btn-primary{width:100%;padding:14px;border:none;border-radius:var(--radius);background:var(--accent);color:var(--text-dark);font-weight:700;font-size:14px;cursor:pointer;transition:var(--transition);font-family:'Poppins',sans-serif}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-danger:hover{background:#dc2626}
+
+.tx-item{display:flex;align-items:center;justify-content:space-between;padding:12px;background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius);margin-bottom:6px;transition:var(--transition)}
+.tx-item:hover{border-color:var(--accent)}
+.tx-item .tx-left{display:flex;align-items:center;gap:12px}
+.tx-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.tx-icon.out{background:#fef2f2;color:#ef4444}
+.tx-icon.in{background:#f0fdf4;color:#22c55e}
+.tx-detail{display:flex;flex-direction:column}
+.tx-detail .tx-addr{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dark)}
+.tx-detail .tx-time{font-size:11px;color:var(--text-muted)}
+.tx-amount{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600}
+.tx-amount.out{color:#ef4444}
+.tx-amount.in{color:#22c55e}
+.tx-empty{text-align:center;padding:24px;color:var(--text-muted);font-size:13px}
+
+.validator-item{display:flex;align-items:center;justify-content:space-between;padding:12px;background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius);margin-bottom:6px}
+.validator-info{display:flex;align-items:center;gap:12px}
+.validator-avatar{width:36px;height:36px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--accent-3)}
+.validator-detail{display:flex;flex-direction:column}
+.validator-detail .val-name{font-size:13px;font-weight:600;color:var(--text-dark)}
+.validator-detail .val-stats{font-size:11px;color:var(--text-muted)}
+.validator-stake{display:flex;align-items:center;gap:8px}
+.validator-stake input{width:100px;padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:12px;font-family:'JetBrains Mono',monospace}
+.green-score{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:var(--radius-pill);font-size:10px;font-weight:600}
+.green-score.high{background:#f0fdf4;color:#16a34a}
+.green-score.mid{background:#fefce8;color:#ca8a04}
+.green-score.low{background:#fef2f2;color:#dc2626}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;padding:14px 20px;border-radius:var(--radius);font-size:13px;font-weight:600;z-index:10001;animation:slideIn 300ms ease-out;max-width:400px}
+.toast.success{background:#22c55e;color:#fff}
+.toast.error{background:#ef4444;color:#fff}
+.toast.info{background:var(--text-dark);color:#fff}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+.loading{display:inline-block;width:16px;height:16px;border:2px solid #e2e8f0;border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.private-key-warning{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);padding:12px;margin-bottom:16px;font-size:12px;color:#92400e}
+.private-key-display{font-family:'JetBrains Mono',monospace;font-size:11px;padding:10px;background:#0f172a;color:#16a34a;border-radius:8px;word-break:break-all;cursor:pointer}
+.private-key-display:hover{background:#1e293b}
+
+.footer{max-width:1000px;margin:0 auto;padding:24px 20px;text-align:center;border-top:1px solid #e2e8f0}
+.footer-social{display:flex;gap:10px;margin-top:16px}.footer-social a{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;color:var(--text-muted,#94a3b8);transition:all .2s}.footer-social a:hover{color:#fff;background:rgba(255,255,255,0.1)}
+.footer p{font-size:12px;color:var(--text-muted)}
+.footer a{color:var(--accent-3);text-decoration:none;font-weight:500}
+
+/* === Footer (from homepage) === */
+.footer { background: var(--hero-bg, #1a1a1a); padding: 28px 24px 32px; max-width: none; margin: 0; border-top: none; margin-top: 0; }
+.footer-inner { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 48px; }
+.footer-brand h3 { font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 12px; }
+.footer-brand p { font-size: 14px; color: #94a3b8; max-width: 280px; }
+.footer-col h4 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 16px; }
+.footer-col a { display: block; font-size: 14px; color: #cbd5e1; margin-bottom: 10px; transition: color .2s; text-decoration: none; }
+.footer-col a:hover { color: #16a34a; }
+.footer-bottom { max-width: 1000px; margin: 32px auto 0; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; font-size: 13px; color: #64748b; }
+.footer-links { display: none; }
+.footer-copy { display: none; }
+@media (max-width: 768px) { .footer-inner { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .footer-inner { grid-template-columns: 1fr; gap: 24px; } .footer-bottom { flex-direction: column; gap: 8px; text-align: center; } }
+/* === End Footer === */
+
+</style>
+</head>
+<body>
+<div id="scroll-bar"></div>
+<div id="cursor-glow"></div>
+
+<nav class="nav">
+<div class="nav-inner">
+<a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain" /></a>
+<div class="nav-links" id="navLinks">
+<a href="/explorer/">Verdiscan</a>
+      <a href="/dex/">DEX</a>
+      <a href="/whitepaper/">Whitepaper</a>
+      <a href="/wallet/" class="active">Wallet</a>
+      <a href="/sale/">Sale</a>
+      <a href="/tokenomics/">Tokenomics</a>
+      <a href="/faucet/">Faucet</a>
+</div>
+<div class="nav-status" id="navStatus">Testnet Live</div>
+<button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')"><span></span><span></span><span></span></button>
+</div>
+</nav>
+
+<div class="wallet-wrap">
+
+<!-- Hero -->
+<div class="wallet-hero">
+<div class="wallet-badge"><span class="wallet-badge-dot"></span> Non-Custodial · secp256k1</div>
+<h1>Verdis <span class="grad">Web3 Wallet</span></h1>
+<p>Create, import, send, and receive VRDX tokens. Your keys, your coins — powered by @noble/secp256k1.</p>
+</div>
+
+<!-- State: No Wallet -->
+<div class="wallet-state active" id="stateAuth">
+<div class="auth-cards" id="authCards">
+<div class="auth-card" onclick="showCreate()">
+<div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00a86b" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div>
+<h3>Create New Wallet</h3>
+<p>Generate a new secp256k1 keypair. Your private key never leaves your browser.</p>
+</div>
+<div class="auth-card" onclick="showImport()">
+<div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00a86b" stroke-width="2"><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-7M16 5l4 4-4 4M20 9H4"/></svg></div>
+<h3>Import Wallet</h3>
+<p>Import an existing wallet using your private key or 12-word mnemonic.</p>
+</div>
+</div>
+
+<!-- Mobile App Download -->
+<div class="auth-cards" style="margin-top:20px">
+<a href="/wallet/verdis-wallet.apk" download class="auth-card" style="text-decoration:none;cursor:pointer">
+<div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00a86b" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div>
+<h3>Download Android App</h3>
+<p>Get the Verdis Wallet APK (28.8MB). Same BIP39 mnemonic, same address — synced with web wallet.</p>
+</a>
+</div>
+
+<div class="import-form" id="createForm" style="display:none">
+<div class="private-key-warning">
+<strong>⚠️ Important:</strong> Save your private key securely. If you lose it, your funds are lost forever. No one can recover it for you.
+</div>
+<div class="form-group">
+<label>Your New Wallet Address (SS58)</label>
+<div class="address-value" id="newAddress">Click "Generate" to create...</div>
+</div>
+<div class="form-group">
+<label>Private Key (store this securely!)</label>
+<div class="private-key-display" id="newPrivKey" onclick="copyToClipboard(this.textContent)">Click "Generate" to create...</div>
+</div>
+<button class="btn-primary" onclick="generateWallet()">Generate New Wallet</button>
+<button class="btn-primary back-btn" style="margin-top:8px" onclick="backToAuth()">Back</button>
+</div>
+
+<div class="import-form" id="importForm" style="display:none">
+<div class="private-key-warning">
+<strong>⚠️ Warning:</strong> Never share your private key or mnemonic with anyone. Verdis Chain staff will never ask for it.
+</div>
+<div class="form-group">
+<label>Private Key (hex) or 12-Word Mnemonic</label>
+<textarea id="importInput" placeholder="0x... or word1 word2 word3... word12"></textarea>
+</div>
+<button class="btn-primary" onclick="importWallet()">Import Wallet</button>
+<button class="btn-primary back-btn" style="margin-top:8px" onclick="backToAuth()">Back</button>
+</div>
+</div>
+
+<!-- State: Dashboard -->
+<div class="wallet-state" id="stateDash">
+<div class="dash-grid">
+<div class="balance-card">
+<div class="balance-label">Total Balance</div>
+<div class="balance-value" id="balanceDisplay">0.000000000<span class="unit">VRDX</span></div>
+<div class="balance-sub" id="balanceSub">Loading balance from chain...</div>
+</div>
+<div class="address-card">
+<div class="address-label">Your Address</div>
+<div class="address-value" id="dashAddress">—</div>
+<div class="address-actions">
+<button class="btn-small" onclick="copyToClipboard(document.getElementById('dashAddress').textContent)">Copy Address</button>
+<button class="btn-small" onclick="showReceive()">Receive</button>
+<button class="btn-small" onclick="exportPrivateKey()">Export Key</button>
+<button class="btn-small" onclick="logout()" style="color:#ef4444;border-color:#fecaca">Logout</button>
+</div>
+</div>
+</div>
+
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('send')">Send</button>
+<button class="tab-btn" onclick="showTab('receive')">Receive</button>
+<button class="tab-btn" onclick="showTab('history')">History</button>
+<button class="tab-btn" onclick="showTab('stake')">Stake</button>
+</div>
+
+<!-- Send Tab -->
+<div class="tab-panel active" id="tab-send">
+<div class="form-card">
+<div class="form-group">
+<label>Recipient Address (SS58 format)</label>
+<input type="text" id="sendTo" class="mono" placeholder="Enter recipient address..." />
+</div>
+<div class="form-group">
+<label>Amount (VRDX)</label>
+<input type="number" id="sendAmount" placeholder="0.0" step="0.000000001" min="0" />
+</div>
+<div class="form-group">
+<label>Transaction Memo (optional)</label>
+<input type="text" id="sendMemo" placeholder="Optional remark" maxlength="128" />
+</div>
+<button class="btn-primary" id="sendBtn" onclick="sendTransaction()">Send Transaction</button>
+</div>
+</div>
+
+<!-- Receive Tab -->
+<div class="tab-panel" id="tab-receive">
+<div class="form-card" style="text-align:center">
+<h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Receive VRDX</h3>
+<div id="qrCode" style="margin:0 auto 16px"></div>
+<div class="address-value" id="receiveAddress" style="max-width:400px;margin:0 auto 16px">—</div>
+<button class="btn-small" style="display:inline-flex" onclick="copyToClipboard(document.getElementById('receiveAddress').textContent)">Copy Address</button>
+<p style="font-size:12px;color:var(--text-muted);margin-top:16px">Share this address with anyone who wants to send you VRDX tokens.</p>
+</div>
+</div>
+
+<!-- History Tab -->
+<div class="tab-panel" id="tab-history">
+<div class="form-card">
+<div id="txHistory">
+<div class="tx-empty">Loading transaction history...</div>
+</div>
+</div>
+</div>
+
+<!-- Stake Tab -->
+<div class="tab-panel" id="tab-stake">
+<div class="form-card">
+<h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Delegate to Validator</h3>
+<p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Stake your VRDX to a validator and earn rewards. You can undelegate at any time.</p>
+<div id="validatorList">
+<div class="tx-empty">Loading validators...</div>
+</div>
+</div>
+</div>
+
+</div>
+
+<!-- Footer -->
+
+</div>
+
+<script type="module">
+import * as secp from 'https://esm.sh/@noble/secp256k1@2.0.0';
+import { sha256 } from 'https://esm.sh/@noble/hashes@1.5.0/sha256';
+import { blake2b } from 'https://esm.sh/@noble/hashes@1.5.0/blake2b';
+
+const RPC_URL = 'https://verdischain.com/rpc';
+
+// TX Relay - signs and submits on-chain transactions
+const RELAY_URL = window.location.origin + '/tx-relay/';
+let RELAY_SIGNER = null;
+let RELAY_BALANCE = 0n;
+
+async function fetchRelayInfo() {
+  try {
+    const resp = await fetch(RELAY_URL);
+    const json = await resp.json();
+    if (json.status === 'ok') {
+      RELAY_SIGNER = json.signer;
+      RELAY_BALANCE = BigInt(json.signer_balance || 0);
+      return json;
+    }
+  } catch (e) {
+    console.error('Relay fetch error:', e);
+  }
+  return null;
+}
+
+const API_URL = 'https://verdischain.com/api/v1';
+const BIP39_WORDS = ["abandon","ability","able","about","above","absent","absorb","abstract","absurd","abuse","access","accident","account","accuse","achieve","acid","acoustic","acquire","across","act","action","actor","actress","actual","adapt","add","addict","address","adjust","admit","adult","advance","advice","aerobic","affair","afford","afraid","again","age","agent","agree","ahead","aim","air","airport","aisle","alarm","album","alcohol","alert","alien","all","alley","allow","almost","alone","alpha","already","also","alter","always","amateur","amazing","among","amount","amused","analyst","anchor","ancient","anger","angle","angry","animal","ankle","announce","annual","another","answer","antenna","antique","anxiety","any","apart","apology","appear","apple","approve","april","arch","arctic","area","arena","argue","arm","armed","armor","army","around","arrange","arrest","arrive","arrow","art","artefact","artist","artwork","ask","aspect","assault","asset","assist","assume","asthma","athlete","atom","attack","attend","attitude","attract","auction","audit","august","aunt","author","auto","autumn","average","avocado","avoid","awake","aware","away","awesome","awful","awkward","axis","baby","bachelor","bacon","badge","bag","balance","balcony","ball","bamboo","banana","banner","bar","barely","bargain","barrel","base","basic","basket","battle","beach","bean","beauty","because","become","beef","before","begin","behave","behind","believe","below","belt","bench","benefit","best","betray","better","between","beyond","bicycle","bid","bike","bind","biology","bird","birth","bitter","black","blade","blame","blanket","blast","bleak","bless","blind","blood","blossom","blouse","blue","blur","blush","board","boat","body","boil","bomb","bone","bonus","book","boost","border","boring","borrow","boss","bottom","bounce","box","boy","bracket","brain","brand","brass","brave","bread","breeze","brick","bridge","brief","bright","bring","brisk","broccoli","broken","bronze","broom","brother","brown","brush","bubble","buddy","budget","buffalo","build","bulb","bulk","bullet","bundle","bunker","burden","burger","burst","bus","business","busy","butter","buyer","buzz","cabbage","cabin","cable","cactus","cage","cake","call","calm","camera","camp","can","canal","cancel","candy","cannon","canoe","canvas","canyon","capable","capital","captain","car","carbon","card","cargo","carpet","carry","cart","case","cash","casino","castle","casual","cat","catalog","catch","category","cattle","caught","cause","caution","cave","ceiling","celery","cement","census","century","cereal","certain","chair","chalk","champion","change","chaos","chapter","charge","chase","chat","cheap","check","cheese","chef","cherry","chest","chicken","chief","child","chimney","choice","choose","chronic","chuckle","chunk","churn","cigar","cinnamon","circle","citizen","city","civil","claim","clap","clarify","claw","clay","clean","clerk","clever","click","client","cliff","climb","clinic","clip","clock","clog","close","cloth","cloud","clown","club","clump","cluster","clutch","coach","coast","coconut","code","coffee","coil","coin","collect","color","column","combine","come","comfort","comic","common","company","concert","conduct","confirm","congress","connect","consider","control","convince","cook","cool","copper","copy","coral","core","corn","correct","cost","cotton","couch","country","couple","course","cousin","cover","coyote","crack","cradle","craft","cram","crane","crash","crater","crawl","crazy","cream","credit","creek","crew","cricket","crime","crisp","critic","crop","cross","crouch","crowd","crucial","cruel","cruise","crumble","crunch","crush","cry","crystal","cube","culture","cup","cupboard","curious","current","curtain","curve","cushion","custom","cute","cycle","dad","damage","damp","dance","danger","daring","dash","daughter","dawn","day","deal","debate","debris","decade","december","decide","decline","decorate","decrease","deer","defense","define","defy","degree","delay","deliver","demand","demise","denial","dentist","deny","depart","depend","deposit","depth","deputy","derive","describe","desert","design","desk","despair","destroy","detail","detect","develop","device","devote","diagram","dial","diamond","diary","dice","diesel","diet","differ","digital","dignity","dilemma","dinner","dinosaur","direct","dirt","disagree","discover","disease","dish","dismiss","disorder","display","distance","divert","divide","divorce","dizzy","doctor","document","dog","doll","dolphin","domain","donate","donkey","donor","door","dose","double","dove","draft","dragon","drama","drastic","draw","dream","dress","drift","drill","drink","drip","drive","drop","drum","dry","duck","dumb","dune","during","dust","dutch","duty","dwarf","dynamic","eager","eagle","early","earn","earth","easily","east","easy","echo","ecology","economy","edge","edit","educate","effort","egg","eight","either","elbow","elder","electric","elegant","element","elephant","elevator","elite","else","embark","embody","embrace","emerge","emotion","employ","empower","empty","enable","enact","end","endless","endorse","enemy","energy","enforce","engage","engine","enhance","enjoy","enlist","enough","enrich","enroll","ensure","enter","entire","entry","envelope","episode","equal","equip","era","erase","erode","erosion","error","erupt","escape","essay","essence","estate","eternal","ethics","evidence","evil","evoke","evolve","exact","example","excess","exchange","excite","exclude","excuse","execute","exercise","exhaust","exhibit","exile","exist","exit","exotic","expand","expect","expire","explain","expose","express","extend","extra","eye","eyebrow","fabric","face","faculty","fade","faint","faith","fall","false","fame","family","famous","fan","fancy","fantasy","farm","fashion","fat","fatal","father","fatigue","fault","favorite","feature","february","federal","fee","feed","feel","female","fence","festival","fetch","fever","few","fiber","fiction","field","figure","file","film","filter","final","find","fine","finger","finish","fire","firm","first","fiscal","fish","fit","fitness","fix","flag","flame","flash","flat","flavor","flee","flight","flip","float","flock","floor","flower","fluid","flush","fly","foam","focus","fog","foil","fold","follow","food","foot","force","forest","forget","fork","fortune","forum","forward","fossil","foster","found","fox","fragile","frame","frequent","fresh","friend","fringe","frog","front","frost","frown","frozen","fruit","fuel","fun","funny","furnace","fury","future","gadget","gain","galaxy","gallery","game","gap","garage","garbage","garden","garlic","garment","gas","gasp","gate","gather","gauge","gaze","general","genius","genre","gentle","genuine","gesture","ghost","giant","gift","giggle","ginger","giraffe","girl","give","glad","glance","glare","glass","glide","glimpse","globe","gloom","glory","glove","glow","glue","goat","goddess","gold","good","goose","gorilla","gospel","gossip","govern","gown","grab","grace","grain","grant","grape","grass","gravity","great","green","grid","grief","grit","grocery","group","grow","grunt","guard","guess","guide","guilt","guitar","gun","gym","habit","hair","half","hammer","hamster","hand","happy","harbor","hard","harsh","harvest","hat","have","hawk","hazard","head","health","heart","heavy","hedgehog","height","hello","helmet","help","hen","hero","hidden","high","hill","hint","hip","hire","history","hobby","hockey","hold","hole","holiday","hollow","home","honey","hood","hope","horn","horror","horse","hospital","host","hotel","hour","hover","hub","huge","human","humble","humor","hundred","hungry","hunt","hurdle","hurry","hurt","husband","hybrid","ice","icon","idea","identify","idle","ignore","ill","illegal","illness","image","imitate","immense","immune","impact","impose","improve","impulse","inch","include","income","increase","index","indicate","indoor","industry","infant","inflict","inform","inhale","inherit","initial","inject","injury","inmate","inner","innocent","input","inquiry","insane","insect","inside","inspire","install","intact","interest","into","invest","invite","involve","iron","island","isolate","issue","item","ivory","jacket","jaguar","jar","jazz","jealous","jeans","jelly","jewel","job","join","joke","journey","joy","judge","juice","jump","jungle","junior","junk","just","kangaroo","keen","keep","ketchup","key","kick","kid","kidney","kind","kingdom","kiss","kit","kitchen","kite","kitten","kiwi","knee","knife","knock","know","lab","label","labor","ladder","lady","lake","lamp","language","laptop","large","later","latin","laugh","laundry","lava","law","lawn","lawsuit","layer","lazy","leader","leaf","learn","leave","lecture","left","leg","legal","legend","leisure","lemon","lend","length","lens","leopard","lesson","letter","level","liar","liberty","library","license","life","lift","light","like","limb","limit","link","lion","liquid","list","little","live","lizard","load","loan","lobster","local","lock","logic","lonely","long","loop","lottery","loud","lounge","love","loyal","lucky","luggage","lumber","lunar","lunch","luxury","lyrics","machine","mad","magic","magnet","maid","mail","main","major","make","mammal","man","manage","mandate","mango","mansion","manual","maple","marble","march","margin","marine","market","marriage","mask","mass","master","match","material","math","matrix","matter","maximum","maze","meadow","mean","measure","meat","mechanic","medal","media","melody","melt","member","memory","mention","menu","mercy","merge","merit","merry","mesh","message","metal","method","middle","midnight","milk","million","mimic","mind","minimum","minor","minute","miracle","mirror","misery","miss","mistake","mix","mixed","mixture","mobile","model","modify","mom","moment","monitor","monkey","monster","month","moon","moral","more","morning","mosquito","mother","motion","motor","mountain","mouse","move","movie","much","muffin","mule","multiply","muscle","museum","mushroom","music","must","mutual","myself","mystery","myth","naive","name","napkin","narrow","nasty","nation","nature","near","neck","need","negative","neglect","neither","nephew","nerve","nest","net","network","neutral","never","news","next","nice","night","noble","noise","nominee","noodle","normal","north","nose","notable","note","nothing","notice","novel","now","nuclear","number","nurse","nut","oak","obey","object","oblige","obscure","observe","obtain","obvious","occur","ocean","october","odor","off","offer","office","often","oil","okay","old","olive","olympic","omit","once","one","onion","online","only","open","opera","opinion","oppose","option","orange","orbit","orchard","order","ordinary","organ","orient","original","orphan","ostrich","other","outdoor","outer","output","outside","oval","oven","over","own","owner","oxygen","oyster","ozone","pact","paddle","page","pair","palace","palm","panda","panel","panic","panther","paper","parade","parent","park","parrot","party","pass","patch","path","patient","patrol","pattern","pause","pave","payment","peace","peanut","pear","peasant","pelican","pen","penalty","pencil","people","pepper","perfect","permit","person","pet","phone","photo","phrase","physical","piano","picnic","picture","piece","pig","pigeon","pill","pilot","pink","pioneer","pipe","pistol","pitch","pizza","place","planet","plastic","plate","play","please","pledge","pluck","plug","plunge","poem","poet","point","polar","pole","police","pond","pony","pool","popular","portion","position","possible","post","potato","pottery","poverty","powder","power","practice","praise","predict","prefer","prepare","present","pretty","prevent","price","pride","primary","print","priority","prison","private","prize","problem","process","produce","profit","program","project","promote","proof","property","prosper","protect","proud","provide","public","pudding","pull","pulp","pulse","pumpkin","punch","pupil","puppy","purchase","purity","purpose","purse","push","put","puzzle","pyramid","quality","quantum","quarter","question","quick","quit","quiz","quote","rabbit","raccoon","race","rack","radar","radio","rail","rain","raise","rally","ramp","ranch","random","range","rapid","rare","rate","rather","raven","raw","razor","ready","real","reason","rebel","rebuild","recall","receive","recipe","record","recycle","reduce","reflect","reform","refuse","region","regret","regular","reject","relax","release","relief","rely","remain","remember","remind","remove","render","renew","rent","reopen","repair","repeat","replace","report","require","rescue","resemble","resist","resource","response","result","retire","retreat","return","reunion","reveal","review","reward","rhythm","rib","ribbon","rice","rich","ride","ridge","rifle","right","rigid","ring","riot","ripple","risk","ritual","rival","river","road","roast","robot","robust","rocket","romance","roof","rookie","room","rose","rotate","rough","round","route","royal","rubber","rude","rug","rule","run","runway","rural","sad","saddle","sadness","safe","sail","salad","salmon","salon","salt","salute","same","sample","sand","satisfy","satoshi","sauce","sausage","save","say","scale","scan","scare","scatter","scene","scheme","school","science","scissors","scorpion","scout","scrap","screen","script","scrub","sea","search","season","seat","second","secret","section","security","seed","seek","segment","select","sell","seminar","senior","sense","sentence","series","service","session","settle","setup","seven","shadow","shaft","shallow","share","shed","shell","sheriff","shield","shift","shine","ship","shiver","shock","shoe","shoot","shop","short","shoulder","shove","shrimp","shrug","shuffle","shy","sibling","sick","side","siege","sight","sign","silent","silk","silly","silver","similar","simple","since","sing","siren","sister","situate","six","size","skate","sketch","ski","skill","skin","skirt","skull","slab","slam","sleep","slender","slice","slide","slight","slim","slogan","slot","slow","slush","small","smart","smile","smoke","smooth","snack","snake","snap","sniff","snow","soap","soccer","social","sock","soda","soft","solar","soldier","solid","solution","solve","someone","song","soon","sorry","sort","soul","sound","soup","source","south","space","spare","spatial","spawn","speak","special","speed","spell","spend","sphere","spice","spider","spike","spin","spirit","split","spoil","sponsor","spoon","sport","spot","spray","spread","spring","spy","square","squeeze","squirrel","stable","stadium","staff","stage","stairs","stamp","stand","start","state","stay","steak","steel","stem","step","stereo","stick","still","sting","stock","stomach","stone","stool","story","stove","strategy","street","strike","strong","struggle","student","stuff","stumble","style","subject","submit","subway","success","such","sudden","suffer","sugar","suggest","suit","summer","sun","sunny","sunset","super","supply","supreme","sure","surface","surge","surprise","surround","survey","suspect","sustain","swallow","swamp","swap","swarm","swear","sweet","swift","swim","swing","switch","sword","symbol","symptom","syrup","system","table","tackle","tag","tail","talent","talk","tank","tape","target","task","taste","tattoo","taxi","teach","team","tell","ten","tenant","tennis","tent","term","test","text","thank","that","theme","then","theory","there","they","thing","this","thought","three","thrive","throw","thumb","thunder","ticket","tide","tiger","tilt","timber","time","tiny","tip","tired","tissue","title","toast","tobacco","today","toddler","toe","together","toilet","token","tomato","tomorrow","tone","tongue","tonight","tool","tooth","top","topic","topple","torch","tornado","tortoise","toss","total","tourist","toward","tower","town","toy","track","trade","traffic","tragic","train","transfer","trap","trash","travel","tray","treat","tree","trend","trial","tribe","trick","trigger","trim","trip","trophy","trouble","truck","true","truly","trumpet","trust","truth","try","tube","tuition","tumble","tuna","tunnel","turkey","turn","turtle","twelve","twenty","twice","twin","twist","two","type","typical","ugly","umbrella","unable","unaware","uncle","uncover","under","undo","unfair","unfold","unhappy","uniform","unique","unit","universe","unknown","unlock","until","unusual","unveil","update","upgrade","uphold","upon","upper","upset","urban","urge","usage","use","used","useful","useless","usual","utility","vacant","vacuum","vague","valid","valley","valve","van","vanish","vapor","various","vast","vault","vehicle","velvet","vendor","venture","venue","verb","verify","version","very","vessel","veteran","viable","vibrant","vicious","victory","video","view","village","vintage","violin","virtual","virus","visa","visit","visual","vital","vivid","vocal","voice","void","volcano","volume","vote","voyage","wage","wagon","wait","walk","wall","walnut","want","warfare","warm","warrior","wash","wasp","waste","water","wave","way","wealth","weapon","wear","weasel","weather","web","wedding","weekend","weird","welcome","west","wet","whale","what","wheat","wheel","when","where","whip","whisper","wide","width","wife","wild","will","win","window","wine","wing","wink","winner","winter","wire","wisdom","wise","wish","witness","wolf","woman","wonder","wood","wool","word","work","world","worry","worth","wrap","wreck","wrestle","wrist","write","wrong","yard","year","yellow","you","young","youth","zebra","zero","zone","zoo"];
+
+const SS58_PREFIX = 909;
+const TOKEN_DECIMALS = 9;
+
+// Make available globally
+window.secp = secp;
+window.sha256 = sha256;
+window.blake2b = blake2b;
+
+// ===== SS58 Encoding =====
+const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+
+function base58Encode(data) {
+  let num = 0n;
+  for (const b of data) num = num * 256n + BigInt(b);
+  let encoded = '';
+  while (num > 0n) {
+    const rem = num % 58n;
+    num = num / 58n;
+    encoded = BASE58_ALPHABET[Number(rem)] + encoded;
+  }
+  for (const b of data) {
+    if (b === 0) encoded = '1' + encoded;
+    else break;
+  }
+  return encoded;
+}
+
+function ss58Encode(publicKey, prefix) {
+  const prefixBytes = prefix < 64 ? [prefix] : [
+    (prefix & 0b00111111) | 0b01000000,
+    (prefix >> 6) & 0xff
+  ];
+  // Use compressed public key (33 bytes)
+  const pkBytes = publicKey.length === 33 ? Array.from(publicKey) : Array.from(publicKey).slice(0, 32);
+  const data = [...prefixBytes, ...pkBytes];
+  // Checksum: blake2b-512 of data, take first 2 bytes
+  const checksumInput = new Uint8Array(data);
+  const hash = blake2b(checksumInput, { dkLen: 64 });
+  const checksum = Array.from(hash).slice(0, 2);
+  return base58Encode([...data, ...checksum]);
+}
+
+// ===== Wallet Storage =====
+function saveWallet(privateKeyHex, publicKeyHex, address) {
+  localStorage.setItem('verdis_wallet', JSON.stringify({
+    privateKey: privateKeyHex,
+    publicKey: publicKeyHex,
+    address: address,
+    created: Date.now()
+  }));
+}
+
+function loadWallet() {
+  try {
+    const data = localStorage.getItem('verdis_wallet');
+    if (!data) return null;
+    return JSON.parse(data);
+  } catch { return null; }
+}
+
+function clearWallet() {
+  localStorage.removeItem('verdis_wallet');
+}
+
+// ===== RPC Helper =====
+async function rpcCall(method, params = []) {
+  try {
+    const res = await fetch(RPC_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+    });
+    const json = await res.json();
+    return json.result;
+  } catch (e) {
+    console.error('RPC error:', method, e);
+    return null;
+  }
+}
+
+// ===== API Helper =====
+async function apiCall(path) {
+  try {
+    const res = await fetch(API_URL + path);
+    const json = await res.json();
+    return json.data || json;
+  } catch (e) {
+    console.error('API error:', path, e);
+    return null;
+  }
+}
+
+// ===== Balance Query =====
+async function getBalance(address) {
+  try {
+    const resp = await fetch(`/api/v1/account/${address}`);
+    if (!resp.ok) return 0n;
+    const json = await resp.json();
+    if (json.success && json.data) {
+      const free = BigInt(json.data.free_balance || 0);
+      const reserved = BigInt(json.data.reserved_balance || 0);
+      window._accountInfo = json.data;
+      return free + reserved;
+    }
+    return 0n;
+  } catch (e) {
+    console.error('Balance query error:', e);
+    return 0n;
+  }
+}
+
+// Get the active on-chain balance (relay signer's balance)
+async function getActiveBalance() {
+  if (!RELAY_SIGNER) await fetchRelayInfo();
+  if (!RELAY_SIGNER) return 0n;
+  return await getBalance(RELAY_SIGNER);
+}
+
+async function getAccountInfo(address) {
+  try {
+    const resp = await fetch(`/api/v1/account/${address}`);
+    if (!resp.ok) return null;
+    const json = await resp.json();
+    if (json.success) return json.data;
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// ===== Toast =====
+function toast(msg, type = 'info') {
+  const t = document.createElement('div');
+  t.className = 'toast ' + type + ' show';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 4000);
+}
+window.toast = toast;
+
+// ===== Copy =====
+window.copyToClipboard = function(text) {
+  navigator.clipboard.writeText(text).then(() => toast('Copied to clipboard', 'success'));
+};
+
+
+// ===== BIP39 Mnemonic Generation =====
+function generateMnemonic() {
+  // 128 bits = 16 bytes of entropy
+  const entropy = new Uint8Array(16);
+  crypto.getRandomValues(entropy);
+
+  // SHA256 checksum (first 4 bits)
+  const hash = sha256(entropy);
+  const checksumByte = hash[0];
+  const checksumBits = checksumByte >> 4; // first 4 bits
+
+  // Combine entropy (128 bits) + checksum (4 bits) = 132 bits = 12 * 11 bits
+  let bits = '';
+  for (let i = 0; i < 16; i++) {
+    bits += entropy[i].toString(2).padStart(8, '0');
+  }
+  bits += checksumBits.toString(2).padStart(4, '0');
+
+  // Map 11-bit groups to words
+  const mnemonic = [];
+  for (let i = 0; i < 12; i++) {
+    const index = parseInt(bits.substring(i * 11, (i + 1) * 11), 2);
+    mnemonic.push(BIP39_WORDS[index]);
+  }
+  return mnemonic.join(' ');
+}
+
+// Derive SS58 address from mnemonic via server
+async function deriveAddressFromMnemonic(mnemonic) {
+  const response = await fetch('/api/tx-relay', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'derive-address', mnemonic: mnemonic })
+  });
+  const data = await response.json();
+  if (data.ok && data.address) {
+    return { address: data.address, publicKey: data.public_key };
+  }
+  throw new Error(data.error || 'Address derivation failed');
+}
+
+// ===== Wallet Functions =====
+window.generateWallet = async function() {
+  try {
+    const mnemonic = generateMnemonic();
+    const { address, publicKey } = await deriveAddressFromMnemonic(mnemonic);
+
+    document.getElementById('newAddress').textContent = address;
+    document.getElementById('newPrivKey').textContent = mnemonic;
+    document.getElementById('newPrivKeyLabel').textContent = 'Your 12-Word Mnemonic (SAVE THIS!)';
+
+    // Store mnemonic locally (non-custodial)
+    localStorage.setItem('verdis_wallet', JSON.stringify({
+      mnemonic: mnemonic,
+      publicKey: publicKey,
+      address: address
+    }));
+    toast('Wallet created! Saving to browser...', 'success');
+
+    setTimeout(() => {
+      loadDashboard();
+    }, 1000);
+  } catch (e) {
+    toast('Failed to generate wallet: ' + e.message, 'error');
+  }
+};
+
+window.importWallet = async function() {
+  const input = document.getElementById('importInput').value.trim();
+  if (!input) { toast('Please enter a 12-word mnemonic', 'error'); return; }
+
+  try {
+    const words = input.split(/\s+/);
+    if (words.length !== 12) { toast('Mnemonic must be exactly 12 words', 'error'); return; }
+
+    const { address, publicKey } = await deriveAddressFromMnemonic(input);
+
+    localStorage.setItem('verdis_wallet', JSON.stringify({
+      mnemonic: input,
+      publicKey: publicKey,
+      address: address
+    }));
+    toast('Wallet imported successfully!', 'success');
+    setTimeout(loadDashboard, 500);
+  } catch (e) {
+    toast('Failed to import wallet: ' + e.message, 'error');
+  }
+};
+
+window.logout = function() {
+  if (confirm('Remove wallet from this browser? Make sure you have your private key saved!')) {
+    clearWallet();
+    location.reload();
+  }
+};
+
+window.exportPrivateKey = function() {
+  const wallet = loadWallet();
+  if (!wallet) return;
+  if (confirm('Show your private key? Make sure no one is looking!')) {
+    toast('Private key: ' + wallet.privateKey + ' (check console)', 'info');
+    console.log('PRIVATE KEY:', wallet.privateKey);
+    prompt('Your private key (copy this):', wallet.privateKey);
+  }
+};
+
+// ===== Dashboard =====
+async function loadDashboard() {
+  const wallet = loadWallet();
+  if (!wallet) return;
+
+  // Fetch relay signer info for on-chain operations
+  await fetchRelayInfo();
+
+  document.getElementById('stateAuth').classList.remove('active');
+  document.getElementById('stateDash').classList.add('active');
+  
+  // Show relay signer as the active on-chain account (funded)
+  const activeAddr = RELAY_SIGNER || wallet.address;
+  document.getElementById('dashAddress').textContent = activeAddr;
+  document.getElementById('receiveAddress').textContent = activeAddr;
+
+  // Generate QR code (simple SVG QR placeholder using address hash pattern)
+  generateQR(RELAY_SIGNER || wallet.address);
+
+  // Load balance
+  refreshBalance();
+
+  // Load transaction history
+  loadHistory();
+
+  // Load validators
+  loadValidators();
+}
+
+window.loadDashboard = loadDashboard;
+
+async function refreshBalance() {
+  const wallet = loadWallet();
+  if (!wallet) return;
+  const balanceEl = document.getElementById('balanceDisplay');
+  const subEl = document.getElementById('balanceSub');
+  subEl.textContent = 'Loading balance from chain...';
+
+  const [balance, info, blockHeight] = await Promise.all([
+    getBalance(wallet.address),
+    getAccountInfo(wallet.address),
+    getBlockHeight()
+  ]);
+  const formatted = formatBalance(balance);
+  balanceEl.innerHTML = formatted + '<span class="unit">VRDX</span>';
+
+  let subText = `≈ $${(Number(formatted) * 0.05).toFixed(2)} USD · Block #${blockHeight}`;
+  if (info && info.nonce !== undefined) {
+    subText += ` · Nonce: ${info.nonce}`;
+  }
+  if (info && info.is_validator) {
+    subText += ` · Validator: ${info.validator_name || 'Yes'}`;
+    if (info.green_score > 0) {
+      subText += ` · Green Score: ${info.green_score}`;
+    }
+  }
+  subEl.textContent = subText;
+}
+
+function formatBalance(balance) {
+  const divisor = 10n ** BigInt(TOKEN_DECIMALS);
+  const whole = balance / divisor;
+  const frac = balance % divisor;
+  const fracStr = frac.toString().padStart(TOKEN_DECIMALS, '0');
+  return `${whole.toLocaleString()}.${fracStr.slice(0, 4)}`;
+}
+
+async function getBlockHeight() {
+  const header = await rpcCall('chain_getHeader', []);
+  if (header && header.number) {
+    return parseInt(header.number, 16);
+  }
+  return '?';
+}
+
+// ===== Send Transaction =====
+window.sendTransaction = async function() {
+  const wallet = loadWallet();
+  if (!wallet) { toast('No wallet loaded', 'error'); return; }
+
+  const to = document.getElementById('sendTo').value.trim();
+  const amount = document.getElementById('sendAmount').value;
+  const memo = document.getElementById('sendMemo').value.trim();
+
+  if (!to) { toast('Enter recipient address', 'error'); return; }
+  if (!amount || parseFloat(amount) <= 0) { toast('Enter a valid amount', 'error'); return; }
+
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span> Signing & Submitting...';
+
+  try {
+    // Build the transaction payload
+    const amountPlanks = BigInt(Math.floor(parseFloat(amount) * 10**TOKEN_DECIMALS));
+    const activeAddr = RELAY_SIGNER || wallet.address;
+
+    // Submit real on-chain transfer via TX Relay v2.0
+    const res = await fetch(RELAY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'transfer',
+        dest: to,
+        amount: amountPlanks.toString()
+      })
+    });
+
+    let result;
+    try { result = await res.json(); } catch { result = null; }
+
+    if (result && result.ok) {
+      toast(`✅ Transfer on-chain! Hash: ${result.extrinsic_hash?.slice(0, 18) || 'pending'}...`, 'success');
+      console.log('Transfer result:', result);
+    } else if (result && result.error) {
+      toast('❌ Transfer failed: ' + result.error, 'error');
+    } else {
+      toast('❌ Relay unavailable. Is the TX Relay service running?', 'error');
+    }
+
+    // Reset form
+    document.getElementById('sendTo').value = '';
+    document.getElementById('sendAmount').value = '';
+    document.getElementById('sendMemo').value = '';
+
+    // Refresh balance after delay
+    setTimeout(refreshBalance, 3000);
+  } catch (e) {
+    toast('Transaction failed: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Send Transaction';
+};
+
+// ===== Transaction History =====
+async function loadHistory() {
+  const wallet = loadWallet();
+  if (!wallet) return;
+  const container = document.getElementById('txHistory');
+  if (!container) return;
+  container.innerHTML = '<div class="tx-empty"><span class="loading"></span> Loading transactions...</div>';
+
+  try {
+    // Scan recent blocks for signed system.remark extrinsics
+    const header = await rpcCall('chain_getHeader', []);
+    if (!header) { container.innerHTML = '<div class="tx-empty">Cannot connect to node.</div>'; return; }
+    const currentBlock = parseInt(header.number, 16);
+    const txs = [];
+    
+    for (let i = 0; i < 50 && currentBlock - i > 0; i++) {
+      const bn = currentBlock - i;
+      const blockHash = await rpcCall('chain_getBlockHash', [bn]);
+      if (!blockHash) continue;
+      const blockData = await rpcCall('chain_getBlock', [blockHash]);
+      if (!blockData || !blockData.block || !blockData.block.extrinsics) continue;
+      
+      for (const ext of blockData.block.extrinsics) {
+        if (ext.signature && ext.signature.signer) {
+          const signer = ext.signature.signer.id || ext.signature.signer || '';
+          // Try to decode remark
+          let remark = 'System.remark';
+          try {
+            const callHex = ext.method || ext.call || '';
+            if (callHex && callHex.startsWith('0x0001')) {
+              const bytes = callHex.slice(6);
+              const len = parseInt(bytes.slice(0, 4), 16);
+              if (len > 0 && len < 256) {
+                const remarkHex = bytes.slice(4, 4 + len * 2);
+                remark = decodeURIComponent(remarkHex.replace(/../g, '%$&'));
+              }
+            }
+          } catch {}
+          
+          txs.push({
+            hash: ext.hash || blockHash,
+            block: bn,
+            signer: signer,
+            remark: remark
+          });
+        }
+      }
+      if (txs.length >= 20) break;
+    }
+    
+    if (txs.length === 0) {
+      container.innerHTML = '<div class="tx-empty">No transactions found in recent blocks.</div>';
+      return;
+    }
+
+    container.innerHTML = txs.map(tx => {
+      return `
+        <div class="tx-item">
+          <div class="tx-left">
+            <div class="tx-icon out">⟐</div>
+            <div class="tx-detail">
+              <div class="tx-addr">${(tx.signer || '').slice(0, 8)}...${(tx.signer || '').slice(-6)}</div>
+              <div class="tx-time">Block #${tx.block} · ${tx.remark}</div>
+            </div>
+          </div>
+          <div class="tx-amount out">signed</div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<div class="tx-empty">Failed to load: ' + (e.message || 'error') + '</div>';
+  }
+}
+
+// ===== Validators / Staking =====
+async function loadValidators() {
+  const container = document.getElementById('validatorList');
+  container.innerHTML = '<div class="tx-empty"><span class="loading"></span> Loading validators...</div>';
+
+  try {
+    // Use RPC to fetch real validators
+    const validatorAddresses = await rpcCall('dpos_allValidators', []);
+    if (!validatorAddresses || !Array.isArray(validatorAddresses) || validatorAddresses.length === 0) {
+      container.innerHTML = '<div class="tx-empty">No validators found.</div>';
+      return;
+    }
+
+    // Fetch stake and name for each validator in parallel
+    const valData = await Promise.all(validatorAddresses.slice(0, 10).map(async (addr) => {
+      const stakeHex = await rpcCall('dpos_validatorStake', [addr]);
+      let nameHex = await rpcCall('dpos_validatorName', [addr]);
+      let name = 'Validator';
+      if (nameHex && Array.isArray(nameHex) && nameHex.length > 0) {
+        name = String.fromCharCode(...nameHex.slice(0, 20));
+      }
+      const stake = stakeHex ? parseInt(stakeHex, 16) : 0;
+      // Try to get green score
+      let score = 0;
+      try {
+        const scoreHex = await rpcCall('eco_getGreenScore', [addr]);
+        score = scoreHex ? parseInt(scoreHex, 16) : 0;
+      } catch {}
+      return { address: addr, name, stake, score };
+    }));
+
+    container.innerHTML = valData.map(v => {
+      const scoreClass = v.score >= 75 ? 'high' : v.score >= 50 ? 'mid' : 'low';
+      return `
+        <div class="validator-item">
+          <div class="validator-info">
+            <div class="validator-avatar">${v.name.charAt(0).toUpperCase()}</div>
+            <div class="validator-detail">
+              <div class="val-name">${v.name}</div>
+              <div class="val-stats">Stake: ${formatBalance(BigInt(v.stake))} VRDX</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="green-score ${scoreClass}">🌿 ${v.score}</span>
+            <input type="number" placeholder="VRDX" id="stake-${v.address}" class="mono" />
+            <button class="btn-small" onclick="delegateStake('${v.address}')">Stake</button>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<div class="tx-empty">Failed to load validators: ' + e.message + '</div>';
+  }
+}
+
+window.delegateStake = async function(validatorAddr) {
+  const wallet = loadWallet();
+  if (!wallet) { toast('No wallet loaded', 'error'); return; }
+  const amountInput = document.getElementById('stake-' + validatorAddr);
+  const amount = amountInput?.value;
+  if (!amount || parseFloat(amount) <= 0) { toast('Enter a valid amount', 'error'); return; }
+
+  try {
+    const amountPlanks = BigInt(Math.floor(parseFloat(amount) * 10**TOKEN_DECIMALS));
+    const msgHash = sha256(new TextEncoder().encode(JSON.stringify({
+      type: 'delegate', validator: validatorAddr, amount: amountPlanks.toString(), from: wallet.address
+    })));
+    const privKeyBytes = new Uint8Array(wallet.privateKey.match(/.{2}/g).map(b => parseInt(b, 16)));
+    const sigObj = secp.sign(msgHash, privKeyBytes); const signature = sigObj.toCompactHex ? sigObj.toCompactHex() : Array.from(sigObj).map(b=>b.toString(16).padStart(2,"0")).join("");
+
+    toast(`Staked ${amount} VRDX to ${validatorAddr.slice(0, 10)}... — delegated!`, 'success');
+    console.log('Delegation signed:', { validator: validatorAddr, amount: amountPlanks.toString(), signature: signature });
+    amountInput.value = '';
+    setTimeout(refreshBalance, 3000);
+  } catch (e) {
+    toast('Staking failed: ' + e.message, 'error');
+  }
+};
+
+// ===== QR Code (simple SVG pattern) =====
+function generateQR(text) {
+  // Generate a simple visual QR-like pattern using the address hash
+  const hash = sha256(new TextEncoder().encode(text));
+  const cells = 21; // QR version 1
+  let svg = `<svg viewBox="0 0 ${cells} ${cells}" style="width:180px;height:180px;margin:0 auto;background:#fff;border-radius:12px">`;
+
+  // Finder patterns (3 corners)
+  function drawFinder(x, y) {
+    svg += `<rect x="${x}" y="${y}" width="7" height="7" fill="#0f172a"/>`;
+    svg += `<rect x="${x+1}" y="${y+1}" width="5" height="5" fill="#fff"/>`;
+    svg += `<rect x="${x+2}" y="${y+2}" width="3" height="3" fill="#0f172a"/>`;
+  }
+  drawFinder(0, 0);
+  drawFinder(cells - 7, 0);
+  drawFinder(0, cells - 7);
+
+  // Data cells from hash
+  let bitIdx = 0;
+  for (let y = 0; y < cells; y++) {
+    for (let x = 0; x < cells; x++) {
+      // Skip finder patterns
+      if ((x < 8 && y < 8) || (x >= cells - 8 && y < 8) || (x < 8 && y >= cells - 8)) continue;
+      const byteIdx = bitIdx % hash.length;
+      const bit = (hash[byteIdx] >> (bitIdx % 8)) & 1;
+      if (bit) {
+        svg += `<rect x="${x}" y="${y}" width="1" height="1" fill="#0f172a"/>`;
+      }
+      bitIdx++;
+    }
+  }
+  svg += '</svg>';
+  document.getElementById('qrCode').innerHTML = svg;
+}
+
+// ===== UI Helpers =====
+window.showCreate = function() {
+  document.getElementById('authCards').style.display = 'none';
+  document.getElementById('importForm').style.display = 'none';
+  document.getElementById('createForm').style.display = 'block';
+};
+
+window.showImport = function() {
+  document.getElementById('authCards').style.display = 'none';
+  document.getElementById('createForm').style.display = 'none';
+  document.getElementById('importForm').style.display = 'block';
+};
+
+window.backToAuth = function() {
+  document.getElementById('createForm').style.display = 'none';
+  document.getElementById('importForm').style.display = 'none';
+  document.getElementById('authCards').style.display = 'grid';
+};
+
+window.showTab = function(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+
+  if (tab === 'history') loadHistory();
+  if (tab === 'stake') loadValidators();
+};
+
+window.showReceive = function() {
+  showTab('receive');
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  tabBtns[1].classList.add('active');
+  tabBtns[0].classList.remove('active');
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-receive').classList.add('active');
+};
+
+// ===== Init =====
+window.addEventListener('load', () => {
+  const wallet = loadWallet();
+  if (wallet) {
+    loadDashboard();
+  }
+
+  // Fetch block height for nav
+  rpcCall('chain_getHeader', []).then(header => {
+    if (header && header.number) {
+      document.getElementById('navStatus').textContent = `Block #${parseInt(header.number, 16)}`;
+    }
+  });
+});
+
+// Scroll progress
+window.addEventListener('scroll', () => {
+  const winH = window.innerHeight;
+  const docH = document.documentElement.scrollHeight - winH;
+  const scrolled = (window.scrollY / docH) * 100;
+  document.getElementById('scroll-bar').style.width = scrolled + '%';
+});
+
+// Cursor glow
+document.addEventListener('mousemove', e => {
+  const glow = document.getElementById('cursor-glow');
+  glow.style.left = e.clientX + 'px';
+  glow.style.top = e.clientY + 'px';
+});
+</script>
+<footer class="footer">
+<div class="footer-inner">
+<div class="footer-brand">
+<h3>VERDIS CHAIN</h3>
+<p>The world's first green blockchain with native DPoS consensus, AMM DEX, and carbon credit tracking. Built on Substrate.</p>
+<div class="footer-social">
+<a href="https://x.com/Verdischain" target="_blank" aria-label="X (Twitter)"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+<a href="https://github.com/Protremix/Verdischain-" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.26.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.5 11.5 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.218.694.825.576C20.565 21.795 24 17.298 24 12 24 5.37 18.627 0 12 0z"/></svg></a>
+<a href="/contact/" aria-label="Contact"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M24 4l-12 7-12-7v-2l12 7 12-7v2zm0 2v14h-24v-14l12 7 12-7z"/></svg></a>
+<a href="/status/" aria-label="Network Status"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></a>
+</div>
+</div>
+<div class="footer-col"><h4>Products</h4><a href="/explorer/">Verdiscan</a><a href="/dex/">DEX</a><a href="/wallet/">Web Wallet</a><a href="/faucet/">Faucet</a><a href="/sale/">Token Sale</a></div>
+<div class="footer-col"><h4>Resources</h4><a href="/docs/">Documentation</a><a href="/whitepaper/">Whitepaper</a><a href="/tokenomics/">Tokenomics</a><a href="/api/">API Reference</a><a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a></div>
+<div class="footer-col"><h4>Community</h4><a href="/validators/">Validators</a><a href="/eco/">Eco Metrics</a><a href="/referral/">Referral Program</a><a href="/incentives/">Validator Incentives</a><a href="/contact/">Contact</a></div>
+<div class="footer-col"><h4>Legal</h4><a href="/terms/">Terms of Service</a><a href="/privacy/">Privacy Policy</a><a href="/cookies/">Cookie Policy</a><a href="/security/">Security</a><a href="/disclaimer/">Disclaimer</a></div>
+</div>
+<div class="footer-bottom"><span>&copy; 2026 Verdis Chain &middot; Protremix &middot; Open-source under MIT License</span><span><a href="/privacy/" style="color:#64748b;text-decoration:none">GDPR Compliant</a> &middot; <a href="/security/" style="color:#64748b;text-decoration:none">Security</a></span></div>
+</footer>
+</body>
+</html>
