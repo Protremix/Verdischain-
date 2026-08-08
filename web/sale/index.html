@@ -35,7 +35,7 @@ nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.85); ba
 .hero-left .badge { display:inline-flex; align-items:center; gap:8px; background:var(--accent-glow); border:1px solid var(--accent); border-radius:100px; padding:6px 16px; font-size:13px; color:var(--accent); font-weight:600; margin-bottom:16px; }
 .hero-left .badge .dot { width:8px; height:8px; border-radius:50%; background:var(--accent); animation:pulse 2s infinite; }
 @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.4; } }
-.hero-left h1 { font-family:'Space Grotesk',sans-serif; font-size: 20px; font-weight:700; margin-bottom:12px; line-height:1.1; }
+.hero-left h1 { font-family:'Space Grotesk',sans-serif; font-size: 28px; font-weight:700; margin-bottom:12px; line-height:1.1; }
 .hero-left h1 .accent { color:var(--accent); }
 .hero-left p { color:var(--text-2); font-size:14px; margin-bottom:12px; max-width:520px; }
 .hero-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; max-width:480px; }
@@ -60,7 +60,7 @@ nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.85); ba
 
 /* SALE PHASES */
 .phases-section { max-width:1280px; margin:0 auto 48px; padding:0 24px; }
-.section-title { font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:600; margin-bottom:8px; }
+.section-title { font-family:'Space Grotesk',sans-serif; font-size:20px; font-weight:600; margin-bottom:8px; }
 .section-sub { color:var(--text-2); font-size:13px; margin-bottom:32px; }
 .phases-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
 @media(max-width:768px) { .phases-grid { grid-template-columns:1fr; } }
@@ -71,7 +71,7 @@ nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.85); ba
 .phase-badge.active { background:var(--accent); color:#000; }
 .phase-badge.upcoming { background:var(--border-2); color:var(--text-2); }
 .phase-badge.sold { background:rgba(239,68,68,0.2); color:var(--error); }
-.phase-card h3 { font-size:13px; font-weight:600; margin-bottom:8px; }
+.phase-card h3 { font-size:16px; font-weight:600; margin-bottom:8px; }
 .phase-card .phase-price { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; color:var(--accent); margin:12px 0; }
 .phase-card .phase-price .old { font-size:14px; color:var(--text-3); text-decoration:line-through; margin-left:8px; }
 .phase-card .phase-info { font-size:14px; color:var(--text-2); margin-bottom:16px; }
@@ -95,7 +95,7 @@ nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.85); ba
 /* BUY INTERFACE */
 .buy-section { max-width:720px; margin:0 auto 48px; padding:0 24px; }
 .buy-card { background:#ffffff; border:1px solid var(--border); border-radius:16px; padding:32px; }
-.buy-card h2 { font-size:13px; font-weight:600; margin-bottom:8px; }
+.buy-card h2 { font-size:18px; font-weight:600; margin-bottom:8px; }
 .buy-card .buy-sub { color:var(--text-2); font-size:13px; margin-bottom:12px; }
 .buy-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
 .buy-input-group { background:var(--bg-1); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; }
@@ -158,7 +158,7 @@ nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.85); ba
 /* WHITELIST */
 .whitelist-section { max-width:720px; margin:0 auto 48px; padding:0 24px; }
 .whitelist-card { background:#ffffff; border:1px solid var(--border); border-radius:16px; padding:32px; text-align:center; }
-.whitelist-card h2 { font-size:13px; font-weight:600; margin-bottom:8px; }
+.whitelist-card h2 { font-size:18px; font-weight:600; margin-bottom:8px; }
 .whitelist-card p { color:var(--text-2); font-size:13px; margin-bottom:12px; }
 .whitelist-form { display:flex; gap:8px; max-width:480px; margin:0 auto; }
 .whitelist-form input { flex:1; background:var(--bg-1); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 18px; color:var(--text,#0f172a); font-size:13px; outline:none; }
@@ -220,6 +220,7 @@ nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; backgro
 html{overflow-x:hidden;max-width:100vw}
 table{width:100%!important;max-width:100%!important;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
 thead,tbody{display:table;width:100%}
+@media(max-width:768px){.hero-right{height:auto!important;min-height:500px}.fc-raise,.fc-price,.fc-alloc{position:relative!important;left:auto!important;right:auto!important;top:auto!important;transform:none!important;animation:none!important;margin:8px auto;width:90%!important}.fc-3d-cluster{height:auto!important;position:static!important;transform:none!important;perspective:none!important}}
 </style>
 <link rel="icon" type="image/png" href="/assets/favicon-32.png">
 <link rel="apple-touch-icon" href="/assets/favicon-180.png">
@@ -307,7 +308,7 @@ thead,tbody{display:table;width:100%}
       <div class="phase-badge upcoming">Upcoming</div>
       <h3>Phase 2 — Private Sale</h3>
       <div class="phase-price">$0.001 <span class="old">$0.10</span></div>
-      <div class="phase-info">Early investors and strategic partners. Minimum $25,000 commitment. 20% bonus tokens.</div>
+      <div class="phase-info">Early investors and strategic partners. Minimum $25,000 commitment. 10% bonus tokens.</div>
       <div class="phase-progress">
         <div class="prog-label"><span class="l">Sold</span><span class="v">0 / 3B</span></div>
         <div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div>
@@ -324,7 +325,7 @@ thead,tbody{display:table;width:100%}
       <div class="phase-badge upcoming">Upcoming</div>
       <h3>Phase 3 — Presale</h3>
       <div class="phase-price">$0.002 <span class="old">$0.10</span></div>
-      <div class="phase-info">Public presale. Minimum $100. 20% bonus tokens included. Whitelist recommended.</div>
+      <div class="phase-info">Public presale. Minimum $100. 5% bonus tokens included. Whitelist recommended.</div>
       <div class="phase-progress">
         <div class="prog-label"><span class="l">Sold</span><span class="v">0 / 4B</span></div>
         <div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div>
@@ -383,7 +384,7 @@ thead,tbody{display:table;width:100%}
       <div class="buy-input-group">
         <label>Receive</label>
         <div class="input-row">
-          <input type="number" id="receiveAmount" placeholder="0.00" readonly style="color:var(--accent)">
+          <input type="number" id="receiveAmount" placeholder="0.00" readonly value="2600000" style="color:var(--accent)">
           <div class="currency-select" style="cursor:default">
             <div class="token-icon vrdx">V</div>
             <span>VRDX</span>
