@@ -452,8 +452,11 @@ function decodeExtrinsic(e, blockHash, blockNum) {
     let remark = '';
     for (let start = Math.max(0, bytes.length - 80); start < bytes.length; start++) {
       try {
-        const slice = bytes.slice(start);
-        const text = new TextDecoder().decode(slice);
+        let text = '';
+        let valid = true;
+        for (let j = start; j < bytes.length; j++) {
+          if (bytes[j] >= 32 && bytes[j] <= 126) { text += String.fromCharCode(bytes[j]); } else { valid = false; break; }
+        }
         if (text.length > 3 && text.length < 200 && /^[\x20-\x7e]+$/.test(text)) {
           remark = text;
           break;
