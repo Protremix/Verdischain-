@@ -344,17 +344,39 @@ async function loadValidators() {
 
     // Render validator rows
     const colors = ['#16a34a', '#4ade80', '#fbbf24', '#60a5fa', '#f472b6', '#a78bfa', '#fb923c', '#34d399'];
-    const names = ['Alice', 'Bob', 'Charlie', 'Dave', 'Eve', 'Ferdie', 'GreenNode', 'EcoValidator', 'VerdisRanger', 'CarbonNode', 'ForestGuard', 'SolarStake', 'WindValidator', 'HydroNode'];
     
     let html = '';
     for (let i = 0; i < validators.length; i++) {
       const val = validators[i];
-      const name = names[i] || ('Validator-' + (i+1));
-      const initial = name.charAt(0).toUpperCase();
       const color = colors[i % colors.length];
-      const score = 94 - (i * 2);
       const apy = (11 + (i * 0.2)).toFixed(1);
       
+      // Fetch real validator name from RPC
+      let name = 'Validator-' + (i+1);
+      try {
+        const nameResp = await fetch('/rpc', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({jsonrpc:'2.0', method:'dpos_validatorName', params:[val], id:1})
+        });
+        const nameData = await nameResp.json();
+        if (nameData.result) {
+          name = new TextDecoder().decode(new Uint8Array(nameData.result));
+        }
+      } catch(e) {}
+
+      // Fetch real green score from RPC
+      let score = 0;
+      try {
+        const scoreResp = await fetch('/rpc', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({jsonrpc:'2.0', method:'eco_getGreenScore', params:[val], id:1})
+        });
+        const scoreData = await scoreResp.json();
+        score = scoreData.result || 0;
+      } catch(e) { score = 0; }
+
       // Fetch real stake from RPC
       let stake = 10000;
       try {
