@@ -28,6 +28,14 @@ h1{font-size:13px;margin-bottom:12px}
 @media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:64px;padding:10px 16px}.card{padding:16px}h1{font-size:13px}}
 @media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:14px}.container{padding:20px}}
 </style>
+
+<style>
+.footer{max-width:1200px;margin:0 auto;padding:32px 24px;border-top:1px solid rgba(0,0,0,0.08);margin-top:40px}
+.footer-links{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:12px;justify-content:center}
+.footer-links a{font-size:12px;color:#475569;text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:#16a34a}
+.footer-copy{font-size:11px;color:#94a3b8;text-align:center}
+</style>
 </head>
 <body>
 <h1 style="text-align:center">🟢 Verdis Chain Status</h1>
@@ -44,5 +52,28 @@ document.getElementById('stats').innerHTML+=card('Validators','14','ok');
 document.getElementById('stats').innerHTML+=card('Network','Testnet','ok');
 function card(label,value,cls){return '<div class="card"><h2>'+label+'</h2><div class="value '+cls+' pulse">'+value+'</div></div>'}
 </script>
+
+<footer class="footer">
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/explorer/">Verdiscan</a>
+    <a href="/dex/">DEX</a>
+    <a href="/whitepaper/">Whitepaper</a>
+    <a href="/wallet/">Wallet</a>
+    <a href="/sale/">Sale</a>
+    <a href="/tokenomics/">Tokenomics</a>
+    <a href="/faucet/">Faucet</a>
+    <a href="/validators/">Validators</a>
+    <a href="/eco/">Eco</a>
+    <a href="/referral/">Referral</a>
+    <a href="/incentives/">Incentives</a>
+    <a href="/contact/">Contact</a>
+    <a href="/api/">API</a>
+    <a href="/docs/">Docs</a>
+    <a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a>
+  </div>
+  <div class="footer-copy">&copy; 2026 Verdis Chain. Powered by live Substrate RPC.</div>
+</footer>
+
 </body>
 </html>
