@@ -557,7 +557,6 @@
 @media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:64px;padding:10px 16px}.card{padding:16px}h1{font-size:13px}}
 @media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:14px}.container{padding:20px}}
 
-
     .hero-container > nav.std-nav { position: absolute; top: 0; left: 0; right: 0; width: 100%; z-index: 20; background: rgba(10,10,10,0.6); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.06); padding: 0 20px; height: 72px; gap: 12px; display: flex; align-items: center; justify-content: space-between; border-radius: 24px 24px 0 0; box-sizing: border-box; }
     nav.std-nav .nav-brand { display: flex; align-items: center; }
     nav.std-nav .nav-links { display: flex; gap: 0; flex-wrap: nowrap; flex: 1; justify-content: center; }
@@ -572,7 +571,6 @@
     
     .nav-brand:hover 
 @media(max-width:768px) {   }
-
 
 /* UX Enhancement Animations */
 .card,.info-card,.stat-card,.feature-card{transition:transform 250ms cubic-bezier(0.16,1,0.3,1),box-shadow 250ms}
@@ -616,6 +614,11 @@ input:focus{outline:none;border-color:#caff33;box-shadow:0 0 0 3px rgba(202,255,
 .nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:#caff33;border-radius:1px;transition:width 250ms}
 .nav-links a:hover::after{width:100%}
 .nav-links a{position:relative}
+.footer{max-width:1200px;margin:0 auto;padding:32px 24px;border-top:1px solid rgba(255,255,255,0.1);margin-top:40px}
+.footer-links{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:12px;justify-content:center}
+.footer-links a{font-size:12px;color:rgba(255,255,255,0.6);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:#00ff88}
+.footer-copy{font-size:11px;color:rgba(255,255,255,0.4);text-align:center}
 </style></head>
 <body>
   <div id="cursor-glow"></div>
@@ -635,7 +638,7 @@ input:focus{outline:none;border-color:#caff33;box-shadow:0 0 0 3px rgba(202,255,
     <a href="/faucet/">Faucet</a>
     <a href="/wallet/">Wallet</a>
     <a href="/sale/">Sale</a>
-    <a href="/docs/">Docs</a>
+    <a href="/contact/">Contact</a><a href="/api/">API</a> <a href="/docs/">Docs</a>
     
   </div>
   <div class="nav-status"><div class="dot"></div><span class="nav-text">Connected</span></div>
@@ -1058,14 +1061,19 @@ input:focus{outline:none;border-color:#caff33;box-shadow:0 0 0 3px rgba(202,255,
 </section>
 
 <footer class="footer">
-    <div class="footer-inner">
-      <div class="footer-brand"><h4><span class="footer-brand-dot"></span>Verdis Chain</h4><p>The world's first green blockchain. Built in Rust + Substrate with DPoS, AMM DEX, EVM, and carbon credit tracking.</p></div>
-      <div class="footer-col"><h5>Platform</h5><a href="/explorer/">Verdiscan</a><a href="/validators/">Validators</a><a href="/dex/">DEX</a><a href="/sale/">Token Sale</a><a href="/eco/">Eco Metrics</a></div>
-      <div class="footer-col"><h5>Developers</h5><a href="/docs/">Documentation</a><a href="#">RPC Endpoint</a><a href="https://github.com/Protremix/Verdischain-">GitHub</a><a href="#">Whitepaper</a></div>
-      <div class="footer-col"><h5>Community</h5><a href="#">Twitter</a><a href="#">Discord</a><a href="#">Telegram</a><a href="#">Blog</a></div>
-    </div>
-    <div class="footer-bottom"><span>© 2026 Verdis Chain · Powered by Protremix</span><span>verdischain.com</span></div>
-  </footer>
+  <div class="footer-links">
+    <a href="/">Landing</a>
+    <a href="/explorer/">Verdiscan</a>
+    <a href="/dex/">DEX</a>
+    <a href="/validators/">Validators</a>
+    <a href="/eco/">Eco</a>
+    <a href="/contact/">Contact</a>
+    <a href="/api/">API</a>
+    <a href="/docs/">Docs</a>
+    <a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a>
+  </div>
+  
+</footer>
 
   <script>
     // ===== CURSOR GLOW =====
@@ -1228,7 +1236,6 @@ async function updateLiveMetrics() {
 updateLiveMetrics();
 setInterval(updateLiveMetrics, 15000);
 </script>
-
 
 <script>
 async function loadLandingValidators() {

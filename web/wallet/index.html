@@ -45,7 +45,7 @@ body:hover #cursor-glow{opacity:1}
 .wallet-hero::before{content:'';position:absolute;top:-30%;right:-10%;width:350px;height:350px;background:radial-gradient(circle,var(--accent-glow),transparent 55%);opacity:0.1;animation:pulse-bg 4s ease-in-out infinite}
 .wallet-hero::after{content:'';position:absolute;bottom:-20%;left:-10%;width:250px;height:250px;background:radial-gradient(circle,rgba(0,168,107,0.12),transparent 60%);opacity:0.06;animation:pulse-bg 6s ease-in-out infinite 1s}
 @keyframes pulse-bg{0%,100%{opacity:0.06;transform:scale(1)}50%{opacity:0.12;transform:scale(1.1)}}
-.wallet-hero h1{font-size:22px;font-weight:800;color:var(--text-white);margin-bottom:8px;position:relative;z-index:2;letter-spacing:-0.02em}
+.wallet-hero h1{font-size: 16px;font-weight:800;color:var(--text-white);margin-bottom:8px;position:relative;z-index:2;letter-spacing:-0.02em}
 .wallet-hero h1 .grad{background:linear-gradient(135deg,#caff33 0%,#a8e607 50%,#00a86b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .wallet-hero p{color:rgba(255,255,255,0.7);font-size:13px;position:relative;z-index:2}
 .wallet-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--accent-light);border:1px solid var(--accent-border);border-radius:var(--radius-pill);font-size:11px;font-weight:600;color:var(--accent);margin-bottom:12px;position:relative;z-index:2}
@@ -77,7 +77,7 @@ body:hover #cursor-glow{opacity:1}
 .balance-card{background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius-lg);padding:24px;position:relative;overflow:hidden}
 .balance-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
 .balance-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:8px}
-.balance-value{font-size:32px;font-weight:800;color:var(--text-dark);font-family:'JetBrains Mono',monospace}
+.balance-value{font-size: 18px;font-weight:800;color:var(--text-dark);font-family:'JetBrains Mono',monospace}
 .balance-value .unit{font-size:14px;color:var(--text-muted);font-weight:500;margin-left:4px}
 .balance-sub{font-size:12px;color:var(--text-muted);margin-top:8px}
 
@@ -311,10 +311,6 @@ body:hover #cursor-glow{opacity:1}
 </div>
 
 <!-- Footer -->
-<div class="footer">
-<p>Verdis Chain Web3 Wallet · <a href="/docs/">Docs</a> · <a href="/explorer/">Explorer</a> · <a href="/dex/">DEX</a> · <a href="/faucet/">Faucet</a></p>
-<p style="margin-top:8px">Non-custodial · secp256k1 · @noble/secp256k1 · © 2026 Verdis Chain</p>
-</div>
 
 </div>
 
@@ -857,5 +853,19 @@ document.addEventListener('mousemove', e => {
   glow.style.top = e.clientY + 'px';
 });
 </script>
+<footer class="footer">
+  <div class="footer-links">
+    <a href="/">Landing</a>
+    <a href="/explorer/">Verdiscan</a>
+    <a href="/dex/">DEX</a>
+    <a href="/validators/">Validators</a>
+    <a href="/eco/">Eco</a>
+    <a href="/contact/">Contact</a>
+    <a href="/api/">API</a>
+    <a href="/docs/">Docs</a>
+    <a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a>
+  </div>
+  
+</footer>
 </body>
 </html>

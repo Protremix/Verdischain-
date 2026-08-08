@@ -916,38 +916,61 @@
         grid-template-columns: 1fr;
       }
     }
-  </style>
+  .footer{max-width:1200px;margin:0 auto;padding:32px 24px;border-top:1px solid var(--border);margin-top:40px}
+.footer-links{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:12px;justify-content:center}
+.footer-links a{font-size:12px;color:var(--text-2);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--accent)}
+.footer-copy{font-size:11px;color:var(--text-3);text-align:center}
+.nav{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;gap:16px}
+.nav-logo{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.nav-logo img{height:32px;width:auto}
+.nav-links{display:flex;align-items:center;gap:4px;flex:1;justify-content:center;flex-wrap:wrap}
+.nav-links a{padding:6px 10px;font-size:12px;font-weight:500;color:var(--text-2);border-radius:6px;transition:all .2s;text-decoration:none}
+.nav-links a:hover{color:var(--text);background:rgba(0,0,0,.04)}
+.nav-links a.active{color:#00b364;background:rgba(0,179,100,.08)}
+.nav-status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-2);flex-shrink:0}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.nav-menu-btn{display:none;padding:8px;background:none;border:none;cursor:pointer;flex-direction:column;gap:4px}
+.nav-menu-btn span{width:20px;height:2px;background:#333;border-radius:2px}
+@media(max-width:768px){
+  .nav-links{display:none}
+  .nav-links.mobile{display:flex;flex-direction:column;position:absolute;top:56px;left:0;right:0;background:#fff;border-bottom:1px solid #e0e0e0;padding:12px;gap:0}
+  .nav-links.mobile a{padding:10px 14px}
+  .nav-menu-btn{display:flex}
+}
+</style>
 </head>
 <body>
 
   <!-- STICKY NAVBAR -->
-  <header class="sticky-nav">
-    <div class="nav-container">
-      <a href="/" class="nav-brand">
-        <div class="nav-logo-badge">V</div>
-        <span>Verdis DEX</span>
-      </a>
-
-      <ul class="nav-menu">
-        <li><a class="nav-link active" onclick="switchTab('swap')">Swap</a></li>
-        <li><a class="nav-link" onclick="switchTab('pools')">Pools</a></li>
-        <li><a class="nav-link" onclick="switchTab('liquidity')">Liquidity</a></li>
-        <li><a class="nav-link" onclick="switchTab('chart')">Price Chart</a></li>
-        <li><a class="nav-link" onclick="switchTab('history')">History</a></li>
-        <li><a class="nav-link" href="https://verdischain.com/docs/" target="_blank">Docs</a></li>
-      </ul>
-
-      <div class="nav-right">
-        <div class="rpc-badge">
-          <div class="rpc-dot" id="rpcDot"></div>
-          <span id="rpcStatusText">RPC: Block #---</span>
-        </div>
-        <button class="btn-connect" id="walletBtn" onclick="toggleWalletModal()">
-          <span>Connect Wallet</span>
-        </button>
-      </div>
+  <nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain"></a>
+    <div class="nav-links" id="navLinks">
+      <a href="/">Home</a>
+      <a href="/explorer/">Verdiscan</a>
+      <a href="/dex/" class="active">DEX</a>
+      <a href="/validators/">Validators</a>
+      <a href="/eco/">Eco</a>
+      <a href="/faucet/">Faucet</a>
+      <a href="/wallet/">Wallet</a>
+      <a href="/sale/">Sale</a>
+      <a href="/contact/">Contact</a>
+      <a href="/api/">API</a>
+      <a href="/docs/">Docs</a>
     </div>
-  </header>
+    <div class="nav-status"><span class="pulse-dot"></span><span>Testnet Live</span></div>
+    <button class="nav-menu-btn" onclick="document.getElementById('navLinks').classList.toggle('mobile')"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div style="max-width:1200px;margin:0 auto;padding:0 24px;display:flex;gap:4px;border-bottom:1px solid #e0e0e0"><li><a style="padding:10px 16px;font-size:13px;font-weight:500;color:#666;cursor:pointer;border-bottom:2px solid transparent;text-decoration:none active" onclick="switchTab('swap')">Swap</a></li>
+<li><a style="padding:10px 16px;font-size:13px;font-weight:500;color:#666;cursor:pointer;border-bottom:2px solid transparent;text-decoration:none" onclick="switchTab('pools')">Pools</a></li>
+<li><a style="padding:10px 16px;font-size:13px;font-weight:500;color:#666;cursor:pointer;border-bottom:2px solid transparent;text-decoration:none" onclick="switchTab('liquidity')">Liquidity</a></li>
+<li><a style="padding:10px 16px;font-size:13px;font-weight:500;color:#666;cursor:pointer;border-bottom:2px solid transparent;text-decoration:none" onclick="switchTab('chart')">Price Chart</a></li>
+<li><a style="padding:10px 16px;font-size:13px;font-weight:500;color:#666;cursor:pointer;border-bottom:2px solid transparent;text-decoration:none" onclick="switchTab('history')">History</a></li>
+</div>
 
   <!-- DARK HERO CONTAINER (GRADIENT-UI-UX TEMPLATE STRUCTURE) -->
   <section class="hero-container">
@@ -1396,21 +1419,20 @@
   </div>
 
   <!-- FOOTER -->
-  <footer>
-    <div class="footer-inner">
-      <div>
-        <div class="footer-brand">Verdis Chain AMM DEX</div>
-        <div style="font-size:0.8rem; margin-top:4px;">
-          Substrate RPC: <code>https://verdischain.com/rpc/</code> | Server: <code>91.98.160.145</code>
-        </div>
-      </div>
-      <ul class="footer-links">
-        <li><a href="https://verdischain.com/explorer/" target="_blank" class="footer-link">Explorer</a></li>
-        <li><a href="https://verdischain.com/rpc/" target="_blank" class="footer-link">RPC Node</a></li>
-        <li><a href="https://verdischain.com/docs/" target="_blank" class="footer-link">Pallet Docs</a></li>
-      </ul>
-    </div>
-  </footer>
+  <footer class="footer">
+  <div class="footer-links">
+    <a href="/">Landing</a>
+    <a href="/explorer/">Verdiscan</a>
+    <a href="/dex/">DEX</a>
+    <a href="/validators/">Validators</a>
+    <a href="/eco/">Eco</a>
+    <a href="/contact/">Contact</a>
+    <a href="/api/">API</a>
+    <a href="/docs/">Docs</a>
+    <a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a>
+  </div>
+  
+</footer>
 
   <!-- JS LOGIC -->
   <script>
