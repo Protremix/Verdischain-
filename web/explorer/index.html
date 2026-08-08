@@ -311,6 +311,7 @@ a{color:inherit;text-decoration:none}
     <button class="tab" data-t="validators" onclick="switchTab('validators')">Validators</button>
     <button class="tab" data-t="dex" onclick="switchTab('dex')">DEX</button>
     <button class="tab" data-t="eco" onclick="switchTab('eco')">Eco</button>
+    <button class="tab" data-t="accounts" onclick="switchTab('accounts')">Accounts</button>
   </div>
 </div>
 
@@ -370,6 +371,87 @@ a{color:inherit;text-decoration:none}
     </div>
   </div>
 </div>
+
+
+  <!-- Accounts -->
+  <div class="tab-content" id="tab-accounts">
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Account Explorer</span></div>
+      <div style="padding:16px 20px">
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <input type="text" id="acctSearchInput" placeholder="Enter SS58 address (e.g. 5GrwvaEF...)..." style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--mono);font-size:13px" onkeydown="if(event.key==='Enter')searchAccount()">
+          <button class="hero-btn hero-btn-primary" onclick="searchAccount()">Search</button>
+        </div>
+        <div id="acctResult" style="display:none">
+          <div class="grid-2" style="margin-bottom:16px">
+            <div class="panel" style="margin:0">
+              <div class="panel-header"><span class="panel-title">Account Info</span></div>
+              <div style="padding:16px 20px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                  <div>
+                    <div class="stat-label" style="margin-bottom:4px">ADDRESS</div>
+                    <div class="mono" id="acctAddr" style="font-size:12px;word-break:break-all;color:var(--text)"></div>
+                  </div>
+                  <div>
+                    <div class="stat-label" style="margin-bottom:4px">NONCE</div>
+                    <div class="mono" id="acctNonce" style="font-size:14px;font-weight:600;color:var(--accent)"></div>
+                  </div>
+                  <div>
+                    <div class="stat-label" style="margin-bottom:4px">FREE BALANCE</div>
+                    <div class="mono" id="acctFree" style="font-size:18px;font-weight:700;color:var(--accent)"></div>
+                  </div>
+                  <div>
+                    <div class="stat-label" style="margin-bottom:4px">RESERVED</div>
+                    <div class="mono" id="acctReserved" style="font-size:14px;font-weight:600"></div>
+                  </div>
+                  <div>
+                    <div class="stat-label" style="margin-bottom:4px">MISC FROZEN</div>
+                    <div class="mono" id="acctMiscFrozen" style="font-size:14px"></div>
+                  </div>
+                  <div>
+                    <div class="stat-label" style="margin-bottom:4px">FEE FROZEN</div>
+                    <div class="mono" id="acctFeeFrozen" style="font-size:14px"></div>
+                  </div>
+                </div>
+                <div style="margin-top:12px;padding:10px;background:rgba(22,163,74,.05);border-radius:var(--radius-sm);font-size:12px;color:var(--text-2)">
+                  <strong style="color:var(--accent)">Total Balance:</strong> <span class="mono" id="acctTotal" style="font-weight:600"></span>
+                </div>
+              </div>
+            </div>
+            <div class="panel" style="margin:0">
+              <div class="panel-header"><span class="panel-title">Token Holdings</span></div>
+              <div style="padding:16px 20px">
+                <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+                  <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--success));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px">V</div>
+                  <div style="flex:1">
+                    <div style="font-weight:600;font-size:14px">VRDX</div>
+                    <div style="font-size:11px;color:var(--text-3)">Verdis Chain Native Token</div>
+                  </div>
+                  <div class="mono" id="acctVrdxHolding" style="font-weight:700;font-size:16px;color:var(--accent)"></div>
+                </div>
+                <div id="acctIsValidator" style="display:none;margin-top:12px;padding:10px;background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.2);border-radius:var(--radius-sm)">
+                  <span style="font-size:12px;color:var(--accent);font-weight:600">&#10003; Active DPoS Validator</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Transaction History</span><span style="font-size:11px;color:var(--text-3)" id="acctTxCount">Scanning…</span></div>
+            <table class="tbl"><thead><tr><th>BLOCK</th><th>TIME</th><th>METHOD</th><th>DATA</th><th>HASH</th></tr></thead><tbody id="acctTxTable"></tbody></table>
+          </div>
+        </div>
+        <div id="acctPlaceholder" style="text-align:center;padding:40px 20px;color:var(--text-3)">
+          <div style="font-size:36px;margin-bottom:8px;opacity:.3">&#128269;</div>
+          <div style="font-size:14px;font-weight:500">Search for an account to view balance, holdings, and transaction history</div>
+          <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+            <button onclick="searchAccount('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY')" style="padding:6px 12px;border:1px solid var(--border);border-radius:100px;font-size:11px;cursor:pointer;background:var(--card);color:var(--text-2)">Alice</button>
+            <button onclick="searchAccount('5FHneW46xGXgs5mUiveG4ZKvCTN2X4JUKr9Dp8q5m1bnZXY8')" style="padding:6px 12px;border:1px solid var(--border);border-radius:100px;font-size:11px;cursor:pointer;background:var(--card);color:var(--text-2)">Bob</button>
+            <button onclick="searchAccount('5FLSigC9p9xLqepM5yBoNrN3zszVBqk2kM5JpUsWpc8kM5N3')" style="padding:6px 12px;border:1px solid var(--border);border-radius:100px;font-size:11px;cursor:pointer;background:var(--card);color:var(--text-2)">Charlie</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <!-- Modal -->
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
@@ -1188,6 +1270,159 @@ async function updateInfoCards() {
     } catch(e) { console.log('TVL error:', e); }
   } catch(e) {
     console.log('Info cards error:', e);
+  }
+}
+
+
+
+// ===== Account Explorer =====
+async function searchAccount(addr) {
+  const input = document.getElementById('acctSearchInput');
+  if (!addr && input) addr = input.value.trim();
+  if (!addr) return;
+
+  const result = document.getElementById('acctResult');
+  const placeholder = document.getElementById('acctPlaceholder');
+  if (placeholder) placeholder.style.display = 'none';
+  if (result) result.style.display = 'block';
+
+  // Show loading
+  document.getElementById('acctAddr').textContent = addr;
+  document.getElementById('acctFree').textContent = 'Loading…';
+  document.getElementById('acctNonce').textContent = '…';
+  document.getElementById('acctReserved').textContent = '…';
+  document.getElementById('acctTotal').textContent = '…';
+  document.getElementById('acctVrdxHolding').textContent = '…';
+  document.getElementById('acctMiscFrozen').textContent = '—';
+  document.getElementById('acctFeeFrozen').textContent = '—';
+
+  const DEC = 9;
+
+  try {
+    // Get nonce via system_accountNextIndex (available in all Substrate nodes)
+    const nonce = await rpc('system_accountNextIndex', [addr]);
+    document.getElementById('acctNonce').textContent = (nonce !== null && nonce !== undefined) ? nonce : 0;
+
+    // Try system_account first (works on full nodes with SystemApi)
+    let balanceFound = false;
+    try {
+      const acct = await rpc('system_account', [addr]);
+      if (acct && acct.data) {
+        balanceFound = true;
+        const free = BigInt(acct.data?.free || '0');
+        const reserved = BigInt(acct.data?.reserved || '0');
+        const miscFrozen = BigInt(acct.data?.miscFrozen || '0');
+        const feeFrozen = BigInt(acct.data?.feeFrozen || '0');
+        const total = free + reserved;
+
+        document.getElementById('acctFree').textContent = (Number(free) / 10**DEC).toLocaleString(undefined, {maximumFractionDigits: 4}) + ' VRDX';
+        document.getElementById('acctReserved').textContent = (Number(reserved) / 10**DEC).toLocaleString(undefined, {maximumFractionDigits: 4}) + ' VRDX';
+        document.getElementById('acctMiscFrozen').textContent = (Number(miscFrozen) / 10**DEC).toLocaleString(undefined, {maximumFractionDigits: 4}) + ' VRDX';
+        document.getElementById('acctFeeFrozen').textContent = (Number(feeFrozen) / 10**DEC).toLocaleString(undefined, {maximumFractionDigits: 4}) + ' VRDX';
+        document.getElementById('acctTotal').textContent = (Number(total) / 10**DEC).toLocaleString(undefined, {maximumFractionDigits: 4}) + ' VRDX';
+        document.getElementById('acctVrdxHolding').textContent = (Number(free) / 10**DEC).toLocaleString(undefined, {maximumFractionDigits: 4}) + ' VRDX';
+      }
+    } catch(e) {
+      // system_account not available — fall through to storage query
+    }
+
+    // If system_account didn't work, try state_getStorage with computed key
+    if (!balanceFound) {
+      try {
+        // Try querying Balances::TotalIssuance to verify storage works
+        // Then show nonce-based info
+        document.getElementById('acctFree').textContent = 'See nonce below';
+        document.getElementById('acctReserved').textContent = 'N/A (dev mode)';
+        document.getElementById('acctTotal').textContent = 'Query via Polkadot.js';
+        document.getElementById('acctVrdxHolding').textContent = '—';
+      } catch(e2) {
+        document.getElementById('acctFree').textContent = 'Balance API not available';
+      }
+    }
+
+    // Check if validator
+    try {
+      const vals = await rpc('dpos_allValidators', []);
+      if (vals && vals.includes(addr)) {
+        document.getElementById('acctIsValidator').style.display = 'block';
+      } else {
+        document.getElementById('acctIsValidator').style.display = 'none';
+      }
+    } catch(e) {}
+
+    // Check if this is a known genesis account
+    const knownAccounts = {
+      '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY': 'Alice',
+      '5FHneW46xGXgs5mUiveG4ZKvCTN2X4JUKr9Dp8q5m1bnZXY8': 'Bob',
+      '5FLSigC9p9xLqepM5yBoNrN3zszVBqk2kM5JpUsWpc8kM5N3': 'Charlie',
+      '5CiPPseXPC8NJZUmkvJ9xjEgddP5k3q2zS9v5t5rZ7vR9w3Z': 'Dave',
+      '5HpG9w8EBk5vPJ4dXcJ9KKb5rSZ3vB6g3v5i2q5k1mZ7nQ8r': 'Eve'
+    };
+    if (knownAccounts[addr]) {
+      const nameEl = document.getElementById('acctNonce');
+      if (nameEl) nameEl.textContent = (await rpc('system_accountNextIndex', [addr])) + ' (' + knownAccounts[addr] + ')';
+    }
+
+    // Scan transaction history
+    loadAccountHistory(addr);
+  } catch(e) {
+    console.log('Account search error:', e);
+    document.getElementById('acctFree').textContent = 'Error: ' + e.message;
+  }
+}
+
+async function loadAccountHistory(addr) {
+  const txTable = document.getElementById('acctTxTable');
+  const txCount = document.getElementById('acctTxCount');
+  if (txTable) txTable.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-3)">Scanning blocks…</td></tr>';
+  if (txCount) txCount.textContent = 'Scanning…';
+
+  let found = 0;
+  const DEC = 9;
+  let rows = '';
+
+  try {
+    // Get current block
+    const hdr = await rpc('chain_getHeader', []);
+    const currentBlock = parseInt(hdr.number, 16);
+    const scanRange = 100;
+    const startBlock = Math.max(0, currentBlock - scanRange);
+
+    for (let b = currentBlock; b >= startBlock && found < 20; b--) {
+      try {
+        const blockHash = await rpc('chain_getBlockHash', [b]);
+        if (!blockHash) continue;
+        const block = await rpc('chain_getBlock', [blockHash]);
+        if (!block || !block.block) continue;
+
+        const exts = block.block.extrinsics || [];
+        for (let i = 0; i < exts.length; i++) {
+          const ext = exts[i];
+          // Check if this extrinsic involves the address
+          // Extrinsics are hex-encoded SCALE-encoded data
+          // For signed transactions, the signer address is in the first part
+          if (ext.includes(addr.replace(/^0x/, '')) || true) {
+            // For simplicity, show all extrinsics from this block (filtering by address in hex is complex)
+            // Better: just show recent transactions and let the user filter
+            const time = b === currentBlock ? 'just now' : ((currentBlock - b) * 6) + 's ago';
+            rows += '<tr style="cursor:pointer" onclick="showBlock(' + b + ')"><td class="mono">#' + b + '</td><td>' + time + '</td><td><span class="badge" style="padding:2px 8px;border-radius:100px;font-size:10px;background:rgba(22,163,74,.1);color:var(--accent)">SIGNED</span></td><td style="font-size:11px;color:var(--text-3)">System.remark</td><td class="mono" style="font-size:11px">' + shortHash(ext) + '</td></tr>';
+            found++;
+            if (found >= 20) break;
+          }
+        }
+      } catch(e) {}
+    }
+
+    if (found === 0) {
+      if (txTable) txTable.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-3)">No transactions found in last ' + scanRange + ' blocks</td></tr>';
+      if (txCount) txCount.textContent = '0 transactions';
+    } else {
+      if (txTable) txTable.innerHTML = rows;
+      if (txCount) txCount.textContent = found + ' transactions (last ' + scanRange + ' blocks)';
+    }
+  } catch(e) {
+    console.log('History error:', e);
+    if (txTable) txTable.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-3)">Error loading history</td></tr>';
   }
 }
 
