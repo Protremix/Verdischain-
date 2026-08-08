@@ -1,81 +1,83 @@
-import re
+import subprocess
 
-with open("/var/www/verdiscan/wallet/index.html") as f:
-    content = f.read()
+result = subprocess.run(
+    ["ssh", "-o", "ConnectTimeout=10", "root@91.98.160.145", "cat /var/www/verdiscan/wallet/index.html"],
+    capture_output=True, text=True
+)
+content = result.stdout
 
-# Fix 1: Replace the success check to use result.ok instead of result.success
-old_check = """    if (result && result.success) {
-      toast(`Transaction submitted! Hash: ${result.data?.hash?.slice(0, 16) || 'pending'}...`, 'success');
-    } else {
-      // Try author_submitExtrinsic via RPC (for raw extrinsic submission)
-      toast(`Transaction signed (sig: ${sigHex.slice(0, 20)}...) — broadcast to network`, 'success');
-      console.log('Transaction signed:', { payload, signature: sigHex });
-    }"""
+# Replace getBalance function
+old_get_balance = '''async function getBalance(address) {
+  try {
+    // Try RPC: system_account
+    const account = await rpcCall('system_account', [address]);
+    if (account && account.data) {
+      const free = BigInt(account.data.free || 0);
+      const reserved = BigInt(account.data.reserved || 0);
+      return free + reserved;
+    }
+    // Fallback: try state_getStorage
+    const storage = await rpcCall('state_getStorage', [address]);
+    if (storage) {
+      try { return BigInt(storage); } catch { return 0n; }
+    }
+    return 0n;
+  } catch {
+    return 0n;
+  }
+}'''
 
-new_check = """    if (result && result.ok) {
-      toast(`Transaction on-chain! Hash: ${result.extrinsic_hash?.slice(0, 20) || 'pending'}...`, 'success');
-      console.log('TX Relay result:', result);
-    } else if (result && result.error) {
-      toast('Relay error: ' + result.error, 'error');
-    } else {
-      toast('Transaction signed (sig: ' + sigHex.slice(0, 20) + '...) — broadcast to network', 'success');
-      console.log('Transaction signed:', { payload, signature: sigHex });
-    }"""
+new_get_balance = '''async function getBalance(address) {
+  try {
+    // Use Verdiscan REST API which queries state_getStorage with proper Blake2_128Concat key
+    const resp = await fetch(`/api/v1/account/${address}`);
+    if (!resp.ok) return 0n;
+    const json = await resp.json();
+    if (json.success && json.data) {
+      const free = BigInt(json.data.free_balance || 0);
+      const reserved = BigInt(json.data.reserved_balance || 0);
+      // Cache additional info for UI
+      window._accountInfo = json.data;
+      return free + reserved;
+    }
+    return 0n;
+  } catch (e) {
+    console.error('Balance query error:', e);
+    return 0n;
+  }
+}
 
-if old_check in content:
-    content = content.replace(old_check, new_check)
-    print("Fixed: ok check replaced")
+async function getAccountInfo(address) {
+  try {
+    const resp = await fetch(`/api/v1/account/${address}`);
+    if (!resp.ok) return null;
+    const json = await resp.json();
+    if (json.success) return json.data;
+    return null;
+  } catch (e) {
+    return null;
+  }
+}'''
+
+if old_get_balance in content:
+    content = content.replace(old_get_balance, new_get_balance)
+    print("Replaced getBalance function")
 else:
-    print("WARNING: old_check not found, trying regex")
-    pattern = r'if \(result && result\.success\).*?console\.log\(\'Transaction signed:\', \{ payload, signature: sigHex \}\);'
-    match = re.search(pattern, content, re.DOTALL)
+    print("ERROR: old getBalance not found")
+    # Try to find it with different whitespace
+    import re
+    match = re.search(r'async function getBalance\(address\).*?^}', content, re.DOTALL | re.MULTILINE)
     if match:
-        content = content[:match.start()] + new_check + content[match.end():]
-        print("Fixed: ok check replaced via regex")
-    else:
-        print("ERROR: Could not find success check block")
+        print(f"Found at: {match.start()}-{match.end()}")
+        print(match.group()[:200])
 
-# Fix 2: Toast function - add show class
-old_toast = """function toast(msg, type = 'info') {
-  const t = document.createElement('div');
-  t.className = 'toast ' + type;
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
-}"""
-
-new_toast = """function toast(msg, type = 'info') {
-  const t = document.createElement('div');
-  t.className = 'toast ' + type + ' show';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 4000);
-}"""
-
-if old_toast in content:
-    content = content.replace(old_toast, new_toast)
-    print("Fixed: toast show class added")
-else:
-    print("WARNING: toast function not found exactly, trying regex")
-    pattern = r"function toast\(msg, type = 'info'\).*?setTimeout\(\(\) => \{ t\.style\.opacity.*?t\.remove\(\)\}, 300\); \}, 4000\);"
-    match = re.search(pattern, content, re.DOTALL)
-    if match:
-        content = content[:match.start()] + new_toast + content[match.end():]
-        print("Fixed: toast replaced via regex")
-    else:
-        print("ERROR: Could not find toast function")
-
-# Check toast CSS exists
-if '.toast' in content:
-    print("Toast CSS: present")
-else:
-    print("Toast CSS: MISSING - adding")
-    toast_css = "\n.toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:10001;opacity:0;transform:translateY(10px);transition:all 300ms ease-out;max-width:400px}\n.toast.show{opacity:1;transform:translateY(0)}\n.toast.success{background:#16a34a;color:#fff}\n.toast.error{background:#dc2626;color:#fff}\n.toast.info{background:#0f172a;color:#fff}\n"
-    content = content.replace('</style>', toast_css + '</style>')
-
-with open("/var/www/verdiscan/wallet/index.html", "w") as f:
-    f.write(content)
-
-print("Done. File size:", len(content))
-print("result.ok present:", "result.ok" in content)
-print("extrinsic_hash present:", "extrinsic_hash" in content)
+# Write back
+proc = subprocess.run(
+    ["ssh", "-o", "ConnectTimeout=10", "root@91.98.160.145", "cat > /var/www/verdiscan/wallet/index.html"],
+    input=content,
+    capture_output=True,
+    text=True
+)
+print(f"Written: exit {proc.returncode}")
+if proc.stderr:
+    print(f"Stderr: {proc.stderr[:200]}")
