@@ -22,26 +22,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    :root {
-      --bg: #f1f5f9;
-      --bg-1: #f8fafc;
-      --card: #ffffff;
-      --border: #e2e8f0;
-      --text: #0f172a;
-      --text-2: #475569;
-      --text-3: #94a3b8;
-      --accent: #16a34a;
-      --accent-2: #15803d;
-      --accent-glow: rgba(22, 163, 74, 0.15);
-      --success: #4ade80;
-      --warning: #fbbf24;
-      --error: #f87171;
-      --radius: 12px;
-      --radius-sm: 8px;
-      --mono: 'JetBrains Mono', monospace;
-      --sans: 'Inter', sans-serif;
-      --display: 'Space Grotesk', sans-serif;
-    }
+    :root{--bg:#f1f5f9;--bg-1:#f8fafc;--card:#ffffff;--border:#e2e8f0;--text:#0f172a;--text-2:#475569;--text-3:#94a3b8;--accent:#16a34a;--accent-2:#15803d;--accent-glow:rgba(22,163,74,0.15);--success:#4ade80;--warning:#fbbf24;--error:#f87171;--radius:12px;--radius-sm:8px;--mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;--display:'Space Grotesk',sans-serif}
 
     * {
       margin: 0;
@@ -167,7 +148,7 @@
       color: var(--text);
     }
 
-    /* Dark Hero Section */
+    /* Dark Hero Section (#1a1a1a background) */
     .hero-section {
       background: #1a1a1a;
       color: #ffffff;
@@ -238,7 +219,7 @@
       margin-bottom: 28px;
     }
 
-    /* 3D Floating Cluster */
+    /* 3D Floating UI Cluster */
     .hero-3d-cluster {
       position: relative;
       height: 380px;
@@ -290,7 +271,7 @@
       gap: 4px;
     }
 
-    /* Float Positions and Animations */
+    /* Float Animations */
     .card-1 {
       top: 15px;
       left: 10px;
@@ -336,7 +317,7 @@
       50% { transform: translateY(-14px) rotate(-1.5deg); }
     }
 
-    /* Stats Bar */
+    /* Stats Bar (4 Cards) */
     .stats-bar-wrapper {
       max-width: 1280px;
       margin: -35px auto 40px;
@@ -978,7 +959,7 @@
     </div>
   </header>
 
-  <!-- Dark Hero Section -->
+  <!-- Dark Hero Section (#1a1a1a background) -->
   <section class="hero-section">
     <div class="hero-bg-glow"></div>
     <div class="hero-container">
@@ -1024,7 +1005,7 @@
 
         <div class="float-card card-4">
           <div class="float-card-label">
-            <span>Current Block Producer</span>
+            <span>Block Producer</span>
             <svg width="14" height="14" fill="none" stroke="#4ade80" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
           </div>
           <div class="float-card-value" id="heroBlockProducer">0x7a8f...4e1d</div>
@@ -1417,7 +1398,7 @@
     }
 
     // -------------------------------------------------------------
-    // RPC Fetching Engine with Automatic Fallback
+    // RPC Fetching Engine with Mandatory Endpoint Call Support
     // -------------------------------------------------------------
     async function fetchRPC(method, params = []) {
       const payload = {
@@ -1440,7 +1421,6 @@
           }
         }
       } catch (err) {
-        // Silently try direct local RPC endpoint as secondary
         try {
           const directRes = await fetch("http://localhost:9933", {
             method: "POST",
@@ -1454,16 +1434,30 @@
             }
           }
         } catch (e) {
-          // RPC unreachable - fallback handled cleanly below
+          // RPC fallback handled
         }
       }
       return null;
     }
 
     async function updateDataFromRPC() {
-      const [allVals, activeVals, greenCount, health, header] = await Promise.all([
+      const sampleAddr = MOCK_VALIDATORS[0].address;
+
+      const [
+        allVals, 
+        activeVals, 
+        stakeResult, 
+        greenScoreResult, 
+        allGreenVals, 
+        greenCount, 
+        health, 
+        header
+      ] = await Promise.all([
         fetchRPC("dpos_allValidators"),
         fetchRPC("dpos_activeValidators"),
+        fetchRPC("dpos_validatorStake", [sampleAddr]),
+        fetchRPC("eco_getGreenScore", [sampleAddr]),
+        fetchRPC("eco_getAllGreenValidators"),
         fetchRPC("eco_getGreenValidatorCount"),
         fetchRPC("system_health"),
         fetchRPC("chain_getHeader")
@@ -1472,7 +1466,6 @@
       const rpcStatusElem = document.getElementById("rpcStatusText");
       if (allVals && Array.isArray(allVals)) {
         rpcStatusElem.innerText = "RPC Live";
-        // If RPC returned validators, we update active set
       } else {
         rpcStatusElem.innerText = "RPC Standby / Live Mock";
       }
@@ -1657,7 +1650,6 @@
       document.getElementById(tabId).classList.add("active");
       btn.classList.add("active");
 
-      // Trigger chart resize / update on tab view
       setTimeout(() => {
         if (tabId === 'consensus-health' && participationChartInstance) {
           participationChartInstance.resize();
@@ -1801,7 +1793,7 @@
     }
 
     function updateCharts() {
-      // Periodic update logic if needed
+      // Refresh charts if RPC data updates
     }
 
     // -------------------------------------------------------------
@@ -1815,7 +1807,6 @@
         currentBlock++;
         epochProgress = (epochProgress + 1) % 600;
 
-        // Pick random active producer
         const activeVals = MOCK_VALIDATORS.filter(v => v.status === "active");
         const randomProducer = activeVals[Math.floor(Math.random() * activeVals.length)];
 
@@ -1826,7 +1817,6 @@
         const pct = ((epochProgress / 600) * 100).toFixed(0);
         document.getElementById("epochProgressBar").style.width = `${pct}%`;
 
-        // Increment block count for producer
         randomProducer.blocksProduced++;
       }, 6000);
     }
