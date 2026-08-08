@@ -133,7 +133,7 @@ mod benches {
         register::<T>(&validator);
 
         #[extrinsic_call]
-        update_green_score(RawOrigin::Signed(validator.clone()), 100);
+        update_green_score(RawOrigin::Root, validator.clone(), 100);
 
         assert_eq!(
             Validators::<T>::get(&validator).map(|v| v.green_score),

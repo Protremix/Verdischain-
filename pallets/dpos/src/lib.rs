@@ -572,8 +572,10 @@ pub mod pallet {
         /// Update green score (self-reported by validator)
         #[pallet::call_index(5)]
         #[pallet::weight(T::WeightInfo::update_green_score())]
-        pub fn update_green_score(origin: OriginFor<T>, score: u8) -> DispatchResult {
-            let who = ensure_signed(origin)?;
+        pub fn update_green_score(origin: OriginFor<T>, validator: T::AccountId, score: u8) -> DispatchResult {
+            ensure_root(origin)?;
+            let who = validator;
+
 
             ensure!(
                 Validators::<T>::contains_key(&who),
@@ -1164,13 +1166,14 @@ mod tests {
             let charlie = Sr25519Keyring::Charlie.to_account_id();
 
             assert_ok!(Dpos::update_green_score(
-                RuntimeOrigin::signed(alice.clone()),
+                RuntimeOrigin::root(),
+                alice.clone(),
                 95
             ));
             assert_eq!(Validators::<Test>::get(&alice).unwrap().green_score, 95);
 
             assert_noop!(
-                Dpos::update_green_score(RuntimeOrigin::signed(charlie), 95),
+                Dpos::update_green_score(RuntimeOrigin::root(), charlie, 95),
                 Error::<Test>::NotValidator
             );
         });

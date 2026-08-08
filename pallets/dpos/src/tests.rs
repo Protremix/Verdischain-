@@ -470,7 +470,8 @@ fn update_green_score_success() {
 
         let new_score = 98;
         assert_ok!(Dpos::update_green_score(
-            RuntimeOrigin::signed(1),
+            RuntimeOrigin::root(),
+            1,
             new_score
         ));
 
@@ -488,7 +489,7 @@ fn update_green_score_success() {
 fn update_green_score_fails_not_validator() {
     new_test_ext().execute_with(|| {
         assert_noop!(
-            Dpos::update_green_score(RuntimeOrigin::signed(2), 90),
+            Dpos::update_green_score(RuntimeOrigin::root(), 2, 90),
             Error::<Test>::NotValidator
         );
     });
@@ -663,7 +664,7 @@ mod real_bench {
             // Benchmark: update_green_score
             assert_ok!(Dpos::register_validator(RuntimeOrigin::signed(20), 85, b"Geothermal".to_vec()));
             let w = measure_bench("update_green_score", 50, || {
-                Dpos::update_green_score(RuntimeOrigin::signed(20), 95).is_ok()
+                Dpos::update_green_score(RuntimeOrigin::root(), 20, 95).is_ok()
             });
             results.push(("update_green_score", w));
 
