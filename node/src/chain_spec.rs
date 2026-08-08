@@ -81,6 +81,46 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
                 grandpa: Ed25519Keyring::Alice.public().into(),
             },
         ),
+        (
+            Sr25519Keyring::Bob.to_account_id(),
+            Sr25519Keyring::Bob.to_account_id(),
+            SessionKeys {
+                babe: Sr25519Keyring::Bob.public().into(),
+                grandpa: Ed25519Keyring::Bob.public().into(),
+            },
+        ),
+        (
+            Sr25519Keyring::Charlie.to_account_id(),
+            Sr25519Keyring::Charlie.to_account_id(),
+            SessionKeys {
+                babe: Sr25519Keyring::Charlie.public().into(),
+                grandpa: Ed25519Keyring::Charlie.public().into(),
+            },
+        ),
+        (
+            Sr25519Keyring::Dave.to_account_id(),
+            Sr25519Keyring::Dave.to_account_id(),
+            SessionKeys {
+                babe: Sr25519Keyring::Dave.public().into(),
+                grandpa: Ed25519Keyring::Dave.public().into(),
+            },
+        ),
+        (
+            Sr25519Keyring::Eve.to_account_id(),
+            Sr25519Keyring::Eve.to_account_id(),
+            SessionKeys {
+                babe: Sr25519Keyring::Eve.public().into(),
+                grandpa: Ed25519Keyring::Eve.public().into(),
+            },
+        ),
+        (
+            Sr25519Keyring::Ferdie.to_account_id(),
+            Sr25519Keyring::Ferdie.to_account_id(),
+            SessionKeys {
+                babe: Sr25519Keyring::Ferdie.public().into(),
+                grandpa: Ed25519Keyring::Ferdie.public().into(),
+            },
+        ),
     ];
 
     verdis_runtime::RuntimeGenesisConfig {
@@ -231,111 +271,6 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
                 ),
                 (
                     Sr25519Keyring::Ferdie.to_account_id(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "e02d26312eb4ab76028ae99ff55ce7d70e9657e31218880bc4b1f39a3aabe866"
-                    )),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "b265f2455b6a7b0ddb85c89cb604a851f125a411e0d66d34d23564da2d0b5323"
-                    )),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "28b50591557804cdfb041ecc82104db4eb4429a44e822763fea504dfbcd93e7c"
-                    )),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "d010e6979cf898866efa21464f44538d12ea3b804a03878f93f12071f84c5c18"
-                    )),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "989979834b681814ddb5f95ffc1943e0dc810e8edb090cbf2a524e7975c6f76d"
-                    )),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "642aad74ec10b27fc15a77449e67492650e0f96e151812eb4cf2fa9f3609031f"
-                    )),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "706db647c9361b782d47ad35028f86fb6d9480737bc9a8c798dd5fa76fc65a7e"
-                    )),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "e87ffb2ab8c1f3338e7c7bc28484f6fa23a96788ca2c8f0fa3468a75e6df713a"
-                    )),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "daf0fe023474574f8e298f4cbc831aee72d0e85c240ddf9b88123eb84def8648"
-                    )),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "260db4b9947dc7b71b2db7af59fcbd55c6cc0dc2e1500d955b3eb88bbbb95b66"
-                    )),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "c479ca9b574fb2520f21e1ac35f20e53713ce39b9b7a7dc206702b76fa79c576"
-                    )),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "d23b4668842fd92e70de0d0bc4f4c4dd97006346260f0c26efde9d37c55a0d4e"
-                    )),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "748823a7b4f3bebf8161eff4136281d8d6e1a93116ecaf69a8093764bfe11664"
-                    )),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "681cd11b2516c2c90fb7cec04506bf94242ebd8f6765ae64e01148ee14ae005f"
-                    )),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "b6f82e1643bb71d393ad21c858685c03d9b7cbca9362e9489d4a2ea4772a2448"
-                    )),
                     10_000 * 1_000_000_000,
                     true,
                 ),
