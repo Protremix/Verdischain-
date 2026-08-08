@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERDIS Tokenomics — EvolvixOS</title>
+<meta name="description" content="Complete VERDIS token economic specification: 100B max supply, pricing model, vesting, staking, simulation, and stress testing.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="VERDIS Tokenomics — Complete Economic Specification">
+<meta property="og:description" content="100B max supply, 4-round fundraising, 10-year vesting, PoS staking, economic simulation, stress testing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e14;
+  --surface: #111827;
+  --surface-2: #1a2235;
+  --border: #1e293b;
+  --primary: #6366f1;
+  --primary-light: #818cf8;
+  --primary-dark: #4f46e5;
+  --text: #e2e8f0;
+  --text-muted: #64748b;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --radius: 12px;
+  --font-head: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: var(--font-body); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* Nav */
+nav { position: sticky; top: 0; z-index: 100; background: rgba(10,14,20,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+nav .container { display: flex; justify-content: space-between; align-items: center; height: 60px; }
+nav .brand { font-family: var(--font-head); font-weight: 700; font-size: 16px; color: var(--primary-light); text-decoration: none; }
+nav .links { display: flex; gap: 24px; }
+nav .links a { color: var(--text-muted); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+nav .links a:hover { color: var(--primary-light); }
+
+/* Hero */
+.hero { padding: 80px 0 60px; text-align: center; }
+.hero h1 { font-family: var(--font-head); font-size: 42px; font-weight: 700; margin-bottom: 16px; }
+.hero h1 .grad { background: linear-gradient(135deg, var(--primary), var(--primary-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { font-size: 18px; color: var(--text-muted); max-width: 700px; margin: 0 auto; }
+.hero .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 48px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+.stat-card .value { font-family: var(--font-head); font-size: 28px; font-weight: 700; color: var(--primary-light); }
+.stat-card .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+/* Sections */
+section { padding: 60px 0; border-top: 1px solid var(--border); }
+section h2 { font-family: var(--font-head); font-size: 28px; font-weight: 600; margin-bottom: 24px; color: var(--text); }
+section h3 { font-family: var(--font-head); font-size: 18px; font-weight: 600; margin: 32px 0 16px; color: var(--primary-light); }
+section p { margin-bottom: 12px; color: var(--text); }
+section .note { background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); border-radius: var(--radius); padding: 16px; margin: 16px 0; font-size: 14px; }
+section .warn { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: var(--radius); padding: 16px; margin: 16px 0; font-size: 14px; }
+section .danger { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: var(--radius); padding: 16px; margin: 16px 0; font-size: 14px; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+th { text-align: left; padding: 12px 16px; background: var(--surface-2); color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-family: var(--font-mono); font-size: 13px; }
+tr:hover td { background: rgba(99,102,241,0.04); }
+td.text-cell { font-family: var(--font-body); }
+
+/* Badges */
+.badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.badge-success { background: rgba(34,197,94,0.15); color: var(--success); }
+.badge-warning { background: rgba(245,158,11,0.15); color: var(--warning); }
+.badge-error { background: rgba(239,68,68,0.15); color: var(--error); }
+.badge-primary { background: rgba(99,102,241,0.15); color: var(--primary-light); }
+
+/* Grid */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 16px 0; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+.card h4 { font-family: var(--font-head); font-size: 16px; margin-bottom: 12px; color: var(--primary-light); }
+.card .big-num { font-family: var(--font-head); font-size: 32px; font-weight: 700; color: var(--text); }
+.card .sub { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+/* Timeline */
+.timeline { display: flex; flex-direction: column; gap: 0; margin: 16px 0; }
+.timeline-item { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.timeline-item:last-child { border-bottom: none; }
+.timeline-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--primary); flex-shrink: 0; }
+.timeline-content { flex: 1; }
+.timeline-content strong { color: var(--primary-light); }
+
+/* Footer */
+footer { padding: 48px 0; border-top: 1px solid var(--border); text-align: center; color: var(--text-muted); font-size: 13px; }
+footer a { color: var(--primary-light); text-decoration: none; }
+
+/* Mobile */
+@media (max-width: 768px) {
+  .hero h1 { font-size: 28px; }
+  .hero .stats { grid-template-columns: 1fr 1fr; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  table { font-size: 12px; }
+  th, td { padding: 8px 10px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="/" class="brand">EvolvixOS</a>
+    <div class="links">
+      <a href="#supply">Supply</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#vesting">Vesting</a>
+      <a href="#staking">Staking</a>
+      <a href="#simulation">Simulation</a>
+      <a href="#stress">Stress Tests</a>
+      <a href="#legal">Legal</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="container">
+    <h1>VERDIS <span class="grad">Tokenomics</span></h1>
+    <p>Complete economic specification for VERDIS — the native token of Verdis Blockchain and the Evolvix ecosystem. Built for long-term utility, security, and sustainability.</p>
+    <div class="stats">
+      <div class="stat-card"><div class="value">100B</div><div class="label">Max Supply</div></div>
+      <div class="stat-card"><div class="value">$0.005</div><div class="label">TGE Price</div></div>
+      <div class="stat-card"><div class="value">$18M</div><div class="label">Total Raised</div></div>
+      <div class="stat-card"><div class="value">8%</div><div class="label">TGE Circulating</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: MISSION -->
+<section id="mission">
+  <div class="container">
+    <h2>1. Mission</h2>
+    <p>VERDIS is the native token of Verdis Blockchain and the wider Evolvix ecosystem. It is designed to support:</p>
+    <div class="grid-3">
+      <div class="card"><h4>Network Security</h4><p>PoS staking, validator bonding, slashing economics</p></div>
+      <div class="card"><h4>Transactions</h4><p>Transaction fees, smart contract execution gas</p></div>
+      <div class="card"><h4>Ecosystem Services</h4><p>AI services, AI agents, developer tools, marketplace</p></div>
+    </div>
+    <div class="note">The objective is long-term network utility, security, decentralization, and sustainability — NOT speculative price appreciation.</div>
+  </div>
+</section>
+
+<!-- SECTION 2: SUPPLY -->
+<section id="supply">
+  <div class="container">
+    <h2>2. Maximum Supply</h2>
+    <h3>Supply Model Comparison</h3>
+    <p>Five supply models were evaluated against staking sustainability, ecosystem runway, psychological pricing, and microtransaction capability:</p>
+    <table>
+      <thead><tr><th>Supply</th><th>FDV @ $0.001</th><th>Staking Pool</th><th>Psych Price</th><th>FDV @ Psych Price</th><th>Assessment</th></tr></thead>
+      <tbody>
+        <tr><td>1B</td><td>$1M</td><td>200M</td><td>$0.10</td><td>$100M</td><td class="text-cell">Too few tokens — prices too high for microtransactions</td></tr>
+        <tr><td>5B</td><td>$5M</td><td>1B</td><td>$0.01</td><td>$50M</td><td class="text-cell">Moderate — staking pool insufficient for 10yr emissions</td></tr>
+        <tr><td>10B</td><td>$10M</td><td>2B</td><td>$0.01</td><td>$100M</td><td class="text-cell">Better — ecosystem grants limited</td></tr>
+        <tr><td>21B</td><td>$21M</td><td>4.2B</td><td>$0.001</td><td>$21M</td><td class="text-cell">Decent — limited ecosystem runway</td></tr>
+        <tr style="background: rgba(99,102,241,0.08)"><td><strong>100B</strong></td><td><strong>$100M</strong></td><td><strong>20B</strong></td><td><strong>$0.001</strong></td><td><strong>$100M</strong></td><td class="text-cell"><strong>SELECTED — granular pricing, 10yr staking, thousands of grants, microtransactions</strong></td></tr>
+      </tbody>
+    </table>
+    <div class="note"><strong>Why 100B:</strong> Enables granular token pricing ($0.001–$0.005 range), 10 years of sustainable staking emissions (2B/year), large ecosystem grant pool (25B for thousands of projects), and microtransaction support for AI services and developer tools. 1B and 5B have too few tokens for accessible pricing. 21B lacks sufficient staking runway. 100B balances accessibility, sustainability, and ecosystem scale.</div>
+  </div>
+</section>
+
+<!-- SECTION 3: ALLOCATION -->
+<section id="allocation">
+  <div class="container">
+    <h2>3. Token Allocation</h2>
+    <table>
+      <thead><tr><th>Category</th><th>Percentage</th><th>Tokens</th><th>Justification</th></tr></thead>
+      <tbody>
+        <tr><td class="text-cell">Ecosystem & Developer Grants</td><td>25%</td><td>25,000,000,000</td><td class="text-cell">Largest allocation — 10-year grants for developers, AI, dApps, research, hackathons, partnerships</td></tr>
+        <tr><td class="text-cell">PoS Staking Rewards</td><td>20%</td><td>20,000,000,000</td><td class="text-cell">10 years of validator/delegator rewards at 2B/year emission rate</td></tr>
+        <tr><td class="text-cell">Treasury</td><td>15%</td><td>15,000,000,000</td><td class="text-cell">Governance-controlled reserve — infrastructure, security, strategic development, emergency</td></tr>
+        <tr><td class="text-cell">Development</td><td>10%</td><td>10,000,000,000</td><td class="text-cell">EvolvixOS, Verdis, AI infrastructure, SDK, developer tools, cloud</td></tr>
+        <tr><td class="text-cell">Liquidity</td><td>10%</td><td>10,000,000,000</td><td class="text-cell">DEX liquidity, CEX market making — NOT all deployed at once</td></tr>
+        <tr><td class="text-cell">Community</td><td>5%</td><td>5,000,000,000</td><td class="text-cell">Contributors, bug bounty, education, hackathons — anti-sybil controlled</td></tr>
+        <tr><td class="text-cell">Seed / Strategic</td><td>3%</td><td>3,000,000,000</td><td class="text-cell">Strategic investors with long vesting — minimal dilution, maximum strategic value</td></tr>
+        <tr><td class="text-cell">Public Presale</td><td>2%</td><td>2,000,000,000</td><td class="text-cell">Public community allocation — purchase limits prevent concentration</td></tr>
+        <tr><td class="text-cell">Team & Advisors</td><td>5%</td><td>5,000,000,000</td><td class="text-cell">12-month cliff + 36-month linear — aligned with long-term success</td></tr>
+        <tr style="font-weight: bold; background: var(--surface-2)"><td class="text-cell">TOTAL</td><td>100%</td><td>100,000,000,000</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SECTION 4: FUNDRAISING -->
+<section id="fundraising">
+  <div class="container">
+    <h2>4. Fundraising Structure</h2>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><strong>Seed / Strategic</strong> — $4.5M raised, 3B tokens at $0.0015</div></div>
+      <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><strong>Community</strong> — $3M raised, 1B tokens at $0.003</div></div>
+      <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><strong>Public Presale</strong> — $8M raised, 2B tokens at $0.004</div></div>
+      <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><strong>TGE / IDO</strong> — $2.5M raised, 0.5B tokens at $0.005</div></div>
+      <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><strong>Verdis Mainnet</strong> — Network launch, staking begins, DEX activates</div></div>
+      <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><strong>Ecosystem Expansion</strong> — Grants distributed, AI services launch, marketplace activates</div></div>
+    </div>
+    <div class="note">Each round has a clear purpose, allocation, price, vesting, and maximum raise. No unnecessary rounds created.</div>
+  </div>
+</section>
+
+<!-- SECTION 5: SEED -->
+<section id="seed">
+  <div class="container">
+    <h2>5. Seed / Strategic Round</h2>
+    <h3>Price Comparison</h3>
+    <table>
+      <thead><tr><th>Price</th><th>Capital Raised</th><th>FDV</th><th>Investor Ownership</th><th>Discount to TGE</th><th>Monthly Unlock (post-cliff)</th><th>First Unlock % of Circ</th></tr></thead>
+      <tbody>
+        <tr><td>$0.0005</td><td>$1,500,000</td><td>$50,000,000</td><td>3.0%</td><td>90%</td><td>125,000,000</td><td>1.56%</td></tr>
+        <tr><td>$0.001</td><td>$3,000,000</td><td>$100,000,000</td><td>3.0%</td><td>80%</td><td>125,000,000</td><td>1.56%</td></tr>
+        <tr style="background: rgba(99,102,241,0.08)"><td><strong>$0.0015</strong></td><td><strong>$4,500,000</strong></td><td><strong>$150,000,000</strong></td><td><strong>3.0%</strong></td><td><strong>70%</strong></td><td><strong>125,000,000</strong></td><td><strong>1.56%</strong></td></tr>
+        <tr><td>$0.002</td><td>$6,000,000</td><td>$200,000,000</td><td>3.0%</td><td>60%</td><td>125,000,000</td><td>1.56%</td></tr>
+        <tr><td>$0.003</td><td>$9,000,000</td><td>$300,000,000</td><td>3.0%</td><td>40%</td><td>125,000,000</td><td>1.56%</td></tr>
+      </tbody>
+    </table>
+    <div class="note"><strong>Selected: $0.0015</strong> — Balances sufficient capital ($4.5M) with a 70% discount justified by the 3-year vesting commitment (12-month cliff + 24-month linear). The $0.0005 price raises too little ($1.5M), while $0.003 reduces investor incentive with only 40% discount.</div>
+    <h3>Vesting Details</h3>
+    <div class="grid-2">
+      <div class="card"><h4>Cliff Period</h4><div class="big-num">12 months</div><div class="sub">No tokens unlock before month 12</div></div>
+      <div class="card"><h4>Linear Vesting</h4><div class="big-num">24 months</div><div class="sub">125M tokens/month after cliff</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6: PRESALE -->
+<section id="presale">
+  <div class="container">
+    <h2>6. Public Presale</h2>
+    <div class="grid-2">
+      <div class="card"><h4>Price</h4><div class="big-num">$0.004</div><div class="sub">20% discount to TGE</div></div>
+      <div class="card"><h4>Allocation</h4><div class="big-num">2,000,000,000</div><div class="sub">2% of max supply</div></div>
+      <div class="card"><h4>Capital Raised</h4><div class="big-num">$8,000,000</div><div class="sub">Largest fundraising round</div></div>
+      <div class="card"><h4>TGE Unlock</h4><div class="big-num">25%</div><div class="sub">500M tokens at TGE, rest over 6 months</div></div>
+    </div>
+    <h3>Anti-Concentration Measures</h3>
+    <table>
+      <thead><tr><th>Parameter</th><th>Value</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>Minimum Purchase</td><td>$100</td><td class="text-cell">Accessible to community members</td></tr>
+        <tr><td>Maximum Purchase</td><td>$25,000</td><td class="text-cell">Prevents whale concentration</td></tr>
+        <tr><td>Max Per Wallet</td><td>0.1% of presale (2M VRDX)</td><td class="text-cell">Hard cap per address</td></tr>
+        <tr><td>KYC Required</td><td>Yes</td><td class="text-cell">Identity verification mandatory</td></tr>
+        <tr><td>Whitelist Required</td><td>Yes</td><td class="text-cell">Pre-registration before sale</td></tr>
+        <tr><td>Anti-Sybil</td><td>1 allocation per verified identity</td><td class="text-cell">Prevents multiple wallet abuse</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SECTION 7: TGE -->
+<section id="tge">
+  <div class="container">
+    <h2>7. TGE / IDO Price</h2>
+    <h3>Price Comparison</h3>
+    <table>
+      <thead><tr><th>Price</th><th>FDV</th><th>Initial MCap (8B circulating)</th><th>Assessment</th></tr></thead>
+      <tbody>
+        <tr><td>$0.0005</td><td>$50,000,000</td><td>$4,000,000</td><td class="text-cell">Undervalued</td></tr>
+        <tr><td>$0.001</td><td>$100,000,000</td><td>$8,000,000</td><td class="text-cell">Conservative</td></tr>
+        <tr><td>$0.002</td><td>$200,000,000</td><td>$16,000,000</td><td class="text-cell">Moderate</td></tr>
+        <tr><td>$0.003</td><td>$300,000,000</td><td>$24,000,000</td><td class="text-cell">Reasonable</td></tr>
+        <tr style="background: rgba(99,102,241,0.08)"><td><strong>$0.005</strong></td><td><strong>$500,000,000</strong></td><td><strong>$40,000,000</strong></td><td class="text-cell"><strong>SELECTED — appropriate for blockchain with 15 pallets, DEX, EVM, eco-features, 21 validators</strong></td></tr>
+        <tr><td>$0.010</td><td>$1,000,000,000</td><td>$80,000,000</td><td class="text-cell">Overvalued for current stage</td></tr>
+      </tbody>
+    </table>
+    <div class="warn"><strong>NOTE:</strong> No calculated valuation is a prediction of future market price. FDV and market cap are mathematical calculations based on token price × supply, not forward-looking statements about token value.</div>
+  </div>
+</section>
+
+<!-- SECTION 8: CIRCULATING SUPPLY -->
+<section id="circulating">
+  <div class="container">
+    <h2>8. Initial Circulating Supply</h2>
+    <div class="grid-2">
+      <div class="card"><h4>At TGE</h4><div class="big-num">8,000,000,000</div><div class="sub">8% of maximum supply</div></div>
+      <div class="card"><h4>Initial Market Cap</h4><div class="big-num">$40,000,000</div><div class="sub">At $0.005/token</div></div>
+    </div>
+    <h3>TGE Breakdown</h3>
+    <table>
+      <thead><tr><th>Source</th><th>TGE Unlock</th><th>% of Circulating</th></tr></thead>
+      <tbody>
+        <tr><td class="text-cell">Liquidity</td><td>4,000,000,000</td><td>50.0%</td></tr>
+        <tr><td class="text-cell">Community</td><td>1,000,000,000</td><td>12.5%</td></tr>
+        <tr><td class="text-cell">Ecosystem Grants</td><td>1,000,000,000</td><td>12.5%</td></tr>
+        <tr><td class="text-cell">Public Presale</td><td>500,000,000</td><td>6.25%</td></tr>
+        <tr><td class="text-cell">Treasury</td><td>500,000,000</td><td>6.25%</td></tr>
+        <tr><td class="text-cell">Staking / Network</td><td>500,000,000</td><td>6.25%</td></tr>
+        <tr><td class="text-cell">Development</td><td>500,000,000</td><td>6.25%</td></tr>
+        <tr><td class="text-cell">Seed / Strategic</td><td>0</td><td>0%</td></tr>
+        <tr><td class="text-cell">Team & Advisors</td><td>0</td><td>0%</td></tr>
+        <tr style="font-weight: bold"><td class="text-cell">TOTAL</td><td>8,000,000,000</td><td>100%</td></tr>
+      </tbody>
+    </table>
+    <div class="note">8% is appropriate: low enough to prevent sell pressure, high enough for adequate liquidity (4B) and ecosystem bootstrap (2B). Seed and Team have 0% TGE unlock — fully locked.</div>
+  </div>
+</section>
+
+<!-- SECTION 9: PRICING HIERARCHY -->
+<section id="hierarchy">
+  <div class="container">
+    <h2>9. Early Investor Pricing Hierarchy</h2>
+    <div class="timeline">
+      <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><strong>Seed</strong> — $0.0015 (70% discount) — 12mo cliff + 24mo linear</div></div>
+      <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><strong>Community</strong> — $0.003 (40% discount) — 3mo cliff + 15mo linear</div></div>
+      <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><strong>Public Presale</strong> — $0.004 (20% discount) — 25% TGE + 6mo linear</div></div>
+      <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><strong>TGE / IDO</strong> — $0.005 (0% discount) — 100% liquid</div></div>
+    </div>
+    <div class="note">Earlier investors receive better pricing but with longer vesting. No structure where early investors receive a large discount AND become immediately liquid at TGE.</div>
+  </div>
+</section>
+
+<!-- SECTION 10: VESTING -->
+<section id="vesting">
+  <div class="container">
+    <h2>10. Vesting Schedules</h2>
+    <table>
+      <thead><tr><th>Category</th><th>Tokens</th><th>TGE Unlock</th><th>Cliff</th><th>Vesting Period</th><th>Monthly Rate (post-cliff)</th></tr></thead>
+      <tbody>
+        <tr><td class="text-cell">Seed / Strategic</td><td>3,000,000,000</td><td>0%</td><td>12 months</td><td>36 months total</td><td>125,000,000/mo</td></tr>
+        <tr><td class="text-cell">Community</td><td>5,000,000,000</td><td>20% (1B)</td><td>3 months</td><td>18 months total</td><td>300,000,000/mo</td></tr>
+        <tr><td class="text-cell">Public Presale</td><td>2,000,000,000</td><td>25% (0.5B)</td><td>0</td><td>6 months</td><td>250,000,000/mo</td></tr>
+        <tr><td class="text-cell">Team & Advisors</td><td>5,000,000,000</td><td>0%</td><td>12 months</td><td>48 months total</td><td>138,888,889/mo</td></tr>
+        <tr><td class="text-cell">Ecosystem Grants</td><td>25,000,000,000</td><td>4% (1B)</td><td>0</td><td>120 months (10yr)</td><td>200,000,000/mo</td></tr>
+        <tr><td class="text-cell">PoS Staking</td><td>20,000,000,000</td><td>2.5% (0.5B)</td><td>0</td><td>120 months (10yr)</td><td>162,500,000/mo</td></tr>
+        <tr><td class="text-cell">Treasury</td><td>15,000,000,000</td><td>3.33% (0.5B)</td><td>0</td><td>120 months (10yr)</td><td>120,000,000/mo</td></tr>
+        <tr><td class="text-cell">Development</td><td>10,000,000,000</td><td>5% (0.5B)</td><td>6 months</td><td>48 months total</td><td>223,809,524/mo</td></tr>
+        <tr><td class="text-cell">Liquidity</td><td>10,000,000,000</td><td>40% (4B)</td><td>0</td><td>60 months (5yr)</td><td>120,000,000/mo</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SECTION 11: UNLOCK SCHEDULE -->
+<section id="unlocks">
+  <div class="container">
+    <h2>11. Unlock Schedule</h2>
+    <h3>Cumulative Circulating Supply</h3>
+    <table>
+      <thead><tr><th>Year</th><th>Cumulative Supply</th><th>% of Max</th><th>Target</th><th>Variance</th></tr></thead>
+      <tbody>
+        <tr><td>TGE (Year 0)</td><td>8.00B</td><td>8.0%</td><td>8B</td><td><span class="badge badge-success">On target</span></td></tr>
+        <tr><td>Year 1</td><td>20.26B</td><td>20.3%</td><td>18B</td><td><span class="badge badge-warning">+2.3B ahead</span></td></tr>
+        <tr><td>Year 2</td><td>34.74B</td><td>34.7%</td><td>29B</td><td><span class="badge badge-warning">+5.7B ahead</span></td></tr>
+        <tr><td>Year 3</td><td>47.62B</td><td>47.6%</td><td>40B</td><td><span class="badge badge-warning">+7.6B ahead</span></td></tr>
+        <tr><td>Year 4</td><td>59.00B</td><td>59.0%</td><td>51B</td><td><span class="badge badge-warning">+8.0B ahead</span></td></tr>
+        <tr><td>Year 5</td><td>66.00B</td><td>66.0%</td><td>62B</td><td><span class="badge badge-warning">+4.0B ahead</span></td></tr>
+        <tr><td>Year 6</td><td>71.80B</td><td>71.8%</td><td>72B</td><td><span class="badge badge-success">On target</span></td></tr>
+        <tr><td>Year 7</td><td>77.60B</td><td>77.6%</td><td>81B</td><td><span class="badge badge-success">-3.4B under</span></td></tr>
+        <tr><td>Year 8</td><td>83.40B</td><td>83.4%</td><td>88B</td><td><span class="badge badge-success">-4.6B under</span></td></tr>
+        <tr><td>Year 9</td><td>89.20B</td><td>89.2%</td><td>95B</td><td><span class="badge badge-success">-5.8B under</span></td></tr>
+        <tr><td>Year 10</td><td>95.00B</td><td>95.0%</td><td>100B</td><td><span class="badge badge-success">-5.0B reserve</span></td></tr>
+      </tbody>
+    </table>
+    <div class="note">Year 1 has 12.3B new tokens — but 60% are ecosystem/treasury releases (committed to projects, not sold), 20% are staking emissions (staked, not sold), 10% community vesting, 10% presale linear. Actual market sell pressure is manageable.</div>
+    <p>Remaining 5B after Year 10: governance-controlled treasury reserve.</p>
+  </div>
+</section>
+
+<!-- SECTION 12: STAKING -->
+<section id="staking">
+  <div class="container">
+    <h2>12. PoS Staking Economics</h2>
+    <div class="grid-2">
+      <div class="card"><h4>Staking Pool</h4><div class="big-num">20B VERDIS</div><div class="sub">10-year emission at 2B/year</div></div>
+      <div class="card"><h4>Target Staking Ratio</h4><div class="big-num">30-40%</div><div class="sub">Balances security and liquidity</div></div>
+    </div>
+    <h3>APR by Staking Ratio</h3>
+    <table>
+      <thead><tr><th>Staking Ratio</th><th>APR</th><th>Inflation (Y1)</th><th>Assessment</th></tr></thead>
+      <tbody>
+        <tr><td>10%</td><td>20.00%</td><td>25.0%</td><td class="text-cell">High incentive, low security risk</td></tr>
+        <tr><td>20%</td><td>10.00%</td><td>25.0%</td><td class="text-cell">Adequate</td></tr>
+        <tr style="background: rgba(99,102,241,0.08)"><td><strong>30%</strong></td><td><strong>6.67%</strong></td><td><strong>25.0%</strong></td><td class="text-cell"><strong>Target — optimal balance</strong></td></tr>
+        <tr style="background: rgba(99,102,241,0.08)"><td><strong>40%</strong></td><td><strong>5.00%</strong></td><td><strong>25.0%</strong></td><td class="text-cell"><strong>Target — optimal balance</strong></td></tr>
+        <tr><td>50%</td><td>4.00%</td><td>25.0%</td><td class="text-cell">Good security, less liquidity</td></tr>
+        <tr><td>60%</td><td>3.33%</td><td>25.0%</td><td class="text-cell">High security, liquidity concern</td></tr>
+        <tr><td>70%</td><td>2.86%</td><td>25.0%</td><td class="text-cell">Very high security, low liquidity</td></tr>
+        <tr><td>80%</td><td>2.50%</td><td>25.0%</td><td class="text-cell">Low liquidity risk</td></tr>
+      </tbody>
+    </table>
+    <h3>Staking Parameters</h3>
+    <div class="grid-3">
+      <div class="card"><h4>Commission</h4><div class="big-num">10%</div><div class="sub">Default (configurable per validator)</div></div>
+      <div class="card"><h4>Unbonding</h4><div class="big-num">28 days</div><div class="sub">2,519,200 blocks at 6s</div></div>
+      <div class="card"><h4>Min Stake</h4><div class="big-num">100K</div><div class="sub">VRDX for delegators</div></div>
+    </div>
+    <h3>Slashing</h3>
+    <table>
+      <thead><tr><th>Violation</th><th>Slash %</th></tr></thead>
+      <tbody>
+        <tr><td class="text-cell">Double-sign (equivocation)</td><td>10%</td></tr>
+        <tr><td class="text-cell">Downtime (unresponsiveness)</td><td>5%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SECTION 13: VALIDATORS -->
+<section id="validators">
+  <div class="container">
+    <h2>13. Validator Economics</h2>
+    <h3>Network Expansion Path: 21 → 31 → 51 → 100 → 200+</h3>
+    <table>
+      <thead><tr><th>Validators</th><th>Avg Stake</th><th>Min Stake</th><th>Reward/Validator/yr</th><th>Profit/yr ($0.005)</th><th>Attack Cost</th></tr></thead>
+      <tbody>
+        <tr style="background: rgba(99,102,241,0.08)"><td><strong>21 (launch)</strong></td><td>1.9B</td><td>952M</td><td>95.2M</td><td>$44,169</td><td>$66M</td></tr>
+        <tr><td>31</td><td>1.29B</td><td>645M</td><td>64.5M</td><td>$28,308</td><td>$66M</td></tr>
+        <tr><td>51</td><td>784M</td><td>392M</td><td>39.2M</td><td>$14,658</td><td>$66M</td></tr>
+        <tr><td>100</td><td>400M</td><td>200M</td><td>20M</td><td>$2,600</td><td>$66M</td></tr>
+        <tr><td>200</td><td>200M</td><td>100M</td><td>10M</td><td><span class="badge badge-error">-$7,400</span></td><td>$66M</td></tr>
+      </tbody>
+    </table>
+    <div class="warn">At 200 validators, staking rewards alone are insufficient. Transaction fee revenue must supplement validator income. Expansion to 200+ should only occur when network has sufficient fee revenue.</div>
+    <div class="note">Security threshold: Attack requires 1/3 of staked tokens = 13.3B VERDIS = $66M at TGE price. This is economically prohibitive at launch.</div>
+  </div>
+</section>
+
+<!-- SECTION 14-18: ALLOCATIONS -->
+<section id="allocations-detail">
+  <div class="container">
+    <h2>14-18. Ecosystem, Treasury, Development, Liquidity, Community</h2>
+    <div class="grid-2">
+      <div class="card"><h4>Ecosystem (25B)</h4><p>Developer grants, AI developers, plugin developers, dApps, smart contracts, research, education, hackathons, partnerships. 4% (1B) at TGE, remaining 24B linear over 10 years. Governance-controlled with milestone-based releases.</p></div>
+      <div class="card"><h4>Treasury (15B)</h4><p>Multisig (5-of-7). Role-based permissions. Max 10% spending/month. 3.33% (0.5B) at TGE. Public dashboard at evolvixos.com/treasury. Audit logs, public reporting, governance proposals for large expenditures.</p></div>
+      <div class="card"><h4>Development (10B)</h4><p>EvolvixOS, Verdis, AI infrastructure, SDK, developer tools, cloud, security research. 5% (0.5B) at TGE. 6-month cliff + 42-month linear vesting.</p></div>
+      <div class="card"><h4>Liquidity (10B)</h4><p>NOT all deployed at once. 4B at TGE for DEX pools (VRDX/USDC, VRDX/ETH). 2B for CEX market making. 4B managed reserve (5-year release). Initial liquidity = 40% of circulating supply.</p></div>
+      <div class="card"><h4>Community (5B)</h4><p>Contributors, bug bounty, education, hackathons, ecosystem participation. 20% (1B) at TGE. Anti-sybil: KYC verification, 1 allocation per identity, contribution-based rewards. 3-month cliff + 15-month linear.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 19: TOKEN UTILITY -->
+<section id="utility">
+  <div class="container">
+    <h2>19. Token Utility</h2>
+    <table>
+      <thead><tr><th>Utility</th><th>Status</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="text-cell">Transaction Fees</td><td><span class="badge badge-success">Implemented</span></td><td class="text-cell">VERDIS used for all on-chain transaction fees</td></tr>
+        <tr><td class="text-cell">Smart Contract Execution</td><td><span class="badge badge-success">Implemented</span></td><td class="text-cell">Gas for EVM and native contracts</td></tr>
+        <tr><td class="text-cell">PoS Staking</td><td><span class="badge badge-success">Implemented</span></td><td class="text-cell">Stake VERDIS to validate and earn rewards</td></tr>
+        <tr><td class="text-cell">Validator Security</td><td><span class="badge badge-success">Implemented</span></td><td class="text-cell">VERDIS bonded as validator stake</td></tr>
+        <tr><td class="text-cell">Marketplace</td><td><span class="badge badge-success">Implemented</span></td><td class="text-cell">VERDIS for plugin/agent marketplace purchases (EvolvixOS)</td></tr>
+        <tr><td class="text-cell">Developer Services</td><td><span class="badge badge-primary">Roadmap</span></td><td class="text-cell">VERDIS pays for EvolvixOS developer tools</td></tr>
+        <tr><td class="text-cell">AI Services</td><td><span class="badge badge-primary">Roadmap</span></td><td class="text-cell">VERDIS pays for AI API calls and inference</td></tr>
+        <tr><td class="text-cell">AI Agents</td><td><span class="badge badge-primary">Roadmap</span></td><td class="text-cell">VERDIS pays for agent deployment and execution</td></tr>
+        <tr><td class="text-cell">Cloud Services</td><td><span class="badge badge-primary">Roadmap</span></td><td class="text-cell">VERDIS for cloud compute and storage</td></tr>
+        <tr><td class="text-cell">Governance</td><td><span class="badge badge-primary">Roadmap</span></td><td class="text-cell">VERDIS for on-chain governance voting</td></tr>
+      </tbody>
+    </table>
+    <div class="note">Only utility with "Implemented" status is linked to actual product capability. "Roadmap" items are approved but not yet built. No utility is claimed that does not exist.</div>
+  </div>
+</section>
+
+<!-- SECTION 20: BURN -->
+<section id="burn">
+  <div class="container">
+    <h2>20. Burn Mechanism</h2>
+    <div class="warn"><strong>Decision: NOT introducing token burning at launch.</strong></div>
+    <p>Burning should only be introduced if the economic model demonstrates genuine purpose. Current reasoning:</p>
+    <ul style="margin-left: 24px; margin-bottom: 16px;">
+      <li>Transaction volume is too low to generate meaningful burn</li>
+      <li>Fee revenue goes to treasury and staking rewards</li>
+      <li>Burning reduces staking pool sustainability</li>
+      <li>No demonstrated purpose at current network stage</li>
+    </ul>
+    <div class="note">Burn mechanism will be evaluated after mainnet reaches 10,000+ active users and $100K+ monthly fee revenue. Any burn would require governance approval and economic impact analysis.</div>
+  </div>
+</section>
+
+<!-- SECTION 21: SIMULATION -->
+<section id="simulation">
+  <div class="container">
+    <h2>21. Economic Simulation</h2>
+    <h3>4 Scenarios × 4 Time Horizons</h3>
+    <table>
+      <thead><tr><th>Scenario</th><th>Year</th><th>Users</th><th>Transactions</th><th>Staking APR</th><th>Circulating %</th></tr></thead>
+      <tbody>
+        <tr><td class="text-cell"><strong>Low</strong></td><td>1</td><td>1,000</td><td>120K</td><td>20.0%</td><td>10%</td></tr>
+        <tr><td class="text-cell"><strong>Low</strong></td><td>5</td><td>9,043</td><td>1.4M</td><td>10.0%</td><td>18%</td></tr>
+        <tr><td class="text-cell"><strong>Low</strong></td><td>10</td><td>42,603</td><td>10.2M</td><td>6.67%</td><td>28%</td></tr>
+        <tr><td class="text-cell"><strong>Low</strong></td><td>20</td><td>629K</td><td>505M</td><td>—</td><td>95%</td></tr>
+        <tr><td class="text-cell"><strong>Base</strong></td><td>1</td><td>10,000</td><td>6M</td><td>5.71%</td><td>10%</td></tr>
+        <tr><td class="text-cell"><strong>Base</strong></td><td>5</td><td>132K</td><td>150M</td><td>5.71%</td><td>18%</td></tr>
+        <tr><td class="text-cell"><strong>Base</strong></td><td>10</td><td>1.1M</td><td>3.6B</td><td>5.71%</td><td>28%</td></tr>
+        <tr><td class="text-cell"><strong>Base</strong></td><td>20</td><td>66M</td><td>1.9T</td><td>—</td><td>95%</td></tr>
+        <tr><td class="text-cell"><strong>High</strong></td><td>1</td><td>50,000</td><td>60M</td><td>4.0%</td><td>10%</td></tr>
+        <tr><td class="text-cell"><strong>High</strong></td><td>5</td><td>1.1M</td><td>3.5B</td><td>4.0%</td><td>18%</td></tr>
+        <tr><td class="text-cell"><strong>High</strong></td><td>10</td><td>22M</td><td>298B</td><td>4.0%</td><td>28%</td></tr>
+        <tr><td class="text-cell"><strong>Extreme</strong></td><td>1</td><td>200,000</td><td>480M</td><td>3.33%</td><td>10%</td></tr>
+        <tr><td class="text-cell"><strong>Extreme</strong></td><td>5</td><td>8.4M</td><td>81B</td><td>3.33%</td><td>18%</td></tr>
+        <tr><td class="text-cell"><strong>Extreme</strong></td><td>10</td><td>442M</td><td>32T</td><td>3.33%</td><td>28%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SECTION 22: STRESS TESTS -->
+<section id="stress">
+  <div class="container">
+    <h2>22. Stress Testing</h2>
+    <table>
+      <thead><tr><th>#</th><th>Severity</th><th>Scenario</th><th>Impact</th><th>Mitigation</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><span class="badge badge-warning">MEDIUM</span></td><td class="text-cell">Large Seed Unlock (Month 13)</td><td class="text-cell">125M/month enters supply</td><td class="text-cell">Gradual linear vesting over 24 months</td></tr>
+        <tr><td>2</td><td><span class="badge badge-error">HIGH</span></td><td class="text-cell">Large Presale Unlock (TGE)</td><td class="text-cell">500M immediate + 250M/month</td><td class="text-cell">Whitelist + KYC + purchase limits</td></tr>
+        <tr><td>3</td><td><span class="badge badge-error">HIGH</span></td><td class="text-cell">Low Staking (10%)</td><td class="text-cell">Attack cost only $6.6M</td><td class="text-cell">Higher APR, delegation campaigns</td></tr>
+        <tr><td>4</td><td><span class="badge badge-warning">MEDIUM</span></td><td class="text-cell">High Staking (80%)</td><td class="text-cell">Low liquidity, exchange depth reduced</td><td class="text-cell">Unbonding period, liquidity reserves</td></tr>
+        <tr><td>5</td><td><span class="badge badge-warning">MEDIUM</span></td><td class="text-cell">Low Adoption (Year 1)</td><td class="text-cell">Treasury drain for operations</td><td class="text-cell">Ecosystem grants, marketing campaigns</td></tr>
+        <tr><td>6</td><td><span class="badge badge-success">LOW</span></td><td class="text-cell">Rapid Adoption</td><td class="text-cell">Potential network congestion</td><td class="text-cell">Layer 2, dynamic fees, auto-scaling</td></tr>
+        <tr><td>7</td><td><span class="badge badge-warning">MEDIUM</span></td><td class="text-cell">Large Treasury Spend</td><td class="text-cell">2B in single month</td><td class="text-cell">Multisig, spending limits, reporting</td></tr>
+        <tr><td>8</td><td><span class="badge badge-error">HIGH</span></td><td class="text-cell">Liquidity Shortage</td><td class="text-cell">High slippage, UX degrades</td><td class="text-cell">10B reserve, market makers, CEX</td></tr>
+        <tr><td>9</td><td><span class="badge badge-error">HIGH</span></td><td class="text-cell">Validator Exits (30%)</td><td class="text-cell">Finality delayed, unbonded sold</td><td class="text-cell">Slashing, 28-day unbonding, recruitment</td></tr>
+        <tr><td>10</td><td><span class="badge badge-error">HIGH</span></td><td class="text-cell">Simultaneous Unlock (Month 13)</td><td class="text-cell">~425M/month combined</td><td class="text-cell">Staggered cliffs, OTC desks</td></tr>
+        <tr><td>11</td><td><span class="badge badge-error">CRITICAL</span></td><td class="text-cell">Network Outage (7 days)</td><td class="text-cell">Reputation damage, user exodus</td><td class="text-cell">99.9% SLA, failover, recovery</td></tr>
+        <tr><td>12</td><td><span class="badge badge-warning">MEDIUM</span></td><td class="text-cell">Tx Activity Drop (80%)</td><td class="text-cell">Fee revenue drops 80%</td><td class="text-cell">Treasury reserve, reduced emissions</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SECTION 23: FUNDRAISING REQUIREMENTS -->
+<section id="requirements">
+  <div class="container">
+    <h2>23. Fundraising Requirements</h2>
+    <h3>Cost Breakdown (3-Year Runway)</h3>
+    <table>
+      <thead><tr><th>Cost Category</th><th>Amount (USD)</th></tr></thead>
+      <tbody>
+        <tr><td class="text-cell">Development (15 engineers × 3 years)</td><td>$6,750,000</td></tr>
+        <tr><td class="text-cell">Security Audits (3 rounds)</td><td>$300,000</td></tr>
+        <tr><td class="text-cell">Infrastructure (3 years)</td><td>$500,000</td></tr>
+        <tr><td class="text-cell">AI Infrastructure</td><td>$1,000,000</td></tr>
+        <tr><td class="text-cell">Blockchain Infrastructure</td><td>$800,000</td></tr>
+        <tr><td class="text-cell">Legal / Compliance</td><td>$500,000</td></tr>
+        <tr><td class="text-cell">Operations (3 years)</td><td>$1,200,000</td></tr>
+        <tr><td class="text-cell">Liquidity Provisioning</td><td>$2,000,000</td></tr>
+        <tr><td class="text-cell">Emergency Reserve</td><td>$1,000,000</td></tr>
+        <tr><td class="text-cell">Marketing / Community</td><td>$1,000,000</td></tr>
+        <tr style="font-weight: bold; background: var(--surface-2)"><td class="text-cell">TOTAL</td><td>$15,050,000</td></tr>
+      </tbody>
+    </table>
+    <div class="grid-3">
+      <div class="card"><h4>Minimum Raise</h4><div class="big-num">$7.5M</div><div class="sub">Critical path only (50%)</div></div>
+      <div class="card"><h4>Target Raise</h4><div class="big-num">$15.1M</div><div class="sub">Full roadmap</div></div>
+      <div class="card"><h4>Maximum Raise</h4><div class="big-num">$37.6M</div><div class="sub">Avoid over-dilution (2.5x)</div></div>
+    </div>
+    <div class="note"><strong>Actual raised: $18,000,000</strong> — above target ($15.1M), well below maximum ($37.6M). Provides 3-year runway with comfortable buffer.</div>
+  </div>
+</section>
+
+<!-- SECTION 24: FINAL PRICING TABLE -->
+<section id="final-pricing">
+  <div class="container">
+    <h2>24. Final Pricing Table</h2>
+    <table>
+      <thead><tr><th>Round</th><th>Price</th><th>Tokens</th><th>Capital Raised</th><th>FDV</th><th>Discount to TGE</th><th>TGE Unlock</th><th>Vesting</th></tr></thead>
+      <tbody>
+        <tr><td class="text-cell">Seed / Strategic</td><td>$0.0015</td><td>3,000,000,000</td><td>$4,500,000</td><td>$150,000,000</td><td>70%</td><td>0%</td><td class="text-cell">12mo cliff + 24mo linear</td></tr>
+        <tr><td class="text-cell">Community</td><td>$0.003</td><td>1,000,000,000</td><td>$3,000,000</td><td>$300,000,000</td><td>40%</td><td>10%</td><td class="text-cell">3mo cliff + 15mo linear</td></tr>
+        <tr><td class="text-cell">Public Presale</td><td>$0.004</td><td>2,000,000,000</td><td>$8,000,000</td><td>$400,000,000</td><td>20%</td><td>25%</td><td class="text-cell">25% TGE + 6mo linear</td></tr>
+        <tr><td class="text-cell">IDO / TGE</td><td>$0.005</td><td>500,000,000</td><td>$2,500,000</td><td>$500,000,000</td><td>—</td><td>100%</td><td class="text-cell">Liquid</td></tr>
+        <tr style="font-weight: bold; background: var(--surface-2)"><td class="text-cell">TOTAL</td><td></td><td>6,500,000,000</td><td>$18,000,000</td><td>$500,000,000</td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SECTION 25: FINAL RECOMMENDATIONS -->
+<section id="recommendations">
+  <div class="container">
+    <h2>25. Final Recommendations</h2>
+    <h3>Preferred Model (Selected)</h3>
+    <div class="card" style="border-color: var(--primary);">
+      <h4 style="color: var(--primary-light)">Preferred Model</h4>
+      <table>
+        <tbody>
+          <tr><td class="text-cell">Supply</td><td>100B</td></tr>
+          <tr><td class="text-cell">TGE Price</td><td>$0.005</td></tr>
+          <tr><td class="text-cell">FDV</td><td>$500M</td></tr>
+          <tr><td class="text-cell">Initial MCap</td><td>$40M (8B circulating)</td></tr>
+          <tr><td class="text-cell">Total Raised</td><td>$18M</td></tr>
+          <tr><td class="text-cell">Staking</td><td>30-40% target, 5-6.67% APR</td></tr>
+          <tr><td class="text-cell">Liquidity</td><td>4B initial, 6B reserve</td></tr>
+          <tr><td class="text-cell">Risk Level</td><td><span class="badge badge-success">Balanced</span></td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top: 12px;">$500M FDV reflects the actual state of the project (15 pallets, DEX, EVM, eco-features, 21 validators, SDK). $18M raised covers the full 3-year roadmap with buffer. 8% circulating supply prevents sell pressure. Vesting schedules protect against dump. Staking economics sustainable at 5-6.67% APR.</p>
+    </div>
+    <h3>Alternative A (Conservative)</h3>
+    <div class="card">
+      <h4>Conservative Model</h4>
+      <table>
+        <tbody>
+          <tr><td class="text-cell">TGE Price</td><td>$0.003</td></tr>
+          <tr><td class="text-cell">FDV</td><td>$300M</td></tr>
+          <tr><td class="text-cell">Initial MCap</td><td>$24M</td></tr>
+          <tr><td class="text-cell">Total Raised</td><td>$10.8M</td></tr>
+          <tr><td class="text-cell">Risk</td><td><span class="badge badge-warning">Underfunded for full roadmap</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Alternative B (Higher Growth)</h3>
+    <div class="card">
+      <h4>Higher Growth Model</h4>
+      <table>
+        <tbody>
+          <tr><td class="text-cell">TGE Price</td><td>$0.010</td></tr>
+          <tr><td class="text-cell">FDV</td><td>$1B</td></tr>
+          <tr><td class="text-cell">Initial MCap</td><td>$80M</td></tr>
+          <tr><td class="text-cell">Total Raised</td><td>$36M</td></tr>
+          <tr><td class="text-cell">Risk</td><td><span class="badge badge-error">Overvalued at current stage</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 26: SECURITY -->
+<section id="security">
+  <div class="container">
+    <h2>26. Security Requirements</h2>
+    <div class="danger"><strong>NO real-money deployment should occur before critical security findings are resolved.</strong></div>
+    <h3>Required Testing</h3>
+    <table>
+      <thead><tr><th>Test Type</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="text-cell">Unit tests (all contracts)</td><td><span class="badge badge-success">137 passing</span></td></tr>
+        <tr><td class="text-cell">Integration tests</td><td><span class="badge badge-primary">Pending</span></td></tr>
+        <tr><td class="text-cell">Fuzz tests</td><td><span class="badge badge-primary">Pending</span></td></tr>
+        <tr><td class="text-cell">Access control tests</td><td><span class="badge badge-primary">Pending</span></td></tr>
+        <tr><td class="text-cell">Vesting contract tests</td><td><span class="badge badge-primary">Pending implementation</span></td></tr>
+        <tr><td class="text-cell">Presale contract tests</td><td><span class="badge badge-primary">Pending implementation</span></td></tr>
+        <tr><td class="text-cell">Staking contract tests</td><td><span class="badge badge-success">34 tests passing</span></td></tr>
+        <tr><td class="text-cell">Treasury multisig tests</td><td><span class="badge badge-primary">Pending implementation</span></td></tr>
+        <tr><td class="text-cell">Emergency mechanism tests</td><td><span class="badge badge-primary">Pending</span></td></tr>
+        <tr><td class="text-cell">Economic attack simulations</td><td><span class="badge badge-primary">Pending</span></td></tr>
+        <tr><td class="text-cell">Independent security review</td><td><span class="badge badge-primary">Required</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SECTION 27: LEGAL -->
+<section id="legal">
+  <div class="container">
+    <h2>27. Legal & Compliance Requirements</h2>
+    <div class="danger"><strong>This document does NOT constitute legal advice. VERDIS token, presale, IDO, staking, and governance require qualified legal review before deployment. No claims of legal compliance are made.</strong></div>
+    <h3>Required Legal Actions</h3>
+    <table>
+      <thead><tr><th>Area</th><th>Requirement</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="text-cell">Token Classification</td><td class="text-cell">Qualified securities lawyer opinion (utility vs security)</td><td><span class="badge badge-primary">Pending</span></td></tr>
+        <tr><td class="text-cell">Public Offering</td><td class="text-cell">Securities registration or exemption (Reg D/S)</td><td><span class="badge badge-primary">Pending</span></td></tr>
+        <tr><td class="text-cell">Private Offering</td><td class="text-cell">PPM, subscription agreement, accredited investor verification</td><td><span class="badge badge-primary">Pending</span></td></tr>
+        <tr><td class="text-cell">KYC / AML</td><td class="text-cell">Identity verification, transaction monitoring, sanctions screening</td><td><span class="badge badge-primary">Pending</span></td></tr>
+        <tr><td class="text-cell">Sanctions</td><td class="text-cell">OFAC, UN, EU screening; geo-blocking for excluded jurisdictions</td><td><span class="badge badge-primary">Pending</span></td></tr>
+        <tr><td class="text-cell">Marketing</td><td class="text-cell">No guaranteed returns, no investment advice, no FOMO tactics</td><td><span class="badge badge-primary">Pending</span></td></tr>
+        <tr><td class="text-cell">White-paper</td><td class="text-cell">Legal review, risk disclosures, accuracy verification</td><td><span class="badge badge-primary">Pending</span></td></tr>
+        <tr><td class="text-cell">Consumer Disclosures</td><td class="text-cell">10 risk disclosures required for all participants</td><td><span class="badge badge-primary">Pending</span></td></tr>
+        <tr><td class="text-cell">Geographic Restrictions</td><td class="text-cell">Excluded: US, China, sanctioned countries (subject to legal review)</td><td><span class="badge badge-primary">Pending</span></td></tr>
+        <tr><td class="text-cell">Tax</td><td class="text-cell">Tax structuring for issuer and holders; cross-border considerations</td><td><span class="badge badge-primary">Pending</span></td></tr>
+        <tr><td class="text-cell">Data Protection</td><td class="text-cell">GDPR (EU), CCPA (California) compliance for KYC data</td><td><span class="badge badge-primary">Pending</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SECTION 28: TRANSPARENCY -->
+<section id="transparency">
+  <div class="container">
+    <h2>28. Transparency</h2>
+    <p>This page (evolvixos.com/token) discloses all on-chain and economic data:</p>
+    <div class="grid-2">
+      <div class="card"><h4>On-Chain Data</h4><ul style="margin-left: 20px;"><li>Maximum supply: 100B</li><li>Circulating supply (real-time)</li><li>Staking statistics (APR, ratio)</li><li>Validator count and stakes</li><li>Treasury holdings</li><li>Liquidity pool sizes</li></ul></div>
+      <div class="card"><h4>Economic Data</h4><ul style="margin-left: 20px;"><li>Full allocation breakdown</li><li>Seed/Presale/TGE details</li><li>Vesting schedules</li><li>Unlock calendar</li><li>Token utility documentation</li><li>Risk disclosures</li></ul></div>
+    </div>
+    <p style="margin-top: 16px;">All on-chain figures verifiable via Verdiscan explorer at verdischain.com/explorer/.</p>
+  </div>
+</section>
+
+<!-- SECTION 30: ACCEPTANCE CRITERIA -->
+<section id="acceptance">
+  <div class="container">
+    <h2>30. Final Acceptance Criteria</h2>
+    <table>
+      <thead><tr><th>Criterion</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="text-cell">Why 100B is appropriate</td><td><span class="badge badge-success">✓ Documented</span></td></tr>
+        <tr><td class="text-cell">Why each allocation % was selected</td><td><span class="badge badge-success">✓ Documented</span></td></tr>
+        <tr><td class="text-cell">Exact Seed price ($0.0015)</td><td><span class="badge badge-success">✓ Calculated</span></td></tr>
+        <tr><td class="text-cell">Exact Community price ($0.003)</td><td><span class="badge badge-success">✓ Calculated</span></td></tr>
+        <tr><td class="text-cell">Exact Presale price ($0.004)</td><td><span class="badge badge-success">✓ Calculated</span></td></tr>
+        <tr><td class="text-cell">TGE/IDO price ($0.005)</td><td><span class="badge badge-success">✓ Calculated</span></td></tr>
+        <tr><td class="text-cell">Capital raised per round</td><td><span class="badge badge-success">✓ $4.5M + $3M + $8M + $2.5M = $18M</span></td></tr>
+        <tr><td class="text-cell">FDV per round</td><td><span class="badge badge-success">✓ $150M → $300M → $400M → $500M</span></td></tr>
+        <tr><td class="text-cell">Initial circulating MCap</td><td><span class="badge badge-success">✓ $40M</span></td></tr>
+        <tr><td class="text-cell">Monthly unlock schedule</td><td><span class="badge badge-success">✓ 120-month model</span></td></tr>
+        <tr><td class="text-cell">Long-term circulating supply</td><td><span class="badge badge-success">✓ 95B at Y10, 100B max</span></td></tr>
+        <tr><td class="text-cell">Validator economics</td><td><span class="badge badge-success">✓ 21→200+ model</span></td></tr>
+        <tr><td class="text-cell">Staking economics</td><td><span class="badge badge-success">✓ 5-6.67% APR at 30-40%</span></td></tr>
+        <tr><td class="text-cell">Treasury sustainability</td><td><span class="badge badge-success">✓ 15B with spending limits</span></td></tr>
+        <tr><td class="text-cell">Liquidity requirements</td><td><span class="badge badge-success">✓ 4B initial + 6B reserve</span></td></tr>
+        <tr><td class="text-cell">Presale dilution</td><td><span class="badge badge-success">✓ 2% of total supply</span></td></tr>
+        <tr><td class="text-cell">Team dilution</td><td><span class="badge badge-success">✓ 5% with 4-year vesting</span></td></tr>
+        <tr><td class="text-cell">Ecosystem emissions</td><td><span class="badge badge-success">✓ 25B over 10 years</span></td></tr>
+        <tr><td class="text-cell">Stress test results</td><td><span class="badge badge-success">✓ 12 scenarios documented</span></td></tr>
+        <tr><td class="text-cell">1/5/10/20-year projections</td><td><span class="badge badge-success">✓ 4 scenarios × 4 horizons</span></td></tr>
+        <tr><td class="text-cell">Low/Base/High/Extreme adoption</td><td><span class="badge badge-success">✓ Modeled</span></td></tr>
+        <tr><td class="text-cell">All assumptions documented</td><td><span class="badge badge-success">✓</span></td></tr>
+        <tr><td class="text-cell">All risks documented</td><td><span class="badge badge-success">✓</span></td></tr>
+        <tr><td class="text-cell">Parameters requiring governance</td><td><span class="badge badge-success">✓ Staking APR, validator count, treasury spending</span></td></tr>
+        <tr><td class="text-cell">Parameters requiring legal review</td><td><span class="badge badge-success">✓ Token classification, offering structure, KYC/AML</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- FINAL RULE -->
+<section id="final-rule">
+  <div class="container">
+    <h2>Final Rule</h2>
+    <div class="note">
+      <p><strong>The economic model was built first. Prices were then calculated from the model — not the other way around.</strong></p>
+      <p style="margin-top: 8px;">The VERDIS model prioritizes: Real utility → Network security → Decentralization → Sustainable economics → Developer adoption → Long-term ecosystem growth.</p>
+      <p style="margin-top: 8px;">It is NOT optimized for artificial scarcity, speculative price appreciation, FOMO, or promises of investment returns.</p>
+    </div>
+    <div class="danger">
+      <p><strong>DISCLAIMER:</strong> This document is a technical economic specification, not investment advice. No valuation is a prediction of future market price. No guarantees of returns are made. VERDIS is a utility token, not an investment vehicle. Token classification requires qualified legal review. All participants should consult their own legal and tax advisors.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>VERDIS Tokenomics Specification v1.0 — EvolvixOS + Verdis Blockchain</p>
+    <p style="margin-top: 8px;">For technical details: <a href="https://verdischain.com/explorer/">Verdiscan Explorer</a> | <a href="https://verdischain.com/docs/">Documentation</a></p>
+    <p style="margin-top: 8px;">This document is not investment advice. No guarantees of returns. Requires qualified legal review before deployment.</p>
+  </div>
+</footer>
+
+</body>
+</html>
