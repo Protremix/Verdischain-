@@ -1,110 +1,106 @@
 import asyncio
 from playwright.async_api import async_playwright
-import json
-import re
-import urllib.request
-import urllib.error
 
-async def run_detailed_audit():
+async def audit():
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
-        # We will test at desktop 1280x800
-        page = await browser.new_page(viewport={'width': 1280, 'height': 800})
-        await page.goto("https://verdischain.com/sale/?nocache=50005", wait_until="networkidle")
-
-        # 1. CSS & Layout Analysis
-        # Check .phases-grid styling and computed CSS
-        phases_grid_info = await page.evaluate("""() => {
-            const grid = document.querySelector('.phases-grid');
-            if (!grid) return null;
-            const style = window.getComputedStyle(grid);
-            const children = Array.from(grid.children);
-            const childRects = children.map((c, idx) => {
-                const r = c.getBoundingClientRect();
-                return { idx, class: c.className, x: r.x, y: r.y, width: r.width, height: r.height };
-            });
-            return {
-                display: style.display,
-                gridTemplateColumns: style.gridTemplateColumns,
-                gap: style.gap,
-                childRects: childRects
-            };
-        }""")
-
-        # Check overlapping elements
-        overlaps = await page.evaluate("""() => {
-            function isOverlapping(rect1, rect2) {
-                return !(rect1.right <= rect2.left || 
-                         rect1.left >= rect2.right || 
-                         rect1.bottom <= rect2.top || 
-                         rect1.top >= rect2.bottom);
-            }
-
-            // Check floating cards / hero / text overlap
-            const elems = Array.from(document.querySelectorAll('body *')).filter(el => {
-                const r = el.getBoundingClientRect();
-                const style = window.getComputedStyle(el);
-                return r.width > 10 && r.height > 10 && style.visibility !== 'hidden' && style.display !== 'none' && style.opacity !== '0';
-            });
-
-            const issues = [];
-            // Check specifically cards, floating elements, text blocks
-            const floatCards = Array.from(document.querySelectorAll('.float-card'));
-            for (let i = 0; i < floatCards.length; i++) {
-                for (let j = i + 1; j < floatCards.length; j++) {
-                    const r1 = floatCards[i].getBoundingClientRect();
-                    const r2 = floatCards[j].getBoundingClientRect();
-                    if (isOverlapping(r1, r2)) {
-                        issues.push({
-                            type: 'float_card_overlap',
-                            elem1: floatCards[i].className + ' ' + floatCards[i].innerText.slice(0, 30),
-                            elem2: floatCards[j].className + ' ' + floatCards[j].innerText.slice(0, 30),
-                            r1: {x: r1.x, y: r1.y, w: r1.width, h: r1.height},
-                            r2: {x: r2.x, y: r2.y, w: r2.width, h: r2.height}
-                        });
-                    }
-                }
-            }
-            return issues;
-        }""")
-
-        # Extract all section texts and HTML snippets
-        full_text = await page.evaluate("document.body.innerText")
+        browser = await p.chromium.launch()
         
-        # Check hero h1, text, prices, stats, tables, FAQ, etc.
-        page_structure = await page.evaluate("""() => {
-            const sections = [];
-            document.querySelectorAll('section, header, nav, footer, div[class*="section"], div[class*="hero"]').forEach(s => {
-                sections.push({
-                    className: s.className,
-                    id: s.id,
-                    text: s.innerText
-                });
-            });
-            return sections;
-        }""")
+        # ---------------- DESKTOP ----------------
+        page = await browser.new_page(viewport={'width': 1440, 'height': 900})
+        await page.goto('https://verdischain.com/whitepaper/', wait_until='networkidle')
 
-        # Check images on page
-        images_status = await page.evaluate("""() => {
-            return Array.from(document.querySelectorAll('img')).map(img => ({
-                src: img.src,
-                alt: img.alt,
-                naturalWidth: img.naturalWidth,
-                naturalHeight: img.naturalHeight,
-                complete: img.complete,
-                boundingClientRect: img.getBoundingClientRect()
-            }));
-        }""")
+        print("=== 1. ALLOCATION TABLE / CARDS ANALYSIS ===")
+        alloc_data = await page.evaluate("""
+            () => {
+                const items = document.querySelectorAll('.alloc-card, .distribution-card, .token-card, .distribution-item, [class*="alloc"], [class*="distribut"]');
+                return Array.from(items).map(el => ({
+                    text: el.innerText.replace(/\\n+/g, ' | '),
+                    className: el.className
+                }));
+            }
+        """)
+        for d in alloc_data:
+            print(d)
+
+        print("\n=== 2. PIE CHART DETAILED ANALYSIS ===")
+        pie_data = await page.evaluate("""
+            () => {
+                const svg = document.querySelector('.pie-svg');
+                if (!svg) return 'No .pie-svg found';
+                const segs = svg.querySelectorAll('.pie-seg');
+                const segData = Array.from(segs).map(s => ({
+                    stroke: s.getAttribute('stroke'),
+                    dasharray: s.getAttribute('stroke-dasharray'),
+                    dashoffset: s.getAttribute('stroke-dashoffset')
+                }));
+                const legend = Array.from(document.querySelectorAll('.pie-legend, .chart-legend, [class*="legend"]')).map(l => l.innerText);
+                return { segData, legend, outerText: svg.parentElement.innerText };
+            }
+        """)
+        print("Pie Chart Data:", pie_data)
+
+        print("\n=== 3. ROADMAP DETAILED ANALYSIS ===")
+        roadmap_data = await page.evaluate("""
+            () => {
+                const phases = document.querySelectorAll('.roadmap-card, .roadmap-phase, .timeline-phase, [class*="roadmap"]');
+                return Array.from(phases).map(p => p.innerText.replace(/\\n+/g, ' | '));
+            }
+        """)
+        for r in roadmap_data:
+            print("ROADMAP ITEM:", r)
+
+        print("\n=== 4. VESTING CARD DETAILED ANALYSIS ===")
+        vesting_data = await page.evaluate("""
+            () => {
+                const cards = document.querySelectorAll('.vesting-card, [class*="vesting"]');
+                return Array.from(cards).map(c => c.innerText.replace(/\\n+/g, ' | '));
+            }
+        """)
+        for v in vesting_data:
+            print("VESTING ITEM:", v)
+
+        print("\n=== 5 & 6. STORY TIMELINE ANALYSIS ===")
+        story_timeline = await page.evaluate("""
+            () => {
+                const items = document.querySelectorAll('.story-timeline .timeline-item, .history-item, .story-item, [class*="story"] .timeline-item, .timeline-node');
+                if (items.length === 0) {
+                    // find timeline nodes in general
+                    const allTimeline = document.querySelectorAll('.timeline-item, .timeline-card, .timeline-step');
+                    return Array.from(allTimeline).map(t => ({
+                        text: t.innerText.replace(/\\n+/g, ' | '),
+                        className: t.className,
+                        classList: Array.from(t.classList),
+                        innerHTML: t.innerHTML
+                    }));
+                }
+                return Array.from(items).map(t => ({
+                    text: t.innerText.replace(/\\n+/g, ' | '),
+                    className: t.className,
+                    classList: Array.from(t.classList),
+                    innerHTML: t.innerHTML
+                }));
+            }
+        """)
+        print(f"Found {len(story_timeline)} timeline items:")
+        for st in story_timeline:
+            print("STORY TIMELINE ITEM:", st['text'])
+            print("  Classes:", st['className'])
+            print("  HTML snippet:", st['innerHTML'][:150])
+
+        # Let's inspect specifically all timeline entries in the page
+        all_timelines = await page.evaluate("""
+            () => {
+                const nodes = document.querySelectorAll('[class*="timeline"]');
+                return Array.from(nodes).map(n => ({
+                    class: n.className,
+                    text: n.innerText.replace(/\\n+/g, ' | ')
+                }));
+            }
+        """)
+        print("\nALL TIMELINE ELEMENTS:")
+        for t in all_timelines:
+            print(t['class'], "-->", t['text'][:100])
 
         await browser.close()
 
-        print("=== PHASES GRID INFO ===")
-        print(json.dumps(phases_grid_info, indent=2))
-
-        print("=== OVERLAPS ===")
-        print(json.dumps(overlaps, indent=2))
-
-        print("=== IMAGES STATUS ===")
-        print(json.dumps(images_status, indent=2))
-
-asyncio.run(run_detailed_audit())
+asyncio.run(audit())

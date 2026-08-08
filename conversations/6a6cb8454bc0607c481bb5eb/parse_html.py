@@ -1,23 +1,27 @@
 from bs4 import BeautifulSoup
-import re
+import json
 
-with open("/tmp/sale_page.html", "r", encoding="utf-8") as f:
-    html_doc = f.read()
+with open("dex_page.html") as f:
+    soup = BeautifulSoup(f.read(), 'html.parser')
 
-soup = BeautifulSoup(html_doc, 'html.parser')
+print("=== SCRIPTS ON PAGE ===")
+scripts = soup.find_all('script')
+for i, s in enumerate(scripts):
+    src = s.get('src')
+    if src:
+        print(f"Script {i} src: {src}")
+    else:
+        print(f"Script {i} inline (length {len(s.text)}):")
+        print(s.text[:500])
+        print("...")
 
-print("=== TITLE ===")
-print(soup.title.string if soup.title else "No Title")
+print("\n=== SECTIONS & TABS ===")
+tabs = soup.find_all(class_=['tab-btn', 'tab-content', 'dex-tab', 'tab-pane'])
+for t in tabs:
+    print(t.get('id'), t.get('class'), t.text[:100].strip())
 
-print("\n=== STYLESHEET / CSS SUMMARY ===")
-styles = soup.find_all('style')
-for i, s in enumerate(styles):
-    print(f"--- Style Block {i+1} ---")
-    print(s.string[:500] if s.string else "Empty")
-
-print("\n=== BODY HEADINGS & PARAGRAPHS ===")
-for elem in soup.find_all(['h1', 'h2', 'h3', 'h4', 'p', 'table', 'ul', 'ol', 'button', 'a']):
-    text = elem.get_text(strip=True)
-    if text:
-        print(f"<{elem.name} class='{elem.get('class')}' id='{elem.get('id')}'> {text[:120]}")
+print("\n=== MAIN DEX CONTAINERS ===")
+containers = soup.find_all(class_=['dex-container', 'dex-grid', 'dex-card', 'card', 'dex-section', 'section'])
+for c in containers:
+    print(c.get('id'), c.get('class'))
 
