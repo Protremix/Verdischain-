@@ -120,6 +120,55 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
                     )),
                     100 * units,
                 ),
+                // Validator15 (100M from team allocation)
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "daf0fe023474574f8e298f4cbc831aee72d0e85c240ddf9b88123eb84def8648"
+                    )),
+                    100 * units,
+                ),
+                // Validator16 (100M from team allocation)
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "260db4b9947dc7b71b2db7af59fcbd55c6cc0dc2e1500d955b3eb88bbbb95b66"
+                    )),
+                    100 * units,
+                ),
+                // Validator17 (100M from team allocation)
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "c479ca9b574fb2520f21e1ac35f20e53713ce39b9b7a7dc206702b76fa79c576"
+                    )),
+                    100 * units,
+                ),
+                // Validator18 (100M from team allocation)
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "d23b4668842fd92e70de0d0bc4f4c4dd97006346260f0c26efde9d37c55a0d4e"
+                    )),
+                    100 * units,
+                ),
+                // Validator19 (100M from team allocation)
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "748823a7b4f3bebf8161eff4136281d8d6e1a93116ecaf69a8093764bfe11664"
+                    )),
+                    100 * units,
+                ),
+                // Validator20 (100M from team allocation)
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "681cd11b2516c2c90fb7cec04506bf94242ebd8f6765ae64e01148ee14ae005f"
+                    )),
+                    100 * units,
+                ),
+                // Validator21 (100M from team allocation)
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "b6f82e1643bb71d393ad21c858685c03d9b7cbca9362e9489d4a2ea4772a2448"
+                    )),
+                    100 * units,
+                ),
                 // Treasury + Staking rewards (20B + 10B = 30B) — DPoS reward pool
                 (dpos_pool, 30 * billion),
                 // Community (35B) — eco/community grants
@@ -241,6 +290,55 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
                     10_000 * 1_000_000_000,
                     true,
                 ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "daf0fe023474574f8e298f4cbc831aee72d0e85c240ddf9b88123eb84def8648"
+                    )),
+                    10_000 * 1_000_000_000,
+                    true,
+                ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "260db4b9947dc7b71b2db7af59fcbd55c6cc0dc2e1500d955b3eb88bbbb95b66"
+                    )),
+                    10_000 * 1_000_000_000,
+                    true,
+                ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "c479ca9b574fb2520f21e1ac35f20e53713ce39b9b7a7dc206702b76fa79c576"
+                    )),
+                    10_000 * 1_000_000_000,
+                    true,
+                ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "d23b4668842fd92e70de0d0bc4f4c4dd97006346260f0c26efde9d37c55a0d4e"
+                    )),
+                    10_000 * 1_000_000_000,
+                    true,
+                ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "748823a7b4f3bebf8161eff4136281d8d6e1a93116ecaf69a8093764bfe11664"
+                    )),
+                    10_000 * 1_000_000_000,
+                    true,
+                ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "681cd11b2516c2c90fb7cec04506bf94242ebd8f6765ae64e01148ee14ae005f"
+                    )),
+                    10_000 * 1_000_000_000,
+                    true,
+                ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "b6f82e1643bb71d393ad21c858685c03d9b7cbca9362e9489d4a2ea4772a2448"
+                    )),
+                    10_000 * 1_000_000_000,
+                    true,
+                ),
             ],
             validator_names: vec![
                 (Sr25519Keyring::Alice.to_account_id(), b"Alice".to_vec()),
@@ -257,6 +355,48 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
                 (AccountId::from(hex_literal::hex!("e87ffb2ab8c1f3338e7c7bc28484f6fa23a96788ca2c8f0fa3468a75e6df713a")), b"SolarStake".to_vec()),
                 (AccountId::from(hex_literal::hex!("8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48")), b"WindValidator".to_vec()),
                 (AccountId::from(hex_literal::hex!("90b5ab205c6974c9ea841be688864633dc9ca8a357843eeacf2314649965fe22")), b"HydroNode".to_vec()),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "daf0fe023474574f8e298f4cbc831aee72d0e85c240ddf9b88123eb84def8648"
+                    )),
+                    b"Validator15".to_vec(),
+                ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "260db4b9947dc7b71b2db7af59fcbd55c6cc0dc2e1500d955b3eb88bbbb95b66"
+                    )),
+                    b"Validator16".to_vec(),
+                ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "c479ca9b574fb2520f21e1ac35f20e53713ce39b9b7a7dc206702b76fa79c576"
+                    )),
+                    b"Validator17".to_vec(),
+                ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "d23b4668842fd92e70de0d0bc4f4c4dd97006346260f0c26efde9d37c55a0d4e"
+                    )),
+                    b"Validator18".to_vec(),
+                ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "748823a7b4f3bebf8161eff4136281d8d6e1a93116ecaf69a8093764bfe11664"
+                    )),
+                    b"Validator19".to_vec(),
+                ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "681cd11b2516c2c90fb7cec04506bf94242ebd8f6765ae64e01148ee14ae005f"
+                    )),
+                    b"Validator20".to_vec(),
+                ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "b6f82e1643bb71d393ad21c858685c03d9b7cbca9362e9489d4a2ea4772a2448"
+                    )),
+                    b"Validator21".to_vec(),
+                ),
             ],
 
             validator_count: 14,
@@ -498,6 +638,42 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
                     991,
                     84,
                     2,
+                ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "daf0fe023474574f8e298f4cbc831aee72d0e85c240ddf9b88123eb84def8648"
+                    )),
+                    true,
+                    b"solar".to_vec(),
+                    5000,
+                    3,
+                ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "260db4b9947dc7b71b2db7af59fcbd55c6cc0dc2e1500d955b3eb88bbbb95b66"
+                    )),
+                    true,
+                    b"solar".to_vec(),
+                    5000,
+                    3,
+                ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "c479ca9b574fb2520f21e1ac35f20e53713ce39b9b7a7dc206702b76fa79c576"
+                    )),
+                    true,
+                    b"solar".to_vec(),
+                    5000,
+                    3,
+                ),
+                (
+                    AccountId::from(hex_literal::hex!(
+                        "d23b4668842fd92e70de0d0bc4f4c4dd97006346260f0c26efde9d37c55a0d4e"
+                    )),
+                    true,
+                    b"solar".to_vec(),
+                    5000,
+                    3,
                 ),
             ],
         },

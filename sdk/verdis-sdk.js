@@ -409,14 +409,14 @@ class VerdisSDK {
     const buf = Buffer.from(data);
     let h1 = 0, h2 = 0;
     for (let i = 0; i < buf.length; i++) {
-      h1 = (h1 * 31 + buf[i]) & 0xFFFFFFFF;
-      h2 = (h2 * 37 + buf[i]) & 0xFFFFFFFF;
+      h1 = (h1 * 31 + buf[i]) >>> 0;
+      h2 = (h2 * 37 + buf[i]) >>> 0;
     }
     const result = Buffer.alloc(16);
     result.writeUInt32LE(h1, 0);
     result.writeUInt32LE(h2, 4);
-    result.writeUInt32LE(h1 ^ 0x5bd1e995, 8);
-    result.writeUInt32LE(h2 ^ 0x5bd1e995, 12);
+    result.writeUInt32LE((h1 ^ 0x5bd1e995) >>> 0, 8);
+    result.writeUInt32LE((h2 ^ 0x5bd1e995) >>> 0, 12);
     return result.toString('hex');
   }
 }
