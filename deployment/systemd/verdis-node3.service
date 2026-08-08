@@ -1,0 +1,14 @@
+[Unit]
+Description=Verdis Blockchain Node 3 (Peer)
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+User=verdis
+Group=verdis
+ExecStart=/usr/local/bin/verdis --chain=/opt/verdis-chain-rust/verdis-dev-raw.json --base-path=/opt/verdis-node3-data-v4 --rpc-port 9935 --port 30335 --bootnodes /ip4/127.0.0.1/tcp/30333/p2p/12D3KooWG2kLcHKbLmHyUKiEUQFePjmyA9K711ffLPN3FhQMgLKu --rpc-cors all --rpc-methods unsafe --no-mdns
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
