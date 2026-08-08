@@ -259,7 +259,7 @@ a{color:inherit;text-decoration:none}
       </div>
       <div class="panel">
         <div class="panel-header"><span class="panel-title">Latest Extrinsics</span><a class="panel-link" onclick="switchTab('extrinsics')">View all →</a></div>
-        <table class="tbl"><thead><tr><th>TYPE</th><th>EXTRINSIC HASH</th><th>BLOCK</th></tr></thead><tbody id="latestExts"></tbody></table>
+        <table class="tbl"><thead><tr><th>TYPE</th><th>METHOD / DATA</th><th>HASH</th><th>BLOCK</th></tr></thead><tbody id="latestExts"></tbody></table>
       </div>
     </div>
   </div>
@@ -489,27 +489,35 @@ function decodeExtrinsic(e, blockHash, blockNum) {
   }
 }
 
-// Load latest extrinsics
+// Load latest extrinsics (SIGNED only - real transactions)
 async function loadLatestExtrinsics() {
   const tbody = document.getElementById('latestExts');
   if (!tbody) return;
   let html = '';
   let count = 0;
-  for (let i = 0; i < blocksData.length && count < 6; i++) {
+  for (let i = 0; i < blocksData.length && count < 8; i++) {
     const b = blocksData[i];
     const exts = b.exts || [];
-    for (let j = 0; j < exts.length && count < 6; j++) {
+    for (let j = 0; j < exts.length && count < 8; j++) {
       const ext = decodeExtrinsic(exts[j], b.hash, b.num);
       if (!ext) continue;
-      html += '<tr onclick="showBlock(\''+b.hash+'\')">' +
+      if (ext.type !== 'Signed') continue; // Skip inherent/timestamp
+      const remarkShort = ext.remark ? ext.remark.substring(0, 35) : '';
+      html += '<tr onclick="showBlock(\''+b.hash+'\')" style="cursor:pointer">' +
         '<td><span class="badge '+ext.badge+'">'+ext.type+'</span></td>' +
+        '<td>' + ext.method + (remarkShort ? '<br><span style="font-size:11px;color:var(--text-3)">'+remarkShort+'</span>' : '') + '</td>' +
         '<td class="hash">'+ext.hash+'</td>' +
         '<td class="hash hash-accent">#'+b.num+'</td>' +
         '</tr>';
       count++;
     }
   }
-  tbody.innerHTML = html || '<tr><td colspan="3" style="text-align:center;color:var(--text-3)">No extrinsics</td></tr>';
+  // If no signed extrinsics found, show message
+  if (count === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-3);padding:24px">Waiting for signed transactions...</td></tr>';
+  } else {
+    tbody.innerHTML = html;
+  }
 }
 
 // Load all blocks
@@ -546,14 +554,36 @@ async function loadBlocks() {
   document.getElementById('blockCount').textContent = 'Showing latest 20 blocks';
 }
 
-// Load all extrinsics
+// Load all extrinsics (fetch more blocks for signed txs)
 async function loadExtrinsics() {
   const tbody = document.getElementById('allExts');
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="6"><span class="skel" style="width:100%"></span></td></tr>';
+  // Fetch 30 blocks worth of extrinsics
+  const hdr = await rpc('chain_getHeader', []);
+  const currentBlock = hdr ? parseInt(hdr.number, 16) : blockNum;
+  let allExts = [];
+  if (currentBlock > 0) {
+    const fetchCount = 30;
+    const promises = [];
+    for (let i = 0; i < fetchCount; i++) {
+      const bn = currentBlock - i;
+      if (bn < 0) break;
+      promises.push(rpc('chain_getBlockHash', [bn]).then(function(h) {
+        if (!h) return null;
+        return rpc('chain_getBlock', [h]).then(function(b) {
+          return {num: bn, hash: h, exts: (b && b.block && b.block.extrinsics) || []};
+        });
+      }));
+    }
+    const results = await Promise.all(promises);
+    for (const r of results) {
+      if (r && r.exts.length > 0) allExts.push(r);
+    }
+  }
   let html = '';
-  for (let i = 0; i < blocksData.length; i++) {
-    const b = blocksData[i];
+  for (let i = 0; i < allExts.length; i++) {
+    const b = allExts[i];
     const exts = b.exts || [];
     for (let j = 0; j < exts.length; j++) {
       const ext = decodeExtrinsic(exts[j], b.hash, b.num);
