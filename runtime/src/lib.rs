@@ -214,7 +214,7 @@ parameter_types! {
     pub const ReportLongevity: u64 = 6000;
 }
 impl pallet_babe::Config for Runtime {
-    type EpochDuration = ConstU64<100000>;
+    type EpochDuration = ConstU64<50>;
     type ExpectedBlockTime = ConstU64<BLOCK_TIME>;
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = Session;
@@ -241,7 +241,7 @@ impl pallet_grandpa::Config for Runtime {
 // === Session ===
 
 parameter_types! {
-    pub const Period: BlockNumber = 600;
+    pub const Period: BlockNumber = 50;
     pub const Offset: BlockNumber = 0;
 }
 
@@ -1220,6 +1220,8 @@ sp_api::decl_runtime_apis! {
         fn validator_stake(validator: AccountId) -> Balance;
         /// Get current epoch
         fn current_epoch() -> u32;
+        /// Get validator name
+        fn get_validator_name(validator: AccountId) -> Option<Vec<u8>>;
     }
 
     /// Eco tracking API for RPC
@@ -1236,6 +1238,10 @@ sp_api::decl_runtime_apis! {
         fn get_reforest_project_count() -> u32;
         /// Get total green validator count
         fn get_green_validator_count() -> u32;
+        /// Get green score for a specific validator
+        fn get_green_score(validator: AccountId) -> Option<u8>;
+        /// Get all green validators with their scores
+        fn get_all_green_validators() -> Vec<(AccountId, u8)>;
     }
 }
 
@@ -1362,7 +1368,7 @@ impl_runtime_apis! {
             sp_consensus_babe::BabeConfiguration {
                 slot_duration: Babe::slot_duration(),
                 epoch_length: <Runtime as pallet_babe::Config>::EpochDuration::get(),
-                c: (1, 4),
+                c: (255, 256),
                 authorities: Babe::authorities().into_iter().map(|x| x.into()).collect(),
                 randomness: Babe::randomness().into(),
                 allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
@@ -1554,6 +1560,9 @@ impl_runtime_apis! {
         fn current_epoch() -> u32 {
             pallet_dpos::CurrentEpoch::<Runtime>::get()
         }
+        fn get_validator_name(validator: AccountId) -> Option<Vec<u8>> {
+            pallet_dpos::ValidatorNames::<Runtime>::get(&validator).map(|n| n.to_vec())
+        }
     }
 
     impl crate::EcoApi<Block> for Runtime {
@@ -1574,6 +1583,12 @@ impl_runtime_apis! {
         }
         fn get_green_validator_count() -> u32 {
             pallet_eco::GreenValidators::<Runtime>::iter().count() as u32
+        }
+        fn get_green_score(validator: AccountId) -> Option<u8> {
+            pallet_eco::GreenValidators::<Runtime>::get(&validator).map(|gv| gv.score)
+        }
+        fn get_all_green_validators() -> Vec<(AccountId, u8)> {
+            pallet_eco::GreenValidators::<Runtime>::iter().map(|(addr, gv)| (addr, gv.score)).collect()
         }
     }
 

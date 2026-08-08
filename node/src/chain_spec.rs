@@ -81,195 +81,6 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
                 grandpa: Ed25519Keyring::Alice.public().into(),
             },
         ),
-        (
-            Sr25519Keyring::Bob.to_account_id(),
-            Sr25519Keyring::Bob.to_account_id(),
-            SessionKeys {
-                babe: Sr25519Keyring::Bob.public().into(),
-                grandpa: Ed25519Keyring::Bob.public().into(),
-            },
-        ),
-        (
-            Sr25519Keyring::Charlie.to_account_id(),
-            Sr25519Keyring::Charlie.to_account_id(),
-            SessionKeys {
-                babe: Sr25519Keyring::Charlie.public().into(),
-                grandpa: Ed25519Keyring::Charlie.public().into(),
-            },
-        ),
-        (
-            Sr25519Keyring::Dave.to_account_id(),
-            Sr25519Keyring::Dave.to_account_id(),
-            SessionKeys {
-                babe: Sr25519Keyring::Dave.public().into(),
-                grandpa: Ed25519Keyring::Dave.public().into(),
-            },
-        ),
-        (
-            Sr25519Keyring::Eve.to_account_id(),
-            Sr25519Keyring::Eve.to_account_id(),
-            SessionKeys {
-                babe: Sr25519Keyring::Eve.public().into(),
-                grandpa: Ed25519Keyring::Eve.public().into(),
-            },
-        ),
-        // Validator 6: Ferdie
-        (
-            Sr25519Keyring::Ferdie.to_account_id(),
-            Sr25519Keyring::Ferdie.to_account_id(),
-            SessionKeys {
-                babe: Sr25519Keyring::Ferdie.public().into(),
-                grandpa: Ed25519Keyring::Ferdie.public().into(),
-            },
-        ),
-        // Validator 7: VerdisValidator1
-        (
-            AccountId::from(hex_literal::hex!(
-                "e02d26312eb4ab76028ae99ff55ce7d70e9657e31218880bc4b1f39a3aabe866"
-            )),
-            AccountId::from(hex_literal::hex!(
-                "e02d26312eb4ab76028ae99ff55ce7d70e9657e31218880bc4b1f39a3aabe866"
-            )),
-            SessionKeys {
-                babe: sp_core::sr25519::Public::from_raw(hex_literal::hex!(
-                    "e02d26312eb4ab76028ae99ff55ce7d70e9657e31218880bc4b1f39a3aabe866"
-                ))
-                .into(),
-                grandpa: sp_core::ed25519::Public::from_raw(hex_literal::hex!(
-                    "38344b70dd2278385631334f42d2fd9056879e3ff9d77802f2cc62b8a671f470"
-                ))
-                .into(),
-            },
-        ),
-        // Validator 8: VerdisValidator2
-        (
-            AccountId::from(hex_literal::hex!(
-                "b265f2455b6a7b0ddb85c89cb604a851f125a411e0d66d34d23564da2d0b5323"
-            )),
-            AccountId::from(hex_literal::hex!(
-                "b265f2455b6a7b0ddb85c89cb604a851f125a411e0d66d34d23564da2d0b5323"
-            )),
-            SessionKeys {
-                babe: sp_core::sr25519::Public::from_raw(hex_literal::hex!(
-                    "b265f2455b6a7b0ddb85c89cb604a851f125a411e0d66d34d23564da2d0b5323"
-                ))
-                .into(),
-                grandpa: sp_core::ed25519::Public::from_raw(hex_literal::hex!(
-                    "27acc07ff4adc5e942cd8cf70c0d187ff580619d14e6c18938cb6e1808354129"
-                ))
-                .into(),
-            },
-        ),
-        // Validator 9: VerdisValidator3
-        (
-            AccountId::from(hex_literal::hex!(
-                "28b50591557804cdfb041ecc82104db4eb4429a44e822763fea504dfbcd93e7c"
-            )),
-            AccountId::from(hex_literal::hex!(
-                "28b50591557804cdfb041ecc82104db4eb4429a44e822763fea504dfbcd93e7c"
-            )),
-            SessionKeys {
-                babe: sp_core::sr25519::Public::from_raw(hex_literal::hex!(
-                    "28b50591557804cdfb041ecc82104db4eb4429a44e822763fea504dfbcd93e7c"
-                ))
-                .into(),
-                grandpa: sp_core::ed25519::Public::from_raw(hex_literal::hex!(
-                    "e709a4a07fdbc640ad735e1ffc39792c638f453291d4653308ac1e5fb178c1e7"
-                ))
-                .into(),
-            },
-        ),
-        // Validator 10: VerdisValidator4
-        (
-            AccountId::from(hex_literal::hex!(
-                "d010e6979cf898866efa21464f44538d12ea3b804a03878f93f12071f84c5c18"
-            )),
-            AccountId::from(hex_literal::hex!(
-                "d010e6979cf898866efa21464f44538d12ea3b804a03878f93f12071f84c5c18"
-            )),
-            SessionKeys {
-                babe: sp_core::sr25519::Public::from_raw(hex_literal::hex!(
-                    "d010e6979cf898866efa21464f44538d12ea3b804a03878f93f12071f84c5c18"
-                ))
-                .into(),
-                grandpa: sp_core::ed25519::Public::from_raw(hex_literal::hex!(
-                    "689ecac9c06cfde9cc1af4012b444fa5464e07a53e03c4f46ca1d000548a99ef"
-                ))
-                .into(),
-            },
-        ),
-        (
-            AccountId::from(hex_literal::hex!(
-                "989979834b681814ddb5f95ffc1943e0dc810e8edb090cbf2a524e7975c6f76d"
-            )),
-            AccountId::from(hex_literal::hex!(
-                "989979834b681814ddb5f95ffc1943e0dc810e8edb090cbf2a524e7975c6f76d"
-            )),
-            SessionKeys {
-                babe: sp_core::sr25519::Public::from_raw(hex_literal::hex!(
-                    "989979834b681814ddb5f95ffc1943e0dc810e8edb090cbf2a524e7975c6f76d"
-                ))
-                .into(),
-                grandpa: sp_core::ed25519::Public::from_raw(hex_literal::hex!(
-                    "0c09881a3bdcfeb5ceac8e036fde00be21bc5d909056840ef59c83f25c3a9b76"
-                ))
-                .into(),
-            },
-        ),
-        (
-            AccountId::from(hex_literal::hex!(
-                "642aad74ec10b27fc15a77449e67492650e0f96e151812eb4cf2fa9f3609031f"
-            )),
-            AccountId::from(hex_literal::hex!(
-                "642aad74ec10b27fc15a77449e67492650e0f96e151812eb4cf2fa9f3609031f"
-            )),
-            SessionKeys {
-                babe: sp_core::sr25519::Public::from_raw(hex_literal::hex!(
-                    "642aad74ec10b27fc15a77449e67492650e0f96e151812eb4cf2fa9f3609031f"
-                ))
-                .into(),
-                grandpa: sp_core::ed25519::Public::from_raw(hex_literal::hex!(
-                    "8c6269c0e028d28f3a120e460cbca8e7da50da7d6620908d935493fa440cb98c"
-                ))
-                .into(),
-            },
-        ),
-        (
-            AccountId::from(hex_literal::hex!(
-                "706db647c9361b782d47ad35028f86fb6d9480737bc9a8c798dd5fa76fc65a7e"
-            )),
-            AccountId::from(hex_literal::hex!(
-                "706db647c9361b782d47ad35028f86fb6d9480737bc9a8c798dd5fa76fc65a7e"
-            )),
-            SessionKeys {
-                babe: sp_core::sr25519::Public::from_raw(hex_literal::hex!(
-                    "706db647c9361b782d47ad35028f86fb6d9480737bc9a8c798dd5fa76fc65a7e"
-                ))
-                .into(),
-                grandpa: sp_core::ed25519::Public::from_raw(hex_literal::hex!(
-                    "f727ef039b78a8cae1eab253c846aafef92ea3fe6eaa01bd0502ba7c1dc75966"
-                ))
-                .into(),
-            },
-        ),
-        (
-            AccountId::from(hex_literal::hex!(
-                "e87ffb2ab8c1f3338e7c7bc28484f6fa23a96788ca2c8f0fa3468a75e6df713a"
-            )),
-            AccountId::from(hex_literal::hex!(
-                "e87ffb2ab8c1f3338e7c7bc28484f6fa23a96788ca2c8f0fa3468a75e6df713a"
-            )),
-            SessionKeys {
-                babe: sp_core::sr25519::Public::from_raw(hex_literal::hex!(
-                    "e87ffb2ab8c1f3338e7c7bc28484f6fa23a96788ca2c8f0fa3468a75e6df713a"
-                ))
-                .into(),
-                grandpa: sp_core::ed25519::Public::from_raw(hex_literal::hex!(
-                    "a261691e34ad41832e91e4c2cd86de501b107c83516f8c4d9f515604fcff1fc1"
-                ))
-                .into(),
-            },
-        ),
     ];
 
     verdis_runtime::RuntimeGenesisConfig {
@@ -329,7 +140,7 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
         babe: BabeConfig {
             authorities: babe_authorities,
             epoch_config: sp_consensus_babe::BabeEpochConfiguration {
-                c: (1, 4),
+                c: (255, 256),
                 allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
             },
             _config: Default::default(),
@@ -431,6 +242,23 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
                     true,
                 ),
             ],
+            validator_names: vec![
+                (Sr25519Keyring::Alice.to_account_id(), b"Alice".to_vec()),
+                (Sr25519Keyring::Bob.to_account_id(), b"Bob".to_vec()),
+                (Sr25519Keyring::Charlie.to_account_id(), b"Charlie".to_vec()),
+                (Sr25519Keyring::Dave.to_account_id(), b"Dave".to_vec()),
+                (Sr25519Keyring::Eve.to_account_id(), b"Eve".to_vec()),
+                (Sr25519Keyring::Ferdie.to_account_id(), b"Ferdie".to_vec()),
+                (AccountId::from(hex_literal::hex!("e02d26312eb4ab76028ae99ff55ce7d70e9657e31218880bc4b1f39a3aabe866")), b"GreenNode".to_vec()),
+                (AccountId::from(hex_literal::hex!("b265f2455b6a7b0ddb85c89cb604a851f125a411e0d66d34d23564da2d0b5323")), b"EcoValidator".to_vec()),
+                (AccountId::from(hex_literal::hex!("28b50591557804cdfb041ecc82104db4eb4429a44e822763fea504dfbcd93e7c")), b"VerdisRanger".to_vec()),
+                (AccountId::from(hex_literal::hex!("d010e6979cf898866efa21464f44538d12ea3b804a03878f93f12071f84c5c18")), b"CarbonNode".to_vec()),
+                (AccountId::from(hex_literal::hex!("706db647c9361b782d47ad350286fb6d9480737bc9a8c798dd5fa76fc65a7a7e")), b"ForestGuard".to_vec()),
+                (AccountId::from(hex_literal::hex!("e87ffb2ab8c1f3338e7c7bc28484f6fa23a96788ca2c8f0fa3468a75e6df713a")), b"SolarStake".to_vec()),
+                (AccountId::from(hex_literal::hex!("8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48")), b"WindValidator".to_vec()),
+                (AccountId::from(hex_literal::hex!("90b5ab205c6974c9ea841be688864633dc9ca8a357843eeacf2314649965fe22")), b"HydroNode".to_vec()),
+            ],
+
             validator_count: 14,
             block_reward: 16 * 1_000_000_000,
         },

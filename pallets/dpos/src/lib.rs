@@ -113,6 +113,10 @@ pub mod pallet {
         StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
 
     #[pallet::storage]
+    #[pallet::getter(fn validator_names)]
+    pub type ValidatorNames<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, BoundedVec<u8, ConstU32<32>>>;
+
+    #[pallet::storage]
     #[pallet::getter(fn unbonding_queue)]
     pub type UnbondingQueue<T: Config> = StorageMap<
         _,
@@ -188,6 +192,8 @@ pub mod pallet {
         NoVotesForValidator,
         SlashingFailed,
         NotValidator,
+        NameTooLong,
+        NameUpdated,
         InvalidSlashReason,
         RewardPoolDepleted,
         UnbondingPeriodNotElapsed,
@@ -227,6 +233,7 @@ pub mod pallet {
         pub validators: Vec<(T::AccountId, BalanceOf<T>, bool)>,
         pub validator_count: u32,
         pub block_reward: BalanceOf<T>,
+        pub validator_names: Vec<(T::AccountId, Vec<u8>)>,
     }
 
     #[pallet::genesis_build]
@@ -252,6 +259,12 @@ pub mod pallet {
             }
             ValidatorList::<T>::put(list.clone());
             TotalStaked::<T>::put(total);
+            // Insert validator names
+            for (addr, name) in &self.validator_names {
+                if let Ok(bounded) = BoundedVec::<u8, ConstU32<32>>::try_from(name.clone()) {
+                    ValidatorNames::<T>::insert(addr.clone(), bounded);
+                }
+            }
             ActiveValidators::<T>::put(list);
             CurrentEpoch::<T>::put(1);
             EpochStartBlock::<T>::put(0);

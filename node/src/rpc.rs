@@ -146,6 +146,9 @@ pub trait DposRpc {
 
     #[method(name = "dpos_currentEpoch")]
     fn current_epoch(&self) -> RpcResult<u32>;
+
+    #[method(name = "dpos_validatorName")]
+    fn get_validator_name(&self, validator: AccountId) -> RpcResult<Option<Vec<u8>>>;
 }
 
 pub struct DposRpcImpl<C> {
@@ -191,6 +194,14 @@ where
         let at = self.client.info().best_hash;
         self.client.runtime_api().current_epoch(at).map_err(rpc_err)
     }
+
+    fn get_validator_name(&self, validator: AccountId) -> RpcResult<Option<Vec<u8>>> {
+        let at = self.client.info().best_hash;
+        self.client
+            .runtime_api()
+            .get_validator_name(at, validator)
+            .map_err(rpc_err)
+    }
 }
 
 
@@ -216,6 +227,12 @@ pub trait EcoRpc {
 
     #[method(name = "eco_getGreenValidatorCount")]
     fn get_green_validator_count(&self) -> RpcResult<u32>;
+
+    #[method(name = "eco_getGreenScore")]
+    fn get_green_score(&self, validator: AccountId) -> RpcResult<Option<u8>>;
+
+    #[method(name = "eco_getAllGreenValidators")]
+    fn get_all_green_validators(&self) -> RpcResult<Vec<(AccountId, u8)>>;
 }
 
 pub struct EcoRpcImpl<C> {
@@ -261,6 +278,22 @@ where
     fn get_green_validator_count(&self) -> RpcResult<u32> {
         let at = self.client.info().best_hash;
         self.client.runtime_api().get_green_validator_count(at).map_err(rpc_err)
+    }
+
+    fn get_green_score(&self, validator: AccountId) -> RpcResult<Option<u8>> {
+        let at = self.client.info().best_hash;
+        self.client
+            .runtime_api()
+            .get_green_score(at, validator)
+            .map_err(rpc_err)
+    }
+
+    fn get_all_green_validators(&self) -> RpcResult<Vec<(AccountId, u8)>> {
+        let at = self.client.info().best_hash;
+        self.client
+            .runtime_api()
+            .get_all_green_validators(at)
+            .map_err(rpc_err)
     }
 }
 
