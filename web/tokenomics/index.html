@@ -130,6 +130,11 @@ nav { position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.85); ba
 .footer-links a:hover { color:var(--accent); }
 
 a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration:none !important; }
+#ido-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+@media(max-width:900px){ #ido-grid { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:600px){ #ido-grid { grid-template-columns:1fr; } }
+.vesting-table-wrap { overflow-x:auto; width:100%; -webkit-overflow-scrolling:touch; }
+@media(max-width:768px){ .hero-right { height:auto !important; position:static !important; perspective:none !important; } .hero-right > div { position:relative !important; top:auto !important; left:auto !important; transform:none !important; animation:none !important; margin-bottom:16px; } }
 </style>
 </head>
 <body>
@@ -223,6 +228,7 @@ a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, 
           <tr><td><span class="cat-dot" style="background:#4ade80"></span>Investors (IDO)</td><td>12%</td><td class="mono">12,000,000,000</td></tr>
         </tbody>
       </table>
+</div>
     </div>
   </div>
 </div>
@@ -272,11 +278,11 @@ a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, 
     </div>
     <div class="cat-body">
       <strong>Purpose:</strong> Aligns founding engineers, Substrate core developers, advisors, and contributors with long-term network success.<br>
-      <strong>Distribution:</strong> 12-month cliff, then linear monthly vesting over 24 months.<br>
+      <strong>Distribution:</strong> 12-month cliff, then linear monthly vesting over 36 months.<br>
       <strong>Economic Reasoning:</strong> Extended lockup prevents founder dump risk and ensures long-term commitment to the Verdis Chain architecture.
     </div>
     <div class="cat-grid">
-      <div><strong>Vesting</strong>12mo cliff + 24mo linear</div>
+      <div><strong>Vesting</strong>12mo cliff + 36mo linear</div>
       <div><strong>Governance</strong>Standard voting power</div>
     </div>
   </div>
@@ -335,7 +341,7 @@ a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, 
   <span class="section-eyebrow">Token Release</span>
   <h2 class="section-title">Vesting Schedule</h2>
   <p class="section-sub">Tokens are released according to the vesting schedule for each allocation category.</p>
-  <table class="vesting-table">
+  <div class="vesting-table-wrap"><table class="vesting-table">
     <thead>
       <tr><th>Category</th><th>TGE Unlock</th><th>Cliff</th><th>Vesting Period</th><th>Monthly Release</th><th>Status</th></tr>
     </thead>
@@ -394,7 +400,7 @@ a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, 
   <span class="section-eyebrow">IDO Phases</span>
   <h2 class="section-title">Investor Allocation Breakdown</h2>
   <p class="section-sub">12B VRDX allocated across 4 IDO phases: Seed, Private, Presale, and Public. Each phase offers different pricing and vesting terms.</p>
-  <div id="ido-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+  <div id="ido-grid">
     <div class="cat-card" style="border-color:var(--accent);box-shadow:0 0 24px var(--accent-glow)">
       <div class="cat-header">
         <div class="cat-title">Phase 1 — Seed Sale</div>
