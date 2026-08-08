@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Set session keys using raw SCALE encoding + Alice's sudo key."""
+"""Set session keys using raw SCALE encoding + Alice's sudo key (fixed signing)."""
 
 import hashlib
 import struct
@@ -15,7 +15,6 @@ spec_version = int(rt.get("specVersion", 11))
 tx_version = int(rt.get("transactionVersion", 3))
 
 def compact(n):
-    """SCALE compact encoding."""
     if n < 64:
         return bytes([n << 2])
     elif n < 16384:
@@ -27,56 +26,45 @@ def compact(n):
 
 def build_set_keys_call(storage_key_bytes, storage_value_bytes):
     """Build SCALE-encoded Sudo::sudo(System::set_storage([(key, value)])) call."""
-    # Inner call: System(0)::set_storage(4)
-    # items: Vec<(Vec<u8>, Vec<u8>)> with 1 item
+    # System(0)::set_storage(4)
     inner = bytes([0, 4])  # System::set_storage
-    inner += compact(1)   # 1 item in the Vec
-    inner += compact(len(storage_key_bytes)) + storage_key_bytes   # key as Vec<u8>
-    inner += compact(len(storage_value_bytes)) + storage_value_bytes  # value as Vec<u8>
-    
-    # Outer call: Sudo(6)::sudo(0)
+    inner += compact(1)   # 1 item
+    inner += compact(len(storage_key_bytes)) + storage_key_bytes
+    inner += compact(len(storage_value_bytes)) + storage_value_bytes
+    # Sudo(6)::sudo(0)
     outer = bytes([6, 0]) + inner
     return outer
 
 def build_and_submit_extrinsic(call_data, kp):
     """Build a signed extrinsic and submit it."""
     genesis_hash = bytes.fromhex(s.get_block_hash(0)[2:])
-    current_hash = bytes.fromhex(s.get_chain_head()[2:])
     
     acct = s.query("System", "Account", [kp.ss58_address])
     nonce = acct.value.get("nonce", 0) if acct else 0
     
-    # Build signing payload:
-    # call + era(0x00=Immortal) + nonce(compact) + tip(compact 0) + spec_version(u32 LE) + tx_version(u32 LE) + genesis_hash + block_hash
+    # Signing payload for immortal era:
+    # call || era(0x00) || nonce(compact) || tip(compact 0) || spec_version(u32 LE) || tx_version(u32 LE) || genesis_hash || genesis_hash
     era = bytes([0x00])
     payload = call_data + era + compact(nonce) + compact(0)
     payload += struct.pack("<I", spec_version)
     payload += struct.pack("<I", tx_version)
     payload += genesis_hash
-    payload += current_hash
+    payload += genesis_hash  # For immortal, block_hash = genesis_hash
     
     # Sign payload
     signature = kp.sign(payload)
     
-    # Build extrinsic:
-    # Version byte: 0x84 (signed, version 4)
-    # Signer: 0x00 (AccountId32) + 32-byte pubkey
-    # Signature: 0x01 (sr25519) + 64-byte signature
-    # Era: 0x00 (Immortal)
-    # Nonce: compact
-    # Tip: compact(0)
-    # Call: call_data
+    # Build extrinsic body
     body = bytes([0x84])           # signed v4
     body += bytes([0x00])          # AccountId32
     body += bytes(kp.public_key)   # 32-byte pubkey
     body += bytes([0x01])          # sr25519
-    body += signature             # 64-byte signature
+    body += signature              # 64-byte signature
     body += era                    # 0x00 Immortal
     body += compact(nonce)         # nonce
     body += compact(0)             # tip
     body += call_data              # the actual call
     
-    # Prefix with length (compact)
     ext_hex = "0x" + (compact(len(body)) + body).hex()
     
     return s.rpc_request("author_submitExtrinsic", [ext_hex])
@@ -93,27 +81,19 @@ for n in range(22, 31):
         success += 1
         continue
     
-    # Generate ed25519 grandpa key
     seed = hashlib.sha256(f"//Grandpa{n}".encode()).digest()
     gp_kp = Keypair.create_from_seed(seed, crypto_type=1, ss58_format=909)
     grandpa_pub = bytes(gp_kp.public_key)
     
-    # Get storage key for Session.NextKeys[addr]
     sk = s.create_storage_key("Session", "NextKeys", [addr])
-    key_hex = sk.to_hex()
-    key_bytes = bytes.fromhex(key_hex[2:])
-    
-    # SessionKeys value: babe(32) + grandpa(32) = 64 bytes
+    key_bytes = bytes.fromhex(sk.to_hex()[2:])
     value_bytes = babe_pub + grandpa_pub
     
-    # Build the call
     call_data = build_set_keys_call(key_bytes, value_bytes)
-    
-    print(f"V{n}: call_data={len(call_data)} bytes, storage_key={len(key_bytes)} bytes")
+    print(f"V{n}: call={len(call_data)}B key={len(key_bytes)}B val={len(value_bytes)}B")
     
     try:
         result = build_and_submit_extrinsic(call_data, sudo_kp)
-        
         if "result" in result:
             print(f"V{n}: OK (hash: {result['result'][:20]}...)")
             success += 1
@@ -123,10 +103,9 @@ for n in range(22, 31):
             print(f"V{n}: {result}")
     except Exception as e:
         print(f"V{n}: Exception - {e}")
-    
     time.sleep(5)
 
-print(f"\n{success}/9 submitted. Waiting 30s for blocks...")
+print(f"\n{success}/9 submitted. Waiting 30s...")
 time.sleep(30)
 
 # Verify
