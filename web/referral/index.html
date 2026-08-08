@@ -182,7 +182,7 @@ h2{font-size:14px;font-weight:600;margin-bottom:12px;line-height:1.3} h2 .accent
 <div class="float-card fc-main">
 <div style="font-size:13px;color:var(--text-3);margin-bottom:8px">Your Earnings</div>
 <div class="price-big">$0</div>
-<div style="font-size:13px;color:var(--success);margin-top:4px">No earnings yet — IDO starting soon</div>
+<div style="font-size:13px;color:var(--success);margin-top:4px">No earnings yet — token sale starting soon</div>
 <div class="bar-chart" id="heroChart"></div>
 <div class="mini-row"><span class="l">Total Referrals</span><span class="v">0</span></div>
 <div class="mini-row"><span class="l">Conversion Rate</span><span class="v">0%</span></div>
@@ -285,7 +285,7 @@ h2{font-size:14px;font-weight:600;margin-bottom:12px;line-height:1.3} h2 .accent
 <div class="row"><span class="l">Tier 2 (5% of indirect)</span><span class="v" id="calcR2">—</span></div>
 <div class="row"><span class="l">Tier 3 (2.5% of deep)</span><span class="v" id="calcR3">—</span></div>
 <div class="row" style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;font-weight:600"><span class="l">Total USD Value</span><span class="v" style="color:var(--accent)" id="calcUSD">—</span></div>
-<div class="row"><span class="l">At Listing Price ($0.10)</span><span class="v" style="color:var(--success)" id="calcListing">—</span></div>
+<div class="row"><span class="l">At TGE Price ($0.005)</span><span class="v" style="color:var(--success)" id="calcListing">—</span></div>
 </div>
 </div>
 </div>
@@ -326,7 +326,7 @@ h2{font-size:14px;font-weight:600;margin-bottom:12px;line-height:1.3} h2 .accent
 <div class="section" style="max-width:720px">
 <h2 class="section-title" style="text-align:center;margin-bottom:32px">FAQ</h2>
 <div class="faq-item open"><div class="faq-q" onclick="toggleFAQ(this)">How are commissions paid? <span class="arrow">▾</span></div><div class="faq-a"><div class="faq-a-inner">Commissions are paid in VRDX tokens directly to your wallet at the Token Generation Event (TGE). You'll receive a single payment covering all tiers with your regular token allocation.</div></div></div>
-<div class="faq-item"><div class="faq-q" onclick="toggleFAQ(this)">Is there a limit on referrals? <span class="arrow">▾</span></div><div class="faq-a"><div class="faq-a-inner">No. You can refer as many people as you want. The more referrals, the more you earn. Start sharing your link early to maximize your earnings when the IDO goes live.</div></div></div>
+<div class="faq-item"><div class="faq-q" onclick="toggleFAQ(this)">Is there a limit on referrals? <span class="arrow">▾</span></div><div class="faq-a"><div class="faq-a-inner">No. You can refer as many people as you want. The more referrals, the more you earn. Start sharing your link early to maximize your earnings when the token sale goes live.</div></div></div>
 <div class="faq-item"><div class="faq-q" onclick="toggleFAQ(this)">Do referrals expire? <span class="arrow">▾</span></div><div class="faq-a"><div class="faq-a-inner">Referrals are valid for 90 days after someone clicks your link. If they purchase within that window, you earn commission. After 90 days, the cookie expires.</div></div></div>
 <div class="faq-item"><div class="faq-q" onclick="toggleFAQ(this)">Can I track my referrals? <span class="arrow">▾</span></div><div class="faq-a"><div class="faq-a-inner">Yes. Your dashboard will show total referrals, conversion rate, earnings breakdown by tier, and weekly activity charts. All updated in real-time once the IDO begins.</div></div></div>
 </div>
@@ -353,16 +353,16 @@ h2{font-size:14px;font-weight:600;margin-bottom:12px;line-height:1.3} h2 .accent
 </footer>
 
 <script>
-const TOKEN_PRICE=0.025,LISTING_PRICE=0.10;
+const TOKEN_PRICE=0.004,LISTING_PRICE=0.005;
 function initHeroChart(){const el=document.getElementById('heroChart');let bars='';for(let i=0;i<14;i++){const h=20+Math.random()*80;bars+=`<div class="bar" style="height:${h}%">`}el.innerHTML=bars}
 function copyLink(){const link=document.getElementById('refLink');link.select();navigator.clipboard.writeText(link.value).then(()=>alert('Referral link copied!')).catch(()=>alert('Link: '+link.value))}
 function shareTwitter(){window.open(`https://twitter.com/intent/tweet?text=Join the Verdis Chain presale and get 20% bonus VRDX! &url=${encodeURIComponent(document.getElementById('refLink').value)}`,'_blank')}
 function shareTelegram(){window.open(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('refLink').value)}&text=Get VRDX tokens at presale price + 20% bonus!`,'_blank')}
 function shareDiscord(){copyLink();alert('Link copied! Paste it in Discord: '+document.getElementById('refLink').value)}
 function shareWhatsApp(){window.open(`https://wa.me/?text=${encodeURIComponent('Get VRDX tokens at presale price + 20% bonus! '+document.getElementById('refLink').value)}`,'_blank')}
-function shareEmail(){window.open(`mailto:?subject=VRDX Token Presale - 20% Bonus&body=Get VRDX tokens at $0.025 (listing $0.10) with 20% bonus: ${document.getElementById('refLink').value}`)}
+function shareEmail(){window.open(`mailto:?subject=VRDX Token Presale - 20% Bonus&body=Get VERDIS tokens at Seed price $0.0015 (TGE $0.005) with 70% discount: ${document.getElementById('refLink').value}`)}
 function calculate(){const t1=+document.getElementById('calcT1').value||0;const t2=+document.getElementById('calcT2').value||0;const t3=+document.getElementById('calcT3').value||0;const avg=+document.getElementById('calcAvg').value||0;const r1=t1*avg*0.10;const r2=t2*avg*0.05;const r3=t3*avg*0.025;const total=r1+r2+r3;const vrdx=total/TOKEN_PRICE;const listingVal=vrdx*LISTING_PRICE;document.getElementById('calcR1').textContent=r1.toLocaleString(undefined,{maximumFractionDigits:0})+' VRDX';document.getElementById('calcR2').textContent=r2.toLocaleString(undefined,{maximumFractionDigits:0})+' VRDX';document.getElementById('calcR3').textContent=r3.toLocaleString(undefined,{maximumFractionDigits:0})+' VRDX';document.getElementById('calcTotal').textContent=vrdx.toLocaleString(undefined,{maximumFractionDigits:0})+' VRDX';document.getElementById('calcUSD').textContent='$'+total.toLocaleString(undefined,{maximumFractionDigits:2});document.getElementById('calcListing').textContent='$'+listingVal.toLocaleString(undefined,{maximumFractionDigits:2})}
-function renderLeaderboard(){document.getElementById('leaderbody').innerHTML='<tr><td colspan="6" style="text-align:center;padding:48px 20px;color:var(--text-3);font-size:14px">No affiliates yet — be the first to share your referral link when the IDO goes live!</td></tr>'}
+function renderLeaderboard(){document.getElementById('leaderbody').innerHTML='<tr><td colspan="6" style="text-align:center;padding:48px 20px;color:var(--text-3);font-size:14px">No affiliates yet — be the first to share your referral link when the token sale goes live!</td></tr>'}
 function toggleFAQ(el){el.parentElement.classList.toggle('open')}
 initHeroChart();calculate();renderLeaderboard();
 </script>
