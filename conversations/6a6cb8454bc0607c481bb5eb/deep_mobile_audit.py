@@ -30,13 +30,13 @@ async def audit():
 
         # 2. Check Hamburger menu toggle
         print("\n=== HAMBURGER MENU CHECK ===")
-        hamburger = await m_page.querySelector('.nav-hamburger')
-        nav_links = await m_page.querySelector('.nav-links')
-        nav_links_vis_before = await nav_links.is_visible()
+        hamburger = await m_page.query_selector('.nav-hamburger')
+        nav_links = await m_page.query_selector('.nav-links')
+        nav_links_vis_before = await nav_links.is_visible() if nav_links else False
         if hamburger:
             await hamburger.click()
             await m_page.wait_for_timeout(300)
-            nav_links_vis_after = await nav_links.is_visible()
+            nav_links_vis_after = await nav_links.is_visible() if nav_links else False
             print(f"Hamburger clicked. Links visible before: {nav_links_vis_before}, after: {nav_links_vis_after}")
         else:
             print("No hamburger button found!")
@@ -98,7 +98,7 @@ async def audit():
             }
         """)
         print(f"Total small font elements: {len(small_fonts)}")
-        for sf in smalls_fonts if 'smalls_fonts' in locals() else small_fonts[:10]:
+        for sf in small_fonts[:10]:
             print(sf)
 
         # 6. Check interactive components (Staking calculator)
