@@ -1,191 +1,148 @@
 import asyncio
 import json
+import os
 from playwright.async_api import async_playwright
 
-async def run_detailed_analysis():
+EVAL_JS = """
+() => {
+    const headerNavLinks = Array.from(document.querySelectorAll('header a, nav a')).map(a => ({
+        text: a.innerText ? a.innerText.trim().replace(/\\n/g, ' ') : '',
+        href: a.getAttribute('href'),
+        fullHref: a.href,
+        visible: a.offsetWidth > 0 && a.offsetHeight > 0
+    }));
+
+    const footerLinks = Array.from(document.querySelectorAll('footer a')).map(a => ({
+        text: a.innerText ? a.innerText.trim().replace(/\\n/g, ' ') : '',
+        href: a.getAttribute('href')
+    }));
+
+    const brokenImages = Array.from(document.querySelectorAll('img')).filter(img => !img.complete || img.naturalWidth === 0).map(img => ({
+        src: img.src,
+        alt: img.alt,
+        className: img.className
+    }));
+
+    const canvases = Array.from(document.querySelectorAll('canvas')).map(c => {
+        const ctx2d = c.getContext('2d');
+        const ctxWebgl = c.getContext('webgl') || c.getContext('webgl2');
+        return {
+            id: c.id,
+            class: c.className,
+            width: c.width,
+            height: c.height,
+            clientWidth: c.clientWidth,
+            clientHeight: c.clientHeight,
+            has2dCtx: !!ctx2d,
+            hasWebglCtx: !!ctxWebgl
+        };
+    });
+
+    let cssTexts = '';
+    try {
+        const stylesheets = Array.from(document.styleSheets);
+        stylesheets.forEach(s => {
+            try {
+                Array.from(s.cssRules).forEach(r => cssTexts += r.cssText + ' ');
+            } catch(e) {}
+        });
+    } catch(e) {}
+
+    const hexColorRegex = /#(?:[0-9a-fA-F]{3,4}){1,2}\\b/g;
+    const matches = cssTexts.match(hexColorRegex) || [];
+    const colorCounts = {};
+    matches.forEach(c => colorCounts[c.toLowerCase()] = (colorCounts[c.toLowerCase()] || 0) + 1);
+
+    const neonRegex = /#caff33|#00ff00|#39ff14|#a3e635|#4ade80|#22c55e|#16a34a|#15803d|#166534/gi;
+    const matchesGreen = cssTexts.match(neonRegex) || [];
+
+    const mainElements = Array.from(document.querySelectorAll('header, main section, footer, card, div[class*="card"], div[class*="box"]'));
+    const elementBoxes = mainElements.map(el => {
+        const r = el.getBoundingClientRect();
+        return {
+            tag: el.tagName,
+            class: el.className.slice(0, 50),
+            top: r.top,
+            bottom: r.bottom,
+            left: r.left,
+            right: r.right,
+            width: r.width,
+            height: r.height,
+            text: el.innerText ? el.innerText.slice(0, 30).replace(/\\n/g, ' ') : ''
+        };
+    });
+
+    const buttons = Array.from(document.querySelectorAll('button, a.btn, a[class*="button"], a[class*="bg-"]')).map(b => ({
+        text: b.innerText ? b.innerText.trim().replace(/\\n/g, ' ') : '',
+        bg: window.getComputedStyle(b).backgroundColor,
+        color: window.getComputedStyle(b).color,
+        href: b.getAttribute('href')
+    }));
+
+    return {
+        headerNavLinks,
+        footerLinks,
+        brokenImages,
+        canvases,
+        colorCounts,
+        matchesGreen,
+        elementBoxes: elementBoxes.slice(0, 20),
+        buttons: buttons.slice(0, 15)
+    };
+}
+"""
+
+async def inspect_details():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
+        context = await browser.new_context(viewport={"width": 1440, "height": 900})
 
-        # ----------------------------------------------------
-        # FAUCET PAGE
-        # ----------------------------------------------------
-        p_faucet = await browser.new_page(viewport={"width": 1280, "height": 800})
-        f_net = []
-        p_faucet.on("response", lambda r: f_net.append((r.status, r.url)))
-        await p_faucet.goto("https://verdischain.com/faucet/", wait_until="networkidle")
-        faucet_html = await p_faucet.content()
-        
-        # Test Faucet Button click
-        await p_faucet.fill("#faucetAddr", "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
-        await p_faucet.fill("#captchaA", "10") # 5 + 5 = 10
-        await p_faucet.click("#faucetBtn")
-        await p_faucet.wait_for_timeout(1000)
-        
-        faucet_alert = await p_faucet.evaluate("""() => {
-            const el = document.querySelector('.alert, #result, #faucetResult, [id*="result"], [class*="result"], [class*="alert"]');
-            return el ? el.innerText : (document.body.innerText.includes('Success') || document.body.innerText.includes('Error') ? 'Message updated' : 'No result el');
-        }""")
-        
-        # Mobile view check for hamburger
-        m_faucet = await browser.new_page(viewport={"width": 375, "height": 812})
-        await m_faucet.goto("https://verdischain.com/faucet/")
-        # Test navHamburger click
-        nav_btn = await m_faucet.query_selector("#navHamburger")
-        nav_works = False
-        if nav_btn:
-            await nav_btn.click()
-            await m_faucet.wait_for_timeout(500)
-            nav_visible = await m_faucet.evaluate("() => document.querySelector('.nav-links, nav ul, #navMenu')?.classList.contains('active') || document.querySelector('.nav-links, nav ul, #navMenu')?.offsetHeight > 0")
-            nav_works = bool(nav_visible)
+        pages = [
+            ("Homepage", "https://verdischain.com/"),
+            ("Explorer", "https://verdischain.com/explorer/"),
+            ("DEX", "https://verdischain.com/dex/"),
+            ("Wallet", "https://verdischain.com/wallet/"),
+            ("Validators", "https://verdischain.com/validators/"),
+            ("Token Sale", "https://verdischain.com/sale/"),
+            ("Tokenomics", "https://verdischain.com/tokenomics/"),
+            ("Faucet", "https://verdischain.com/faucet/"),
+            ("Eco Dashboard", "https://verdischain.com/eco/"),
+            ("Whitepaper", "https://verdischain.com/whitepaper/"),
+            ("Docs", "https://verdischain.com/docs/"),
+        ]
 
-        # ----------------------------------------------------
-        # REFERRAL PAGE
-        # ----------------------------------------------------
-        p_ref = await browser.new_page(viewport={"width": 1280, "height": 800})
-        await p_ref.goto("https://verdischain.com/referral/", wait_until="networkidle")
-        
-        # Check copy link button behavior
-        copy_btn = await p_ref.query_selector("button:has-text('Copy Link')")
-        copy_text_before = await copy_btn.inner_text() if copy_btn else ""
-        if copy_btn:
-            await copy_btn.click()
-            await p_ref.wait_for_timeout(300)
-        copy_text_after = await copy_btn.inner_text() if copy_btn else ""
-        
-        # Check referral calculator math
-        # Inputs: calcT1=50, calcAvg=500, calcT2=100, calcT3=200
-        # Expected:
-        # Tier 1 = 50 * 500 * 10% = $2,500
-        # Tier 2 = 100 * 500 * 5% = $2,500
-        # Tier 3 = 200 * 500 * 2.5% = $2,500
-        # Total = $7,500
-        calc_out = await p_ref.evaluate("""() => {
-            const totalEl = document.querySelector('#calcTotal, .calc-total, #totalEarnings');
-            const body = document.body.innerText;
-            return {
-                totalEl: totalEl ? totalEl.innerText : null,
-                calcSectionText: document.querySelector('.calc-box, #calculator')?.innerText
-            };
-        }""")
+        detailed_data = {}
 
-        # ----------------------------------------------------
-        # INCENTIVES PAGE
-        # ----------------------------------------------------
-        p_inc = await browser.new_page(viewport={"width": 1280, "height": 800})
-        await p_inc.goto("https://verdischain.com/incentives/", wait_until="networkidle")
-        inc_calc = await p_inc.evaluate("""() => {
-            const stakeInput = document.querySelector('#calcStake');
-            const tierSelect = document.querySelector('#calcTier');
-            const boxText = document.querySelector('.calc-box, #calculator, section:nth-of-type(3)')?.innerText;
-            return {
-                stake: stakeInput ? stakeInput.value : null,
-                tier: tierSelect ? tierSelect.value : null,
-                boxText: boxText
-            };
-        }""")
+        for name, url in pages:
+            page = await context.new_page()
+            
+            logs = []
+            requests_info = []
 
-        # ----------------------------------------------------
-        # DOCS PAGE
-        # ----------------------------------------------------
-        p_docs = await browser.new_page(viewport={"width": 1280, "height": 800})
-        await p_docs.goto("https://verdischain.com/docs/", wait_until="networkidle")
-        
-        # Check copy buttons on code blocks
-        copy_btns = await p_docs.query_selector_all("button:has-text('Copy')")
-        copy_working = []
-        for btn in copy_btns[:3]:
-            txt = await btn.inner_text()
-            await btn.click()
-            await p_docs.wait_for_timeout(200)
-            txt_after = await btn.inner_text()
-            copy_working.append((txt, txt_after))
+            page.on("console", lambda msg: logs.append({"type": msg.type, "text": msg.text, "location": str(msg.location)}))
+            page.on("response", lambda res: requests_info.append({"url": res.url, "status": res.status}) if res.status >= 400 else None)
 
-        # Check search input if present
-        doc_search = await p_docs.query_selector("input[type='search'], input[placeholder*='Search']")
+            res = await page.goto(url, wait_until="networkidle", timeout=20000)
+            await page.wait_for_timeout(2000)
 
-        # ----------------------------------------------------
-        # CONTACT PAGE
-        # ----------------------------------------------------
-        p_contact = await browser.new_page(viewport={"width": 1280, "height": 800})
-        c_net = []
-        p_contact.on("response", lambda r: c_net.append((r.status, r.url)))
-        await p_contact.goto("https://verdischain.com/contact/", wait_until="networkidle")
-        
-        # Submit form
-        await p_contact.select_option("#subject", index=1)
-        await p_contact.fill("#name", "Auditor")
-        await p_contact.fill("#email", "audit@test.com")
-        await p_contact.fill("#message", "Testing contact form functionality.")
-        await p_contact.click("button[type='submit']")
-        await p_contact.wait_for_timeout(1000)
-        
-        contact_result = await p_contact.evaluate("""() => {
-            const alert = document.querySelector('.alert, #formResult, #result, p.text-green-500, p.text-red-500, div[class*="success"], div[class*="error"]');
-            return alert ? alert.innerText : 'No alert box';
-        }""")
+            data = await page.evaluate(EVAL_JS)
 
-        # ----------------------------------------------------
-        # API PAGE
-        # ----------------------------------------------------
-        p_api = await browser.new_page(viewport={"width": 1280, "height": 800})
-        await p_api.goto("https://verdischain.com/api/", wait_until="networkidle")
-        
-        # Check mobile element causing overflow
-        m_api = await browser.new_page(viewport={"width": 375, "height": 812})
-        await m_api.goto("https://verdischain.com/api/")
-        overflow_causes = await m_api.evaluate("""() => {
-            const results = [];
-            document.querySelectorAll('*').forEach(el => {
-                if (el.scrollWidth > 375) {
-                    results.push({
-                        tag: el.tagName,
-                        class: el.className,
-                        id: el.id,
-                        scrollWidth: el.scrollWidth,
-                        text: el.innerText ? el.innerText.substring(0, 60).replace(/\\n/g, ' ') : ''
-                    });
-                }
-            });
-            return results;
-        }""")
+            detailed_data[name] = {
+                "url": url,
+                "status": res.status if res else None,
+                "title": await page.title(),
+                "logs": logs,
+                "failed_requests": requests_info,
+                "data": data
+            }
 
-        # ----------------------------------------------------
-        # TERMS & PRIVACY
-        # ----------------------------------------------------
-        p_terms = await browser.new_page(viewport={"width": 1280, "height": 800})
-        await p_terms.goto("https://verdischain.com/terms/")
-        terms_info = await p_terms.evaluate("() => document.body.innerText.substring(0, 500)")
-
-        p_priv = await browser.new_page(viewport={"width": 1280, "height": 800})
-        await p_priv.goto("https://verdischain.com/privacy/")
-        priv_info = await p_priv.evaluate("() => document.body.innerText.substring(0, 500)")
-
-        print("=== DETAILED FINDINGS ===")
-        print("1. FAUCET:")
-        print("  - Subresource 502:", [r for r in f_net if r[0] == 502])
-        print("  - Faucet form alert:", faucet_alert)
-        print("  - Mobile hamburger works:", nav_works)
-
-        print("\n2. REFERRAL:")
-        print("  - Copy button text before/after:", copy_text_before, "->", copy_text_after)
-        print("  - Calc text:\n", calc_out['calcSectionText'])
-
-        print("\n3. INCENTIVES:")
-        print("  - Staking calc text:\n", inc_calc['boxText'])
-
-        print("\n4. DOCS:")
-        print("  - Code copy buttons tested:", copy_working)
-        print("  - Search input present:", bool(doc_search))
-
-        print("\n5. CONTACT:")
-        print("  - Form submit result alert:", contact_result)
-        print("  - Network calls during submit:", c_net)
-
-        print("\n6. API:")
-        print("  - Mobile overflow elements (>375px width):", len(overflow_causes))
-        for oc in overflow_causes[:5]:
-            print("    *", oc)
+            await page.close()
 
         await browser.close()
 
-asyncio.run(run_detailed_analysis())
+        with open("detailed_audit.json", "w") as f:
+            json.dump(detailed_data, f, indent=2)
+        print("Detailed audit complete.")
+
+if __name__ == "__main__":
+    asyncio.run(inspect_details())

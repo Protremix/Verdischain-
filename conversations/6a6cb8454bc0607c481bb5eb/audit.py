@@ -1,150 +1,221 @@
 import asyncio
 import json
 import os
-import urllib.parse
+import re
 from playwright.async_api import async_playwright
 
 PAGES = [
-    ("faucet", "https://verdischain.com/faucet/"),
-    ("referral", "https://verdischain.com/referral/"),
-    ("incentives", "https://verdischain.com/incentives/"),
-    ("docs", "https://verdischain.com/docs/"),
-    ("contact", "https://verdischain.com/contact/"),
-    ("api", "https://verdischain.com/api/"),
-    ("terms", "https://verdischain.com/terms/"),
-    ("privacy", "https://verdischain.com/privacy/")
+    {"name": "Homepage", "url": "https://verdischain.com/"},
+    {"name": "Explorer", "url": "https://verdischain.com/explorer/"},
+    {"name": "DEX", "url": "https://verdischain.com/dex/"},
+    {"name": "Wallet", "url": "https://verdischain.com/wallet/"},
+    {"name": "Validators", "url": "https://verdischain.com/validators/"},
+    {"name": "Token Sale", "url": "https://verdischain.com/sale/"},
+    {"name": "Tokenomics", "url": "https://verdischain.com/tokenomics/"},
+    {"name": "Faucet", "url": "https://verdischain.com/faucet/"},
+    {"name": "Eco Dashboard", "url": "https://verdischain.com/eco/"},
+    {"name": "Whitepaper", "url": "https://verdischain.com/whitepaper/"},
+    {"name": "Docs", "url": "https://verdischain.com/docs/"},
 ]
 
-os.makedirs("screenshots/desktop", exist_ok=True)
-os.makedirs("screenshots/mobile", exist_ok=True)
+os.makedirs("screenshots", exist_ok=True)
 
-async def check_links(page, base_url):
-    links = await page.eval_on_selector_all("a[href]", "elements => elements.map(e => ({href: e.getAttribute('href'), text: (e.innerText || e.textContent || '').trim()}))")
-    broken_links = []
-    checked = set()
+EVAL_JS = """
+() => {
+    const pageText = document.body ? document.body.innerText : '';
+    const bodyHtml = document.body ? document.body.innerHTML : '';
     
-    urls_to_check = []
-    for l in links:
-        href = l['href']
-        if not href or href.startswith('#') or href.startswith('javascript:') or href.startswith('mailto:') or href.startswith('tel:'):
-            continue
-        full_url = urllib.parse.urljoin(base_url, href)
-        if full_url not in checked:
-            checked.add(full_url)
-            urls_to_check.append((href, full_url, l['text']))
-            
-    context = page.context
-    for href, full_url, text in urls_to_check:
-        try:
-            res = await context.request.get(full_url, timeout=5000)
-            if res.status >= 400:
-                broken_links.append({'href': href, 'full_url': full_url, 'text': text, 'status': res.status})
-        except Exception as e:
-            broken_links.append({'href': href, 'full_url': full_url, 'text': text, 'error': str(e)})
-            
-    return links, broken_links
+    const allNodes = document.querySelectorAll('*');
+    let neonGreenCount = 0;
+    let darkGreenCount = 0;
+    let neonElements = [];
+    let neonInStyles = [];
 
-async def audit_page(p, name, url):
-    print(f"\n--- Auditing {name}: {url} ---")
-    results = {
+    const htmlLower = bodyHtml.toLowerCase();
+    const hasNeonHex = htmlLower.includes('#caff33') || htmlLower.includes('rgb(202, 255, 51)') || htmlLower.includes('202,255,51');
+    
+    try {
+        for (let styleSheet of document.styleSheets) {
+            try {
+                for (let rule of styleSheet.cssRules) {
+                    if (rule.cssText && (rule.cssText.toLowerCase().includes('#caff33') || rule.cssText.toLowerCase().includes('202, 255, 51'))) {
+                        neonInStyles.push(rule.cssText.slice(0, 100));
+                    }
+                }
+            } catch (e) {}
+        }
+    } catch (e) {}
+
+    allNodes.forEach(el => {
+        try {
+            const style = window.getComputedStyle(el);
+            const color = style.color || '';
+            const bg = style.backgroundColor || '';
+            const border = style.borderColor || '';
+
+            if (color.includes('202, 255, 51') || bg.includes('202, 255, 51') || border.includes('202, 255, 51')) {
+                neonGreenCount++;
+                neonElements.push(el.tagName + '.' + el.className + ' | ' + (el.innerText ? el.innerText.slice(0, 30) : ''));
+            }
+            if (color.includes('22, 163, 74') || bg.includes('22, 163, 74') || border.includes('22, 163, 74')) {
+                darkGreenCount++;
+            }
+        } catch (e) {}
+    });
+
+    const navLinks = Array.from(document.querySelectorAll('nav a, header a')).map(a => ({
+        text: a.innerText.trim(),
+        href: a.getAttribute('href'),
+        fullHref: a.href
+    }));
+
+    const footerLinks = Array.from(document.querySelectorAll('footer a')).map(a => ({
+        text: a.innerText.trim(),
+        href: a.getAttribute('href')
+    }));
+
+    const canvases = Array.from(document.querySelectorAll('canvas')).map(c => ({
+        width: c.width,
+        height: c.height,
+        clientWidth: c.clientWidth,
+        clientHeight: c.clientHeight,
+        webglContext: !!(c.getContext('webgl') || c.getContext('webgl2'))
+    }));
+
+    const sections = Array.from(document.querySelectorAll('section, main > div, div[class*="section"], div[class*="container"]'));
+    const emptySections = [];
+    sections.forEach((sec, idx) => {
+        const rect = sec.getBoundingClientRect();
+        const text = sec.innerText.trim();
+        if (rect.height > 100 && text.length === 0) {
+            emptySections.push({ index: idx, class: sec.className, height: rect.height });
+        }
+    });
+
+    const headings = Array.from(document.querySelectorAll('h1, h2, h3, p, button, a')).map(el => {
+        const rect = el.getBoundingClientRect();
+        const style = window.getComputedStyle(el);
+        return {
+            tag: el.tagName,
+            text: el.innerText ? el.innerText.slice(0, 40).replace(/\\n/g, ' ') : '',
+            color: style.color,
+            bg: style.backgroundColor,
+            fontSize: style.fontSize,
+            visible: rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden',
+            top: rect.top,
+            bottom: rect.bottom,
+            height: rect.height
+        };
+    });
+
+    return {
+        pageLength: pageText.length,
+        previewText: pageText.slice(0, 300).replace(/\\s+/g, ' '),
+        hasNeonHex,
+        neonGreenCount,
+        darkGreenCount,
+        neonInStyles,
+        neonElements: neonElements.slice(0, 10),
+        navLinks,
+        footerLinks,
+        canvases,
+        emptySections,
+        headingCount: headings.length,
+        headingsSample: headings.slice(0, 15)
+    };
+}
+"""
+
+async def audit_page(context, page_info):
+    page = await context.new_page()
+    
+    console_logs = []
+    failed_requests = []
+    
+    page.on("console", lambda msg: console_logs.append({
+        "type": msg.type,
+        "text": msg.text,
+        "location": str(msg.location)
+    }))
+    
+    page.on("requestfailed", lambda req: failed_requests.append({
+        "url": req.url,
+        "failure": str(req.failure)
+    }))
+    
+    page.on("response", lambda res: failed_requests.append({
+        "url": res.url,
+        "status": res.status
+    }) if res.status >= 400 else None)
+
+    url = page_info["url"]
+    name = page_info["name"]
+    slug = re.sub(r'[^a-zA-Z0-9]', '_', name.lower())
+
+    print(f"--- Auditing: {name} ({url}) ---")
+    
+    response = None
+    try:
+        response = await page.goto(url, wait_until="networkidle", timeout=20000)
+    except Exception as e:
+        print(f"Goto timeout/error for {url}: {e}")
+        try:
+            response = await page.goto(url, wait_until="domcontentloaded", timeout=10000)
+        except Exception as e2:
+            print(f"Secondary goto error: {e2}")
+
+    await page.wait_for_timeout(3000)
+
+    http_status = response.status if response else "Unknown"
+    title = await page.title()
+
+    viewport_path = f"screenshots/{slug}_viewport.png"
+    full_path = f"screenshots/{slug}_full.png"
+    await page.screenshot(path=viewport_path)
+    try:
+        await page.screenshot(path=full_path, full_page=True)
+    except Exception as e:
+        print(f"Full page screenshot failed for {name}: {e}")
+        full_path = viewport_path
+
+    analysis = await page.evaluate(EVAL_JS)
+
+    await page.close()
+
+    return {
         "name": name,
         "url": url,
-        "http_status": None,
-        "title": None,
-        "console_errors": [],
-        "failed_requests": [],
-        "desktop_overflow": False,
-        "mobile_overflow": False,
-        "broken_links": [],
-        "total_links": 0,
-        "images": [],
-        "missing_alt_images": 0,
-        "broken_images": [],
-        "interactive_elements": []
+        "http_status": http_status,
+        "title": title,
+        "viewport_path": viewport_path,
+        "full_path": full_path,
+        "console_logs": console_logs,
+        "failed_requests": failed_requests,
+        "analysis": analysis
     }
-
-    browser = await p.chromium.launch(headless=True)
-    
-    # 1. Desktop Audit
-    d_context = await browser.new_context(viewport={"width": 1280, "height": 800})
-    d_page = await d_context.new_page()
-    
-    # Capture console & failed requests
-    d_page.on("console", lambda msg: results["console_errors"].append(f"[Desktop Console {msg.type}] {msg.text}") if msg.type in ["error", "warning"] else None)
-    d_page.on("requestfailed", lambda req: results["failed_requests"].append(f"[Desktop Request Failed] {req.url} - {req.failure}"))
-
-    try:
-        response = await d_page.goto(url, wait_until="networkidle", timeout=15000)
-        results["http_status"] = response.status if response else "No response"
-    except Exception as e:
-        results["http_status"] = f"Error: {e}"
-        try:
-            response = await d_page.goto(url, wait_until="domcontentloaded", timeout=10000)
-            results["http_status"] = response.status if response else "Error"
-        except Exception:
-            pass
-
-    results["title"] = await d_page.title()
-    await d_page.screenshot(path=f"screenshots/desktop/{name}.png", full_page=True)
-
-    # Check overflow desktop
-    d_overflow = await d_page.evaluate("() => ({scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth, overflow: document.documentElement.scrollWidth > window.innerWidth})")
-    results["desktop_overflow"] = d_overflow
-
-    # Images
-    images = await d_page.eval_on_selector_all("img", "imgs => imgs.map(i => ({src: i.src, alt: i.alt, naturalWidth: i.naturalWidth, naturalHeight: i.naturalHeight}))")
-    results["images"] = images
-    for img in images:
-        if not img.get("alt"):
-            results["missing_alt_images"] += 1
-        if img.get("naturalWidth") == 0:
-            results["broken_images"].append(img.get("src"))
-
-    # Links check
-    links, broken_links = await check_links(d_page, url)
-    results["total_links"] = len(links)
-    results["broken_links"] = broken_links
-
-    # Buttons / Inputs / Forms
-    buttons = await d_page.eval_on_selector_all("button, input, form, select, textarea", "elems => elems.map(e => ({tag: e.tagName, type: e.type, id: e.id, class: e.className, text: (e.innerText || e.value || '').trim()}))")
-    results["interactive_elements"] = buttons
-
-    # Text content
-    text_content = await d_page.evaluate("() => document.body.innerText")
-    
-    # 2. Mobile Audit (375px width)
-    m_context = await browser.new_context(
-        viewport={"width": 375, "height": 812}, 
-        user_agent="Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"
-    )
-    m_page = await m_context.new_page()
-    m_page.on("console", lambda msg: results["console_errors"].append(f"[Mobile Console {msg.type}] {msg.text}") if msg.type in ["error", "warning"] else None)
-
-    try:
-        await m_page.goto(url, wait_until="networkidle", timeout=15000)
-    except Exception:
-        await m_page.goto(url, wait_until="domcontentloaded", timeout=10000)
-
-    await m_page.screenshot(path=f"screenshots/mobile/{name}.png", full_page=True)
-    m_overflow = await m_page.evaluate("() => ({scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth, overflow: document.documentElement.scrollWidth > window.innerWidth})")
-    results["mobile_overflow"] = m_overflow
-
-    await browser.close()
-    return results, text_content
 
 async def main():
     async with async_playwright() as p:
-        all_results = {}
-        all_texts = {}
-        for name, url in PAGES:
-            res, text = await audit_page(p, name, url)
-            all_results[name] = res
-            all_texts[name] = text
+        browser = await p.chromium.launch(
+            headless=True,
+            args=['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+        )
+        context = await browser.new_context(
+            viewport={"width": 1440, "height": 900},
+            device_scale_factor=1,
+            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        )
+        
+        results = []
+        for page_info in PAGES:
+            res = await audit_page(context, page_info)
+            results.append(res)
+            
+        await browser.close()
         
         with open("audit_results.json", "w") as f:
-            json.dump(all_results, f, indent=2)
-        with open("audit_texts.json", "w") as f:
-            json.dump(all_texts, f, indent=2)
-        print("\nAudit completed! Results saved.")
+            json.dump(results, f, indent=2)
+        print("Audit run complete! Saved to audit_results.json")
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
