@@ -1,174 +1,202 @@
-import sys
+import xxhash
+import struct
+import hashlib
 
-with open("/opt/verdis/app/dist/api/server.js", "r") as f:
-    content = f.read()
+# Read the existing API file
+import subprocess
+result = subprocess.run(
+    ["ssh", "-o", "ConnectTimeout=10", "root@91.98.160.145", "cat /opt/verdis-api/verdiscan_api.py"],
+    capture_output=True, text=True
+)
+content = result.stdout
 
-# === 1. ENHANCE DEX POOLS ENDPOINT ===
-old_pools = """        this.app.get('/api/dex/pools', (req, res) => {
-            const pools = this.dex.getAllPools().map(p => ({
-                ...p,
-                pair: `${p.tokenA === 'VRDX' ? 'VRDX' : p.tokenA}/${p.tokenB === 'VRDX' ? 'VRDX' : p.tokenB}`
-            }));
-            res.json(pools);
-        });"""
+# 1. Fix RPC port from 9948 to 9933
+content = content.replace("RPC_URL = \"http://127.0.0.1:9948\"", "RPC_URL = \"http://127.0.0.1:9933\"")
 
-new_pools = """        this.app.get('/api/dex/pools', (req, res) => {
-            const swapHistory = this.marketTracker ? (this.marketTracker.getSwapHistory(10000) || []) : [];
-            const pools = this.dex.getAllPools().map(p => {
-                const price = p.reserveA > 0 ? p.reserveB / p.reserveA : 0;
-                const tvl = p.reserveA + p.reserveB;
-                const poolSwaps = swapHistory.filter(s => s.poolId === p.id);
-                const swapCount = poolSwaps.length;
-                const volume24h = poolSwaps.reduce((sum, s) => sum + (s.amountInUSD || s.amountIn || 0), 0);
-                return {
-                    ...p,
-                    pair: p.tokenA + '/' + p.tokenB,
-                    price: price,
-                    tvl: tvl,
-                    swapCount: swapCount,
-                    volume24h: volume24h,
-                    priceFormatted: price.toFixed(6),
-                    tvlFormatted: tvl.toLocaleString(),
-                };
-            });
-            res.json(pools);
-        });"""
+# 2. Add twox_128 and blake2_128 helper functions after the imports
+helper_code = '''
+# --- Storage Key Helpers ---
+import xxhash as _xxhash
+import struct as _struct
+import hashlib as _hashlib
 
-if old_pools in content:
-    content = content.replace(old_pools, new_pools)
-    print("DEX pools endpoint enhanced")
+def _twox_128(data: bytes) -> bytes:
+    """Substrate twox_128 hash"""
+    h0 = _xxhash.xxh64(data, seed=0).intdigest()
+    h1 = _xxhash.xxh64(data, seed=1).intdigest()
+    return _struct.pack("<Q", h0) + _struct.pack("<Q", h1)
+
+def _account_storage_key(address_hex: str) -> str:
+    """Compute System::Account storage key using Blake2_128Concat"""
+    # Remove 0x prefix if present
+    if address_hex.startswith("0x"):
+        address_hex = address_hex[2:]
+    account_bytes = bytes.fromhex(address_hex)
+    prefix = _twox_128(b"System") + _twox_128(b"Account")
+    # Blake2_128Concat: blake2_128(account) ++ account
+    blake = _hashlib.blake2b(account_bytes, digest_size=16).digest()
+    return "0x" + (prefix + blake + account_bytes).hex()
+
+def _decode_account_info(hex_value: str) -> dict:
+    """Decode SCALE-encoded AccountInfo from storage value"""
+    if not hex_value or hex_value == "null":
+        return None
+    raw = bytes.fromhex(hex_value[2:] if hex_value.startswith("0x") else hex_value)
+    if len(raw) < 48:
+        return None
+    nonce = struct.unpack_from("<I", raw, 0)[0]
+    consumers = struct.unpack_from("<I", raw, 4)[0]
+    providers = struct.unpack_from("<I", raw, 8)[0]
+    sufficients = struct.unpack_from("<I", raw, 12)[0]
+    free = int.from_bytes(raw[16:32], "little")
+    reserved = int.from_bytes(raw[32:48], "little")
+    misc_frozen = int.from_bytes(raw[48:64], "little") if len(raw) >= 64 else 0
+    fee_frozen = int.from_bytes(raw[64:80], "little") if len(raw) >= 80 else 0
+    return {
+        "nonce": nonce, "consumers": consumers, "providers": providers,
+        "sufficients": sufficients, "free": free, "reserved": reserved,
+        "misc_frozen": misc_frozen, "fee_frozen": fee_frozen,
+    }
+
+'''
+
+# Insert helper code after the CORS middleware setup
+insert_after = "client = httpx.AsyncClient(timeout=10.0)"
+content = content.replace(insert_after, insert_after + "\n" + helper_code)
+
+# 3. Replace the fallback account endpoint with real balance query
+old_account_endpoint = '''@app.get("/api/v1/account/{address}")
+async def account_detail(address: str):
+    # Try to query system account
+    # For now, return fallback data
+    balance = 10000
+    for v in VALIDATORS:
+        if v["address"][:10] in address or address[:10] in v["address"]:
+            balance = v["stake"]
+            break
+    
+    return {
+        "success": True,
+        "data": {
+            "address": address,
+            "balance": balance,
+            "balance_formatted": f"{balance:,.0f} VRDX",
+            "nonce": 0,
+            "identity": None,
+            "is_validator": any(v["address"][:10] in address for v in VALIDATORS),
+            "source": "fallback",
+        }
+    }'''
+
+new_account_endpoint = '''@app.get("/api/v1/account/{address}")
+async def account_detail(address: str):
+    """Query real account data from System::Account storage via state_getStorage"""
+    DEC = 9  # VRDX decimals
+
+    # Get nonce via system_accountNextIndex (always available)
+    nonce_val = await rpc("system_accountNextIndex", [address])
+
+    # Query balance via state_getStorage with computed Blake2_128Concat key
+    # First convert SS58 address to hex - we need the raw account bytes
+    # For known test accounts, we can hardcode the hex. For others, try state_call.
+    # Use the address directly as the storage key parameter
+    balance = None
+    try:
+        # Try to decode SS58 to hex
+        import base58
+        ss58_bytes = base58.b58decode(address)
+        # SS58 format: prefix(1 byte) + account(32 bytes) + checksum(2 bytes)
+        account_hex = ss58_bytes[1:33].hex()
+
+        storage_key = _account_storage_key(account_hex)
+        result = await rpc("state_getStorage", [storage_key])
+
+        if result:
+            decoded = _decode_account_info(result)
+            if decoded:
+                free = decoded["free"]
+                reserved = decoded["reserved"]
+                total = free + reserved
+                balance = {
+                    "free": free,
+                    "reserved": reserved,
+                    "total": total,
+                    "misc_frozen": decoded["misc_frozen"],
+                    "fee_frozen": decoded["fee_frozen"],
+                    "free_formatted": f"{free / 10**DEC:,.4f} VRDX",
+                    "reserved_formatted": f"{reserved / 10**DEC:,.4f} VRDX",
+                    "total_formatted": f"{total / 10**DEC:,.4f} VRDX",
+                }
+    except Exception as e:
+        pass
+
+    # Check if validator
+    is_validator = False
+    validator_name = None
+    try:
+        vals = await rpc("dpos_allValidators", [])
+        if vals and address in vals:
+            is_validator = True
+            try:
+                name_result = await rpc("dpos_validatorName", [address])
+                if name_result and isinstance(name_result, list):
+                    validator_name = "".join(chr(b) for b in name_result).strip()
+                elif name_result and isinstance(name_result, str):
+                    validator_name = name_result.strip()
+            except:
+                pass
+    except:
+        pass
+
+    # Check green score
+    green_score = 0
+    if is_validator:
+        try:
+            gs = await rpc("eco_getGreenScore", [address])
+            green_score = gs or 0
+        except:
+            pass
+
+    return {
+        "success": True,
+        "data": {
+            "address": address,
+            "nonce": nonce_val or 0,
+            "balance": balance.get("total", 0) if balance else 0,
+            "balance_formatted": balance.get("total_formatted", "0 VRDX") if balance else "N/A",
+            "free_balance": balance.get("free", 0) if balance else 0,
+            "free_balance_formatted": balance.get("free_formatted", "N/A") if balance else "N/A",
+            "reserved_balance": balance.get("reserved", 0) if balance else 0,
+            "reserved_formatted": balance.get("reserved_formatted", "N/A") if balance else "N/A",
+            "misc_frozen": balance.get("misc_frozen", 0) if balance else 0,
+            "fee_frozen": balance.get("fee_frozen", 0) if balance else 0,
+            "is_validator": is_validator,
+            "validator_name": validator_name,
+            "green_score": green_score,
+            "identity": validator_name,
+            "source": "rpc" if balance else "partial",
+        }
+    }'''
+
+if old_account_endpoint in content:
+    content = content.replace(old_account_endpoint, new_account_endpoint)
+    print("Replaced account endpoint with real balance query")
 else:
-    print("WARNING: DEX pools pattern not found")
+    print("WARNING: old account endpoint not found")
 
-# === 2. ENHANCE VALIDATORS ENDPOINT ===
-old_validators = """        this.app.get('/api/validators', (req, res) => {
-            res.json(this.blockchain.getConsensus().getAllValidatorsList());
-        });"""
+# 4. Add base58 import at the top
+content = content.replace(
+    "import hashlib\nfrom collections import defaultdict",
+    "import hashlib\nimport base58\nfrom collections import defaultdict"
+)
 
-new_validators = """        this.app.get('/api/validators', (req, res) => {
-            const validators = this.blockchain.getConsensus().getAllValidatorsList();
-            const greenScores = this.eco.getAllGreenScores();
-            const greenMap = new Map();
-            for (const gs of greenScores) {
-                greenMap.set(gs.address, gs);
-            }
-            const enriched = validators.map(v => {
-                const gs = greenMap.get(v.address) || {};
-                return {
-                    ...v,
-                    active: v.isProducer || false,
-                    greenScore: gs.score || 0,
-                    energySource: gs.energySource || 'Unknown',
-                    renewableEnergy: gs.renewableEnergy || false,
-                    carbonOffset: gs.carbonOffset || 0,
-                    treesPlanted: gs.treesPlanted || 0,
-                };
-            });
-            res.json(enriched);
-        });"""
-
-if old_validators in content:
-    content = content.replace(old_validators, new_validators)
-    print("Validators endpoint enhanced")
-else:
-    print("WARNING: Validators pattern not found")
-
-# === 3. ADD ECO STATS ENDPOINT ===
-old_eco = "        this.app.get('/api/eco/impact', (req, res) => { res.json(this.eco.getNetworkImpact()); });"
-
-new_eco = """        this.app.get('/api/eco/impact', (req, res) => { res.json(this.eco.getNetworkImpact()); });
-        this.app.get('/api/eco/stats', (req, res) => {
-            const impact = this.eco.getNetworkImpact();
-            const carbonCredits = this.eco.getCarbonCredits();
-            const reforestationProjects = this.eco.getReforestationProjects();
-            const greenScores = this.eco.getAllGreenScores();
-            const totalCredits = carbonCredits.reduce((s, c) => s + c.amount, 0);
-            const retiredCredits = carbonCredits.filter(c => c.status === 'retired').length;
-            const activeCredits = carbonCredits.filter(c => c.status === 'active' || c.status === 'verified').length;
-            const totalTrees = reforestationProjects.reduce((s, p) => s + (p.treesPlanted || 0), 0);
-            const totalCO2 = reforestationProjects.reduce((s, p) => s + (p.co2Sequestered || 0), 0);
-            const totalArea = reforestationProjects.reduce((s, p) => s + (p.area || 0), 0);
-            res.json({
-                totalCO2Offset: impact.totalCO2Offset || totalCO2,
-                totalTrees: impact.totalTrees || totalTrees,
-                totalArea: impact.totalArea || totalArea,
-                greenValidators: impact.greenValidators || greenScores.length,
-                creditsRetired: impact.creditsRetired || retiredCredits,
-                creditsActive: activeCredits,
-                creditsTotal: carbonCredits.length,
-                totalCreditAmount: totalCredits,
-                reforestationProjects: reforestationProjects.length,
-                greenScores: greenScores,
-                carbonCredits: carbonCredits,
-                reforestationData: reforestationProjects,
-            });
-        });"""
-
-if old_eco in content:
-    content = content.replace(old_eco, new_eco)
-    print("Eco stats endpoint added")
-else:
-    print("WARNING: Eco impact pattern not found")
-
-# === 4. ENHANCE EXPLORER STATS ===
-old_explorer = """        this.app.get('/api/explorer/stats', (req, res) => {
-            const chain = this.blockchain.getChain();
-            let totalTx = 0;
-            for (const b of chain)
-                totalTx += b.transactions.length;
-            res.json({
-                blockHeight: this.blockchain.getChainHeight(),
-                totalBlocks: chain.length,
-                totalTransactions: totalTx,
-                totalSupply: this.blockchain.getTokenSystem().getTotalSupply(),
-                maxSupply: this.blockchain.getTokenSystem().getMaxSupply(),
-                validators: this.blockchain.getConsensus().getAllValidatorsList().length,
-                mempoolSize: this.blockchain.getMempool().size(),
-                activeWallets: this.walletManager.getAllWallets().length,
-                dexPools: this.dex.getAllPools().length,
-                contracts: this.contractManager.getAllContracts().length,
-                chainValid: this.blockchain.isChainValid(),
-            });
-        });"""
-
-new_explorer = """        this.app.get('/api/explorer/stats', (req, res) => {
-            const chain = this.blockchain.getChain();
-            let totalTx = 0;
-            for (const b of chain)
-                totalTx += b.transactions.length;
-            const ecoImpact = this.eco.getNetworkImpact();
-            const swapHistory = this.marketTracker ? (this.marketTracker.getSwapHistory(10000) || []) : [];
-            const totalDexVolume = swapHistory.reduce((s, sw) => s + (sw.amountInUSD || sw.amountIn || 0), 0);
-            const totalDexTvl = this.dex.getAllPools().reduce((s, p) => s + p.reserveA + p.reserveB, 0);
-            res.json({
-                blockHeight: this.blockchain.getChainHeight(),
-                totalBlocks: chain.length,
-                totalTransactions: totalTx,
-                totalSupply: this.blockchain.getTokenSystem().getTotalSupply(),
-                maxSupply: this.blockchain.getTokenSystem().getMaxSupply(),
-                validators: this.blockchain.getConsensus().getAllValidatorsList().length,
-                mempoolSize: this.blockchain.getMempool().size(),
-                activeWallets: this.walletManager.getAllWallets().length,
-                dexPools: this.dex.getAllPools().length,
-                dexTvl: totalDexTvl,
-                dexVolume: totalDexVolume,
-                dexSwaps: swapHistory.length,
-                contracts: this.contractManager.getAllContracts().length,
-                chainValid: this.blockchain.isChainValid(),
-                co2Offset: ecoImpact.totalCO2Offset || 0,
-                treesPlanted: ecoImpact.totalTrees || 0,
-                greenValidators: ecoImpact.greenValidators || 0,
-                carbonCredits: ecoImpact.creditsRetired || 0,
-            });
-        });"""
-
-if old_explorer in content:
-    content = content.replace(old_explorer, new_explorer)
-    print("Explorer stats enhanced")
-else:
-    print("WARNING: Explorer stats pattern not found")
-
-with open("/opt/verdis/app/dist/api/server.js", "w") as f:
-    f.write(content)
-
-print("All API endpoints enhanced successfully")
+# Write back
+proc = subprocess.run(
+    ["ssh", "-o", "ConnectTimeout=10", "root@91.98.160.145", "cat > /opt/verdis-api/verdiscan_api.py"],
+    input=content,
+    capture_output=True,
+    text=True
+)
+print(f"Written: exit {proc.returncode}")
+if proc.stderr:
+    print(f"Stderr: {proc.stderr[:200]}")
