@@ -1,0 +1,680 @@
+VERDIS
+Verdis
+Verdiscan
+DEX
+Whitepaper
+Wallet
+Sale
+Tokenomics
+Faucet
+Launch Wallet
+GETTING STARTED
+Quick Start Guide
+SDKs & Client Libraries
+Architecture Overview
+API & RPC REFERENCE
+RPC Method Directory
+WebSocket API
+Full API Reference Table
+Interactive Playground
+GUIDES & TOOLS
+Code Examples
+Step-by-Step Guides
+Substrate CLI
+NETWORK METADATA
+Network:
+Verdis Testnet
+Ticker:
+VRDX
+SS58 Format:
+909
+Block Time:
+6.0 Seconds
+Consensus:
+BABE / GRANDPA
+Testnet Online (10 Nodes)
+100% Carbon-Negative
+WASM Contracts (`pallet-contracts`)
+Build Next-Gen Green Web3 on Verdis
+
+Verdis is a world-class Layer-1 blockchain ecosystem engineered with Substrate and Rust. Featuring native Delegated Proof-of-Stake (DPoS), built-in AMM DEX, protocol carbon credit registries, deflationary tokenomics, and high-performance WASM smart contracts with zero net environmental impact.
+
+Quick Start Guide
+Explore RPC Methods
+verdis-testnet-raw.json
+NATIVE TICKER
+VRDX
+MAX SUPPLY
+100,000,000,000
+JSON-RPC URL
+https://rpc.verdischain.com
+WEBSOCKET URL
+wss://rpc.verdischain.com
+NETWORK TOPOLOGY
+10 Active Nodes
+CONSENSUS
+BABE / GRANDPA
+1. Quick Start Guide
+Connect to Verdis, manage sr25519 accounts, request testnet VRDX, and send your first transaction.
+Connect to the Verdis Network Endpoint
+Establish a secure JSON-RPC or WebSocket connection to the Verdis node cluster using JavaScript/TypeScript (`@polkadot/api`), Rust (`subxt`), or HTTP curl.
+JavaScript / TS
+Rust
+curl
+Copy
+const { ApiPromise, WsProvider } = require('@polkadot/api');
+
+async function connectVerdis() {
+  // Connect to official Verdis WebSocket RPC endpoint
+  const provider = new WsProvider('wss://rpc.verdischain.com');
+  const api = await ApiPromise.create({ provider });
+
+  // Fetch chain metadata and system specs
+  const [chain, nodeName, nodeVersion] = await Promise.all([
+    api.rpc.system.chain(),
+    api.rpc.system.name(),
+    api.rpc.system.version()
+  ]);
+
+  console.log(`Connected to ${chain} running ${nodeName} v${nodeVersion}`);
+  return api;
+}
+
+connectVerdis().catch(console.error);
+Generate Account & Keyring (SS58 Format 909)
+Verdis accounts use `sr25519` schnorrkel signature scheme with custom SS58 prefix `909`. Always derive accounts safely using standard BIP-39 mnemonics.
+JavaScript / Account Keyring Derivation
+Copy
+const { Keyring } = require('@polkadot/api');
+const { mnemonicGenerate, cryptoWaitReady } = require('@polkadot/util-crypto');
+
+async function createVerdisAccount() {
+  await cryptoWaitReady();
+
+  // Initialize Keyring with Verdis SS58 prefix 909
+  const keyring = new Keyring({ type: 'sr25519', ss58Format: 909 });
+
+  // Generate new 12-word seed phrase
+  const mnemonic = mnemonicGenerate();
+  const pair = keyring.addFromUri(mnemonic, { name: 'Verdis Dev Pair' });
+
+  console.log(`Generated Mnemonic: "${mnemonic}"`);
+  console.log(`Verdis SS58 Address: ${pair.address}`);
+  return { pair, mnemonic };
+}
+Request Testnet VRDX from Faucet
+Fund your freshly derived address with testnet VRDX tokens to execute extrinsics and deploy smart contracts.
+cURL / Faucet Request Endpoint
+Copy
+# Request 100 testnet VRDX tokens to your SS58 address
+curl -X POST https://rpc.verdischain.com/faucet \
+  -H "Content-Type: application/json" \
+  -d '{"address": "YOUR_VERDIS_SS58_ADDRESS", "amount": 100}'
+Submit a VRDX Transfer Extrinsic
+Construct, sign, and submit a balance transfer on Verdis using `balances.transferKeepAlive`.
+JavaScript / Sign and Send Transfer
+Copy
+async function sendVRDX(api, senderPair, recipientAddress, amountVRDX) {
+  // Convert VRDX to Planck units (1 VRDX = 1,000,000,000 Planck)
+  const decimals = api.registry.chainDecimals[0] || 9;
+  const amountPlanck = BigInt(amountVRDX) * (10n ** BigInt(decimals));
+
+  // Create balance transfer keep-alive call
+  const tx = api.tx.balances.transferKeepAlive(recipientAddress, amountPlanck);
+
+  // Sign and watch extrinsic submission
+  const unsub = await tx.signAndSend(senderPair, ({ status, events, dispatchError }) => {
+    console.log(`Transaction Status: ${status.type}`);
+
+    if (status.isInBlock) {
+      console.log(`Included in Block: ${status.asInBlock.toHex()}`);
+    } else if (status.isFinalized) {
+      console.log(`Finalized in Block: ${status.asFinalized.toHex()}`);
+      unsub();
+    }
+
+    if (dispatchError) {
+      if (dispatchError.isModule) {
+        const decoded = api.registry.findMetaError(dispatchError.asModule);
+        console.error(`Module Error: ${decoded.section}.${decoded.name}`);
+      } else {
+        console.error(`Dispatch Error: ${dispatchError.toString()}`);
+      }
+    }
+  });
+}
+2. SDKs & Client Libraries
+Client SDKs and API packages for building Web3 applications on Verdis.
+JavaScript / TS
+AVAILABLE
+Full-featured JS/TS client (`@polkadot/api` & `@verdis/api`) with scale codec, custom RPC definitions (`ammDex`, `eco`), and wallet adapters.
+npm install @polkadot/api @verdis/api
+View Repository
+Rust SDK
+AVAILABLE
+Type-safe Rust SDK (`verdis-subxt`) powered by `subxt`. Ideal for node infrastructure, trading bots, indexers, and backend relays.
+cargo add subxt verdis-subxt
+View Crate
+Python SDK
+AVAILABLE
+Python interface library (`substrate-interface` & `verdis-py`) for analytics, carbon offset modeling, and automated validator telemetry.
+pip install substrate-interface verdis-py
+View Package
+Go SDK
+COMING SOON
+High-performance Go SDK for enterprise custody, exchange integrations, and low-latency websocket streaming.
+go get github.com/verdischain/verdis-go
+Download TBD
+iOS Swift SDK
+PLANNED
+Native iOS library with Secure Enclave hardware key generation, FaceID transaction signing, and mobile RPC management.
+Swift Package: VerdisSDK
+Download TBD
+Android Kotlin SDK
+PLANNED
+Kotlin mobile library for Android mobile dApps, Android Keystore encryption, and decentralized identity integrations.
+implementation 'com.verdis:sdk:1.0.0'
+Download TBD
+3. RPC Method Directory
+Comprehensive reference of official Substrate JSON-RPC methods and custom Verdis pallet endpoints.
+All Methods
+Chain
+State
+System
+Author
+AMM DEX
+Eco / Carbon
+Smart Contracts
+DPoS
+BABE / GRANDPA
+RPC METHOD	PARAMETERS	RETURN TYPE	DESCRIPTION
+chain_getBlock
+CHAIN
+	hash?: Hash	SignedBlock	Get header and body extrinsics for a specific block hash or latest block.
+chain_getHeader
+CHAIN
+	hash?: Hash	Header	Get header info (number, parentHash, stateRoot, extrinsicsRoot, digest).
+chain_getBlockHash
+CHAIN
+	blockNumber?: BlockNumber	Hash	Get block hash corresponding to a specific block height.
+chain_getFinalizedHead
+CHAIN
+	none	Hash	Get the hash of the latest block finalized by GRANDPA consensus.
+chain_subscribeAllHeads
+CHAIN
+	none	SubscriptionId	Subscribe to all block headers received by node.
+chain_subscribeNewHeads
+CHAIN
+	none	SubscriptionId	Subscribe to new best block header notifications.
+chain_subscribeFinalizedHeads
+CHAIN
+	none	SubscriptionId	Subscribe to GRANDPA finalized header notifications.
+chain_unsubscribeNewHeads
+CHAIN
+	subId: SubscriptionId	bool	Unsubscribe from new block header notifications.
+state_getStorage
+STATE
+	key: StorageKey, hash?: Hash	StorageData (Hex)	Read scale-encoded storage value from runtime storage trie at given hash.
+state_getRuntimeVersion
+STATE
+	hash?: Hash	RuntimeVersion	Get spec name, spec version, authoring version, and API version.
+state_getMetadata
+STATE
+	hash?: Hash	Metadata (Hex)	Fetch full runtime metadata describing pallets, calls, events, and storage.
+state_queryStorageAt
+STATE
+	keys: Vec<StorageKey>, at?: Hash	Vec<StorageChangeSet>	Query storage entries across multiple keys at a specific block.
+state_subscribeStorage
+STATE
+	keys: Vec<StorageKey>	SubscriptionId	Subscribe to real-time storage modifications for specified storage keys.
+state_call
+STATE
+	method: String, data: Bytes	Bytes	Execute a read-only runtime API call without modifying state.
+state_getChildKeys
+STATE
+	childKey: StorageKey, prefix: StorageKey	Vec<StorageKey>	Query child storage keys for contracts or child tries.
+state_getStorageHash
+STATE
+	key: StorageKey, hash?: Hash	Hash	Get blake2 hash of storage value at given key.
+system_health
+SYSTEM
+	none	Health	Return node health state: `{ isSyncing: bool, peers: usize, shouldHavePeers: bool }`.
+system_name
+SYSTEM
+	none	String	Get node implementation name ("Verdis Node").
+system_version
+SYSTEM
+	none	String	Get release binary version string ("1.4.0-verdis").
+system_networkState
+SYSTEM
+	none	NetworkState	Return network P2P state, libp2p multiaddresses, and connected peer IDs.
+system_chain
+SYSTEM
+	none	String	Returns chain name ("Verdis Testnet").
+system_properties
+SYSTEM
+	none	ChainProperties	Returns `{ ss58Format: 909, tokenSymbol: "VRDX", tokenDecimals: 9 }`.
+system_peers
+SYSTEM
+	none	Vec<PeerInfo>	Detailed list of connected P2P peers, roles, and latency.
+system_addReservedPeer
+SYSTEM
+	peer: String	void	Add multiaddress as a reserved peer node in libp2p overlay.
+system_nodeRoles
+SYSTEM
+	none	Vec<NodeRole>	Return active roles of this node (Full, Light, Authority).
+author_submitExtrinsic
+AUTHOR
+	extrinsic: Bytes	Hash	Submit hex-encoded signed transaction payload into local tx pool.
+author_submitAndWatchExtrinsic
+AUTHOR
+	extrinsic: Bytes	SubscriptionId	Submit transaction and stream status updates (Ready, InBlock, Finalized).
+author_pendingExtrinsics
+AUTHOR
+	none	Vec<Bytes>	Return list of all unconfirmed transactions currently queued in mempool.
+author_removeExtrinsic
+AUTHOR
+	bytes: Vec<ExtrinsicOrHash>	Vec<Hash>	Remove specified extrinsics from local transaction queue.
+author_rotateKeys
+AUTHOR
+	none	Bytes	Generate new BABE / GRANDPA session keys in node keystore for validator rotation.
+author_hasKey
+AUTHOR
+	publicKey: Bytes, keyType: String	bool	Check if node keystore possesses private key for public key.
+author_hasSessionKeys
+AUTHOR
+	sessionKeys: Bytes	bool	Verify validator session key ownership in local keystore.
+amm_dex_getPool
+AMM DEX
+	assetA: AssetId, assetB: AssetId	PoolInfo	Query reserves, total LP shares, and swap fee for a liquidity pool.
+amm_dex_getAllPools
+AMM DEX
+	none	Vec<PoolInfo>	Return complete directory of active AMM trading pairs on Verdis.
+amm_dex_getPrice
+AMM DEX
+	assetIn: AssetId, assetOut: AssetId, amountIn: Balance	QuoteResult	Calculate spot price quote, expected output amount, and price impact.
+amm_dex_getLiquidity
+AMM DEX
+	provider: AccountId, poolId: PoolId	LPBalance	Query liquidity provider position, LP token balance, and share percentage.
+amm_dex_quoteAddLiquidity
+AMM DEX
+	assetA: AssetId, assetB: AssetId, amountADesired: Balance	QuoteAddResult	Calculate required counter-asset amount for balanced liquidity deposit.
+amm_dex_quoteRemoveLiquidity
+AMM DEX
+	poolId: PoolId, lpAmount: Balance	QuoteRemoveResult	Calculate underlying asset amounts returned when burning LP tokens.
+eco_getCarbonOffset
+ECO
+	account?: AccountId	CarbonMetrics	Fetch cumulative carbon offset in kg CO2e for an account or entire network.
+eco_getGreenScore
+ECO
+	validator: AccountId	GreenScore (0-100)	Calculate validator sustainability rating based on renewable power & green stakes.
+eco_getReforestationProjects
+ECO
+	status?: ProjectStatus	Vec<ProjectInfo>	List verified global reforestation projects funded by Verdis protocol gas fee burns.
+eco_getProjectDetails
+ECO
+	projectId: u32	ProjectDetails	Detailed statistics, GPS coordinates, and verification proofs for an Eco project.
+babe_epochAuthorship
+BABE
+	none	HashMap<AuthorityId, Vec<Slot>>	Returns expected slot assignment for validators in current BABE epoch.
+grandpa_roundState
+GRANDPA
+	none	ReportedRoundState	Returns voting round status, prevotes, and precommits for GRANDPA finality gadget.
+grandpa_subscribeJustifications
+GRANDPA
+	none	SubscriptionId	Subscribe to stream of GRANDPA finality justification proofs.
+contracts_call
+SMART CONTRACTS
+	origin: AccountId, dest: AccountId, value: Balance, gasLimit?: u64, storageDepositLimit?: Balance, inputData: Vec<u8>	ContractCallResult	Simulate a read-only call to a smart contract. Returns success status, output data, gas consumed, and any error. No state changes are committed.
+contracts_getStorage
+SMART CONTRACTS
+	address: AccountId, key: Vec<u8>	Option<Vec<u8>>	Query a specific storage entry of a deployed contract by its account address and storage key.
+contracts_instantiate
+SMART CONTRACTS
+	origin: AccountId, value: Balance, gasLimit?: u64, storageDepositLimit?: Balance, codeHash: Hash, data: Vec<u8>, salt: Vec<u8>	ContractInstantiateResult	Simulate deployment of a new smart contract instance from existing uploaded code. Returns the new contract address and gas consumed.
+dpos_activeValidators
+DPOS
+	none	Vec<AccountId>	Get the list of currently active validators participating in block production for the current epoch.
+dpos_allValidators
+DPOS
+	none	Vec<AccountId>	Get all registered validators on the network, including inactive ones.
+dpos_validatorStake
+DPOS
+	validator: AccountId	Balance	Query the total stake (self-staked + delegated) for a specific validator.
+dpos_currentEpoch
+DPOS
+	none	u32	Get the current DPoS epoch number. Epochs transition every 600 blocks (~1 hour).
+4. WebSocket API & Subscriptions
+Stream real-time block events, pending extrinsics, and state notifications (`wss://rpc.verdischain.com`).
+
+Verdis WebSocket API relies on JSON-RPC 2.0 pub/sub messaging. Clients subscribe to specific notification topics and receive real-time updates as state mutates.
+
+JavaScript / Node.js
+Python
+Copy
+const WebSocket = require('ws');
+
+const ws = new WebSocket('wss://rpc.verdischain.com');
+
+ws.on('open', () => {
+  console.log('WebSocket connection established to Verdis RPC');
+
+  // Subscribe to new best block headers
+  const subscribeHeader = {
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'chain_subscribeNewHeads',
+    params: []
+  };
+
+  ws.send(JSON.stringify(subscribeHeader));
+});
+
+ws.on('message', (data) => {
+  const payload = JSON.parse(data);
+
+  if (payload.method === 'chain_newHead') {
+    const header = payload.params.result;
+    const blockNum = parseInt(header.number, 16);
+    console.log(`🌿 New Verdis Block #${blockNum} | State Root: ${header.stateRoot}`);
+  }
+});
+5. Practical Code Examples
+Production-grade code examples covering balances, AMM DEX pools, carbon credits, and smart contracts.
+Query Account Balance & Staking Info
+JavaScript / TS
+Rust
+curl
+Copy
+const { ApiPromise, WsProvider } = require('@polkadot/api');
+
+async function getAccountBalance(ss58Address) {
+  const api = await ApiPromise.create({ provider: new WsProvider('wss://rpc.verdischain.com') });
+
+  // Query System.Account frame storage
+  const { data: { free, reserved, frozen } } = await api.query.system.account(ss58Address);
+
+  // Convert Planck (10^-9) to native VRDX
+  const freeVRDX = Number(free.toBigInt()) / 1e9;
+  const reservedVRDX = Number(reserved.toBigInt()) / 1e9;
+
+  console.log(`Account: ${ss58Address}`);
+  console.log(`Free Balance: ${freeVRDX.toFixed(4)} VRDX`);
+  console.log(`Reserved / Staked: ${reservedVRDX.toFixed(4)} VRDX`);
+}
+Query AMM DEX Pools & Green Carbon Metrics
+JavaScript / TS
+curl
+Copy
+async function fetchDexAndEcoData() {
+  // Query custom AMM DEX and Eco RPC methods
+  const pools = await callVerdisRpc('amm_dex_getAllPools', []);
+  const ecoOffset = await callVerdisRpc('eco_getCarbonOffset', []);
+
+  console.log('Active Verdis AMM Liquidity Pairs:', pools);
+  console.log(`Total Verdis Protocol CO2 Offset: ${ecoOffset.total_co2_kg} kg`);
+}
+
+async function callVerdisRpc(method, params) {
+  const response = await fetch('https://rpc.verdischain.com', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+  });
+  const data = await response.json();
+  return data.result;
+}
+Deploy WASM Smart Contract (`pallet-contracts`)
+JavaScript / TS
+ink! Rust Contract
+Copy
+const { CodePromise, ContractPromise } = require('@polkadot/api-contract');
+const fs = require('fs');
+
+async function deployWasmContract(api, deployerPair) {
+  // Load compiled ink! WASM bytecode and ABI json metadata
+  const wasm = fs.readFileSync('./target/ink/flipper.wasm');
+  const abi = JSON.parse(fs.readFileSync('./target/ink/flipper.json'));
+
+  // Prepare CodePromise for pallet-contracts
+  const code = new CodePromise(api, abi, wasm);
+
+  // Set gas limits & storage deposit limits
+  const gasLimit = api.registry.createType('WeightV2', { refTime: 3000000000, proofSize: 100000 });
+  const storageDepositLimit = null;
+
+  // Instantiate smart contract
+  const tx = code.tx.new({ gasLimit, storageDepositLimit }, true);
+  await tx.signAndSend(deployerPair, ({ status, contract }) => {
+    if (status.isInBlock) {
+      console.log(`Contract deployed at address: ${contract.address.toString()}`);
+    }
+  });
+}
+Smart Contract RPC — Query & Simulate
+
+Use the 3 native Contracts RPC methods to query contract storage and simulate calls without submitting extrinsics.
+
+cURL
+JavaScript
+Python
+# 1. Query contract storage (read a value at a specific key)
+curl -X POST https://verdischain.com/rpc \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"contracts_getStorage","params":["5GrwvaEF...","0x..."]}'
+
+# 2. Simulate a read-only contract call (no state change, no fees)
+curl -X POST https://verdischain.com/rpc \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"contracts_call","params":["5GrwvaEF...","5G...dest",0,1000000000,null,"0x..."]}'
+
+# 3. Simulate contract instantiation (returns new address)
+curl -X POST https://verdischain.com/rpc \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"contracts_instantiate","params":["5GrwvaEF...",0,1000000000,null,"0x...codehash","0x...data","0x...salt"]}'
+const RPC = 'https://verdischain.com/rpc';
+
+async function callRpc(method, params) {
+  const res = await fetch(RPC, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+  });
+  return (await res.json()).result;
+}
+
+// Query contract storage
+const storage = await callRpc('contracts_getStorage', [
+  '5GrwvaEFY...',  // contract address
+  '0x...'            // storage key
+]);
+
+// Simulate a contract call (read-only)
+const result = await callRpc('contracts_call', [
+  '5GrwvaEFY...',  // caller origin
+  '5G...dest',      // contract address
+  0,                  // value (VRDX to send)
+  1000000000,         // gas limit (ref_time)
+  null,               // storage deposit limit
+  '0x...'            // input data (selector + args)
+]);
+
+console.log(result);
+// { success: true, output: [...], gas_consumed: 12345, error: null }
+import json, requests
+
+RPC = 'https://verdischain.com/rpc'
+
+def call_rpc(method, params=[]):
+    r = requests.post(RPC, json={
+        'jsonrpc': '2.0', 'id': 1,
+        'method': method, 'params': params
+    })
+    return r.json().get('result')
+
+# Query contract storage
+storage = call_rpc('contracts_getStorage', [
+    '5GrwvaEFY...',  // contract address
+    bytes.fromhex('...') # storage key
+])
+
+# Simulate a contract call
+result = call_rpc('contracts_call', [
+    '5GrwvaEFY...',  // origin
+    '5G...dest',      // contract address
+    0,                 // value
+    1000000000,        // gas limit
+    None,             // storage deposit
+    bytes.fromhex('...') // input data
+])
+
+print(result)
+# {'success': True, 'output': [...], 'gas_consumed': 12345, 'error': None}
+6. Step-by-Step Tutorials
+Practical walkthroughs for setting up nodes, connecting to testnet, building dApps, and writing WASM contracts.
+Setting Up a Local Node
+
+Compile `verdis-chain` from Rust source and launch a single-node development network.
+
+git clone https://github.com/Protremix/Verdischain-.git
+cd verdis-chain
+cargo build --release
+./target/release/verdis-chain --dev --tmp
+Connecting to Testnet
+
+Join the 10-node Verdis testnet using raw chain spec (`verdis-testnet-raw.json`).
+
+./verdis-chain \
+  --chain verdis-testnet-raw.json \
+  --bootnodes /ip4/147.182.200.12/tcp/30333/p2p/12D3KooW... \
+  --port 30333 --rpc-port 9944
+Building a Simple dApp
+
+Connect React/Vue frontend apps to Verdis extension wallets and query state in real-time.
+
+import { web3Enable, web3Accounts } from '@polkadot/extension-dapp';
+await web3Enable('My Verdis App');
+const accounts = await web3Accounts();
+Interacting with Smart Contracts
+
+Compile ink! smart contracts to WASM bytecode and upload to `pallet-contracts`.
+
+cargo contract new my_verdis_contract
+cargo contract build --release
+cargo contract upload --suri //Alice
+7. Substrate CLI Reference
+Key command line arguments for `verdis-chain` binary, subkey, and cargo-contract tools.
+Verdis Binary & Subkey Tool Commands
+Copy
+# Run node as a active validator with raw spec file
+./verdis-chain \
+  --chain verdis-testnet-raw.json \
+  --validator \
+  --name "Verdis-Validator-Node-01" \
+  --base-path /var/lib/verdis-data \
+  --port 30333 \
+  --rpc-port 9944 \
+  --ws-port 9944 \
+  --rpc-cors all \
+  --rpc-methods Safe \
+  --telemetry-url "wss://telemetry.verdischain.com/submit 0"
+
+# Generate Keypairs using Subkey tool for Verdis (SS58 Format 909)
+subkey generate --scheme sr25519 --network verdis
+
+# Inspect Public Key & SS58 Address
+subkey inspect --scheme sr25519 "YOUR_MNEMONIC_PHRASE_HERE"
+
+# Cargo Contract CLI Commands
+cargo contract new my_token
+cargo contract build --release
+cargo contract test
+8. Architecture & Pallet Breakdown
+Technical breakdown of Verdis consensus engine, runtime components, and custom pallets.
+Substrate Runtime
+
+WASM-compiled state machine ensuring forkless upgrades and instant extrinsic dispatch.
+
+Engine: WASMtime
+BABE / GRANDPA
+
+BABE block production every 6s slot paired with GRANDPA deterministic finality gadget.
+
+Slot Duration: 6000ms
+Eco Engine
+
+Integrated carbon footprint tracking, automated reforestation treasury, and green scoring.
+
+Pallet: pallet-eco
+AMM DEX
+
+Constant product $x \cdot y = k$ liquidity pools with eco-fee routing directly on-chain.
+
+Pallet: pallet-amm-dex
+Pallet Directory:
+CUSTOM CORE PALLETS
+pallet-dpos
+pallet-amm-dex
+pallet-eco
+pallet-fungible-tokens
+pallet-tokenomics
+pallet-vesting
+SUBSTRATE PLATFORM PALLETS
+pallet-balances
+pallet-sudo
+pallet-timestamp
+pallet-session
+pallet-scheduler
+pallet-preimage
+pallet-contracts
+pallet-nfts
+pallet-multisig
+pallet-proxy
+pallet-collective
+pallet-democracy
+pallet-utility
+9. Interactive RPC Request Playground
+Test JSON-RPC calls live against `https://rpc.verdischain.com` directly from your browser.
+SELECT RPC METHOD
+system_health
+chain_getHeader
+system_name
+system_version
+chain_getFinalizedHead
+amm_dex_getAllPools
+eco_getCarbonOffset
+TARGET RPC ENDPOINT
+JSON-RPC PAYLOAD
+Execute RPC Call
+RPC RESPONSE OUTPUT
+// Click 'Execute RPC Call' to run live request...
+Verdis
+
+The world's first fully green, carbon-negative blockchain ecosystem. Built with Substrate, powered by nature.
+
+ECOSYSTEM
+Home
+Verdiscan
+DEX
+Whitepaper
+Wallet
+Sale
+Tokenomics
+Faucet
+RESOURCES
+Validators
+Eco Metrics
+Referral
+Incentives
+Contact
+Docs
+API
+COMMUNITY
+GitHub
+Blog
+Developers
+Download
+© 2026 Verdis. All rights reserved.
+VRDX · Carbon-Negative Blockchain
+Code copied to clipboard!
+EvolvixOS — AI Engineering OS

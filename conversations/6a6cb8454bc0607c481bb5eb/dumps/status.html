@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis Chain Network Status</title>
+<link rel="canonical" href="https://verdischain.com/status/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Verdis Chain Network Status">
+<meta property="og:description" content="Real-time network status for Verdis Chain. Block height, peers, TPS, and service health monitoring.">
+<meta property="og:url" content="https://verdischain.com/status/">
+<meta property="og:image" content="https://verdischain.com/assets/verdis-logo-black.png">
+<meta name="description" content="Real-time network status for Verdis Chain. Block height, peers, TPS, and service health monitoring.">
+<meta http-equiv="refresh" content="30">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f1f5f9;color:#0f172a;font-family:system-ui,sans-serif;padding:32px}
+h1{font-size:13px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;max-width:800px;margin:0 auto}
+.card{background:#111;border:1px solid #222;border-radius:12px;padding:20px}
+.card h2{font-size:14px;color:#334155;text-transform:uppercase;margin-bottom:8px}
+.value{font-size:14px;font-weight:700;color:#caff33}
+.ok{color:#22c55e}
+.pulse{animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* Mobile responsiveness */
+@media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:64px;padding:10px 16px}.card{padding:16px}h1{font-size:13px}}
+@media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:14px}.container{padding:20px}}
+</style>
+</head>
+<body>
+<h1 style="text-align:center">🟢 Verdis Chain Status</h1>
+<div class="grid" id="stats"><div class="card"><h2>Services</h2><div class="value ok pulse">13/13</div></div><div class="card"><h2>Validators</h2><div class="value ok pulse">14</div></div><div class="card"><h2>Network</h2><div class="value ok pulse">Testnet</div></div><div class="card"><h2>Block Height</h2><div class="value ok pulse">#340</div></div><div class="card"><h2>Peers</h2><div class="value ok pulse">0</div></div><div class="card"><h2>AMM Pools</h2><div class="value ok pulse">6</div></div></div>
+<script>
+fetch('/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'chain_getHeader',params:[],id:1})})
+.then(r=>r.json()).then(d=>{document.getElementById('stats').innerHTML+=card('Block Height','#'+parseInt(d.result.number,16),'ok')});
+fetch('/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'system_health',params:[],id:2})})
+.then(r=>r.json()).then(d=>{document.getElementById('stats').innerHTML+=card('Peers',d.result.peers,'ok')});
+fetch('/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'amm_dex_getPoolCount',params:[],id:3})})
+.then(r=>r.json()).then(d=>{document.getElementById('stats').innerHTML+=card('AMM Pools',d.result||0,'ok')});
+document.getElementById('stats').innerHTML+=card('Services','13/13','ok');
+document.getElementById('stats').innerHTML+=card('Validators','14','ok');
+document.getElementById('stats').innerHTML+=card('Network','Testnet','ok');
+function card(label,value,cls){return '<div class="card"><h2>'+label+'</h2><div class="value '+cls+' pulse">'+value+'</div></div>'}
+</script>
+
+
+</body></html>

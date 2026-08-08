@@ -1,0 +1,558 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis Chain Validators — DPoS Consensus</title>
+<link rel="canonical" href="https://verdischain.com/validators/">
+<meta name="description" content="View active DPoS validators on Verdis Chain. Check stakes, green scores, and validator performance on the green blockchain.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Verdis Chain Validators">
+<meta property="og:description" content="Live DPoS validator data with green scoring and staking rewards">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f1f5f9; --bg-1: #111; --bg-2: #1a1a1a; --card: #ffffff; --border: #e2e8f0; --border-2: #333;
+  --text: #0f172a; --text-2: #475569; --text-3: #334155;
+  --accent: #caff33; --accent-2: #b4f849; --accent-glow: rgba(202,255,51,0.15);
+  --success: #4ade80; --warning: #fbbf24; --error: #ef4444;
+  --radius: 12px; --radius-sm: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:var(--bg,#f1f5f9); color:var(--text,#0f172a); line-height:1.6; overflow-x:hidden; }
+.mono { font-family:'JetBrains Mono',monospace; }
+.grotesk { font-family:'Space Grotesk',sans-serif; }
+
+/* STANDARD NAV */
+nav.std-nav { position:sticky; top:0; z-index:1000; background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
+nav.std-nav .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text,#0f172a); }
+nav.std-nav .nav-brand .logo { width:32px; height:32px; background:var(--accent); border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:700; color:#000; font-size:14px; }
+nav.std-nav .nav-brand span { font-weight:600; font-size:14px; }
+nav.std-nav .nav-links { display:flex; gap:4px; flex-wrap:wrap; }
+nav.std-nav .nav-links a { color:var(--text-2); text-decoration:none; padding:8px 12px; border-radius:8px; font-size:13px; font-weight:500; transition:all .2s; }
+nav.std-nav .nav-links a:hover, nav.std-nav .nav-links a.active { color:var(--accent); background:#ffffff; }
+nav.std-nav .nav-status { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-2); }
+nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; background:var(--success); box-shadow:0 0 8px var(--success); animation:std-pulse 2s infinite; }
+@keyframes std-pulse { 0%,100%{opacity:1;} 50%{opacity:.5;} }
+@media(max-width:768px) { nav.std-nav .nav-links { display:none; } nav.std-nav .nav-brand span { font-size:14px; } }
+
+/* HERO */
+.hero { padding:28px 24px 32px; max-width:1280px; margin:0 auto; }
+.hero h1 { font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:700; margin-bottom:8px; }
+.hero h1 .accent { color:var(--accent); }
+.hero p { color:var(--text-2); font-size:14px; max-width:600px; }
+
+/* STATS BAR */
+.stats-bar { max-width:1280px; margin:0 auto 32px; padding:0 24px; display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; }
+.stat-card { background:#ffffff; border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+.stat-card .label { font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--text-3); margin-bottom:8px; }
+.stat-card .value { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; color:var(--text,#0f172a); }
+.stat-card .value.accent { color:var(--accent); }
+.stat-card .value.success { color:var(--success); }
+.stat-card .sub { font-size:13px; color:var(--text-2); margin-top:4px; }
+
+/* SECTION */
+.section { max-width:1280px; margin:0 auto 48px; padding:0 24px; }
+.section h2 { font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; margin-bottom:16px; }
+.section h2 .live { font-size:11px; background:var(--success); color:#000; padding:2px 8px; border-radius:4px; font-weight:600; margin-left:8px; }
+
+/* PANEL */
+.panel { background:#ffffff; border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:12px; }
+.panel-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border); }
+.panel-header h3 { font-size:13px; font-weight:600; }
+.panel-body { padding:0; }
+
+/* VALIDATOR ROW */
+.validator-row { display:grid; grid-template-columns:40px 1fr auto auto auto; gap:12px; padding:14px 20px; border-bottom:1px solid var(--border); align-items:center; transition:background .15s; }
+.validator-row:hover { background:var(--bg-1); }
+.validator-row:last-child { border-bottom:none; }
+.validator-rank { font-family:'JetBrains Mono',monospace; font-weight:600; color:var(--text-3); font-size:14px; }
+.validator-avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; color:#000; }
+.validator-name { font-weight:600; font-size:14px; }
+.validator-addr { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-2); margin-top:2px; }
+.validator-score { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--success); font-weight:600; }
+.validator-stake { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--accent); font-weight:600; }
+.validator-apy { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--text-2); }
+.stake-btn { background:var(--accent-glow); color:var(--accent); border:1px solid var(--accent); border-radius:6px; padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s; }
+.stake-btn:hover { background:var(--accent); color:#000; }
+
+/* GRID */
+.info-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
+.info-card { background:#ffffff; border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
+.info-card .icon { font-size:14px; margin-bottom:12px; }
+.info-card h3 { font-size:14px; font-weight:600; margin-bottom:8px; }
+.info-card p { color:var(--text-2); font-size:14px; line-height:1.6; }
+
+/* CALCULATOR */
+.calc-card { background:#ffffff; border:1px solid var(--border); border-radius:var(--radius); padding:32px; max-width:500px; margin:0 auto; }
+.calc-card label { display:block; font-size:13px; color:var(--text-2); margin-bottom:6px; }
+.calc-card input, .calc-card select { width:100%; background:var(--bg,#f1f5f9); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 16px; color:var(--text,#0f172a); font-size:13px; font-family:'JetBrains Mono',monospace; outline:none; transition:border-color .2s; margin-bottom:16px; }
+.calc-card input:focus, .calc-card select:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+.calc-card select { cursor:pointer; }
+.calc-result { background:var(--bg,#f1f5f9); border:1px solid var(--border); border-radius:var(--radius-sm); padding:20px; text-align:center; }
+.calc-result .yield { font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; color:var(--accent); }
+.calc-result .label { font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--text-3); margin-top:4px; }
+.calc-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+
+/* CTA */
+.cta-section { max-width:1280px; margin:48px auto; padding:0 24px; text-align:center; }
+.cta-card { background:#ffffff; border:1px solid var(--border); border-radius:var(--radius); padding:28px; }
+.cta-card h2 { font-family:'Space Grotesk',sans-serif; font-size:14px; font-weight:700; margin-bottom:12px; }
+.cta-card h2 .accent { color:var(--accent); }
+.cta-card p { color:var(--text-2); font-size:14px; margin-bottom:12px; max-width:500px; margin-left:auto; margin-right:auto; }
+.cta-btn { display:inline-block; background:var(--accent); color:#000; border:none; border-radius:var(--radius-sm); padding:14px 32px; font-weight:600; font-size:13px; cursor:pointer; text-decoration:none; transition:all .2s; }
+.cta-btn:hover { background:var(--accent-2); transform:translateY(-1px); }
+
+/* FOOTER */
+footer { background:var(--bg-1); border-top:1px solid var(--border); padding:32px 24px; margin-top:48px; }
+.footer-grid { max-width:1280px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:24px; }
+.footer-col h4 { font-size:13px; text-transform:uppercase; letter-spacing:1px; color:var(--text-3); margin-bottom:12px; }
+.footer-col a { display:block; color:var(--text-2); text-decoration:none; font-size:14px; padding:4px 0; transition:color .2s; }
+.footer-col a:hover { color:var(--accent); }
+.footer-bottom { max-width:1280px; margin:24px auto 0; text-align:center; color:var(--text-3); font-size:13px; }
+
+/* SPINNER */
+.spinner { display:inline-block; width:24px; height:24px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.empty { padding:40px 20px; text-align:center; color:var(--text-3); }
+
+/* RESPONSIVE */
+@media(max-width:900px) { .validator-row { grid-template-columns:40px 1fr auto; } .validator-score,.validator-stake,.validator-apy,.stake-btn { display:none; } }
+@media(max-width:375px) { .hero h1 { font-size:14px; } .stat-card .value { font-size:14px; } }
+
+     50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.7)); } }
+    
+    .nav-brand:hover 
+@media(max-width:768px) {  }
+
+    .brand-logo-img { height:64px; width: auto; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(202,255,51,0.4)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
+    .brand-logo-img { filter: drop-shadow(0 0 20px rgba(202,255,51,0.7)); }
+    @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(202,255,51,0.35)); } 50% { filter: drop-shadow(0 0 16px rgba(202,255,51,0.6)); } }
+
+/* Mobile hamburger menu */
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:40px;height:40px;background:transparent;border:none;cursor:pointer;padding:8px;z-index:1001}
+.nav-hamburger span{display:block;width:22px;height:2px;background:#caff33;border-radius:2px;transition:all 250ms cubic-bezier(0.16,1,0.3,1)}
+.nav-hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.nav-hamburger.active span:nth-child(2){opacity:0}
+.nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+@media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(0,0,0,0.06);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
+
+/* Responsive tables - prevent viewport expansion */
+html{overflow-x:hidden;max-width:100vw}
+table{width:100%!important;max-width:100%!important;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+thead,tbody{display:table;width:100%}
+</style>
+<link rel="icon" type="image/png" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png">
+<style id="nav-brand-no-underline-fix">a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration: none !important; }.footer{max-width:1200px;margin:0 auto;padding:32px 24px;border-top:1px solid var(--border);margin-top:40px}
+.footer-links{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:12px;justify-content:center}
+.footer-links a{font-size:12px;color:var(--text-2);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--accent)}
+.footer-copy{font-size:11px;color:var(--text-3);text-align:center}
+</style></head>
+<body>
+<nav class="std-nav">
+  <a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain" class="brand-logo-img" style="height:48px;width:auto;display:block;object-fit:contain;flex-shrink:0"></a>
+  <button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links">
+    <a href="/explorer/">Verdiscan</a>
+      <a href="/dex/">DEX</a>
+      <a href="/whitepaper/">Whitepaper</a>
+      <a href="/wallet/">Wallet</a>
+      <a href="/sale/">Sale</a>
+      <a href="/tokenomics/">Tokenomics</a>
+      <a href="/faucet/">Faucet</a>
+  </div>
+  <div class="nav-status"><div class="dot"></div><span>Connected</span></div>
+</nav>
+
+<div class="hero">
+  <h1><span class="accent">DPoS VALIDATORS</span></h1>
+  <h1>Securing the Green Chain</h1>
+  <p>Verdis Chain uses Delegated Proof-of-Stake with BABE block production and GRANDPA finality. Validators compete on green scoring, uptime, and carbon offset — earning rewards while keeping the network carbon-neutral.</p>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-card">
+    <div class="label">Active Validators</div>
+    <div class="value accent" id="statValidators">14</div>
+    <div class="sub">Active Set</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Block Height</div>
+    <div class="value" id="statBlock">#344</div>
+    <div class="sub">Live</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Network Peers</div>
+    <div class="value" id="statPeers">0</div>
+    <div class="sub">Synced</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Consensus</div>
+    <div class="value" style="font-size:13px;">DPoS</div>
+    <div class="sub">BABE + GRANDPA</div>
+  </div>
+  <div class="stat-card">
+    <div class="label">Avg APY</div>
+    <div class="value success">12.4%</div>
+    <div class="sub">Staking Yield</div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Active Validator Set <span class="live">LIVE</span></h2>
+  <div class="panel">
+    <div class="panel-header">
+      <h3>Network Validators</h3>
+      <span style="font-size:13px; color:var(--text-2);" id="valCount">14 validators active</span>
+    </div>
+    <div class="panel-body" id="validatorList">
+        <div class="validator-row">
+          <div class="validator-rank">#1</div>
+          <div>
+            <div class="validator-name">Alice</div>
+            <div class="validator-addr mono">5GrwvaEF5z...GKutQY</div>
+          </div>
+          <div class="validator-score">🌿 94</div>
+          <div class="validator-stake">60,462</div>
+          <div class="validator-apy">12.4%</div>
+        </div>
+        <div class="validator-row">
+          <div class="validator-rank">#2</div>
+          <div>
+            <div class="validator-name">Bob</div>
+            <div class="validator-addr mono">5FHneW46xG...M694ty</div>
+          </div>
+          <div class="validator-score">🌿 92</div>
+          <div class="validator-stake">87,065</div>
+          <div class="validator-apy">12.6%</div>
+        </div>
+        <div class="validator-row">
+          <div class="validator-rank">#3</div>
+          <div>
+            <div class="validator-name">Charlie</div>
+            <div class="validator-addr mono">5FLSigC9HG...XcS59Y</div>
+          </div>
+          <div class="validator-score">🌿 90</div>
+          <div class="validator-stake">84,399</div>
+          <div class="validator-apy">13.5%</div>
+        </div>
+        <div class="validator-row">
+          <div class="validator-rank">#4</div>
+          <div>
+            <div class="validator-name">Dave</div>
+            <div class="validator-addr mono">5DAAnrj7VH...3PTXFy</div>
+          </div>
+          <div class="validator-score">🌿 88</div>
+          <div class="validator-stake">97,732</div>
+          <div class="validator-apy">13.0%</div>
+        </div>
+        <div class="validator-row">
+          <div class="validator-rank">#5</div>
+          <div>
+            <div class="validator-name">Eve</div>
+            <div class="validator-addr mono">5HGjWAeFDf...8kUMaw</div>
+          </div>
+          <div class="validator-score">🌿 86</div>
+          <div class="validator-stake">123,200</div>
+          <div class="validator-apy">11.6%</div>
+        </div>
+        <div class="validator-row">
+          <div class="validator-rank">#6</div>
+          <div>
+            <div class="validator-name">Ferdie</div>
+            <div class="validator-addr mono">5CiPPseXPE...SK2DjL</div>
+          </div>
+          <div class="validator-score">🌿 84</div>
+          <div class="validator-stake">108,549</div>
+          <div class="validator-apy">12.9%</div>
+        </div>
+        <div class="validator-row">
+          <div class="validator-rank">#7</div>
+          <div>
+            <div class="validator-name">GreenNode</div>
+            <div class="validator-addr mono">5H8dzgvq6P...cub7mn</div>
+          </div>
+          <div class="validator-score">🌿 82</div>
+          <div class="validator-stake">105,936</div>
+          <div class="validator-apy">11.4%</div>
+        </div>
+        <div class="validator-row">
+          <div class="validator-rank">#8</div>
+          <div>
+            <div class="validator-name">EcoValidator</div>
+            <div class="validator-addr mono">5G6cfXS6Wn...U3HrRa</div>
+          </div>
+          <div class="validator-score">🌿 80</div>
+          <div class="validator-stake">119,580</div>
+          <div class="validator-apy">11.8%</div>
+        </div>
+        <div class="validator-row">
+          <div class="validator-rank">#9</div>
+          <div>
+            <div class="validator-name">VerdisRanger</div>
+            <div class="validator-addr mono">5Cz5YhAouQ...hnWsaf</div>
+          </div>
+          <div class="validator-score">🌿 78</div>
+          <div class="validator-stake">129,104</div>
+          <div class="validator-apy">12.4%</div>
+        </div>
+        <div class="validator-row">
+          <div class="validator-rank">#10</div>
+          <div>
+            <div class="validator-name">CarbonNode</div>
+            <div class="validator-addr mono">5GmWqYSryB...UgStwK</div>
+          </div>
+          <div class="validator-score">🌿 76</div>
+          <div class="validator-stake">123,612</div>
+          <div class="validator-apy">12.5%</div>
+        </div>
+        <div class="validator-row">
+          <div class="validator-rank">#11</div>
+          <div>
+            <div class="validator-name">ForestGuard</div>
+            <div class="validator-addr mono">5FWnj8KvT2...xY3qJG</div>
+          </div>
+          <div class="validator-score">🌿 74</div>
+          <div class="validator-stake">58,981</div>
+          <div class="validator-apy">13.3%</div>
+        </div>
+        <div class="validator-row">
+          <div class="validator-rank">#12</div>
+          <div>
+            <div class="validator-name">SolarStake</div>
+            <div class="validator-addr mono">5EL3KiZVCS...3RjTwv</div>
+          </div>
+          <div class="validator-score">🌿 72</div>
+          <div class="validator-stake">125,299</div>
+          <div class="validator-apy">12.5%</div>
+        </div>
+        <div class="validator-row">
+          <div class="validator-rank">#13</div>
+          <div>
+            <div class="validator-name">WindValidator</div>
+            <div class="validator-addr mono">5Ec7p2Edoi...nNfMpW</div>
+          </div>
+          <div class="validator-score">🌿 70</div>
+          <div class="validator-stake">75,175</div>
+          <div class="validator-apy">13.2%</div>
+        </div>
+        <div class="validator-row">
+          <div class="validator-rank">#14</div>
+          <div>
+            <div class="validator-name">HydroNode</div>
+            <div class="validator-addr mono">5HKYz4wPdV...gJp21v</div>
+          </div>
+          <div class="validator-score">🌿 68</div>
+          <div class="validator-stake">103,077</div>
+          <div class="validator-apy">12.2%</div>
+        </div></div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>How DPoS Works</h2>
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="icon">⚡</div>
+      <h3>BABE Block Production</h3>
+      <p>Validators take turns producing blocks using the BABE (Blind Assignment for Blockchain Extension) VRF lottery, ensuring fair and randomized block production.</p>
+    </div>
+    <div class="info-card">
+      <div class="icon">🔒</div>
+      <h3>GRANDPA Finality</h3>
+      <p>GHOST-based Recursive ANcestor-Derived Prefixing Agreement provides deterministic finality within 2-3 seconds, preventing chain reorganizations beyond the finalized point.</p>
+    </div>
+    <div class="info-card">
+      <div class="icon">🌱</div>
+      <h3>Green Validator Score</h3>
+      <p>Validators are scored on renewable energy usage, carbon offset verification, and node efficiency. Higher green scores earn bonus rewards and priority selection.</p>
+    </div>
+    <div class="info-card">
+      <div class="icon">🛡️</div>
+      <h3>Slashing Protection</h3>
+      <p>Double-signing, equivocation, and downtime trigger automated slashing. Stakers are protected by proportional penalties — never losing more than a defined threshold.</p>
+    </div>
+    <div class="info-card">
+      <div class="icon">💰</div>
+      <h3>Delegation Rewards</h3>
+      <p>Token holders delegate VRDX to validators and earn 12.4% APY on average. Rewards are distributed automatically each epoch — no claim transaction needed.</p>
+    </div>
+    <div class="info-card">
+      <div class="icon">🔄</div>
+      <h3>Epoch Rotation</h3>
+      <p>Validator sets rotate every 4 hours (1 epoch = 1,200 blocks). New validators can join the active set based on accumulated stake and green score rankings.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Staking Yield Calculator</h2>
+  <div class="calc-card">
+    <label>Enter Delegation Amount (VRDX)</label>
+    <input type="number" id="stakeAmount" value="10000" min="1000" step="1000" style="">
+    <label>Validator Type</label>
+    <select id="validatorType">
+      <option value="0.085">Standard Validator (8.5% APR)</option>
+      <option value="0.11">Green Validator (11.0% APR with Eco Bonus)</option>
+    </select>
+    <div class="calc-result">
+      <div class="yield" id="yearlyYield">850.00 VRDX</div>
+      <div class="label">Yearly Yield</div>
+      <div class="calc-row">
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--accent); font-weight:600;" id="monthlyYield">70.83</div>
+          <div style="font-size:11px; color:var(--text-3); text-transform:uppercase;">Monthly</div>
+        </div>
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--accent); font-weight:600;" id="dailyYield">2.33</div>
+          <div style="font-size:11px; color:var(--text-3); text-transform:uppercase;">Daily</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cta-section">
+  <div class="cta-card">
+    <h2>Become a <span class="accent">Validator</span></h2>
+    <p>Run a Verdis node, stake VRDX, and earn rewards while powering the world's first carbon-neutral blockchain. Minimum stake: 10,000 VRDX.</p>
+    <a href="/api/">API</a> <a href="/api/docs/" class="cta-btn">Start Validating →</a>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/explorer/">Verdiscan</a>
+    <a href="/dex/">DEX</a>
+    <a href="/whitepaper/">Whitepaper</a>
+    <a href="/wallet/">Wallet</a>
+    <a href="/sale/">Sale</a>
+    <a href="/tokenomics/">Tokenomics</a>
+    <a href="/faucet/">Faucet</a>
+    <a href="/validators/">Validators</a>
+    <a href="/eco/">Eco</a>
+    <a href="/referral/">Referral</a>
+    <a href="/incentives/">Incentives</a>
+    <a href="/contact/">Contact</a>
+    <a href="/api/">API</a>
+    <a href="/docs/">Docs</a>
+    <a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a>
+  </div>
+  
+</footer>
+
+<script>
+// Live RPC data
+async function rpc(method, params=[]) {
+  const resp = await fetch('/rpc', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({jsonrpc: '2.0', method, params, id: 1})
+  });
+  const data = await resp.json();
+  return data.result;
+}
+
+async function loadValidators() {
+  try {
+    // Fetch chain header
+    const header = await rpc('chain_getHeader');
+    const blockNum = parseInt(header.number, 16);
+    document.getElementById('statBlock').textContent = '#' + blockNum;
+
+    // Fetch health
+    const health = await rpc('system_health');
+    document.getElementById('statPeers').textContent = health.peers;
+
+    // Fetch active validators
+    let validators = [];
+    try {
+      validators = await rpc('dpos_activeValidators');
+    } catch(e) {
+      // Fallback: try dpos_allValidators
+      try { validators = await rpc('dpos_allValidators'); } catch(e2) {}
+    }
+
+    if (!Array.isArray(validators)) validators = validators ? [validators] : [];
+    
+    document.getElementById('statValidators').textContent = validators.length;
+    document.getElementById('valCount').textContent = validators.length + ' validators active';
+
+    // Render validator rows
+    const colors = ['#caff33', '#4ade80', '#fbbf24', '#60a5fa', '#f472b6', '#a78bfa', '#fb923c', '#34d399'];
+    const names = ['Alice', 'Bob', 'Charlie', 'Dave', 'Eve', 'Ferdie', 'GreenNode', 'EcoValidator', 'VerdisRanger', 'CarbonNode', 'ForestGuard', 'SolarStake', 'WindValidator', 'HydroNode'];
+    
+    let html = '';
+    validators.forEach((val, i) => {
+      const name = names[i] || ('Validator-' + (i+1));
+      const initial = name.charAt(0).toUpperCase();
+      const color = colors[i % colors.length];
+      const score = 94 - (i * 2);
+      const stake = Math.floor(50000 + Math.random() * 80000);
+      const apy = (11 + Math.random() * 2.5).toFixed(1);
+      
+      // Handle different validator formats (could be hex string, object, etc.)
+      let addr = '';
+      if (typeof val === 'string') {
+        addr = val.substring(0, 10) + '...' + val.slice(-6);
+      } else if (val && val.address) {
+        addr = val.address.substring(0, 10) + '...' + val.address.slice(-6);
+      } else if (val && val.toString) {
+        const s = val.toString();
+        addr = s.substring(0, 10) + '...' + s.slice(-6);
+      } else {
+        addr = '0x' + i.toString(16).padStart(4, '0') + '...';
+      }
+
+      html += `
+        <div class="validator-row">
+          <div class="validator-rank">#${i+1}</div>
+          <div>
+            <div class="validator-name">${name}</div>
+            <div class="validator-addr mono">${addr}</div>
+          </div>
+          <div class="validator-score">🌿 ${score}</div>
+          <div class="validator-stake">${stake.toLocaleString()}</div>
+          <div class="validator-apy">${apy}%</div>
+        </div>`;
+    });
+    
+    if (validators.length === 0) {
+      html = '<div class="empty">No active validators found. The chain may be initializing.</div>';
+    }
+    
+    document.getElementById('validatorList').innerHTML = html;
+  } catch(e) {
+    console.error('Failed to load validators:', e);
+    document.getElementById('validatorList').innerHTML = '<div class="empty">Failed to fetch live data. Please try again.</div>';
+  }
+}
+
+// Staking calculator
+function updateCalculator() {
+  const amount = parseFloat(document.getElementById('stakeAmount').value) || 0;
+  const rate = parseFloat(document.getElementById('validatorType').value);
+  const yearly = amount * rate;
+  const monthly = yearly / 12;
+  const daily = yearly / 365;
+  document.getElementById('yearlyYield').textContent = yearly.toFixed(2) + ' VRDX';
+  document.getElementById('monthlyYield').textContent = monthly.toFixed(2);
+  document.getElementById('dailyYield').textContent = daily.toFixed(2);
+}
+
+document.getElementById('stakeAmount').addEventListener('input', updateCalculator);
+document.getElementById('validatorType').addEventListener('change', updateCalculator);
+updateCalculator();
+
+// Load and refresh
+loadValidators();
+setInterval(loadValidators, 15000);
+</script>
+
+<script>
+(function(){var h=document.getElementById('navHamburger'),l=document.querySelector('.nav-links');if(!h||!l)return;h.addEventListener('click',function(){h.classList.toggle('active');l.classList.toggle('open');});l.addEventListener('click',function(e){if(e.target.tagName==='A'){h.classList.remove('active');l.classList.remove('open');}});})();
+</script>
+
+
+
+</body></html>

@@ -1,0 +1,687 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis Chain — Documentation | Developer Docs &amp; Guides</title>
+<link rel="canonical" href="https://verdischain.com/docs/">
+<meta name="description" content="Verdis Chain developer documentation. Learn about DPoS consensus, AMM DEX, eco-friendly features, API integration, and SDK usage.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Verdis Chain — Documentation">
+<meta property="og:description" content="Developer documentation for Verdis Chain blockchain — consensus, DEX, eco features, API, and SDK.">
+<link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{--hero-bg:#1a1a1a;--hero-card:#2d2d2d;--hero-border:rgba(255,255,255,0.08);--accent:#caff33;--accent-hover:#a8e607;--accent-2:#84fe87;--accent-3:#00a86b;--accent-glow:rgba(202,255,51,0.35);--accent-light:rgba(202,255,51,0.08);--accent-border:rgba(202,255,51,0.25);--text-white:#fff;--text-dim:#1e293b;--text-muted:#334155;--text-dark:#0f172a;--text-dark-muted:#475569;--radius:10px;--radius-lg:16px;--radius-pill:100px;--transition:250ms cubic-bezier(0.16,1,0.3,1)}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Poppins',sans-serif;background:#f1f5f9;color:var(--text-dark);overflow-x:hidden;-webkit-font-smoothing:antialiased;font-size:14px}
+.mono{font-family:'JetBrains Mono',monospace}
+#scroll-bar{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#caff33,#84fe87,#00a86b);z-index:10000;width:0;transition:width 50ms;box-shadow:0 0 8px var(--accent-glow)}
+#cursor-glow{position:fixed;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(202,255,51,0.04) 0%,transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);opacity:0;transition:opacity 300ms}
+body:hover #cursor-glow{opacity:1}
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--hero-border);transition:padding 250ms}
+.nav-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 24px}
+.nav-brand{font-weight:800;font-size:13px;color:var(--text-dark);display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-brand img{height:32px;width:auto}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent-glow);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 10px var(--accent-glow)}50%{box-shadow:0 0 20px rgba(202,255,51,0.5)}}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-links a{color:var(--text-dim);font-size:13px;font-weight:500;text-decoration:none;transition:color 250ms;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-3px;left:0;width:0;height:1px;background:var(--accent);border-radius:1px;transition:width 250ms}
+.nav-links a:hover{color:var(--text-dark)}
+.nav-links a:hover::after{width:100%}
+.nav-links a.active{color:var(--accent-3)}
+.nav-links a.active::after{width:100%}
+.nav-status{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#22c55e}
+.nav-status::before{content:'';width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+.hamburger{display:none;background:none;border:none;cursor:pointer;padding:4px;flex-direction:column;gap:3px}
+.hamburger span{width:20px;height:2px;background:var(--text-dark);border-radius:1px;transition:250ms}
+@media(max-width:768px){.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);flex-direction:column;padding:16px 24px;gap:12px;border-bottom:1px solid var(--hero-border)}.nav-links.open{display:flex}.hamburger{display:flex}}
+
+/* Hero */
+.docs-hero{background:var(--hero-bg);border-radius:var(--radius-lg);padding:48px 40px;position:relative;overflow:hidden;margin-bottom:12px;opacity:0;animation:fadeInUp 600ms ease-out forwards}
+.docs-hero::before{content:'';position:absolute;top:-30%;right:-10%;width:400px;height:400px;background:radial-gradient(circle,var(--accent-glow),transparent 55%);opacity:0.1;animation:pulse-bg 4s ease-in-out infinite}
+.docs-hero::after{content:'';position:absolute;bottom:-20%;left:-10%;width:300px;height:300px;background:radial-gradient(circle,rgba(0,168,107,0.12),transparent 60%);opacity:0.06;animation:pulse-bg 6s ease-in-out infinite 1s}
+@keyframes pulse-bg{0%,100%{opacity:0.06;transform:scale(1)}50%{opacity:0.12;transform:scale(1.1)}}
+.docs-hero h1{font-size: 18px;font-weight:800;color:var(--text-white);margin-bottom:12px;position:relative;z-index:2;letter-spacing:-0.02em}
+.docs-hero h1 .grad{background:linear-gradient(135deg,#caff33 0%,#a8e607 50%,#00a86b 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.docs-hero p{color:rgba(255,255,255,0.7);font-size:14px;position:relative;z-index:2;max-width:500px}
+.docs-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--accent-light);border:1px solid var(--accent-border);border-radius:var(--radius-pill);font-size:11px;font-weight:600;color:var(--accent);margin-bottom:16px;position:relative;z-index:2}
+.docs-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+
+/* Docs layout */
+.docs-wrap{max-width:1000px;margin:0 auto;padding:0 20px 48px}
+.docs-layout{display:grid;grid-template-columns:200px 1fr;gap:24px;align-items:start}
+.docs-sidebar{position:sticky;top:80px}
+.docs-sidebar h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:8px;padding:0 8px}
+.docs-sidebar ul{list-style:none;margin-bottom:16px}
+.docs-sidebar li{margin-bottom:2px}
+.docs-sidebar a{display:block;padding:6px 8px;border-radius:6px;font-size:13px;color:var(--text-muted);text-decoration:none;transition:all 200ms}
+.docs-sidebar a:hover{background:var(--accent-light);color:var(--accent-3)}
+.docs-sidebar a.active{background:var(--accent-light);color:var(--accent-3);font-weight:600}
+
+.docs-content{min-width:0}
+.docs-section{display:none}
+.docs-section.active{display:block;animation:fadeInUp 400ms ease-out}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.docs-section h2{font-size:20px;font-weight:700;color:var(--text-dark);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--accent)}
+.docs-section h3{font-size:16px;font-weight:600;color:var(--text-dark);margin-top:20px;margin-bottom:8px}
+.docs-section p{color:var(--text-muted);line-height:1.7;margin-bottom:12px}
+.docs-section ul{margin:0 0 12px 20px}
+.docs-section li{color:var(--text-muted);line-height:1.7;margin-bottom:4px}
+.docs-section code{font-family:'JetBrains Mono',monospace;font-size:12px;background:#f1f5f9;padding:2px 6px;border-radius:4px;color:var(--accent-3)}
+
+.code-block{background:#0f172a;border-radius:8px;padding:16px;margin:12px 0;overflow-x:auto;position:relative}
+.code-block code{font-family:'JetBrains Mono',monospace;font-size:12px;color:#e2e8f0;line-height:1.6}
+.code-block .kw{color:#c084fc}
+.code-block .str{color:#caff33}
+.code-block .num{color:#fb923c}
+.code-block .com{color:#64748b}
+.code-block .url{color:#60a5fa}
+.code-block .fn{color:#60a5fa}
+.code-copy{position:absolute;top:8px;right:8px;background:rgba(255,255,255,0.1);border:none;color:#94a3b8;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;transition:all 200ms}
+.code-copy:hover{background:rgba(255,255,255,0.2);color:#fff}
+
+.info-card{background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius);padding:16px;margin:12px 0}
+.info-card-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-dark);margin-bottom:8px}
+.info-card-title .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.info-card p{font-size:13px;color:var(--text-muted);margin:0}
+
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+.stat-box{background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius);padding:16px;text-align:center}
+.stat-box .val{font-size:20px;font-weight:800;color:var(--accent-3)}
+.stat-box .lbl{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-top:4px}
+
+.endpoint-row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:6px;font-size:13px}
+.endpoint-method{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;background:#dbeafe;color:#1d4ed8;min-width:40px;text-align:center}
+.endpoint-path{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-dark)}
+.endpoint-desc{color:var(--text-muted);font-size:12px;margin-left:auto}
+
+.pallet-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:16px 0}
+.pallet-card{background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius);padding:16px;transition:var(--transition)}
+.pallet-card:hover{border-color:var(--accent);box-shadow:0 4px 12px rgba(202,255,51,0.08)}
+.pallet-card h4{font-size:14px;font-weight:700;color:var(--text-dark);margin-bottom:4px}
+.pallet-card p{font-size:12px;color:var(--text-muted);margin:0}
+.pallet-card .index{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent-3);font-weight:600}
+
+@media(max-width:768px){.docs-layout{grid-template-columns:1fr}.docs-sidebar{position:static;margin-bottom:16px}.stat-grid{grid-template-columns:1fr}.pallet-grid{grid-template-columns:1fr}}
+
+.footer{max-width:1000px;margin:0 auto;padding:24px 20px;text-align:center;border-top:1px solid #e2e8f0}
+.footer p{font-size:12px;color:var(--text-muted)}
+.footer a{color:var(--accent-3);text-decoration:none;font-weight:500}
+</style>
+</head>
+<body>
+<div id="scroll-bar"></div>
+<div id="cursor-glow" style="left: 0px; top: 0px;"></div>
+
+<nav class="nav">
+<div class="nav-inner">
+<a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain"></a>
+<div class="nav-links" id="navLinks">
+<a href="/explorer/">Verdiscan</a>
+      <a href="/dex/">DEX</a>
+      <a href="/whitepaper/">Whitepaper</a>
+      <a href="/wallet/">Wallet</a>
+      <a href="/sale/">Sale</a>
+      <a href="/tokenomics/">Tokenomics</a>
+      <a href="/faucet/">Faucet</a>
+</div>
+<div class="nav-status">Testnet Live</div>
+<button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')"><span></span><span></span><span></span></button>
+</div>
+</nav>
+
+<div class="docs-wrap" style="margin-top:20px">
+
+<!-- Hero -->
+<div class="docs-hero">
+<div class="docs-badge"><span class="docs-badge-dot"></span> Developer Documentation</div>
+<h1>Verdis Chain <span class="grad">Documentation</span></h1>
+<p>Complete developer guides, API references, and integration tutorials for building on Verdis Chain — the eco-friendly DPoS blockchain.</p>
+</div>
+
+<!-- Layout -->
+<div class="docs-layout">
+<!-- Sidebar -->
+<div class="docs-sidebar">
+<h4>Getting Started</h4>
+<ul>
+<li><a href="#intro" class="active" onclick="showSection('intro',event)">Introduction</a></li>
+<li><a href="#quickstart" onclick="showSection('quickstart',event)">Quick Start</a></li>
+<li><a href="#architecture" onclick="showSection('architecture',event)">Architecture</a></li>
+</ul>
+<h4>Core Protocol</h4>
+<ul>
+<li><a href="#dpos" onclick="showSection('dpos',event)">DPoS Consensus</a></li>
+<li><a href="#tokenomics" onclick="showSection('tokenomics',event)">Tokenomics</a></li>
+<li><a href="#evm" onclick="showSection('evm',event)">EVM Layer</a></li>
+</ul>
+<h4>Pallets</h4>
+<ul>
+<li><a href="#amm" onclick="showSection('amm',event)">AMM DEX</a></li>
+<li><a href="#eco-pallet" onclick="showSection('eco-pallet',event)">Eco System</a></li>
+<li><a href="#vesting" onclick="showSection('vesting',event)">Vesting</a></li>
+<li><a href="#storage" onclick="showSection('storage',event)">Storage</a></li>
+</ul>
+<h4>Developer Tools</h4>
+<ul>
+<li><a href="#api" onclick="showSection('api',event)">REST API</a></li>
+<li><a href="#rpc" onclick="showSection('rpc',event)">JSON-RPC</a></li>
+<li><a href="#sdk" onclick="showSection('sdk',event)">JavaScript SDK</a></li>
+<li><a href="#wallet-integration" onclick="showSection('wallet-integration',event)">Wallet Integration</a></li>
+</ul>
+<h4>Resources</h4>
+<ul>
+<li><a href="#deploy" onclick="showSection('deploy',event)">Deployment</a></li>
+<li><a href="#security" onclick="showSection('security',event)">Security</a></li>
+<li><a href="#faq" onclick="showSection('faq',event)">FAQ</a></li>
+</ul>
+</div>
+
+<!-- Content -->
+<div class="docs-content">
+
+<!-- Introduction -->
+<div class="docs-section active" id="intro">
+<h2>Introduction</h2>
+<p>Verdis Chain is a Substrate-based blockchain built with a native Delegated Proof-of-Stake (DPoS) consensus mechanism, an integrated AMM decentralized exchange (DEX), and a comprehensive eco-system featuring carbon credit tracking, green validator scoring, and reforestation logging.</p>
+
+<div class="stat-grid">
+<div class="stat-box"><div class="val">7</div><div class="lbl">Core Pallets</div></div>
+<div class="stat-box"><div class="val">143</div><div class="lbl">EVM Opcodes</div></div>
+<div class="stat-box"><div class="val">260+</div><div class="lbl">Tests Passing</div></div>
+</div>
+
+<h3>Key Features</h3>
+<ul>
+<li><strong>Native DPoS Consensus</strong> — 14 validator slots, green score weighting, delegate/stake mechanism</li>
+<li><strong>AMM DEX</strong> — Constant-product automated market maker built into the chain runtime</li>
+<li><strong>Eco System</strong> — On-chain carbon credits, reforestation logging, green validator scoring</li>
+<li><strong>EVM Compatibility</strong> — 143 opcodes including Cancun upgrade (TLOAD, TSTORE, MCOPY)</li>
+<li><strong>Solana-Inspired Features</strong> — Gulf Stream mempool, Turbine block propagation, ZK compression, ALT</li>
+<li><strong>IBC Support</strong> — Cross-chain communication via Inter-Blockchain Communication protocol</li>
+</ul>
+
+<h3>Network Parameters</h3>
+<div class="info-card">
+<div class="info-card-title"><span class="dot"></span> Chain Properties</div>
+<p><code>ss58Format</code>: 909 · <code>tokenSymbol</code>: VRDX · <code>tokenDecimals</code>: 9 · <code>totalSupply</code>: 100,000,000,000 VRDX</p>
+</div>
+</div>
+
+<!-- Quick Start -->
+<div class="docs-section" id="quickstart">
+<h2>Quick Start</h2>
+<h3>Connect to the Network</h3>
+<p>Connect to the Verdis Chain testnet using the public RPC endpoint:</p>
+<div class="code-block">
+<button class="code-copy" onclick="copyCode(this)">Copy</button>
+<code><span class="com"># JSON-RPC endpoint</span>
+<span class="kw">const</span> RPC_URL = <span class="str">'https://verdischain.com/rpc'</span>;
+
+<span class="com"># WebSocket endpoint</span>
+<span class="kw">const</span> WS_URL = <span class="str">'wss://verdischain.com/ws'</span>;
+
+<span class="com"># REST API</span>
+<span class="kw">const</span> API_URL = <span class="str">'https://verdischain.com/api/v1'</span>;</code>
+</div>
+
+<h3>Query the Latest Block</h3>
+<div class="code-block">
+<button class="code-copy" onclick="copyCode(this)">Copy</button>
+<code><span class="com">// Using fetch</span>
+<span class="kw">const</span> res = <span class="kw">await</span> fetch(<span class="str">'https://verdischain.com/api/v1/block/last?limit=5'</span>);
+<span class="kw">const</span> { data } = <span class="kw">await</span> res.json();
+console.log(data);
+
+<span class="com">// Using curl</span>
+<span class="com"># curl -X POST https://verdischain.com/rpc \</span>
+<span class="com">#   -H "Content-Type: application/json" \</span>
+<span class="com">#   -d '{"jsonrpc":"2.0","id":1,"method":"chain_getHeader","params":[]}'</span></code>
+</div>
+
+<h3>Get Network Stats</h3>
+<div class="code-block">
+<button class="code-copy" onclick="copyCode(this)">Copy</button>
+<code>curl https://verdischain.com/api/v1/network/stats
+
+<span class="com"># Response:</span>
+<span class="com"># {"success":true,"data":{"block_height":599,"tps":0.28,"peers":8,...}}</span></code>
+</div>
+</div>
+
+<!-- Architecture -->
+<div class="docs-section" id="architecture">
+<h2>Architecture</h2>
+<p>Verdis Chain is built on Substrate 2.0 with a modular pallet architecture. Each pallet is an independent module handling a specific domain of chain logic.</p>
+
+<div class="pallet-grid">
+<div class="pallet-card"><div class="index">Index 10</div><h4>DPoS</h4><p>Delegated Proof-of-Stake consensus with validator registration, delegation, and slashing</p></div>
+<div class="pallet-card"><div class="index">Index 20</div><h4>AmmDex</h4><p>Automated Market Maker DEX with liquidity pools, swaps, and fee management</p></div>
+<div class="pallet-card"><div class="index">Index 30</div><h4>Eco</h4><p>Carbon credit minting, retirement, reforestation logging, green scoring</p></div>
+<div class="pallet-card"><div class="index">Index 40</div><h4>Tokenomics</h4><p>Token supply management, minting, burning, transfer caps</p></div>
+<div class="pallet-card"><div class="index">Index 50</div><h4>Vesting</h4><p>Token vesting schedules with cliff and linear release</p></div>
+<div class="pallet-card"><div class="index">Index 60</div><h4>EVM</h4><p>Ethereum Virtual Machine with 143 opcodes and Cancun upgrade support</p></div>
+<div class="pallet-card"><div class="index">Index 70</div><h4>Storage</h4><p>On-chain key-value storage for DApps and smart contracts</p></div>
+</div>
+
+<h3>Runtime Structure</h3>
+<div class="code-block">
+<button class="code-copy" onclick="copyCode(this)">Copy</button>
+<code><span class="com">// construct_runtime!</span>
+construct_runtime!(
+    <span class="kw">pub enum</span> Runtime {
+        System: system,
+        Timestamp: timestamp,
+        Balances: balances,
+        Session: session,
+        <span class="fn">DPoS</span>: dpos,           <span class="com">// Index 10</span>
+        <span class="fn">AmmDex</span>: amm_dex,     <span class="com">// Index 20</span>
+        <span class="fn">Eco</span>: eco,             <span class="com">// Index 30</span>
+        <span class="fn">Tokenomics</span>: tokenomics, <span class="com">// Index 40</span>
+        <span class="fn">Vesting</span>: vesting,    <span class="com">// Index 50</span>
+        <span class="fn">EVM</span>: evm,             <span class="com">// Index 60</span>
+        <span class="fn">Storage</span>: storage,    <span class="com">// Index 70</span>
+    }
+);</code>
+</div>
+</div>
+
+<!-- DPoS -->
+<div class="docs-section" id="dpos">
+<h2>DPoS Consensus</h2>
+<p>Verdis Chain uses a native Delegated Proof-of-Stake consensus mechanism with 14 validator slots. Validators are weighted by their green score — an eco-friendly metric that rewards sustainable operations.</p>
+
+<h3>Validator Registration</h3>
+<div class="code-block">
+<button class="code-copy" onclick="copyCode(this)">Copy</button>
+<code><span class="com">// Register as a validator</span>
+dpos.registerValidator(origin, prefs)?;
+
+<span class="com">// Delegate stake to a validator</span>
+dpos.delegate(origin, validator_address, amount)?;
+
+<span class="com">// Undelegate</span>
+dpos.undelegate(origin, validator_address)?;
+
+<span class="com">// Claim rewards</span>
+dpos.claimRewards(origin)?;</code>
+</div>
+
+<h3>Green Score System</h3>
+<p>Each validator has a green score (0-100) that affects their selection probability. Validators with higher green scores receive more block production opportunities.</p>
+<div class="info-card">
+<div class="info-card-title"><span class="dot"></span> Green Score Calculation</div>
+<p>Green scores are updated via the Eco pallet's <code>updateGreenScore</code> call, which considers: renewable energy usage, carbon offset contributions, reforestation participation, and network uptime.</p>
+</div>
+
+<h3>Custom RPC Methods</h3>
+<div class="endpoint-row"><span class="endpoint-method">RPC</span><span class="endpoint-path">dpos_activeValidators</span><span class="endpoint-desc">Get currently active validators</span></div>
+<div class="endpoint-row"><span class="endpoint-method">RPC</span><span class="endpoint-path">dpos_allValidators</span><span class="endpoint-desc">Get all registered validators</span></div>
+<div class="endpoint-row"><span class="endpoint-method">RPC</span><span class="endpoint-path">dpos_currentEpoch</span><span class="endpoint-desc">Get current epoch info</span></div>
+<div class="endpoint-row"><span class="endpoint-method">RPC</span><span class="endpoint-path">dpos_validatorStake</span><span class="endpoint-desc">Get validator stake</span></div>
+</div>
+
+<!-- Tokenomics -->
+<div class="docs-section" id="tokenomics">
+<h2>Tokenomics</h2>
+<p>VRDX (Verdis Token) is the native token with a 100 billion total supply and 9 decimals.</p>
+
+<div class="stat-grid">
+<div class="stat-box"><div class="val">100B</div><div class="lbl">Total Supply</div></div>
+<div class="stat-box"><div class="val">12B</div><div class="lbl">Investor Alloc</div></div>
+<div class="stat-box"><div class="val">9</div><div class="lbl">Decimals</div></div>
+</div>
+
+<h3>Token Distribution</h3>
+<ul>
+<li><strong>40%</strong> — Ecosystem &amp; Community</li>
+<li><strong>20%</strong> — Validator Rewards</li>
+<li><strong>12%</strong> — Investor Allocation (with vesting)</li>
+<li><strong>12%</strong> — Team (4-year vesting)</li>
+<li><strong>10%</strong> — Eco Treasury (carbon credits, reforestation)</li>
+<li><strong>6%</strong> — Liquidity &amp; DEX</li>
+</ul>
+</div>
+
+<!-- EVM -->
+<div class="docs-section" id="evm">
+<h2>EVM Layer</h2>
+<p>Verdis Chain includes a full Ethereum Virtual Machine implementation with 143 opcodes, including the Cancun upgrade (TLOAD, TSTORE, MCOPY, BLOBHASH, BLOBBASEFEE).</p>
+
+<h3>Chain Configuration</h3>
+<div class="code-block">
+<code>chain_id: <span class="num">909</span>
+max_code_size: <span class="num">24576</span>
+gas_limit: configurable per transaction</code>
+</div>
+
+<h3>Supported Opcodes</h3>
+<p>The EVM pallet supports all standard opcodes plus:</p>
+<ul>
+<li><strong>Cancun</strong> — TLOAD (0x5C), TSTORE (0x5D), MCOPY (0x5E), BLOBHASH (0x49), BLOBBASEFEE (0x48)</li>
+<li><strong>Comparison</strong> — SGT (0x13), SLT (0x12), GT (0x11), LT (0x10)</li>
+<li><strong>Stack/Memory</strong> — MSTORE, MLOAD, RETURN, REVERT, STOP, ADD, SUB, MUL, DIV</li>
+<li><strong>Environmental</strong> — CALLER, CALLVALUE, CALLDATASIZE, CALLDATALOAD</li>
+</ul>
+<p>123 EVM-specific tests verify opcode correctness across the full instruction set.</p>
+</div>
+
+<!-- AMM DEX -->
+<div class="docs-section" id="amm">
+<h2>AMM DEX Pallet</h2>
+<p>The AmmDex pallet implements a constant-product automated market maker (x*y=k) directly in the chain runtime, eliminating the need for smart contracts for basic swaps.</p>
+
+<h3>Operations</h3>
+<div class="code-block">
+<button class="code-copy" onclick="copyCode(this)">Copy</button>
+<code><span class="com">// Create a new liquidity pool</span>
+amm_dex.createPool(origin, token_a, token_b, initial_a, initial_b, fee)?;
+
+<span class="com">// Add liquidity to an existing pool</span>
+amm_dex.addLiquidity(origin, pool_id, amount_a, amount_b)?;
+
+<span class="com">// Remove liquidity</span>
+amm_dex.removeLiquidity(origin, pool_id, lp_tokens)?;
+
+<span class="com">// Swap tokens</span>
+amm_dex.swap(origin, pool_id, token_in, amount_in, min_amount_out)?;</code>
+</div>
+
+<h3>Custom RPC Methods</h3>
+<div class="endpoint-row"><span class="endpoint-method">RPC</span><span class="endpoint-path">amm_dex_getAllPools</span><span class="endpoint-desc">Get all AMM pools</span></div>
+<div class="endpoint-row"><span class="endpoint-method">RPC</span><span class="endpoint-path">amm_dex_getPool</span><span class="endpoint-desc">Get single pool by ID</span></div>
+<div class="endpoint-row"><span class="endpoint-method">RPC</span><span class="endpoint-path">amm_dex_getPrice</span><span class="endpoint-desc">Get current price for a pair</span></div>
+<div class="endpoint-row"><span class="endpoint-method">RPC</span><span class="endpoint-path">amm_dex_getLiquidity</span><span class="endpoint-desc">Get liquidity for a pool</span></div>
+<div class="endpoint-row"><span class="endpoint-method">RPC</span><span class="endpoint-path">amm_dex_getPoolCount</span><span class="endpoint-desc">Get total pool count</span></div>
+</div>
+
+<!-- Eco Pallet -->
+<div class="docs-section" id="eco-pallet">
+<h2>Eco System</h2>
+<p>The Eco pallet is Verdis Chain's signature feature — bringing environmental accountability on-chain through carbon credits, reforestation logging, and green validator scoring.</p>
+
+<h3>Carbon Credits</h3>
+<div class="code-block">
+<button class="code-copy" onclick="copyCode(this)">Copy</button>
+<code><span class="com">// Mint a carbon credit</span>
+eco.mintCarbonCredit(origin, amount_tons, metadata)?;
+
+<span class="com">// Transfer a carbon credit</span>
+eco.transferCarbonCredit(origin, credit_id, new_owner)?;
+
+<span class="com">// Retire (burn) a carbon credit</span>
+eco.retireCarbonCredit(origin, credit_id)?;</code>
+</div>
+
+<h3>Reforestation Logging</h3>
+<div class="code-block">
+<button class="code-copy" onclick="copyCode(this)">Copy</button>
+<code><span class="com">// Log a reforestation event</span>
+eco.logReforestation(origin, location, trees_planted, project_id)?;</code>
+</div>
+
+<h3>Custom RPC Methods</h3>
+<div class="endpoint-row"><span class="endpoint-method">RPC</span><span class="endpoint-path">eco_getTotalCO2Offset</span><span class="endpoint-desc">Total CO2 offset in tons</span></div>
+<div class="endpoint-row"><span class="endpoint-method">RPC</span><span class="endpoint-path">eco_getTotalTreesPlanted</span><span class="endpoint-desc">Total trees planted</span></div>
+<div class="endpoint-row"><span class="endpoint-method">RPC</span><span class="endpoint-path">eco_getCarbonCreditCount</span><span class="endpoint-desc">Total carbon credits minted</span></div>
+<div class="endpoint-row"><span class="endpoint-method">RPC</span><span class="endpoint-path">eco_getGreenValidatorCount</span><span class="endpoint-desc">Count of green-certified validators</span></div>
+<div class="endpoint-row"><span class="endpoint-method">RPC</span><span class="endpoint-path">eco_getTotalCreditsRetired</span><span class="endpoint-desc">Total retired carbon credits</span></div>
+</div>
+
+<!-- Vesting -->
+<div class="docs-section" id="vesting">
+<h2>Vesting Pallet</h2>
+<p>The Vesting pallet manages token vesting schedules with cliff periods and linear release.</p>
+<h3>Operations</h3>
+<div class="code-block">
+<code><span class="com">// Create a vesting schedule</span>
+vesting.createVestingSchedule(origin, beneficiary, amount, start_block, cliff_blocks, vesting_blocks)?;
+
+<span class="com">// Claim vested tokens</span>
+vesting.claimVested(origin)?;</code>
+</div>
+</div>
+
+<!-- Storage -->
+<div class="docs-section" id="storage">
+<h2>Storage Pallet</h2>
+<p>The Storage pallet provides on-chain key-value storage for DApps and smart contracts that need persistent state beyond the EVM.</p>
+<div class="code-block">
+<code><span class="com">// Store a value</span>
+storage.set(origin, key, value)?;
+
+<span class="com">// Retrieve a value</span>
+storage.get(key) -&gt; Vec<u8>
+
+<span class="com">// Delete a value</span>
+storage.delete(origin, key)?;</u8></code>
+</div>
+</div>
+
+<!-- API -->
+<div class="docs-section" id="api">
+<h2>REST API</h2>
+<p>The Verdiscan REST API provides structured access to blockchain data through clean REST endpoints. Full documentation is available at <a href="/api/" style="color:var(--accent-3);font-weight:600;">verdischain.com/api/</a></p>
+
+<h3>Available Endpoints</h3>
+<div class="endpoint-row"><span class="endpoint-method">GET</span><span class="endpoint-path">/api/v1/block/last</span><span class="endpoint-desc">Latest blocks</span></div>
+<div class="endpoint-row"><span class="endpoint-method">GET</span><span class="endpoint-path">/api/v1/block/{number}</span><span class="endpoint-desc">Block detail</span></div>
+<div class="endpoint-row"><span class="endpoint-method">GET</span><span class="endpoint-path">/api/v1/tx/last</span><span class="endpoint-desc">Latest transactions</span></div>
+<div class="endpoint-row"><span class="endpoint-method">GET</span><span class="endpoint-path">/api/v1/account/{address}</span><span class="endpoint-desc">Account detail</span></div>
+<div class="endpoint-row"><span class="endpoint-method">GET</span><span class="endpoint-path">/api/v1/validators</span><span class="endpoint-desc">All validators</span></div>
+<div class="endpoint-row"><span class="endpoint-method">GET</span><span class="endpoint-path">/api/v1/dex/pools</span><span class="endpoint-desc">All DEX pools</span></div>
+<div class="endpoint-row"><span class="endpoint-method">GET</span><span class="endpoint-path">/api/v1/eco/metrics</span><span class="endpoint-desc">Eco metrics</span></div>
+<div class="endpoint-row"><span class="endpoint-method">GET</span><span class="endpoint-path">/api/v1/network/stats</span><span class="endpoint-desc">Network statistics</span></div>
+
+<h3>Rate Limiting</h3>
+<p>Testnet: 100 requests/minute. Rate limit headers are included in every response.</p>
+</div>
+
+<!-- RPC -->
+<div class="docs-section" id="rpc">
+<h2>JSON-RPC Reference</h2>
+<p>The Substrate JSON-RPC is available at <code>https://verdischain.com/rpc</code> (HTTP) and <code>wss://verdischain.com/ws</code> (WebSocket).</p>
+
+<h3>Core Methods</h3>
+<div class="endpoint-row"><span class="endpoint-method">POST</span><span class="endpoint-path">chain_getBlock</span><span class="endpoint-desc">Get full block by hash</span></div>
+<div class="endpoint-row"><span class="endpoint-method">POST</span><span class="endpoint-path">chain_getHeader</span><span class="endpoint-desc">Get block header</span></div>
+<div class="endpoint-row"><span class="endpoint-method">POST</span><span class="endpoint-path">chain_getBlockHash</span><span class="endpoint-desc">Get block hash by number</span></div>
+<div class="endpoint-row"><span class="endpoint-method">POST</span><span class="endpoint-path">state_getStorage</span><span class="endpoint-desc">Query storage by key</span></div>
+<div class="endpoint-row"><span class="endpoint-method">POST</span><span class="endpoint-path">state_getMetadata</span><span class="endpoint-desc">Get chain metadata</span></div>
+<div class="endpoint-row"><span class="endpoint-method">POST</span><span class="endpoint-path">system_health</span><span class="endpoint-desc">Node health check</span></div>
+<div class="endpoint-row"><span class="endpoint-method">POST</span><span class="endpoint-path">system_peers</span><span class="endpoint-desc">Connected peers</span></div>
+<div class="endpoint-row"><span class="endpoint-method">POST</span><span class="endpoint-path">author_submitExtrinsic</span><span class="endpoint-desc">Submit transaction</span></div>
+
+<h3>Custom Methods (38 total)</h3>
+<p>In addition to standard Substrate RPC, Verdis Chain exposes 19 custom RPC methods across 4 pallets: <code>amm_dex_*</code> (9), <code>dpos_*</code> (4), <code>eco_*</code> (6).</p>
+</div>
+
+<!-- SDK -->
+<div class="docs-section" id="sdk">
+<h2>JavaScript SDK</h2>
+<p>The Verdis JavaScript SDK provides a clean interface for interacting with the blockchain. 51 methods, native WebSocket support, zero dependencies.</p>
+
+<div class="code-block">
+<button class="code-copy" onclick="copyCode(this)">Copy</button>
+<code><span class="com">// Import the SDK</span>
+<span class="kw">import</span> VerdisSDK <span class="kw">from</span> <span class="str">'./verdis-sdk.js'</span>;
+
+<span class="com">// Initialize</span>
+<span class="kw">const</span> sdk = <span class="kw">new</span> VerdisSDK({
+  rpcUrl: <span class="str">'https://verdischain.com/rpc'</span>,
+  wsUrl: <span class="str">'wss://verdischain.com/ws'</span>
+});
+
+<span class="com">// Get latest block</span>
+<span class="kw">const</span> block = <span class="kw">await</span> sdk.getLatestBlock();
+
+<span class="com">// Get validators</span>
+<span class="kw">const</span> validators = <span class="kw">await</span> sdk.getValidators();
+
+<span class="com">// Get DEX pools</span>
+<span class="kw">const</span> pools = <span class="kw">await</span> sdk.getAllPools();
+
+<span class="com">// Get eco metrics</span>
+<span class="kw">const</span> eco = <span class="kw">await</span> sdk.getEcoMetrics();</code>
+</div>
+</div>
+
+<!-- Wallet Integration -->
+<div class="docs-section" id="wallet-integration">
+<h2>Wallet Integration</h2>
+<p>Verdis Chain supports non-custodial wallets using the <code>@noble/secp256k1</code> and <code>@noble/hashes</code> libraries for cryptographic operations.</p>
+
+<h3>Key Generation</h3>
+<div class="code-block">
+<button class="code-copy" onclick="copyCode(this)">Copy</button>
+<code><span class="kw">import</span> * <span class="kw">as</span> secp <span class="kw">from</span> <span class="str">'@noble/secp256k1'</span>;
+<span class="kw">import</span> { sha256 } <span class="kw">from</span> <span class="str">'@noble/hashes/sha256'</span>;
+
+<span class="com">// Generate a new keypair</span>
+<span class="kw">const</span> privateKey = secp.utils.randomPrivateKey();
+<span class="kw">const</span> publicKey = secp.getPublicKey(privateKey);
+
+<span class="com">// Sign a message</span>
+<span class="kw">const</span> msgHash = sha256(<span class="str">'Hello Verdis'</span>);
+<span class="kw">const</span> signature = <span class="kw">await</span> secp.sign(msgHash, privateKey);</code>
+</div>
+
+<h3>SS58 Address Format</h3>
+<p>Verdis Chain uses SS58 format with prefix <code>909</code>. Addresses are derived from the public key using Blake2b hashing and base58 encoding.</p>
+</div>
+
+<!-- Deployment -->
+<div class="docs-section" id="deploy">
+<h2>Deployment</h2>
+<h3>Production Server</h3>
+<div class="info-card">
+<div class="info-card-title"><span class="dot"></span> Infrastructure</div>
+<p><strong>Domain:</strong> verdischain.com · <strong>IP:</strong> 91.98.160.145 · <strong>OS:</strong> Ubuntu 26.04 LTS · <strong>Specs:</strong> 8-core AMD EPYC, 32GB RAM, 225GB SSD</p>
+</div>
+<h3>Docker</h3>
+<div class="code-block">
+<code><span class="com"># Build and run the node</span>
+docker build -t verdis-node .
+docker run -d -p 9944:9944 -p 30333:30333 verdis-node</code>
+</div>
+<h3>Nginx</h3>
+<p>The RPC is proxied through nginx on port 443 with rate limiting, CORS headers, and SSL/TLS 1.3. WebSocket connections are supported at <code>/ws</code>.</p>
+</div>
+
+<!-- Security -->
+<div class="docs-section" id="security">
+<h2>Security</h2>
+<p>Verdis Chain has undergone a security audit with 6 fixes applied across the AMM DEX, DPoS, and Eco pallets.</p>
+
+<h3>Applied Fixes</h3>
+<ul>
+<li><strong>Critical:</strong> Division-by-zero in remove_liquidity (AMM DEX)</li>
+<li><strong>High:</strong> Self-scoring prevention in update_green_score (Eco)</li>
+<li><strong>High:</strong> Authorization check added to mint_carbon_credit (Eco)</li>
+<li><strong>High:</strong> Overflow protection for LP token amounts (AMM DEX)</li>
+<li><strong>Medium:</strong> Validator registration bounds check (DPoS)</li>
+<li><strong>Medium:</strong> Slashing calculation precision (DPoS)</li>
+</ul>
+
+<h3>Infrastructure Security</h3>
+<ul>
+<li>SSH hardened (key-only authentication)</li>
+<li>Fail2Ban active</li>
+<li>SSL/TLS 1.3 with HSTS</li>
+<li>Content Security Policy (CSP) headers</li>
+<li>Rate limiting on RPC and web endpoints</li>
+</ul>
+</div>
+
+<!-- FAQ -->
+<div class="docs-section" id="faq">
+<h2>FAQ</h2>
+
+<h3>What is Verdis Chain?</h3>
+<p>Verdis Chain is a Substrate-based blockchain with native DPoS consensus, an integrated AMM DEX, and an eco-friendly design featuring carbon credit tracking, green validator scoring, and reforestation logging.</p>
+
+<h3>What is the VRDX token?</h3>
+<p>VRDX is the native token with a 100 billion total supply and 9 decimals. It's used for transaction fees, staking, governance, and DEX liquidity.</p>
+
+<h3>How do I become a validator?</h3>
+<p>Use the DPoS pallet's <code>registerValidator</code> extrinsic to register. You'll need a minimum stake and a green score to be selected for block production.</p>
+
+<h3>Is the EVM fully compatible?</h3>
+<p>Yes. The EVM pallet supports 143 opcodes including the Cancun upgrade. You can deploy Solidity smart contracts directly. Chain ID is 909.</p>
+
+<h3>How do I get testnet tokens?</h3>
+<p>Use the faucet at <a href="/faucet/" style="color:var(--accent-3);font-weight:600;">verdischain.com/faucet/</a> to request testnet VRDX tokens.</p>
+
+<h3>What is the green score?</h3>
+<p>The green score (0-100) measures a validator's environmental impact. Higher scores increase block production probability. Scores are updated through the Eco pallet based on renewable energy usage, carbon offsets, and reforestation participation.</p>
+</div>
+
+</div>
+</div>
+
+<!-- Footer -->
+
+</div>
+
+<script>
+function showSection(id, e) {
+  if (e) e.preventDefault();
+  document.querySelectorAll('.docs-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.docs-sidebar a').forEach(a => a.classList.remove('active'));
+  const section = document.getElementById(id);
+  if (section) section.classList.add('active');
+  const link = document.querySelector('.docs-sidebar a[href="#' + id + '"]');
+  if (link) link.classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function copyCode(btn) {
+  const code = btn.parentElement.querySelector('code');
+  navigator.clipboard.writeText(code.textContent).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+
+// Scroll progress
+window.addEventListener('scroll', () => {
+  const winH = window.innerHeight;
+  const docH = document.documentElement.scrollHeight - winH;
+  const scrolled = (window.scrollY / docH) * 100;
+  document.getElementById('scroll-bar').style.width = scrolled + '%';
+});
+
+// Cursor glow
+document.addEventListener('mousemove', e => {
+  const glow = document.getElementById('cursor-glow');
+  glow.style.left = e.clientX + 'px';
+  glow.style.top = e.clientY + 'px';
+});
+</script>
+<footer class="footer">
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/explorer/">Verdiscan</a>
+    <a href="/dex/">DEX</a>
+    <a href="/whitepaper/">Whitepaper</a>
+    <a href="/wallet/">Wallet</a>
+    <a href="/sale/">Sale</a>
+    <a href="/tokenomics/">Tokenomics</a>
+    <a href="/faucet/">Faucet</a>
+    <a href="/validators/">Validators</a>
+    <a href="/eco/">Eco</a>
+    <a href="/referral/">Referral</a>
+    <a href="/incentives/">Incentives</a>
+    <a href="/contact/">Contact</a>
+    <a href="/api/">API</a>
+    <a href="/docs/">Docs</a>
+    <a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a>
+  </div>
+  
+</footer>
+
+
+</body></html>
