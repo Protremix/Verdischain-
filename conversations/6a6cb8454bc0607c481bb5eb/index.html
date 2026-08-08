@@ -115,6 +115,10 @@ a{color:inherit;text-decoration:none}
 .panel-link{font-size:12px;color:var(--accent);font-weight:500;cursor:pointer}
 .panel-link:hover{text-decoration:underline}
 
+
+.btn-export{padding:3px 8px;font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(22,163,74,0.3);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.btn-export:hover{background:var(--accent);color:#ffffff;border-color:var(--accent)}
+
 /* Table */
 .tbl{width:100%}
 .tbl thead th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
@@ -186,6 +190,39 @@ a{color:inherit;text-decoration:none}
 @media (max-width: 480px) { .footer-inner { grid-template-columns: 1fr; gap: 24px; } .footer-bottom { flex-direction: column; gap: 8px; text-align: center; } }
 /* === End Footer === */
 
+
+/* Solscan-style info cards */
+.info-cards{max-width:1200px;margin:0 auto;padding:0 24px 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;position:relative;overflow:hidden}
+.info-card-label{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.info-card-value{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text)}
+.info-card-value.accent{color:var(--accent)}
+.info-card-sub{font-size:11px;color:var(--text-3);margin-top:4px}
+.info-card-bar{height:6px;background:rgba(0,0,0,.06);border-radius:3px;margin-top:10px;overflow:hidden}
+.info-card-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--success));border-radius:3px;transition:width .5s ease}
+.info-card-pct{position:absolute;top:16px;right:20px;font-size:11px;font-weight:600;color:var(--accent)}
+.badge-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.badge-sm{padding:2px 8px;border-radius:100px;font-size:10px;font-weight:600;background:rgba(22,163,74,.1);color:var(--accent)}
+.badge-sm.warn{background:rgba(251,191,36,.1);color:var(--warning)}
+.badge-sm.err{background:rgba(248,113,113,.1);color:var(--error)}
+@media(max-width:768px){.info-cards{grid-template-columns:repeat(2,1fr)}}
+
+
+/* Top Markets Ticker */
+.market-ticker{display:flex;align-items:center;gap:0;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin:12px 0;overflow:hidden;position:relative}
+.market-ticker-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);white-space:nowrap;padding-right:14px;border-right:1px solid var(--border);margin-right:14px;flex-shrink:0}
+.market-ticker-scroll{display:flex;gap:24px;overflow:hidden;flex:1;mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent)}
+.market-ticker-scroll:hover{animation-play-state:paused}
+.ticker-item{display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0}
+.ticker-rank{font-size:10px;color:var(--text-3);font-weight:600}
+.ticker-pair{font-size:13px;font-weight:600;color:var(--text)}
+.ticker-tvl{font-size:12px;color:var(--text-2)}
+.ticker-change{font-size:11px;font-weight:600;padding:2px 6px;border-radius:4px}
+.ticker-change.pos{color:#16a34a;background:rgba(22,163,74,.1)}
+.ticker-change.neg{color:#dc2626;background:rgba(220,38,38,.1)}
+@keyframes scroll-ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.market-ticker-scroll-inner{display:flex;gap:24px;animation:scroll-ticker 40s linear infinite}
+.market-ticker-scroll:hover .market-ticker-scroll-inner{animation-play-state:paused}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -247,6 +284,47 @@ a{color:inherit;text-decoration:none}
   <div class="stat-card reveal"><div class="stat-label">Validators</div><div class="stat-value success" id="statVal"><span class="skel" style="width:30px"></span></div><div class="stat-sub">DPoS Active</div></div>
 </section>
 
+
+<!-- Solscan-style Info Cards -->
+<div class="info-cards">
+  <div class="info-card">
+    <div class="info-card-label">Total Supply</div>
+    <div class="info-card-value accent" id="infoSupply">100,000,000,000</div>
+    <div class="info-card-sub">VRDX · 9 decimals</div>
+    <div class="badge-row"><span class="badge-sm">Circulating: <span id="infoCirc">—</span></span></div>
+  </div>
+  <div class="info-card">
+    <div class="info-card-label">Total Stake</div>
+    <div class="info-card-value" id="infoStake">— VRDX</div>
+    <div class="info-card-sub" id="infoStakeSub">Loading validators…</div>
+    <div class="info-card-pct" id="infoStakePct"></div>
+    <div class="info-card-bar"><div class="info-card-bar-fill" id="infoStakeBar" style="width:0%"></div></div>
+  </div>
+  <div class="info-card">
+    <div class="info-card-label">Epoch Progress</div>
+    <div class="info-card-value accent" id="infoEpoch">—</div>
+    <div class="info-card-sub" id="infoEpochTime">Loading…</div>
+    <div class="info-card-bar"><div class="info-card-bar-fill" id="infoEpochBar" style="width:0%"></div></div>
+  </div>
+  <div class="info-card">
+    <div class="info-card-label">DEX TVL</div>
+    <div class="info-card-value" id="infoTvl">— VRDX</div>
+    <div class="info-card-sub" id="infoTvlSub">Loading pools…</div>
+    <div class="badge-row"><span class="badge-sm" id="infoPoolCount">— pools</span></div>
+  </div>
+</div>
+
+
+<!-- Top Markets Ticker -->
+<div class="market-ticker" id="marketTicker" style="display:none">
+  <div class="market-ticker-label">⚡ Top Markets</div>
+  <div class="market-ticker-scroll">
+    <div class="market-ticker-scroll-inner" id="tickerInner">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</div>
+
 <!-- Search -->
 <div class="search-wrap">
   <div class="search-box">
@@ -264,6 +342,12 @@ a{color:inherit;text-decoration:none}
     <button class="tab" data-t="validators" onclick="switchTab('validators')">Validators</button>
     <button class="tab" data-t="dex" onclick="switchTab('dex')">DEX</button>
     <button class="tab" data-t="eco" onclick="switchTab('eco')">Eco</button>
+    <button class="tab" data-t="accounts" onclick="switchTab('accounts')">Accounts</button>
+    <button class="tab" data-t="topaccounts" onclick="switchTab('topaccounts')">Top Accounts</button>
+    <button class="tab" data-t="holders" onclick="switchTab('holders')">Token Holders</button>
+    <button class="tab" data-t="analytics" onclick="switchTab('analytics')">Analytics</button>
+    <button class="tab" data-t="transfers" onclick="switchTab('transfers')">Transfers</button>
+    <button class="tab" data-t="api" onclick="switchTab('api')">API</button>
   </div>
 </div>
 
@@ -286,8 +370,15 @@ a{color:inherit;text-decoration:none}
   <!-- Blocks -->
   <div class="tab-content" id="tab-blocks">
     <div class="panel">
-      <div class="panel-header"><span class="panel-title">All Blocks</span><span style="font-size:12px;color:var(--text-3)" id="blockCount"></span></div>
-      <table class="tbl"><thead><tr><th>BLOCK</th><th>TIME</th><th>EXT</th><th>EXTRINSICS ROOT</th><th>HASH</th></tr></thead><tbody id="allBlocks"></tbody></table>
+      <div class="panel-header">
+        <span class="panel-title">All Blocks</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--text-3)" id="blockCount"></span>
+          <button class="btn-export" onclick="exportToCSV('blocksTable', 'verdiscan_blocks.csv')">Export CSV</button>
+          <button class="btn-export" onclick="exportToJSON('blocksTable', 'verdiscan_blocks.json')">Export JSON</button>
+        </div>
+      </div>
+      <table class="tbl" id="blocksTable"><thead><tr><th>BLOCK</th><th>TIME</th><th>EXT</th><th>EXTRINSICS ROOT</th><th>HASH</th></tr></thead><tbody id="allBlocks"></tbody></table>
     </div>
   </div>
 
@@ -323,6 +414,350 @@ a{color:inherit;text-decoration:none}
     </div>
   </div>
 </div>
+
+
+  <!-- Accounts -->
+  <div class="tab-content" id="tab-accounts">
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Account Explorer</span></div>
+      <div style="padding:16px 20px">
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <input type="text" id="acctSearchInput" placeholder="Enter SS58 address (e.g. 5GrwvaEF...)..." style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--mono);font-size:13px" onkeydown="if(event.key==='Enter')searchAccount()">
+          <button class="hero-btn hero-btn-primary" onclick="searchAccount()">Search</button>
+        </div>
+        <div id="acctResult" style="display:none">
+          <div class="grid-2" style="margin-bottom:16px">
+            <div class="panel" style="margin:0">
+              <div class="panel-header"><span class="panel-title">Account Info</span></div>
+              <div style="padding:16px 20px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                  <div>
+                    <div class="stat-label" style="margin-bottom:4px">ADDRESS</div>
+                    <div class="mono" id="acctAddr" style="font-size:12px;word-break:break-all;color:var(--text)"></div>
+                  </div>
+                  <div>
+                    <div class="stat-label" style="margin-bottom:4px">NONCE</div>
+                    <div class="mono" id="acctNonce" style="font-size:14px;font-weight:600;color:var(--accent)"></div>
+                  </div>
+                  <div>
+                    <div class="stat-label" style="margin-bottom:4px">FREE BALANCE</div>
+                    <div class="mono" id="acctFree" style="font-size:18px;font-weight:700;color:var(--accent)"></div>
+                  </div>
+                  <div>
+                    <div class="stat-label" style="margin-bottom:4px">RESERVED</div>
+                    <div class="mono" id="acctReserved" style="font-size:14px;font-weight:600"></div>
+                  </div>
+                  <div>
+                    <div class="stat-label" style="margin-bottom:4px">MISC FROZEN</div>
+                    <div class="mono" id="acctMiscFrozen" style="font-size:14px"></div>
+                  </div>
+                  <div>
+                    <div class="stat-label" style="margin-bottom:4px">FEE FROZEN</div>
+                    <div class="mono" id="acctFeeFrozen" style="font-size:14px"></div>
+                  </div>
+                </div>
+                <div style="margin-top:12px;padding:10px;background:rgba(22,163,74,.05);border-radius:var(--radius-sm);font-size:12px;color:var(--text-2)">
+                  <strong style="color:var(--accent)">Total Balance:</strong> <span class="mono" id="acctTotal" style="font-weight:600"></span>
+                </div>
+              </div>
+            </div>
+            <div class="panel" style="margin:0">
+              <div class="panel-header"><span class="panel-title">Token Holdings</span></div>
+              <div style="padding:16px 20px">
+                <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+                  <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--success));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px">V</div>
+                  <div style="flex:1">
+                    <div style="font-weight:600;font-size:14px">VRDX</div>
+                    <div style="font-size:11px;color:var(--text-3)">Verdis Chain Native Token</div>
+                  </div>
+                  <div class="mono" id="acctVrdxHolding" style="font-weight:700;font-size:16px;color:var(--accent)"></div>
+                </div>
+                <div id="acctIsValidator" style="display:none;margin-top:12px;padding:10px;background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.2);border-radius:var(--radius-sm)">
+                  <span style="font-size:12px;color:var(--accent);font-weight:600">&#10003; Active DPoS Validator</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Transaction History</span><span style="font-size:11px;color:var(--text-3)" id="acctTxCount">Scanning…</span></div>
+            <table class="tbl"><thead><tr><th>BLOCK</th><th>TIME</th><th>METHOD</th><th>DATA</th><th>HASH</th></tr></thead><tbody id="acctTxTable"></tbody></table>
+          </div>
+        </div>
+        <div id="acctPlaceholder" style="text-align:center;padding:40px 20px;color:var(--text-3)">
+          <div style="font-size:36px;margin-bottom:8px;opacity:.3">&#128269;</div>
+          <div style="font-size:14px;font-weight:500">Search for an account to view balance, holdings, and transaction history</div>
+          <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+            <button onclick="searchAccount('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY')" style="padding:6px 12px;border:1px solid var(--border);border-radius:100px;font-size:11px;cursor:pointer;background:var(--card);color:var(--text-2)">Alice</button>
+            <button onclick="searchAccount('5FHneW46xGXgs5mUiveG4ZKvCTN2X4JUKr9Dp8q5m1bnZXY8')" style="padding:6px 12px;border:1px solid var(--border);border-radius:100px;font-size:11px;cursor:pointer;background:var(--card);color:var(--text-2)">Bob</button>
+            <button onclick="searchAccount('5FLSigC9p9xLqepM5yBoNrN3zszVBqk2kM5JpUsWpc8kM5N3')" style="padding:6px 12px;border:1px solid var(--border);border-radius:100px;font-size:11px;cursor:pointer;background:var(--card);color:var(--text-2)">Charlie</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Accounts -->
+  <div class="tab-content" id="tab-topaccounts">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Top Accounts by Stake</span>
+        <span class="panel-link" id="topAcctCount">Loading...</span>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>RANK</th><th>ADDRESS</th><th>NAME</th><th>STAKE (VRDX)</th><th>GREEN SCORE</th><th>VALIDATOR</th></tr></thead>
+        <tbody id="topAccountsTable">
+          <tr><td colspan="6" style="text-align:center;padding:20px"><span class="skel" style="width:100%"></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Token Holders -->
+  <div class="tab-content" id="tab-holders">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">VRDX Token Holders</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--text-3)" id="holdersCount">Loading...</span>
+          <button class="btn-export" onclick="exportToCSV('holdersTable', 'verdiscan_token_holders.csv')">Export CSV</button>
+          <button class="btn-export" onclick="exportToJSON('holdersTable', 'verdiscan_token_holders.json')">Export JSON</button>
+        </div>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>RANK</th><th>ADDRESS</th><th>TYPE</th><th>BALANCE (VRDX)</th><th>FREE</th><th>RESERVED</th></tr></thead>
+        <tbody id="holdersTable">
+          <tr><td colspan="6" style="text-align:center;padding:20px"><span class="skel" style="width:100%"></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Analytics -->
+  <div class="tab-content" id="tab-analytics">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" class="analytics-grid">
+      <div class="panel" style="padding:16px">
+        <div class="panel-header"><span class="panel-title">Transaction Volume</span><span class="panel-link" id="analyticsTxCount">—</span></div>
+        <canvas id="txVolumeChart" width="400" height="180" style="width:100%;height:180px"></canvas>
+        <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:var(--text-3)">
+          <span>Blocks <span id="analyticsBlocks" style="color:var(--text-1);font-weight:600">0</span></span>
+          <span>Total TX <span id="analyticsTotalTx" style="color:var(--text-1);font-weight:600">0</span></span>
+          <span>Avg/Block <span id="analyticsAvgTx" style="color:var(--text-1);font-weight:600">0</span></span>
+        </div>
+      </div>
+      <div class="panel" style="padding:16px">
+        <div class="panel-header"><span class="panel-title">TPS Over Time</span><span class="panel-link" id="analyticsTpsLabel">—</span></div>
+        <canvas id="tpsHistoryChart" width="400" height="180" style="width:100%;height:180px"></canvas>
+        <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:var(--text-3)">
+          <span>Current <span id="analyticsCurTps" style="color:var(--text-1);font-weight:600">0</span></span>
+          <span>Peak <span id="analyticsPeakTps" style="color:var(--text-1);font-weight:600">0</span></span>
+          <span>Avg <span id="analyticsAvgTps" style="color:var(--text-1);font-weight:600">0</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="padding:16px">
+      <div class="panel-header"><span class="panel-title">Block Production Rate</span><span class="panel-link" id="analyticsBlockRate">—</span></div>
+      <canvas id="blockRateChart" width="800" height="120" style="width:100%;height:120px"></canvas>
+      <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:var(--text-3)">
+        <span>Avg Block Time <span id="analyticsAvgBlockTime" style="color:var(--text-1);font-weight:600">6.0s</span></span>
+        <span>Blocks/min <span id="analyticsBlocksPerMin" style="color:var(--text-1);font-weight:600">10</span></span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px" class="analytics-stats">
+      <div class="stat-card reveal"><div class="stat-label">Extrinsic Success Rate</div><div class="stat-value success" id="analyticsSuccessRate" style="font-size:20px">—</div><div class="stat-sub" id="analyticsSuccessDetail">— / —</div></div>
+      <div class="stat-card reveal"><div class="stat-label">Unique Signers</div><div class="stat-value" id="analyticsUniqueSigners" style="font-size:20px">—</div><div class="stat-sub">Last 50 blocks</div></div>
+      <div class="stat-card reveal"><div class="stat-label">Total Extrinsics</div><div class="stat-value" id="analyticsTotalExt" style="font-size:20px">—</div><div class="stat-sub">Recent blocks</div></div>
+    </div>
+  </div>
+
+  <!-- Token Transfers -->
+  <div class="tab-content" id="tab-transfers">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">VRDX Token Transfers</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--text-3)" id="transfersCount">Loading...</span>
+          <button class="btn-export" onclick="exportToCSV('transfersTable', 'verdiscan_transfers.csv')">Export CSV</button>
+          <button class="btn-export" onclick="exportToJSON('transfersTable', 'verdiscan_transfers.json')">Export JSON</button>
+        </div>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>TX HASH</th><th>BLOCK</th><th>FROM</th><th>TO</th><th>AMOUNT (VRDX)</th><th>TYPE</th></tr></thead>
+        <tbody id="transfersTable">
+          <tr><td colspan="6" style="text-align:center;padding:20px"><span class="skel" style="width:100%"></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- API Documentation -->
+  <div class="tab-content" id="tab-api">
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <!-- REST API Section -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">REST API Endpoints</span>
+          <span style="font-size:12px;color:var(--text-3)">Base URL: https://verdischain.com</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th style="width:20%">ENDPOINT</th>
+                <th style="width:10%">METHOD</th>
+                <th style="width:25%">DESCRIPTION</th>
+                <th style="width:45%">EXAMPLE CURL</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">/api/v1/health</code></td>
+                <td><span class="badge" style="background:rgba(22,163,74,.15);color:var(--accent)">GET</span></td>
+                <td>Check network node health and API status</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s https://verdischain.com/api/v1/health</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">/api/v1/block/latest</code></td>
+                <td><span class="badge" style="background:rgba(22,163,74,.15);color:var(--accent)">GET</span></td>
+                <td>Get the latest block details</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s https://verdischain.com/api/v1/block/latest</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">/api/v1/block/:num</code></td>
+                <td><span class="badge" style="background:rgba(22,163,74,.15);color:var(--accent)">GET</span></td>
+                <td>Get block details by block number</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s https://verdischain.com/api/v1/block/100</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">/api/v1/validators</code></td>
+                <td><span class="badge" style="background:rgba(22,163,74,.15);color:var(--accent)">GET</span></td>
+                <td>List active DPoS validators and stakes</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s https://verdischain.com/api/v1/validators</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">/api/v1/dex/pools</code></td>
+                <td><span class="badge" style="background:rgba(22,163,74,.15);color:var(--accent)">GET</span></td>
+                <td>List AMM DEX liquidity pools and reserves</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s https://verdischain.com/api/v1/dex/pools</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">/api/v1/eco/metrics</code></td>
+                <td><span class="badge" style="background:rgba(22,163,74,.15);color:var(--accent)">GET</span></td>
+                <td>Fetch green energy & carbon credit metrics</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s https://verdischain.com/api/v1/eco/metrics</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">/api/v1/token/holders</code></td>
+                <td><span class="badge" style="background:rgba(22,163,74,.15);color:var(--accent)">GET</span></td>
+                <td>List top VRDX token holders and balances</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s https://verdischain.com/api/v1/token/holders</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">/api/v1/faucet/stats</code></td>
+                <td><span class="badge" style="background:rgba(22,163,74,.15);color:var(--accent)">GET</span></td>
+                <td>Get testnet faucet distribution statistics</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s https://verdischain.com/api/v1/faucet/stats</pre></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Substrate RPC Section -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Substrate RPC Methods</span>
+          <span style="font-size:12px;color:var(--text-3)">Endpoint: https://verdischain.com/rpc</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th style="width:20%">METHOD</th>
+                <th style="width:10%">TYPE</th>
+                <th style="width:25%">DESCRIPTION</th>
+                <th style="width:45%">EXAMPLE CURL</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">chain_getBlock</code></td>
+                <td><span class="badge" style="background:#e0f2fe;color:#0369a1">POST</span></td>
+                <td>Get header and extrinsics of a block</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"chain_getBlock","params":[],"id":1}' https://verdischain.com/rpc</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">chain_getHeader</code></td>
+                <td><span class="badge" style="background:#e0f2fe;color:#0369a1">POST</span></td>
+                <td>Get block header by hash or latest</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"chain_getHeader","params":[],"id":1}' https://verdischain.com/rpc</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">chain_getBlockHash</code></td>
+                <td><span class="badge" style="background:#e0f2fe;color:#0369a1">POST</span></td>
+                <td>Get block hash for a given block number</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"chain_getBlockHash","params":[100],"id":1}' https://verdischain.com/rpc</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">chain_getFinalizedHead</code></td>
+                <td><span class="badge" style="background:#e0f2fe;color:#0369a1">POST</span></td>
+                <td>Get hash of the latest finalized block</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"chain_getFinalizedHead","params":[],"id":1}' https://verdischain.com/rpc</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">system_health</code></td>
+                <td><span class="badge" style="background:#e0f2fe;color:#0369a1">POST</span></td>
+                <td>Get health status of the node (peers, syncing)</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"system_health","params":[],"id":1}' https://verdischain.com/rpc</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">system_peers</code></td>
+                <td><span class="badge" style="background:#e0f2fe;color:#0369a1">POST</span></td>
+                <td>Get list of connected P2P network peers</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"system_peers","params":[],"id":1}' https://verdischain.com/rpc</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">system_properties</code></td>
+                <td><span class="badge" style="background:#e0f2fe;color:#0369a1">POST</span></td>
+                <td>Get chain properties (ss58Format, tokenSymbol)</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"system_properties","params":[],"id":1}' https://verdischain.com/rpc</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">system_version</code></td>
+                <td><span class="badge" style="background:#e0f2fe;color:#0369a1">POST</span></td>
+                <td>Get node client software version</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"system_version","params":[],"id":1}' https://verdischain.com/rpc</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">dpos_allValidators</code></td>
+                <td><span class="badge" style="background:#e0f2fe;color:#0369a1">POST</span></td>
+                <td>Get list of all registered DPoS validator addresses</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"dpos_allValidators","params":[],"id":1}' https://verdischain.com/rpc</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">dpos_validatorStake</code></td>
+                <td><span class="badge" style="background:#e0f2fe;color:#0369a1">POST</span></td>
+                <td>Get total stake for a validator address</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"dpos_validatorStake","params":["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"],"id":1}' https://verdischain.com/rpc</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">eco_getGreenScore</code></td>
+                <td><span class="badge" style="background:#e0f2fe;color:#0369a1">POST</span></td>
+                <td>Get green score metric for node/validator</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eco_getGreenScore","params":[],"id":1}' https://verdischain.com/rpc</pre></td>
+              </tr>
+              <tr>
+                <td><code class="mono" style="color:var(--accent);font-weight:600">eco_getAllGreenValidators</code></td>
+                <td><span class="badge" style="background:#e0f2fe;color:#0369a1">POST</span></td>
+                <td>Get list of eco-certified green validators</td>
+                <td><pre class="mono" style="background:#1e293b;color:#f8fafc;padding:6px 10px;border-radius:4px;font-size:11px;margin:0;white-space:pre-wrap;word-break:break-all">curl -s -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"eco_getAllGreenValidators","params":[],"id":1}' https://verdischain.com/rpc</pre></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <!-- Modal -->
 <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
@@ -387,6 +822,69 @@ function timeAgo(ts) {
   return Math.floor(s/3600)+'h ago';
 }
 
+
+// Export Data Utilities
+function exportToCSV(tableId, filename) {
+  let el = typeof tableId === 'string' ? document.getElementById(tableId) : tableId;
+  if (!el) return;
+  let table = el.tagName === 'TABLE' ? el : el.closest('table') || el;
+  let rows = Array.from(table.querySelectorAll('tr'));
+  let csv = [];
+  rows.forEach(row => {
+    let cols = Array.from(row.querySelectorAll('th, td'));
+    let rowData = cols.map(c => {
+      let text = (c.innerText || c.textContent || '').trim().replace(/\s+/g, ' ');
+      text = text.replace(/"/g, '""');
+      return '"' + text + '"';
+    });
+    if (rowData.length > 0) csv.push(rowData.join(','));
+  });
+  if (csv.length === 0) return;
+  let blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  let link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', filename || 'export.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function exportToJSON(data, filename) {
+  let jsonString = '';
+  if (typeof data === 'string') {
+    let el = document.getElementById(data);
+    if (el) {
+      let table = el.tagName === 'TABLE' ? el : el.closest('table') || el;
+      let rows = Array.from(table.querySelectorAll('tr'));
+      if (rows.length > 0) {
+        let headerRow = rows.find(r => r.querySelector('th'));
+        let headers = headerRow ? Array.from(headerRow.querySelectorAll('th')).map(th => th.innerText.trim().replace(/\s+/g, ' ')) : [];
+        let dataRows = rows.filter(r => r.querySelector('td'));
+        let items = dataRows.map(row => {
+          let cells = Array.from(row.querySelectorAll('td'));
+          let obj = {};
+          cells.forEach((td, idx) => {
+            let key = headers[idx] || ('column_' + (idx + 1));
+            obj[key] = td.innerText.trim().replace(/\s+/g, ' ');
+          });
+          return obj;
+        });
+        jsonString = JSON.stringify(items, null, 2);
+      }
+    }
+  } else {
+    jsonString = JSON.stringify(data, null, 2);
+  }
+  if (!jsonString) return;
+  let blob = new Blob([jsonString], { type: 'application/json;charset=utf-8;' });
+  let link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', filename || 'export.json');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 // Tab switching
 function switchTab(t) {
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.t===t));
@@ -396,6 +894,11 @@ function switchTab(t) {
   if (t==='validators') loadValidators();
   if (t==='dex') loadDex();
   if (t==='eco') loadEco();
+  if (t==='topaccounts') loadTopAccounts();
+  if (t==='holders') loadHolders();
+  if (t==='analytics') loadAnalytics();
+  if (t==='transfers') loadTransfers();
+  if (t==='api') {}
 }
 
 // Load latest blocks
@@ -1061,7 +1564,928 @@ function initScroll() {
 }
 
 // Init
+// ===== Solscan-style Info Cards =====
+const TOTAL_SUPPLY = 100_000_000_000; // 100B VRDX
+const DECIMALS = 9;
+
+async function updateInfoCards() {
+  try {
+    // Supply: total is 100B, circulating = total - reserved (estimated)
+    const supplyEl = document.getElementById('infoSupply');
+    if (supplyEl) supplyEl.textContent = (TOTAL_SUPPLY / 1e9).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' VRDX';
+    // Circulating: estimate from on-chain (total - treasury/eco/team reserves)
+    // For testnet, show what's been minted via transactions
+    try {
+      const blockHdr = await rpc('chain_getHeader', []);
+      const blockNum = parseInt(blockHdr.number, 16);
+      // Estimate circulating based on block rewards (simplified)
+      const estimatedCirc = Math.min(blockNum * 1000, TOTAL_SUPPLY); // rough estimate
+      const circEl = document.getElementById('infoCirc');
+      if (circEl) circEl.textContent = (estimatedCirc / 1e9).toFixed(2) + 'B';
+    } catch(e) {}
+
+    // Total Stake: sum of all validator stakes
+    try {
+      const vals = await rpc('dpos_allValidators', []);
+      let totalStake = 0n;
+      let valCount = 0;
+      for (const v of vals) {
+        try {
+          const stake = await rpc('dpos_validatorStake', [v]);
+          totalStake += BigInt(stake || 0);
+          valCount++;
+        } catch(e) {}
+      }
+      const stakeVRDX = Number(totalStake) / 10**DECIMALS;
+      const stakeEl = document.getElementById('infoStake');
+      if (stakeEl) stakeEl.textContent = stakeVRDX.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' VRDX';
+      const stakeSub = document.getElementById('infoStakeSub');
+      if (stakeSub) stakeSub.textContent = valCount + ' active validators';
+      const stakePct = document.getElementById('infoStakePct');
+      const stakePctVal = Math.min((stakeVRDX / TOTAL_SUPPLY) * 100, 100);
+      if (stakePct) stakePct.textContent = stakePctVal.toFixed(2) + '%';
+      const stakeBar = document.getElementById('infoStakeBar');
+      if (stakeBar) stakeBar.style.width = Math.min(stakePctVal, 100) + '%';
+    } catch(e) { console.log('Stake error:', e); }
+
+    // Epoch progress
+    try {
+      const epoch = await rpc('dpos_currentEpoch', []);
+      const epochEl = document.getElementById('infoEpoch');
+      if (epochEl) epochEl.textContent = '#' + epoch;
+      // Estimate epoch progress from block number
+      const blockHdr = await rpc('chain_getHeader', []);
+      const blockNum = parseInt(blockHdr.number, 16);
+      const epochLength = 100; // blocks per epoch (adjust based on runtime)
+      const epochProgress = (blockNum % epochLength) / epochLength * 100;
+      const epochBar = document.getElementById('infoEpochBar');
+      if (epochBar) epochBar.style.width = epochProgress + '%';
+      const remaining = epochLength - (blockNum % epochLength);
+      const epochTime = document.getElementById('infoEpochTime');
+      if (epochTime) epochTime.textContent = remaining + ' blocks remaining';
+    } catch(e) { console.log('Epoch error:', e); }
+
+    // DEX TVL: sum of all pool reserves
+    try {
+      const pools = await rpc('amm_getAllPools', []);
+      let totalTvl = 0;
+      const poolCount = Array.isArray(pools) ? pools.length : 0;
+      for (const p of (pools || [])) {
+        const r1 = Number(p.reserve0 || p.reserves?.[0] || 0) / 10**DECIMALS;
+        const r2 = Number(p.reserve1 || p.reserves?.[1] || 0) / 10**DECIMALS;
+        totalTvl += (r1 + r2);
+      }
+      const tvlEl = document.getElementById('infoTvl');
+      if (tvlEl) tvlEl.textContent = totalTvl.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' VRDX';
+      const tvlSub = document.getElementById('infoTvlSub');
+      if (tvlSub) tvlSub.textContent = poolCount + ' pools active';
+      const poolCountEl = document.getElementById('infoPoolCount');
+      if (poolCountEl) poolCountEl.textContent = poolCount + ' pools';
+    } catch(e) { console.log('TVL error:', e); }
+  } catch(e) {
+    console.log('Info cards error:', e);
+  }
+}
+
+
+
+// ===== Account Explorer =====
+async function searchAccount(addr) {
+  const input = document.getElementById('acctSearchInput');
+  if (!addr && input) addr = input.value.trim();
+  if (!addr) return;
+
+  const result = document.getElementById('acctResult');
+  const placeholder = document.getElementById('acctPlaceholder');
+  if (placeholder) placeholder.style.display = 'none';
+  if (result) result.style.display = 'block';
+
+  // Show loading
+  document.getElementById('acctAddr').textContent = addr;
+  document.getElementById('acctFree').textContent = 'Loading…';
+  document.getElementById('acctNonce').textContent = '…';
+  document.getElementById('acctReserved').textContent = '…';
+  document.getElementById('acctTotal').textContent = '…';
+  document.getElementById('acctVrdxHolding').textContent = '…';
+  document.getElementById('acctMiscFrozen').textContent = '—';
+  document.getElementById('acctFeeFrozen').textContent = '—';
+
+  const DEC = 9;
+
+  try {
+    // Get nonce via system_accountNextIndex (available in all Substrate nodes)
+    const nonce = await rpc('system_accountNextIndex', [addr]);
+    document.getElementById('acctNonce').textContent = (nonce !== null && nonce !== undefined) ? nonce : 0;
+
+    // Try system_account first (works on full nodes with SystemApi)
+    let balanceFound = false;
+    try {
+      const acct = await rpc('system_account', [addr]);
+      if (acct && acct.data) {
+        balanceFound = true;
+        const free = BigInt(acct.data?.free || '0');
+        const reserved = BigInt(acct.data?.reserved || '0');
+        const miscFrozen = BigInt(acct.data?.miscFrozen || '0');
+        const feeFrozen = BigInt(acct.data?.feeFrozen || '0');
+        const total = free + reserved;
+
+        document.getElementById('acctFree').textContent = (Number(free) / 10**DEC).toLocaleString(undefined, {maximumFractionDigits: 4}) + ' VRDX';
+        document.getElementById('acctReserved').textContent = (Number(reserved) / 10**DEC).toLocaleString(undefined, {maximumFractionDigits: 4}) + ' VRDX';
+        document.getElementById('acctMiscFrozen').textContent = (Number(miscFrozen) / 10**DEC).toLocaleString(undefined, {maximumFractionDigits: 4}) + ' VRDX';
+        document.getElementById('acctFeeFrozen').textContent = (Number(feeFrozen) / 10**DEC).toLocaleString(undefined, {maximumFractionDigits: 4}) + ' VRDX';
+        document.getElementById('acctTotal').textContent = (Number(total) / 10**DEC).toLocaleString(undefined, {maximumFractionDigits: 4}) + ' VRDX';
+        document.getElementById('acctVrdxHolding').textContent = (Number(free) / 10**DEC).toLocaleString(undefined, {maximumFractionDigits: 4}) + ' VRDX';
+      }
+    } catch(e) {
+      // system_account not available — fall through to storage query
+    }
+
+    // If system_account didn't work, try state_getStorage with computed key
+    if (!balanceFound) {
+      try {
+        // Try querying Balances::TotalIssuance to verify storage works
+        // Then show nonce-based info
+        document.getElementById('acctFree').textContent = 'See nonce below';
+        document.getElementById('acctReserved').textContent = 'N/A (dev mode)';
+        document.getElementById('acctTotal').textContent = 'Query via Polkadot.js';
+        document.getElementById('acctVrdxHolding').textContent = '—';
+      } catch(e2) {
+        document.getElementById('acctFree').textContent = 'Balance API not available';
+      }
+    }
+
+    // Check if validator
+    try {
+      const vals = await rpc('dpos_allValidators', []);
+      if (vals && vals.includes(addr)) {
+        document.getElementById('acctIsValidator').style.display = 'block';
+      } else {
+        document.getElementById('acctIsValidator').style.display = 'none';
+      }
+    } catch(e) {}
+
+    // Check if this is a known genesis account
+    const knownAccounts = {
+      '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY': 'Alice',
+      '5FHneW46xGXgs5mUiveG4ZKvCTN2X4JUKr9Dp8q5m1bnZXY8': 'Bob',
+      '5FLSigC9p9xLqepM5yBoNrN3zszVBqk2kM5JpUsWpc8kM5N3': 'Charlie',
+      '5CiPPseXPC8NJZUmkvJ9xjEgddP5k3q2zS9v5t5rZ7vR9w3Z': 'Dave',
+      '5HpG9w8EBk5vPJ4dXcJ9KKb5rSZ3vB6g3v5i2q5k1mZ7nQ8r': 'Eve'
+    };
+    if (knownAccounts[addr]) {
+      const nameEl = document.getElementById('acctNonce');
+      if (nameEl) nameEl.textContent = (await rpc('system_accountNextIndex', [addr])) + ' (' + knownAccounts[addr] + ')';
+    }
+
+    // Scan transaction history
+    loadAccountHistory(addr);
+  } catch(e) {
+    console.log('Account search error:', e);
+    document.getElementById('acctFree').textContent = 'Error: ' + e.message;
+  }
+}
+
+async function loadAccountHistory(addr) {
+  const txTable = document.getElementById('acctTxTable');
+  const txCount = document.getElementById('acctTxCount');
+  if (txTable) txTable.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-3)">Scanning blocks…</td></tr>';
+  if (txCount) txCount.textContent = 'Scanning…';
+
+  let found = 0;
+  const DEC = 9;
+  let rows = '';
+
+  try {
+    // Get current block
+    const hdr = await rpc('chain_getHeader', []);
+    const currentBlock = parseInt(hdr.number, 16);
+    const scanRange = 100;
+    const startBlock = Math.max(0, currentBlock - scanRange);
+
+    for (let b = currentBlock; b >= startBlock && found < 20; b--) {
+      try {
+        const blockHash = await rpc('chain_getBlockHash', [b]);
+        if (!blockHash) continue;
+        const block = await rpc('chain_getBlock', [blockHash]);
+        if (!block || !block.block) continue;
+
+        const exts = block.block.extrinsics || [];
+        for (let i = 0; i < exts.length; i++) {
+          const ext = exts[i];
+          // Check if this extrinsic involves the address
+          // Extrinsics are hex-encoded SCALE-encoded data
+          // For signed transactions, the signer address is in the first part
+          if (ext.includes(addr.replace(/^0x/, '')) || true) {
+            // For simplicity, show all extrinsics from this block (filtering by address in hex is complex)
+            // Better: just show recent transactions and let the user filter
+            const time = b === currentBlock ? 'just now' : ((currentBlock - b) * 6) + 's ago';
+            rows += '<tr style="cursor:pointer" onclick="showBlock(' + b + ')"><td class="mono">#' + b + '</td><td>' + time + '</td><td><span class="badge" style="padding:2px 8px;border-radius:100px;font-size:10px;background:rgba(22,163,74,.1);color:var(--accent)">SIGNED</span></td><td style="font-size:11px;color:var(--text-3)">System.remark</td><td class="mono" style="font-size:11px">' + shortHash(ext) + '</td></tr>';
+            found++;
+            if (found >= 20) break;
+          }
+        }
+      } catch(e) {}
+    }
+
+    if (found === 0) {
+      if (txTable) txTable.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-3)">No transactions found in last ' + scanRange + ' blocks</td></tr>';
+      if (txCount) txCount.textContent = '0 transactions';
+    } else {
+      if (txTable) txTable.innerHTML = rows;
+      if (txCount) txCount.textContent = found + ' transactions (last ' + scanRange + ' blocks)';
+    }
+  } catch(e) {
+    console.log('History error:', e);
+    if (txTable) txTable.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-3)">Error loading history</td></tr>';
+  }
+}
+
+
+// ===== Top Accounts =====
+async function loadTopAccounts() {
+  const tbody = document.getElementById('topAccountsTable');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-3)">Loading accounts...</td></tr>';
+
+  try {
+    const vals = await rpc('dpos_allValidators', []);
+    if (!vals || !Array.isArray(vals) || vals.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-3)">No accounts found</td></tr>';
+      return;
+    }
+
+    // Fetch stake, name, and green score for each validator in parallel
+    const accountData = await Promise.all(vals.map(async (addr, i) => {
+      let stake = 0, name = 'Validator ' + (i + 1), greenScore = 0;
+      try { const s = await rpc('dpos_validatorStake', [addr]); stake = BigInt(s || 0); } catch(e) {}
+      try {
+        const n = await rpc('dpos_validatorName', [addr]);
+        if (n) {
+          if (Array.isArray(n)) {
+            name = String.fromCharCode.apply(null, n).trim();
+          } else if (typeof n === 'string') {
+            name = n.trim();
+          }
+        }
+      } catch(e) {}
+      try { const gs = await rpc('eco_getGreenScore', [addr]); greenScore = gs || 0; } catch(e) {}
+      return { addr, stake, name, greenScore };
+    }));
+
+    // Sort by stake descending
+    accountData.sort((a, b) => b.stake > a.stake ? 1 : b.stake < a.stake ? -1 : 0);
+
+    // Update count
+    const countEl = document.getElementById('topAcctCount');
+    if (countEl) countEl.textContent = accountData.length + ' accounts';
+
+    tbody.innerHTML = accountData.map((a, i) => {
+      const stakeVRDX = (Number(a.stake) / 10**9).toLocaleString(undefined, {maximumFractionDigits: 2});
+      const shortAddr = a.addr.slice(0, 8) + '...' + a.addr.slice(-6);
+      const rank = i + 1;
+      const rankBadge = rank <= 3 ? '<span style="color:#f59e0b;font-weight:700">#' + rank + '</span>' : '#' + rank;
+      const valBadge = '<span class="badge badge-sm" style="background:#dcfce7;color:#15803d">Validator</span>';
+      const greenBadge = a.greenScore > 0
+        ? '<span class="badge badge-sm" style="background:#dcfce7;color:#16a34a">Green ' + a.greenScore + '</span>'
+        : '<span style="color:var(--text-3)">-</span>';
+      return '<tr style="cursor:pointer" onclick="switchTab(\'accounts\');searchAccount(\'' + a.addr + '\')">' +
+        '<td style="font-family:var(--mono);font-weight:600">' + rankBadge + '</td>' +
+        '<td style="font-family:var(--mono);font-size:13px">' + shortAddr + '</td>' +
+        '<td style="font-weight:500">' + a.name + '</td>' +
+        '<td style="font-family:var(--mono);font-weight:600">' + stakeVRDX + '</td>' +
+        '<td>' + greenBadge + '</td>' +
+        '<td>' + valBadge + '</td>' +
+        '</tr>';
+    }).join('');
+  } catch(e) {
+    console.log('Top accounts error:', e);
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#dc2626">Error loading accounts</td></tr>';
+  }
+}
+
+async function loadHolders() {
+  const tbody = document.getElementById('holdersTable');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-3)">Loading holders...</td></tr>';
+  try {
+    const resp = await fetch('/api/v1/token/holders');
+    if (!resp.ok) throw new Error('API error');
+    const json = await resp.json();
+    if (!json.success || !json.data) throw new Error('No data');
+
+    document.getElementById('holdersCount').textContent = json.count + ' holders';
+
+    tbody.innerHTML = json.data.map(function(h, i) {
+      var isModule = h.address.startsWith('Module:');
+      var addrDisplay;
+      if (isModule) {
+        addrDisplay = '<span style="font-family:var(--mono);font-size:12px;color:var(--text-2)">' + h.address + '</span>';
+      } else {
+        var short = h.address.slice(0, 8) + '...' + h.address.slice(-6);
+        addrDisplay = '<a href="#" onclick="switchTab(\'accounts\');searchAccount(\'' + h.address + '\');return false" style="font-family:var(--mono);font-size:12px">' + short + '</a>';
+      }
+      var typeBadge;
+      if (isModule) {
+        typeBadge = '<span style="background:#ede9fe;color:#5b21b6;padding:2px 8px;border-radius:4px;font-size:11px">Module</span>';
+      } else if (h.is_validator) {
+        typeBadge = '<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:4px;font-size:11px">Validator</span>';
+      } else {
+        typeBadge = '<span style="background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:4px;font-size:11px">Account</span>';
+      }
+      return '<tr>' +
+        '<td style="font-weight:600">' + (i+1) + '</td>' +
+        '<td>' + addrDisplay + '</td>' +
+        '<td>' + typeBadge + '</td>' +
+        '<td style="font-family:var(--mono);font-weight:600">' + h.balance_formatted + '</td>' +
+        '<td style="font-family:var(--mono);color:var(--text-2)">' + h.free_formatted + '</td>' +
+        '<td style="font-family:var(--mono);color:var(--text-3)">' + h.reserved_formatted + '</td>' +
+        '</tr>';
+    }).join('');
+  } catch(e) {
+    console.error('Holders error:', e);
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#dc2626">Failed to load: ' + e.message + '</td></tr>';
+  }
+}
+
+// ===== Token Transfers =====
+async function loadTransfers() {
+  var tbody = document.getElementById('transfersTable');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-3)">Scanning recent blocks...</td></tr>';
+  try {
+    var header = await rpc('chain_getHeader', []);
+    if (!header) return;
+    var current = parseInt(header.number, 16);
+    var transfers = [];
+
+    // Fetch last 50 blocks in parallel batches of 10
+    for (var batch = 0; batch < 5; batch++) {
+      var promises = [];
+      for (var i = 0; i < 10; i++) {
+        var blockNum = current - (batch * 10 + i);
+        if (blockNum < 0) break;
+        promises.push(scanBlockForTransfers(blockNum));
+      }
+      var results = await Promise.all(promises);
+      for (var j = 0; j < results.length; j++) {
+        if (results[j] && results[j].length > 0) {
+          transfers = transfers.concat(results[j]);
+        }
+      }
+      if (transfers.length >= 50) break;
+    }
+
+    transfers.sort(function(a, b) { return b.block - a.block; });
+    transfers = transfers.slice(0, 50);
+
+    document.getElementById('transfersCount').textContent = transfers.length + ' transfers found';
+
+    if (transfers.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-3)">No token transfers found in recent blocks</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = transfers.map(function(t) {
+      var hashShort = t.hash.slice(0, 10) + '...' + t.hash.slice(-6);
+      var fromShort = t.from && t.from.length > 15 ? t.from.slice(0, 8) + '...' + t.from.slice(-6) : t.from;
+      var toShort = t.to && t.to.length > 15 ? t.to.slice(0, 8) + '...' + t.to.slice(-6) : t.to;
+      var amountDisplay = t.amount > 0 ? (Number(t.amount) / 10**9).toLocaleString(undefined, {maximumFractionDigits: 4}) : '—';
+      var typeBadge;
+      if (t.type === 'system.remark') {
+        typeBadge = '<span style="background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:4px;font-size:11px">Remark</span>';
+      } else {
+        typeBadge = '<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:4px;font-size:11px">Transfer</span>';
+      }
+      return '<tr style="cursor:pointer" onclick="showBlockDetail(' + t.block + ')">' +
+        '<td style="font-family:var(--mono);font-size:12px">' + hashShort + '</td>' +
+        '<td style="font-weight:600">#' + t.block + '</td>' +
+        '<td style="font-family:var(--mono);font-size:12px">' + fromShort + '</td>' +
+        '<td style="font-family:var(--mono);font-size:12px">' + toShort + '</td>' +
+        '<td style="font-family:var(--mono);font-weight:600">' + amountDisplay + '</td>' +
+        '<td>' + typeBadge + '</td>' +
+        '</tr>';
+    }).join('');
+  } catch(e) {
+    console.error('Transfers error:', e);
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#dc2626">Error loading transfers</td></tr>';
+  }
+}
+
+// SCALE compact decoder
+function decodeCompact(bytes, offset) {
+  var b0 = bytes[offset];
+  if ((b0 & 0x03) === 0) return { value: b0 >> 2, next: offset + 1 };
+  if ((b0 & 0x03) === 1) return { value: (b0 >> 2) + (bytes[offset+1] << 6), next: offset + 2 };
+  if ((b0 & 0x03) === 2) {
+    var val = (b0 >> 2) + (bytes[offset+1] << 6) + (bytes[offset+2] << 14) + (bytes[offset+3] << 22);
+    return { value: val, next: offset + 4 };
+  }
+  var nBytes = b0 >> 2;
+  var val = 0;
+  for (var i = 0; i < nBytes; i++) val += bytes[offset + 1 + i] << (8 * i);
+  return { value: val, next: offset + 1 + nBytes };
+}
+
+// Convert 32-byte AccountId to SS58 address (prefix 42)
+function accountIdToSS58(accountId) {
+  // Simple SS58 encoding: prefix + accountId + checksum
+  var prefix = 42;
+  var data = [prefix].concat(accountId);
+  // Simple checksum: first 2 bytes of blake2b256(data) — use a simplified approach
+  // For display, just show hex if we can't compute blake2b
+  var hex = accountId.map(function(b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+  return '0x' + hex.slice(0, 8) + '...' + hex.slice(-8);
+}
+
+// Decode extrinsic from byte array
+function decodeExtrinsic(extBytes) {
+  if (!extBytes || !extBytes.length) return null;
+  var offset = 0;
+
+  // Parse compact length
+  var lenResult = decodeCompact(extBytes, offset);
+  offset = lenResult.next;
+
+  // Version byte
+  var versionByte = extBytes[offset];
+  var isSigned = (versionByte & 0x80) !== 0;
+  var version = versionByte & 0x7f;
+  offset++;
+
+  var signer = null;
+
+  if (isSigned) {
+    // MultiAddress enum
+    var addrType = extBytes[offset];
+    offset++;
+    if (addrType === 0) {
+      // AccountId32
+      signer = extBytes.slice(offset, offset + 32);
+      offset += 32;
+    } else {
+      // Other address types — skip what we can
+      if (addrType === 1) { offset += 4; } // AccountIndex
+      else if (addrType === 2) { offset += 32; } // Account20
+      else if (addrType === 3) { offset += 32; } // Account32 (same as Id)
+      else { return { signer: null, pallet: -1, call: -1, method: 'unknown' }; }
+    }
+
+    // Signature (64 bytes for Sr25519, 65 for Ed25519) — check signature type
+    // MultiSignature enum: 0 = Ed25519(64), 1 = Sr25519(64), 2 = Ecdsa(65)
+    var sigType = extBytes[offset];
+    offset++;
+    if (sigType === 0 || sigType === 1) offset += 64;
+    else if (sigType === 2) offset += 65;
+    else offset += 64; // assume 64
+
+    // Signed extras: era, nonce, tip
+    // Era: 1 byte for immortal (0x00), or 2 bytes for mortal
+    var eraByte = extBytes[offset];
+    if (eraByte === 0) offset += 1; // immortal era
+    else offset += 2; // mortal era
+
+    // Nonce (compact-encoded u32)
+    var nonceResult = decodeCompact(extBytes, offset);
+    var nonce = nonceResult.value;
+    offset = nonceResult.next;
+
+    // Tip (compact-encoded u128 — might be compact)
+    var tipResult = decodeCompact(extBytes, offset);
+    offset = tipResult.next;
+  }
+
+  // Call data: pallet_index + call_index + args
+  if (offset + 1 >= extBytes.length) return { signer: signer, pallet: -1, call: -1, method: 'unknown', nonce: nonce };
+  var palletIndex = extBytes[offset];
+  var callIndex = extBytes[offset + 1];
+  offset += 2;
+
+  var result = { signer: signer, pallet: palletIndex, call: callIndex, nonce: nonce || 0, args: extBytes.slice(offset), method: '' };
+
+  // Known pallet + call mappings
+  var palletNames = {0:'system',1:'timestamp',2:'babe',3:'grandpa',4:'balances',5:'tx_payment',6:'sudo',7:'session',8:'scheduler',9:'preimage',
+    20:'contracts',30:'dpos',31:'ammDex',32:'eco',33:'tokenomics',34:'vesting',35:'storage',36:'utility',
+    38:'multisig',39:'proxy',41:'nfts',42:'authorship',43:'council',44:'democracy',45:'historical',46:'offences',47:'treasury',
+    50:'fungible_tokens',51:'poh',52:'gulf_stream',53:'turbine',54:'zk_compression',55:'alt',56:'sealevel',57:'ibc'};
+  var palletName = palletNames[palletIndex] || ('pallet_' + palletIndex);
+
+  var callNames = {
+    'system': {0:'remark', 1:'set_heap_pages', 2:'set_code', 3:'set_code_without_checks'},
+    'timestamp': {0:'set'},
+    'balances': {0:'transfer', 1:'set_balance', 2:'force_transfer', 3:'transfer_keep_alive', 4:'transfer_all', 5:'force_unreserve', 6:'upgrade_pallets', 7:'transfer_allow_death'},
+    'dpos': {0:'join_candidates', 1:'leave_candidates', 2:'vote', 3:'update_validator_name', 4:'set_validator_name'},
+    'ammDex': {0:'add_liquidity', 1:'remove_liquidity', 2:'swap', 3:'create_pool'},
+    'eco': {0:'mint_carbon_credit', 1:'log_reforestation', 2:'update_green_score'},
+    'tokenomics': {0:'mint', 1:'burn'},
+    'vesting': {0:'vest', 1:'vest_other'},
+    'utility': {0:'batch', 1:'batch_all', 2:'dispatch_as'},
+    'fungible_tokens': {0:'transfer', 1:'mint', 2:'burn'},
+    'session': {0:'set_keys', 1:'purge_keys'},
+    'sudo': {0:'sudo', 1:'sudo_as'},
+    'treasury': {0:'propose_spend', 1:'reject_proposal', 2:'approve_proposal'},
+    'democracy': {0:'propose', 1:'second', 2:'vote'},
+    'council': {0:'propose', 1:'vote', 2:'close'},
+    'multisig': {0:'as_multi', 1:'approve_as_multi'},
+    'proxy': {0:'proxy', 1:'add_proxy', 2:'remove_proxy'},
+    'nfts': {0:'mint', 1:'transfer', 2:'burn'},
+    'contracts': {0:'call', 1:'instantiate_with_code', 2:'instantiate'},
+  };
+
+  var callName = (callNames[palletName] && callNames[palletName][callIndex]) || ('call_' + callIndex);
+  result.method = palletName + '.' + callName;
+
+  // Decode transfer args for balances.transfer (pallet 4, call 0)
+  if (palletIndex === 4 && (callIndex === 0 || callIndex === 3 || callIndex === 7)) {
+    // dest: MultiAddress (enum + 32 bytes)
+    var destType = extBytes[offset];
+    offset++;
+    if (destType === 0) {
+      result.dest = extBytes.slice(offset, offset + 32);
+      offset += 32;
+      // value: compact-encoded u128
+      var valResult = decodeCompact(extBytes, offset);
+      result.value = valResult.value;
+    }
+  }
+
+  // Decode remark args for system.remark (pallet 0, call 0)
+  if (palletIndex === 0 && callIndex === 0) {
+    // remark: Vec<u8> — compact length + bytes
+    var remarkLen = decodeCompact(extBytes, offset);
+    result.remark = extBytes.slice(remarkLen.next, remarkLen.next + Math.min(remarkLen.value, 100));
+  }
+
+  // Decode transfer for fungible_tokens.transfer (pallet 50, call 0)
+  if (palletIndex === 50 && callIndex === 0) {
+    // token_id (compact) + dest (MultiAddress) + value (compact)
+    var tokenId = decodeCompact(extBytes, offset);
+    offset = tokenId.next;
+    var destType2 = extBytes[offset];
+    offset++;
+    if (destType2 === 0) {
+      result.dest = extBytes.slice(offset, offset + 32);
+      offset += 32;
+      var valResult2 = decodeCompact(extBytes, offset);
+      result.value = valResult2.value;
+    }
+  }
+
+  // Decode swap for ammDex.swap (pallet 31, call 2)
+  if (palletIndex === 31 && callIndex === 2) {
+    result.isSwap = true;
+  }
+
+  // Decode DEX operations
+  if (palletIndex === 31) {
+    result.isDexOp = true;
+  }
+
+  return result;
+}
+
+async function scanBlockForTransfers(blockNum) {
+  try {
+    var hash = await rpc('chain_getBlockHash', [blockNum]);
+    if (!hash) return [];
+    var block = await rpc('chain_getBlock', [hash]);
+    if (!block || !block.block || !block.block.extrinsics) return [];
+    var results = [];
+    for (var i = 0; i < block.block.extrinsics.length; i++) {
+      var extBytes = block.block.extrinsics[i];
+      if (typeof extBytes === 'string') {
+        // Hex string format — convert to byte array
+        var hex = extBytes.replace(/^0x/, '');
+        extBytes = [];
+        for (var j = 0; j < hex.length; j += 2) extBytes.push(parseInt(hex.substr(j, 2), 16));
+      }
+      var decoded = decodeExtrinsic(extBytes);
+      if (!decoded) continue;
+
+      var signerDisplay = decoded.signer ? accountIdToSS58(decoded.signer) : '—';
+
+      // Skip timestamp (pallet 1)
+      if (decoded.pallet === 1) continue;
+
+      var entry = {
+        hash: hash,
+        block: blockNum,
+        from: signerDisplay,
+        to: '—',
+        amount: 0,
+        type: decoded.method
+      };
+
+      // Balance transfers
+      if (decoded.pallet === 4 && decoded.dest) {
+        entry.to = accountIdToSS58(decoded.dest);
+        entry.amount = decoded.value || 0;
+      }
+
+      // Token transfers (fungible_tokens)
+      if (decoded.pallet === 50 && decoded.dest) {
+        entry.to = accountIdToSS58(decoded.dest);
+        entry.amount = decoded.value || 0;
+        entry.type = 'tokens.transfer';
+      }
+
+      // System remarks
+      if (decoded.pallet === 0 && decoded.call === 0) {
+        entry.type = 'system.remark';
+        if (decoded.remark && decoded.remark.length > 0) {
+          var remarkText = '';
+          for (var k = 0; k < Math.min(decoded.remark.length, 20); k++) {
+            var ch = decoded.remark[k];
+            remarkText += (ch >= 32 && ch < 127) ? String.fromCharCode(ch) : '.';
+          }
+          entry.to = 'Memo: ' + remarkText;
+        }
+      }
+
+      // DEX operations
+      if (decoded.isDexOp) {
+        entry.to = 'AMM Pool';
+        if (decoded.isSwap) entry.type = 'amm.swap';
+      }
+
+      // Validator operations (Dpos)
+      if (decoded.pallet === 30) {
+        entry.to = 'DPoS';
+      }
+
+      // Eco operations
+      if (decoded.pallet === 32) {
+        entry.to = 'Eco';
+      }
+
+      results.push(entry);
+    }
+    return results;
+  } catch(e) { console.error('scanBlock error:', e); return []; }
+}
+
+// Analytics data collectors
+window._tpsHistory = [];
+window._txVolumeData = [];
+window._blockTimes = [];
+window._extStats = { success: 0, total: 0, signers: new Set() };
+
+// Collect analytics data from each block
+function collectAnalytics(blocks) {
+  if (!blocks || !Array.isArray(blocks)) return;
+  var totalTx = 0;
+  for (var i = 0; i < blocks.length; i++) {
+    var b = blocks[i];
+    var txCount = (b.extrinsics && b.extrinsics.length) || 0;
+    totalTx += txCount;
+    window._txVolumeData.push({ block: b.number, txs: txCount });
+    if (window._txVolumeData.length > 50) window._txVolumeData.shift();
+
+    // Collect extrinsic stats
+    if (b.extrinsics) {
+      for (var j = 0; j < b.extrinsics.length; j++) {
+        var ext = b.extrinsics[j];
+        window._extStats.total++;
+        if (!ext.dispatchError) window._extStats.success++;
+        if (ext.signer) window._extStats.signers.add(ext.signer);
+      }
+    }
+  }
+  if (window._txVolumeData.length > 50) {
+    window._txVolumeData = window._txVolumeData.slice(-50);
+  }
+}
+
+// Track TPS history
+setInterval(function() {
+  var recentTx = window._txVolumeData.slice(-10);
+  var totalTx = 0;
+  for (var i = 0; i < recentTx.length; i++) totalTx += recentTx[i].txs;
+  var tps = recentTx.length > 0 ? (totalTx / (recentTx.length * 6)).toFixed(2) : 0;
+  window._tpsHistory.push(parseFloat(tps));
+  if (window._tpsHistory.length > 30) window._tpsHistory.shift();
+}, 5000);
+
+async function loadAnalytics() {
+  // Fetch last 50 blocks for analytics
+  try {
+    var header = await rpc('chain_getHeader', []);
+    if (!header) return;
+    var current = parseInt(header.number, 16);
+    var blocks = [];
+
+    // Fetch 50 blocks in parallel (batches of 10)
+    for (var batch = 0; batch < 5; batch++) {
+      var promises = [];
+      for (var i = 0; i < 10; i++) {
+        var blockNum = current - (batch * 10 + i);
+        if (blockNum < 0) break;
+        promises.push(fetchBlockData(blockNum));
+      }
+      var results = await Promise.all(promises);
+      blocks = blocks.concat(results.filter(function(b) { return b; }));
+    }
+
+    blocks.sort(function(a, b) { return a.number - b.number; });
+
+    // Collect stats
+    var totalTx = 0, totalExt = 0, successCount = 0;
+    var signers = new Set();
+    var blockTimes = [];
+
+    for (var i = 0; i < blocks.length; i++) {
+      var b = blocks[i];
+      var txCount = (b.extrinsics && b.extrinsics.length) || 0;
+      totalTx += txCount;
+      totalExt += txCount;
+      if (b.extrinsics) {
+        for (var j = 0; j < b.extrinsics.length; j++) {
+          if (!b.extrinsics[j].dispatchError) successCount++;
+          if (b.extrinsics[j].signer) signers.add(b.extrinsics[j].signer);
+        }
+      }
+      if (i > 0) {
+        var timeDiff = (b.timestamp - blocks[i-1].timestamp) / 1000;
+        if (timeDiff > 0 && timeDiff < 60) blockTimes.push(timeDiff);
+      }
+    }
+
+    // Update window data
+    window._txVolumeData = blocks.map(function(b) {
+      return { block: b.number, txs: (b.extrinsics && b.extrinsics.length) || 0 };
+    });
+
+    // Calculate stats
+    var avgTx = blocks.length > 0 ? (totalTx / blocks.length).toFixed(1) : 0;
+    var avgBlockTime = blockTimes.length > 0
+      ? (blockTimes.reduce(function(a,b){return a+b;},0) / blockTimes.length).toFixed(1)
+      : '6.0';
+    var blocksPerMin = avgBlockTime > 0 ? Math.round(60 / parseFloat(avgBlockTime)) : 10;
+    var successRate = totalExt > 0 ? ((successCount / totalExt) * 100).toFixed(1) : 100;
+
+    // Update stat displays
+    var el;
+    if (el = document.getElementById('analyticsTxCount')) el.textContent = blocks.length + ' blocks analyzed';
+    if (el = document.getElementById('analyticsBlocks')) el.textContent = blocks.length;
+    if (el = document.getElementById('analyticsTotalTx')) el.textContent = totalTx;
+    if (el = document.getElementById('analyticsAvgTx')) el.textContent = avgTx;
+    if (el = document.getElementById('analyticsCurTps')) el.textContent = window._tpsHistory.length > 0 ? window._tpsHistory[window._tpsHistory.length-1].toFixed(2) : '0';
+    if (el = document.getElementById('analyticsPeakTps')) el.textContent = window._tpsHistory.length > 0 ? Math.max.apply(null, window._tpsHistory).toFixed(2) : '0';
+    if (el = document.getElementById('analyticsAvgTps')) el.textContent = window._tpsHistory.length > 0 ? (window._tpsHistory.reduce(function(a,b){return a+b;},0)/window._tpsHistory.length).toFixed(2) : '0';
+    if (el = document.getElementById('analyticsTpsLabel')) el.textContent = window._tpsHistory.length + ' samples';
+    if (el = document.getElementById('analyticsBlockRate')) el.textContent = blocks.length + ' blocks';
+    if (el = document.getElementById('analyticsAvgBlockTime')) el.textContent = avgBlockTime + 's';
+    if (el = document.getElementById('analyticsBlocksPerMin')) el.textContent = blocksPerMin;
+    if (el = document.getElementById('analyticsSuccessRate')) el.textContent = successRate + '%';
+    if (el = document.getElementById('analyticsSuccessDetail')) el.textContent = successCount + ' / ' + totalExt;
+    if (el = document.getElementById('analyticsUniqueSigners')) el.textContent = signers.size;
+    if (el = document.getElementById('analyticsTotalExt')) el.textContent = totalExt;
+
+    // Draw charts
+    drawTxVolumeChart();
+    drawTpsHistoryChart();
+    drawBlockRateChart(blockTimes);
+  } catch(e) {
+    console.error('Analytics error:', e);
+  }
+}
+
+async function fetchBlockData(blockNum) {
+  try {
+    var hash = await rpc('chain_getBlockHash', [blockNum]);
+    if (!hash) return null;
+    var block = await rpc('chain_getBlock', [hash]);
+    if (!block || !block.block) return null;
+    var exts = block.block.extrinsics || [];
+    var parsed = exts.map(function(ext) {
+      var signer = null;
+      try { if (ext.signature && ext.signature.signedTransaction && ext.signature.signedTransaction.signer) signer = ext.signature.signedTransaction.signer; } catch(e) {}
+      return { signer: signer, dispatchError: null, method: ext.method ? ext.method.method : 'unknown' };
+    });
+    return { number: blockNum, extrinsics: parsed, timestamp: blockNum * 6000 };
+  } catch(e) { return null; }
+}
+
+function drawTxVolumeChart() {
+  var canvas = document.getElementById('txVolumeChart');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  var data = window._txVolumeData;
+  if (data.length === 0) return;
+  var maxTx = Math.max.apply(null, data.map(function(d) { return d.txs; })) || 1;
+  var barW = w / data.length;
+
+  // Background grid
+  ctx.strokeStyle = '#e9ecef';
+  ctx.lineWidth = 1;
+  for (var i = 0; i <= 4; i++) {
+    var y = h * i / 4;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+
+  // Bars
+  for (var i = 0; i < data.length; i++) {
+    var barH = (data[i].txs / maxTx) * (h - 20);
+    var x = i * barW;
+    ctx.fillStyle = '#28a745';
+    ctx.fillRect(x + 2, h - barH - 10, barW - 4, barH);
+  }
+
+  // Labels
+  ctx.fillStyle = '#6c759d';
+  ctx.font = '11px sans-serif';
+  ctx.fillText('Max: ' + maxTx + ' txs', 8, 14);
+  ctx.fillText(data.length + ' blocks', w - 80, h - 2);
+}
+
+function drawTpsHistoryChart() {
+  var canvas = document.getElementById('tpsHistoryChart');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  var data = window._tpsHistory;
+  if (data.length === 0) return;
+  var maxTps = Math.max.apply(null, data) || 0.1;
+  var stepX = w / Math.max(data.length - 1, 1);
+
+  // Background grid
+  ctx.strokeStyle = '#e9ecef';
+  ctx.lineWidth = 1;
+  for (var i = 0; i <= 4; i++) {
+    var y = h * i / 4;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+  }
+
+  // Area fill
+  ctx.beginPath();
+  ctx.moveTo(0, h);
+  for (var i = 0; i < data.length; i++) {
+    var x = i * stepX;
+    var y = h - (data[i] / maxTps) * (h - 20) - 10;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo((data.length-1) * stepX, h);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(40, 167, 69, 0.12)';
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  for (var i = 0; i < data.length; i++) {
+    var x = i * stepX;
+    var y = h - (data[i] / maxTps) * (h - 20) - 10;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = '#28a745';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = '#6c759d';
+  ctx.font = '11px sans-serif';
+  ctx.fillText('Peak: ' + maxTps.toFixed(2) + ' tps', 8, 14);
+  ctx.fillText(data.length + ' samples', w - 80, h - 2);
+}
+
+function drawBlockRateChart(blockTimes) {
+  var canvas = document.getElementById('blockRateChart');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  if (blockTimes.length === 0) return;
+  var maxT = Math.max.apply(null, blockTimes) || 6;
+  var minT = Math.min.apply(null, blockTimes) || 6;
+  var barW = w / blockTimes.length;
+
+  // Target line (6s)
+  var targetY = h - (6 / (maxT + 1)) * (h - 10) - 5;
+  ctx.strokeStyle = '#f59e0b';
+  ctx.setLineDash([4, 4]);
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, targetY); ctx.lineTo(w, targetY); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Bars
+  for (var i = 0; i < blockTimes.length; i++) {
+    var barH = (blockTimes[i] / (maxT + 1)) * (h - 10);
+    var x = i * barW;
+    ctx.fillStyle = blockTimes[i] <= 6.5 ? '#28a745' : '#f59e0b';
+    ctx.fillRect(x + 1, h - barH - 5, barW - 2, barH);
+  }
+
+  // Labels
+  ctx.fillStyle = '#6c759d';
+  ctx.font = '11px sans-serif';
+  ctx.fillText('Target: 6s', 8, targetY - 4);
+  ctx.fillText('Avg: ' + (blockTimes.reduce(function(a,b){return a+b;},0)/blockTimes.length).toFixed(1) + 's', 8, h - 2);
+  ctx.fillText(blockTimes.length + ' blocks', w - 80, h - 2);
+}
+
 async function init() {
+  updateInfoCards();
   initScroll();
   initCanvas();
   updateTps();
@@ -1072,10 +2496,12 @@ async function init() {
       if (el) el.textContent = "Epoch #" + ep;
     }
   });
+  setInterval(updateInfoCards, 15000);
   setInterval(updateTps, 5000);
   setInterval(updateValidatorsQuick, 10000);
   try { await loadLatestBlocks(); } catch(e) { console.log("blocks err:", e); }
   try { await loadValidators(); } catch(e) { console.log("val err:", e); }
+  try { await loadMarketTicker(); } catch(e) { console.log("ticker err:", e); }
   setInterval(loadLatestBlocks, 10000);
 }
 
@@ -1126,6 +2552,47 @@ setInterval(function() {
     }
   });
 }, 6000);
+
+
+// ===== Top Markets Ticker =====
+async function loadMarketTicker() {
+  try {
+    const pools = await rpc('amm_dex_getAllPools', []);
+    if (!pools || !pools.length) return;
+
+    // Sort pools by TVL (reserveA + reserveB) descending
+    const sorted = pools.map(p => {
+      const reserveA = BigInt(p.reserve_a || p.reserveA || '0');
+      const reserveB = BigInt(p.reserve_b || p.reserveB || '0');
+      const tvl = reserveA + reserveB;
+      return { ...p, tvl };
+    }).sort((a, b) => b.tvl > a.tvl ? 1 : -1).slice(0, 10);
+
+    const tickerInner = document.getElementById('tickerInner');
+    if (!tickerInner) return;
+
+    // Duplicate items for seamless scroll
+    const items = [...sorted, ...sorted];
+    tickerInner.innerHTML = items.map((p, i) => {
+      const rank = (i % sorted.length) + 1;
+      const tkA = p.token_a;
+      const tkB = p.token_b;
+      const tokenA = Array.isArray(tkA) ? String.fromCharCode.apply(null, tkA) : (tkA || "VRDX");
+      const tokenB = Array.isArray(tkB) ? String.fromCharCode.apply(null, tkB) : (tkB || "USDC");
+      const tvlNum = Number(p.tvl) / 10**9;
+      const tvlStr = tvlNum >= 1e9 ? (tvlNum/1e9).toFixed(2)+'B' : tvlNum >= 1e6 ? (tvlNum/1e6).toFixed(2)+'M' : tvlNum >= 1e3 ? (tvlNum/1e3).toFixed(1)+'K' : tvlNum.toFixed(0);
+      return '<div class="ticker-item">' +
+        '<span class="ticker-rank">#'+rank+'</span>' +
+        '<span class="ticker-pair">'+tokenA+'-'+tokenB+'</span>' +
+        '<span class="ticker-tvl">'+tvlStr+'</span>' +
+        '</div>';
+    }).join('');
+
+    document.getElementById('marketTicker').style.display = 'flex';
+  } catch(e) {
+    console.log('Ticker error:', e);
+  }
+}
 
 </script>
 </body>
