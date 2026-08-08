@@ -1,0 +1,15 @@
+[Unit]
+Description=Verdis Blockchain Node
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+ExecStart=/usr/local/bin/verdis --dev --rpc-port 9933 --rpc-cors all --unsafe-rpc-external --rpc-methods unsafe
+Restart=always
+RestartSec=5
+User=root
+StandardOutput=append:/var/log/verdis-node.log
+StandardError=append:/var/log/verdis-node.log
+
+[Install]
+WantedBy=multi-user.target
