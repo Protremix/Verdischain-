@@ -453,52 +453,52 @@ async function loadLatestBlocks() {
 function decodeExtrinsic(e, blockHash, blockNum) {
   if (!Array.isArray(e)) return null;
   const bytes = e;
-  const hexStr = '0x' + bytes.map(b => b.toString(16).padStart(2,'0')).join('');
-  // Signed extrinsics are 100+ bytes, inherents (timestamp) are ~11 bytes
   const isSigned = bytes.length > 50;
   
   if (isSigned) {
-    // Extract signer public key (bytes 4-35)
     let signer = '';
-    if (bytes.length > 35) {
+    if (bytes.length > 36) {
       const signerBytes = bytes.slice(4, 36);
       signer = '0x' + signerBytes.map(b => b.toString(16).padStart(2,'0')).join('');
     }
-    // Try to decode remark text from the end of the extrinsic
+    
     let remark = '';
-    for (let start = Math.max(0, bytes.length - 80); start < bytes.length; start++) {
-      try {
-        let text = '';
-        let valid = true;
-        for (let j = start; j < bytes.length; j++) {
-          if (bytes[j] >= 32 && bytes[j] <= 126) { text += String.fromCharCode(bytes[j]); } else { valid = false; break; }
-        }
-        if (text.length > 3 && text.length < 200 && /^[\x20-\x7e]+$/.test(text)) {
-          remark = text;
+    const scanStart = Math.min(bytes.length - 4, 100);
+    for (let start = scanStart; start < bytes.length; start++) {
+      let text = '';
+      let valid = true;
+      for (let j = start; j < bytes.length; j++) {
+        if (bytes[j] >= 32 && bytes[j] <= 126) {
+          text += String.fromCharCode(bytes[j]);
+        } else {
+          valid = false;
           break;
         }
-      } catch(err) {}
+      }
+      if (text.length >= 5 && text.length < 200 && /[a-zA-Z]{3,}/.test(text)) {
+        remark = text;
+        break;
+      }
     }
-    // Generate extrinsic hash from full bytes
+    
     let hash = 0;
     for (const b of bytes) { hash = ((hash << 5) - hash + b) >>> 0; }
     const extHash = '0x' + hash.toString(16).padStart(8,'0');
     return {
       type: 'Signed',
       badge: 'badge-signed',
-      signer: signer ? signer.substring(0, 10) + '...' + signer.slice(-4) : '—',
+      signer: signer ? signer.slice(0, 10) + '...' + signer.slice(-4) : '\u2014',
       method: 'System.remark',
-      remark: remark || '',
+      remark: remark,
       hash: extHash,
       blockHash: blockHash,
       blockNum: blockNum
     };
   } else {
-    // Inherent (timestamp, etc.)
     return {
       type: 'Inherent',
       badge: 'badge-inherent',
-      signer: '—',
+      signer: '\u2014',
       method: 'Timestamp.set',
       remark: '',
       hash: shortHash(blockHash),
