@@ -1122,50 +1122,54 @@ async function searchTransactions() {
   }
 }
 
-function decodeExtrinsicCall(extHex) {
+function decodeExtrinsicCall(extData) {
   try {
-    const hex = extHex.startsWith("0x") ? extHex.slice(2) : extHex;
-    const firstByte = parseInt(hex.slice(0, 2), 16);
-    
+    var bytes;
+    if (typeof extData === "string") {
+      var hex = extData.startsWith("0x") ? extData.slice(2) : extData;
+      bytes = [];
+      for (var i = 0; i < hex.length; i += 2) { bytes.push(parseInt(hex.substr(i, 2), 16)); }
+    } else if (Array.isArray(extData)) { bytes = extData; } else { return { section: "error", method: "?", sender: "" }; }
+    if (bytes.length < 4) return { section: "error", method: "?", sender: "" };
+
+    var offset = 2; // Skip 2-byte prefix
+    var versionByte = bytes[offset];
     var callMap = {
-      "0,0": ["system","remark"], "0,1": ["system","setHeapPages"],
-      "0,2": ["system","setCode"], "0,3": ["system","setStorage"],
+      "0,0": ["system","remark"], "0,1": ["system","setHeapPages"], "0,2": ["system","setCode"], "0,3": ["system","setStorage"],
       "1,0": ["timestamp","set"],
-      "2,0": ["balances","transferAllowDeath"], "2,1": ["balances","setBalance"],
-      "2,3": ["balances","transferKeepAlive"], "2,4": ["balances","transferAll"],
-      "10,0": ["dpos","registerValidator"], "10,1": ["dpos","unregisterValidator"],
-      "10,2": ["dpos","updateGreenScore"], "10,5": ["dpos","setValidatorName"],
-      "11,0": ["ammDex","createPool"], "11,1": ["ammDex","addLiquidity"],
-      "11,2": ["ammDex","removeLiquidity"], "11,3": ["ammDex","swap"],
-      "12,0": ["eco","mintCarbonCredit"], "12,1": ["eco","createReforestProject"],
-      "12,2": ["eco","logReforestation"],
+      "4,0": ["balances","transferAllowDeath"], "4,1": ["balances","setBalance"], "4,3": ["balances","transferKeepAlive"], "4,4": ["balances","transferAll"],
+      "6,0": ["sudo","sudo"],
+      "30,0": ["dpos","registerValidator"], "30,1": ["dpos","unregisterValidator"], "30,2": ["dpos","updateGreenScore"], "30,5": ["dpos","setValidatorName"],
+      "31,0": ["ammDex","createPool"], "31,1": ["ammDex","addLiquidity"], "31,2": ["ammDex","removeLiquidity"], "31,3": ["ammDex","swap"],
+      "32,0": ["eco","mintCarbonCredit"], "32,1": ["eco","createReforestProject"], "32,2": ["eco","logReforestation"],
     };
-    
-    if (firstByte >= 0x80) {
-      // Signed: try to find call index at various offsets after signature
-      var sender = "[signed:" + hex.slice(2, 10) + "...]";
-      for (var offset = 200; offset < hex.length - 4; offset += 2) {
-        var sec = parseInt(hex.slice(offset, offset+2), 16);
-        var meth = parseInt(hex.slice(offset+2, offset+4), 16);
-        var key = sec + "," + meth;
-        if (callMap[key]) {
-          return { section: callMap[key][0], method: callMap[key][1], sender: sender };
-        }
-      }
+
+    if (versionByte >= 0x80) {
+      offset++;
+      var sigType = bytes[offset]; offset++;
+      offset += (sigType === 2) ? 65 : 64;
+      var sender = offset + 32 <= bytes.length ? "0x" + bytes.slice(offset, offset+32).map(function(b){return("0"+b.toString(16)).slice(-2)}).join("") : "[signed]";
+      offset += 32;
+      offset += (bytes[offset] === 0) ? 1 : 2; // era
+      offset = readCompactExp(bytes, offset).nextOffset; // nonce
+      offset = readCompactExp(bytes, offset).nextOffset; // tip
+      var key = bytes[offset] + "," + bytes[offset+1];
+      if (callMap[key]) return { section: callMap[key][0], method: callMap[key][1], sender: sender };
       return { section: "signed", method: "unknown", sender: sender };
     } else {
-      // Unsigned/inherent
-      var sec = parseInt(hex.slice(0, 2), 16);
-      var meth = parseInt(hex.slice(2, 4), 16);
-      var key = sec + "," + meth;
-      if (callMap[key]) {
-        return { section: callMap[key][0], method: callMap[key][1], sender: "(inherent)" };
-      }
-      return { section: "inherent", method: "sec" + sec, sender: "(inherent)" };
+      var key = bytes[offset] + "," + bytes[offset+1];
+      if (callMap[key]) return { section: callMap[key][0], method: callMap[key][1], sender: "(inherent)" };
+      return { section: "inherent", method: "sec" + bytes[offset], sender: "(inherent)" };
     }
-  } catch(e) {
-    return { section: "error", method: "?", sender: "" };
-  }
+  } catch(e) { return { section: "error", method: "?", sender: "" }; }
+}
+function readCompactExp(bytes, offset) {
+  if (offset >= bytes.length) return { value: 0, nextOffset: offset };
+  var first = bytes[offset]; var mode = first & 0x03;
+  if (mode === 0) return { value: first >> 2, nextOffset: offset + 1 };
+  if (mode === 1 && offset+1 < bytes.length) return { value: (first|(bytes[offset+1]<<8))>>2, nextOffset: offset+2 };
+  if (mode === 2 && offset+3 < bytes.length) return { value: (first|(bytes[offset+1]<<8)|(bytes[offset+2]<<16)|(bytes[offset+3]<<24))>>>2, nextOffset: offset+4 };
+  var bigLen = (first >> 2) + 4; var val = 0; for (var bi = 1; bi <= bigLen && offset + bi < bytes.length; bi++) { val += bytes[offset + bi] * Math.pow(256, bi - 1); } return { value: val, nextOffset: offset + 1 + bigLen };
 }
 
 function clearTxSearch() {
@@ -3461,14 +3465,15 @@ function decodeExtrinsicCall(extHex) {
       "0,0": ["system","remark"], "0,1": ["system","setHeapPages"],
       "0,2": ["system","setCode"], "0,3": ["system","setStorage"],
       "1,0": ["timestamp","set"],
-      "2,0": ["balances","transferAllowDeath"], "2,1": ["balances","setBalance"],
-      "2,3": ["balances","transferKeepAlive"], "2,4": ["balances","transferAll"],
-      "10,0": ["dpos","registerValidator"], "10,1": ["dpos","unregisterValidator"],
-      "10,2": ["dpos","updateGreenScore"], "10,5": ["dpos","setValidatorName"],
-      "11,0": ["ammDex","createPool"], "11,1": ["ammDex","addLiquidity"],
-      "11,2": ["ammDex","removeLiquidity"], "11,3": ["ammDex","swap"],
-      "12,0": ["eco","mintCarbonCredit"], "12,1": ["eco","createReforestProject"],
-      "12,2": ["eco","logReforestation"],
+      "4,0": ["balances","transferAllowDeath"], "4,1": ["balances","setBalance"],
+      "4,3": ["balances","transferKeepAlive"], "4,4": ["balances","transferAll"],
+      "6,0": ["sudo","sudo"],
+      "30,0": ["dpos","registerValidator"], "30,1": ["dpos","unregisterValidator"],
+      "30,2": ["dpos","updateGreenScore"], "30,5": ["dpos","setValidatorName"],
+      "31,0": ["ammDex","createPool"], "31,1": ["ammDex","addLiquidity"],
+      "31,2": ["ammDex","removeLiquidity"], "31,3": ["ammDex","swap"],
+      "32,0": ["eco","mintCarbonCredit"], "32,1": ["eco","createReforestProject"],
+      "32,2": ["eco","logReforestation"],
     };
     
     if (firstByte >= 0x80) {

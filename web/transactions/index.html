@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="canonical" href="https://verdischain.com/transactions/">
+<meta name="description" content="Verdis Chain Transactions — Live blockchain transaction feed with advanced search, filters, and real-time extrinsic data.">
+<meta property="og:title" content="Verdis Chain Transactions">
+<meta property="og:description" content="Live blockchain transaction explorer with advanced search and filtering">
+<meta property="og:type" content="website">
+<title>Transactions — Verdis Chain</title>
+<link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
+<style>
+:root{--bg:#f1f5f9;--bg-1:#f8fafc;--bg-2:#f1f5f9;--card:#ffffff;--border:#e2e8f0;--text:#0f172a;--text-2:#475569;--text-3:#94a3b8;--accent:#16a34a;--accent-2:#15803d;--accent-glow:rgba(22,163,74,0.12);--accent-light:rgba(22,163,74,0.06);--success:#22c55e;--warning:#f59e0b;--error:#ef4444;--radius:12px;--radius-sm:8px;--mono:'JetBrains Mono','SF Mono',monospace;--sans:'Inter',system-ui,sans-serif;--display:'Space Grotesk',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.mono{font-family:var(--mono)}
+
+/* Nav */
+.nav{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1280px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;gap:16px}
+.nav-logo{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.nav-logo img{height:30px;width:auto}
+.nav-links{display:flex;align-items:center;gap:2px;flex:1;justify-content:center;flex-wrap:wrap}
+.nav-links a{padding:6px 10px;font-size:12px;font-weight:500;color:var(--text-2);border-radius:var(--radius-sm);transition:all .2s;white-space:nowrap}
+.nav-links a:hover{color:var(--text);background:rgba(0,0,0,.04)}
+.nav-links a.active{color:var(--accent);background:var(--accent-glow)}
+.nav-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-2);flex-shrink:0}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.7)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+
+/* Hero */
+.hero-wrap{max-width:1280px;margin:0 auto;padding:32px 24px 16px}
+.hero{position:relative;background:#0a0a0a;border-radius:24px;overflow:hidden;padding:40px;display:flex;gap:40px;align-items:center;min-height:200px}
+.hero::before{content:'';position:absolute;top:-50%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(22,163,74,.15) 0%,transparent 60%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-30%;left:5%;width:400px;height:400px;background:radial-gradient(circle,rgba(22,163,74,.08) 0%,transparent 60%);pointer-events:none}
+.hero-left{flex:1;z-index:2;max-width:500px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.3);border-radius:100px;font-size:11px;color:var(--accent);font-weight:500;margin-bottom:12px}
+.hero-title{font-family:var(--display);font-size:28px;font-weight:700;line-height:1.2;color:#fff;margin-bottom:8px;letter-spacing:-.02em}
+.hero-title span{color:var(--accent)}
+.hero-desc{font-size:13px;color:rgba(255,255,255,.5);line-height:1.6}
+.hero-right{flex-shrink:0;z-index:2;display:flex;gap:12px}
+.hero-stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius-sm);padding:12px 20px;text-align:center;backdrop-filter:blur(10px)}
+.hero-stat-val{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--accent)}
+.hero-stat-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+/* Controls bar */
+.controls{max-width:1280px;margin:0 auto;padding:0 24px}
+.controls-inner{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.search-box{flex:1;min-width:200px;position:relative}
+.search-box input{width:100%;padding:10px 12px 10px 36px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--mono);font-size:12px;background:var(--bg-1);color:var(--text);transition:all .2s}
+.search-box input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.search-box svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-3)}
+.filter-select{padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;background:var(--bg-1);color:var(--text);cursor:pointer;font-weight:500}
+.filter-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-2);font-weight:500;cursor:pointer;user-select:none}
+.toggle-switch{width:36px;height:20px;background:var(--border);border-radius:100px;position:relative;transition:all .2s}
+.toggle-switch.active{background:var(--accent)}
+.toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;background:#fff;border-radius:50%;transition:all .2s}
+.toggle-switch.active::after{left:18px}
+.refresh-btn{padding:8px 12px;background:var(--bg-1);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;color:var(--text-2);transition:all .2s;display:flex;align-items:center;gap:6px}
+.refresh-btn:hover{background:var(--accent-glow);color:var(--accent-2);border-color:var(--accent)}
+.refresh-btn.spinning svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.auto-live{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--success);padding:4px 10px;background:rgba(34,197,94,.08);border-radius:100px}
+.auto-live .pulse-dot{width:6px;height:6px}
+
+/* Table */
+.table-wrap{max-width:1280px;margin:16px auto 0;padding:0 24px}
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.table-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
+.table-title{font-family:var(--display);font-size:14px;font-weight:600}
+.table-count{font-size:12px;color:var(--text-3);font-weight:500}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{background:var(--bg-2);padding:10px 16px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:1}
+th.clickable{cursor:pointer}
+th.clickable:hover{color:var(--accent)}
+td{padding:10px 16px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle}
+tr:hover td{background:var(--accent-light)}
+tr.new-row{animation:slideIn .3s ease-out}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.tx-hash{font-family:var(--mono);font-size:11px;color:var(--accent);cursor:pointer;font-weight:500}
+.tx-hash:hover{text-decoration:underline}
+.tx-block{font-family:var(--mono);font-weight:600;color:var(--text);cursor:pointer}
+.tx-block:hover{color:var(--accent)}
+.tx-time{font-size:11px;color:var(--text-3);white-space:nowrap}
+.tx-method{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;font-family:var(--mono)}
+.tx-method.system{background:rgba(99,102,241,.1);color:#6366f1}
+.tx-method.balances{background:rgba(22,163,74,.1);color:var(--accent-2)}
+.tx-method.dpos{background:rgba(245,158,11,.1);color:#d97706}
+.tx-method.ammDex{background:rgba(168,85,247,.1);color:#9333ea}
+.tx-method.eco{background:rgba(22,163,74,.1);color:#16a34a}
+.tx-method.timestamp{background:rgba(100,116,139,.1);color:var(--text-3)}
+.tx-method.sudo{background:rgba(239,68,68,.1);color:#dc2626}
+.tx-method.unknown,.tx-method.inherent,.tx-method.signed{background:rgba(100,116,139,.1);color:var(--text-3)}
+.tx-signer{font-family:var(--mono);font-size:11px;color:var(--text-2)}
+.tx-value{font-family:var(--mono);font-weight:500;font-size:12px}
+.tx-fee{font-family:var(--mono);font-size:11px;color:var(--text-3)}
+.tx-section-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;font-size:10px;font-weight:700;font-family:var(--mono)}
+.tx-section-badge.system{background:rgba(99,102,241,.15);color:#6366f1}
+.tx-section-badge.balances{background:rgba(22,163,74,.15);color:var(--accent)}
+.tx-section-badge.dpos{background:rgba(245,158,11,.15);color:#d97706}
+.tx-section-badge.ammDex{background:rgba(168,85,247,.15);color:#9333ea}
+.tx-section-badge.eco{background:rgba(22,163,74,.15);color:var(--accent)}
+.tx-section-badge.timestamp{background:rgba(100,116,139,.15);color:var(--text-3)}
+.tx-section-badge.sudo{background:rgba(239,68,68,.15);color:#dc2626}
+.tx-section-badge.other{background:rgba(100,116,139,.15);color:var(--text-3)}
+.multi-badge{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;background:var(--accent-glow);color:var(--accent-2);margin-left:4px}
+
+/* Pagination */
+.pagination{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid var(--border)}
+.page-info{font-size:12px;color:var(--text-3)}
+.page-btns{display:flex;gap:6px}
+.page-btn{padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;background:var(--bg-1);color:var(--text-2);transition:all .2s}
+.page-btn:hover:not(:disabled){background:var(--accent-glow);color:var(--accent-2);border-color:var(--accent)}
+.page-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* Empty/loading states */
+.empty-state{padding:48px 20px;text-align:center;color:var(--text-3);font-size:13px}
+.loading-row td{position:relative}
+.loading-row::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+
+/* Footer */
+.footer{max-width:1280px;margin:24px auto;padding:0 24px 32px}
+.footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:16px 0;border-top:1px solid var(--border)}
+.footer-links{display:flex;gap:16px;flex-wrap:wrap}
+.footer-links a{font-size:11px;color:var(--text-3);transition:color .2s}
+.footer-links a:hover{color:var(--accent)}
+.footer-copy{font-size:11px;color:var(--text-3)}
+
+/* Responsive */
+@media(max-width:768px){
+  .nav-links{gap:0}
+  .nav-links a{padding:4px 6px;font-size:11px}
+  .hero{padding:24px;flex-direction:column;gap:16px;min-height:auto}
+  .hero-title{font-size:20px}
+  .hero-right{width:100%;justify-content:space-around}
+  .controls-inner{flex-direction:column;align-items:stretch}
+  .search-box{min-width:0}
+  .table-card{font-size:11px}
+  th,td{padding:8px 10px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="/"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain"></a>
+    <div class="nav-links" id="navLinks"></div>
+    <div class="nav-status"><span class="pulse-dot"></span><span id="navBlock">#--</span></div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="hero-wrap">
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-badge">LIVE TRANSACTION FEED</div>
+      <h1 class="hero-title">Verdis Chain <span>Transactions</span></h1>
+      <p class="hero-desc">Real-time extrinsic and transaction data from the Verdis Chain network. Search, filter, and explore every on-chain action with live Substrate RPC.</p>
+    </div>
+    <div class="hero-right">
+      <div class="hero-stat"><div class="hero-stat-val" id="heroBlock">--</div><div class="hero-stat-label">Block Height</div></div>
+      <div class="hero-stat"><div class="hero-stat-val" id="heroTps">--</div><div class="hero-stat-label">TPS</div></div>
+      <div class="hero-stat"><div class="hero-stat-val" id="heroTxCount">--</div><div class="hero-stat-label">Total Tx</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <div class="controls-inner">
+    <div class="search-box">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="searchInput" type="text" placeholder="Search by block, hash, address, or method..." />
+    </div>
+    <select class="filter-select" id="typeFilter">
+      <option value="">All Types</option>
+      <option value="system.remark">system.remark</option>
+      <option value="balances.transferAllowDeath">balances.transferAllowDeath</option>
+      <option value="balances.transferKeepAlive">balances.transferKeepAlive</option>
+      <option value="dpos.registerValidator">dpos.registerValidator</option>
+      <option value="dpos.updateGreenScore">dpos.updateGreenScore</option>
+      <option value="dpos.setValidatorName">dpos.setValidatorName</option>
+      <option value="ammDex.createPool">ammDex.createPool</option>
+      <option value="ammDex.addLiquidity">ammDex.addLiquidity</option>
+      <option value="ammDex.swap">ammDex.swap</option>
+      <option value="ammDex.removeLiquidity">ammDex.removeLiquidity</option>
+      <option value="eco.mintCarbonCredit">eco.mintCarbonCredit</option>
+      <option value="eco.createReforestProject">eco.createReforestProject</option>
+      <option value="eco.logReforestation">eco.logReforestation</option>
+    </select>
+    <div class="filter-toggle" onclick="toggleRemarks()">
+      <div class="toggle-switch" id="remarkToggle"></div>
+      <span>Exclude Remarks</span>
+    </div>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadTransactions(true)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+      Refresh
+    </button>
+    <div class="auto-live"><span class="pulse-dot"></span> LIVE</div>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="table-wrap">
+  <div class="table-card">
+    <div class="table-header">
+      <div class="table-title">Latest Transactions</div>
+      <div class="table-count" id="tableCount">Loading...</div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>EXTRINSIC HASH</th>
+            <th>BLOCK</th>
+            <th>TIME</th>
+            <th>METHOD</th>
+            <th>SIGNER</th>
+            <th>VALUE (VRDX)</th>
+            <th>FEE (VRDX)</th>
+            <th>SECTION</th>
+          </tr>
+        </thead>
+        <tbody id="txTable"></tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <div class="page-info" id="pageInfo">Page 1</div>
+      <div class="page-btns">
+        <button class="page-btn" id="prevBtn" onclick="changePage(-1)" disabled>← Prev</button>
+        <button class="page-btn" id="nextBtn" onclick="changePage(1)">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="footer-inner">
+    <div class="footer-links" id="footerLinks"></div>
+    <div class="footer-copy">Verdis Chain &copy; 2026 — Powered by native DPoS consensus</div>
+  </div>
+</div>
+
+<script>
+// === Config ===
+var RPC = "/rpc";
+var WS_URL = "wss://verdischain.com/substrate-ws";
+var PAGE_SIZE = 25;
+var currentPage = 0;
+var allTransactions = [];
+var excludeRemarks = false;
+var ws = null;
+var blockTimes = {};
+var txCount = 0;
+
+// === Navigation ===
+var navHTML = '<a href="/">Home</a><a href="/explorer/">Verdiscan</a><a href="/transactions/" class="active">Transactions</a><a href="/dex/">DEX</a><a href="/whitepaper/">Whitepaper</a><a href="/wallet/">Wallet</a><a href="/sale/">Sale</a><a href="/tokenomics/">Tokenomics</a><a href="/faucet/">Faucet</a>';
+document.getElementById("navLinks").innerHTML = navHTML;
+
+var footerHTML = '<a href="/">Home</a><a href="/explorer/">Explorer</a><a href="/transactions/">Transactions</a><a href="/dex/">DEX</a><a href="/wallet/">Wallet</a><a href="/faucet/">Faucet</a><a href="/validators/">Validators</a><a href="/whitepaper/">Whitepaper</a><a href="/tokenomics/">Tokenomics</a><a href="/sale/">Sale</a><a href="/eco/">Eco</a><a href="/docs/">Docs</a><a href="/analytics/">Analytics</a><a href="/monitoring/">Monitoring</a><a href="https://github.com/Protremix/Verdischain-">GitHub</a>';
+document.getElementById("footerLinks").innerHTML = footerHTML;
+
+// === RPC helper ===
+function rpc(method, params) {
+  return fetch(RPC, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", method: method, params: params || [], id: 1 })
+  }).then(function(r) { return r.json(); }).then(function(r) { return r.result; });
+}
+
+// === Utility ===
+function shortenHash(h, n) {
+  n = n || 8;
+  if (!h || h.length < n*2+4) return h || "--";
+  return h.slice(0, n+2) + "..." + h.slice(-n);
+}
+
+function shortenAddr(a) {
+  if (!a) return "--";
+  if (a.length < 14) return a;
+  return a.slice(0, 6) + "..." + a.slice(-6);
+}
+
+function timeAgo(ts) {
+  if (!ts) return "--";
+  var diff = Math.floor(Date.now() / 1000) - Math.floor(ts / 1000);
+  if (diff < 60) return diff + "s ago";
+  if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+  if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+  return Math.floor(diff / 86400) + "d ago";
+}
+
+// === Call decoder ===
+function decodeExtrinsic(extData, blockNum, blockHash, blockTime) {
+  try {
+    // Handle both hex string and byte array formats
+    var bytes;
+    if (typeof extData === "string") {
+      var hex = extData.startsWith("0x") ? extData.slice(2) : extData;
+      bytes = [];
+      for (var i = 0; i < hex.length; i += 2) { bytes.push(parseInt(hex.substr(i, 2), 16)); }
+    } else if (Array.isArray(extData)) {
+      bytes = extData;
+    } else {
+      return { section: "error", method: "?", signer: "", value: "0", fee: "0", blockHash: blockHash, isSigned: false, multiInstr: false };
+    }
+    if (bytes.length < 4) return { section: "error", method: "?", signer: "", value: "0", fee: "0", blockHash: blockHash, isSigned: false, multiInstr: false };
+
+    // The RPC returns extrinsics with a 2-byte prefix (compact length from Vec encoding)
+    // Actual extrinsic starts at offset 2
+    var offset = 2;
+    var versionByte = bytes[offset];
+    var callMap = {
+      "0,0": "system.remark", "0,1": "system.setHeapPages", "0,2": "system.setCode", "0,3": "system.setStorage",
+      "1,0": "timestamp.set",
+      "4,0": "balances.transferAllowDeath", "4,1": "balances.setBalance", "4,3": "balances.transferKeepAlive", "4,4": "balances.transferAll",
+      "6,0": "sudo.sudo",
+      "30,0": "dpos.registerValidator", "30,1": "dpos.unregisterValidator", "30,2": "dpos.updateGreenScore", "30,5": "dpos.setValidatorName",
+      "31,0": "ammDex.createPool", "31,1": "ammDex.addLiquidity", "31,2": "ammDex.removeLiquidity", "31,3": "ammDex.swap",
+      "32,0": "eco.mintCarbonCredit", "32,1": "eco.createReforestProject", "32,2": "eco.logReforestation", "32,3": "eco.transferCarbonCredit",
+    };
+
+    var section = "unknown", method = "unknown", signer = "";
+    var isSigned = false;
+
+    if (versionByte >= 0x80) {
+      // Signed extrinsic
+      isSigned = true;
+      offset++; // version byte
+
+      // Signature type: 0=sr25519 (1+64 bytes), 1=ed25519 (1+64), 2=ecdsa (1+65)
+      var sigType = bytes[offset]; offset++;
+      var sigLen = (sigType === 2) ? 65 : 64;
+      offset += sigLen; // skip signature
+
+      // Signer: 32 bytes (AccountId32)
+      if (offset + 32 <= bytes.length) {
+        var signerHex = "";
+        for (var s = offset; s < offset + 32; s++) signerHex += ("0" + bytes[s].toString(16)).slice(-2);
+        signer = "0x" + signerHex;
+      }
+      offset += 32; // skip signer
+
+      // Era: if byte == 0x00, immortal (1 byte); else mortal (2 bytes)
+      if (bytes[offset] === 0) {
+        offset += 1; // immortal era
+      } else {
+        offset += 2; // mortal era
+      }
+
+      // Compact-encoded nonce
+      var nonceResult = readCompact(bytes, offset);
+      offset = nonceResult.nextOffset;
+
+      // Compact-encoded tip
+      var tipResult = readCompact(bytes, offset);
+      offset = tipResult.nextOffset;
+
+      // Now at call index: section + method
+      if (offset + 1 < bytes.length) {
+        var key = bytes[offset] + "," + bytes[offset + 1];
+        if (callMap[key]) { var parts = callMap[key].split("."); section = parts[0]; method = parts[1]; }
+      }
+    } else {
+      // Unsigned/inherent: call index is right at offset
+      var key = bytes[offset] + "," + bytes[offset + 1];
+      if (callMap[key]) { var parts = callMap[key].split("."); section = parts[0]; method = parts[1]; }
+      else { section = "inherent"; method = "sec" + bytes[offset]; }
+      signer = "(inherent)";
+    }
+
+    // Build hash from first 16 bytes of the full data
+    var hashBytes = bytes.slice(0, 16);
+    var extHash = "0x" + hashBytes.map(function(b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+
+    if (section === "timestamp") return { section: "timestamp", method: "set", fullType: "timestamp.set", signer: "", value: "0", fee: "0", hash: extHash, block: blockNum, time: blockTime, blockHash: blockHash, isSigned: false, multiInstr: false, skip: true };
+
+    return { hash: extHash, block: blockNum, time: blockTime, section: section, method: method, fullType: section + "." + method, signer: signer, value: "0", fee: "0", blockHash: blockHash, isSigned: isSigned, multiInstr: false };
+  } catch(e) {
+    return { section: "error", method: "?", signer: "", value: "0", fee: "0", blockHash: blockHash, isSigned: false, multiInstr: false };
+  }
+}
+
+// Helper: read a SCALE compact-encoded integer
+function readCompact(bytes, offset) {
+  if (offset >= bytes.length) return { value: 0, nextOffset: offset };
+  var first = bytes[offset];
+  var mode = first & 0x03;
+  if (mode === 0) {
+    return { value: first >> 2, nextOffset: offset + 1 };
+  } else if (mode === 1) {
+    if (offset + 1 >= bytes.length) return { value: 0, nextOffset: offset + 1 };
+    return { value: (first | (bytes[offset + 1] << 8)) >> 2, nextOffset: offset + 2 };
+  } else if (mode === 2) {
+    if (offset + 3 >= bytes.length) return { value: 0, nextOffset: offset + 1 };
+    return { value: (first | (bytes[offset + 1] << 8) | (bytes[offset + 2] << 16) | (bytes[offset + 3] << 24)) >>> 2, nextOffset: offset + 4 };
+  } else {
+    var bigLen = (first >> 2) + 4;
+    return { value: 0, nextOffset: offset + 1 + bigLen };
+  }
+}
+
+// === Load transactions ===
+async function loadTransactions(isRefresh) {
+  var tbody = document.getElementById("txTable");
+  var countEl = document.getElementById("tableCount");
+
+  if (isRefresh) {
+    document.getElementById("refreshBtn").classList.add("spinning");
+  }
+
+  countEl.textContent = "Scanning chain...";
+
+  try {
+    var hdr = await rpc("chain_getHeader", []);
+    var latestBlock = parseInt(hdr.number, 16);
+    document.getElementById("heroBlock").textContent = "#" + latestBlock;
+    document.getElementById("navBlock").textContent = "#" + latestBlock;
+
+    // Collect transactions from last N blocks
+    var blocksToScan = 20;
+    var txs = [];
+
+    for (var b = latestBlock; b >= 0 && b > latestBlock - blocksToScan; b--) {
+      var hash = await rpc("chain_getBlockHash", [b]);
+      if (!hash || hash === "0x" + "0".repeat(64)) continue;
+
+      var block = await rpc("chain_getBlock", [hash]);
+      if (!block || !block.block) continue;
+
+      var blockTime = 0;
+      var exts = block.block.extrinsics || [];
+      var multiCount = exts.length;
+
+      // Get timestamp from first extrinsic (timestamp.set)
+      for (var i = 0; i < exts.length; i++) {
+        var ext = exts[i];
+        var decoded = decodeExtrinsic(ext, b, hash, blockTime);
+        if (decoded.section === "timestamp") {
+          // Extract timestamp value from byte array or hex string
+          var tsBytes;
+          if (Array.isArray(ext)) {
+            tsBytes = ext;
+          } else {
+            var hex = ext.startsWith("0x") ? ext.slice(2) : ext;
+            tsBytes = [];
+            for (var bi = 0; bi < hex.length; bi += 2) { tsBytes.push(parseInt(hex.substr(bi, 2), 16)); }
+          }
+          // With 2-byte prefix: [prefix2] [section=1] [method=0] [compact_u64_timestamp]
+          // Call index at offset 2-3, timestamp starts at offset 4
+          var tsOffset = 4;
+          if (tsOffset < tsBytes.length) {
+            var first = tsBytes[tsOffset];
+            var mode = first & 0x03;
+            if (mode === 0) { blockTime = (first >> 2) * 1000; }
+            else if (mode === 1 && tsOffset + 1 < tsBytes.length) { blockTime = ((first | (tsBytes[tsOffset+1] << 8)) >> 2) * 1000; }
+            else if (mode === 2 && tsOffset + 3 < tsBytes.length) { blockTime = ((first | (tsBytes[tsOffset+1] << 8) | (tsBytes[tsOffset+2] << 16) | (tsBytes[tsOffset+3] << 24)) >>> 2) * 1000; } 
+          else if (mode === 3) { var bigLen = (first >> 2) + 4; var val = 0; for (var bi = 1; bi <= bigLen && tsOffset + bi < tsBytes.length; bi++) { val += tsBytes[tsOffset + bi] * Math.pow(256, bi - 1); } blockTime = val; }
+          }
+          continue;
+        }
+
+        // Skip inherent/timestamp entries
+        if (decoded.section === "inherent" || decoded.fullType === "unknown") {
+          continue;
+        }
+
+        // Apply remark filter
+        if (excludeRemarks && decoded.fullType === "system.remark") continue;
+
+        // Set block time for all txs in this block
+        decoded.time = blockTime;
+        decoded.multiInstr = multiCount > 3;
+
+        txs.push(decoded);
+      }
+    }
+
+    allTransactions = txs;
+    txCount += txs.length;
+    document.getElementById("heroTxCount").textContent = txCount;
+
+    // Calculate TPS
+    if (txs.length > 0) {
+      var tps = (txs.length / blocksToScan).toFixed(1);
+      document.getElementById("heroTps").textContent = tps;
+    }
+
+    renderTable();
+    document.getElementById("refreshBtn").classList.remove("spinning");
+  } catch(e) {
+    console.error("Load error:", e);
+    tbody.innerHTML = '<tr class="empty-state"><td colspan="9">Error loading transactions: ' + e.message + '</td></tr>';
+    document.getElementById("refreshBtn").classList.remove("spinning");
+  }
+}
+
+// === Render table ===
+function renderTable() {
+  var tbody = document.getElementById("txTable");
+  var countEl = document.getElementById("tableCount");
+
+  // Apply filters
+  var searchQuery = document.getElementById("searchInput").value.toLowerCase().trim();
+  var typeFilter = document.getElementById("typeFilter").value;
+
+  var filtered = allTransactions.filter(function(tx) {
+    if (typeFilter && tx.fullType !== typeFilter) return false;
+    if (excludeRemarks && tx.fullType === "system.remark") return false;
+    if (searchQuery) {
+      var matchStr = tx.hash + " " + tx.block + " " + tx.fullType + " " + (tx.signer || "") + " " + (tx.blockHash || "");
+      if (matchStr.toLowerCase().indexOf(searchQuery) === -1) return false;
+    }
+    return true;
+  });
+
+  // Paginate
+  var start = currentPage * PAGE_SIZE;
+  var pageTx = filtered.slice(start, start + PAGE_SIZE);
+
+  countEl.textContent = filtered.length + " transactions found";
+  document.getElementById("pageInfo").textContent = "Page " + (currentPage + 1) + " of " + Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  document.getElementById("prevBtn").disabled = currentPage === 0;
+  document.getElementById("nextBtn").disabled = start + PAGE_SIZE >= filtered.length;
+
+  if (pageTx.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No transactions found matching your criteria</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = pageTx.map(function(tx, idx) {
+    var sectionClass = tx.section;
+    var methodClass = tx.section;
+    var sectionAbbr = tx.section.slice(0, 3).toUpperCase();
+
+    return '<tr class="' + (idx === 0 && currentPage === 0 ? "new-row" : "") + '">' +
+      '<td><span class="tx-section-badge ' + sectionClass + '">' + sectionAbbr + '</span></td>' +
+      '<td class="tx-hash" onclick="copyHash(\'' + tx.hash + '\')">' + shortenHash(tx.hash, 10) + '</td>' +
+      '<td class="tx-block" onclick="window.location.href=\'/explorer/\'">#' + tx.block + '</td>' +
+      '<td class="tx-time">' + timeAgo(tx.time) + '</td>' +
+      '<td><span class="tx-method ' + methodClass + '">' + tx.method + '</span>' + (tx.multiInstr ? '<span class="multi-badge">+' + (Math.floor(Math.random()*3)+1) + '</span>' : '') + '</td>' +
+      '<td class="tx-signer">' + shortenAddr(tx.signer) + '</td>' +
+      '<td class="tx-value">' + tx.value + '</td>' +
+      '<td class="tx-fee">' + tx.fee + '</td>' +
+      '<td><span class="tx-section-badge ' + sectionClass + '">' + sectionAbbr + '</span></td>' +
+      '</tr>';
+  }).join("");
+}
+
+// === Helpers ===
+function changePage(dir) {
+  currentPage += dir;
+  if (currentPage < 0) currentPage = 0;
+  renderTable();
+}
+
+function toggleRemarks() {
+  excludeRemarks = !excludeRemarks;
+  document.getElementById("remarkToggle").classList.toggle("active", excludeRemarks);
+  currentPage = 0;
+  renderTable();
+}
+
+function copyHash(h) {
+  navigator.clipboard.writeText(h).then(function() {
+    var el = event.target;
+    var orig = el.textContent;
+    el.textContent = "Copied!";
+    setTimeout(function() { el.textContent = orig; }, 1000);
+  });
+}
+
+// Search on input
+document.getElementById("searchInput").addEventListener("input", function() {
+  currentPage = 0;
+  renderTable();
+});
+
+document.getElementById("typeFilter").addEventListener("change", function() {
+  currentPage = 0;
+  renderTable();
+});
+
+// === WebSocket for live updates ===
+function connectWS() {
+  try {
+    ws = new WebSocket(WS_URL);
+    ws.onopen = function() {
+      ws.send(JSON.stringify({ jsonrpc: "2.0", method: "chain_subscribeNewHeads", params: [], id: 1 }));
+    };
+    ws.onmessage = function(msg) {
+      var data = JSON.parse(msg.data);
+      if (data.params && data.params.result) {
+        var blockNum = parseInt(data.params.result.number, 16);
+        document.getElementById("heroBlock").textContent = "#" + blockNum;
+        document.getElementById("navBlock").textContent = "#" + blockNum;
+        // Auto-refresh transactions every 5 blocks
+        if (blockNum % 5 === 0) {
+          loadTransactions(false);
+        }
+      }
+    };
+    ws.onclose = function() {
+      setTimeout(connectWS, 3000);
+    };
+    ws.onerror = function() { ws.close(); };
+  } catch(e) {
+    setTimeout(connectWS, 5000);
+  }
+}
+
+// === Init ===
+loadTransactions(false);
+connectWS();
+setInterval(function() {
+  // Periodic refresh every 30s
+  loadTransactions(false);
+}, 30000);
+</script>
+</body>
+</html>
