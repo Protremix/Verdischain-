@@ -168,7 +168,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
         // Team & Advisors (5B) minus 6 validator stakes (6 * 10K = 60K)
-        (sudo_account.clone(), 5 * bn - 5 * 10_000 * u),
+        (sudo_account.clone(), 5 * bn - 5 * 10_001 * u),
     ];
     // 5 validator stakes (skip Alice, she has the team allocation)
     for uri in uris.iter().skip(1) {
@@ -180,7 +180,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
             _ => sr_from(&format!("//{}", uri)).public().into(),
         };
-        balances.push((acct, 10_000 * u));
+        balances.push((acct, 10_001 * u));
     }
 
     // Dev DPoS validators (6)
@@ -377,7 +377,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
         // Team & Advisors (5B) minus 21 validator stakes (21 * 10K = 210K)
-        (sudo_account.clone(), 5 * bn - 20 * 10_000 * u),
+        (sudo_account.clone(), 5 * bn - 20 * 10_001 * u),
     ];
     // 20 validator stakes (skip Alice, she has the team allocation)
     for uri in uris.iter().skip(1) {
@@ -389,7 +389,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
             _ => sr_from(&format!("//{}", uri)).public().into(),
         };
-        balances.push((acct, 10_000 * u));
+        balances.push((acct, 10_001 * u));
     }
 
     // DPoS validators (21)
@@ -709,7 +709,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (community_pool, 5 * bn),
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
-        (sudo_account.clone(), 5 * bn - 20 * 10_000 * u),
+        (sudo_account.clone(), 5 * bn - 20 * 10_001 * u),
     ];
     // 20 validator stakes (skip Alice, she has the team allocation)
     for uri in uris.iter().skip(1) {
@@ -721,7 +721,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
             _ => sr_from(&format!("//{}", uri)).public().into(),
         };
-        balances.push((acct, 10_000 * u));
+        balances.push((acct, 10_001 * u));
     }
 
     // DPoS validators (21)

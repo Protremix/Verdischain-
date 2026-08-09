@@ -775,6 +775,29 @@ pub mod pallet {
 
     // === Session Manager Implementation ===
     impl<T: Config> pallet_session::SessionManager<T::AccountId> for Pallet<T> {
+        fn new_session_genesis(_new_index: u32) -> Option<Vec<T::AccountId>> {
+            // At genesis, return all active validators from genesis config.
+            // This ensures session_validators is populated from block #0.
+            let active = ActiveValidators::<T>::get();
+            if active.is_empty() {
+                // Fallback: if ActiveValidators is empty at genesis, populate
+                // from the full validator list up to ActiveValidatorCount.
+                let all = ValidatorList::<T>::get();
+                let count = T::ActiveValidatorCount::get() as usize;
+                let initial: Vec<T::AccountId> = all.iter().take(count).cloned().collect();
+                if initial.is_empty() {
+                    None
+                } else {
+                    ActiveValidators::<T>::put(
+                        BoundedVec::try_from(initial.clone()).unwrap_or_default()
+                    );
+                    Some(initial)
+                }
+            } else {
+                Some(active.into_iter().collect())
+            }
+        }
+
         fn new_session(new_index: u32) -> Option<Vec<T::AccountId>> {
             // Rotate epoch when Session asks for new validators.
             // This aligns DPoS validator selection with BABE/Session epoch boundaries.
