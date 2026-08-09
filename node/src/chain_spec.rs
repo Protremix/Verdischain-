@@ -1,4 +1,9 @@
 //! Verdis Chain — Chain Specification (Substrate v48)
+//!
+//! Three separate chain specs:
+//! - `dev`: 6 validators (Alice–Ferdie), fast epochs, test data
+//! - `testnet`: 21 validators, production epochs, full test data + vesting
+//! - `mainnet`: 21 validators, production epochs, NO test data, placeholder keys
 
 #![allow(deprecated, unused_imports, unused_variables, clippy::all, dead_code)]
 use frame_support::traits::Currency;
@@ -25,110 +30,106 @@ use verdis_runtime::{
 
 pub type VerdisChainSpec = sc_service::GenericChainSpec;
 
-/// Create the development chain spec for Verdis
-pub fn chain_spec() -> VerdisChainSpec {
-    let genesis = genesis_config();
-    let patch = serde_json::to_value(&genesis).expect("Failed to serialize genesis config");
+// ─── common helpers ─────────────────────────────────────────────────────────
 
-    sc_chain_spec::GenericChainSpec::builder(
-        verdis_runtime::WASM_BINARY.expect("WASM binary exists"),
-        Default::default(),
-    )
-    .with_name("Verdis")
-    .with_id("verdis")
-    .with_chain_type(ChainType::Development)
-    .with_properties({
-        let mut props = serde_json::Map::new();
-        props.insert("tokenSymbol".into(), "VRDX".into());
-        props.insert("tokenDecimals".into(), 9.into());
-        props.insert("ss58Format".into(), 909.into());
-        props
-    })
-    .with_genesis_config_patch(patch)
-    .build()
+fn common_props() -> serde_json::Map<String, serde_json::Value> {
+    let mut props = serde_json::Map::new();
+    props.insert("tokenSymbol".into(), "VRDX".into());
+    props.insert("tokenDecimals".into(), 9.into());
+    props.insert("ss58Format".into(), 909.into());
+    props
 }
 
-/// Development spec (local testing with --dev or --chain dev)
+fn units() -> u128 {
+    1_000_000_000
+}
+
+fn billion() -> u128 {
+    1_000_000_000 * units()
+}
+
+/// Build a session-keys vector for the given list of (controller, babe_pair, grandpa_pair) URIs.
+fn build_session_keys(uris: &[&str]) -> Vec<(AccountId, AccountId, SessionKeys)> {
+    uris.iter()
+        .map(|uri| {
+            let acct: AccountId = sr_from(&format!("//{}", uri)).public().into();
+            SessionKeys {
+                babe: sr_from(&format!("//{}", uri)).public().into(),
+                grandpa: ed_from(&format!("//{}", uri)).public().into(),
+            }
+        })
+        .enumerate()
+        .map(|(i, keys)| {
+            // Use the keyring for Alice–Ferdie, derived URIs for the rest
+            let controller = match i {
+                0 => Sr25519Keyring::Alice.to_account_id(),
+                1 => Sr25519Keyring::Bob.to_account_id(),
+                2 => Sr25519Keyring::Charlie.to_account_id(),
+                3 => Sr25519Keyring::Dave.to_account_id(),
+                4 => Sr25519Keyring::Eve.to_account_id(),
+                5 => Sr25519Keyring::Ferdie.to_account_id(),
+                _ => sr_from(&format!("//{}", uris[i])).public().into(),
+            };
+            (controller.clone(), controller, keys)
+        })
+        .collect()
+}
+
+// ─── 6-validator key set (dev) ──────────────────────────────────────────────
+
+fn dev_validator_uris() -> Vec<&'static str> {
+    vec!["Alice", "Bob", "Charlie", "Dave", "Eve", "Ferdie"]
+}
+
+// ─── 21-validator key set (testnet + mainnet) ───────────────────────────────
+
+fn testnet_validator_uris() -> Vec<&'static str> {
+    vec![
+        "Alice",
+        "Bob",
+        "Charlie",
+        "Dave",
+        "Eve",
+        "Ferdie",
+        "Validator7",
+        "Validator8",
+        "Validator9",
+        "Validator10",
+        "Validator11",
+        "Validator12",
+        "Validator13",
+        "Validator14",
+        "Validator15",
+        "Validator16",
+        "Validator17",
+        "Validator18",
+        "Validator19",
+        "Validator20",
+        "Validator21",
+    ]
+}
+
+// ─── DEV spec ──────────────────────────────────────────────────────────────
+
 pub fn dev_spec() -> VerdisChainSpec {
-    chain_spec()
-}
-
-/// Testnet spec (public testnet with known keys)
-pub fn testnet_spec() -> VerdisChainSpec {
-    let genesis = genesis_config();
-    let patch = serde_json::to_value(&genesis).expect("Failed to serialize genesis config");
+    let genesis = dev_genesis();
+    let patch = serde_json::to_value(&genesis).expect("Failed to serialize dev genesis");
 
     sc_chain_spec::GenericChainSpec::builder(
         verdis_runtime::WASM_BINARY.expect("WASM binary exists"),
         Default::default(),
     )
-    .with_name("Verdis Testnet")
-    .with_id("verdis-testnet")
-    .with_chain_type(ChainType::Live)
-    .with_protocol_id("verdis-testnet")
-    .with_properties({
-        let mut props = serde_json::Map::new();
-        props.insert("tokenSymbol".into(), "VRDX".into());
-        props.insert("tokenDecimals".into(), 9.into());
-        props.insert("ss58Format".into(), 909.into());
-        props
-    })
+    .with_name("Verdis Dev")
+    .with_id("verdis-dev")
+    .with_chain_type(ChainType::Development)
+    .with_protocol_id("verdis-dev")
+    .with_properties(common_props())
     .with_genesis_config_patch(patch)
     .build()
 }
 
-/// Mainnet spec (production with env-var-based keys)
-pub fn mainnet_spec() -> VerdisChainSpec {
-    let genesis = genesis_config();
-    let patch = serde_json::to_value(&genesis).expect("Failed to serialize genesis config");
-
-    sc_chain_spec::GenericChainSpec::builder(
-        verdis_runtime::WASM_BINARY.expect("WASM binary exists"),
-        Default::default(),
-    )
-    .with_name("Verdis Mainnet")
-    .with_id("verdis")
-    .with_chain_type(ChainType::Live)
-    .with_protocol_id("verdis")
-    .with_properties({
-        let mut props = serde_json::Map::new();
-        props.insert("tokenSymbol".into(), "VRDX".into());
-        props.insert("tokenDecimals".into(), 9.into());
-        props.insert("ss58Format".into(), 909.into());
-        props
-    })
-    .with_genesis_config_patch(patch)
-    .build()
-}
-
-/// Dispatcher: load spec by chain ID
-pub fn load_spec(id: &str) -> VerdisChainSpec {
-    match id {
-        "dev" | "" => dev_spec(),
-        "testnet" => testnet_spec(),
-        "mainnet" => mainnet_spec(),
-        _ => dev_spec(),
-    }
-}
-
-fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
+fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     use verdis_runtime::{BabeConfig, BalancesConfig, GrandpaConfig, SessionConfig, SudoConfig};
-
-    // === Token Distribution (100B VRDX total) ===
-    // UNITS = 1_000_000_000 (9 decimals)
-    // Total: 100,000,000,000 * UNITS = 100,000,000,000,000,000,000
-    //
-    // 9-Category Distribution (Production Tokenomics):
-    //   Ecosystem & Developer Grants  (30%) = 30B  → EcoPalletId (verdisec)
-    //   PoS Staking Rewards            (20%) = 20B  → DposPalletId (verdisdp)
-    //   Treasury                        (15%) = 15B  → TreasuryPalletId (verdist0)
-    //   Development                     (10%) = 10B  → DevPalletId (verdisdv)
-    //   Liquidity                       (10%) = 10B  → DexPalletId (verdisdx)
-    //   Community                        (5%) =  5B  → CommunityPalletId (verdiscm)
-    //   Seed / Strategic                 (3%) =  3B  → VestingPalletId (verdisvs)
-    //   Public Presale                   (2%) =  2B  → TokenomicsPalletId (verdistk)
-    //   Team & Advisors                  (5%) =  5B  → Sudo account (Alice)
-    //   TOTAL = 30B + 20B + 15B + 10B + 10B + 5B + 3B + 2B + 5B = 100B VRDX
 
     let sudo_account: AccountId = Sr25519Keyring::Alice.to_account_id();
     let eco_pool: AccountId = PalletId(*b"verdisec").into_account_truncating();
@@ -140,60 +141,12 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
     let seed_pool: AccountId = PalletId(*b"verdisvs").into_account_truncating();
     let presale_pool: AccountId = PalletId(*b"verdistk").into_account_truncating();
 
-    let units: u128 = 1_000_000_000;
-    let billion: u128 = 1_000_000_000 * units; // 1B VRDX
+    let u = units();
+    let bn = billion();
 
-    // BABE/GRANDPA authorities are initialized via session.keys
-    let session_keys: Vec<(AccountId, AccountId, SessionKeys)> = vec![
-        (
-            Sr25519Keyring::Alice.to_account_id(),
-            Sr25519Keyring::Alice.to_account_id(),
-            SessionKeys {
-                babe: Sr25519Keyring::Alice.public().into(),
-                grandpa: ed_from("//Alice").public().into(),
-            },
-        ),
-        (
-            Sr25519Keyring::Bob.to_account_id(),
-            Sr25519Keyring::Bob.to_account_id(),
-            SessionKeys {
-                babe: Sr25519Keyring::Bob.public().into(),
-                grandpa: ed_from("//Bob").public().into(),
-            },
-        ),
-        (
-            Sr25519Keyring::Charlie.to_account_id(),
-            Sr25519Keyring::Charlie.to_account_id(),
-            SessionKeys {
-                babe: Sr25519Keyring::Charlie.public().into(),
-                grandpa: ed_from("//Charlie").public().into(),
-            },
-        ),
-        (
-            Sr25519Keyring::Dave.to_account_id(),
-            Sr25519Keyring::Dave.to_account_id(),
-            SessionKeys {
-                babe: Sr25519Keyring::Dave.public().into(),
-                grandpa: ed_from("//Dave").public().into(),
-            },
-        ),
-        (
-            Sr25519Keyring::Eve.to_account_id(),
-            Sr25519Keyring::Eve.to_account_id(),
-            SessionKeys {
-                babe: Sr25519Keyring::Eve.public().into(),
-                grandpa: ed_from("//Eve").public().into(),
-            },
-        ),
-        (
-            Sr25519Keyring::Ferdie.to_account_id(),
-            Sr25519Keyring::Ferdie.to_account_id(),
-            SessionKeys {
-                babe: Sr25519Keyring::Ferdie.public().into(),
-                grandpa: ed_from("//Ferdie").public().into(),
-            },
-        ),
-    ];
+    // 6 validators for dev (fast testing)
+    let uris = dev_validator_uris();
+    let session_keys = build_session_keys(&uris);
 
     let babe_authorities: Vec<(BabeId, u64)> = session_keys
         .iter()
@@ -204,54 +157,102 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
         .map(|(_, _, keys)| (keys.grandpa.clone(), 1))
         .collect();
 
-    // Production: Each validator gets unique session keys (no key reuse)
+    // Dev balances: same 9-category tokenomics but fewer validator stakes
+    let mut balances = vec![
+        (eco_pool, 30 * bn),
+        (staking_pool, 20 * bn),
+        (treasury_account, 15 * bn),
+        (dev_pool, 10 * bn),
+        (dex_pool, 10 * bn),
+        (community_pool, 5 * bn),
+        (seed_pool, 3 * bn),
+        (presale_pool, 2 * bn),
+        // Team & Advisors (5B) minus 6 validator stakes (6 * 10K = 60K)
+        (sudo_account.clone(), 5 * bn - 5 * 10_000 * u),
+    ];
+    // 5 validator stakes (skip Alice, she has the team allocation)
+    for uri in uris.iter().skip(1) {
+        let acct: AccountId = match *uri {
+            "Bob" => Sr25519Keyring::Bob.to_account_id(),
+            "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
+            "Dave" => Sr25519Keyring::Dave.to_account_id(),
+            "Eve" => Sr25519Keyring::Eve.to_account_id(),
+            "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
+            _ => sr_from(&format!("//{}", uri)).public().into(),
+        };
+        balances.push((acct, 10_000 * u));
+    }
+
+    // Dev DPoS validators (6)
+    let dpos_validators: Vec<(AccountId, u128, bool)> = uris
+        .iter()
+        .map(|uri| {
+            let acct: AccountId = match *uri {
+                "Alice" => Sr25519Keyring::Alice.to_account_id(),
+                "Bob" => Sr25519Keyring::Bob.to_account_id(),
+                "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
+                "Dave" => Sr25519Keyring::Dave.to_account_id(),
+                "Eve" => Sr25519Keyring::Eve.to_account_id(),
+                "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
+                _ => sr_from(&format!("//{}", uri)).public().into(),
+            };
+            (acct, 10_000 * u, true)
+        })
+        .collect();
+
+    let validator_names: Vec<(AccountId, Vec<u8>)> = uris
+        .iter()
+        .map(|uri| {
+            let acct: AccountId = match *uri {
+                "Alice" => Sr25519Keyring::Alice.to_account_id(),
+                "Bob" => Sr25519Keyring::Bob.to_account_id(),
+                "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
+                "Dave" => Sr25519Keyring::Dave.to_account_id(),
+                "Eve" => Sr25519Keyring::Eve.to_account_id(),
+                "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
+                _ => sr_from(&format!("//{}", uri)).public().into(),
+            };
+            (acct, uri.as_bytes().to_vec())
+        })
+        .collect();
+
+    // Dev eco: minimal test data
+    let eco_carbon = vec![(
+        b"DEV-001".to_vec(),
+        b"Dev Test Carbon".to_vec(),
+        100,
+        true,
+        sudo_account.clone(),
+    )];
+    let eco_reforest = vec![(
+        b"DEV-001".to_vec(),
+        b"Dev Test Forest".to_vec(),
+        1000,
+        b"Testland".to_vec(),
+        1,
+        true,
+    )];
+    let green_validators: Vec<(AccountId, bool, Vec<u8>, u64, u32, u8)> = uris
+        .iter()
+        .enumerate()
+        .map(|(i, uri)| {
+            let acct: AccountId = match *uri {
+                "Alice" => Sr25519Keyring::Alice.to_account_id(),
+                "Bob" => Sr25519Keyring::Bob.to_account_id(),
+                "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
+                "Dave" => Sr25519Keyring::Dave.to_account_id(),
+                "Eve" => Sr25519Keyring::Eve.to_account_id(),
+                "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
+                _ => sr_from(&format!("//{}", uri)).public().into(),
+            };
+            (acct, true, b"Solar".to_vec(), (990 - i as u64), 90u32, 1u8)
+        })
+        .collect();
 
     verdis_runtime::RuntimeGenesisConfig {
         system: Default::default(),
         balances: BalancesConfig {
-            balances: vec![
-                // === 9-Category Tokenomics (100B VRDX total) ===
-                // Ecosystem & Developer Grants (30B)
-                (eco_pool, 30 * billion),
-                // PoS Staking Rewards (20B)
-                (staking_pool, 20 * billion),
-                // Treasury (15B) — uses Treasury pallet's own PalletId
-                (treasury_account, 15 * billion),
-                // Development (10B)
-                (dev_pool, 10 * billion),
-                // Liquidity (10B)
-                (dex_pool, 10 * billion),
-                // Community (5B)
-                (community_pool, 5 * billion),
-                // Seed / Strategic (3B) — vesting locked
-                (seed_pool, 3 * billion),
-                // Public Presale (2B)
-                (presale_pool, 2 * billion),
-                // Team & Advisors (5B) — Alice is sudo/founder
-                // 5B - (21 * 10K) = 4,999,790,000 VRDX
-                (sudo_account.clone(), 5 * billion - 21 * 10_000 * units),
-                // Validator stakes (21 validators x 10K VRDX each = 210K from Team)
-                (Sr25519Keyring::Bob.to_account_id(), 10_000 * units),
-                (Sr25519Keyring::Charlie.to_account_id(), 10_000 * units),
-                (Sr25519Keyring::Dave.to_account_id(), 10_000 * units),
-                (Sr25519Keyring::Eve.to_account_id(), 10_000 * units),
-                (Sr25519Keyring::Ferdie.to_account_id(), 10_000 * units),
-                (sr_from("//Validator7").public().into(), 10_000 * units),
-                (sr_from("//Validator8").public().into(), 10_000 * units),
-                (sr_from("//Validator9").public().into(), 10_000 * units),
-                (sr_from("//Validator10").public().into(), 10_000 * units),
-                (sr_from("//Validator11").public().into(), 10_000 * units),
-                (sr_from("//Validator12").public().into(), 10_000 * units),
-                (sr_from("//Validator13").public().into(), 10_000 * units),
-                (sr_from("//Validator14").public().into(), 10_000 * units),
-                (sr_from("//Validator15").public().into(), 10_000 * units),
-                (sr_from("//Validator16").public().into(), 10_000 * units),
-                (sr_from("//Validator17").public().into(), 10_000 * units),
-                (sr_from("//Validator18").public().into(), 10_000 * units),
-                (sr_from("//Validator19").public().into(), 10_000 * units),
-                (sr_from("//Validator20").public().into(), 10_000 * units),
-                (sr_from("//Validator21").public().into(), 10_000 * units),
-            ],
+            balances,
             dev_accounts: None,
         },
         sudo: SudoConfig {
@@ -275,142 +276,18 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
             non_authority_keys: Vec::new(),
         },
         dpos: pallet_dpos::GenesisConfig {
-            validators: vec![
-                (
-                    Sr25519Keyring::Alice.to_account_id(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    Sr25519Keyring::Bob.to_account_id(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    Sr25519Keyring::Charlie.to_account_id(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    Sr25519Keyring::Dave.to_account_id(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    Sr25519Keyring::Eve.to_account_id(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    Sr25519Keyring::Ferdie.to_account_id(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    sr_from("//Validator7").public().into(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    sr_from("//Validator8").public().into(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    sr_from("//Validator9").public().into(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    sr_from("//Validator10").public().into(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    sr_from("//Validator11").public().into(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    sr_from("//Validator12").public().into(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    sr_from("//Validator13").public().into(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    sr_from("//Validator14").public().into(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    sr_from("//Validator15").public().into(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    sr_from("//Validator16").public().into(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    sr_from("//Validator17").public().into(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    sr_from("//Validator18").public().into(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    sr_from("//Validator19").public().into(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    sr_from("//Validator20").public().into(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-                (
-                    sr_from("//Validator21").public().into(),
-                    10_000 * 1_000_000_000,
-                    true,
-                ),
-            ],
-            validator_count: 21,
-            block_reward: 16 * 1_000_000_000,
-            validator_names: {
-                let mut names = vec![
-                    (Sr25519Keyring::Alice.to_account_id(), b"Alice".to_vec()),
-                    (Sr25519Keyring::Bob.to_account_id(), b"Bob".to_vec()),
-                    (Sr25519Keyring::Charlie.to_account_id(), b"Charlie".to_vec()),
-                    (Sr25519Keyring::Dave.to_account_id(), b"Dave".to_vec()),
-                    (Sr25519Keyring::Eve.to_account_id(), b"Eve".to_vec()),
-                    (Sr25519Keyring::Ferdie.to_account_id(), b"Ferdie".to_vec()),
-                ];
-                for i in 7..=21 {
-                    let name = format!("Validator{}", i);
-                    let acct: AccountId = sr_from(&format!("//Validator{}", i)).public().into();
-                    names.push((acct, name.into_bytes()));
-                }
-                names
-            },
+            validators: dpos_validators,
+            validator_count: 6,
+            block_reward: 16 * u,
+            validator_names,
         },
         tokenomics: Default::default(),
         presale: Default::default(),
         vesting: pallet_vesting::GenesisConfig {
             vesting_schedules: vec![
-                // Seed/Strategic: 3B VRDX, 12-month cliff, 24-month total vesting
-                (b"seed".to_vec(), 3 * billion, 730, 365),
-                // Public Presale: 2B VRDX, 6-month cliff, 12-month total vesting
-                (b"presale".to_vec(), 2 * billion, 365, 180),
-                // Team & Advisors: 5B VRDX, 12-month cliff, 36-month total vesting
-                (b"team".to_vec(), 5 * billion, 1095, 365),
+                (b"seed".to_vec(), 3 * bn, 730, 365),
+                (b"presale".to_vec(), 2 * bn, 365, 180),
+                (b"team".to_vec(), 5 * bn, 1095, 365),
             ],
         },
         council: pallet_collective::GenesisConfig {
@@ -418,16 +295,290 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
                 Sr25519Keyring::Alice.to_account_id(),
                 Sr25519Keyring::Bob.to_account_id(),
                 Sr25519Keyring::Charlie.to_account_id(),
-                Sr25519Keyring::Dave.to_account_id(),
-                Sr25519Keyring::Eve.to_account_id(),
-                Sr25519Keyring::Ferdie.to_account_id(),
-                AccountId::from(hex_literal::hex!(
-                    "e02d26312eb4ab76028ae99ff55ce7d70e9657e31218880bc4b1f39a3aabe866"
-                )),
-                AccountId::from(hex_literal::hex!(
-                    "b265f2455b6a7b0ddb85c89cb604a851f125a411e0d66d34d23564da2d0b5323"
-                )),
             ],
+            phantom: Default::default(),
+        },
+        democracy: Default::default(),
+        treasury: Default::default(),
+        amm_dex: pallet_amm_dex::GenesisConfig {
+            initial_pools: vec![(
+                b"VRDX".to_vec(),
+                b"ECO".to_vec(),
+                100_000 * u,
+                100_000 * u,
+                3,
+            )],
+            _phantom: Default::default(),
+        },
+        eco: pallet_eco::GenesisConfig {
+            carbon_credits: eco_carbon,
+            reforest_projects: eco_reforest,
+            green_validators,
+        },
+    }
+}
+
+// ─── TESTNET spec ───────────────────────────────────────────────────────────
+
+pub fn testnet_spec() -> VerdisChainSpec {
+    let genesis = testnet_genesis();
+    let patch = serde_json::to_value(&genesis).expect("Failed to serialize testnet genesis");
+
+    sc_chain_spec::GenericChainSpec::builder(
+        verdis_runtime::WASM_BINARY.expect("WASM binary exists"),
+        Default::default(),
+    )
+    .with_name("Verdis Testnet")
+    .with_id("verdis-testnet")
+    .with_chain_type(ChainType::Live)
+    .with_protocol_id("verdis-testnet")
+    .with_properties(common_props())
+    .with_genesis_config_patch(patch)
+    .build()
+}
+
+fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
+    use verdis_runtime::{BabeConfig, BalancesConfig, GrandpaConfig, SessionConfig, SudoConfig};
+
+    let sudo_account: AccountId = Sr25519Keyring::Alice.to_account_id();
+    let eco_pool: AccountId = PalletId(*b"verdisec").into_account_truncating();
+    let staking_pool: AccountId = PalletId(*b"verdisdp").into_account_truncating();
+    let treasury_account: AccountId = PalletId(*b"verdist0").into_account_truncating();
+    let dev_pool: AccountId = PalletId(*b"verdisdv").into_account_truncating();
+    let dex_pool: AccountId = PalletId(*b"verdisdx").into_account_truncating();
+    let community_pool: AccountId = PalletId(*b"verdiscm").into_account_truncating();
+    let seed_pool: AccountId = PalletId(*b"verdisvs").into_account_truncating();
+    let presale_pool: AccountId = PalletId(*b"verdistk").into_account_truncating();
+
+    let u = units();
+    let bn = billion();
+
+    // 21 validators for testnet
+    let uris = testnet_validator_uris();
+    let session_keys = build_session_keys(&uris);
+
+    // Balances: 9-category tokenomics (100B VRDX total)
+    let mut balances = vec![
+        (eco_pool, 30 * bn),
+        (staking_pool, 20 * bn),
+        (treasury_account, 15 * bn),
+        (dev_pool, 10 * bn),
+        (dex_pool, 10 * bn),
+        (community_pool, 5 * bn),
+        (seed_pool, 3 * bn),
+        (presale_pool, 2 * bn),
+        // Team & Advisors (5B) minus 21 validator stakes (21 * 10K = 210K)
+        (sudo_account.clone(), 5 * bn - 20 * 10_000 * u),
+    ];
+    // 20 validator stakes (skip Alice, she has the team allocation)
+    for uri in uris.iter().skip(1) {
+        let acct: AccountId = match *uri {
+            "Bob" => Sr25519Keyring::Bob.to_account_id(),
+            "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
+            "Dave" => Sr25519Keyring::Dave.to_account_id(),
+            "Eve" => Sr25519Keyring::Eve.to_account_id(),
+            "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
+            _ => sr_from(&format!("//{}", uri)).public().into(),
+        };
+        balances.push((acct, 10_000 * u));
+    }
+
+    // DPoS validators (21)
+    let dpos_validators: Vec<(AccountId, u128, bool)> = uris
+        .iter()
+        .map(|uri| {
+            let acct: AccountId = match *uri {
+                "Alice" => Sr25519Keyring::Alice.to_account_id(),
+                "Bob" => Sr25519Keyring::Bob.to_account_id(),
+                "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
+                "Dave" => Sr25519Keyring::Dave.to_account_id(),
+                "Eve" => Sr25519Keyring::Eve.to_account_id(),
+                "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
+                _ => sr_from(&format!("//{}", uri)).public().into(),
+            };
+            (acct, 10_000 * u, true)
+        })
+        .collect();
+
+    let validator_names: Vec<(AccountId, Vec<u8>)> = uris
+        .iter()
+        .map(|uri| {
+            let acct: AccountId = match *uri {
+                "Alice" => Sr25519Keyring::Alice.to_account_id(),
+                "Bob" => Sr25519Keyring::Bob.to_account_id(),
+                "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
+                "Dave" => Sr25519Keyring::Dave.to_account_id(),
+                "Eve" => Sr25519Keyring::Eve.to_account_id(),
+                "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
+                _ => sr_from(&format!("//{}", uri)).public().into(),
+            };
+            (acct, uri.as_bytes().to_vec())
+        })
+        .collect();
+
+    // Testnet: full test eco data + 6 DEX pools
+    let eco_carbon = vec![
+        (
+            b"ECO-001".to_vec(),
+            b"Amazon Reforestation".to_vec(),
+            1250,
+            true,
+            Sr25519Keyring::Alice.to_account_id(),
+        ),
+        (
+            b"ECO-002".to_vec(),
+            b"Mangrove Restoration".to_vec(),
+            890,
+            true,
+            Sr25519Keyring::Bob.to_account_id(),
+        ),
+        (
+            b"ECO-003".to_vec(),
+            b"Urban Green Belt".to_vec(),
+            450,
+            true,
+            Sr25519Keyring::Charlie.to_account_id(),
+        ),
+        (
+            b"ECO-004".to_vec(),
+            b"Sahara Solar Forest".to_vec(),
+            670,
+            false,
+            Sr25519Keyring::Dave.to_account_id(),
+        ),
+        (
+            b"ECO-005".to_vec(),
+            b"Boreal Conservation".to_vec(),
+            2000,
+            true,
+            Sr25519Keyring::Eve.to_account_id(),
+        ),
+    ];
+    let eco_reforest = vec![
+        (
+            b"ECO-001".to_vec(),
+            b"Amazon Reforestation".to_vec(),
+            125000,
+            b"Brazil".to_vec(),
+            1,
+            true,
+        ),
+        (
+            b"ECO-002".to_vec(),
+            b"Mangrove Restoration".to_vec(),
+            89000,
+            b"Indonesia".to_vec(),
+            1,
+            true,
+        ),
+        (
+            b"ECO-003".to_vec(),
+            b"Urban Green Belt".to_vec(),
+            45000,
+            b"Singapore".to_vec(),
+            1,
+            true,
+        ),
+        (
+            b"ECO-004".to_vec(),
+            b"Sahara Solar Forest".to_vec(),
+            67000,
+            b"Morocco".to_vec(),
+            1,
+            false,
+        ),
+        (
+            b"ECO-005".to_vec(),
+            b"Boreal Conservation".to_vec(),
+            200000,
+            b"Canada".to_vec(),
+            1,
+            true,
+        ),
+    ];
+    let green_validators: Vec<(AccountId, bool, Vec<u8>, u64, u32, u8)> = uris
+        .iter()
+        .enumerate()
+        .map(|(i, uri)| {
+            let acct: AccountId = match *uri {
+                "Alice" => Sr25519Keyring::Alice.to_account_id(),
+                "Bob" => Sr25519Keyring::Bob.to_account_id(),
+                "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
+                "Dave" => Sr25519Keyring::Dave.to_account_id(),
+                "Eve" => Sr25519Keyring::Eve.to_account_id(),
+                "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
+                _ => sr_from(&format!("//{}", uri)).public().into(),
+            };
+            let energy = match i % 4 {
+                0 => b"Solar".to_vec(),
+                1 => b"Wind".to_vec(),
+                2 => b"Hydro".to_vec(),
+                _ => b"Geothermal".to_vec(),
+            };
+            let score = (990 - i as u64).max(950);
+            let efficiency = (95 - i as u32).max(75);
+            let tier = (i % 4 + 1) as u8;
+            (acct, true, energy, score, efficiency, tier)
+        })
+        .collect();
+
+    let council_members: Vec<AccountId> = uris
+        .iter()
+        .take(8)
+        .map(|uri| match *uri {
+            "Alice" => Sr25519Keyring::Alice.to_account_id(),
+            "Bob" => Sr25519Keyring::Bob.to_account_id(),
+            "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
+            "Dave" => Sr25519Keyring::Dave.to_account_id(),
+            "Eve" => Sr25519Keyring::Eve.to_account_id(),
+            "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
+            _ => sr_from(&format!("//{}", uri)).public().into(),
+        })
+        .collect();
+
+    verdis_runtime::RuntimeGenesisConfig {
+        system: Default::default(),
+        balances: BalancesConfig {
+            balances,
+            dev_accounts: None,
+        },
+        sudo: SudoConfig {
+            key: Some(sudo_account),
+        },
+        transaction_payment: Default::default(),
+        babe: BabeConfig {
+            authorities: vec![],
+            epoch_config: sp_consensus_babe::BabeEpochConfiguration {
+                c: (255, 256),
+                allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
+            },
+            _config: Default::default(),
+        },
+        grandpa: GrandpaConfig {
+            authorities: vec![],
+            _config: Default::default(),
+        },
+        session: SessionConfig {
+            keys: session_keys,
+            non_authority_keys: Vec::new(),
+        },
+        dpos: pallet_dpos::GenesisConfig {
+            validators: dpos_validators,
+            validator_count: 21,
+            block_reward: 16 * u,
+            validator_names,
+        },
+        tokenomics: Default::default(),
+        presale: Default::default(),
+        vesting: pallet_vesting::GenesisConfig {
+            vesting_schedules: vec![
+                (b"seed".to_vec(), 3 * bn, 730, 365),
+                (b"presale".to_vec(), 2 * bn, 365, 180),
+                (b"team".to_vec(), 5 * bn, 1095, 365),
+            ],
+        },
+        council: pallet_collective::GenesisConfig {
+            members: council_members,
             phantom: Default::default(),
         },
         democracy: Default::default(),
@@ -437,306 +588,248 @@ fn genesis_config() -> verdis_runtime::RuntimeGenesisConfig {
                 (
                     b"VRDX".to_vec(),
                     b"ECO".to_vec(),
-                    500_000 * units,
-                    500_000 * units,
+                    500_000 * u,
+                    500_000 * u,
                     3,
                 ),
                 (
                     b"VRDX".to_vec(),
                     b"CARBON".to_vec(),
-                    300_000 * units,
-                    300_000 * units,
+                    300_000 * u,
+                    300_000 * u,
                     3,
                 ),
                 (
                     b"VRDX".to_vec(),
                     b"TREE".to_vec(),
-                    200_000 * units,
-                    200_000 * units,
+                    200_000 * u,
+                    200_000 * u,
                     3,
                 ),
                 (
                     b"VRDX".to_vec(),
                     b"GREEN".to_vec(),
-                    200_000 * units,
-                    200_000 * units,
+                    200_000 * u,
+                    200_000 * u,
                     3,
                 ),
                 (
                     b"ECO".to_vec(),
                     b"CARBON".to_vec(),
-                    100_000 * units,
-                    100_000 * units,
+                    100_000 * u,
+                    100_000 * u,
                     3,
                 ),
                 (
                     b"VRDX".to_vec(),
                     b"REDD".to_vec(),
-                    100_000 * units,
-                    100_000 * units,
+                    100_000 * u,
+                    100_000 * u,
                     3,
                 ),
             ],
             _phantom: Default::default(),
         },
         eco: pallet_eco::GenesisConfig {
-            carbon_credits: vec![
-                (
-                    b"ECO-001".to_vec(),
-                    b"Amazon Reforestation".to_vec(),
-                    1250,
-                    true,
-                    Sr25519Keyring::Alice.to_account_id(),
-                ),
-                (
-                    b"ECO-002".to_vec(),
-                    b"Mangrove Restoration".to_vec(),
-                    890,
-                    true,
-                    Sr25519Keyring::Bob.to_account_id(),
-                ),
-                (
-                    b"ECO-003".to_vec(),
-                    b"Urban Green Belt".to_vec(),
-                    450,
-                    true,
-                    Sr25519Keyring::Charlie.to_account_id(),
-                ),
-                (
-                    b"ECO-004".to_vec(),
-                    b"Sahara Solar Forest".to_vec(),
-                    670,
-                    false,
-                    Sr25519Keyring::Dave.to_account_id(),
-                ),
-                (
-                    b"ECO-005".to_vec(),
-                    b"Boreal Conservation".to_vec(),
-                    2000,
-                    true,
-                    Sr25519Keyring::Eve.to_account_id(),
-                ),
-            ],
-            reforest_projects: vec![
-                (
-                    b"ECO-001".to_vec(),
-                    b"Amazon Reforestation".to_vec(),
-                    125000,
-                    b"Brazil".to_vec(),
-                    1,
-                    true,
-                ),
-                (
-                    b"ECO-002".to_vec(),
-                    b"Mangrove Restoration".to_vec(),
-                    89000,
-                    b"Indonesia".to_vec(),
-                    1,
-                    true,
-                ),
-                (
-                    b"ECO-003".to_vec(),
-                    b"Urban Green Belt".to_vec(),
-                    45000,
-                    b"Singapore".to_vec(),
-                    1,
-                    true,
-                ),
-                (
-                    b"ECO-004".to_vec(),
-                    b"Sahara Solar Forest".to_vec(),
-                    67000,
-                    b"Morocco".to_vec(),
-                    1,
-                    false,
-                ),
-                (
-                    b"ECO-005".to_vec(),
-                    b"Boreal Conservation".to_vec(),
-                    200000,
-                    b"Canada".to_vec(),
-                    1,
-                    true,
-                ),
-            ],
-            green_validators: vec![
-                (
-                    Sr25519Keyring::Alice.to_account_id(),
-                    true,
-                    b"Solar".to_vec(),
-                    998,
-                    95,
-                    1,
-                ),
-                (
-                    Sr25519Keyring::Bob.to_account_id(),
-                    true,
-                    b"Wind".to_vec(),
-                    995,
-                    92,
-                    2,
-                ),
-                (
-                    Sr25519Keyring::Charlie.to_account_id(),
-                    true,
-                    b"Hydro".to_vec(),
-                    989,
-                    88,
-                    3,
-                ),
-                (
-                    Sr25519Keyring::Dave.to_account_id(),
-                    true,
-                    b"Solar".to_vec(),
-                    992,
-                    85,
-                    1,
-                ),
-                (
-                    Sr25519Keyring::Eve.to_account_id(),
-                    true,
-                    b"Geothermal".to_vec(),
-                    997,
-                    90,
-                    4,
-                ),
-                (
-                    Sr25519Keyring::Ferdie.to_account_id(),
-                    true,
-                    b"Wind".to_vec(),
-                    990,
-                    87,
-                    2,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "e02d26312eb4ab76028ae99ff55ce7d70e9657e31218880bc4b1f39a3aabe866"
-                    )),
-                    true,
-                    b"Solar".to_vec(),
-                    985,
-                    83,
-                    1,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "b265f2455b6a7b0ddb85c89cb604a851f125a411e0d66d34d23564da2d0b5323"
-                    )),
-                    true,
-                    b"Hydro".to_vec(),
-                    988,
-                    86,
-                    3,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "28b50591557804cdfb041ecc82104db4eb4429a44e822763fea504dfbcd93e7c"
-                    )),
-                    true,
-                    b"Geothermal".to_vec(),
-                    993,
-                    89,
-                    4,
-                ),
-                (
-                    AccountId::from(hex_literal::hex!(
-                        "d010e6979cf898866efa21464f44538d12ea3b804a03878f93f12071f84c5c18"
-                    )),
-                    true,
-                    b"Wind".to_vec(),
-                    991,
-                    84,
-                    2,
-                ),
-                (
-                    sr_from("//Validator11").public().into(),
-                    true,
-                    b"Solar".to_vec(),
-                    987,
-                    82,
-                    1,
-                ),
-                (
-                    sr_from("//Validator12").public().into(),
-                    true,
-                    b"Wind".to_vec(),
-                    986,
-                    81,
-                    2,
-                ),
-                (
-                    sr_from("//Validator13").public().into(),
-                    true,
-                    b"Hydro".to_vec(),
-                    984,
-                    80,
-                    3,
-                ),
-                (
-                    sr_from("//Validator14").public().into(),
-                    true,
-                    b"Solar".to_vec(),
-                    983,
-                    79,
-                    1,
-                ),
-                (
-                    sr_from("//Validator15").public().into(),
-                    true,
-                    b"Geothermal".to_vec(),
-                    982,
-                    78,
-                    4,
-                ),
-                (
-                    sr_from("//Validator16").public().into(),
-                    true,
-                    b"Wind".to_vec(),
-                    981,
-                    77,
-                    2,
-                ),
-                (
-                    sr_from("//Validator17").public().into(),
-                    true,
-                    b"Solar".to_vec(),
-                    980,
-                    76,
-                    1,
-                ),
-                (
-                    sr_from("//Validator18").public().into(),
-                    true,
-                    b"Hydro".to_vec(),
-                    979,
-                    75,
-                    3,
-                ),
-                (
-                    sr_from("//Validator19").public().into(),
-                    true,
-                    b"Geothermal".to_vec(),
-                    978,
-                    74,
-                    4,
-                ),
-                (
-                    sr_from("//Validator20").public().into(),
-                    true,
-                    b"Wind".to_vec(),
-                    977,
-                    73,
-                    2,
-                ),
-                (
-                    sr_from("//Validator21").public().into(),
-                    true,
-                    b"Solar".to_vec(),
-                    976,
-                    72,
-                    1,
-                ),
-            ],
+            carbon_credits: eco_carbon,
+            reforest_projects: eco_reforest,
+            green_validators,
         },
     }
+}
+
+// ─── MAINNET spec ───────────────────────────────────────────────────────────
+//
+// Mainnet uses the same 21 well-known test keys as placeholders.
+// Before mainnet launch, these MUST be replaced with air-gapped generated keys.
+// The `chain-specs/mainnet-key-config.json` file documents this requirement.
+
+pub fn mainnet_spec() -> VerdisChainSpec {
+    let genesis = mainnet_genesis();
+    let patch = serde_json::to_value(&genesis).expect("Failed to serialize mainnet genesis");
+
+    sc_chain_spec::GenericChainSpec::builder(
+        verdis_runtime::WASM_BINARY.expect("WASM binary exists"),
+        Default::default(),
+    )
+    .with_name("Verdis Mainnet")
+    .with_id("verdis")
+    .with_chain_type(ChainType::Live)
+    .with_protocol_id("verdis")
+    .with_properties(common_props())
+    .with_genesis_config_patch(patch)
+    .build()
+}
+
+fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
+    use verdis_runtime::{BabeConfig, BalancesConfig, GrandpaConfig, SessionConfig, SudoConfig};
+
+    let sudo_account: AccountId = Sr25519Keyring::Alice.to_account_id();
+    let eco_pool: AccountId = PalletId(*b"verdisec").into_account_truncating();
+    let staking_pool: AccountId = PalletId(*b"verdisdp").into_account_truncating();
+    let treasury_account: AccountId = PalletId(*b"verdist0").into_account_truncating();
+    let dev_pool: AccountId = PalletId(*b"verdisdv").into_account_truncating();
+    let dex_pool: AccountId = PalletId(*b"verdisdx").into_account_truncating();
+    let community_pool: AccountId = PalletId(*b"verdiscm").into_account_truncating();
+    let seed_pool: AccountId = PalletId(*b"verdisvs").into_account_truncating();
+    let presale_pool: AccountId = PalletId(*b"verdistk").into_account_truncating();
+
+    let u = units();
+    let bn = billion();
+
+    // 21 validators — placeholder keys (MUST be replaced before mainnet launch)
+    let uris = testnet_validator_uris();
+    let session_keys = build_session_keys(&uris);
+
+    // Balances: 9-category tokenomics (100B VRDX total)
+    let mut balances = vec![
+        (eco_pool, 30 * bn),
+        (staking_pool, 20 * bn),
+        (treasury_account, 15 * bn),
+        (dev_pool, 10 * bn),
+        (dex_pool, 10 * bn),
+        (community_pool, 5 * bn),
+        (seed_pool, 3 * bn),
+        (presale_pool, 2 * bn),
+        (sudo_account.clone(), 5 * bn - 20 * 10_000 * u),
+    ];
+    // 20 validator stakes (skip Alice, she has the team allocation)
+    for uri in uris.iter().skip(1) {
+        let acct: AccountId = match *uri {
+            "Bob" => Sr25519Keyring::Bob.to_account_id(),
+            "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
+            "Dave" => Sr25519Keyring::Dave.to_account_id(),
+            "Eve" => Sr25519Keyring::Eve.to_account_id(),
+            "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
+            _ => sr_from(&format!("//{}", uri)).public().into(),
+        };
+        balances.push((acct, 10_000 * u));
+    }
+
+    // DPoS validators (21)
+    let dpos_validators: Vec<(AccountId, u128, bool)> = uris
+        .iter()
+        .map(|uri| {
+            let acct: AccountId = match *uri {
+                "Alice" => Sr25519Keyring::Alice.to_account_id(),
+                "Bob" => Sr25519Keyring::Bob.to_account_id(),
+                "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
+                "Dave" => Sr25519Keyring::Dave.to_account_id(),
+                "Eve" => Sr25519Keyring::Eve.to_account_id(),
+                "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
+                _ => sr_from(&format!("//{}", uri)).public().into(),
+            };
+            (acct, 10_000 * u, true)
+        })
+        .collect();
+
+    let validator_names: Vec<(AccountId, Vec<u8>)> = uris
+        .iter()
+        .map(|uri| {
+            let acct: AccountId = match *uri {
+                "Alice" => Sr25519Keyring::Alice.to_account_id(),
+                "Bob" => Sr25519Keyring::Bob.to_account_id(),
+                "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
+                "Dave" => Sr25519Keyring::Dave.to_account_id(),
+                "Eve" => Sr25519Keyring::Eve.to_account_id(),
+                "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
+                _ => sr_from(&format!("//{}", uri)).public().into(),
+            };
+            (acct, uri.as_bytes().to_vec())
+        })
+        .collect();
+
+    // Mainnet: NO test eco data, NO test DEX pools
+    // DEX pools will be initialized at runtime via governance or sudo
+    // Eco data will be populated by real carbon credit issuers
+
+    let council_members: Vec<AccountId> = uris
+        .iter()
+        .take(8)
+        .map(|uri| match *uri {
+            "Alice" => Sr25519Keyring::Alice.to_account_id(),
+            "Bob" => Sr25519Keyring::Bob.to_account_id(),
+            "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
+            "Dave" => Sr25519Keyring::Dave.to_account_id(),
+            "Eve" => Sr25519Keyring::Eve.to_account_id(),
+            "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
+            _ => sr_from(&format!("//{}", uri)).public().into(),
+        })
+        .collect();
+
+    verdis_runtime::RuntimeGenesisConfig {
+        system: Default::default(),
+        balances: BalancesConfig {
+            balances,
+            dev_accounts: None,
+        },
+        sudo: SudoConfig {
+            key: Some(sudo_account),
+        },
+        transaction_payment: Default::default(),
+        babe: BabeConfig {
+            authorities: vec![],
+            epoch_config: sp_consensus_babe::BabeEpochConfiguration {
+                c: (255, 256),
+                allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
+            },
+            _config: Default::default(),
+        },
+        grandpa: GrandpaConfig {
+            authorities: vec![],
+            _config: Default::default(),
+        },
+        session: SessionConfig {
+            keys: session_keys,
+            non_authority_keys: Vec::new(),
+        },
+        dpos: pallet_dpos::GenesisConfig {
+            validators: dpos_validators,
+            validator_count: 21,
+            block_reward: 16 * u,
+            validator_names,
+        },
+        tokenomics: Default::default(),
+        presale: Default::default(),
+        vesting: pallet_vesting::GenesisConfig {
+            vesting_schedules: vec![
+                (b"seed".to_vec(), 3 * bn, 730, 365),
+                (b"presale".to_vec(), 2 * bn, 365, 180),
+                (b"team".to_vec(), 5 * bn, 1095, 365),
+            ],
+        },
+        council: pallet_collective::GenesisConfig {
+            members: council_members,
+            phantom: Default::default(),
+        },
+        democracy: Default::default(),
+        treasury: Default::default(),
+        amm_dex: pallet_amm_dex::GenesisConfig {
+            initial_pools: vec![], // No test pools on mainnet — initialized at runtime
+            _phantom: Default::default(),
+        },
+        eco: pallet_eco::GenesisConfig {
+            carbon_credits: vec![], // No test eco data on mainnet
+            reforest_projects: vec![],
+            green_validators: vec![],
+        },
+    }
+}
+
+// ─── Dispatcher ─────────────────────────────────────────────────────────────
+
+pub fn load_spec(id: &str) -> VerdisChainSpec {
+    match id {
+        "dev" | "" => dev_spec(),
+        "testnet" => testnet_spec(),
+        "mainnet" => mainnet_spec(),
+        _ => dev_spec(),
+    }
+}
+
+// ─── Backward compatibility ─────────────────────────────────────────────────
+
+/// Original chain_spec() — now delegates to dev_spec()
+pub fn chain_spec() -> VerdisChainSpec {
+    dev_spec()
 }
