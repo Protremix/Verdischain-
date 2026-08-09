@@ -19,12 +19,12 @@ use frame_support::{
     dispatch::DispatchResult,
     ensure,
     pallet_prelude::*,
-    traits::{Currency, EnsureOrigin, Get, ReservableCurrency},
+    traits::{Currency, EnsureOrigin, ExistenceRequirement, Get, ReservableCurrency},
     PalletId,
 };
 use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
-use sp_runtime::traits::Zero;
+use sp_runtime::traits::{AccountIdConversion, Zero};
 use sp_std::prelude::*;
 
 pub use pallet::*;
@@ -175,12 +175,14 @@ pub mod pallet {
         Paused,
         ExceedsPerAccountCap,
         ExceedsRoundAllocation,
+        InsufficientAllocation,
         NotWhitelisted,
         InsufficientPayment,
         ZeroPayment,
         RoundAlreadyExists,
         LabelTooLong,
         VestingLabelTooLong,
+        EmptyVestingLabel,
         NoContribution,
         CalculationOverflow,
         VestingFailed,
@@ -298,6 +300,7 @@ pub mod pallet {
                 Error::<T>::InsufficientPayment
             );
             ensure!(end_block > start_block, Error::<T>::RoundNotStarted);
+            ensure!(!vesting_label.is_empty(), Error::<T>::EmptyVestingLabel);
 
             let round = SaleRound {
                 label: label_bv,
@@ -428,6 +431,16 @@ pub mod pallet {
             // Reserve payment from contributor
             T::Currency::reserve(&who, payment_amount)
                 .map_err(|_| Error::<T>::InsufficientPayment)?;
+
+            // Transfer purchased tokens from presale escrow to buyer
+            let escrow = T::PalletId::get().into_account_truncating();
+            T::Currency::transfer(
+                &escrow,
+                &who,
+                token_amount,
+                ExistenceRequirement::AllowDeath,
+            )
+            .map_err(|_| Error::<T>::InsufficientAllocation)?;
 
             // Create vesting entry (atomic — if this fails, reserve is auto-reverted by Substrate)
             if !round.vesting_label.is_empty() {

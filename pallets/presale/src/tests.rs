@@ -5,7 +5,7 @@ use frame_support::{
     traits::{ConstU32, ConstU64},
 };
 use sp_io::TestExternalities;
-use sp_runtime::{traits::IdentityLookup, BuildStorage};
+use sp_runtime::{traits::{AccountIdConversion, IdentityLookup}, BuildStorage};
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -61,9 +61,15 @@ pub fn new_test_ext() -> TestExternalities {
     let mut t = frame_system::GenesisConfig::<Test>::default()
         .build_storage()
         .unwrap();
+    let escrow = PresalePalletId::get().into_account_truncating();
     pallet_balances::GenesisConfig::<Test> {
         dev_accounts: None,
-        balances: vec![(1, 1_000_000_000), (2, 1_000_000_000), (3, 1_000_000_000)],
+        balances: vec![
+            (1, 1_000_000_000),
+            (2, 1_000_000_000),
+            (3, 1_000_000_000),
+            (escrow, 1_000_000_000_000),
+        ],
     }
     .assimilate_storage(&mut t)
     .unwrap();
@@ -143,7 +149,7 @@ fn test_create_round_non_admin_fails() {
 fn test_activate_deactivate_round() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
         assert!(Presale::rounds(0).unwrap().is_active);
         assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
         assert!(!Presale::rounds(0).unwrap().is_active);
@@ -154,7 +160,7 @@ fn test_activate_deactivate_round() {
 fn test_contribute_to_round() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
         let contrib = Presale::contributions(0, 1).unwrap();
         assert_eq!(contrib.total_purchased, 50);
@@ -166,7 +172,7 @@ fn test_contribute_to_round() {
 fn test_contribute_exceeds_per_account_cap() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 10000, 100, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 10000, 100, 1, 100, b"vest".to_vec());
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 20)); // 100 tokens
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 1),
@@ -179,7 +185,7 @@ fn test_contribute_exceeds_per_account_cap() {
 fn test_contribute_exceeds_round_allocation() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 50, 1000, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 50, 1000, 1, 100, b"vest".to_vec());
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10)); // 50 tokens
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(2), 0, 1),
@@ -200,7 +206,7 @@ fn test_contribute_round_not_active() {
             100,
             1,
             100,
-            vec![],
+            b"vest".to_vec(),
         ));
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 10),
@@ -213,7 +219,7 @@ fn test_contribute_round_not_active() {
 fn test_contribute_round_not_started() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 50, 100, vec![]);
+        create_and_activate_round(0, 5, 1000, 100, 50, 100, b"vest".to_vec());
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 10),
             Error::<Test>::RoundNotStarted
@@ -225,7 +231,7 @@ fn test_contribute_round_not_started() {
 fn test_contribute_round_ended() {
     new_test_ext().execute_with(|| {
         set_block(150);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 10),
             Error::<Test>::RoundEnded
@@ -237,7 +243,7 @@ fn test_contribute_round_ended() {
 fn test_paused_blocks_contributions() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
         assert_ok!(Presale::set_paused(RuntimeOrigin::root(), true));
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 10),
@@ -250,7 +256,7 @@ fn test_paused_blocks_contributions() {
 fn test_whitelist() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
         assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));
         // Whitelisted user can contribute
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
@@ -266,7 +272,7 @@ fn test_whitelist() {
 fn test_zero_payment_fails() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 0),
             Error::<Test>::ZeroPayment
@@ -289,7 +295,7 @@ fn test_round_not_found() {
 fn test_total_raised_and_sold_tracking() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 10000, 1000, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 0, 20));
         assert_eq!(Presale::total_raised(), 30);
@@ -304,9 +310,9 @@ fn test_per_round_cap_independence() {
     new_test_ext().execute_with(|| {
         set_block(1);
         // Round A: cap=100 tokens, price=5
-        create_and_activate_round(0, 5, 10000, 100, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 10000, 100, 1, 100, b"vest".to_vec());
         // Round B: cap=100 tokens, price=5
-        create_and_activate_round(1, 5, 10000, 100, 1, 100, vec![]);
+        create_and_activate_round(1, 5, 10000, 100, 1, 100, b"vest".to_vec());
 
         // User 1 buys 100 tokens (cap) in Round A
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 20));
@@ -332,8 +338,8 @@ fn test_per_round_cap_independence() {
 fn test_per_round_whitelist_independence() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, vec![]);
-        create_and_activate_round(1, 5, 1000, 100, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
+        create_and_activate_round(1, 5, 1000, 100, 1, 100, b"vest".to_vec());
 
         // Round A: whitelist Alice (user 1)
         assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));
@@ -360,7 +366,7 @@ fn test_per_round_whitelist_independence() {
 fn test_public_round_no_whitelist() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
         // No whitelist entries → round is public
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 0, 10));
@@ -374,7 +380,7 @@ fn test_public_round_no_whitelist() {
 fn test_invariant_total_sold_cannot_exceed_allocation() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 50, 1000, 1, 100, vec![]); // allocation=50 tokens
+        create_and_activate_round(0, 5, 50, 1000, 1, 100, b"vest".to_vec()); // allocation=50 tokens
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10)); // 50 tokens
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(2), 0, 1),
@@ -387,7 +393,7 @@ fn test_invariant_total_sold_cannot_exceed_allocation() {
 fn test_invariant_user_cannot_exceed_per_round_cap() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 10000, 50, 1, 100, vec![]); // cap=50 tokens
+        create_and_activate_round(0, 5, 10000, 50, 1, 100, b"vest".to_vec()); // cap=50 tokens
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10)); // 50 tokens
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 1),
@@ -400,9 +406,9 @@ fn test_invariant_user_cannot_exceed_per_round_cap() {
 fn test_invariant_multiple_rounds_independent_caps() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 1, 10000, 100, 1, 100, vec![]);
-        create_and_activate_round(1, 1, 10000, 100, 1, 100, vec![]);
-        create_and_activate_round(2, 1, 10000, 100, 1, 100, vec![]);
+        create_and_activate_round(0, 1, 10000, 100, 1, 100, b"vest".to_vec());
+        create_and_activate_round(1, 1, 10000, 100, 1, 100, b"vest".to_vec());
+        create_and_activate_round(2, 1, 10000, 100, 1, 100, b"vest".to_vec());
 
         for rid in 0..3u32 {
             assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), rid, 100));
@@ -421,7 +427,7 @@ fn test_invariant_multiple_rounds_independent_caps() {
 fn test_invariant_payment_cannot_be_zero() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 0),
             Error::<Test>::ZeroPayment
@@ -433,7 +439,7 @@ fn test_invariant_payment_cannot_be_zero() {
 fn test_invariant_token_calculation_cannot_overflow() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, u64::MAX, 10000, u64::MAX, 1, 100, vec![]);
+        create_and_activate_round(0, u64::MAX, 10000, u64::MAX, 1, 100, b"vest".to_vec());
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 2),
             Error::<Test>::CalculationOverflow
@@ -445,7 +451,7 @@ fn test_invariant_token_calculation_cannot_overflow() {
 fn test_invariant_total_sold_consistent() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 10000, 1000, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 0, 20));
         assert_eq!(Presale::total_sold(), 150);
@@ -457,7 +463,7 @@ fn test_invariant_total_sold_consistent() {
 fn test_invariant_total_raised_consistent() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 10000, 1000, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 0, 20));
         assert_eq!(Presale::total_raised(), 30);
@@ -468,7 +474,7 @@ fn test_invariant_total_raised_consistent() {
 fn test_invariant_failed_contribution_changes_no_state() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 10000, 50, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 10000, 50, 1, 100, b"vest".to_vec());
 
         // Succeed
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10)); // 50 tokens = cap
@@ -493,7 +499,7 @@ fn test_invariant_failed_contribution_changes_no_state() {
 fn test_invariant_paused_rejects_contributions() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
         assert_ok!(Presale::set_paused(RuntimeOrigin::root(), true));
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 10),
@@ -506,7 +512,7 @@ fn test_invariant_paused_rejects_contributions() {
 fn test_invariant_expired_round_rejects() {
     new_test_ext().execute_with(|| {
         set_block(200);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 10),
             Error::<Test>::RoundEnded
@@ -518,7 +524,7 @@ fn test_invariant_expired_round_rejects() {
 fn test_invariant_before_start_rejects() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 50, 100, vec![]);
+        create_and_activate_round(0, 5, 1000, 100, 50, 100, b"vest".to_vec());
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 10),
             Error::<Test>::RoundNotStarted
@@ -540,7 +546,7 @@ fn test_invariant_unauthorized_admin_calls_reject() {
                 100,
                 1,
                 100,
-                vec![],
+                b"vest".to_vec(),
             ),
             sp_runtime::DispatchError::BadOrigin
         );
@@ -553,7 +559,7 @@ fn test_invariant_unauthorized_admin_calls_reject() {
             100,
             1,
             100,
-            vec![],
+            b"vest".to_vec(),
         ));
         assert_noop!(
             Presale::activate_round(RuntimeOrigin::signed(1), 0),
@@ -576,8 +582,8 @@ fn test_invariant_unauthorized_admin_calls_reject() {
 fn test_invariant_whitelist_restrictions_per_round() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, vec![]);
-        create_and_activate_round(1, 5, 1000, 100, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
+        create_and_activate_round(1, 5, 1000, 100, 1, 100, b"vest".to_vec());
 
         // Only round 0 has whitelist for user 1
         assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));
@@ -600,7 +606,7 @@ fn test_invariant_whitelist_restrictions_per_round() {
 fn test_invariant_duplicate_contribution_no_duplicate_allocation() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 10000, 1000, 1, 100, vec![]);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
 
         // First contribution
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
@@ -635,7 +641,7 @@ fn test_invariant_create_round_validates_inputs() {
                 100,
                 1,
                 100,
-                vec![]
+                b"vest".to_vec()
             ),
             Error::<Test>::InsufficientPayment
         );
@@ -649,7 +655,7 @@ fn test_invariant_create_round_validates_inputs() {
                 100,
                 1,
                 100,
-                vec![]
+                b"vest".to_vec()
             ),
             Error::<Test>::InsufficientPayment
         );
@@ -663,7 +669,7 @@ fn test_invariant_create_round_validates_inputs() {
                 100,
                 100,
                 100,
-                vec![]
+                b"vest".to_vec()
             ),
             Error::<Test>::RoundNotStarted
         );
@@ -677,7 +683,7 @@ fn test_invariant_create_round_validates_inputs() {
                 100,
                 1,
                 100,
-                vec![]
+                b"vest".to_vec()
             ),
             Error::<Test>::LabelTooLong
         );
@@ -699,14 +705,22 @@ fn test_invariant_create_round_validates_inputs() {
 }
 
 #[test]
-fn test_invariant_no_vesting_label_no_vesting_created() {
+fn test_invariant_empty_vesting_label_rejected() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        // Round with empty vesting label — contribution should succeed without vesting
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, vec![]);
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
-        let contrib = Presale::contributions(0, 1).unwrap();
-        assert_eq!(contrib.total_purchased, 50);
-        assert_eq!(contrib.total_paid, 10);
+        // Round with empty vesting label — create_round should fail
+        assert_noop!(
+            Presale::create_round(
+                RuntimeOrigin::root(),
+                b"test".to_vec(),
+                5,
+                1000,
+                100,
+                1,
+                100,
+                vec![],
+            ),
+            Error::<Test>::EmptyVestingLabel
+        );
     });
 }
