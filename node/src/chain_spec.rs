@@ -139,7 +139,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     let dex_pool: AccountId = PalletId(*b"verdisdx").into_account_truncating();
     let community_pool: AccountId = PalletId(*b"verdiscm").into_account_truncating();
     let seed_pool: AccountId = PalletId(*b"verdisvs").into_account_truncating();
-    let presale_pool: AccountId = PalletId(*b"verdistk").into_account_truncating();
+    let presale_pool: AccountId = PalletId(*b"verdisps").into_account_truncating();
 
     let u = units();
     let bn = billion();
@@ -159,7 +159,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
 
     // Dev balances: same 9-category tokenomics but fewer validator stakes
     let mut balances = vec![
-        (eco_pool, 30 * bn),
+        (eco_pool, 25 * bn),
         (staking_pool, 20 * bn),
         (treasury_account, 15 * bn),
         (dev_pool, 10 * bn),
@@ -348,7 +348,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     let dex_pool: AccountId = PalletId(*b"verdisdx").into_account_truncating();
     let community_pool: AccountId = PalletId(*b"verdiscm").into_account_truncating();
     let seed_pool: AccountId = PalletId(*b"verdisvs").into_account_truncating();
-    let presale_pool: AccountId = PalletId(*b"verdistk").into_account_truncating();
+    let presale_pool: AccountId = PalletId(*b"verdisps").into_account_truncating();
 
     let u = units();
     let bn = billion();
@@ -368,7 +368,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
 
     // Balances: 9-category tokenomics (100B VRDX total)
     let mut balances = vec![
-        (eco_pool, 30 * bn),
+        (eco_pool, 25 * bn),
         (staking_pool, 20 * bn),
         (treasury_account, 15 * bn),
         (dev_pool, 10 * bn),
@@ -681,7 +681,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     let dex_pool: AccountId = PalletId(*b"verdisdx").into_account_truncating();
     let community_pool: AccountId = PalletId(*b"verdiscm").into_account_truncating();
     let seed_pool: AccountId = PalletId(*b"verdisvs").into_account_truncating();
-    let presale_pool: AccountId = PalletId(*b"verdistk").into_account_truncating();
+    let presale_pool: AccountId = PalletId(*b"verdisps").into_account_truncating();
 
     let u = units();
     let bn = billion();
@@ -701,7 +701,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
 
     // Balances: 9-category tokenomics (100B VRDX total)
     let mut balances = vec![
-        (eco_pool, 30 * bn),
+        (eco_pool, 25 * bn),
         (staking_pool, 20 * bn),
         (treasury_account, 15 * bn),
         (dev_pool, 10 * bn),

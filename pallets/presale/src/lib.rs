@@ -156,6 +156,8 @@ pub mod pallet {
         },
         Paused,
         Unpaused,
+        /// Funds collected from a round
+        FundsCollected { round_id: u32, amount: BalanceOf<T>, collected_by: T::AccountId },
         WhitelistUpdated {
             who: T::AccountId,
             whitelisted: bool,
@@ -503,6 +505,47 @@ pub mod pallet {
             Self::deposit_event(Event::WhitelistUpdated { who, whitelisted });
             Ok(())
         }
+
+        /// Collect reserved funds from a completed round (admin only)
+        #[pallet::call_index(6)]
+        #[pallet::weight(T::WeightInfo::update_whitelist())]
+        pub fn collect_funds(
+            origin: OriginFor<T>,
+            round_id: u32,
+            beneficiary: T::AccountId,
+        ) -> DispatchResult {
+            T::AdminOrigin::ensure_origin(origin)?;
+
+            let round = Rounds::<T>::get(round_id).ok_or(Error::<T>::RoundNotFound)?;
+            ensure!(!round.is_active, Error::<T>::RoundNotActive);
+
+            // Sum all reserved payments for this round
+            let mut total_collected = BalanceOf::<T>::zero();
+            for (contributor, contribution) in Contributions::<T>::iter_prefix(round_id) {
+                let reserved = T::Currency::reserved_balance(&contributor);
+                if reserved >= contribution.total_paid {
+                    // Unreserve and transfer to beneficiary
+                    T::Currency::unreserve(&contributor, contribution.total_paid);
+                    T::Currency::transfer(
+                        &contributor,
+                        &beneficiary,
+                        contribution.total_paid,
+                        frame_support::traits::ExistenceRequirement::AllowDeath,
+                    )?;
+                    total_collected = total_collected
+                        .checked_add(&contribution.total_paid)
+                        .ok_or(Error::<T>::CalculationOverflow)?;
+                }
+            }
+
+            Self::deposit_event(Event::FundsCollected {
+                round_id,
+                amount: total_collected,
+                collected_by: beneficiary,
+            });
+
+            Ok(())
+        }
     }
 
     // === Weight Info ===
@@ -514,6 +557,7 @@ pub mod pallet {
         fn contribute() -> frame_support::weights::Weight;
         fn set_paused() -> frame_support::weights::Weight;
         fn update_whitelist() -> frame_support::weights::Weight;
+        fn collect_funds() -> frame_support::weights::Weight;
     }
 
     pub struct SubstrateWeight<T>(PhantomData<T>);
@@ -535,6 +579,9 @@ pub mod pallet {
         }
         fn update_whitelist() -> frame_support::weights::Weight {
             frame_support::weights::Weight::from_parts(10_000, 0)
+        }
+        fn collect_funds() -> frame_support::weights::Weight {
+            frame_support::weights::Weight::from_parts(15_000, 0)
         }
     }
 
@@ -558,8 +605,10 @@ pub mod pallet {
         fn update_whitelist() -> frame_support::weights::Weight {
             frame_support::weights::Weight::from_parts(10_000, 0)
         }
+        fn collect_funds() -> frame_support::weights::Weight {
+            frame_support::weights::Weight::from_parts(15_000, 0)
+        }
     }
 }
-
 #[cfg(test)]
 mod tests;

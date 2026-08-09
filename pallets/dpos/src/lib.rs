@@ -261,6 +261,9 @@ pub mod pallet {
                     energy_source: b"Unknown".to_vec().try_into().unwrap_or_default(),
                 };
                 Validators::<T>::insert(addr, validator);
+                // Reserve the stake balance so validators can't spend it
+                T::Currency::reserve(&addr, *stake)
+                    .expect("insufficient balance for validator stake at genesis");
                 list.try_push(addr.clone())
                     .expect("validator list overflow at genesis");
                 total = total.saturating_add(*stake);
@@ -685,7 +688,7 @@ pub mod pallet {
 
             let mut bounded_active: BoundedVec<T::AccountId, ConstU32<1001>> =
                 BoundedVec::default();
-            for addr in new_active.iter().take(101) {
+            for addr in new_active.iter().take(T::ActiveValidatorCount::get() as usize) {
                 let _ = bounded_active.try_push(addr.clone());
             }
             ActiveValidators::<T>::put(bounded_active);
