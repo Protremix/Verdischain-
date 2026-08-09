@@ -4,22 +4,45 @@
 //! # Verdis Presale Pallet
 //!
 //! On-chain presale/IDO contribution system with:
-//! - Multiple contribution rounds (Seed, Community, Presale, TGE)
+//! - **Escrow-based payments**: buyer pays into a deterministic Presale Escrow
+//!   account (derived from PalletId), NOT user reserved balances.
 //! - Per-round per-account caps (independent per round)
 //! - Per-round whitelist (independent per round)
 //! - Vesting schedule integration (atomic)
-//! - Overflow protection (checked arithmetic throughout)
+//! - Overflow protection (checked arithmetic throughout — no saturating for financial accounting)
+//! - **O(1) fund collection** from escrow (no unbounded contributor iteration)
+//! - **Double-collection prevention** via `RoundFundsCollected` flag
+//! - **Round-end enforcement**: collection only after `end_block`
+//! - **Escrow VRDX balance verification**: contribution fails if escrow lacks tokens
 //! - Admin controls (start/stop, whitelist, emergency pause)
 //! - Atomic accounting (all-or-nothing state changes)
+//!
+//! ## Payment Flow
+//! ```text
+//! Buyer --payment--> Presale Escrow Account
+//! Presale Escrow Account --VRDX--> Buyer
+//! Presale Escrow Account --vesting--> Vesting Pallet
+//! ```
+//!
+//! ## Collection Flow
+//! ```text
+//! After round.end_block:
+//!   Admin calls collect_funds(round_id, beneficiary)
+//!   Presale Escrow --RoundRaised amount--> Beneficiary
+//!   RoundFundsCollected = true  (prevents double collection)
+//! ```
+//!
+//! ## Price Formula
+//! `token_amount = payment_amount.checked_mul(token_price)`
+//! where `token_price` = tokens per payment unit (e.g. price=5 means 5 VRDX per 1 unit of payment).
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(deprecated)]
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{
-    dispatch::DispatchResult,
     ensure,
     pallet_prelude::*,
-    traits::{Currency, EnsureOrigin, ExistenceRequirement, Get, ReservableCurrency},
+    traits::{Currency, EnsureOrigin, ExistenceRequirement, Get},
     PalletId,
 };
 use frame_system::pallet_prelude::*;
@@ -58,6 +81,7 @@ pub mod pallet {
     #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]
     pub struct SaleRound<Balance, BlockNumber> {
         pub label: BoundedVec<u8, ConstU32<32>>,
+        /// Tokens per payment unit. token_amount = payment_amount * token_price.
         pub token_price: Balance,
         pub total_allocation: Balance,
         pub sold: Balance,
@@ -125,6 +149,19 @@ pub mod pallet {
     #[pallet::getter(fn total_sold)]
     pub type TotalSold<T: Config> = StorageValue<_, BalanceOf<T>, ValueQuery>;
 
+    /// Per-round raised amount — total payment received for each round.
+    /// Used by collect_funds() for O(1) collection.
+    #[pallet::storage]
+    #[pallet::getter(fn round_raised)]
+    pub type RoundRaised<T: Config> =
+        StorageMap<_, Blake2_128Concat, u32, BalanceOf<T>, ValueQuery>;
+
+    /// Per-round funds collected flag — prevents double collection.
+    #[pallet::storage]
+    #[pallet::getter(fn round_funds_collected)]
+    pub type RoundFundsCollected<T: Config> =
+        StorageMap<_, Blake2_128Concat, u32, bool, ValueQuery>;
+
     // === Events ===
 
     #[pallet::event]
@@ -156,8 +193,12 @@ pub mod pallet {
         },
         Paused,
         Unpaused,
-        /// Funds collected from a round
-        FundsCollected { round_id: u32, amount: BalanceOf<T>, collected_by: T::AccountId },
+        /// Funds collected from escrow to beneficiary (O(1) operation)
+        FundsCollected {
+            round_id: u32,
+            amount: BalanceOf<T>,
+            collected_by: T::AccountId,
+        },
         WhitelistUpdated {
             who: T::AccountId,
             whitelisted: bool,
@@ -187,6 +228,12 @@ pub mod pallet {
         CalculationOverflow,
         VestingFailed,
         InvalidGenesisConfig,
+        /// Funds have already been collected for this round
+        FundsAlreadyCollected,
+        /// Round has not ended yet — collection requires block >= end_block
+        RoundNotEnded,
+        /// Presale escrow does not have enough VRDX to fulfill this contribution
+        InsufficientEscrowBalance,
     }
 
     // === Config ===
@@ -194,7 +241,7 @@ pub mod pallet {
     #[pallet::config]
     pub trait Config: frame_system::Config {
         type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-        type Currency: ReservableCurrency<Self::AccountId>;
+        type Currency: Currency<Self::AccountId>;
         #[pallet::constant]
         type PalletId: Get<PalletId>;
         type AdminOrigin: EnsureOrigin<Self::RuntimeOrigin>;
@@ -242,6 +289,10 @@ pub mod pallet {
                 assert!(
                     end > start,
                     "Presale genesis: end_block must be > start_block"
+                );
+                assert!(
+                    !vesting_label.is_empty(),
+                    "Presale genesis: vesting_label must not be empty"
                 );
 
                 let round = SaleRound {
@@ -353,8 +404,11 @@ pub mod pallet {
             })
         }
 
-        /// Contribute to a sale round
-        /// Payment is reserved; tokens are credited with vesting (atomic)
+        /// Contribute to a sale round.
+        ///
+        /// Payment flow: buyer → presale escrow (transfer, not reserve).
+        /// Token flow: presale escrow → buyer (with vesting).
+        /// All state changes are atomic — on failure, no financial state changes remain.
         #[pallet::call_index(3)]
         #[pallet::weight(T::WeightInfo::contribute())]
         pub fn contribute(
@@ -388,7 +442,8 @@ pub mod pallet {
                 );
             }
 
-            // Calculate token amount (checked arithmetic)
+            // === Price formula: token_amount = payment_amount * token_price ===
+            // token_price = tokens per payment unit
             let token_amount = payment_amount
                 .checked_mul(&round.token_price)
                 .ok_or(Error::<T>::CalculationOverflow)?;
@@ -419,6 +474,9 @@ pub mod pallet {
                 .total_paid
                 .checked_add(&payment_amount)
                 .ok_or(Error::<T>::CalculationOverflow)?;
+            let new_round_raised = RoundRaised::<T>::get(round_id)
+                .checked_add(&payment_amount)
+                .ok_or(Error::<T>::CalculationOverflow)?;
             let new_global_raised = TotalRaised::<T>::get()
                 .checked_add(&payment_amount)
                 .ok_or(Error::<T>::CalculationOverflow)?;
@@ -426,14 +484,26 @@ pub mod pallet {
                 .checked_add(&token_amount)
                 .ok_or(Error::<T>::CalculationOverflow)?;
 
-            // === All checks passed — now mutate state ===
-
-            // Reserve payment from contributor
-            T::Currency::reserve(&who, payment_amount)
-                .map_err(|_| Error::<T>::InsufficientPayment)?;
-
-            // Transfer purchased tokens from presale escrow to buyer
+            // === Verify escrow has enough VRDX before any state mutation ===
             let escrow = T::PalletId::get().into_account_truncating();
+            let escrow_balance = T::Currency::free_balance(&escrow);
+            ensure!(
+                escrow_balance >= token_amount,
+                Error::<T>::InsufficientEscrowBalance
+            );
+
+            // === All checks passed — now perform state mutations (atomic) ===
+
+            // 1. Transfer payment from buyer to presale escrow
+            T::Currency::transfer(
+                &who,
+                &escrow,
+                payment_amount,
+                ExistenceRequirement::KeepAlive,
+            )
+            .map_err(|_| Error::<T>::InsufficientPayment)?;
+
+            // 2. Transfer purchased VRDX from escrow to buyer
             T::Currency::transfer(
                 &escrow,
                 &who,
@@ -442,7 +512,8 @@ pub mod pallet {
             )
             .map_err(|_| Error::<T>::InsufficientAllocation)?;
 
-            // Create vesting entry (atomic — if this fails, reserve is auto-reverted by Substrate)
+            // 3. Create vesting entry (if this fails, the transfers above are reverted
+            //    by the dispatchable's automatic state rollback)
             if !round.vesting_label.is_empty() {
                 T::Vesting::assign_vesting(
                     &who,
@@ -459,14 +530,14 @@ pub mod pallet {
                 });
             }
 
-            // Update round sold
+            // 4. Update round sold
             Rounds::<T>::mutate(round_id, |round_opt| {
                 if let Some(r) = round_opt {
                     r.sold = new_sold;
                 }
             });
 
-            // Update per-round contribution
+            // 5. Update per-round contribution
             Contributions::<T>::insert(
                 round_id,
                 &who,
@@ -476,7 +547,10 @@ pub mod pallet {
                 },
             );
 
-            // Update global totals (checked — no saturating)
+            // 6. Update round-level raised amount
+            RoundRaised::<T>::insert(round_id, new_round_raised);
+
+            // 7. Update global totals (checked — no saturating)
             TotalRaised::<T>::put(new_global_raised);
             TotalSold::<T>::put(new_global_sold);
 
@@ -519,9 +593,17 @@ pub mod pallet {
             Ok(())
         }
 
-        /// Collect reserved funds from a completed round (admin only)
+        /// Collect raised funds from a completed round (admin only).
+        ///
+        /// O(1) operation — transfers `RoundRaised[round_id]` from the presale
+        /// escrow account to the beneficiary. Does NOT iterate over contributors.
+        ///
+        /// Requirements:
+        /// - Round must exist
+        /// - Current block >= round.end_block (round must have ended)
+        /// - Funds must not have been collected already (no double collection)
         #[pallet::call_index(6)]
-        #[pallet::weight(T::WeightInfo::update_whitelist())]
+        #[pallet::weight(T::WeightInfo::collect_funds())]
         pub fn collect_funds(
             origin: OriginFor<T>,
             round_id: u32,
@@ -529,39 +611,49 @@ pub mod pallet {
         ) -> DispatchResult {
             T::AdminOrigin::ensure_origin(origin)?;
 
+            // Load round
             let round = Rounds::<T>::get(round_id).ok_or(Error::<T>::RoundNotFound)?;
-            ensure!(!round.is_active, Error::<T>::RoundNotActive);
 
-            // Sum all reserved payments for this round
-            let mut total_collected = BalanceOf::<T>::zero();
-            for (contributor, contribution) in Contributions::<T>::iter_prefix(round_id) {
-                let reserved = T::Currency::reserved_balance(&contributor);
-                if reserved >= contribution.total_paid {
-                    // Unreserve and transfer to beneficiary
-                    T::Currency::unreserve(&contributor, contribution.total_paid);
-                    T::Currency::transfer(
-                        &contributor,
-                        &beneficiary,
-                        contribution.total_paid,
-                        frame_support::traits::ExistenceRequirement::AllowDeath,
-                    )?;
-                    total_collected = total_collected
-                        .checked_add(&contribution.total_paid)
-                        .ok_or(Error::<T>::CalculationOverflow)?;
-                }
+            // Verify round has ended (block >= end_block)
+            let current_block = frame_system::Pallet::<T>::block_number();
+            ensure!(
+                current_block >= round.end_block,
+                Error::<T>::RoundNotEnded
+            );
+
+            // Prevent double collection
+            ensure!(
+                !RoundFundsCollected::<T>::get(round_id),
+                Error::<T>::FundsAlreadyCollected
+            );
+
+            // Get the total raised for this round
+            let round_raised = RoundRaised::<T>::get(round_id);
+
+            // Transfer from escrow to beneficiary (O(1) — no contributor iteration)
+            if round_raised > BalanceOf::<T>::zero() {
+                let escrow = T::PalletId::get().into_account_truncating();
+                T::Currency::transfer(
+                    &escrow,
+                    &beneficiary,
+                    round_raised,
+                    ExistenceRequirement::AllowDeath,
+                )?;
             }
+
+            // Mark funds as collected (prevents double collection)
+            RoundFundsCollected::<T>::insert(round_id, true);
 
             Self::deposit_event(Event::FundsCollected {
                 round_id,
-                amount: total_collected,
+                amount: round_raised,
                 collected_by: beneficiary,
             });
 
             Ok(())
         }
-    }
 
-    // === Weight Info ===
+    }
 
     pub trait WeightInfo {
         fn create_round() -> frame_support::weights::Weight;
@@ -573,7 +665,7 @@ pub mod pallet {
         fn collect_funds() -> frame_support::weights::Weight;
     }
 
-    pub struct SubstrateWeight<T>(PhantomData<T>);
+    pub struct SubstrateWeight<T>(core::marker::PhantomData<T>);
     impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
         fn create_round() -> frame_support::weights::Weight {
             frame_support::weights::Weight::from_parts(10_000, 0)
@@ -594,34 +686,43 @@ pub mod pallet {
             frame_support::weights::Weight::from_parts(10_000, 0)
         }
         fn collect_funds() -> frame_support::weights::Weight {
+            // O(1) — no contributor iteration
             frame_support::weights::Weight::from_parts(15_000, 0)
         }
     }
 
-    #[cfg(feature = "std")]
-    impl WeightInfo for () {
-        fn create_round() -> frame_support::weights::Weight {
-            frame_support::weights::Weight::from_parts(10_000, 0)
-        }
-        fn activate_round() -> frame_support::weights::Weight {
-            frame_support::weights::Weight::from_parts(5_000, 0)
-        }
-        fn deactivate_round() -> frame_support::weights::Weight {
-            frame_support::weights::Weight::from_parts(5_000, 0)
-        }
-        fn contribute() -> frame_support::weights::Weight {
-            frame_support::weights::Weight::from_parts(20_000, 0)
-        }
-        fn set_paused() -> frame_support::weights::Weight {
-            frame_support::weights::Weight::from_parts(5_000, 0)
-        }
-        fn update_whitelist() -> frame_support::weights::Weight {
-            frame_support::weights::Weight::from_parts(10_000, 0)
-        }
-        fn collect_funds() -> frame_support::weights::Weight {
-            frame_support::weights::Weight::from_parts(15_000, 0)
+    impl<T: Config> Pallet<T> {
+        /// Returns the deterministic escrow account for this pallet.
+        pub fn escrow_account() -> T::AccountId {
+            T::PalletId::get().into_account_truncating()
         }
     }
 }
+
+#[cfg(feature = "std")]
+impl WeightInfo for () {
+    fn create_round() -> frame_support::weights::Weight {
+        frame_support::weights::Weight::from_parts(10_000, 0)
+    }
+    fn activate_round() -> frame_support::weights::Weight {
+        frame_support::weights::Weight::from_parts(5_000, 0)
+    }
+    fn deactivate_round() -> frame_support::weights::Weight {
+        frame_support::weights::Weight::from_parts(5_000, 0)
+    }
+    fn contribute() -> frame_support::weights::Weight {
+        frame_support::weights::Weight::from_parts(20_000, 0)
+    }
+    fn set_paused() -> frame_support::weights::Weight {
+        frame_support::weights::Weight::from_parts(5_000, 0)
+    }
+    fn update_whitelist() -> frame_support::weights::Weight {
+        frame_support::weights::Weight::from_parts(10_000, 0)
+    }
+    fn collect_funds() -> frame_support::weights::Weight {
+        frame_support::weights::Weight::from_parts(15_000, 0)
+    }
+}
+
 #[cfg(test)]
 mod tests;

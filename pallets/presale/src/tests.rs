@@ -2,7 +2,7 @@
 use crate::*;
 use frame_support::{
     assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types,
-    traits::{ConstU32, ConstU64},
+    traits::{ConstU32, ConstU64, Currency},
 };
 use sp_io::TestExternalities;
 use sp_runtime::{traits::{AccountIdConversion, IdentityLookup}, BuildStorage};
@@ -51,11 +51,9 @@ impl crate::Config for Test {
     type Currency = Balances;
     type PalletId = PresalePalletId;
     type AdminOrigin = frame_system::EnsureRoot<u64>;
-    type Vesting = (); // no-op vesting handler for presale-only tests
+    type Vesting = ();
     type WeightInfo = crate::SubstrateWeight<Test>;
 }
-
-// === Test setup ===
 
 pub fn new_test_ext() -> TestExternalities {
     let mut t = frame_system::GenesisConfig::<Test>::default()
@@ -78,6 +76,10 @@ pub fn new_test_ext() -> TestExternalities {
 
 fn set_block(n: u64) {
     System::set_block_number(n);
+}
+
+fn escrow_account() -> u64 {
+    PresalePalletId::get().into_account_truncating()
 }
 
 fn create_and_activate_round(
@@ -105,7 +107,7 @@ fn create_and_activate_round(
     ));
 }
 
-// === Existing tests (updated for per-round storage) ===
+// === EXISTING TESTS ===
 
 #[test]
 fn test_create_round_admin_only() {
@@ -173,7 +175,7 @@ fn test_contribute_exceeds_per_account_cap() {
     new_test_ext().execute_with(|| {
         set_block(1);
         create_and_activate_round(0, 5, 10000, 100, 1, 100, b"vest".to_vec());
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 20)); // 100 tokens
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 20));
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 1),
             Error::<Test>::ExceedsPerAccountCap
@@ -186,7 +188,7 @@ fn test_contribute_exceeds_round_allocation() {
     new_test_ext().execute_with(|| {
         set_block(1);
         create_and_activate_round(0, 5, 50, 1000, 1, 100, b"vest".to_vec());
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10)); // 50 tokens
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(2), 0, 1),
             Error::<Test>::ExceedsRoundAllocation
@@ -258,9 +260,7 @@ fn test_whitelist() {
         set_block(1);
         create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
         assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));
-        // Whitelisted user can contribute
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
-        // Non-whitelisted user cannot
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(2), 0, 10),
             Error::<Test>::NotWhitelisted
@@ -299,89 +299,224 @@ fn test_total_raised_and_sold_tracking() {
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 0, 20));
         assert_eq!(Presale::total_raised(), 30);
-        assert_eq!(Presale::total_sold(), 150); // 10*5 + 20*5
+        assert_eq!(Presale::total_sold(), 150);
     });
 }
 
-// === P0: Per-round cap independence ===
+// === P0: ESCROW-BASED PAYMENT TESTS ===
 
 #[test]
-fn test_per_round_cap_independence() {
+fn test_payment_transferred_to_escrow_not_reserved() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        // Round A: cap=100 tokens, price=5
-        create_and_activate_round(0, 5, 10000, 100, 1, 100, b"vest".to_vec());
-        // Round B: cap=100 tokens, price=5
-        create_and_activate_round(1, 5, 10000, 100, 1, 100, b"vest".to_vec());
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
+        let escrow = escrow_account();
+        let escrow_before = Balances::free_balance(&escrow);
+        let user1_before = Balances::free_balance(&1);
 
-        // User 1 buys 100 tokens (cap) in Round A
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
+
+        let escrow_after = Balances::free_balance(&escrow);
+        let user1_after = Balances::free_balance(&1);
+
+        // Payment (10) transferred to escrow, tokens (50) transferred out
+        let escrow_change = escrow_after as i64 - escrow_before as i64;
+        assert_eq!(escrow_change, 10i64 - 50, "Escrow: +10 payment, -50 tokens");
+        // User: -10 payment + 50 tokens = +40 net
+        let user1_change = user1_after as i64 - user1_before as i64;
+        assert_eq!(user1_change, -10i64 + 50, "User net: -10 payment + 50 tokens");
+        // No reserved balance
+        assert_eq!(Balances::reserved_balance(&1), 0, "No reserved balance for buyer");
+    });
+}
+
+#[test]
+fn test_escrow_receives_payment_and_sends_tokens() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
+        let escrow = escrow_account();
+        let escrow_before = Balances::free_balance(&escrow);
+
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
+
+        let escrow_after = Balances::free_balance(&escrow);
+        let escrow_change = escrow_after as i64 - escrow_before as i64;
+        assert_eq!(escrow_change, 10i64 - 50, "Escrow: +10 payment, -50 tokens");
+    });
+}
+
+// === P0: ROUND-LEVEL RAISED TRACKING ===
+
+#[test]
+fn test_round_raised_tracking() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
+        create_and_activate_round(1, 3, 10000, 1000, 1, 100, b"vest".to_vec());
+
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 0, 20));
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 1, 15));
+
+        assert_eq!(Presale::round_raised(0), 30);
+        assert_eq!(Presale::round_raised(1), 15);
+        assert_eq!(Presale::total_raised(), 45);
+    });
+}
+
+// === P0: COLLECT_FUNDS — O(1) FROM ESCROW ===
+
+#[test]
+fn test_collect_funds_after_round_end() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 0, 200));
+
+        set_block(50);
+        assert_noop!(
+            Presale::collect_funds(RuntimeOrigin::root(), 0, 3),
+            Error::<Test>::RoundNotEnded
+        );
+
+        set_block(100);
+        let escrow = escrow_account();
+        let escrow_before = Balances::free_balance(&escrow);
+        let beneficiary_before = Balances::free_balance(&3);
+
+        assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 3));
+
+        let raised = Presale::round_raised(0);
+        assert_eq!(raised, 300);
+        assert_eq!(Balances::free_balance(&3) - beneficiary_before, 300);
+        assert_eq!(escrow_before - Balances::free_balance(&escrow), 300);
+        assert!(Presale::round_funds_collected(0));
+    });
+}
+
+#[test]
+fn test_collect_funds_active_round_fails() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
+
+        set_block(50);
+        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
+        assert_noop!(
+            Presale::collect_funds(RuntimeOrigin::root(), 0, 3),
+            Error::<Test>::RoundNotEnded
+        );
+    });
+}
+
+#[test]
+fn test_collect_funds_deactivated_not_ended_fails() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 200, b"vest".to_vec());
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
+
+        set_block(100);
+        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
+
+        assert_noop!(
+            Presale::collect_funds(RuntimeOrigin::root(), 0, 3),
+            Error::<Test>::RoundNotEnded
+        );
+    });
+}
+
+#[test]
+fn test_collect_funds_double_collection_fails() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
+
+        set_block(100);
+        assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 3));
+        assert_noop!(
+            Presale::collect_funds(RuntimeOrigin::root(), 0, 3),
+            Error::<Test>::FundsAlreadyCollected
+        );
+    });
+}
+
+#[test]
+fn test_collect_funds_round_not_found() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        assert_noop!(
+            Presale::collect_funds(RuntimeOrigin::root(), 99, 3),
+            Error::<Test>::RoundNotFound
+        );
+    });
+}
+
+#[test]
+fn test_collect_funds_non_admin_fails() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
+
+        set_block(100);
+        assert_noop!(
+            Presale::collect_funds(RuntimeOrigin::signed(1), 0, 3),
+            sp_runtime::DispatchError::BadOrigin
+        );
+    });
+}
+
+#[test]
+fn test_collect_funds_zero_raised() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
+
+        set_block(100);
+        assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 3));
+        assert_eq!(Presale::round_funds_collected(0), true);
+    });
+}
+
+// === P0: ESCROW BALANCE VERIFICATION ===
+
+#[test]
+fn test_escrow_insufficient_balance_fails() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 1000, 10000, 1, 100, b"vest".to_vec());
+
+        let escrow = escrow_account();
+        let escrow_bal = Balances::free_balance(&escrow);
+        assert_ok!(Balances::transfer_allow_death(
+            RuntimeOrigin::signed(escrow),
+            3,
+            escrow_bal - 100,
+        ));
+
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
+        assert_noop!(
+            Presale::contribute(RuntimeOrigin::signed(1), 0, 21),
+            Error::<Test>::InsufficientEscrowBalance
+        );
+    });
+}
+
+// === P0: ECONOMIC INVARIANTS ===
+
+#[test]
+fn test_invariant_round_sold_le_allocation() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 100, 1000, 1, 100, b"vest".to_vec());
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 20));
-        let contrib_a = Presale::contributions(0, 1).unwrap();
-        assert_eq!(contrib_a.total_purchased, 100);
-
-        // Same user can still buy 100 tokens in Round B
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 1, 20));
-        let contrib_b = Presale::contributions(1, 1).unwrap();
-        assert_eq!(contrib_b.total_purchased, 100);
-
-        // Verify independence: Round A cap is NOT affected by Round B
-        assert_noop!(
-            Presale::contribute(RuntimeOrigin::signed(1), 0, 1),
-            Error::<Test>::ExceedsPerAccountCap
-        );
-    });
-}
-
-// === P0: Per-round whitelist independence ===
-
-#[test]
-fn test_per_round_whitelist_independence() {
-    new_test_ext().execute_with(|| {
-        set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
-        create_and_activate_round(1, 5, 1000, 100, 1, 100, b"vest".to_vec());
-
-        // Round A: whitelist Alice (user 1)
-        assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));
-        // Round B: whitelist Bob (user 2)
-        assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 1, 2, true));
-
-        // Alice allowed in A, not in B
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
-        assert_noop!(
-            Presale::contribute(RuntimeOrigin::signed(1), 1, 10),
-            Error::<Test>::NotWhitelisted
-        );
-
-        // Bob allowed in B, not in A
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 1, 10));
-        assert_noop!(
-            Presale::contribute(RuntimeOrigin::signed(2), 0, 10),
-            Error::<Test>::NotWhitelisted
-        );
-    });
-}
-
-#[test]
-fn test_public_round_no_whitelist() {
-    new_test_ext().execute_with(|| {
-        set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
-        // No whitelist entries → round is public
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 0, 10));
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(3), 0, 10));
-    });
-}
-
-// === P0: Economic invariants ===
-
-#[test]
-fn test_invariant_total_sold_cannot_exceed_allocation() {
-    new_test_ext().execute_with(|| {
-        set_block(1);
-        create_and_activate_round(0, 5, 50, 1000, 1, 100, b"vest".to_vec()); // allocation=50 tokens
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10)); // 50 tokens
+        assert_eq!(Presale::rounds(0).unwrap().sold, 100);
+        assert_eq!(Presale::rounds(0).unwrap().total_allocation, 100);
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(2), 0, 1),
             Error::<Test>::ExceedsRoundAllocation
@@ -390,11 +525,75 @@ fn test_invariant_total_sold_cannot_exceed_allocation() {
 }
 
 #[test]
-fn test_invariant_user_cannot_exceed_per_round_cap() {
+fn test_invariant_total_sold_le_total_allocation() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 10000, 50, 1, 100, b"vest".to_vec()); // cap=50 tokens
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10)); // 50 tokens
+        create_and_activate_round(0, 5, 100, 1000, 1, 100, b"vest".to_vec());
+        create_and_activate_round(1, 5, 100, 1000, 1, 100, b"vest".to_vec());
+
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 20));
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 1, 20));
+
+        assert_eq!(Presale::total_sold(), 200);
+        assert_noop!(
+            Presale::contribute(RuntimeOrigin::signed(1), 0, 1),
+            Error::<Test>::ExceedsRoundAllocation
+        );
+        assert_noop!(
+            Presale::contribute(RuntimeOrigin::signed(2), 1, 1),
+            Error::<Test>::ExceedsRoundAllocation
+        );
+    });
+}
+
+#[test]
+fn test_invariant_collected_le_round_raised() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 0, 200));
+
+        set_block(100);
+        let beneficiary_before = Balances::free_balance(&3);
+        assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 3));
+
+        let collected = Balances::free_balance(&3) - beneficiary_before;
+        assert_eq!(collected, Presale::round_raised(0));
+        assert_eq!(collected, 300);
+    });
+}
+
+#[test]
+fn test_invariant_funds_cannot_be_collected_twice() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
+
+        set_block(100);
+        let before1 = Balances::free_balance(&3);
+        assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 3));
+        let first = Balances::free_balance(&3) - before1;
+
+        let before2 = Balances::free_balance(&3);
+        assert_noop!(
+            Presale::collect_funds(RuntimeOrigin::root(), 0, 3),
+            Error::<Test>::FundsAlreadyCollected
+        );
+        let second = Balances::free_balance(&3) - before2;
+        assert_eq!(second, 0);
+        assert_eq!(first, 100);
+    });
+}
+
+#[test]
+fn test_invariant_user_purchased_le_per_round_cap() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 100, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 20));
+        assert_eq!(Presale::contributions(0, 1).unwrap().total_purchased, 100);
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 1),
             Error::<Test>::ExceedsPerAccountCap
@@ -403,43 +602,93 @@ fn test_invariant_user_cannot_exceed_per_round_cap() {
 }
 
 #[test]
-fn test_invariant_multiple_rounds_independent_caps() {
+fn test_invariant_round_raised_contributes_once_to_total() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 1, 10000, 100, 1, 100, b"vest".to_vec());
-        create_and_activate_round(1, 1, 10000, 100, 1, 100, b"vest".to_vec());
-        create_and_activate_round(2, 1, 10000, 100, 1, 100, b"vest".to_vec());
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
+        create_and_activate_round(1, 3, 10000, 1000, 1, 100, b"vest".to_vec());
 
-        for rid in 0..3u32 {
-            assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), rid, 100));
-        }
-        // Each round independently allows 100
-        for rid in 0..3u32 {
-            assert_noop!(
-                Presale::contribute(RuntimeOrigin::signed(1), rid, 1),
-                Error::<Test>::ExceedsPerAccountCap
-            );
-        }
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 1, 200));
+
+        assert_eq!(Presale::round_raised(0), 100);
+        assert_eq!(Presale::round_raised(1), 200);
+        assert_eq!(Presale::total_raised(), 300);
     });
 }
 
+// === P0: PER-ROUND CAP INDEPENDENCE ===
+
 #[test]
-fn test_invariant_payment_cannot_be_zero() {
+fn test_per_round_cap_independence() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
+        create_and_activate_round(0, 5, 10000, 100, 1, 100, b"vest".to_vec());
+        create_and_activate_round(1, 5, 10000, 100, 1, 100, b"vest".to_vec());
+
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 20));
+        assert_eq!(Presale::contributions(0, 1).unwrap().total_purchased, 100);
+
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 1, 20));
+        assert_eq!(Presale::contributions(1, 1).unwrap().total_purchased, 100);
+
         assert_noop!(
-            Presale::contribute(RuntimeOrigin::signed(1), 0, 0),
-            Error::<Test>::ZeroPayment
+            Presale::contribute(RuntimeOrigin::signed(1), 0, 1),
+            Error::<Test>::ExceedsPerAccountCap
         );
     });
 }
 
+// === P0: PER-ROUND WHITELIST INDEPENDENCE ===
+
 #[test]
-fn test_invariant_token_calculation_cannot_overflow() {
+fn test_per_round_whitelist_independence() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, u64::MAX, 10000, u64::MAX, 1, 100, b"vest".to_vec());
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
+        create_and_activate_round(1, 5, 1000, 100, 1, 100, b"vest".to_vec());
+
+        assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));
+
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 1, 10));
+        assert_noop!(
+            Presale::contribute(RuntimeOrigin::signed(2), 0, 10),
+            Error::<Test>::NotWhitelisted
+        );
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 1, 10));
+    });
+}
+
+// === P0: PRICE FORMULA EDGE CASES ===
+
+#[test]
+fn test_price_formula_minimum_payment() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 1));
+        let contrib = Presale::contributions(0, 1).unwrap();
+        assert_eq!(contrib.total_purchased, 5);
+        assert_eq!(contrib.total_paid, 1);
+    });
+}
+
+#[test]
+fn test_price_formula_large_payment() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 100_000_000, 100_000_000, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10_000_000));
+        assert_eq!(Presale::contributions(0, 1).unwrap().total_purchased, 50_000_000);
+    });
+}
+
+#[test]
+fn test_price_formula_overflow_protection() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, u64::MAX, 10000, 100_000_000, 1, 100, b"vest".to_vec());
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 2),
             Error::<Test>::CalculationOverflow
@@ -448,95 +697,120 @@ fn test_invariant_token_calculation_cannot_overflow() {
 }
 
 #[test]
-fn test_invariant_total_sold_consistent() {
+fn test_price_formula_exact_allocation() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 10, 1000, 1000, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
+        assert_eq!(Presale::rounds(0).unwrap().sold, 1000);
+    });
+}
+
+// === P0: ATTACKER / SECURITY TESTS ===
+
+#[test]
+fn test_attacker_double_collection_prevented() {
     new_test_ext().execute_with(|| {
         set_block(1);
         create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 0, 20));
-        assert_eq!(Presale::total_sold(), 150);
-        assert_eq!(Presale::rounds(0).unwrap().sold, 150);
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
+
+        set_block(100);
+        assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 3));
+        assert_noop!(
+            Presale::collect_funds(RuntimeOrigin::root(), 0, 2),
+            Error::<Test>::FundsAlreadyCollected
+        );
     });
 }
 
 #[test]
-fn test_invariant_total_raised_consistent() {
+fn test_attacker_collection_before_round_end() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 0, 20));
-        assert_eq!(Presale::total_raised(), 30);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 200, b"vest".to_vec());
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
+
+        set_block(50);
+        assert_noop!(
+            Presale::collect_funds(RuntimeOrigin::root(), 0, 3),
+            Error::<Test>::RoundNotEnded
+        );
+        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
+        assert_noop!(
+            Presale::collect_funds(RuntimeOrigin::root(), 0, 3),
+            Error::<Test>::RoundNotEnded
+        );
     });
 }
 
 #[test]
-fn test_invariant_failed_contribution_changes_no_state() {
+fn test_attacker_whitelist_bypass() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 10000, 50, 1, 100, b"vest".to_vec());
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));
 
-        // Succeed
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10)); // 50 tokens = cap
-        let sold_before = Presale::rounds(0).unwrap().sold;
-        let raised_before = Presale::total_raised();
-        let bal_before = pallet_balances::Pallet::<Test>::free_balance(1);
+        assert_noop!(
+            Presale::contribute(RuntimeOrigin::signed(2), 0, 10),
+            Error::<Test>::NotWhitelisted
+        );
+        assert_noop!(
+            Presale::update_whitelist(RuntimeOrigin::signed(2), 0, 2, true),
+            sp_runtime::DispatchError::BadOrigin
+        );
+        assert_noop!(
+            Presale::contribute(RuntimeOrigin::signed(2), 0, 10),
+            Error::<Test>::NotWhitelisted
+        );
+    });
+}
 
-        // Fail (exceeds cap)
+#[test]
+fn test_attacker_cap_bypass() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 100, 1, 100, b"vest".to_vec());
+
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 20));
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 1),
             Error::<Test>::ExceedsPerAccountCap
         );
-
-        // Nothing changed
-        assert_eq!(Presale::rounds(0).unwrap().sold, sold_before);
-        assert_eq!(Presale::total_raised(), raised_before);
-        assert_eq!(pallet_balances::Pallet::<Test>::free_balance(1), bal_before);
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 0, 20));
     });
 }
 
 #[test]
-fn test_invariant_paused_rejects_contributions() {
+fn test_attacker_allocation_bypass() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
-        assert_ok!(Presale::set_paused(RuntimeOrigin::root(), true));
+        create_and_activate_round(0, 5, 100, 1000, 1, 100, b"vest".to_vec());
+
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 20));
         assert_noop!(
-            Presale::contribute(RuntimeOrigin::signed(1), 0, 10),
-            Error::<Test>::Paused
+            Presale::contribute(RuntimeOrigin::signed(2), 0, 1),
+            Error::<Test>::ExceedsRoundAllocation
         );
     });
 }
 
 #[test]
-fn test_invariant_expired_round_rejects() {
+fn test_attacker_overflow_attempt() {
     new_test_ext().execute_with(|| {
-        set_block(200);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
+        set_block(1);
+        create_and_activate_round(0, u64::MAX / 2, 10000, 100_000_000, 1, 100, b"vest".to_vec());
         assert_noop!(
-            Presale::contribute(RuntimeOrigin::signed(1), 0, 10),
-            Error::<Test>::RoundEnded
+            Presale::contribute(RuntimeOrigin::signed(1), 0, 3),
+            Error::<Test>::CalculationOverflow
         );
     });
 }
 
 #[test]
-fn test_invariant_before_start_rejects() {
+fn test_attacker_unauthorized_admin() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 50, 100, b"vest".to_vec());
-        assert_noop!(
-            Presale::contribute(RuntimeOrigin::signed(1), 0, 10),
-            Error::<Test>::RoundNotStarted
-        );
-    });
-}
-
-#[test]
-fn test_invariant_unauthorized_admin_calls_reject() {
-    new_test_ext().execute_with(|| {
-        set_block(1);
-        // Non-admin cannot create round
         assert_noop!(
             Presale::create_round(
                 RuntimeOrigin::signed(1),
@@ -550,7 +824,6 @@ fn test_invariant_unauthorized_admin_calls_reject() {
             ),
             sp_runtime::DispatchError::BadOrigin
         );
-        // Non-admin cannot activate
         assert_ok!(Presale::create_round(
             RuntimeOrigin::root(),
             b"test".to_vec(),
@@ -565,139 +838,221 @@ fn test_invariant_unauthorized_admin_calls_reject() {
             Presale::activate_round(RuntimeOrigin::signed(1), 0),
             sp_runtime::DispatchError::BadOrigin
         );
-        // Non-admin cannot pause
         assert_noop!(
             Presale::set_paused(RuntimeOrigin::signed(1), true),
             sp_runtime::DispatchError::BadOrigin
         );
-        // Non-admin cannot update whitelist
         assert_noop!(
             Presale::update_whitelist(RuntimeOrigin::signed(1), 0, 1, true),
+            sp_runtime::DispatchError::BadOrigin
+        );
+        set_block(100);
+        assert_noop!(
+            Presale::collect_funds(RuntimeOrigin::signed(1), 0, 3),
             sp_runtime::DispatchError::BadOrigin
         );
     });
 }
 
 #[test]
-fn test_invariant_whitelist_restrictions_per_round() {
+fn test_attacker_malicious_beneficiary() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
-        create_and_activate_round(1, 5, 1000, 100, 1, 100, b"vest".to_vec());
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
 
-        // Only round 0 has whitelist for user 1
-        assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));
-
-        // User 1 can contribute to round 0
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
-        // User 1 CAN contribute to round 1 (no whitelist = public)
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 1, 10));
-        // User 2 cannot contribute to round 0 (not whitelisted)
+        set_block(100);
+        assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 1));
         assert_noop!(
-            Presale::contribute(RuntimeOrigin::signed(2), 0, 10),
-            Error::<Test>::NotWhitelisted
+            Presale::collect_funds(RuntimeOrigin::root(), 0, 2),
+            Error::<Test>::FundsAlreadyCollected
         );
-        // User 2 CAN contribute to round 1 (no whitelist = public)
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 1, 10));
     });
 }
 
 #[test]
-fn test_invariant_duplicate_contribution_no_duplicate_allocation() {
+fn test_attacker_replay_contribution() {
     new_test_ext().execute_with(|| {
         set_block(1);
         create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
 
-        // First contribution
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
-        let contrib1 = Presale::contributions(0, 1).unwrap();
+        assert_eq!(Presale::contributions(0, 1).unwrap().total_paid, 10);
 
-        // Second contribution (legitimate, not duplicate)
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
-        let contrib2 = Presale::contributions(0, 1).unwrap();
-
-        // Total purchased should be cumulative, not duplicated beyond payment
-        assert_eq!(contrib2.total_purchased, contrib1.total_purchased + 50);
-        assert_eq!(contrib2.total_paid, contrib1.total_paid + 10);
-
-        // Round sold should match sum of contributions
-        assert_eq!(Presale::rounds(0).unwrap().sold, 100); // 50 + 50
-        assert_eq!(Presale::total_sold(), 100);
+        assert_eq!(Presale::contributions(0, 1).unwrap().total_paid, 20);
+        assert_eq!(Presale::rounds(0).unwrap().sold, 100);
+        assert_eq!(Presale::round_raised(0), 20);
         assert_eq!(Presale::total_raised(), 20);
     });
 }
 
 #[test]
+fn test_attacker_zero_value_edge_cases() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
+        assert_noop!(
+            Presale::contribute(RuntimeOrigin::signed(1), 0, 0),
+            Error::<Test>::ZeroPayment
+        );
+    });
+}
+
+#[test]
+fn test_attacker_maximum_value_edge_cases() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 1, u64::MAX, u64::MAX, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 999_999_999));
+        assert_eq!(Presale::rounds(0).unwrap().sold, 999_999_999);
+    });
+}
+
+// === P0: VESTING INVARIANTS ===
+
+#[test]
+fn test_vesting_invariant_purchased_equals_vested() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"seed-12mo".to_vec());
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
+        assert_eq!(Presale::contributions(0, 1).unwrap().total_purchased, 500);
+
+        System::assert_has_event(RuntimeEvent::Presale(crate::Event::VestingCreated {
+            who: 1,
+            round_id: 0,
+            token_amount: 500,
+            vesting_label: b"seed-12mo".to_vec(),
+        }));
+    });
+}
+
+#[test]
+fn test_vesting_invariant_no_vesting_without_payment() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
+        assert_noop!(
+            Presale::contribute(RuntimeOrigin::signed(1), 0, 0),
+            Error::<Test>::ZeroPayment
+        );
+        assert!(Presale::contributions(0, 1).is_none());
+    });
+}
+
+// === P0: ATOMIC TRANSACTION TESTS ===
+
+#[test]
+fn test_atomic_insufficient_payment_no_state_change() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, u64::MAX, u64::MAX, 1, 100, b"vest".to_vec());
+
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
+        let remaining = Balances::free_balance(&1);
+        assert_noop!(
+            Presale::contribute(RuntimeOrigin::signed(1), 0, remaining + 1),
+            Error::<Test>::InsufficientPayment
+        );
+
+        let contrib = Presale::contributions(0, 1).unwrap();
+        assert_eq!(contrib.total_paid, 100);
+        assert_eq!(Presale::rounds(0).unwrap().sold, 500);
+        assert_eq!(Presale::total_raised(), 100);
+    });
+}
+
+#[test]
+fn test_atomic_insufficient_escrow_no_state_change() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
+
+        let escrow = escrow_account();
+        let escrow_bal = Balances::free_balance(&escrow);
+        assert_ok!(Balances::transfer_allow_death(
+            RuntimeOrigin::signed(escrow),
+            3,
+            escrow_bal - 10,
+        ));
+
+        assert_noop!(
+            Presale::contribute(RuntimeOrigin::signed(1), 0, 3),
+            Error::<Test>::InsufficientEscrowBalance
+        );
+
+        assert!(Presale::contributions(0, 1).is_none());
+        assert_eq!(Presale::rounds(0).unwrap().sold, 0);
+        assert_eq!(Presale::total_raised(), 0);
+    });
+}
+
+#[test]
+fn test_atomic_invalid_round_no_state_change() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
+
+        assert_noop!(
+            Presale::contribute(RuntimeOrigin::signed(1), 99, 10),
+            Error::<Test>::RoundNotFound
+        );
+        assert_eq!(Presale::total_raised(), 0);
+        assert_eq!(Presale::total_sold(), 0);
+    });
+}
+
+#[test]
+fn test_atomic_allocation_exceeded_no_state_change() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 50, 1000, 1, 100, b"vest".to_vec());
+
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
+        assert_noop!(
+            Presale::contribute(RuntimeOrigin::signed(2), 0, 1),
+            Error::<Test>::ExceedsRoundAllocation
+        );
+
+        assert!(Presale::contributions(0, 2).is_none());
+        assert_eq!(Presale::rounds(0).unwrap().sold, 50);
+    });
+}
+
+// === GENESIS VALIDATION ===
+
+#[test]
 fn test_invariant_create_round_validates_inputs() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        // Zero price fails
         assert_noop!(
             Presale::create_round(
-                RuntimeOrigin::root(),
-                b"test".to_vec(),
-                0,
-                1000,
-                100,
-                1,
-                100,
-                b"vest".to_vec()
+                RuntimeOrigin::root(), b"test".to_vec(), 0, 1000, 100, 1, 100, b"vest".to_vec()
             ),
             Error::<Test>::InsufficientPayment
         );
-        // Zero allocation fails
         assert_noop!(
             Presale::create_round(
-                RuntimeOrigin::root(),
-                b"test".to_vec(),
-                5,
-                0,
-                100,
-                1,
-                100,
-                b"vest".to_vec()
+                RuntimeOrigin::root(), b"test".to_vec(), 5, 0, 100, 1, 100, b"vest".to_vec()
             ),
             Error::<Test>::InsufficientPayment
         );
-        // end <= start fails
         assert_noop!(
             Presale::create_round(
-                RuntimeOrigin::root(),
-                b"test".to_vec(),
-                5,
-                1000,
-                100,
-                100,
-                100,
-                b"vest".to_vec()
+                RuntimeOrigin::root(), b"test".to_vec(), 5, 1000, 100, 100, 100, b"vest".to_vec()
             ),
             Error::<Test>::RoundNotStarted
         );
-        // Label too long fails
         assert_noop!(
             Presale::create_round(
-                RuntimeOrigin::root(),
-                vec![0u8; 33],
-                5,
-                1000,
-                100,
-                1,
-                100,
-                b"vest".to_vec()
+                RuntimeOrigin::root(), vec![0u8; 33], 5, 1000, 100, 1, 100, b"vest".to_vec()
             ),
             Error::<Test>::LabelTooLong
         );
-        // Vesting label too long fails
         assert_noop!(
             Presale::create_round(
-                RuntimeOrigin::root(),
-                b"test".to_vec(),
-                5,
-                1000,
-                100,
-                1,
-                100,
-                vec![0u8; 65]
+                RuntimeOrigin::root(), b"test".to_vec(), 5, 1000, 100, 1, 100, vec![0u8; 65]
             ),
             Error::<Test>::VestingLabelTooLong
         );
@@ -708,19 +1063,72 @@ fn test_invariant_create_round_validates_inputs() {
 fn test_invariant_empty_vesting_label_rejected() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        // Round with empty vesting label — create_round should fail
         assert_noop!(
             Presale::create_round(
-                RuntimeOrigin::root(),
-                b"test".to_vec(),
-                5,
-                1000,
-                100,
-                1,
-                100,
-                vec![],
+                RuntimeOrigin::root(), b"test".to_vec(), 5, 1000, 100, 1, 100, vec![],
             ),
             Error::<Test>::EmptyVestingLabel
         );
+    });
+}
+
+// === PALLET ID / ESCROW CONSISTENCY ===
+
+#[test]
+fn test_escrow_account_deterministic() {
+    new_test_ext().execute_with(|| {
+        let escrow = Presale::escrow_account();
+        let expected: u64 = PresalePalletId::get().into_account_truncating();
+        assert_eq!(escrow, expected);
+    });
+}
+
+#[test]
+fn test_escrow_account_funded_in_genesis() {
+    new_test_ext().execute_with(|| {
+        let escrow = escrow_account();
+        let balance = Balances::free_balance(&escrow);
+        assert!(balance > 0);
+        assert_eq!(balance, 1_000_000_000_000);
+    });
+}
+
+// === WHITELIST RESTRICTIONS PER ROUND ===
+
+#[test]
+fn test_invariant_whitelist_restrictions_per_round() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
+        create_and_activate_round(1, 5, 1000, 100, 1, 100, b"vest".to_vec());
+
+        assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 1, 10));
+        assert_noop!(
+            Presale::contribute(RuntimeOrigin::signed(2), 0, 10),
+            Error::<Test>::NotWhitelisted
+        );
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 1, 10));
+    });
+}
+
+#[test]
+fn test_invariant_duplicate_contribution_no_duplicate_allocation() {
+    new_test_ext().execute_with(|| {
+        set_block(1);
+        create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
+
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
+        let contrib1 = Presale::contributions(0, 1).unwrap();
+
+        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
+        let contrib2 = Presale::contributions(0, 1).unwrap();
+
+        assert_eq!(contrib2.total_purchased, contrib1.total_purchased + 50);
+        assert_eq!(contrib2.total_paid, contrib1.total_paid + 10);
+        assert_eq!(Presale::rounds(0).unwrap().sold, 100);
+        assert_eq!(Presale::total_sold(), 100);
+        assert_eq!(Presale::total_raised(), 20);
     });
 }
