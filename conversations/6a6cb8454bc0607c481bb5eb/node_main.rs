@@ -99,9 +99,9 @@ fn main() -> sc_cli::Result<()> {
                 BenchmarkCmd::Pallet(cmd) => {
                     runner.sync_run(|config| {
                         cmd.run_with_spec::<
-                            sp_core::Blake2Hasher,
+                            sp_runtime::traits::BlakeTwo256,
                             <ExecutorDispatch as sc_executor::NativeExecutionDispatch>::ExtendHostFunctions,
-                        >(config.chain_spec)
+                        >(Some(config.chain_spec))
                     })
                 }
                 _ => Err("Only the `pallet` benchmark subcommand is supported.".into()),
