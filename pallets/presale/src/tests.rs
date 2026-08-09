@@ -311,13 +311,13 @@ fn test_payment_transferred_to_escrow_not_reserved() {
         set_block(1);
         create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
         let escrow = escrow_account();
-        let escrow_before = Balances::free_balance(&escrow);
-        let user1_before = Balances::free_balance(&1);
+        let escrow_before = Balances::free_balance(escrow);
+        let user1_before = Balances::free_balance(1);
 
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
 
-        let escrow_after = Balances::free_balance(&escrow);
-        let user1_after = Balances::free_balance(&1);
+        let escrow_after = Balances::free_balance(escrow);
+        let user1_after = Balances::free_balance(1);
 
         // Payment (10) transferred to escrow, tokens (50) transferred out
         let escrow_change = escrow_after as i64 - escrow_before as i64;
@@ -326,7 +326,7 @@ fn test_payment_transferred_to_escrow_not_reserved() {
         let user1_change = user1_after as i64 - user1_before as i64;
         assert_eq!(user1_change, -10i64 + 50, "User net: -10 payment + 50 tokens");
         // No reserved balance
-        assert_eq!(Balances::reserved_balance(&1), 0, "No reserved balance for buyer");
+        assert_eq!(Balances::reserved_balance(1), 0, "No reserved balance for buyer");
     });
 }
 
@@ -336,11 +336,11 @@ fn test_escrow_receives_payment_and_sends_tokens() {
         set_block(1);
         create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
         let escrow = escrow_account();
-        let escrow_before = Balances::free_balance(&escrow);
+        let escrow_before = Balances::free_balance(escrow);
 
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
 
-        let escrow_after = Balances::free_balance(&escrow);
+        let escrow_after = Balances::free_balance(escrow);
         let escrow_change = escrow_after as i64 - escrow_before as i64;
         assert_eq!(escrow_change, 10i64 - 50, "Escrow: +10 payment, -50 tokens");
     });
@@ -383,15 +383,15 @@ fn test_collect_funds_after_round_end() {
 
         set_block(100);
         let escrow = escrow_account();
-        let escrow_before = Balances::free_balance(&escrow);
-        let beneficiary_before = Balances::free_balance(&3);
+        let escrow_before = Balances::free_balance(escrow);
+        let beneficiary_before = Balances::free_balance(3);
 
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 3));
 
         let raised = Presale::round_raised(0);
         assert_eq!(raised, 300);
-        assert_eq!(Balances::free_balance(&3) - beneficiary_before, 300);
-        assert_eq!(escrow_before - Balances::free_balance(&escrow), 300);
+        assert_eq!(Balances::free_balance(3) - beneficiary_before, 300);
+        assert_eq!(escrow_before - Balances::free_balance(escrow), 300);
         assert!(Presale::round_funds_collected(0));
     });
 }
@@ -479,7 +479,7 @@ fn test_collect_funds_zero_raised() {
 
         set_block(100);
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 3));
-        assert_eq!(Presale::round_funds_collected(0), true);
+        assert!(Presale::round_funds_collected(0));
     });
 }
 
@@ -492,7 +492,7 @@ fn test_escrow_insufficient_balance_fails() {
         create_and_activate_round(0, 5, 1000, 10000, 1, 100, b"vest".to_vec());
 
         let escrow = escrow_account();
-        let escrow_bal = Balances::free_balance(&escrow);
+        let escrow_bal = Balances::free_balance(escrow);
         assert_ok!(Balances::transfer_allow_death(
             RuntimeOrigin::signed(escrow),
             3,
@@ -555,10 +555,10 @@ fn test_invariant_collected_le_round_raised() {
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 0, 200));
 
         set_block(100);
-        let beneficiary_before = Balances::free_balance(&3);
+        let beneficiary_before = Balances::free_balance(3);
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 3));
 
-        let collected = Balances::free_balance(&3) - beneficiary_before;
+        let collected = Balances::free_balance(3) - beneficiary_before;
         assert_eq!(collected, Presale::round_raised(0));
         assert_eq!(collected, 300);
     });
@@ -572,16 +572,16 @@ fn test_invariant_funds_cannot_be_collected_twice() {
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
 
         set_block(100);
-        let before1 = Balances::free_balance(&3);
+        let before1 = Balances::free_balance(3);
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 3));
-        let first = Balances::free_balance(&3) - before1;
+        let first = Balances::free_balance(3) - before1;
 
-        let before2 = Balances::free_balance(&3);
+        let before2 = Balances::free_balance(3);
         assert_noop!(
             Presale::collect_funds(RuntimeOrigin::root(), 0, 3),
             Error::<Test>::FundsAlreadyCollected
         );
-        let second = Balances::free_balance(&3) - before2;
+        let second = Balances::free_balance(3) - before2;
         assert_eq!(second, 0);
         assert_eq!(first, 100);
     });
@@ -950,7 +950,7 @@ fn test_atomic_insufficient_payment_no_state_change() {
         create_and_activate_round(0, 5, u64::MAX, u64::MAX, 1, 100, b"vest".to_vec());
 
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
-        let remaining = Balances::free_balance(&1);
+        let remaining = Balances::free_balance(1);
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, remaining + 1),
             Error::<Test>::InsufficientPayment
@@ -970,7 +970,7 @@ fn test_atomic_insufficient_escrow_no_state_change() {
         create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
 
         let escrow = escrow_account();
-        let escrow_bal = Balances::free_balance(&escrow);
+        let escrow_bal = Balances::free_balance(escrow);
         assert_ok!(Balances::transfer_allow_death(
             RuntimeOrigin::signed(escrow),
             3,
@@ -1087,7 +1087,7 @@ fn test_escrow_account_deterministic() {
 fn test_escrow_account_funded_in_genesis() {
     new_test_ext().execute_with(|| {
         let escrow = escrow_account();
-        let balance = Balances::free_balance(&escrow);
+        let balance = Balances::free_balance(escrow);
         assert!(balance > 0);
         assert_eq!(balance, 1_000_000_000_000);
     });
