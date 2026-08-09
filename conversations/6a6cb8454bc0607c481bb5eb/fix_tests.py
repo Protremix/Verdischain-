@@ -1,24 +1,40 @@
 import re
 
-path = '/opt/verdis-chain/pallets/evm/src/tests.rs'
+with open('/dev/stdin', 'r') as f:
+    lines = f.readlines()
 
-with open(path) as f:
-    c = f.read()
+# We need to fix specific lines. Let's find and fix them.
+new_lines = []
+i = 0
+while i < len(lines):
+    line = lines[i]
+    
+    # Fix 1: user1_before - user1_after assertion (overflow)
+    if 'user1_before - user1_after' in line:
+        # Replace this block (assert_eq! spanning multiple lines)
+        # Skip until we find the closing );
+        new_lines.append('        let user1_change = user1_after as i64 - user1_before as i64;\n')
+        new_lines.append('        assert_eq!(user1_change, -10i64 + 50, "User net: -10 payment + 50 tokens = +40");\n')
+        # Skip the next few lines until )
+        i += 1
+        while i < len(lines) and ');' not in lines[i]:
+            i += 1
+        i += 1  # skip the ); line
+        continue
+    
+    # Fix 2: escrow_after - escrow_before assertion (overflow)
+    if 'escrow_after - escrow_before' in line and 'escrow_change' not in line:
+        new_lines.append('        let escrow_change = escrow_after as i64 - escrow_before as i64;\n')
+        new_lines.append('        assert_eq!(escrow_change, 10i64 - 50, "Escrow: +10 payment, -50 tokens = -40 net");\n')
+        # Skip until )
+        i += 1
+        while i < len(lines) and ');' not in lines[i]:
+            i += 1
+        i += 1
+        continue
+    
+    new_lines.append(line)
+    i += 1
 
-# Fix run_code to use externalities
-old = """fn run_code(code: &[u8], gas: u64) -> ExecResult {
-    Evm::execute_code(code, &[], gas)
-}"""
-
-new = """fn run_code(code: &[u8], gas: u64) -> ExecResult {
-    new_test_ext().execute_with(|| {
-        Evm::execute_code(code, &[], gas)
-    })
-}"""
-
-c = c.replace(old, new)
-
-with open(path, 'w') as f:
-    f.write(c)
-
-print('Fixed run_code to use externalities')
+import sys
+sys.stdout.writelines(new_lines)
