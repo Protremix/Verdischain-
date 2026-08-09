@@ -485,10 +485,7 @@ fn test_invariant_failed_contribution_changes_no_state() {
         // Nothing changed
         assert_eq!(Presale::rounds(0).unwrap().sold, sold_before);
         assert_eq!(Presale::total_raised(), raised_before);
-        assert_eq!(
-            pallet_balances::Pallet::<Test>::free_balance(1),
-            bal_before
-        );
+        assert_eq!(pallet_balances::Pallet::<Test>::free_balance(1), bal_before);
     });
 }
 

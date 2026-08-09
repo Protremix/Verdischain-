@@ -671,4 +671,465 @@ mod tests {
             assert!(remaining > 0 && remaining < 500_000_000);
         });
     }
+    // === COMPREHENSIVE VESTING TESTS ===
+
+    #[test]
+    fn test_assign_vesting_non_root() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_noop!(
+                Vesting::assign_vesting(
+                    RuntimeOrigin::signed(alice.clone()),
+                    alice,
+                    b"seed".to_vec(),
+                    500_000_000u128,
+                ),
+                sp_runtime::DispatchError::BadOrigin
+            );
+        });
+    }
+
+    #[test]
+    fn test_assign_vesting_nonexistent_schedule() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_noop!(
+                Vesting::assign_vesting(
+                    RuntimeOrigin::root(),
+                    alice,
+                    b"nonexistent".to_vec(),
+                    500_000_000u128,
+                ),
+                Error::<Test>::ScheduleNotFound
+            );
+        });
+    }
+
+    #[test]
+    fn test_add_schedule_label_too_long() {
+        new_test_ext().execute_with(|| {
+            let long_label = vec![b'x'; 65]; // Max is 64
+            assert_noop!(
+                Vesting::add_schedule(RuntimeOrigin::root(), long_label, 500_000_000u128, 365, 90,),
+                Error::<Test>::LabelTooLong
+            );
+        });
+    }
+
+    #[test]
+    fn test_add_schedule_zero_vesting_days() {
+        new_test_ext().execute_with(|| {
+            assert_noop!(
+                Vesting::add_schedule(
+                    RuntimeOrigin::root(),
+                    b"instant".to_vec(),
+                    500_000_000u128,
+                    0,
+                    0,
+                ),
+                Error::<Test>::VestingNotStarted
+            );
+        });
+    }
+
+    #[test]
+    fn test_add_schedule_cliff_gt_vesting_days() {
+        new_test_ext().execute_with(|| {
+            assert_noop!(
+                Vesting::add_schedule(
+                    RuntimeOrigin::root(),
+                    b"bad_cliff".to_vec(),
+                    500_000_000u128,
+                    30,
+                    60, // cliff > vesting_days
+                ),
+                Error::<Test>::VestingNotStarted
+            );
+        });
+    }
+
+    #[test]
+    fn test_multiple_schedules_same_account() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+
+            // Add a second schedule
+            assert_ok!(Vesting::add_schedule(
+                RuntimeOrigin::root(),
+                b"team".to_vec(),
+                300_000_000u128,
+                365,
+                90,
+            ));
+
+            // Assign both schedules to Alice
+            assert_ok!(Vesting::assign_vesting(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"seed".to_vec(),
+                500_000_000u128,
+            ));
+            assert_ok!(Vesting::assign_vesting(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"team".to_vec(),
+                300_000_000u128,
+            ));
+
+            // Should have 2 vesting entries
+            let vestings = UserVestings::<Test>::get(&alice).unwrap();
+            assert_eq!(vestings.len(), 2);
+
+            // Total locked should be sum of both
+            assert_eq!(LockedBalances::<Test>::get(&alice), 800_000_000);
+        });
+    }
+
+    #[test]
+    fn test_max_vesting_entries_per_account() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+
+            // Assign 16 vesting entries (the max BoundedVec size)
+            for i in 0..16 {
+                let label = format!("sch{}", i);
+                assert_ok!(Vesting::add_schedule(
+                    RuntimeOrigin::root(),
+                    label.as_bytes().to_vec(),
+                    1_000_000u128,
+                    60,
+                    30,
+                ));
+                assert_ok!(Vesting::assign_vesting(
+                    RuntimeOrigin::root(),
+                    alice.clone(),
+                    label.as_bytes().to_vec(),
+                    1_000_000u128,
+                ));
+            }
+
+            // 17th should fail with MaxVestingSchedules
+            assert_ok!(Vesting::add_schedule(
+                RuntimeOrigin::root(),
+                b"sch16".to_vec(),
+                1_000_000u128,
+                60,
+                30,
+            ));
+            assert_noop!(
+                Vesting::assign_vesting(
+                    RuntimeOrigin::root(),
+                    alice,
+                    b"sch16".to_vec(),
+                    1_000_000u128,
+                ),
+                Error::<Test>::MaxVestingSchedules
+            );
+        });
+    }
+
+    #[test]
+    fn test_release_at_exact_cliff_boundary() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+
+            Vesting::assign_vesting(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"seed".to_vec(),
+                600_000_000u128,
+            )
+            .unwrap();
+
+            // Advance to exactly 30 days (the cliff boundary)
+            // 30 * 17280 = 518400 blocks
+            System::set_block_number(1 + 518400);
+
+            assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+                alice.clone()
+            )));
+
+            // At day 30 of 60, should have released 50% = 300M
+            let released_entry = UserVestings::<Test>::get(&alice).unwrap();
+            let entry = &released_entry[0];
+            assert_eq!(
+                entry.released, 300_000_000,
+                "At cliff boundary (half vesting), 50% should be released"
+            );
+        });
+    }
+
+    #[test]
+    fn test_progressive_release_multiple_times() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+
+            Vesting::assign_vesting(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"seed".to_vec(),
+                600_000_000u128,
+            )
+            .unwrap();
+
+            // Release at day 30 (cliff boundary, 50% = 300M)
+            System::set_block_number(1 + 518400); // 30 days
+            assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+                alice.clone()
+            )));
+            assert_eq!(LockedBalances::<Test>::get(&alice), 300_000_000);
+
+            // Release at day 45 (75% = 450M, additional 150M)
+            System::set_block_number(1 + 777600); // 45 days
+            assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+                alice.clone()
+            )));
+            assert_eq!(LockedBalances::<Test>::get(&alice), 150_000_000);
+
+            // Release at day 60 (100% = 600M, remaining 150M)
+            System::set_block_number(1 + 1036800); // 60 days
+            assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+                alice.clone()
+            )));
+            assert_eq!(LockedBalances::<Test>::get(&alice), 0);
+        });
+    }
+
+    #[test]
+    fn test_release_nothing_after_full_release() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+
+            Vesting::assign_vesting(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"seed".to_vec(),
+                500_000_000u128,
+            )
+            .unwrap();
+
+            // Full release
+            System::set_block_number(1 + 1036800);
+            assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+                alice.clone()
+            )));
+            assert_eq!(LockedBalances::<Test>::get(&alice), 0);
+
+            // Try to release again — should fail
+            assert_noop!(
+                Vesting::release_vested(RuntimeOrigin::signed(alice)),
+                Error::<Test>::NothingToRelease
+            );
+        });
+    }
+
+    #[test]
+    fn test_transfer_after_partial_release() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let bob = Sr25519Keyring::Bob.to_account_id();
+
+            // Assign vesting for half the balance
+            assert_ok!(Vesting::assign_vesting(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"seed".to_vec(),
+                500_000_000u128,
+            ));
+
+            // Advance to day 30 (cliff boundary, 50% released = 250M)
+            System::set_block_number(1 + 518400);
+            assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+                alice.clone()
+            )));
+
+            // Alice should be able to transfer the released portion
+            assert_ok!(pallet_balances::Call::<Test>::transfer_allow_death {
+                dest: bob,
+                value: 100_000_000u128
+            }
+            .dispatch_bypass_filter(RuntimeOrigin::signed(alice.clone())));
+
+            // But not more than what's unlocked
+            let usable = pallet_balances::Pallet::<Test>::usable_balance(&alice);
+            // After releasing 250M of 500M locked, usable should be 1B - 250M remaining = 750M
+            // But the actual transfer of 100M already happened, so usable = 750M - 100M = 650M
+            // Key assertion: usable is reduced (not full 1B - existential)
+            assert!(
+                usable < 1_000_000_000,
+                "Usable balance should be reduced by remaining lock"
+            );
+            assert!(
+                usable > 500_000_000,
+                "Usable should include released portion"
+            );
+        });
+    }
+
+    #[test]
+    fn test_do_assign_vesting_internal() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+
+            // Call the internal function directly (simulates cross-pallet call from presale)
+            assert_ok!(Vesting::do_assign_vesting(
+                alice.clone(),
+                b"seed".to_vec(),
+                500_000_000u128,
+            ));
+
+            assert_eq!(LockedBalances::<Test>::get(&alice), 500_000_000);
+            let vestings = UserVestings::<Test>::get(&alice).unwrap();
+            assert_eq!(vestings.len(), 1);
+            assert_eq!(vestings[0].total_amount, 500_000_000);
+        });
+    }
+
+    #[test]
+    fn test_genesis_multiple_schedules() {
+        let mut t = frame_system::GenesisConfig::<Test>::default()
+            .build_storage()
+            .unwrap();
+        pallet_balances::GenesisConfig::<Test> {
+            balances: vec![(Sr25519Keyring::Alice.to_account_id(), 1_000_000_000)],
+            ..Default::default()
+        }
+        .assimilate_storage(&mut t)
+        .unwrap();
+        GenesisConfig::<Test> {
+            vesting_schedules: vec![
+                (b"seed".to_vec(), 1_000_000_000u128, 365, 90),
+                (b"team".to_vec(), 500_000_000u128, 730, 365),
+                (b"community".to_vec(), 200_000_000u128, 90, 0),
+            ],
+        }
+        .assimilate_storage(&mut t)
+        .unwrap();
+        let mut ext = TestExternalities::new(t);
+        ext.execute_with(|| System::set_block_number(1));
+        ext.execute_with(|| {
+            let key_seed: BoundedVec<u8, ConstU32<64>> = b"seed".to_vec().try_into().unwrap();
+            let key_team: BoundedVec<u8, ConstU32<64>> = b"team".to_vec().try_into().unwrap();
+            let key_comm: BoundedVec<u8, ConstU32<64>> = b"community".to_vec().try_into().unwrap();
+            assert!(Schedules::<Test>::contains_key(&key_seed));
+            assert!(Schedules::<Test>::contains_key(&key_team));
+            assert!(Schedules::<Test>::contains_key(&key_comm));
+        });
+    }
+
+    #[test]
+    fn test_release_exactly_at_start_block() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+
+            Vesting::assign_vesting(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"seed".to_vec(),
+                500_000_000u128,
+            )
+            .unwrap();
+
+            // At block 1 (start), nothing vested yet (cliff = 30 days)
+            assert_noop!(
+                Vesting::release_vested(RuntimeOrigin::signed(alice)),
+                Error::<Test>::NothingToRelease
+            );
+        });
+    }
+
+    #[test]
+    fn test_assign_zero_amount() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+
+            // Assigning zero should work but lock nothing meaningful
+            assert_ok!(Vesting::assign_vesting(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"seed".to_vec(),
+                0u128,
+            ));
+            assert_eq!(LockedBalances::<Test>::get(&alice), 0);
+
+            // Vesting entry should still exist
+            let vestings = UserVestings::<Test>::get(&alice).unwrap();
+            assert_eq!(vestings.len(), 1);
+            assert_eq!(vestings[0].total_amount, 0);
+        });
+    }
+
+    #[test]
+    fn test_assign_vesting_preserves_existing_entries() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+
+            // Add a second schedule
+            assert_ok!(Vesting::add_schedule(
+                RuntimeOrigin::root(),
+                b"team".to_vec(),
+                300_000_000u128,
+                365,
+                90,
+            ));
+
+            // First assignment
+            assert_ok!(Vesting::assign_vesting(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"seed".to_vec(),
+                500_000_000u128,
+            ));
+
+            // Second assignment should not remove the first
+            assert_ok!(Vesting::assign_vesting(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"team".to_vec(),
+                300_000_000u128,
+            ));
+
+            let vestings = UserVestings::<Test>::get(&alice).unwrap();
+            assert_eq!(vestings.len(), 2, "Both entries should be preserved");
+            assert_eq!(vestings[0].total_amount, 500_000_000);
+            assert_eq!(vestings[1].total_amount, 300_000_000);
+        });
+    }
+
+    #[test]
+    fn test_cliff_zero_immediate_vesting() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+
+            // Add a schedule with zero cliff (immediate vesting start)
+            assert_ok!(Vesting::add_schedule(
+                RuntimeOrigin::root(),
+                b"immediate".to_vec(),
+                500_000_000u128,
+                60,
+                0, // No cliff
+            ));
+
+            assert_ok!(Vesting::assign_vesting(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"immediate".to_vec(),
+                500_000_000u128,
+            ));
+
+            // At block 1, some tokens should be vestable (day 0 out of 60 = 0%)
+            // Actually at day 0, elapsed_days = 0, so vested = 0. Need to advance at least 1 day
+            // 1 day = 17280 blocks
+            System::set_block_number(1 + 17280);
+
+            assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+                alice.clone()
+            )));
+
+            // At day 1 of 60, should have ~1/60 vested = ~8.33M
+            let locked = LockedBalances::<Test>::get(&alice);
+            assert!(locked < 500_000_000, "Some tokens should be released");
+            assert!(locked > 0, "Not all should be released yet");
+        });
+    }
 }
