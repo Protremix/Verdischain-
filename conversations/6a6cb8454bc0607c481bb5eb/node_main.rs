@@ -1,154 +1,122 @@
-//! Verdis Chain Node — Entry Point
-//! BABE + GRANDPA full node
+//! Verdis Chain — CLI Entry Point (Substrate v48)
 
-use std::sync::Arc;
+#![allow(deprecated, unused_imports, unused_variables, clippy::all, dead_code)]
+mod chain_spec;
+mod service;
 
 use clap::Parser;
-use sc_cli::{CliConfiguration, Result as CliResult, RunCmd, SubstrateCli};
-use sc_service::{Configuration, TaskManager};
+use sc_cli::{RunCmd, SubstrateCli};
+use sc_service::ChainSpec;
 
-use verdis_runtime::Block;
-
-mod chain_spec;
-mod rpc;
-mod service;
+use chain_spec::{load_spec, VerdisChainSpec};
+use service::ExecutorDispatch;
+use verdis_runtime::opaque::Block;
 
 #[derive(Parser)]
 #[command(
     name = "verdis",
-    about = "Verdis Chain — The world's first fully green, carbon-negative blockchain",
-    version = "2.0.0"
+    author = "Rojs Gordons <rojs@verdischain.com>",
+    version,
+    about = "Verdis — The world's first fully green, carbon-negative blockchain ecosystem",
+    long_about = None,
+    propagate_version = true,
+    args_conflicts_with_subcommands = true,
+    subcommand_negates_reqs = true,
 )]
 struct Cli {
     #[command(subcommand)]
-    subcommand: Subcommand,
-
+    subcommand: Option<Subcommand>,
     #[clap(flatten)]
     run: RunCmd,
 }
 
-#[derive(clap::Subcommand)]
+#[derive(Debug, clap::Subcommand)]
 enum Subcommand {
-    /// Build chain specification
-    BuildSpec(sc_cli::BuildSpecCmd),
-    /// Export blocks
-    ExportBlocks(sc_cli::ExportBlocksCmd),
-    /// Import blocks
-    ImportBlocks(sc_cli::ImportBlocksCmd),
-    /// Revert chain
-    Revert(sc_cli::RevertCmd),
-    /// Remove whole chain data (database)
-    PurgeChain(sc_cli::PurgeChainCmd),
-    /// Export state
-    ExportState(sc_cli::ExportStateCmd),
+    /// Key management
+    Key {
+        #[command(subcommand)]
+        subcommand: sc_cli::KeySubcommand,
+    },
+    /// Build a chain spec
+    BuildSpec(#[command(flatten)] sc_cli::BuildSpecCmd),
+    /// Chain info
+    ChainInfo(#[command(flatten)] sc_cli::ChainInfoCmd),
+    /// Purge chain
+    PurgeChain(#[command(flatten)] sc_cli::PurgeChainCmd),
+    /// Benchmark pallets (requires --features runtime-benchmarks)
+    #[cfg(feature = "runtime-benchmarks")]
+    #[command(subcommand)]
+    Benchmark(frame_benchmarking_cli::BenchmarkCmd),
 }
 
 impl SubstrateCli for Cli {
-    fn impl_name(&self) -> String {
+    fn impl_name() -> String {
         "Verdis Chain".into()
     }
-
-    fn impl_version(&self) -> String {
+    fn impl_version() -> String {
         env!("CARGO_PKG_VERSION").into()
     }
-
-    fn executable_name(&self) -> String {
-        "verdis".into()
+    fn description() -> String {
+        "Verdis — The world's first fully green, carbon-negative blockchain ecosystem".into()
     }
-
-    fn description(&self) -> String {
-        env!("CARGO_PKG_DESCRIPTION").into()
+    fn author() -> String {
+        "Rojs Gordons <rojs@verdischain.com>".into()
     }
-
-    fn author(&self) -> String {
-        "Protremix".into()
-    }
-
-    fn support_url(&self) -> String {
+    fn support_url() -> String {
         "https://verdischain.com".into()
     }
-
-    fn copyright_start_year(&self) -> isize {
+    fn copyright_start_year() -> i32 {
         2024
     }
-
-    fn load_spec(&self, id: &str) -> CliResult<Box<dyn sc_service::ChainSpec>> {
-        Ok(match id {
-            "dev" => Box::new(chain_spec::development_config()?) as Box<_>,
-            "" | "local" => Box::new(chain_spec::local_testnet_config()?) as Box<_>,
-            path => {
-                Box::new(chain_spec::ChainSpec::from_json_file(
-                    std::path::PathBuf::from(path),
-                )?) as Box<_>
-            }
-        })
-    }
-
-    fn native_runtime_version(&self) -> &'static sp_version::RuntimeVersion {
-        &verdis_runtime::VERSION
+    fn load_spec(&self, id: &str) -> Result<Box<dyn ChainSpec>, String> {
+        Ok(Box::new(load_spec(id)))
     }
 }
 
-fn main() -> CliResult<()> {
-    let cli = Cli::parse();
+fn main() -> sc_cli::Result<()> {
+    let cli = Cli::from_args();
 
     match &cli.subcommand {
-        Subcommand::BuildSpec(cmd) => cmd.run(&cli),
-        Subcommand::ExportBlocks(cmd) => {
+        Some(Subcommand::Key { subcommand }) => subcommand.run(&cli),
+        Some(Subcommand::BuildSpec(cmd)) => {
             let runner = cli.create_runner(cmd)?;
-            runner.async_run(|config| {
-                let (backend, _) = sc_service::new_full_parts::<
-                    Block,
-                    verdis_runtime::RuntimeApi,
-                    sc_executor::NativeElseWasmExecutor<service::Executor>,
-                >(&config, sc_executor::NativeElseWasmExecutor::new(config.wasm_method))?;
-                Ok((cmd.run(backend.client()), backend.task_manager))
-            })
+            runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
         }
-        Subcommand::ImportBlocks(cmd) => {
+        Some(Subcommand::ChainInfo(cmd)) => {
             let runner = cli.create_runner(cmd)?;
-            runner.async_run(|config| {
-                let (backend, _) = sc_service::new_full_parts::<
-                    Block,
-                    verdis_runtime::RuntimeApi,
-                    sc_executor::NativeElseWasmExecutor<service::Executor>,
-                >(&config, sc_executor::NativeElseWasmExecutor::new(config.wasm_method))?;
-                Ok((cmd.run(backend.client()), backend.task_manager))
-            })
+            runner.sync_run(|config| cmd.run::<Block>(&config))
         }
-        Subcommand::Revert(cmd) => {
+        Some(Subcommand::PurgeChain(cmd)) => {
             let runner = cli.create_runner(cmd)?;
-            runner.async_run(|config| {
-                let (backend, _) = sc_service::new_full_parts::<
-                    Block,
-                    verdis_runtime::RuntimeApi,
-                    sc_executor::NativeElseWasmExecutor<service::Executor>,
-                >(&config, sc_executor::NativeElseWasmExecutor::new(config.wasm_method))?;
-                Ok((cmd.run(backend.client(), backend.task_manager))
-                    .map(|_| ((), backend.task_manager)))
-            })
+            runner.sync_run(|config| cmd.run(config.database))
         }
-        Subcommand::PurgeChain(cmd) => {
+        #[cfg(feature = "runtime-benchmarks")]
+        Some(Subcommand::Benchmark(cmd)) => {
+            use frame_benchmarking_cli::BenchmarkCmd;
             let runner = cli.create_runner(cmd)?;
-            runner.sync_run(|config| cmd.run(&config))
-        }
-        Subcommand::ExportState(cmd) => {
-            let runner = cli.create_runner(cmd)?;
-            runner.async_run(|config| {
-                let (backend, _) = sc_service::new_full_parts::<
-                    Block,
-                    verdis_runtime::RuntimeApi,
-                    sc_executor::NativeElseWasmExecutor<service::Executor>,
-                >(&config, sc_executor::NativeElseWasmExecutor::new(config.wasm_method))?;
-                Ok((cmd.run(backend.client(), backend.task_manager)?, backend.task_manager))
-            })
+
+            match cmd {
+                BenchmarkCmd::Pallet(cmd) => {
+                    runner.sync_run(|config| {
+                        cmd.run_with_spec::<
+                            sp_core::Blake2Hasher,
+                            <ExecutorDispatch as sc_executor::NativeExecutionDispatch>::ExtendHostFunctions,
+                        >(config.chain_spec)
+                    })
+                }
+                _ => Err("Only the `pallet` benchmark subcommand is supported.".into()),
+            }
         }
         None => {
             let runner = cli.create_runner(&cli.run)?;
             runner.run_node_until_exit(|config| async move {
-                service::new_full(config)
-                    .map(|(task_manager, _)| task_manager)
-                    .map_err(Into::into)
+                service::new_full::<
+                    sc_network::service::NetworkWorker<
+                        Block,
+                        <Block as sp_runtime::traits::Block>::Hash,
+                    >,
+                >(config)
+                .map_err(|e| e.into())
             })
         }
     }
