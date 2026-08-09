@@ -1,0 +1,2160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="icon" type="image/png" href="/favicon-32.png">
+    <link rel="apple-touch-icon" href="/favicon-192.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verdis Chain — Tokenomics & Whitepaper v2.0 | Green Layer-1</title>
+  <meta name="description" content="Verdis Chain Tokenomics & Whitepaper v2.0. 100B total supply, 12B investor allocation (Seed 3B + Presale 2B + Strategic), DPoS staking rewards, carbon credit incentives, and 4-year vesting schedule." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --canvas: #e8ebee;
+      --canvas-light: #f1f5f9;
+      --hero-bg: #1a1a1a;
+      --hero-card: #2d2d2d;
+      --hero-card-dark: #252525;
+      --hero-border: rgba(255,255,255,0.08);
+      --accent: #caff33;
+      --accent-hover: #a8e607;
+      --accent-2: #84fe87;
+      --accent-3: #00a86b;
+      --accent-glow: rgba(202,255,51,0.35);
+      --accent-light: rgba(202,255,51,0.08);
+      --accent-border: rgba(202,255,51,0.25);
+      --text-white: #ffffff;
+      --text-dim: #b8bcc4;
+      --text-muted: #6b7080;
+      --text-dark: #0f172a;
+      --text-dark-muted: #64748b;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --radius: 12px;
+      --radius-lg: 20px;
+      --radius-pill: 100px;
+      --transition: 300ms cubic-bezier(0.16,1,0.3,1);
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--canvas-light);
+      color: var(--text-dark);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    .mono { font-family: 'JetBrains Mono', monospace !important; }
+
+    /* ===== SCROLL PROGRESS ===== */
+    #scroll-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #caff33, #84fe87, #00a86b);
+      z-index: 10000;
+      width: 0;
+      transition: width 50ms;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    /* ===== CURSOR GLOW ===== */
+    #cursor-glow {
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(202,255,51,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%,-50%);
+      opacity: 0;
+      transition: opacity 300ms;
+    }
+    body:hover #cursor-glow { opacity: 1; }
+
+    /* ===== HERO SECTION — Dark container, split layout ===== */
+    .hero-section { position: relative; background: var(--canvas); padding: 24px 24px 0 24px; overflow: hidden; }
+    .hero-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      background: var(--hero-bg);
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      min-height: 720px;
+      display: flex;
+    }
+    .hero-container::before {
+      content: '';
+      position: absolute;
+      top: -30%;
+      right: -15%;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, var(--accent-glow), transparent 55%);
+      opacity: 0.12;
+      animation: pulse-bg 4s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .hero-container::after {
+      content: '';
+      position: absolute;
+      bottom: -20%;
+      left: -10%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(0,168,107,0.15), transparent 60%);
+      opacity: 0.08;
+      animation: pulse-bg 6s ease-in-out infinite 1s;
+      pointer-events: none;
+    }
+    @keyframes pulse-bg { 0%,100% { opacity: 0.08; transform: scale(1); } 50% { opacity: 0.15; transform: scale(1.1); } }
+
+    /* ===== NAV ===== */
+    .hero-nav {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 48px;
+    }
+    .nav-brand {
+      font-family: 'Poppins';
+      font-weight: 800;
+      font-size: 22px;
+      color: var(--text-white);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .nav-brand-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 16px var(--accent-glow);
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot { 0%,100% { box-shadow: 0 0 16px var(--accent-glow); } 50% { box-shadow: 0 0 28px rgba(202,255,51,0.6); } }
+    
+    .nav-links { display: flex; gap: 32px; align-items: center; }
+    .nav-links a {
+      color: var(--text-dim);
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 250ms;
+      position: relative;
+      text-decoration: none;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: width 250ms;
+    }
+    .nav-links a:hover { color: var(--text-white); }
+    .nav-links a:hover::after { width: 100%; }
+
+    .nav-cta { display: flex; gap: 12px; align-items: center; }
+    .btn-signup {
+      background: var(--accent);
+      color: var(--hero-bg);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 10px 24px;
+      border-radius: var(--radius-pill);
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-signup::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      transition: left 500ms;
+    }
+    .btn-signup:hover::before { left: 100%; }
+    .btn-signup:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--accent-glow); }
+
+    /* ===== HERO LEFT ===== */
+    .hero-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 120px 48px 60px 56px;
+      position: relative;
+      z-index: 5;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: var(--accent-light);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--radius-pill);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 28px;
+      width: fit-content;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: slideUp 600ms 200ms forwards;
+    }
+    .hero-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse-dot 2s infinite; }
+    .hero-title {
+      font-size: 48px;
+      font-weight: 900;
+      line-height: 1.1;
+      color: var(--text-white);
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: slideUp 800ms 400ms forwards;
+    }
+    .hero-title .gradient {
+      background: linear-gradient(135deg, #caff33 0%, #a8e607 50%, #00a86b 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-desc {
+      font-size: 15px;
+      color: var(--text-dim);
+      line-height: 1.8;
+      margin-bottom: 32px;
+      max-width: 520px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: slideUp 800ms 600ms forwards;
+    }
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: slideUp 800ms 800ms forwards;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #caff33, #a8e607);
+      color: var(--hero-bg);
+      font-size: 15px;
+      font-weight: 700;
+      padding: 14px 32px;
+      border-radius: var(--radius-pill);
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+      transition: left 500ms;
+    }
+    .btn-primary:hover::before { left: 100%; }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 32px var(--accent-glow); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-white);
+      font-size: 15px;
+      font-weight: 600;
+      padding: 14px 32px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255,255,255,0.18);
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-secondary:hover { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+    /* ===== HERO RIGHT — 3D Floating UI Cluster ===== */
+    .hero-right {
+      flex: 1.25;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      min-height: 660px;
+    }
+    .hero-visual {
+      position: relative;
+      width: 100%;
+      max-width: 620px;
+      height: 600px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #hero-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Lime Green Circle Backdrop */
+    .hero-lime-circle {
+      position: absolute;
+      width: 410px;
+      height: 410px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #caff33 0%, #a8e607 65%, #88be00 100%);
+      box-shadow: 0 0 100px rgba(202, 255, 51, 0.45);
+      z-index: 1;
+    }
+
+    /* Glassmorphism Common Styles */
+    .token-chart-card,
+    .calendar-widget,
+    .monitor-frame,
+    .mobile-phone-mockup,
+    .q-card,
+    .v-btn,
+    .float-tag {
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Float Animations */
+    .float-anim-1 { animation: float1 5.5s ease-in-out infinite; }
+    .float-anim-2 { animation: float2 7s ease-in-out infinite; }
+    .float-anim-3 { animation: float3 6s ease-in-out infinite; }
+    .float-anim-4 { animation: float4 5s ease-in-out infinite; }
+    .float-anim-5 { animation: float5 6.5s ease-in-out infinite; }
+    .float-anim-6 { animation: float6 6s ease-in-out infinite; }
+
+    .float-tag-1 { animation: floatTag1 4s ease-in-out infinite; }
+    .float-tag-2 { animation: floatTag2 5s ease-in-out infinite; }
+    .float-tag-3 { animation: floatTag3 6s ease-in-out infinite; }
+    .float-tag-4 { animation: floatTag4 4.5s ease-in-out infinite; }
+
+    @keyframes float1 { 0%,100% { transform: translateY(0px) rotate(-1.5deg); } 50% { transform: translateY(-14px) rotate(1deg); } }
+    @keyframes float2 { 0%,100% { transform: translateY(0px) rotate(2deg); } 50% { transform: translateY(-12px) rotate(-1deg); } }
+    @keyframes float3 { 0%,100% { transform: translateY(0px) rotate(-1deg); } 50% { transform: translateY(-16px) rotate(1deg); } }
+    @keyframes float4 { 0%,100% { transform: translateY(0px) rotate(2deg) scale(1); } 50% { transform: translateY(-18px) rotate(-1deg) scale(1.02); } }
+    @keyframes float5 { 0%,100% { transform: translateY(0px) rotate(1deg); } 50% { transform: translateY(-10px) rotate(-1.5deg); } }
+    @keyframes float6 { 0%,100% { transform: translateY(0px) rotate(-1deg); } 50% { transform: translateY(-12px) rotate(1deg); } }
+
+    @keyframes floatTag1 { 0%,100% { transform: translate(0, 0) rotate(-3deg); } 50% { transform: translate(6px, -10px) rotate(2deg); } }
+    @keyframes floatTag2 { 0%,100% { transform: translate(0, 0) rotate(2deg); } 50% { transform: translate(-8px, 12px) rotate(-2deg); } }
+    @keyframes floatTag3 { 0%,100% { transform: translate(0, 0) rotate(-2deg); } 50% { transform: translate(8px, -8px) rotate(3deg); } }
+    @keyframes floatTag4 { 0%,100% { transform: translate(0, 0) rotate(3deg); } 50% { transform: translate(-6px, 10px) rotate(-2deg); } }
+
+    /* 1. Central Monitor Frame — Tokenomics Dashboard */
+    .monitor-frame {
+      position: absolute;
+      top: 18%;
+      left: 18%;
+      width: 350px;
+      background: rgba(45, 45, 45, 0.88);
+      border-radius: 18px;
+      overflow: hidden;
+      z-index: 4;
+    }
+    .monitor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: rgba(30, 30, 30, 0.6);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .win-controls { display: flex; gap: 6px; }
+    .win-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .win-dot.red { background: #ff5f56; }
+    .win-dot.yellow { background: #ffbd2e; }
+    .win-dot.green { background: #caff33; }
+    .monitor-title { font-size: 11px; color: #b8bcc4; font-weight: 600; }
+    .monitor-status { font-size: 10px; font-weight: 700; color: #caff33; display: flex; align-items: center; gap: 4px; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #caff33; box-shadow: 0 0 8px #caff33; }
+    .monitor-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+    .monitor-metrics { display: flex; justify-content: space-between; gap: 8px; }
+    .m-stat { display: flex; flex-direction: column; gap: 2px; }
+    .m-lbl { font-size: 10px; color: #b8bcc4; }
+    .m-val { font-size: 14px; font-weight: 700; color: #ffffff; }
+    .m-val.green { color: #caff33; }
+    
+    .monitor-pie-visual {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(20, 20, 20, 0.4);
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .mini-pie-svg { width: 60px; height: 60px; transform: rotate(-90deg); flex-shrink: 0; }
+    .mini-pie-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; font-size: 9px; }
+    .pie-leg-item { display: flex; align-items: center; gap: 4px; color: #b8bcc4; }
+    .pie-leg-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    .monitor-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 10px;
+      color: #b8bcc4;
+      background: rgba(0,0,0,0.2);
+      padding: 8px 10px;
+      border-radius: 8px;
+      border-left: 2px solid #caff33;
+    }
+    .m-timeline-bar {
+      height: 6px;
+      width: 100%;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 2px;
+      display: flex;
+    }
+    .bar-seg { height: 100%; }
+
+    /* 2. Mobile Phone Mockup — Token Wallet (Center-Left) */
+    .mobile-phone-mockup {
+      position: absolute;
+      top: 14%;
+      left: -2%;
+      width: 195px;
+      background: rgba(35, 35, 35, 0.92);
+      border-radius: 28px;
+      padding: 12px;
+      z-index: 10;
+    }
+    .phone-notch { width: 55px; height: 10px; background: #1a1a1a; border-radius: 0 0 8px 8px; margin: -12px auto 8px auto; }
+    .phone-screen { display: flex; flex-direction: column; gap: 10px; }
+    .phone-profile {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.04);
+      padding: 8px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .profile-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(202,255,51,0.15);
+      border: 1px solid #caff33;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #caff33;
+      font-weight: 700;
+      font-size: 12px;
+    }
+    .profile-info { flex: 1; }
+    .profile-name { font-size: 11px; font-weight: 700; color: #ffffff; line-height: 1.1; }
+    .profile-address { font-size: 9px; color: #b8bcc4; }
+    .phone-balance-card {
+      background: linear-gradient(135deg, rgba(202,255,51,0.12), rgba(45,45,45,0.6));
+      padding: 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(202,255,51,0.2);
+    }
+    .p-bal-lbl { font-size: 9px; color: #b8bcc4; font-weight: 500; }
+    .p-bal-val { font-size: 16px; font-weight: 800; color: #caff33; margin: 2px 0; }
+    .p-bal-sub { font-size: 9px; color: #b8bcc4; }
+
+    /* Circular Progress Ring */
+    .phone-vesting-ring {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 0;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .ring-svg { width: 56px; height: 56px; transform: rotate(-90deg); }
+    .ring-label { position: absolute; display: flex; flex-direction: column; align-items: center; }
+    .ring-pct { font-size: 12px; font-weight: 800; color: #caff33; line-height: 1; }
+    .ring-txt { font-size: 7px; color: #b8bcc4; font-weight: 600; text-transform: uppercase; }
+
+    /* 3. Calendar Widget — Vesting Schedule (Top Right) */
+    .calendar-widget {
+      position: absolute;
+      top: 2%;
+      right: 2%;
+      width: 190px;
+      background: rgba(45, 45, 45, 0.88);
+      border-radius: 18px;
+      padding: 14px;
+      z-index: 8;
+    }
+    .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .cal-title { font-size: 11px; font-weight: 700; color: #ffffff; }
+    .cal-badge { font-size: 9px; font-weight: 700; color: #caff33; background: rgba(202,255,51,0.15); padding: 2px 6px; border-radius: 100px; }
+    .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 8px; font-weight: 600; color: #b8bcc4; margin-bottom: 4px; }
+    .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 2px; font-size: 9px; color: #ffffff; }
+    .cal-days span { padding: 3px 0; border-radius: 4px; font-size: 9px; }
+    .cal-days span.muted { color: rgba(255,255,255,0.2); }
+    .cal-days span.active { background: #caff33; color: #1a1a1a; font-weight: 800; box-shadow: 0 0 8px rgba(202,255,51,0.6); }
+    .cal-footer { font-size: 9px; color: #b8bcc4; margin-top: 8px; display: flex; align-items: center; gap: 6px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 6px; }
+    .cal-footer-dot { width: 6px; height: 6px; border-radius: 50%; background: #caff33; }
+
+    /* 4. Grid of 4 Small Cards — Token Stats (Bottom Left) */
+    .stats-grid-4 {
+      position: absolute;
+      bottom: 2%;
+      left: 2%;
+      width: 220px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      z-index: 9;
+    }
+    .q-card {
+      background: rgba(45, 45, 45, 0.88);
+      border-radius: 14px;
+      padding: 10px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .q-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: rgba(202,255,51,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #caff33;
+      flex-shrink: 0;
+    }
+    .q-lbl { font-size: 8px; color: #b8bcc4; font-weight: 500; }
+    .q-val { font-size: 11px; font-weight: 700; color: #ffffff; }
+    .q-val.green { color: #caff33; }
+
+    /* 5. Card with Bar Chart — Token Distribution Chart Card (Top Left) */
+    .token-chart-card {
+      position: absolute;
+      top: 2%;
+      left: 2%;
+      width: 185px;
+      background: rgba(45, 45, 45, 0.88);
+      border-radius: 18px;
+      padding: 12px 14px;
+      z-index: 9;
+    }
+    .tc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .tc-title { font-size: 10px; font-weight: 700; color: #ffffff; }
+    .tc-badge { font-size: 9px; font-weight: 700; color: #caff33; background: rgba(202,255,51,0.15); padding: 1px 6px; border-radius: 100px; }
+    .tc-bars { display: flex; align-items: flex-end; gap: 5px; height: 42px; margin-top: 6px; }
+    .tc-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .tc-bar { width: 100%; height: var(--h); background: linear-gradient(to top, #caff33, #a8e607); border-radius: 3px; }
+    .tc-bar-lbl { font-size: 7px; color: #b8bcc4; font-weight: 600; }
+
+    /* 6. Vertical Button Stack — Quick Actions (Far Right) */
+    .vertical-action-stack {
+      position: absolute;
+      top: 22%;
+      right: -2%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10;
+    }
+    .v-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: rgba(45, 45, 45, 0.88);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #caff33;
+      cursor: pointer;
+      transition: all 250ms ease;
+    }
+    .v-btn:hover {
+      background: #caff33;
+      color: #1a1a1a;
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(202, 255, 51, 0.6);
+    }
+
+    /* 7. Small Floating Tags */
+    .float-tag {
+      position: absolute;
+      padding: 5px 12px;
+      border-radius: 100px;
+      background: rgba(202, 255, 51, 0.15);
+      border: 1px solid rgba(202, 255, 51, 0.4);
+      color: #caff33;
+      font-size: 10px;
+      font-weight: 700;
+      z-index: 11;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+    .tag-dpos { top: -2%; right: 28%; }
+    .tag-100b { bottom: 12%; right: 16%; }
+    .tag-12b { top: 42%; left: -6%; }
+    .tag-vesting { bottom: -1%; right: 38%; }
+
+    /* ===== STATS BAR SECTION ===== */
+    .stats-bar-section { background: var(--canvas-light); padding: 50px 24px 20px 24px; }
+    .stats-bar-inner { max-width: 1200px; margin: 0 auto; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 28px 20px;
+      text-align: center;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, #caff33, #00a86b);
+      transform: scaleX(0);
+      transition: transform 400ms;
+    }
+    .stat-card:hover { box-shadow: 0 12px 32px rgba(0,0,0,0.08); transform: translateY(-4px); }
+    .stat-card:hover::before { transform: scaleX(1); }
+    .stat-value {
+      font-size: 38px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #0f172a, #00a86b);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-dark-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ===== MAIN BODY SECTIONS ===== */
+    .page-section { padding: 80px 24px; max-width: 1240px; margin: 0 auto; }
+    .section-header { text-align: center; margin-bottom: 50px; }
+    .section-tag {
+      display: inline-block;
+      padding: 6px 16px;
+      background: rgba(202,255,51,0.2);
+      border: 1px solid rgba(0,168,107,0.3);
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+      font-weight: 700;
+      color: #00a86b;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .section-title {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--text-dark);
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .section-desc {
+      font-size: 15px;
+      color: var(--text-dark-muted);
+      max-width: 620px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* Common Card Styles in Light Sections */
+    .content-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+      transition: var(--transition);
+    }
+    .content-card:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.07); }
+
+    /* Overview Section Grid */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    .ov-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .ov-card::top-bar {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: #caff33;
+    }
+    .ov-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(202,255,51,0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #00a86b;
+      margin-bottom: 4px;
+    }
+    .ov-lbl { font-size: 12px; font-weight: 600; color: var(--text-dark-muted); text-transform: uppercase; }
+    .ov-val { font-size: 20px; font-weight: 800; color: var(--text-dark); }
+    .ov-sub { font-size: 12px; color: #64748b; }
+
+    /* Specifications Table */
+    .specs-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 16px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    .specs-table th {
+      background: #f8fafc;
+      padding: 14px 20px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .specs-table td {
+      padding: 16px 20px;
+      font-size: 14px;
+      color: #1e293b;
+      border-bottom: 1px solid #f1f5f9;
+      background: #ffffff;
+    }
+    .specs-table tr:last-child td { border-bottom: none; }
+    .specs-table tr:hover td { background: #f8fafc; }
+
+    /* Distribution Section Layout */
+    .dist-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: center;
+    }
+    .pie-chart-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-lg);
+      padding: 40px 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    .pie-chart-svg {
+      width: 280px;
+      height: 280px;
+      transform: rotate(-90deg);
+      cursor: pointer;
+    }
+    .pie-segment {
+      transition: transform 250ms ease, opacity 250ms;
+      transform-origin: center;
+    }
+    .pie-segment:hover {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+    .pie-center-info {
+      position: absolute;
+      text-align: center;
+      pointer-events: none;
+    }
+    .pie-center-val { font-size: 28px; font-weight: 800; color: var(--text-dark); }
+    .pie-center-lbl { font-size: 12px; font-weight: 600; color: var(--text-dark-muted); text-transform: uppercase; }
+
+    .dist-legend-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .dist-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .dist-item:hover, .dist-item.active {
+      border-color: #00a86b;
+      box-shadow: 0 6px 20px rgba(0,168,107,0.12);
+      transform: translateX(4px);
+    }
+    .dist-left { display: flex; align-items: center; gap: 14px; }
+    .dist-color-dot { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+    .dist-name { font-size: 15px; font-weight: 700; color: var(--text-dark); }
+    .dist-desc { font-size: 12px; color: var(--text-dark-muted); }
+    .dist-right { text-align: right; }
+    .dist-pct { font-size: 18px; font-weight: 800; color: #00a86b; }
+    .dist-amt { font-size: 12px; color: var(--text-dark-muted); }
+
+    /* Vesting Section */
+    .vesting-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    .vest-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      transition: var(--transition);
+    }
+    .vest-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.06); }
+    .vest-header { display: flex; align-items: center; justify-content: space-between; }
+    .vest-title { font-size: 18px; font-weight: 700; color: var(--text-dark); }
+    .vest-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px; background: rgba(202,255,51,0.2); color: #00a86b; border: 1px solid rgba(0,168,107,0.2); }
+    .vest-cliff { font-size: 13px; font-weight: 600; color: #d97706; background: #fffbe3; padding: 6px 12px; border-radius: 8px; border: 1px solid #fde68a; }
+    .vest-details { font-size: 13px; color: var(--text-dark-muted); line-height: 1.6; }
+    .vest-progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 6px; }
+    .vest-progress-fill { height: 100%; background: linear-gradient(90deg, #caff33, #00a86b); border-radius: 4px; }
+
+    /* Staking Section & Calculator */
+    .staking-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    .calc-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    .calc-title { font-size: 20px; font-weight: 800; color: var(--text-dark); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+    .calc-group { margin-bottom: 20px; }
+    .calc-label { font-size: 13px; font-weight: 600; color: var(--text-dark-muted); margin-bottom: 8px; display: block; }
+    .calc-input-wrap { position: relative; }
+    .calc-input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      border: 1px solid #cbd5e1;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-dark);
+      outline: none;
+      transition: border 200ms;
+    }
+    .calc-input:focus { border-color: #00a86b; box-shadow: 0 0 0 3px rgba(0,168,107,0.15); }
+    .calc-unit { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #64748b; font-size: 14px; }
+    
+    .calc-results {
+      background: #f8fafc;
+      border-radius: var(--radius);
+      padding: 20px;
+      border: 1px solid #e2e8f0;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      text-align: center;
+    }
+    .res-box { display: flex; flex-direction: column; gap: 4px; }
+    .res-lbl { font-size: 11px; color: var(--text-dark-muted); font-weight: 600; text-transform: uppercase; }
+    .res-val { font-size: 18px; font-weight: 800; color: #00a86b; }
+
+    /* Carbon Credit Section */
+    .carbon-box {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 36px;
+      align-items: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    }
+    .carbon-left h3 { font-size: 28px; font-weight: 800; margin-bottom: 14px; color: #ffffff; }
+    .carbon-left p { font-size: 15px; color: #b8bcc4; line-height: 1.8; margin-bottom: 24px; }
+    .carbon-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+    .carbon-pill {
+      background: rgba(202,255,51,0.12);
+      border: 1px solid rgba(202,255,51,0.3);
+      color: #caff33;
+      padding: 8px 16px;
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .carbon-right {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .c-metric-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px; }
+    .c-metric-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .c-m-lbl { font-size: 13px; color: #b8bcc4; }
+    .c-m-val { font-size: 16px; font-weight: 700; color: #caff33; }
+
+    /* Utility Grid */
+    .utility-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .u-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: var(--transition);
+    }
+    .u-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.06); border-color: #00a86b; }
+    .u-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(202,255,51,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #00a86b;
+    }
+    .u-title { font-size: 18px; font-weight: 700; color: var(--text-dark); }
+    .u-desc { font-size: 13px; color: var(--text-dark-muted); line-height: 1.6; }
+
+    /* Roadmap Timeline */
+    .roadmap-timeline {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px 0;
+    }
+    .roadmap-timeline::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 4px;
+      background: linear-gradient(to bottom, #caff33, #00a86b);
+      transform: translateX(-50%);
+      border-radius: 2px;
+    }
+    .rm-item {
+      position: relative;
+      width: 50%;
+      padding: 0 40px 40px 0;
+      text-align: right;
+    }
+    .rm-item:nth-child(even) {
+      margin-left: 50%;
+      padding: 0 0 40px 40px;
+      text-align: left;
+    }
+    .rm-dot {
+      position: absolute;
+      top: 0;
+      right: -10px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #caff33;
+      border: 4px solid #ffffff;
+      box-shadow: 0 0 12px rgba(202,255,51,0.8);
+      z-index: 2;
+    }
+    .rm-item:nth-child(even) .rm-dot {
+      right: auto;
+      left: -10px;
+    }
+    .rm-content {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    .rm-phase { font-size: 12px; font-weight: 800; color: #00a86b; text-transform: uppercase; margin-bottom: 4px; }
+    .rm-title { font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px; }
+    .rm-desc { font-size: 13px; color: var(--text-dark-muted); line-height: 1.6; }
+
+    /* CTA Section */
+    .cta-section { background: var(--canvas-light); padding: 60px 24px; }
+    .cta-inner { max-width: 1200px; margin: 0 auto; }
+    .cta-card {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      border-radius: 24px;
+      padding: 60px 40px;
+      text-align: center;
+      color: #ffffff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    }
+    .cta-card h2 { font-size: 36px; font-weight: 800; margin-bottom: 16px; color: #ffffff; }
+    .cta-card p { font-size: 16px; color: #b8bcc4; max-width: 600px; margin: 0 auto 32px auto; line-height: 1.7; }
+    .cta-btns { display: flex; justify-content: center; gap: 16px; }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      background: #111827;
+      color: #9ca3af;
+      padding: 60px 24px 30px 24px;
+      border-top: 1px solid #1f2937;
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+    .footer-brand h4 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .footer-brand-dot { width: 10px; height: 10px; border-radius: 50%; background: #caff33; box-shadow: 0 0 10px #caff33; }
+    .footer-brand p { font-size: 13px; color: #9ca3af; line-height: 1.7; max-width: 320px; }
+    .footer-col h5 { font-size: 13px; font-weight: 700; color: #ffffff; text-transform: uppercase; margin-bottom: 16px; letter-spacing: 0.05em; }
+    .footer-col a { display: block; color: #9ca3af; font-size: 14px; margin-bottom: 10px; text-decoration: none; transition: color 200ms; }
+    .footer-col a:hover { color: #caff33; }
+    .footer-bottom {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-top: 24px;
+      border-top: 1px solid #1f2937;
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    /* REVEAL ANIMATIONS */
+    .reveal { opacity: 0; transform: translateY(30px); transition: all 600ms cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .hero-container { flex-direction: column; min-height: auto; }
+      .hero-left { padding: 100px 32px 40px 32px; }
+      .hero-right { min-height: 520px; padding: 20px; }
+      .dist-container, .staking-container, .carbon-box { grid-template-columns: 1fr; }
+      .overview-grid, .stats-grid, .utility-grid, .vesting-grid { grid-template-columns: 1fr 1fr; }
+      .roadmap-timeline::before { left: 20px; }
+      .rm-item, .rm-item:nth-child(even) { width: 100%; margin-left: 0; padding: 0 0 30px 50px; text-align: left; }
+      .rm-dot, .rm-item:nth-child(even) .rm-dot { left: 10px; right: auto; }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .hero-nav { padding: 20px; }
+      .nav-links { display: none; }
+      .hero-title { font-size: 34px; }
+      .overview-grid, .stats-grid, .utility-grid, .vesting-grid { grid-template-columns: 1fr; }
+      .calc-results { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr; }
+    }
+  </style>
+    <meta property="og:title" content="Verdis Chain Whitepaper">
+    <meta property="og:description" content="Technical specification and tokenomics for Verdis Chain">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://verdischain.com/whitepaper/">
+    <meta property="og:image" content="https://verdischain.com/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+
+  <!-- Scroll Progress Bar -->
+  <div id="scroll-bar"></div>
+
+  <!-- Cursor Glow -->
+  <div id="cursor-glow"></div>
+
+  <!-- HERO SECTION -->
+  <section class="hero-section">
+    <div class="hero-container">
+      
+      <!-- NAV BAR -->
+      <nav class="hero-nav">
+        <a href="index.html" class="nav-brand">
+          <span class="nav-brand-dot"></span>Verdis Chain
+        </a>
+        <div class="nav-links">
+          <a href="#overview">Overview</a>
+          <a href="#supply">Supply</a>
+          <a href="#vesting">Vesting</a>
+          <a href="#distribution">Distribution</a>
+          <a href="#roadmap">Roadmap</a>
+        </div>
+        <div class="nav-cta">
+          <a href="index.html#signup" class="btn-signup">Sign Up</a>
+        </div>
+      </nav>
+
+      <!-- HERO LEFT -->
+      <div class="hero-left">
+        <div class="hero-badge">
+          <span class="hero-badge-dot"></span> Whitepaper v2.0 · 100B Total Supply
+        </div>
+        <h1 class="hero-title">
+          <span class="gradient">TOKENOMICS</span><br />
+          WHITEPAPER
+        </h1>
+        <p class="hero-desc">
+          Verdis Chain's economic model. 100B total supply, 12B investor allocation (Seed 3B + Presale 2B + Strategic), DPoS staking rewards, carbon credit incentives, and a 4-year vesting schedule.
+        </p>
+        <div class="hero-actions">
+          <a href="#overview" class="btn-primary">Read Full Paper →</a>
+          <a href="javascript:void(0)" onclick="alert('Downloading Verdis Whitepaper v2.0 PDF...')" class="btn-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Download PDF
+          </a>
+        </div>
+      </div>
+
+      <!-- HERO RIGHT — 3D Floating UI Cluster -->
+      <div class="hero-right">
+        <div class="hero-visual">
+          <canvas id="hero-canvas"></canvas>
+          <div class="hero-lime-circle"></div>
+
+          <!-- 1. Central Monitor Frame → Tokenomics Dashboard -->
+          <div class="monitor-frame float-anim-1">
+            <div class="monitor-header">
+              <div class="win-controls">
+                <div class="win-dot red"></div>
+                <div class="win-dot yellow"></div>
+                <div class="win-dot green"></div>
+              </div>
+              <span class="monitor-title">Tokenomics Dashboard</span>
+              <div class="monitor-status"><span class="status-dot"></span> Live</div>
+            </div>
+            <div class="monitor-body">
+              <div class="monitor-metrics">
+                <div class="m-stat"><span class="m-lbl">Total Supply</span><span class="m-val green mono">100B VRDX</span></div>
+                <div class="m-stat"><span class="m-lbl">Staked Ratio</span><span class="m-val mono">33.4%</span></div>
+                <div class="m-stat"><span class="m-lbl">Consensus</span><span class="m-val mono">DPoS</span></div>
+              </div>
+
+              <!-- Mini Pie Chart -->
+              <div class="monitor-pie-visual">
+                <svg class="mini-pie-svg" viewBox="0 0 36 36">
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#252525" stroke-width="4"/>
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 15.12 11.08" fill="none" stroke="#caff33" stroke-width="4" stroke-dasharray="40 100"/>
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 15.12 11.08" fill="none" stroke="#00a86b" stroke-width="4" stroke-dasharray="20 100" stroke-dashoffset="-40"/>
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 15.12 11.08" fill="none" stroke="#84fe87" stroke-width="4" stroke-dasharray="15 100" stroke-dashoffset="-60"/>
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 15.12 11.08" fill="none" stroke="#ffbd2e" stroke-width="4" stroke-dasharray="12 100" stroke-dashoffset="-75"/>
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 15.12 11.08" fill="none" stroke="#38bdf8" stroke-width="4" stroke-dasharray="13 100" stroke-dashoffset="-87"/>
+                </svg>
+                <div class="mini-pie-legend">
+                  <div class="pie-leg-item"><div class="pie-leg-dot" style="background:#caff33"></div>Ecosystem 25%</div>
+                  <div class="pie-leg-item"><div class="pie-leg-dot" style="background:#00a86b"></div>Staking 20%</div>
+                  <div class="pie-leg-item"><div class="pie-leg-dot" style="background:#84fe87"></div>Treasury 15%</div>
+                  <div class="pie-leg-item"><div class="pie-leg-dot" style="background:#ffbd2e"></div>Development 10%</div>
+                  <div class="pie-leg-item"><div class="pie-leg-dot" style="background:#3b82f6"></div>Liquidity 10%</div>
+                  <div class="pie-leg-item"><div class="pie-leg-dot" style="background:#a855f7"></div>Community 5%</div>
+                  <div class="pie-leg-item"><div class="pie-leg-dot" style="background:#ec4899"></div>Seed 3%</div>
+                  <div class="pie-leg-item"><div class="pie-leg-dot" style="background:#f97316"></div>Presale 2%</div>
+                  <div class="pie-leg-item"><div class="pie-leg-dot" style="background:#6b7280"></div>Team 5%</div>
+                </div>
+              </div>
+
+              <div class="monitor-timeline">
+                <div style="display:flex; justify-content:space-between;">
+                  <span>Vesting Timeline</span>
+                  <span class="mono" style="color:#caff33;">Year 1 of 4</span>
+                </div>
+                <div class="m-timeline-bar">
+                  <div class="bar-seg" style="width: 25%; background: #caff33;"></div>
+                  <div class="bar-seg" style="width: 20%; background: #00a86b;"></div>
+                  <div class="bar-seg" style="width: 15%; background: #84fe87;"></div>
+                  <div class="bar-seg" style="width: 10%; background: #ffbd2e;"></div>
+                  <div class="bar-seg" style="width: 10%; background: #3b82f6;"></div>
+                  <div class="bar-seg" style="width: 5%; background: #a855f7;"></div>
+                  <div class="bar-seg" style="width: 3%; background: #ec4899;"></div>
+                  <div class="bar-seg" style="width: 2%; background: #f97316;"></div>
+                  <div class="bar-seg" style="width: 5%; background: #6b7280;"></div>
+                  <div class="bar-seg" style="width: 5%; background: rgba(255,255,255,0.1);"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Mobile Phone Mockup → Token Wallet -->
+          <div class="mobile-phone-mockup float-anim-2">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="phone-profile">
+                <div class="profile-avatar">V</div>
+                <div class="profile-info">
+                  <div class="profile-name">Verdis Wallet</div>
+                  <div class="profile-address mono">0x7a...4e91</div>
+                </div>
+              </div>
+              <div class="phone-balance-card">
+                <div class="p-bal-lbl">Total Balance</div>
+                <div class="p-bal-val mono">12,847.5 VRDX</div>
+                <div class="p-bal-sub mono">≈ $3,211.88 USD</div>
+              </div>
+              <div class="phone-vesting-ring">
+                <svg class="ring-svg" viewBox="0 0 36 36">
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#caff33" stroke-width="4" stroke-dasharray="75, 100"/>
+                </svg>
+                <div class="ring-label">
+                  <span class="ring-pct mono">75%</span>
+                  <span class="ring-txt">Vested</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Calendar Widget → Vesting Schedule -->
+          <div class="calendar-widget float-anim-3">
+            <div class="cal-header">
+              <span class="cal-title">Vesting Schedule</span>
+              <span class="cal-badge">August 2026</span>
+            </div>
+            <div class="cal-weekdays">
+              <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+            </div>
+            <div class="cal-days">
+              <span class="muted">28</span><span class="muted">29</span><span class="muted">30</span><span class="muted">31</span><span>1</span><span>2</span><span>3</span>
+              <span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+              <span>11</span><span class="active mono">12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span>
+              <span class="active mono">18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span>
+              <span class="active mono">25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span>
+            </div>
+            <div class="cal-footer">
+              <span class="cal-footer-dot"></span>
+              <span>Cliff Unlock: <strong class="mono" style="color:#caff33">12 Aug</strong></span>
+            </div>
+          </div>
+
+          <!-- 4. Grid of 4 Small Cards → Token Stats -->
+          <div class="stats-grid-4 float-anim-4">
+            <div class="q-card">
+              <div class="q-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v12M6 12h12"></path></svg>
+              </div>
+              <div>
+                <div class="q-lbl">Total Supply</div>
+                <div class="q-val green mono">100B</div>
+              </div>
+            </div>
+            <div class="q-card">
+              <div class="q-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg>
+              </div>
+              <div>
+                <div class="q-lbl">Investor Alloc</div>
+                <div class="q-val green mono">12B</div>
+              </div>
+            </div>
+            <div class="q-card">
+              <div class="q-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+              </div>
+              <div>
+                <div class="q-lbl">Circulating</div>
+                <div class="q-val mono">24.5B</div>
+              </div>
+            </div>
+            <div class="q-card">
+              <div class="q-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              </div>
+              <div>
+                <div class="q-lbl">Staked</div>
+                <div class="q-val green mono">8.2B</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Card with Bar Chart → Token Distribution Chart Card -->
+          <div class="token-chart-card float-anim-5">
+            <div class="tc-header">
+              <span class="tc-title">Distribution</span>
+              <span class="tc-badge">100B</span>
+            </div>
+            <div class="tc-bars">
+              <div class="tc-bar-wrap"><div class="tc-bar" style="--h: 90%;"></div><span class="tc-bar-lbl mono">40%</span></div>
+              <div class="tc-bar-wrap"><div class="tc-bar" style="--h: 60%;"></div><span class="tc-bar-lbl mono">20%</span></div>
+              <div class="tc-bar-wrap"><div class="tc-bar" style="--h: 45%;"></div><span class="tc-bar-lbl mono">15%</span></div>
+              <div class="tc-bar-wrap"><div class="tc-bar" style="--h: 38%;"></div><span class="tc-bar-lbl mono">12%</span></div>
+              <div class="tc-bar-wrap"><div class="tc-bar" style="--h: 25%;"></div><span class="tc-bar-lbl mono">8%</span></div>
+              <div class="tc-bar-wrap"><div class="tc-bar" style="--h: 18%;"></div><span class="tc-bar-lbl mono">5%</span></div>
+            </div>
+          </div>
+
+          <!-- 6. Vertical Button Stack → Quick Actions -->
+          <div class="vertical-action-stack float-anim-6">
+            <div class="v-btn" title="Buy VRDX" onclick="alert('Action: Buy VRDX Token')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            </div>
+            <div class="v-btn" title="Stake VRDX" onclick="alert('Action: Stake VRDX')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </div>
+            <div class="v-btn" title="Vote Governance" onclick="alert('Action: Vote on Proposals')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+            </div>
+            <div class="v-btn" title="Swap Tokens" onclick="alert('Action: Swap Tokens on Verdis DEX')">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="8 21 3 21 3 16"></polyline></svg>
+            </div>
+          </div>
+
+          <!-- 7. Small Floating Tags -->
+          <div class="float-tag tag-dpos float-tag-1">DPoS</div>
+          <div class="float-tag tag-100b float-tag-2 mono">100B</div>
+          <div class="float-tag tag-12b float-tag-3 mono">12B</div>
+          <div class="float-tag tag-vesting float-tag-4">Vesting</div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- STATS BAR -->
+  <section class="stats-bar-section">
+    <div class="stats-bar-inner">
+      <div class="stats-grid">
+        <div class="stat-card reveal">
+          <div class="stat-value mono">100,000,000,000</div>
+          <div class="stat-label">Total VRDX Supply</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="stat-value mono">10,000,000,000</div>
+          <div class="stat-label">Investor Allocation</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="stat-value mono">24,500,000,000</div>
+          <div class="stat-label">Initial Circulating</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="stat-value mono">8,200,000,000</div>
+          <div class="stat-label">Currently Staked</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 1: TOKEN OVERVIEW -->
+  <section id="overview" class="page-section">
+    <div class="section-header reveal">
+      <span class="section-tag">Specifications</span>
+      <h2 class="section-title">1. Token Overview</h2>
+      <p class="section-desc">
+        Core architectural parameters of the VRDX token — the native gas, staking, and governance asset powering Verdis Chain.
+      </p>
+    </div>
+
+    <div class="overview-grid reveal">
+      <div class="ov-card">
+        <div class="ov-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v12M6 12h12"></path></svg>
+        </div>
+        <span class="ov-lbl">Total Supply</span>
+        <span class="ov-val mono">100B VRDX</span>
+        <span class="ov-sub mono">100,000,000,000</span>
+      </div>
+      <div class="ov-card">
+        <div class="ov-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        </div>
+        <span class="ov-lbl">Token Ticker</span>
+        <span class="ov-val mono">VRDX</span>
+        <span class="ov-sub">Native Asset</span>
+      </div>
+      <div class="ov-card">
+        <div class="ov-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+        </div>
+        <span class="ov-lbl">Chain ID</span>
+        <span class="ov-val mono">909</span>
+        <span class="ov-sub">Verdis Testnet</span>
+      </div>
+      <div class="ov-card">
+        <div class="ov-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        </div>
+        <span class="ov-lbl">Consensus</span>
+        <span class="ov-val mono">DPoS</span>
+        <span class="ov-sub">BABE + GRANDPA</span>
+      </div>
+    </div>
+
+    <div class="content-card reveal">
+      <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 16px;">Protocol Level Parameters</h3>
+      <table class="specs-table">
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Value</th>
+            <th>Description / Implementation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Decimals</strong></td>
+            <td class="mono">18</td>
+            <td>1 VRDX = <span class="mono">1,000,000,000</span> Planck units</td>
+          </tr>
+          <tr>
+            <td><strong>Block Time</strong></td>
+            <td class="mono">3.0 Seconds</td>
+            <td>Slot time target via Substrate BABE engine</td>
+          </tr>
+          <tr>
+            <td><strong>Genesis Block Emission</strong></td>
+            <td class="mono">1,250 VRDX / Block</td>
+            <td>Disinflationary reward model with 4-year halving cycle</td>
+          </tr>
+          <tr>
+            <td><strong>Substrate Precompile</strong></td>
+            <td class="mono">0x00...0802</td>
+            <td>Dual compatibility (Substrate Balances + Substrate ERC-20 interface)</td>
+          </tr>
+          <tr>
+            <td><strong>Minimum Existential Deposit</strong></td>
+            <td class="mono">0.001 VRDX</td>
+            <td>Prevents state bloat on ledger</td>
+          </tr>
+          <tr>
+            <td><strong>Governance Model</strong></td>
+            <td class="mono">Substrate Democracy</td>
+            <td>Direct stake-weighted voting & Council proposals</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 2: SUPPLY DISTRIBUTION -->
+  <section id="supply" class="page-section" style="background: #ffffff; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+    <div class="section-header reveal">
+      <span class="section-tag">Allocation</span>
+      <h2 class="section-title">2. Supply Distribution</h2>
+      <p class="section-desc">
+        Transparent distribution model designed to incentivize long-term decentralization, ecosystem sustainability, and carbon credit direct funding.
+      </p>
+    </div>
+
+    <div class="dist-container reveal">
+      <!-- Interactive Donut Chart -->
+      <div class="pie-chart-wrapper">
+        <svg class="pie-chart-svg" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#f1f5f9" stroke-width="16" />
+          
+          <!-- Ecosystem: 25% -> 59.69 -->
+          <circle class="pie-segment" cx="50" cy="50" r="38" fill="none" stroke="#caff33" stroke-width="16"
+                  stroke-dasharray="59.69 179.07" stroke-dashoffset="0" data-idx="0" />
+                  
+          <!-- Staking: 20% -> 47.75 -->
+          <circle class="pie-segment" cx="50" cy="50" r="38" fill="none" stroke="#00a86b" stroke-width="16"
+                  stroke-dasharray="47.75 191.01" stroke-dashoffset="-59.69" data-idx="1" />
+                  
+          <!-- Treasury: 15% -> 35.81 -->
+          <circle class="pie-segment" cx="50" cy="50" r="38" fill="none" stroke="#84fe87" stroke-width="16"
+                  stroke-dasharray="35.81 202.95" stroke-dashoffset="-107.44" data-idx="2" />
+                  
+          <!-- Development: 10% -> 23.88 -->
+          <circle class="pie-segment" cx="50" cy="50" r="38" fill="none" stroke="#ffbd2e" stroke-width="16"
+                  stroke-dasharray="23.88 214.88" stroke-dashoffset="-143.25" data-idx="3" />
+                  
+          <!-- Liquidity: 10% -> 23.88 -->
+          <circle class="pie-segment" cx="50" cy="50" r="38" fill="none" stroke="#3b82f6" stroke-width="16"
+                  stroke-dasharray="23.88 214.88" stroke-dashoffset="-167.13" data-idx="4" />
+                  
+          <!-- Community: 5% -> 11.94 -->
+          <circle class="pie-segment" cx="50" cy="50" r="38" fill="none" stroke="#a855f7" stroke-width="16"
+                  stroke-dasharray="11.94 226.82" stroke-dashoffset="-191.01" data-idx="5" />
+                  
+          <!-- Seed: 3% -> 7.16 -->
+          <circle class="pie-segment" cx="50" cy="50" r="38" fill="none" stroke="#ec4899" stroke-width="16"
+                  stroke-dasharray="7.16 231.6" stroke-dashoffset="-202.95" data-idx="6" />
+                  
+          <!-- Presale: 2% -> 4.77 -->
+          <circle class="pie-segment" cx="50" cy="50" r="38" fill="none" stroke="#f97316" stroke-width="16"
+                  stroke-dasharray="4.77 233.99" stroke-dashoffset="-210.11" data-idx="7" />
+                  
+          <!-- Team: 5% -> 11.94 -->
+          <circle class="pie-segment" cx="50" cy="50" r="38" fill="none" stroke="#6b7280" stroke-width="16"
+                  stroke-dasharray="11.94 226.82" stroke-dashoffset="-214.88" data-idx="8" />
+        </svg>
+
+        <div class="pie-center-info">
+          <div class="pie-center-val mono" id="pie-center-val">100B</div>
+          <div class="pie-center-lbl" id="pie-center-lbl">Total Supply</div>
+        </div>
+      </div>
+
+      <!-- Legend & Breakdown List -->
+      <div class="dist-legend-grid">
+        <div class="dist-item active" data-idx="0" onclick="selectDist(0, '40B VRDX', 'Community & Ecosystem')">
+          <div class="dist-left">
+            <div class="dist-color-dot" style="background:#00a86b;"></div>
+            <div>
+              <div class="dist-name">Community & Ecosystem</div>
+              <div class="dist-desc">Grants, Developer Funds, User Rewards</div>
+            </div>
+          </div>
+          <div class="dist-right">
+            <div class="dist-pct mono">40%</div>
+            <div class="dist-amt mono">210,000,000,000</div>
+          </div>
+        </div>
+
+        <div class="dist-item" data-idx="1" onclick="selectDist(1, '20B VRDX', 'Validator Staking Rewards')">
+          <div class="dist-left">
+            <div class="dist-color-dot" style="background:#caff33;"></div>
+            <div>
+              <div class="dist-name">Validator Staking Rewards</div>
+              <div class="dist-desc">DPoS Block Emission & Yield Incentives</div>
+            </div>
+          </div>
+          <div class="dist-right">
+            <div class="dist-pct mono">20%</div>
+            <div class="dist-amt mono">20,000,000,000</div>
+          </div>
+        </div>
+
+        <div class="dist-item" data-idx="2" onclick="selectDist(2, '15B VRDX', 'Core Team & Contributors')">
+          <div class="dist-left">
+            <div class="dist-color-dot" style="background:#38bdf8;"></div>
+            <div>
+              <div class="dist-name">Team & Contributors</div>
+              <div class="dist-desc">4-Year Vesting with 12-Month Cliff</div>
+            </div>
+          </div>
+          <div class="dist-right">
+            <div class="dist-pct mono">15%</div>
+            <div class="dist-amt mono">10,000,000,000</div>
+          </div>
+        </div>
+
+        <div class="dist-item" data-idx="3" onclick="selectDist(3, '12B VRDX', 'Strategic Investors')">
+          <div class="dist-left">
+            <div class="dist-color-dot" style="background:#ffbd2e;"></div>
+            <div>
+              <div class="dist-name">Strategic Investors</div>
+              <div class="dist-desc">Seed, Private & Public Round Allocations</div>
+            </div>
+          </div>
+          <div class="dist-right">
+            <div class="dist-pct mono">12%</div>
+            <div class="dist-amt mono">10,000,000,000</div>
+          </div>
+        </div>
+
+        <div class="dist-item" data-idx="4" onclick="selectDist(4, '8B VRDX', 'Protocol Treasury')">
+          <div class="dist-left">
+            <div class="dist-color-dot" style="background:#a855f7;"></div>
+            <div>
+              <div class="dist-name">Protocol Treasury</div>
+              <div class="dist-desc">DAO-Governed Strategic Reserve</div>
+            </div>
+          </div>
+          <div class="dist-right">
+            <div class="dist-pct mono">8%</div>
+            <div class="dist-amt mono">110,000,000,000</div>
+          </div>
+        </div>
+
+        <div class="dist-item" data-idx="5" onclick="selectDist(5, '5B VRDX', 'Green Eco Fund')">
+          <div class="dist-left">
+            <div class="dist-color-dot" style="background:#84fe87;"></div>
+            <div>
+              <div class="dist-name">Green Eco Fund</div>
+              <div class="dist-desc">Direct Carbon Offset Purchases & Reforestation</div>
+            </div>
+          </div>
+          <div class="dist-right">
+            <div class="dist-pct mono">5%</div>
+            <div class="dist-amt mono">10,000,000,000</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: VESTING SCHEDULE -->
+  <section id="vesting" class="page-section">
+    <div class="section-header reveal">
+      <span class="section-tag">Release Rules</span>
+      <h2 class="section-title">3. Vesting Schedule</h2>
+      <p class="section-desc">
+        Structured release terms enforcing long-term alignment across team, investors, and ecosystem participants.
+      </p>
+    </div>
+
+    <div class="vesting-grid reveal">
+      <div class="vest-card">
+        <div class="vest-header">
+          <span class="vest-title">Core Team</span>
+          <span class="vest-badge mono">15B VRDX</span>
+        </div>
+        <div class="vest-cliff">12-Month Cliff (0% unlocked)</div>
+        <div class="vest-details">
+          100% locked for first 12 months. After month 12, linear release of <span class="mono">312,500,000 VRDX</span> per month over 36 months (4 years total).
+        </div>
+        <div class="vest-progress-bar">
+          <div class="vest-progress-fill" style="width: 25%;"></div>
+        </div>
+        <span class="mono" style="font-size: 11px; color: #64748b;">Cliff status: 8 months remaining</span>
+      </div>
+
+      <div class="vest-card">
+        <div class="vest-header">
+          <span class="vest-title">Investors</span>
+          <span class="vest-badge mono">12B VRDX</span>
+        </div>
+        <div class="vest-cliff">6-Month Cliff (10% TGE)</div>
+        <div class="vest-details">
+          10% unlocked at Genesis TGE. 6-month cliff followed by 12-month linear monthly unlock (<span class="mono">166,666,666 VRDX / mo</span>).
+        </div>
+        <div class="vest-progress-bar">
+          <div class="vest-progress-fill" style="width: 40%;"></div>
+        </div>
+        <span class="mono" style="font-size: 11px; color: #64748b;">Cliff status: 2 months remaining</span>
+      </div>
+
+      <div class="vest-card">
+        <div class="vest-header">
+          <span class="vest-title">Community & Eco</span>
+          <span class="vest-badge mono">45B VRDX</span>
+        </div>
+        <div class="vest-cliff" style="background:#e6f4ea; color:#00a86b; border-color:#b7e4c7;">Linear Release</div>
+        <div class="vest-details">
+          10% unlocked at TGE. Remaining 90% released linearly over 60 months via community grants and verified eco-rewards.
+        </div>
+        <div class="vest-progress-bar">
+          <div class="vest-progress-fill" style="width: 65%;"></div>
+        </div>
+        <span class="mono" style="font-size: 11px; color: #64748b;">Linear active: 4,500,000,000 circulating</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: STAKING REWARDS & CALCULATOR -->
+  <section id="distribution" class="page-section" style="background: #ffffff; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+    <div class="section-header reveal">
+      <span class="section-tag">DPoS Yield</span>
+      <h2 class="section-title">4. Staking Rewards & Calculator</h2>
+      <p class="section-desc">
+        Earn passive rewards by delegating VRDX to top active validators. Green validators operating on 100% renewable energy earn an additional yield bonus.
+      </p>
+    </div>
+
+    <div class="staking-container reveal">
+      <!-- Staking Rules Info -->
+      <div class="content-card">
+        <h3 style="font-size: 22px; font-weight: 800; margin-bottom: 16px;">DPoS Consensus Parameters</h3>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 14px; color: #334155; font-size: 14px;">
+          <li style="display: flex; align-items: flex-start; gap: 10px;">
+            <span style="color: #00a86b; font-weight: 800;">✓</span>
+            <div><strong>Active Validators:</strong> <span class="mono">3 Validator Nodes (testnet)</span> selected every epoch (<span class="mono">50 blocks (testnet)</span>).</div>
+          </li>
+          <li style="display: flex; align-items: flex-start; gap: 10px;">
+            <span style="color: #00a86b; font-weight: 800;">✓</span>
+            <div><strong>Base Staking APR:</strong> <span class="mono">8.5% APY</span> target rate funded by inflation and DEX transaction fees.</div>
+          </li>
+          <li style="display: flex; align-items: flex-start; gap: 10px;">
+            <span style="color: #00a86b; font-weight: 800;">✓</span>
+            <div><strong>Green Validator Bonus:</strong> <span class="mono">+2.5% APY</span> bonus yield for nodes operating on verified zero-carbon energy.</div>
+          </li>
+          <li style="display: flex; align-items: flex-start; gap: 10px;">
+            <span style="color: #00a86b; font-weight: 800;">✓</span>
+            <div><strong>Unbonding Period:</strong> <span class="mono">7 Days</span> lockup period when unbonding delegated tokens.</div>
+          </li>
+          <li style="display: flex; align-items: flex-start; gap: 10px;">
+            <span style="color: #00a86b; font-weight: 800;">✓</span>
+            <div><strong>Slashing Rules:</strong> Double-signing incurs <span class="mono">100% stake slash</span>; unresponsiveness incurs <span class="mono">0.1% slash</span>.</div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Interactive Calculator -->
+      <div class="calc-card">
+        <div class="calc-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00a86b" stroke-width="2.5"><rect x="4" y="2" width="16" height="20" rx="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M8 18h.01M12 18h.01"></path></svg>
+          Staking Yield Calculator
+        </div>
+
+        <div class="calc-group">
+          <label class="calc-label">Enter Delegation Amount</label>
+          <div class="calc-input-wrap">
+            <input type="number" id="stake-amount" class="calc-input mono" value="10000" oninput="calculateRewards()" />
+            <span class="calc-unit">VRDX</span>
+          </div>
+        </div>
+
+        <div class="calc-group">
+          <label class="calc-label">Validator Type</label>
+          <select id="validator-type" class="calc-input" onchange="calculateRewards()" style="cursor:pointer;">
+            <option value="0.085">Standard Validator (8.5% APR)</option>
+            <option value="0.11" selected>Green Validator (11.0% APR with Eco Bonus)</option>
+          </select>
+        </div>
+
+        <div class="calc-results">
+          <div class="res-box">
+            <span class="res-lbl">Daily Yield</span>
+            <span class="res-val mono" id="daily-res">3.01 VRDX</span>
+          </div>
+          <div class="res-box">
+            <span class="res-lbl">Monthly Yield</span>
+            <span class="res-val mono" id="monthly-res">91.67 VRDX</span>
+          </div>
+          <div class="res-box">
+            <span class="res-lbl">Yearly Yield</span>
+            <span class="res-val mono" id="yearly-res">1,100.00 VRDX</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: CARBON CREDIT ECONOMICS -->
+  <section class="page-section">
+    <div class="section-header reveal">
+      <span class="section-tag">Sustainability Engine</span>
+      <h2 class="section-title">5. Carbon Credit Economics</h2>
+      <p class="section-desc">
+        How Verdis Chain embeds direct environmental offset mechanisms into native consensus and smart contract execution.
+      </p>
+    </div>
+
+    <div class="carbon-box reveal">
+      <div class="carbon-left">
+        <h3>On-Chain Proof of Offset (pCO2)</h3>
+        <p>
+          Verdis Chain ties every 100 VRDX transaction fee batch to verified carbon credits (Verra / Gold Standard). 20% of network fees are automatically directed to purchasing and retiring carbon offsets on-chain via dedicated Substrate precompiles.
+        </p>
+        <div class="carbon-pills">
+          <span class="carbon-pill">1 tCO2e = 100 Eco-Credits</span>
+          <span class="carbon-pill">20% Fee Auto-Retire</span>
+          <span class="carbon-pill">Precompile 0x...0802</span>
+        </div>
+      </div>
+
+      <div class="carbon-right">
+        <div class="c-metric-row">
+          <span class="c-m-lbl">Total Carbon Offset To Date</span>
+          <span class="c-m-val mono">142,850 tCO2e</span>
+        </div>
+        <div class="c-metric-row">
+          <span class="c-m-lbl">Trees Planted Equivalent</span>
+          <span class="c-m-val mono">5,714,000 Trees</span>
+        </div>
+        <div class="c-metric-row">
+          <span class="c-m-lbl">Eco Fund Allocation</span>
+          <span class="c-m-val mono">10,000,000,000 VRDX</span>
+        </div>
+        <div class="c-metric-row">
+          <span class="c-m-lbl">Net Carbon Impact</span>
+          <span class="c-m-val mono" style="color:#00a86b;">Carbon-Negative (-142%)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6: TOKEN UTILITY -->
+  <section class="page-section" style="background: #ffffff; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+    <div class="section-header reveal">
+      <span class="section-tag">Utility</span>
+      <h2 class="section-title">6. VRDX Token Utility</h2>
+      <p class="section-desc">
+        Six foundational utility pillars driving long-term demand and protocol velocity.
+      </p>
+    </div>
+
+    <div class="utility-grid reveal">
+      <div class="u-card">
+        <div class="u-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+        </div>
+        <div class="u-title">Network Gas Fees</div>
+        <div class="u-desc">Pay sub-cent transaction fees (<span class="mono">~0.0001 VRDX</span> average) across Substrate native transfers and 36 pallet operations.</div>
+      </div>
+
+      <div class="u-card">
+        <div class="u-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </div>
+        <div class="u-title">DPoS Staking</div>
+        <div class="u-desc">Bond VRDX to secure block validation or delegate to top 21 active nodes to earn up to <span class="mono">11.0% APY</span> yield.</div>
+      </div>
+
+      <div class="u-card">
+        <div class="u-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+        </div>
+        <div class="u-title">On-Chain Governance</div>
+        <div class="u-desc">Submit and vote on runtime upgrade proposals, parameter tweaks, and protocol treasury grant disbursements.</div>
+      </div>
+
+      <div class="u-card">
+        <div class="u-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <div class="u-title">DEX Liquidity & Swaps</div>
+        <div class="u-desc">Route trades through native AMM DEX liquidity pools with discounted trading fees for VRDX stakers (<span class="mono">0.15% tier</span>).</div>
+      </div>
+
+      <div class="u-card">
+        <div class="u-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        </div>
+        <div class="u-title">Carbon Credit Minting</div>
+        <div class="u-desc">Collateralize VRDX tokens to issue, verify, and trade standardized on-chain carbon credit tokens (<span class="mono">pCO2</span>).</div>
+      </div>
+
+      <div class="u-card">
+        <div class="u-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+        </div>
+        <div class="u-title">Cross-Chain Bridge</div>
+        <div class="u-desc">Lock VRDX on Verdis Testnet to mint wrapped VRDX tokens across BSC, Ethereum, and Polygon liquidity pools.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 7: ROADMAP -->
+  <section id="roadmap" class="page-section">
+    <div class="section-header reveal">
+      <span class="section-tag">Timeline</span>
+      <h2 class="section-title">7. Token Release Roadmap</h2>
+      <p class="section-desc">
+        Phase-by-phase execution timeline for token unlocking, ecosystem grants, and global reforestation expansion.
+      </p>
+    </div>
+
+    <div class="roadmap-timeline reveal">
+      <div class="rm-item">
+        <div class="rm-dot"></div>
+        <div class="rm-content">
+          <div class="rm-phase">Phase 1 · Q1 2026</div>
+          <div class="rm-title">Genesis & Token Generation (TGE)</div>
+          <div class="rm-desc">
+            Mainnet genesis launch. <span class="mono">24.5B VRDX</span> initial circulating supply. Team & investor cliff period begins.
+          </div>
+        </div>
+      </div>
+
+      <div class="rm-item">
+        <div class="rm-dot"></div>
+        <div class="rm-content">
+          <div class="rm-phase">Phase 2 · Q2 2026</div>
+          <div class="rm-title">DPoS Staking & DEX Activation</div>
+          <div class="rm-desc">
+            Activation of 21 validator node slots. <span class="mono">8.2B VRDX</span> bonded in staking. Native AMM DEX liquidity bootstrap.
+          </div>
+        </div>
+      </div>
+
+      <div class="rm-item">
+        <div class="rm-dot"></div>
+        <div class="rm-content">
+          <div class="rm-phase">Phase 3 · Q4 2026</div>
+          <div class="rm-title">Eco Precompiles & First Unlocks</div>
+          <div class="rm-desc">
+            Activation of carbon offset precompile <span class="mono">0x...0802</span>. Investor 6-month cliff completes; linear unlock starts.
+          </div>
+        </div>
+      </div>
+
+      <div class="rm-item">
+        <div class="rm-dot"></div>
+        <div class="rm-content">
+          <div class="rm-phase">Phase 4 · Q1 2027</div>
+          <div class="rm-title">Team Cliff End & DAO Handover</div>
+          <div class="rm-desc">
+            Team 12-month cliff ends (<span class="mono">312.5M VRDX / mo</span> linear). On-chain democracy council takes full treasury control.
+          </div>
+        </div>
+      </div>
+
+      <div class="rm-item">
+        <div class="rm-dot"></div>
+        <div class="rm-content">
+          <div class="rm-phase">Phase 5 · 2027 – 2030</div>
+          <div class="rm-title">Global Carbon Offset Scaling</div>
+          <div class="rm-desc">
+            Full release of community eco funds, targeting <span class="mono">10,000,000+ tCO2e</span> verified carbon offsets retired globally.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA SECTION -->
+  <section class="cta-section">
+    <div class="cta-inner">
+      <div class="cta-card reveal">
+        <h2>Join the Green Blockchain Revolution</h2>
+        <p>Explore the live blockchain explorer, stake VRDX with green validators, or deploy Substrate smart contracts on carbon-negative infrastructure.</p>
+        <div class="cta-btns">
+          <a href="explorer.html" class="btn-primary">Open Explorer →</a>
+          <a href="docs.html" class="btn-secondary">Developer Docs</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <h4><span class="footer-brand-dot"></span>Verdis Chain</h4>
+        <p>The world's first green blockchain. Built in Rust + Substrate with DPoS, AMM DEX, 36-pallet Substrate, and carbon credit tracking.</p>
+      </div>
+
+      <div class="footer-col">
+        <h5>Platform</h5>
+        <a href="index.html">Landing</a>
+        <a href="explorer.html">Explorer</a>
+        <a href="validators.html">Validators</a>
+        <a href="dex.html">DEX</a>
+        <a href="eco.html">Eco Metrics</a>
+      </div>
+
+      <div class="footer-col">
+        <h5>Resources</h5>
+        <a href="docs.html">Documentation</a>
+        <a href="whitepaper.html">Whitepaper</a>
+        <a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a>
+      </div>
+
+      <div class="footer-col">
+        <h5>Community</h5>
+        <a href="#">Twitter / X</a>
+        <a href="#">Discord</a>
+        <a href="#">Telegram</a>
+        <a href="#">Medium</a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 Verdis Chain · Powered by Protremix</span>
+      <span>verdischain.com · Chain ID 909</span>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    // ===== CURSOR GLOW =====
+    const glow = document.getElementById('cursor-glow');
+    document.addEventListener('mousemove', e => {
+      glow.style.left = e.clientX + 'px';
+      glow.style.top = e.clientY + 'px';
+    });
+
+    // ===== SCROLL PROGRESS BAR =====
+    const scrollBar = document.getElementById('scroll-bar');
+    window.addEventListener('scroll', () => {
+      const totalHeight = document.body.scrollHeight - window.innerHeight;
+      const progress = (window.scrollY / totalHeight) * 100;
+      scrollBar.style.width = progress + '%';
+    });
+
+    // ===== SCROLL REVEAL ANIMATIONS =====
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // ===== INTERACTIVE CALCULATOR =====
+    function calculateRewards() {
+      const amtInput = document.getElementById('stake-amount');
+      const rateSelect = document.getElementById('validator-type');
+      
+      let amt = parseFloat(amtInput.value) || 0;
+      let rate = parseFloat(rateSelect.value) || 0.11;
+
+      let yearly = amt * rate;
+      let monthly = yearly / 12;
+      let daily = yearly / 365;
+
+      document.getElementById('daily-res').innerText = daily.toFixed(2) + ' VRDX';
+      document.getElementById('monthly-res').innerText = monthly.toFixed(2) + ' VRDX';
+      document.getElementById('yearly-res').innerText = yearly.toFixed(2) + ' VRDX';
+    }
+
+    // ===== PIE CHART INTERACTION =====
+    function selectDist(idx, amtText, nameText) {
+      document.querySelectorAll('.dist-item').forEach((item, i) => {
+        if (i === idx) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+
+      document.getElementById('pie-center-val').innerText = amtText;
+      document.getElementById('pie-center-lbl').innerText = nameText;
+    }
+
+    // ===== HERO CANVAS PARTICLES =====
+    const canvas = document.getElementById('hero-canvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let W, H, nodes = [];
+
+      function resize() {
+        W = canvas.width = canvas.offsetWidth;
+        H = canvas.height = canvas.offsetHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      for (let i = 0; i < 35; i++) {
+        nodes.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.5,
+          vy: (Math.random() - 0.5) * 0.5,
+          r: 2 + Math.random() * 2.5
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            let dx = nodes[i].x - nodes[j].x;
+            let dy = nodes[i].y - nodes[j].y;
+            let dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 120) {
+              ctx.beginPath();
+              ctx.moveTo(nodes[i].x, nodes[i].y);
+              ctx.lineTo(nodes[j].x, nodes[j].y);
+              ctx.strokeStyle = 'rgba(202,255,51,' + (1 - dist / 120) * 0.15 + ')';
+              ctx.lineWidth = 1;
+              ctx.stroke();
+            }
+          }
+        }
+
+        nodes.forEach(n => {
+          n.x += n.vx;
+          n.y += n.vy;
+          if (n.x < 0 || n.x > W) n.vx *= -1;
+          if (n.y < 0 || n.y > H) n.vy *= -1;
+
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(202,255,51,0.5)';
+          ctx.fill();
+        });
+
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+  </script>
+</body>
+</html>

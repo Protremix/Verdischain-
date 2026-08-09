@@ -1,0 +1,156 @@
+name: Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'v*'
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+env:
+  CARGO_TERM_COLOR: always
+  REGISTRY: ghcr.io
+  IMAGE_NAME: verdischain/verdis-chain
+
+jobs:
+  build-release-binary:
+    name: Build & Package Release Binary (linux/amd64)
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install System Dependencies & Build Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang libclang-dev pkg-config libssl-dev protobuf-compiler cmake upx-ucl gpg
+
+      - name: Install Rust Toolchain (1.78 + WASM target)
+        uses: dtolnay/rust-toolchain@1.78
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo Dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Cross-Compile Binary for linux/amd64
+        run: cargo build --release --workspace
+
+      - name: Package Release Artifacts
+        run: |
+          chmod +x ci-cd/release-artifacts.sh
+          ./ci-cd/release-artifacts.sh --version "${GITHUB_REF_NAME}" --strip --upx
+
+      - name: Generate Checksums
+        run: |
+          chmod +x ci-cd/checksums.sh
+          ./ci-cd/checksums.sh --dir dist/
+
+      - name: Sign Release Artifacts with GPG (if key available)
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          if [ -n "$GPG_PRIVATE_KEY" ]; then
+            echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+            gpg --batch --detach-sign --armor dist/verdis-linux-amd64-${GITHUB_REF_NAME}.tar.gz || true
+            gpg --batch --detach-sign --armor dist/SHA256SUMS || true
+          else
+            echo "No GPG private key provided; skipping GPG signing."
+          fi
+
+      - name: Upload Build Artifacts for GitHub Release
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-dist
+          path: dist/*
+          retention-days: 1
+
+  publish-docker:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.5.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+            type=sha,prefix=
+
+      - name: Build and Push Docker Image
+        id: build-and-push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ci-cd/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Sign Docker Image with Cosign
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          echo "Signing Docker image with Cosign..."
+          cosign sign --yes ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }} || echo "Cosign signature completed or skipped"
+
+  create-github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-22.04
+    needs: [build-release-binary, publish-docker]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Release Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-dist
+          path: release-files/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-files/*
+          name: Verdis Blockchain Release ${{ github.ref_name }}
+          body: |
+            ## Verdis Blockchain Release `${{ github.ref_name }}`
+            
+            ### Artifacts Included
+            - Node binary tarball: `verdis-linux-amd64-${{ github.ref_name }}.tar.gz`
+            - SHA-256 Checksums: `SHA256SUMS`
+            - MD5 Checksums: `MD5SUMS`
+            - Container Registry: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}`
+            
+            ### Blockchain Specs
+            - **Native Token**: VRS (100 Billion Total Supply, 9 Decimals, SS58 Prefix: 909)
+            - **Runtime**: 17 Substrate Pallets (BABE, GRANDPA, Session, Balances, DPoS, Eco, Carbon, DEX, Vesting, etc.)
+            - **Target Binary**: `/opt/verdis-chain-rust/target/release/verdis`
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
