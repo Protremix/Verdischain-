@@ -357,6 +357,15 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     let uris = testnet_validator_uris();
     let session_keys = build_session_keys(&uris);
 
+    let babe_authorities: Vec<(BabeId, u64)> = session_keys
+        .iter()
+        .map(|(_, _, keys)| (keys.babe.clone(), 1))
+        .collect();
+    let grandpa_authorities: Vec<(GrandpaId, u64)> = session_keys
+        .iter()
+        .map(|(_, _, keys)| (keys.grandpa.clone(), 1))
+        .collect();
+
     // Balances: 9-category tokenomics (100B VRDX total)
     let mut balances = vec![
         (eco_pool, 30 * bn),
@@ -680,6 +689,15 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     // 21 validators — placeholder keys (MUST be replaced before mainnet launch)
     let uris = testnet_validator_uris();
     let session_keys = build_session_keys(&uris);
+
+    let babe_authorities: Vec<(BabeId, u64)> = session_keys
+        .iter()
+        .map(|(_, _, keys)| (keys.babe.clone(), 1))
+        .collect();
+    let grandpa_authorities: Vec<(GrandpaId, u64)> = session_keys
+        .iter()
+        .map(|(_, _, keys)| (keys.grandpa.clone(), 1))
+        .collect();
 
     // Balances: 9-category tokenomics (100B VRDX total)
     let mut balances = vec![

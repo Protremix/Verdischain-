@@ -2,7 +2,6 @@
 #![cfg(feature = "runtime-benchmarks")]
 
 use super::*;
-use crate::pallet::*;
 use frame_benchmarking::v2::*;
 use frame_support::{
     traits::{tokens::WithdrawReasons, Currency, LockableCurrency},
@@ -54,6 +53,10 @@ mod benches {
         };
         Schedules::<T>::insert(label_bv.clone(), schedule);
 
+        // Fund the target account so the lock can be set
+        let funding = amount.saturating_mul(100u32.into());
+        let _ = T::Currency::make_free_balance_be(&target, funding);
+
         let mut vestings = BoundedVec::default();
         for _ in 0..(s - 1) {
             let entry = UserVestingEntry {
@@ -101,6 +104,9 @@ mod benches {
             assert!(vestings.try_push(entry).is_ok());
             total_locked = total_locked.saturating_add(amount);
         }
+        // Fund the caller account so the lock can be set
+        let funding = total_locked.saturating_mul(100u32.into());
+        let _ = T::Currency::make_free_balance_be(&caller, funding);
         UserVestings::<T>::insert(&caller, vestings);
         LockedBalances::<T>::insert(&caller, total_locked);
         T::Currency::set_lock(

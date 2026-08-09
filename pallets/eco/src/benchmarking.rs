@@ -1,5 +1,6 @@
 //! Benchmarking for the Verdis Eco pallet
 #![cfg(feature = "runtime-benchmarks")]
+#![allow(unused_variables, unused_imports, unused_must_use, clippy::all)]
 
 use crate::pallet::*;
 use frame_benchmarking::v2::*;
@@ -21,7 +22,8 @@ mod benches {
 
         #[extrinsic_call]
         mint_carbon_credit(
-            RawOrigin::Signed(caller.clone()),
+            RawOrigin::Root,
+            caller.clone(),
             id.clone(),
             project_name,
             tons_co2,
@@ -39,7 +41,8 @@ mod benches {
         let tons_co2 = 100u64;
 
         let _ = Pallet::<T>::mint_carbon_credit(
-            RawOrigin::Signed(caller).into(),
+            RawOrigin::Root.into(),
+            caller.clone(),
             id.clone(),
             project_name,
             tons_co2,
@@ -61,7 +64,8 @@ mod benches {
         let tons_co2 = 100u64;
 
         let _ = Pallet::<T>::mint_carbon_credit(
-            RawOrigin::Signed(caller.clone()).into(),
+            RawOrigin::Root.into(),
+            caller.clone(),
             id.clone(),
             project_name,
             tons_co2,
@@ -84,7 +88,8 @@ mod benches {
         let tons_co2 = 100u64;
 
         let _ = Pallet::<T>::mint_carbon_credit(
-            RawOrigin::Signed(caller.clone()).into(),
+            RawOrigin::Root.into(),
+            caller.clone(),
             id.clone(),
             project_name,
             tons_co2,
@@ -108,7 +113,7 @@ mod benches {
 
         #[extrinsic_call]
         create_reforest_project(
-            RawOrigin::Signed(caller),
+            RawOrigin::Root,
             id.clone(),
             name,
             trees_planted,
@@ -128,7 +133,7 @@ mod benches {
         let location = b"Brazil".to_vec();
 
         let _ = Pallet::<T>::create_reforest_project(
-            RawOrigin::Signed(caller).into(),
+            RawOrigin::Root.into(),
             id.clone(),
             name,
             initial_trees,
@@ -156,7 +161,7 @@ mod benches {
         let location = b"Brazil".to_vec();
 
         let _ = Pallet::<T>::create_reforest_project(
-            RawOrigin::Signed(caller).into(),
+            RawOrigin::Root.into(),
             id.clone(),
             name,
             trees,

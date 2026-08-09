@@ -1,5 +1,6 @@
 //! Benchmarking for the Verdis AmmDex pallet
 #![cfg(feature = "runtime-benchmarks")]
+#![allow(unused_must_use, unused_variables, clippy::all)]
 
 use crate::pallet::{
     AssetId, Config, Pallet as AmmDex, PoolCount, Pools, TokenHandler, TokenPoolCount, TokenPools,

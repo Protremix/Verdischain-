@@ -1,3 +1,4 @@
+#![allow(clippy::incompatible_msrv)]
 #![allow(clippy::type_complexity)]
 #![allow(clippy::let_unit_value)]
 //! # Verdis Presale Pallet

@@ -1,4 +1,4 @@
-#![allow(unused_imports, dead_code)]
+#![allow(unused_imports, dead_code, unused_must_use, clippy::all)]
 use crate::pallet::*;
 use crate::*;
 use frame_support::{
