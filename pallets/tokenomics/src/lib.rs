@@ -25,6 +25,8 @@ use sp_runtime::traits::{AccountIdConversion, Saturating};
 use sp_std::prelude::*;
 
 pub use pallet::*;
+pub mod weights;
+pub use weights::SubstrateWeight;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
@@ -376,21 +378,6 @@ pub mod pallet {
         fn release_distribution() -> Weight;
     }
 
-    pub struct SubstrateWeight<T>(PhantomData<T>);
-    impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
-        fn give_consent() -> Weight {
-            Weight::from_parts(30_000_000, 0)
-        }
-        fn purchase() -> Weight {
-            Weight::from_parts(100_000_000, 0)
-        }
-        fn update_presale_price() -> Weight {
-            Weight::from_parts(20_000_000, 0)
-        }
-        fn release_distribution() -> Weight {
-            Weight::from_parts(40_000_000, 0)
-        }
-    }
 }
 
 pub struct TestGreenTreasury;

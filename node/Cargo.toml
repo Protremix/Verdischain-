@@ -74,11 +74,13 @@ substrate-frame-rpc-system = { version = "53.0.0" }
 pallet-transaction-payment-rpc = { version = "52.0.0" }
 pallet-transaction-payment-rpc-runtime-api = { version = "49.0.0" }
 substrate-prometheus-endpoint = { version = "0.17.7" }
+frame-benchmarking-cli = { version = "58.0.0", default-features = false, features = ["rocksdb"] }
+pallet-staking = { version = "49.0.0", default-features = false, optional = true }
 
 [build-dependencies]
 substrate-build-script-utils = { workspace = true }
 
 [features]
 default = []
-runtime-benchmarks = ["verdis-runtime/runtime-benchmarks"]
+runtime-benchmarks = ["verdis-runtime/runtime-benchmarks", "pallet-staking/runtime-benchmarks"]
 try-runtime = ["verdis-runtime/try-runtime"]

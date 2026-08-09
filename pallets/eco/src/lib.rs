@@ -19,6 +19,8 @@ use scale_info::TypeInfo;
 use sp_std::prelude::*;
 
 pub use pallet::*;
+pub mod weights;
+pub use weights::SubstrateWeight;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -561,36 +563,6 @@ pub mod pallet {
         fn update_green_score() -> Weight;
     }
 
-    pub struct SubstrateWeight<T>(PhantomData<T>);
-    impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
-        fn mint_carbon_credit() -> Weight {
-            Weight::from_parts(80_000_000, 0)
-        }
-        fn verify_carbon_credit() -> Weight {
-            Weight::from_parts(30_000_000, 0)
-        }
-        fn retire_carbon_credit() -> Weight {
-            Weight::from_parts(40_000_000, 0)
-        }
-        fn transfer_carbon_credit() -> Weight {
-            Weight::from_parts(50_000_000, 0)
-        }
-        fn create_reforest_project() -> Weight {
-            Weight::from_parts(70_000_000, 0)
-        }
-        fn update_reforest_project() -> Weight {
-            Weight::from_parts(50_000_000, 0)
-        }
-        fn verify_reforest_project() -> Weight {
-            Weight::from_parts(30_000_000, 0)
-        }
-        fn register_green_validator() -> Weight {
-            Weight::from_parts(60_000_000, 0)
-        }
-        fn update_green_score() -> Weight {
-            Weight::from_parts(20_000_000, 0)
-        }
-    }
 }
 
 #[cfg(feature = "runtime-benchmarks")]

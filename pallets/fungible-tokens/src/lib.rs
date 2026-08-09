@@ -19,6 +19,8 @@ use scale_info::TypeInfo;
 use sp_std::prelude::*;
 
 pub use pallet::*;
+pub mod weights;
+pub use weights::SubstrateWeight;
 
 pub const MAX_TOKEN_NAME: u32 = 32;
 pub const MAX_TOKEN_SYMBOL: u32 = 12;
@@ -45,6 +47,39 @@ pub struct TokenMetadata {
     pub logo_uri: BoundedVec<u8, frame_support::traits::ConstU32<MAX_METADATA>>,
 }
 
+use frame_support::weights::Weight;
+
+/// Weight functions for Fungible Tokens pallet.
+pub trait WeightInfo {
+    fn create() -> Weight;
+    fn mint() -> Weight;
+    fn burn() -> Weight;
+    fn transfer() -> Weight;
+    fn approve() -> Weight;
+    fn transfer_from() -> Weight;
+    fn set_metadata(n: u32) -> Weight;
+    fn freeze() -> Weight;
+    fn thaw() -> Weight;
+    fn destroy() -> Weight;
+    fn batch_transfer(b: u32) -> Weight;
+    fn transfer_ownership() -> Weight;
+}
+
+impl WeightInfo for () {
+    fn create() -> Weight { Weight::from_parts(10_000, 0) }
+    fn mint() -> Weight { Weight::from_parts(5_000, 0) }
+    fn burn() -> Weight { Weight::from_parts(5_000, 0) }
+    fn transfer() -> Weight { Weight::from_parts(5_000, 0) }
+    fn approve() -> Weight { Weight::from_parts(3_000, 0) }
+    fn transfer_from() -> Weight { Weight::from_parts(5_000, 0) }
+    fn set_metadata(_n: u32) -> Weight { Weight::from_parts(3_000, 0) }
+    fn freeze() -> Weight { Weight::from_parts(2_000, 0) }
+    fn thaw() -> Weight { Weight::from_parts(2_000, 0) }
+    fn destroy() -> Weight { Weight::from_parts(5_000, 0) }
+    fn batch_transfer(_b: u32) -> Weight { Weight::from_parts(10_000, 0) }
+    fn transfer_ownership() -> Weight { Weight::from_parts(3_000, 0) }
+}
+
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
@@ -62,6 +97,7 @@ pub mod pallet {
         type CreateTokenDeposit: Get<BalanceOf<Self>>;
         #[pallet::constant]
         type MaxBalance: Get<u128>;
+        type WeightInfo: WeightInfo;
     }
 
     #[pallet::pallet]
@@ -178,7 +214,7 @@ pub mod pallet {
     impl<T: Config> Pallet<T> {
         /// Create a new fungible token
         #[pallet::call_index(0)]
-        #[pallet::weight(10_000)]
+        #[pallet::weight(T::WeightInfo::create())]
         pub fn create(
             origin: OriginFor<T>,
             name: Vec<u8>,
@@ -241,7 +277,7 @@ pub mod pallet {
 
         /// Mint tokens to an account (token owner only)
         #[pallet::call_index(1)]
-        #[pallet::weight(5_000)]
+        #[pallet::weight(T::WeightInfo::mint())]
         pub fn mint(
             origin: OriginFor<T>,
             token_id: u64,
@@ -281,7 +317,7 @@ pub mod pallet {
 
         /// Burn tokens from your own account
         #[pallet::call_index(2)]
-        #[pallet::weight(5_000)]
+        #[pallet::weight(T::WeightInfo::burn())]
         pub fn burn(origin: OriginFor<T>, token_id: u64, amount: u128) -> DispatchResult {
             let who = ensure_signed(origin)?;
             ensure!(amount > 0, Error::<T>::ZeroAmount);
@@ -309,7 +345,7 @@ pub mod pallet {
 
         /// Transfer tokens to another account
         #[pallet::call_index(3)]
-        #[pallet::weight(5_000)]
+        #[pallet::weight(T::WeightInfo::transfer())]
         pub fn transfer(
             origin: OriginFor<T>,
             token_id: u64,
@@ -345,7 +381,7 @@ pub mod pallet {
 
         /// Approve a spender to transfer tokens on your behalf
         #[pallet::call_index(4)]
-        #[pallet::weight(3_000)]
+        #[pallet::weight(T::WeightInfo::approve())]
         pub fn approve(
             origin: OriginFor<T>,
             token_id: u64,
@@ -369,7 +405,7 @@ pub mod pallet {
 
         /// Transfer tokens on behalf of an approved account
         #[pallet::call_index(5)]
-        #[pallet::weight(5_000)]
+        #[pallet::weight(T::WeightInfo::transfer_from())]
         pub fn transfer_from(
             origin: OriginFor<T>,
             token_id: u64,
@@ -407,7 +443,7 @@ pub mod pallet {
 
         /// Set extended metadata for a token (owner only)
         #[pallet::call_index(6)]
-        #[pallet::weight(3_000)]
+        #[pallet::weight(T::WeightInfo::set_metadata(description.len() as u32))]
         pub fn set_metadata(
             origin: OriginFor<T>,
             token_id: u64,
@@ -448,7 +484,7 @@ pub mod pallet {
 
         /// Freeze a token (owner only)
         #[pallet::call_index(7)]
-        #[pallet::weight(2_000)]
+        #[pallet::weight(T::WeightInfo::freeze())]
         pub fn freeze(origin: OriginFor<T>, token_id: u64) -> DispatchResult {
             let who = ensure_signed(origin)?;
             let mut token = Tokens::<T>::get(token_id).ok_or(Error::<T>::TokenNotFound)?;
@@ -462,7 +498,7 @@ pub mod pallet {
 
         /// Unfreeze a token (owner only)
         #[pallet::call_index(8)]
-        #[pallet::weight(2_000)]
+        #[pallet::weight(T::WeightInfo::thaw())]
         pub fn thaw(origin: OriginFor<T>, token_id: u64) -> DispatchResult {
             let who = ensure_signed(origin)?;
             let mut token = Tokens::<T>::get(token_id).ok_or(Error::<T>::TokenNotFound)?;
@@ -476,7 +512,7 @@ pub mod pallet {
 
         /// Destroy a token — requires zero total supply (owner only)
         #[pallet::call_index(9)]
-        #[pallet::weight(5_000)]
+        #[pallet::weight(T::WeightInfo::destroy())]
         pub fn destroy(origin: OriginFor<T>, token_id: u64) -> DispatchResult {
             let who = ensure_signed(origin)?;
             let token = Tokens::<T>::get(token_id).ok_or(Error::<T>::TokenNotFound)?;
@@ -506,7 +542,7 @@ pub mod pallet {
 
         /// Batch transfer tokens to multiple recipients
         #[pallet::call_index(10)]
-        #[pallet::weight(10_000)]
+        #[pallet::weight(T::WeightInfo::batch_transfer(recipients.len() as u32))]
         pub fn batch_transfer(
             origin: OriginFor<T>,
             token_id: u64,
@@ -548,7 +584,7 @@ pub mod pallet {
 
         /// Transfer token ownership to a new account
         #[pallet::call_index(11)]
-        #[pallet::weight(3_000)]
+        #[pallet::weight(T::WeightInfo::transfer_ownership())]
         pub fn transfer_ownership(
             origin: OriginFor<T>,
             token_id: u64,

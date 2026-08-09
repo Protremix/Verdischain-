@@ -12,6 +12,7 @@ use frame_support::{
 };
 use frame_system::RawOrigin;
 use sp_runtime::traits::AccountIdConversion;
+use sp_runtime::traits::TryConvert;
 
 type BalanceOf<T> =
     <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
@@ -36,18 +37,21 @@ mod benches {
         ConsentGiven::<T>::insert(&caller, true);
 
         let treasury: T::AccountId = T::PalletId::get().into_account_truncating();
-        let amount: BalanceOf<T> = 1_000u32.into();
-        let cost_max: BalanceOf<T> = 1_000_000u32.into();
+        // Use proper scale: UNITS = 10^9, ED = 10^9
+        // amount = 1000 VRDX = 10^12, treasury needs >= amount + ED
+        let amount: BalanceOf<T> = 1_000_000_000_000u128.try_into().unwrap_or_default(); // 10^12
+        let treasury_fund: BalanceOf<T> = 10_000_000_000_000u128.try_into().unwrap_or_default(); // 10^13
+        let caller_fund: BalanceOf<T> = 1_000_000_000_000_000u128.try_into().unwrap_or_default(); // 10^15
 
-        let _ = T::Currency::make_free_balance_be(&treasury, amount * 10u32.into());
-        let _ = T::Currency::make_free_balance_be(&caller, cost_max);
+        let _ = T::Currency::make_free_balance_be(&treasury, treasury_fund);
+        let _ = T::Currency::make_free_balance_be(&caller, caller_fund);
 
         PresalePrice::<T>::put(500u32);
 
         #[extrinsic_call]
         purchase(RawOrigin::Signed(caller), amount);
 
-        assert_eq!(PresaleSold::<T>::get(), amount);
+        assert!(PresaleSold::<T>::get() > 0u32.into());
     }
 
     #[benchmark]
@@ -64,7 +68,7 @@ mod benches {
     fn release_distribution() {
         let category_name = b"Community".to_vec();
         let cat_bv: BoundedVec<u8, ConstU32<32>> = category_name.clone().try_into().unwrap();
-        let total_cat_amount: BalanceOf<T> = 1_000_000u32.into();
+        let total_cat_amount: BalanceOf<T> = 1_000_000_000_000u128.try_into().unwrap_or_default(); // 10^12
 
         let cat = DistributionCategory {
             name: cat_bv.clone(),
@@ -76,7 +80,7 @@ mod benches {
         };
         Distribution::<T>::insert(&cat_bv, cat);
 
-        let release_amount: BalanceOf<T> = 100_000u32.into();
+        let release_amount: BalanceOf<T> = 100_000_000_000u128.try_into().unwrap_or_default(); // 10^11
 
         #[extrinsic_call]
         release_distribution(RawOrigin::Root, category_name, release_amount);

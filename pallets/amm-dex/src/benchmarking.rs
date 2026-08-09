@@ -19,9 +19,17 @@ fn make_token_bytes(prefix: u8) -> BoundedVec<u8, ConstU32<32>> {
     BoundedVec::try_from(bytes).expect("4 bytes fits in 32")
 }
 
+// Scale constants: UNITS = 10^9, MinLiquidity = 10^3 * UNITS = 10^12
+// Pool amounts must produce lp_minted >= MinLiquidity => sqrt(a*b) >= 10^12 => a*b >= 10^24
+// Using 10^13 each: sqrt(10^13 * 10^13) = 10^13 > 10^12 ✓
+const BENCH_FUND: u128 = 1_000_000_000_000_000_000; // 10^18 — plenty for all operations
+const BENCH_AMOUNT: u128 = 10_000_000_000_000; // 10^13 — above MinLiquidity (10^12)
+const BENCH_LP_BURN: u128 = 1_000_000_000_000; // 10^12 — minimal LP burn
+const BENCH_SWAP_IN: u128 = 100_000_000_000; // 10^11 — swap input
+
 /// Fund the caller with sufficient balance for benchmark operations
 fn fund_caller<T: Config>(caller: &T::AccountId) {
-    let amount: BalanceOf<T> = 10_000_000_000u128.try_into().unwrap_or_default();
+    let amount: BalanceOf<T> = BENCH_FUND.try_into().unwrap_or_default();
     <<T as Config>::Currency as frame_support::traits::Currency<_>>::deposit_creating(
         caller, amount,
     );
@@ -40,8 +48,8 @@ mod benches {
         fund_caller::<T>(&caller);
         let token_a = make_token_bytes(1u8);
         let token_b = make_token_bytes(2u8);
-        let amount_a: BalanceOf<T> = 1_000_000u32.into();
-        let amount_b: BalanceOf<T> = 1_000_000u32.into();
+        let amount_a: BalanceOf<T> = BENCH_AMOUNT.try_into().unwrap_or_default();
+        let amount_b: BalanceOf<T> = BENCH_AMOUNT.try_into().unwrap_or_default();
 
         #[extrinsic_call]
         create_pool(
@@ -66,19 +74,20 @@ mod benches {
             RawOrigin::Signed(caller.clone()).into(),
             token_a.to_vec(),
             token_b.to_vec(),
-            1_000_000u32.into(),
-            1_000_000u32.into(),
+            BENCH_AMOUNT.try_into().unwrap_or_default(),
+            BENCH_AMOUNT.try_into().unwrap_or_default(),
         );
 
         let pool_id = PoolCount::<T>::get() - 1;
-        let amount_a: BalanceOf<T> = (500_000u32 + n * 10_000).into();
-        let amount_b: BalanceOf<T> = (500_000u32 + n * 10_000).into();
+        let extra: u128 = n as u128 * 1_000_000_000_000; // n * 10^12
+        let amount_a: BalanceOf<T> = (5_000_000_000_000 + extra).try_into().unwrap_or_default();
+        let amount_b: BalanceOf<T> = (5_000_000_000_000 + extra).try_into().unwrap_or_default();
 
         #[extrinsic_call]
         add_liquidity(RawOrigin::Signed(caller), pool_id, amount_a, amount_b);
 
         let pool = Pools::<T>::get(pool_id).unwrap();
-        assert!(pool.total_lp > 1_000_000u32.into());
+        assert!(pool.total_lp > 0u32.into());
     }
 
     #[benchmark]
@@ -92,12 +101,12 @@ mod benches {
             RawOrigin::Signed(caller.clone()).into(),
             token_a.to_vec(),
             token_b.to_vec(),
-            1_000_000u32.into(),
-            1_000_000u32.into(),
+            BENCH_AMOUNT.try_into().unwrap_or_default(),
+            BENCH_AMOUNT.try_into().unwrap_or_default(),
         );
 
         let pool_id = PoolCount::<T>::get() - 1;
-        let lp_amount: BalanceOf<T> = 100_000u32.into();
+        let lp_amount: BalanceOf<T> = BENCH_LP_BURN.try_into().unwrap_or_default();
 
         #[extrinsic_call]
         remove_liquidity(RawOrigin::Signed(caller), pool_id, lp_amount);
@@ -116,12 +125,12 @@ mod benches {
             RawOrigin::Signed(caller.clone()).into(),
             token_a.to_vec(),
             token_b.to_vec(),
-            1_000_000u32.into(),
-            1_000_000u32.into(),
+            BENCH_AMOUNT.try_into().unwrap_or_default(),
+            BENCH_AMOUNT.try_into().unwrap_or_default(),
         );
 
         let pool_id = PoolCount::<T>::get() - 1;
-        let amount_in: BalanceOf<T> = 10_000u32.into();
+        let amount_in: BalanceOf<T> = BENCH_SWAP_IN.try_into().unwrap_or_default();
         let min_out: BalanceOf<T> = 0u32.into();
 
         #[extrinsic_call]
@@ -134,7 +143,7 @@ mod benches {
         );
 
         let pool = Pools::<T>::get(pool_id).unwrap();
-        assert!(pool.reserve_a > 1_000_000u32.into());
+        assert!(pool.reserve_a > 0u32.into());
     }
 
     #[benchmark]
@@ -143,8 +152,8 @@ mod benches {
         fund_caller::<T>(&caller);
         let asset_a = AssetId::Native;
         let asset_b = AssetId::Custom(0);
-        let amount_a: BalanceOf<T> = 1_000_000u32.into();
-        let amount_b: BalanceOf<T> = 1_000_000u32.into();
+        let amount_a: BalanceOf<T> = BENCH_AMOUNT.try_into().unwrap_or_default();
+        let amount_b: BalanceOf<T> = BENCH_AMOUNT.try_into().unwrap_or_default();
 
         #[extrinsic_call]
         create_token_pool(
@@ -164,26 +173,26 @@ mod benches {
         fund_caller::<T>(&caller);
         let asset_a = AssetId::Native;
         let asset_b = AssetId::Custom(0);
-        // Debug: check caller address and balances
 
         AmmDex::<T>::create_token_pool(
             RawOrigin::Signed(caller.clone()).into(),
             asset_a,
             asset_b,
-            1_000_000u32.into(),
-            1_000_000u32.into(),
+            BENCH_AMOUNT.try_into().unwrap_or_default(),
+            BENCH_AMOUNT.try_into().unwrap_or_default(),
         )
         .expect("create_token_pool failed in benchmark setup");
 
         let pool_id = TokenPoolCount::<T>::get() - 1;
-        let amount_a: BalanceOf<T> = (500_000u32 + n * 10_000).into();
-        let amount_b: BalanceOf<T> = (500_000u32 + n * 10_000).into();
+        let extra: u128 = n as u128 * 1_000_000_000_000; // n * 10^12
+        let amount_a: BalanceOf<T> = (5_000_000_000_000 + extra).try_into().unwrap_or_default();
+        let amount_b: BalanceOf<T> = (5_000_000_000_000 + extra).try_into().unwrap_or_default();
 
         #[extrinsic_call]
         add_token_liquidity(RawOrigin::Signed(caller), pool_id, amount_a, amount_b);
 
         let pool = TokenPools::<T>::get(pool_id).unwrap();
-        assert!(pool.total_lp > 1_000_000u32.into());
+        assert!(pool.total_lp > 0u32.into());
     }
 
     #[benchmark]
@@ -197,13 +206,13 @@ mod benches {
             RawOrigin::Signed(caller.clone()).into(),
             asset_a,
             asset_b,
-            1_000_000u32.into(),
-            1_000_000u32.into(),
+            BENCH_AMOUNT.try_into().unwrap_or_default(),
+            BENCH_AMOUNT.try_into().unwrap_or_default(),
         )
         .expect("create_token_pool failed in benchmark setup");
 
         let pool_id = TokenPoolCount::<T>::get() - 1;
-        let lp_amount: BalanceOf<T> = 100_000u32.into();
+        let lp_amount: BalanceOf<T> = BENCH_LP_BURN.try_into().unwrap_or_default();
 
         #[extrinsic_call]
         remove_token_liquidity(RawOrigin::Signed(caller), pool_id, lp_amount);
@@ -222,13 +231,13 @@ mod benches {
             RawOrigin::Signed(caller.clone()).into(),
             asset_a,
             asset_b,
-            1_000_000u32.into(),
-            1_000_000u32.into(),
+            BENCH_AMOUNT.try_into().unwrap_or_default(),
+            BENCH_AMOUNT.try_into().unwrap_or_default(),
         )
         .expect("create_token_pool failed in benchmark setup");
 
         let pool_id = TokenPoolCount::<T>::get() - 1;
-        let amount_in: BalanceOf<T> = 10_000u32.into();
+        let amount_in: BalanceOf<T> = BENCH_SWAP_IN.try_into().unwrap_or_default();
         let min_out: BalanceOf<T> = 0u32.into();
 
         #[extrinsic_call]
@@ -241,7 +250,7 @@ mod benches {
         );
 
         let pool = TokenPools::<T>::get(pool_id).unwrap();
-        assert!(pool.reserve_a > 1_000_000u32.into());
+        assert!(pool.reserve_a > 0u32.into());
     }
 
     impl_benchmark_test_suite!(

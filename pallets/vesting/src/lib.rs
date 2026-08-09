@@ -25,6 +25,8 @@ use sp_runtime::traits::Saturating;
 use sp_std::prelude::*;
 
 pub use pallet::*;
+pub mod weights;
+pub use weights::SubstrateWeight;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
@@ -172,7 +174,7 @@ pub mod pallet {
     impl<T: Config> Pallet<T> {
         /// Add a vesting schedule (governance only)
         #[pallet::call_index(0)]
-        #[pallet::weight(T::WeightInfo::add_schedule())]
+        #[pallet::weight(T::WeightInfo::add_schedule(0))]
         pub fn add_schedule(
             origin: OriginFor<T>,
             label: Vec<u8>,
@@ -212,7 +214,7 @@ pub mod pallet {
         }
 
         #[pallet::call_index(1)]
-        #[pallet::weight(T::WeightInfo::assign_vesting())]
+        #[pallet::weight(T::WeightInfo::assign_vesting(0))]
         pub fn assign_vesting(
             origin: OriginFor<T>,
             who: T::AccountId,
@@ -225,7 +227,7 @@ pub mod pallet {
 
         /// Release vested tokens (called by the vested account)
         #[pallet::call_index(2)]
-        #[pallet::weight(T::WeightInfo::release_vested())]
+        #[pallet::weight(T::WeightInfo::release_vested(0))]
         pub fn release_vested(origin: OriginFor<T>) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
@@ -385,23 +387,11 @@ pub mod pallet {
 
     // === WeightInfo ===
     pub trait WeightInfo {
-        fn add_schedule() -> Weight;
-        fn assign_vesting() -> Weight;
-        fn release_vested() -> Weight;
+        fn add_schedule(s: u32) -> Weight;
+        fn assign_vesting(s: u32) -> Weight;
+        fn release_vested(s: u32) -> Weight;
     }
 
-    pub struct SubstrateWeight<T>(PhantomData<T>);
-    impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
-        fn add_schedule() -> Weight {
-            Weight::from_parts(50_000_000, 0)
-        }
-        fn assign_vesting() -> Weight {
-            Weight::from_parts(80_000_000, 0)
-        }
-        fn release_vested() -> Weight {
-            Weight::from_parts(100_000_000, 0)
-        }
-    }
 }
 
 #[cfg(test)]

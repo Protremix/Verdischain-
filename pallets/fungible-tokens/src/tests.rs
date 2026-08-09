@@ -58,6 +58,7 @@ impl Config for Test {
     type MaxTokensPerAccount = MaxTokensPerAccount;
     type CreateTokenDeposit = CreateTokenDeposit;
     type MaxBalance = FungibleMaxBalance;
+    type WeightInfo = ();
 }
 
 pub fn new_test_ext() -> TestExternalities {

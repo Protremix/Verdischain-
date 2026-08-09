@@ -29,6 +29,8 @@ use sp_std::prelude::*;
 use serde::{Deserialize, Serialize};
 
 pub use pallet::*;
+pub mod weights;
+pub use weights::SubstrateWeight;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -507,7 +509,7 @@ pub mod pallet {
 
         /// Withdraw unbonded funds after unbonding period elapses
         #[pallet::call_index(6)]
-        #[pallet::weight(T::WeightInfo::unvote())]
+        #[pallet::weight(T::WeightInfo::withdraw_unbonded())]
         pub fn withdraw_unbonded(origin: OriginFor<T>) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
@@ -827,29 +829,9 @@ pub mod pallet {
         fn unvote() -> Weight;
         fn slash_validator() -> Weight;
         fn update_green_score() -> Weight;
+        fn withdraw_unbonded() -> Weight;
     }
 
-    pub struct SubstrateWeight<T>(PhantomData<T>);
-    impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
-        fn register_validator() -> Weight {
-            Weight::from_parts(100_000_000, 0)
-        }
-        fn unregister_validator() -> Weight {
-            Weight::from_parts(80_000_000, 0)
-        }
-        fn vote() -> Weight {
-            Weight::from_parts(60_000_000, 0)
-        }
-        fn unvote() -> Weight {
-            Weight::from_parts(50_000_000, 0)
-        }
-        fn slash_validator() -> Weight {
-            Weight::from_parts(90_000_000, 0)
-        }
-        fn update_green_score() -> Weight {
-            Weight::from_parts(20_000_000, 0)
-        }
-    }
 }
 
 // === Type Aliases ===

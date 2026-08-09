@@ -14,6 +14,9 @@ use sp_std::vec;
 type BalanceOf<T> =
     <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
+// Scale: UNITS = 10^9, ED = 10^9. Use 10^12 as base amount (1000 VRDX).
+const BENCH_AMOUNT: u128 = 1_000_000_000_000; // 10^12
+
 #[benchmarks]
 mod benches {
     use super::*;
@@ -21,7 +24,7 @@ mod benches {
     #[benchmark]
     fn add_schedule(s: Linear<1, 64>) {
         let label = vec![b'a'; s as usize];
-        let total_amount: BalanceOf<T> = 1_000_000u32.into();
+        let total_amount: BalanceOf<T> = BENCH_AMOUNT.try_into().unwrap_or_default();
         let vesting_days = 60u32;
         let cliff_days = 30u32;
 
@@ -42,7 +45,7 @@ mod benches {
     fn assign_vesting(s: Linear<1, 15>) {
         let target: T::AccountId = account("target", 0, 0);
         let schedule_label = b"schedule_for_assign".to_vec();
-        let amount: BalanceOf<T> = 1_000_000u32.into();
+        let amount: BalanceOf<T> = BENCH_AMOUNT.try_into().unwrap_or_default();
 
         let label_bv: BoundedVec<u8, ConstU32<64>> = schedule_label.clone().try_into().unwrap();
         let schedule = VestingSchedule {
@@ -53,8 +56,8 @@ mod benches {
         };
         Schedules::<T>::insert(label_bv.clone(), schedule);
 
-        // Fund the target account so the lock can be set
-        let funding = amount.saturating_mul(100u32.into());
+        // Fund the target account well above ED and total locked amount
+        let funding: BalanceOf<T> = (BENCH_AMOUNT * 100).try_into().unwrap_or_default();
         let _ = T::Currency::make_free_balance_be(&target, funding);
 
         let mut vestings = BoundedVec::default();
@@ -81,7 +84,7 @@ mod benches {
         let caller: T::AccountId = whitelisted_caller();
         let schedule_label = b"release_schedule".to_vec();
         let label_bv: BoundedVec<u8, ConstU32<64>> = schedule_label.clone().try_into().unwrap();
-        let amount: BalanceOf<T> = 1_000_000u32.into();
+        let amount: BalanceOf<T> = BENCH_AMOUNT.try_into().unwrap_or_default();
 
         let schedule = VestingSchedule {
             label: label_bv.clone(),
@@ -104,7 +107,7 @@ mod benches {
             assert!(vestings.try_push(entry).is_ok());
             total_locked = total_locked.saturating_add(amount);
         }
-        // Fund the caller account so the lock can be set
+        // Fund the caller account well above ED and total locked
         let funding = total_locked.saturating_mul(100u32.into());
         let _ = T::Currency::make_free_balance_be(&caller, funding);
         UserVestings::<T>::insert(&caller, vestings);

@@ -25,6 +25,8 @@ use sp_runtime::traits::{AccountIdConversion, CheckedMul, Saturating};
 use sp_std::prelude::*;
 
 pub use pallet::*;
+pub mod weights;
+pub use weights::SubstrateWeight;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
@@ -38,11 +40,11 @@ pub mod pallet {
 
     pub trait WeightInfo {
         fn create_pool() -> Weight;
-        fn add_liquidity() -> Weight;
+        fn add_liquidity(n: u32) -> Weight;
         fn remove_liquidity() -> Weight;
         fn swap() -> Weight;
         fn create_token_pool() -> Weight;
-        fn add_token_liquidity() -> Weight;
+        fn add_token_liquidity(n: u32) -> Weight;
         fn remove_token_liquidity() -> Weight;
         fn swap_token() -> Weight;
         fn get_price() -> Weight;
@@ -54,7 +56,7 @@ pub mod pallet {
             Weight::from_parts(35_000_000, 0)
         }
         /// Add liquidity: storage read, balance math, sqrt, 2 transfers, 3 storage writes
-        fn add_liquidity() -> Weight {
+        fn add_liquidity(_n: u32) -> Weight {
             Weight::from_parts(30_000_000, 0)
         }
         /// Remove liquidity: storage read, ratio math, 2 transfers, 3 storage writes
@@ -70,7 +72,7 @@ pub mod pallet {
             Weight::from_parts(40_000_000, 0)
         }
         /// Token add liquidity: TokenHandler, math, 2 transfers, 3 storage writes
-        fn add_token_liquidity() -> Weight {
+        fn add_token_liquidity(_n: u32) -> Weight {
             Weight::from_parts(35_000_000, 0)
         }
         /// Token remove liquidity: TokenHandler, ratio math, 2 transfers, 3 storage writes
@@ -432,7 +434,7 @@ pub mod pallet {
 
         /// Add liquidity to an existing pool
         #[pallet::call_index(1)]
-        #[pallet::weight(T::WeightInfo::add_liquidity())]
+        #[pallet::weight(T::WeightInfo::add_liquidity(0))]
         pub fn add_liquidity(
             origin: OriginFor<T>,
             pool_id: u32,
@@ -766,7 +768,7 @@ pub mod pallet {
 
         /// Add liquidity to a fungible token pool
         #[pallet::call_index(6)]
-        #[pallet::weight(T::WeightInfo::add_liquidity())]
+        #[pallet::weight(T::WeightInfo::add_token_liquidity(0))]
         pub fn add_token_liquidity(
             origin: OriginFor<T>,
             pool_id: u32,

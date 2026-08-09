@@ -59,6 +59,7 @@ impl pallet_fungible_tokens::Config for Test {
     type MaxTokensPerAccount = MaxTokensPerAccount;
     type CreateTokenDeposit = CreateTokenDeposit;
     type MaxBalance = MaxBalance;
+    type WeightInfo = ();
 }
 
 parameter_types! {

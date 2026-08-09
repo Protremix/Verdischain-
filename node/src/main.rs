@@ -43,6 +43,10 @@ enum Subcommand {
     ChainInfo(#[command(flatten)] sc_cli::ChainInfoCmd),
     /// Purge chain
     PurgeChain(#[command(flatten)] sc_cli::PurgeChainCmd),
+    /// Benchmark pallets (requires --features runtime-benchmarks)
+    #[cfg(feature = "runtime-benchmarks")]
+    #[command(subcommand)]
+    Benchmark(frame_benchmarking_cli::BenchmarkCmd),
 }
 
 impl SubstrateCli for Cli {
@@ -85,6 +89,23 @@ fn main() -> sc_cli::Result<()> {
         Some(Subcommand::PurgeChain(cmd)) => {
             let runner = cli.create_runner(cmd)?;
             runner.sync_run(|config| cmd.run(config.database))
+        }
+        #[cfg(feature = "runtime-benchmarks")]
+        Some(Subcommand::Benchmark(cmd)) => {
+            use frame_benchmarking_cli::BenchmarkCmd;
+            let runner = cli.create_runner(cmd)?;
+
+            match cmd {
+                BenchmarkCmd::Pallet(cmd) => {
+                    runner.sync_run(|config| {
+                        cmd.run_with_spec::<
+                            sp_runtime::traits::BlakeTwo256,
+                            <ExecutorDispatch as sc_executor::NativeExecutionDispatch>::ExtendHostFunctions,
+                        >(Some(config.chain_spec))
+                    })
+                }
+                _ => Err("Only the `pallet` benchmark subcommand is supported.".into()),
+            }
         }
         None => {
             let runner = cli.create_runner(&cli.run)?;

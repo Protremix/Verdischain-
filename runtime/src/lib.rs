@@ -573,6 +573,33 @@ impl pallet_amm_dex::TokenHandler<AccountId, u128> for Runtime {
             }
         }
     }
+
+    #[cfg(feature = "runtime-benchmarks")]
+    fn fund_for_benchmark(asset: &pallet_amm_dex::AssetId, who: &AccountId, amount: u128) {
+        match asset {
+            pallet_amm_dex::AssetId::Native => {
+                let _ = <pallet_balances::Pallet<Runtime> as frame_support::traits::Currency<AccountId>>::deposit_creating(who, amount);
+            }
+            pallet_amm_dex::AssetId::Custom(token_id) => {
+                use pallet_fungible_tokens::{TokenInfo, TokenBalances, Tokens};
+                use frame_support::BoundedVec;
+                if Tokens::<Runtime>::get(token_id).is_none() {
+                    let token = TokenInfo {
+                        owner: who.clone(),
+                        name: BoundedVec::try_from(b"BENCH".to_vec()).unwrap(),
+                        symbol: BoundedVec::try_from(b"BCH".to_vec()).unwrap(),
+                        decimals: 9,
+                        total_supply: amount,
+                        is_frozen: false,
+                        created_block: 0,
+                    };
+                    Tokens::<Runtime>::insert(token_id, token);
+                }
+                let current = TokenBalances::<Runtime>::get(token_id, who);
+                TokenBalances::<Runtime>::insert(token_id, who, current + amount);
+            }
+        }
+    }
 }
 
 impl pallet_amm_dex::Config for Runtime {
@@ -584,7 +611,7 @@ impl pallet_amm_dex::Config for Runtime {
     type FeeDenominator = FeeDenominator;
     type MinLiquidity = MinLiquidity;
     type MaxPools = MaxPools;
-    type WeightInfo = ();
+    type WeightInfo = pallet_amm_dex::SubstrateWeight<Runtime>;
     type TokenHandler = Runtime;
 }
 
@@ -625,6 +652,7 @@ impl pallet_fungible_tokens::Config for Runtime {
     type MaxTokensPerAccount = MaxTokensPerAccount;
     type CreateTokenDeposit = CreateTokenDeposit;
     type MaxBalance = FungibleMaxBalance;
+    type WeightInfo = pallet_fungible_tokens::SubstrateWeight<Runtime>;
 }
 
 // === Verdis Tokenomics ===
