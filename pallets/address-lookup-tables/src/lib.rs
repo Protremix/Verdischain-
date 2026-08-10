@@ -56,6 +56,8 @@ pub mod pallet {
         TableNotActive,
         TableFull,
         MaxTablesExceeded,
+        NotTableOwner,
+        TableLimitReached,
     }
     #[pallet::call]
     impl<T: Config> Pallet<T> {
@@ -63,11 +65,11 @@ pub mod pallet {
         #[pallet::call_index(0)]
         pub fn create_table(origin: OriginFor<T>) -> DispatchResult {
             let who = ensure_signed(origin)?;
-            let table_id = AltTotalTables::<T>::get() as u32;
+            let table_id = AltTotalTables::<T>::get().try_into().map_err(|_| Error::<T>::TableLimitReached)?;
             let root = sp_io::hashing::blake2_256(&who.encode());
             TableIds::<T>::insert(table_id, root);
             TableActive::<T>::insert(table_id, true);
-            AltTotalTables::<T>::mutate(|t| *t += 1);
+            AltTotalTables::<T>::mutate(|t| *t = t.saturating_add(1));
             Self::deposit_event(Event::TableCreated { table_id, root });
             Ok(())
         }
@@ -81,9 +83,9 @@ pub mod pallet {
                 count < T::MaxAddressesPerTable::get(),
                 Error::<T>::TableFull
             );
-            TableAddressCount::<T>::mutate(table_id, |c| *c += 1);
+            TableAddressCount::<T>::mutate(table_id, |c| *c = c.saturating_add(1));
             AltTotalAddresses::<T>::mutate(|a| *a += 1);
-            AltBytesSaved::<T>::mutate(|b| *b += 30);
+            AltBytesSaved::<T>::mutate(|b| *b = b.saturating_add(30));
             Self::deposit_event(Event::AddressAdded {
                 table_id,
                 index: count,
@@ -93,7 +95,12 @@ pub mod pallet {
         #[pallet::weight(0)]
         #[pallet::call_index(2)]
         pub fn deactivate_table(origin: OriginFor<T>, table_id: u32) -> DispatchResult {
-            ensure_signed(origin)?;
+            let who = ensure_signed(origin)?;
+            ensure!(TableActive::<T>::get(table_id), Error::<T>::TableNotActive);
+            // Only table owner can deactivate
+            let root = TableIds::<T>::get(table_id).ok_or(Error::<T>::TableNotFound)?;
+            let expected_root = sp_io::hashing::blake2_256(&who.encode());
+            ensure!(root == expected_root, Error::<T>::NotTableOwner);
             TableActive::<T>::insert(table_id, false);
             Self::deposit_event(Event::TableDeactivated { table_id });
             Ok(())
@@ -102,8 +109,8 @@ pub mod pallet {
         #[pallet::call_index(3)]
         pub fn lookup_address(origin: OriginFor<T>, table_id: u32, index: u32) -> DispatchResult {
             ensure_signed(origin)?;
-            AltTotalLookups::<T>::mutate(|l| *l += 1);
-            AltBytesSaved::<T>::mutate(|b| *b += 30);
+            AltTotalLookups::<T>::mutate(|l| *l = l.saturating_add(1));
+            AltBytesSaved::<T>::mutate(|b| *b = b.saturating_add(30));
             Self::deposit_event(Event::LookupPerformed {
                 table_id,
                 index,

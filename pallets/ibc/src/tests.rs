@@ -233,7 +233,7 @@ fn close_channel_works() {
         ));
         assert!(Pallet::<Test>::is_channel_open(0));
         assert_ok!(Pallet::<Test>::close_channel(
-            frame_system::RawOrigin::Signed(acct.clone()).into(),
+            frame_system::RawOrigin::Root.into(),
             0
         ));
         assert!(!Pallet::<Test>::is_channel_open(0));

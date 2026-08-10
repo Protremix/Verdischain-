@@ -157,7 +157,7 @@ pub mod pallet {
             block_number: u32,
             forward_time_ms: u64,
         ) -> DispatchResult {
-            let _ = ensure_signed(origin)?;
+            ensure_root(origin)?;
 
             let mut tx =
                 PendingForwards::<T>::get(tx_hash).ok_or(Error::<T>::TransactionNotFound)?;

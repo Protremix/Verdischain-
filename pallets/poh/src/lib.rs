@@ -87,7 +87,7 @@ pub mod pallet {
         #[pallet::call_index(0)]
         #[pallet::weight(0)]
         pub fn record_block(origin: OriginFor<T>) -> DispatchResult {
-            let _who = ensure_signed_or_root(origin)?;
+            let _who = ensure_root(origin)?;
             let block_number = <frame_system::Pallet<T>>::block_number();
             let hash = Self::tick();
             <PohHashes<T>>::insert(block_number, hash);
@@ -119,7 +119,7 @@ pub mod pallet {
         #[pallet::call_index(2)]
         #[pallet::weight(0)]
         pub fn tick_extrinsic(origin: OriginFor<T>) -> DispatchResult {
-            let _who = ensure_signed_or_root(origin)?;
+            let _who = ensure_root(origin)?;
             Self::tick();
             Ok(())
         }

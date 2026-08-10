@@ -63,6 +63,10 @@ pub mod pallet {
         StorageMap<_, Blake2_128Concat, BoundedVec<u8, ConstU32<64>>, StorageRecord<T::AccountId>>;
 
     #[pallet::storage]
+    #[pallet::getter(fn storage_record_count)]
+    pub type StorageRecordCount<T: Config> = StorageValue<_, u32, ValueQuery>;
+
+    #[pallet::storage]
     #[pallet::getter(fn storage_providers)]
     pub type StorageProviders<T: Config> =
         StorageMap<_, Blake2_128Concat, T::AccountId, StorageProvider<T::AccountId>>;
@@ -144,6 +148,7 @@ pub mod pallet {
     pub enum Error<T> {
         RecordNotFound,
         RecordAlreadyExists,
+        NotOwner,
         NotRecordOwner,
         ProviderNotFound,
         ProviderAlreadyRegistered,
@@ -193,7 +198,7 @@ pub mod pallet {
                 Error::<T>::RecordAlreadyExists
             );
             ensure!(
-                (StorageRecords::<T>::iter().count() as u32) < T::MaxRecords::get(),
+                StorageRecordCount::<T>::get() < T::MaxRecords::get(),
                 Error::<T>::MaxRecordsReached
             );
 
@@ -281,7 +286,7 @@ pub mod pallet {
         #[pallet::call_index(3)]
         #[pallet::weight(Weight::from_parts(20_000_000, 0))]
         pub fn request_pin(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
-            let _who = ensure_signed(origin)?;
+            let who = ensure_signed(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
                 id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
@@ -290,6 +295,9 @@ pub mod pallet {
                 StorageRecords::<T>::contains_key(&id_bv),
                 Error::<T>::RecordNotFound
             );
+            // Only record owner can pin
+            let record = StorageRecords::<T>::get(&id_bv).ok_or(Error::<T>::RecordNotFound)?;
+            ensure!(record.owner == who, Error::<T>::NotOwner);
             PinRequests::<T>::insert(&id_bv, true);
             StorageRecords::<T>::mutate(&id_bv, |r| {
                 if let Some(r) = r {

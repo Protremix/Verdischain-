@@ -66,7 +66,7 @@ pub mod pallet {
         #[pallet::weight(0)]
         #[pallet::call_index(1)]
         pub fn rebuild_tree(origin: OriginFor<T>, validator_count: u32) -> DispatchResult {
-            let _ = ensure_signed(origin)?;
+            ensure_root(origin)?;
             ensure!(validator_count > 0, Error::<T>::NoValidators);
             let depth = Self::calc_depth(validator_count, T::MaxValidatorsPerNode::get());
             TurbineTreeDepth::<T>::put(depth);
@@ -98,7 +98,7 @@ pub mod pallet {
             let mut d = 1;
             let mut n = fanout;
             while n < count {
-                n *= fanout;
+                n = n.saturating_mul(fanout);
                 d += 1;
             }
             d

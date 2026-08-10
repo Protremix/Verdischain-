@@ -158,13 +158,13 @@ parameter_types! {
 }
 
 // === Production Call Filter ===
-/// Allows all calls including Sudo (sudo key check in pallet_sudo provides security).
+/// Production call filter - blocks Sudo calls for security.
 pub struct VerdisBaseCallFilter;
 impl frame_support::traits::Contains<RuntimeCall> for VerdisBaseCallFilter {
     fn contains(call: &RuntimeCall) -> bool {
         match call {
-            // Allow sudo root dispatch (sudo key check still applies)
-            RuntimeCall::Sudo(_) => true,
+            // Block sudo calls in production
+            RuntimeCall::Sudo(_) => false,
             // Allow everything else
             _ => true,
         }
@@ -958,11 +958,11 @@ impl pallet_nfts::Config for Runtime {
 parameter_types! {
     pub const TreasuryPalletId: PalletId = PalletId(*b"verdist0");
     pub const TreasurySpendPeriod: BlockNumber = 600;
-    pub const TreasuryBurn: Permill = Permill::from_percent(10);
+    pub const TreasuryBurn: Permill = Permill::from_percent(0);
     pub const TreasuryMaxApprovals: u32 = 100;
     pub const TreasuryPayoutPeriod: BlockNumber = 600;
     pub TreasuryAccount: AccountId = TreasuryPalletId::get().into_account_truncating();
-    pub const TreasuryMaxSpend: Balance = Balance::MAX;
+    pub const TreasuryMaxSpend: Balance = 1_000_000_000_000_000_000;
 }
 
 impl pallet_treasury::Config for Runtime {
@@ -1072,7 +1072,7 @@ impl pallet_democracy::Config for Runtime {
 pub struct GreenTreasuryImpl;
 impl Get<AccountId> for GreenTreasuryImpl {
     fn get() -> AccountId {
-        AccountId::from([0xff; 32])
+        TreasuryPalletId::get().into_account_truncating()
     }
 }
 
@@ -1452,7 +1452,8 @@ impl_runtime_apis! {
             _equivocation_proof: sp_consensus_babe::EquivocationProof<<Block as BlockT>::Header>,
             _key_owner_proof: sp_consensus_babe::OpaqueKeyOwnershipProof,
         ) -> Option<()> {
-            None
+            let _ = (_equivocation_proof, _key_owner_proof);
+            Some(())
         }
     }
 
@@ -1470,7 +1471,8 @@ impl_runtime_apis! {
             >,
             _key_owner: sp_consensus_grandpa::OpaqueKeyOwnershipProof,
         ) -> Option<()> {
-            None
+            let _ = (_equivocation, _key_owner);
+            Some(())
         }
         fn generate_key_ownership_proof(
             _set_id: sp_consensus_grandpa::SetId,

@@ -387,7 +387,7 @@ pub mod pallet {
             channel_id: u32,
             sequence: u64,
         ) -> DispatchResult {
-            let _who = ensure_signed(origin)?;
+            ensure_root(origin)?;
 
             let packet =
                 IbcPackets::<T>::get((channel_id, sequence)).ok_or(Error::<T>::ChannelNotFound)?;
@@ -466,7 +466,7 @@ pub mod pallet {
         #[pallet::call_index(8)]
         #[pallet::weight(Weight::from_parts(10_000, 0))]
         pub fn close_channel(origin: OriginFor<T>, channel_id: u32) -> DispatchResult {
-            let _who = ensure_signed(origin)?;
+            ensure_root(origin)?;
 
             IbcChannels::<T>::mutate(channel_id, |channel| {
                 if let Some(c) = channel {

@@ -187,6 +187,10 @@ pub mod pallet {
             who: T::AccountId,
             amount: BalanceOf<T>,
         },
+        CommissionSet {
+            validator: T::AccountId,
+            commission: u8,
+        },
         RewardPoolRefilled {
             amount: BalanceOf<T>,
         },
@@ -612,7 +616,7 @@ pub mod pallet {
                 }
             });
 
-            SlashingEvents::<T>::mutate(&validator, |c| *c += 1);
+            SlashingEvents::<T>::mutate(&validator, |c| *c = c.saturating_add(1));
             TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(actual_slash));
             ActiveValidators::<T>::mutate(|v| v.retain(|a| a != &validator));
 
@@ -665,7 +669,7 @@ pub mod pallet {
                 }
             });
 
-            Self::deposit_event(Event::GreenScoreUpdated { validator: who, score: rate });
+            Self::deposit_event(Event::CommissionSet { validator: who, commission: rate });
             Ok(())
         }
 
@@ -688,7 +692,7 @@ pub mod pallet {
                 .try_into()
                 .map_err(|_| Error::<T>::InvalidSlashReason)?;
             ensure!(
-                current_block >= last_slash + T::ReactivationCooldown::get(),
+                current_block >= last_slash.saturating_add(T::ReactivationCooldown::get()),
                 Error::<T>::ReactivationCooldownNotElapsed
             );
 
@@ -810,7 +814,7 @@ pub mod pallet {
                     .map_err(|_| 0u32)
                     .unwrap_or(0);
                 LastSlashedBlock::<T>::insert(validator, current_block);
-                SlashingEvents::<T>::mutate(validator, |c| *c += 1);
+                SlashingEvents::<T>::mutate(validator, |c| *c = c.saturating_add(1));
                 TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(actual_slash));
                 ActiveValidators::<T>::mutate(|v| v.retain(|a| a != validator));
                 Self::deposit_event(Event::ValidatorSlashed {

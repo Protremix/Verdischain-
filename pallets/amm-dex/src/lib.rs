@@ -656,6 +656,12 @@ pub mod pallet {
                 Error::<T>::InsufficientLiquidity
             );
 
+            // Transfers FIRST (before state update for atomicity)
+            let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
+            T::Currency::transfer(&who, &dex_account, amount_in, ExistenceRequirement::KeepAlive)?;
+            T::Currency::transfer(&dex_account, &who, amount_out, ExistenceRequirement::KeepAlive)?;
+
+            // THEN update pool reserves
             if is_a_to_b {
                 pool.reserve_a = pool
                     .reserve_a
@@ -676,14 +682,10 @@ pub mod pallet {
                     .ok_or(Error::<T>::ArithmeticUnderflow)?;
             }
 
-            let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
-            T::Currency::transfer(&who, &dex_account, amount_in, ExistenceRequirement::KeepAlive)?;
-            T::Currency::transfer(&dex_account, &who, amount_out, ExistenceRequirement::KeepAlive)?;
-
             Pools::<T>::insert(pool_id, pool.clone());
 
             TotalVolume::<T>::mutate(|v| *v = v.saturating_add(amount_in));
-            TotalSwaps::<T>::mutate(|s| *s += 1);
+            TotalSwaps::<T>::mutate(|s| *s = s.saturating_add(1));
 
             Self::deposit_event(Event::SwapExecuted {
                 pool_id,
@@ -1019,7 +1021,7 @@ pub mod pallet {
 
             TokenPools::<T>::insert(pool_id, pool);
             TotalVolume::<T>::mutate(|v| *v = v.saturating_add(amount_in));
-            TotalSwaps::<T>::mutate(|s| *s += 1);
+            TotalSwaps::<T>::mutate(|s| *s = s.saturating_add(1));
 
             Self::deposit_event(Event::TokenSwapExecuted {
                 pool_id,

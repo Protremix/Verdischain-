@@ -308,8 +308,11 @@ pub mod pallet {
             let divisor: BalanceOf<T> = 10_000u32.saturated_into();
             let cost = amount.saturating_mul(price_bal) / divisor;
 
-            // Transfer tokens from pallet treasury
+            // Collect payment from buyer FIRST
             let treasury = T::PalletId::get().into_account_truncating();
+            T::Currency::transfer(&who, &treasury, cost, ExistenceRequirement::KeepAlive)?;
+
+            // Then transfer purchased tokens to buyer
             T::Currency::transfer(&treasury, &who, amount, ExistenceRequirement::AllowDeath)?;
 
             PresaleRaised::<T>::mutate(|r| *r = r.saturating_add(cost));

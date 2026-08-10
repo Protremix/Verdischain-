@@ -55,7 +55,7 @@ fn register_shard_works() {
 fn rebuild_tree_works() {
     new_test_ext().execute_with(|| {
         assert_ok!(Pallet::<Test>::rebuild_tree(
-            frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+            frame_system::RawOrigin::Root.into(),
             64
         ));
         assert_eq!(TurbineValidatorCount::<Test>::get(), 64);

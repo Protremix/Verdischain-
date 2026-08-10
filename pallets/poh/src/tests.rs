@@ -75,13 +75,13 @@ fn tick_generates_vdf_hash() {
 fn record_block_works() {
     new_test_ext().execute_with(|| {
         System::set_block_number(1);
-        assert_ok!(Poh::record_block(RuntimeOrigin::signed(alice())));
+        assert_ok!(Poh::record_block(RuntimeOrigin::root()));
 
         let hash1 = Poh::get_poh_hash(1).expect("Block 1 should be stamped");
         assert_eq!(PohTick::<Test>::get(), 1);
 
         System::set_block_number(2);
-        assert_ok!(Poh::record_block(RuntimeOrigin::signed(alice())));
+        assert_ok!(Poh::record_block(RuntimeOrigin::root()));
 
         let hash2 = Poh::get_poh_hash(2).expect("Block 2 should be stamped");
         assert_eq!(PohTick::<Test>::get(), 2);
@@ -93,13 +93,13 @@ fn record_block_works() {
 fn verify_poh_works() {
     new_test_ext().execute_with(|| {
         System::set_block_number(1);
-        assert_ok!(Poh::record_block(RuntimeOrigin::signed(alice())));
+        assert_ok!(Poh::record_block(RuntimeOrigin::root()));
 
         System::set_block_number(2);
-        assert_ok!(Poh::record_block(RuntimeOrigin::signed(alice())));
+        assert_ok!(Poh::record_block(RuntimeOrigin::root()));
 
         System::set_block_number(3);
-        assert_ok!(Poh::record_block(RuntimeOrigin::signed(alice())));
+        assert_ok!(Poh::record_block(RuntimeOrigin::root()));
 
         assert!(Poh::verify_poh(1, 3));
         assert!(Poh::verify_poh(1, 2));
@@ -134,7 +134,7 @@ fn set_config_works() {
 #[test]
 fn tick_extrinsic_works() {
     new_test_ext().execute_with(|| {
-        assert_ok!(Poh::tick_extrinsic(RuntimeOrigin::signed(alice())));
+        assert_ok!(Poh::tick_extrinsic(RuntimeOrigin::root()));
         assert_eq!(PohTick::<Test>::get(), 1);
     });
 }

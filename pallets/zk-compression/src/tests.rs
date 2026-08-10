@@ -67,10 +67,10 @@ fn compress_account_works() {
 fn verify_proof_works() {
     new_test_ext().execute_with(|| {
         assert_ok!(Pallet::<Test>::verify_proof(
-            frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+            frame_system::RawOrigin::Root.into(),
             0,
             0,
-            true
+            [0u8; 32]
         ));
     });
 }
