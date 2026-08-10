@@ -509,7 +509,7 @@ impl pallet_contracts::Config for Runtime {
 parameter_types! {
     pub const DposPalletId: PalletId = PalletId(*b"verdisdp");
     pub const MaxStakePerValidator: Balance = 1_000_000_000 * UNITS; // 1B VRDX (1% of total supply)
-    pub const MinValidatorStake: Balance = 10_000_000 * UNITS; // 10M VRDX minimum
+    pub const MinValidatorStake: Balance = 100_000_000 * UNITS; // 100M VRDX minimum (0.1% supply) for sybil resistance
     pub const MaxValidators: u32 = 100;
     pub const ValidatorCount: u32 = 7; // 7 genesis validators (expand to 21 post-launch)
     pub const MinimumValidatorCount: u32 = 4; // Below 4 active validators, chain halts

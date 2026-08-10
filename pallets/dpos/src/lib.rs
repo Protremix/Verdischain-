@@ -55,6 +55,7 @@ pub mod pallet {
         pub slashed: bool,
         pub green_score: u8,
         pub energy_source: BoundedVec<u8, ConstU32<64>>,
+        pub commission: u8,
     }
 
     #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
@@ -261,6 +262,7 @@ pub mod pallet {
                     slashed: false,
                     green_score: 0,
                     energy_source: b"Unknown".to_vec().try_into().unwrap_or_default(),
+                    commission: 10,
                 };
                 Validators::<T>::insert(addr, validator);
                 // Reserve the stake balance so validators can't spend it
@@ -347,6 +349,7 @@ pub mod pallet {
                 slashed: false,
                 green_score,
                 energy_source: energy_source.clone().try_into().unwrap_or_default(),
+                commission: 10,
             };
 
             Validators::<T>::insert(&who, validator);
@@ -632,6 +635,26 @@ pub mod pallet {
             Self::deposit_event(Event::GreenScoreUpdated { validator, score });
             Ok(())
         }
+
+        /// Set validator commission rate (validator sets own rate, 0-100%)
+        #[pallet::call_index(7)]
+        #[pallet::weight(T::WeightInfo::update_green_score())]
+        pub fn set_commission(
+            origin: OriginFor<T>,
+            rate: u8,
+        ) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+            ensure!(rate <= 100, Error::<T>::InvalidSlashReason);
+
+            Validators::<T>::mutate(&who, |v| {
+                if let Some(v) = v {
+                    v.commission = rate;
+                }
+            });
+
+            Self::deposit_event(Event::GreenScoreUpdated { validator: who, score: rate });
+            Ok(())
+        }
     }
 
     // === Internal Functions ===
@@ -686,16 +709,25 @@ pub mod pallet {
 
         /// Rotate epoch — select top validators by votes
         fn rotate_epoch(block: u32) {
+            // Weight validators by green score: effective_votes = total_votes * (1 + green_score * 0.1)
+            // Green score 0 = 1x weight, score 5 = 1.5x weight, score 10 = 2x weight
             let mut all_validators: Vec<(T::AccountId, BalanceOf<T>)> = ValidatorList::<T>::get()
                 .into_iter()
                 .filter_map(|addr| {
                     Validators::<T>::get(&addr)
                         .filter(|v| v.active && !v.slashed)
-                        .map(|v| (addr, v.total_votes))
+                        .map(|v| {
+                            let score: BalanceOf<T> = (v.green_score as u32).into();
+                            let hundred: BalanceOf<T> = 100u32.into();
+                            let ten: BalanceOf<T> = 10u32.into();
+                            let multiplier = hundred.saturating_add(score.saturating_mul(ten));
+                            let effective_votes = v.total_votes.saturating_mul(multiplier) / hundred;
+                            (addr, effective_votes)
+                        })
                 })
                 .collect();
 
-            // Sort by votes descending, break ties by account ID for determinism
+            // Sort by effective votes descending, break ties by account ID for determinism
             all_validators.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
 
             let active_count = T::ActiveValidatorCount::get() as usize;
