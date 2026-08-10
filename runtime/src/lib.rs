@@ -163,8 +163,19 @@ pub struct VerdisBaseCallFilter;
 impl frame_support::traits::Contains<RuntimeCall> for VerdisBaseCallFilter {
     fn contains(call: &RuntimeCall) -> bool {
         match call {
-            // Block sudo calls in production
+            // Block ALL sudo calls in production
             RuntimeCall::Sudo(_) => false,
+            // Recursively check Utility batch calls for nested Sudo
+            RuntimeCall::Utility(pallet_utility::Call::batch { calls })
+            | RuntimeCall::Utility(pallet_utility::Call::batch_all { calls })
+            | RuntimeCall::Utility(pallet_utility::Call::force_batch { calls }) => {
+                calls.iter().all(|c| Self::contains(c))
+            }
+            // Block Scheduler schedule calls that wrap Sudo
+            RuntimeCall::Scheduler(pallet_scheduler::Call::schedule { call, .. })
+            | RuntimeCall::Scheduler(pallet_scheduler::Call::schedule_named { call, .. }) => {
+                Self::contains(call.as_ref())
+            }
             // Allow everything else
             _ => true,
         }
@@ -528,7 +539,8 @@ impl pallet_contracts::Config for Runtime {
 
 parameter_types! {
     pub const DposPalletId: PalletId = PalletId(*b"verdisdp");
-    pub const MaxStakePerValidator: Balance = 1_000_000_000 * UNITS; // 1B VRDX (1% of total supply)
+    pub const MaxStakePerValidator: Balance = 1_000_000_000 * UNITS;
+    pub const MaxCommission: u8 = 20; // Maximum 20% commission // 1B VRDX (1% of total supply)
     pub const ReactivationCooldown: u32 = 432_000; // ~30 days at 6s blocks (7200 blocks/day)
     pub const MinValidatorStake: Balance = 100_000_000 * UNITS; // 100M VRDX minimum (0.1% supply) for sybil resistance
     pub const MaxValidators: u32 = 100;
@@ -550,6 +562,7 @@ impl pallet_dpos::Config for Runtime {
     type UnbondingPeriod = UnbondingPeriod;
     type PalletId = DposPalletId;
     type MaxStakePerValidator = MaxStakePerValidator;
+    type MaxCommission = MaxCommission;
     type ReactivationCooldown = ReactivationCooldown;
     type WeightInfo = pallet_dpos::SubstrateWeight<Runtime>;
 }

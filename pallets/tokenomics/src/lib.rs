@@ -198,6 +198,9 @@ pub mod pallet {
         InvalidCategory,
         DistributionComplete,
         AlreadyConsented,
+        ZeroAmount,
+        ZeroPrice,
+        CalculationOverflow,
     }
 
     // === Config ===
@@ -286,17 +289,23 @@ pub mod pallet {
         pub fn purchase(origin: OriginFor<T>, amount: BalanceOf<T>) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
+            // Zero-check: prevent zero-amount purchases
+            ensure!(amount > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
+
             // Enforce consent gating
             ensure!(
                 ConsentGiven::<T>::get(&who).unwrap_or(false),
                 Error::<T>::ConsentRequired
             );
 
-            // Enforce investor allocation limit (12B)
+            // Enforce investor allocation limit
             let sold = PresaleSold::<T>::get();
             let max = T::InvestorAllocation::get();
+            let new_sold = sold
+                .checked_add(&amount)
+                .ok_or(Error::<T>::CalculationOverflow)?;
             ensure!(
-                sold.saturating_add(amount) <= max,
+                new_sold <= max,
                 Error::<T>::MaxInvestorAllocationReached
             );
 
@@ -304,7 +313,13 @@ pub mod pallet {
             let price_bps = PresalePrice::<T>::get();
             let price_bal: BalanceOf<T> = price_bps.saturated_into();
             let divisor: BalanceOf<T> = 10_000u32.saturated_into();
-            let cost = amount.saturating_mul(price_bal) / divisor;
+            let gross = amount
+                .checked_mul(&price_bal)
+                .ok_or(Error::<T>::CalculationOverflow)?;
+            let cost = gross
+                .checked_div(&divisor)
+                .ok_or(Error::<T>::CalculationOverflow)?;
+            ensure!(cost > BalanceOf::<T>::zero(), Error::<T>::ZeroPrice);
 
             // Collect payment from buyer FIRST
             let treasury = T::PalletId::get().into_account_truncating();
@@ -313,9 +328,12 @@ pub mod pallet {
             // Then transfer purchased tokens to buyer
             T::Currency::transfer(&treasury, &who, amount, ExistenceRequirement::AllowDeath)?;
 
-            PresaleRaised::<T>::mutate(|r| *r = r.saturating_add(cost));
-            PresaleSold::<T>::mutate(|s| *s = s.saturating_add(amount));
-            CirculatingSupply::<T>::mutate(|c| *c = c.saturating_add(amount));
+            let new_raised = PresaleRaised::<T>::get().checked_add(&cost).ok_or(Error::<T>::CalculationOverflow)?;
+            PresaleRaised::<T>::put(new_raised);
+            let new_sold = PresaleSold::<T>::get().checked_add(&amount).ok_or(Error::<T>::CalculationOverflow)?;
+            PresaleSold::<T>::put(new_sold);
+            let new_supply = CirculatingSupply::<T>::get().checked_add(&amount).ok_or(Error::<T>::CalculationOverflow)?;
+            CirculatingSupply::<T>::put(new_supply);
 
             Self::deposit_event(Event::TokensPurchased {
                 buyer: who,
@@ -361,7 +379,8 @@ pub mod pallet {
                 Ok::<(), Error<T>>(())
             })?;
 
-            CirculatingSupply::<T>::mutate(|c| *c = c.saturating_add(amount));
+            let new_supply = CirculatingSupply::<T>::get().checked_add(&amount).ok_or(Error::<T>::CalculationOverflow)?;
+            CirculatingSupply::<T>::put(new_supply);
 
             Self::deposit_event(Event::DistributionUpdated {
                 category,

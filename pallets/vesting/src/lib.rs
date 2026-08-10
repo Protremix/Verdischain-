@@ -128,6 +128,8 @@ pub mod pallet {
         LabelTooLong,
         MaxVestingSchedules,
         ScheduleAlreadyExists,
+        Overflow,
+        Underflow,
     }
 
     // === Config ===
@@ -294,7 +296,10 @@ pub mod pallet {
             });
 
             // Reduce locked balance tracking
-            LockedBalances::<T>::mutate(&who, |l| *l = l.saturating_sub(total_releasable));
+            let new_locked = LockedBalances::<T>::get(&who)
+                .checked_sub(&total_releasable)
+                .ok_or(Error::<T>::Underflow)?;
+            LockedBalances::<T>::insert(&who, new_locked);
 
             // Update or remove the native Substrate lock
             let remaining_locked = LockedBalances::<T>::get(&who);

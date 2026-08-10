@@ -80,8 +80,13 @@ pub mod pallet {
     #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]
     pub struct SaleRound<Balance, BlockNumber> {
         pub label: BoundedVec<u8, ConstU32<32>>,
-        /// Tokens per payment unit. token_amount = payment_amount * token_price.
+        /// Price numerator: token_amount = (payment_amount * token_price) / price_precision
+        /// For integer ratios (5 VRDX per 1 payment unit): token_price=5, price_precision=1
+        /// For fractional ratios (0.5 VRDX per 1 payment unit): token_price=5, price_precision=10
+        /// For 9-decimal fixed point: token_price=5*10^9, price_precision=10^9
         pub token_price: Balance,
+        /// Denominator for price calculation. Default 1 for backward compatibility.
+        pub price_precision: Balance,
         pub total_allocation: Balance,
         pub sold: Balance,
         pub per_account_cap: Balance,
@@ -297,6 +302,7 @@ pub mod pallet {
                 let round = SaleRound {
                     label: label_bv,
                     token_price: *price,
+                    price_precision: <BalanceOf<T> as From<u32>>::from(1u32),
                     total_allocation: *allocation,
                     sold: BalanceOf::<T>::zero(),
                     per_account_cap: *cap,
@@ -355,6 +361,7 @@ pub mod pallet {
             let round = SaleRound {
                 label: label_bv,
                 token_price,
+                price_precision: <BalanceOf<T> as From<u32>>::from(1u32),
                 total_allocation,
                 sold: BalanceOf::<T>::zero(),
                 per_account_cap,
@@ -441,11 +448,18 @@ pub mod pallet {
                 );
             }
 
-            // === Price formula: token_amount = payment_amount * token_price ===
-            // token_price = tokens per payment unit
-            let token_amount = payment_amount
+            // === Price formula: token_amount = (payment_amount * token_price) / price_precision ===
+            // This prevents over-issuance when using fixed-point price representation
+            let gross_amount = payment_amount
                 .checked_mul(&round.token_price)
                 .ok_or(Error::<T>::CalculationOverflow)?;
+            let token_amount = if round.price_precision > BalanceOf::<T>::zero() {
+                gross_amount
+                    .checked_div(&round.price_precision)
+                    .ok_or(Error::<T>::CalculationOverflow)?
+            } else {
+                gross_amount // Fallback for zero precision (treats as 1)
+            };
 
             // Per-round per-account cap check
             let contribution = Contributions::<T>::get(round_id, &who).unwrap_or_default();

@@ -218,6 +218,7 @@ pub mod pallet {
         AlreadyVoted,
         VoteStorageFull,
         UnbondingQueueFull,
+        CommissionTooHigh,
         ZeroAmount,
         ReactivationCooldownNotElapsed,
         ValidatorNotSlashed,
@@ -245,6 +246,7 @@ pub mod pallet {
         type PalletId: Get<PalletId>;
         #[pallet::constant]
         type MaxStakePerValidator: Get<BalanceOf<Self>>;
+    type MaxCommission: Get<u8>;
         #[pallet::constant]
         type ReactivationCooldown: Get<u32>;
         type WeightInfo: WeightInfo;
@@ -659,7 +661,7 @@ pub mod pallet {
             rate: u8,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
-            ensure!(rate <= 100, Error::<T>::InvalidSlashReason);
+            ensure!(rate <= T::MaxCommission::get(), Error::<T>::CommissionTooHigh);
 
             Validators::<T>::mutate(&who, |v| {
                 if let Some(v) = v {
@@ -1080,6 +1082,7 @@ mod tests {
         pub const UnbondingPeriod: u32 = 20;
         pub const DposPalletId: PalletId = PalletId(*b"v/dposps");
         pub const MaxStakePerValidator: u128 = 100_000;
+        pub const MaxCommission: u8 = 20;
         pub const ReactivationCooldown: u32 = 10;
     }
 
@@ -1095,6 +1098,7 @@ mod tests {
         type PalletId = DposPalletId;
         type MaxStakePerValidator = MaxStakePerValidator;
         type ReactivationCooldown = ReactivationCooldown;
+        type MaxCommission = MaxCommission;
         type WeightInfo = SubstrateWeight<Test>;
     }
 

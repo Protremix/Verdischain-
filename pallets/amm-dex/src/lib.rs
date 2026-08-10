@@ -465,12 +465,12 @@ pub mod pallet {
                     .total_lp
                     .checked_mul(&amount_a)
                     .ok_or(Error::<T>::ArithmeticOverflow)?
-                    / pool.reserve_a;
+                    .checked_div(&pool.reserve_a).unwrap_or(0u32.into());
                 let lp_b = pool
                     .total_lp
                     .checked_mul(&amount_b)
                     .ok_or(Error::<T>::ArithmeticOverflow)?
-                    / pool.reserve_b;
+                    .checked_div(&pool.reserve_b).unwrap_or(0u32.into());
                 let lp = lp_a.min(lp_b);
                 ensure!(lp > BalanceOf::<T>::zero(), Error::<T>::InsufficientAmount);
                 lp
@@ -635,7 +635,7 @@ pub mod pallet {
             let denominator = reserve_in
                 .checked_add(&amount_in_after_fee)
                 .ok_or(Error::<T>::ArithmeticOverflow)?;
-            let amount_out = numerator / denominator;
+            let amount_out = numerator.checked_div(&denominator).ok_or(Error::<T>::InsufficientLiquidity)?;
 
             // Circuit breaker: limit single swap size to MaxPriceImpact of pool reserves
             let max_impact: BalanceOf<T> = T::MaxPriceImpact::get().deconstruct().into();
@@ -802,12 +802,12 @@ pub mod pallet {
                     .total_lp
                     .checked_mul(&amount_a)
                     .ok_or(Error::<T>::ArithmeticOverflow)?
-                    / pool.reserve_a;
+                    .checked_div(&pool.reserve_a).unwrap_or(0u32.into());
                 let lp_b = pool
                     .total_lp
                     .checked_mul(&amount_b)
                     .ok_or(Error::<T>::ArithmeticOverflow)?
-                    / pool.reserve_b;
+                    .checked_div(&pool.reserve_b).unwrap_or(0u32.into());
                 let lp = lp_a.min(lp_b);
                 ensure!(lp > BalanceOf::<T>::zero(), Error::<T>::InsufficientAmount);
                 lp
@@ -970,7 +970,7 @@ pub mod pallet {
             let denominator = reserve_in
                 .checked_add(&amount_in_after_fee)
                 .ok_or(Error::<T>::ArithmeticOverflow)?;
-            let amount_out = numerator / denominator;
+            let amount_out = numerator.checked_div(&denominator).ok_or(Error::<T>::InsufficientLiquidity)?;
 
             // Circuit breaker: limit single swap size to MaxPriceImpact of pool reserves
             let max_impact: BalanceOf<T> = T::MaxPriceImpact::get().deconstruct().into();

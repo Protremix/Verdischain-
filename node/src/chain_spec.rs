@@ -143,6 +143,13 @@ fn dev_validator_uris() -> Vec<&'static str> {
 
 // ─── 21-validator key set (testnet + mainnet) ───────────────────────────────
 
+
+fn mainnet_validator_uris() -> Vec<String> {
+    // CRITICAL: PLACEHOLDER URIs - MUST be replaced before mainnet launch
+    // Generate real keypairs: subkey generate --scheme sr25519
+    (1..=21).map(|i| format!("//MAINNET_VALIDATOR_{}", i)).collect()
+}
+
 fn testnet_validator_uris() -> Vec<&'static str> {
     vec![
         "Alice",
@@ -205,7 +212,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
 
     // Dev balances: same 9-category tokenomics but fewer validator stakes
     let mut balances = vec![
-        (eco_pool, 25 * bn),
+        (eco_pool, 30 * bn),
         (staking_pool, 20 * bn),
         (treasury_account, 15 * bn),
         (dev_pool, 10 * bn),
@@ -414,7 +421,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
 
     // Balances: 9-category tokenomics (100B VRDX total)
     let mut balances = vec![
-        (eco_pool, 25 * bn),
+        (eco_pool, 30 * bn),
         (staking_pool, 20 * bn),
         (treasury_account, 15 * bn),
         (dev_pool, 10 * bn),
@@ -717,9 +724,10 @@ pub fn mainnet_spec() -> VerdisChainSpec {
 }
 
 fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
-    use verdis_runtime::{BabeConfig, BalancesConfig, GrandpaConfig, SessionConfig, SudoConfig};
+    use verdis_runtime::{BabeConfig, BalancesConfig, GrandpaConfig, SessionConfig};
 
-    let sudo_account: AccountId = Sr25519Keyring::Alice.to_account_id();
+    // CRITICAL: No Sudo on mainnet. Sudo is disabled.
+    let team_multisig: AccountId = PalletId(*b"verdistm").into_account_truncating();
     let eco_pool: AccountId = PalletId(*b"verdisec").into_account_truncating();
     let staking_pool: AccountId = PalletId(*b"verdisdp").into_account_truncating();
     let treasury_account: AccountId = PalletId(*b"verdist0").into_account_truncating();
@@ -733,8 +741,9 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     let bn = billion();
 
     // 21 validators — placeholder keys (MUST be replaced before mainnet launch)
-    let uris = testnet_validator_uris();
-    let session_keys = build_session_keys(&uris);
+    let uris = mainnet_validator_uris();
+    let uri_refs: Vec<&str> = uris.iter().map(|s| s.as_str()).collect();
+    let session_keys = build_session_keys(&uri_refs);
 
     let babe_authorities: Vec<(BabeId, u64)> = session_keys
         .iter()
@@ -747,7 +756,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
 
     // Balances: 9-category tokenomics (100B VRDX total)
     let mut balances = vec![
-        (eco_pool, 25 * bn),
+        (eco_pool, 30 * bn),
         (staking_pool, 20 * bn),
         (treasury_account, 15 * bn),
         (dev_pool, 10 * bn),
@@ -755,18 +764,11 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (community_pool, 5 * bn),
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
-        (sudo_account.clone(), 5 * bn - 6 * 10_001_000 * u),
+        (team_multisig.clone(), 5 * bn),
     ];
     // 6 validator stakes (skip Alice, she has the team allocation)
     for uri in uris.iter().skip(1) {
-        let acct: AccountId = match *uri {
-            "Bob" => Sr25519Keyring::Bob.to_account_id(),
-            "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
-            "Dave" => Sr25519Keyring::Dave.to_account_id(),
-            "Eve" => Sr25519Keyring::Eve.to_account_id(),
-            "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
-            _ => sr_from(&format!("//{}", uri)).public().into(),
-        };
+        let acct: AccountId = sr_from(uri).public().into();
         balances.push((acct, 10_001_000 * u));
     }
 
@@ -774,15 +776,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     let dpos_validators: Vec<(AccountId, u128, bool)> = uris
         .iter()
         .map(|uri| {
-            let acct: AccountId = match *uri {
-                "Alice" => Sr25519Keyring::Alice.to_account_id(),
-                "Bob" => Sr25519Keyring::Bob.to_account_id(),
-                "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
-                "Dave" => Sr25519Keyring::Dave.to_account_id(),
-                "Eve" => Sr25519Keyring::Eve.to_account_id(),
-                "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
-                _ => sr_from(&format!("//{}", uri)).public().into(),
-            };
+            let acct: AccountId = sr_from(uri).public().into();
             (acct, 10_000_000 * u, true)
         })
         .collect();
@@ -790,15 +784,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     let validator_names: Vec<(AccountId, Vec<u8>)> = uris
         .iter()
         .map(|uri| {
-            let acct: AccountId = match *uri {
-                "Alice" => Sr25519Keyring::Alice.to_account_id(),
-                "Bob" => Sr25519Keyring::Bob.to_account_id(),
-                "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
-                "Dave" => Sr25519Keyring::Dave.to_account_id(),
-                "Eve" => Sr25519Keyring::Eve.to_account_id(),
-                "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
-                _ => sr_from(&format!("//{}", uri)).public().into(),
-            };
+            let acct: AccountId = sr_from(uri).public().into();
             (acct, uri.as_bytes().to_vec())
         })
         .collect();
@@ -810,15 +796,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     let council_members: Vec<AccountId> = uris
         .iter()
         .take(8)
-        .map(|uri| match *uri {
-            "Alice" => Sr25519Keyring::Alice.to_account_id(),
-            "Bob" => Sr25519Keyring::Bob.to_account_id(),
-            "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
-            "Dave" => Sr25519Keyring::Dave.to_account_id(),
-            "Eve" => Sr25519Keyring::Eve.to_account_id(),
-            "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
-            _ => sr_from(&format!("//{}", uri)).public().into(),
-        })
+        .map(|uri| sr_from(uri).public().into())
         .collect();
 
     verdis_runtime::RuntimeGenesisConfig {
@@ -827,9 +805,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             balances,
             dev_accounts: None,
         },
-        sudo: SudoConfig {
-            key: Some(sudo_account),
-        },
+        sudo: Default::default(), // Sudo disabled on mainnet (key = None)
         transaction_payment: Default::default(),
         babe: BabeConfig {
             authorities: vec![],
