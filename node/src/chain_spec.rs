@@ -48,29 +48,63 @@ fn billion() -> u128 {
     1_000_000_000 * units()
 }
 
-/// Build a session-keys vector for the given list of (controller, babe_pair, grandpa_pair) URIs.
+/// Build a session-keys vector for the given list of URIs.
 fn build_session_keys(uris: &[&str]) -> Vec<(AccountId, AccountId, SessionKeys)> {
     uris.iter()
-        .map(|uri| {
-            let acct: AccountId = sr_from(&format!("//{}", uri)).public().into();
-            SessionKeys {
-                babe: sr_from(&format!("//{}", uri)).public().into(),
-                grandpa: ed_from(&format!("//{}", uri)).public().into(),
-            }
-        })
         .enumerate()
-        .map(|(i, keys)| {
-            // Use the keyring for Alice–Ferdie, derived URIs for the rest
-            let controller = match i {
-                0 => Sr25519Keyring::Alice.to_account_id(),
-                1 => Sr25519Keyring::Bob.to_account_id(),
-                2 => Sr25519Keyring::Charlie.to_account_id(),
-                3 => Sr25519Keyring::Dave.to_account_id(),
-                4 => Sr25519Keyring::Eve.to_account_id(),
-                5 => Sr25519Keyring::Ferdie.to_account_id(),
-                _ => sr_from(&format!("//{}", uris[i])).public().into(),
-            };
-            (controller.clone(), controller, keys)
+        .map(|(i, uri)| {
+            match i {
+                0 => {
+                    let controller = Sr25519Keyring::Alice.to_account_id();
+                    (controller.clone(), controller, SessionKeys {
+                        babe: Sr25519Keyring::Alice.public().into(),
+                        grandpa: Ed25519Keyring::Alice.public().into(),
+                    })
+                }
+                1 => {
+                    let controller = Sr25519Keyring::Bob.to_account_id();
+                    (controller.clone(), controller, SessionKeys {
+                        babe: Sr25519Keyring::Bob.public().into(),
+                        grandpa: Ed25519Keyring::Bob.public().into(),
+                    })
+                }
+                2 => {
+                    let controller = Sr25519Keyring::Charlie.to_account_id();
+                    (controller.clone(), controller, SessionKeys {
+                        babe: Sr25519Keyring::Charlie.public().into(),
+                        grandpa: Ed25519Keyring::Charlie.public().into(),
+                    })
+                }
+                3 => {
+                    let controller = Sr25519Keyring::Dave.to_account_id();
+                    (controller.clone(), controller, SessionKeys {
+                        babe: Sr25519Keyring::Dave.public().into(),
+                        grandpa: Ed25519Keyring::Dave.public().into(),
+                    })
+                }
+                4 => {
+                    let controller = Sr25519Keyring::Eve.to_account_id();
+                    (controller.clone(), controller, SessionKeys {
+                        babe: Sr25519Keyring::Eve.public().into(),
+                        grandpa: Ed25519Keyring::Eve.public().into(),
+                    })
+                }
+                5 => {
+                    let controller = Sr25519Keyring::Ferdie.to_account_id();
+                    (controller.clone(), controller, SessionKeys {
+                        babe: Sr25519Keyring::Ferdie.public().into(),
+                        grandpa: Ed25519Keyring::Ferdie.public().into(),
+                    })
+                }
+                _ => {
+                    let pair = sr_from(&format!("//{}", uri));
+                    let controller: AccountId = pair.public().into();
+                    (controller.clone(), controller, SessionKeys {
+                        babe: pair.public().into(),
+                        grandpa: ed_from(&format!("//{}", uri)).public().into(),
+                    })
+                }
+            }
         })
         .collect()
 }
@@ -88,24 +122,6 @@ fn testnet_validator_uris() -> Vec<&'static str> {
         "Alice",
         "Bob",
         "Charlie",
-        "Dave",
-        "Eve",
-        "Ferdie",
-        "Validator7",
-        "Validator8",
-        "Validator9",
-        "Validator10",
-        "Validator11",
-        "Validator12",
-        "Validator13",
-        "Validator14",
-        "Validator15",
-        "Validator16",
-        "Validator17",
-        "Validator18",
-        "Validator19",
-        "Validator20",
-        "Validator21",
     ]
 }
 
@@ -146,7 +162,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
 
     // 6 validators for dev (fast testing)
     let uris = dev_validator_uris();
-    let session_keys = build_session_keys(&uris);
+    let session_keys = build_session_keys(&["Alice", "Bob", "Charlie"]);
 
     let babe_authorities: Vec<(BabeId, u64)> = session_keys
         .iter()
@@ -377,9 +393,9 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
         // Team & Advisors (5B) minus 21 validator stakes (21 * 10K = 210K)
-        (sudo_account.clone(), 5 * bn - 20 * 10_001 * u),
+        (sudo_account.clone(), 5 * bn - 2 * 10_001 * u),
     ];
-    // 20 validator stakes (skip Alice, she has the team allocation)
+    // 2 validator stakes (skip Alice, she has the team allocation)
     for uri in uris.iter().skip(1) {
         let acct: AccountId = match *uri {
             "Bob" => Sr25519Keyring::Bob.to_account_id(),
@@ -573,7 +589,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         },
         dpos: pallet_dpos::GenesisConfig {
             validators: dpos_validators,
-            validator_count: 21,
+            validator_count: 3,
             block_reward: 16 * u,
             validator_names,
         },
@@ -709,9 +725,9 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (community_pool, 5 * bn),
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
-        (sudo_account.clone(), 5 * bn - 20 * 10_001 * u),
+        (sudo_account.clone(), 5 * bn - 2 * 10_001 * u),
     ];
-    // 20 validator stakes (skip Alice, she has the team allocation)
+    // 2 validator stakes (skip Alice, she has the team allocation)
     for uri in uris.iter().skip(1) {
         let acct: AccountId = match *uri {
             "Bob" => Sr25519Keyring::Bob.to_account_id(),
@@ -803,7 +819,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         },
         dpos: pallet_dpos::GenesisConfig {
             validators: dpos_validators,
-            validator_count: 21,
+            validator_count: 3,
             block_reward: 16 * u,
             validator_names,
         },
