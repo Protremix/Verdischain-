@@ -94,6 +94,8 @@ pub mod pallet {
         pub end_block: BlockNumber,
         pub vesting_label: BoundedVec<u8, ConstU32<64>>,
         pub is_active: bool,
+        /// If true, only whitelisted accounts can contribute
+        pub whitelist_required: bool,
     }
 
     /// User contribution record — per (round_id, account_id)
@@ -203,6 +205,12 @@ pub mod pallet {
             amount: BalanceOf<T>,
             collected_by: T::AccountId,
         },
+        /// Refund claimed by a contributor from a failed/cancelled round
+        RefundClaimed {
+            round_id: u32,
+            account: T::AccountId,
+            amount: BalanceOf<T>,
+        },
         WhitelistUpdated {
             who: T::AccountId,
             whitelisted: bool,
@@ -222,6 +230,7 @@ pub mod pallet {
         ExceedsRoundAllocation,
         InsufficientAllocation,
         NotWhitelisted,
+        RoundNotRefundable,
         InsufficientPayment,
         ZeroPayment,
         RoundAlreadyExists,
@@ -310,6 +319,7 @@ pub mod pallet {
                     end_block: BlockNumberFor::<T>::from(*end),
                     vesting_label: vesting_bv,
                     is_active: false,
+                    whitelist_required: false,
                 };
 
                 let round_id = NextRoundId::<T>::get();
@@ -369,6 +379,7 @@ pub mod pallet {
                 end_block,
                 vesting_label: vesting_bv,
                 is_active: false,
+                whitelist_required: false,
             };
 
             let round_id = NextRoundId::<T>::get();
@@ -440,8 +451,8 @@ pub mod pallet {
             );
             ensure!(current_block < round.end_block, Error::<T>::RoundEnded);
 
-            // Per-round whitelist check
-            if Whitelist::<T>::iter_prefix(round_id).next().is_some() {
+            // Per-round whitelist check — enforced when admin sets whitelist_required
+            if round.whitelist_required {
                 ensure!(
                     Whitelist::<T>::get(round_id, &who),
                     Error::<T>::NotWhitelisted
@@ -662,6 +673,73 @@ pub mod pallet {
 
             Ok(())
         }
+
+        /// Set whitelist enforcement for a round (admin only)
+        #[pallet::call_index(7)]
+        #[pallet::weight(T::WeightInfo::update_whitelist())]
+        pub fn set_whitelist_required(
+            origin: OriginFor<T>,
+            round_id: u32,
+            required: bool,
+        ) -> DispatchResult {
+            T::AdminOrigin::ensure_origin(origin)?;
+
+            Rounds::<T>::try_mutate(round_id, |round_opt| -> Result<(), Error<T>> {
+                let round = round_opt.as_mut().ok_or(Error::<T>::RoundNotFound)?;
+                round.whitelist_required = required;
+                Ok(())
+            })?;
+
+            Ok(())
+        }
+
+        /// Claim a refund for a failed/cancelled presale round.
+        /// Only works when the round is inactive AND past its end block.
+        #[pallet::call_index(8)]
+        #[pallet::weight(T::WeightInfo::collect_funds())]
+        pub fn claim_refund(
+            origin: OriginFor<T>,
+            round_id: u32,
+        ) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+
+            let round = Rounds::<T>::get(round_id).ok_or(Error::<T>::RoundNotFound)?;
+
+            // Round must be inactive and past its end block
+            ensure!(!round.is_active, Error::<T>::RoundNotRefundable);
+            let current_block = frame_system::Pallet::<T>::block_number();
+            ensure!(current_block >= round.end_block, Error::<T>::RoundNotRefundable);
+
+            // Get user's contribution
+            let contribution = Contributions::<T>::get(round_id, &who)
+                .ok_or(Error::<T>::NoContribution)?;
+            ensure!(
+                contribution.total_paid > BalanceOf::<T>::zero(),
+                Error::<T>::NoContribution
+            );
+
+            let refund_amount = contribution.total_paid;
+
+            // Clear contribution record
+            Contributions::<T>::remove(round_id, &who);
+
+            // Transfer refund from escrow to user
+            let escrow = T::PalletId::get().into_account_truncating();
+            T::Currency::transfer(
+                &escrow,
+                &who,
+                refund_amount,
+                ExistenceRequirement::KeepAlive,
+            )?;
+
+            Self::deposit_event(Event::RefundClaimed {
+                round_id,
+                account: who,
+                amount: refund_amount,
+            });
+
+            Ok(())
+        }
     }
 
     pub trait WeightInfo {
@@ -672,6 +750,8 @@ pub mod pallet {
         fn set_paused() -> frame_support::weights::Weight;
         fn update_whitelist() -> frame_support::weights::Weight;
         fn collect_funds() -> frame_support::weights::Weight;
+        fn set_whitelist_required() -> frame_support::weights::Weight;
+        fn claim_refund() -> frame_support::weights::Weight;
     }
 
     pub struct SubstrateWeight<T>(core::marker::PhantomData<T>);
@@ -696,6 +776,12 @@ pub mod pallet {
         }
         fn collect_funds() -> frame_support::weights::Weight {
             // O(1) — no contributor iteration
+            frame_support::weights::Weight::from_parts(15_000, 0)
+        }
+        fn set_whitelist_required() -> frame_support::weights::Weight {
+            frame_support::weights::Weight::from_parts(5_000, 0)
+        }
+        fn claim_refund() -> frame_support::weights::Weight {
             frame_support::weights::Weight::from_parts(15_000, 0)
         }
     }
@@ -729,6 +815,12 @@ impl WeightInfo for () {
         frame_support::weights::Weight::from_parts(10_000, 0)
     }
     fn collect_funds() -> frame_support::weights::Weight {
+        frame_support::weights::Weight::from_parts(15_000, 0)
+    }
+    fn set_whitelist_required() -> frame_support::weights::Weight {
+        frame_support::weights::Weight::from_parts(5_000, 0)
+    }
+    fn claim_refund() -> frame_support::weights::Weight {
         frame_support::weights::Weight::from_parts(15_000, 0)
     }
 }

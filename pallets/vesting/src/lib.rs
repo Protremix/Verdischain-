@@ -80,7 +80,7 @@ pub mod pallet {
         _,
         Blake2_128Concat,
         T::AccountId,
-        BoundedVec<UserVestingEntry<BalanceOf<T>, BlockNumberFor<T>>, ConstU32<16>>,
+        BoundedVec<UserVestingEntry<BalanceOf<T>, BlockNumberFor<T>>, T::MaxSchedulesPerAccount>,
     >;
 
     #[pallet::storage]
@@ -141,6 +141,9 @@ pub mod pallet {
         #[pallet::constant]
         type PalletId: Get<PalletId>;
         type WeightInfo: WeightInfo;
+        /// Maximum number of vesting schedules per account
+        #[pallet::constant]
+        type MaxSchedulesPerAccount: Get<u32>;
     }
 
     // === Genesis ===
@@ -441,6 +444,8 @@ mod tests {
 
     parameter_types! {
         pub const VestPalletId: PalletId = PalletId(*b"v/vestng");
+        pub const MaxVestingSchedules: u32 = 16;
+        pub const MaxSchedulesPerAccount: u32 = 10;
     }
 
     impl Config for Test {
@@ -448,6 +453,7 @@ mod tests {
         type Currency = Balances;
         type PalletId = VestPalletId;
         type WeightInfo = SubstrateWeight<Test>;
+        type MaxSchedulesPerAccount = MaxSchedulesPerAccount;
     }
 
     pub fn new_test_ext() -> TestExternalities {
@@ -782,8 +788,8 @@ mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
 
-            // Assign 16 vesting entries (the max BoundedVec size)
-            for i in 0..16 {
+            // Assign 10 vesting entries (the max per-account limit)
+            for i in 0..10 {
                 let label = format!("sch{}", i);
                 assert_ok!(Vesting::add_schedule(
                     RuntimeOrigin::root(),
@@ -800,10 +806,10 @@ mod tests {
                 ));
             }
 
-            // 17th should fail with MaxVestingSchedules
+            // 11th should fail with MaxVestingSchedules
             assert_ok!(Vesting::add_schedule(
                 RuntimeOrigin::root(),
-                b"sch16".to_vec(),
+                b"sch10".to_vec(),
                 1_000_000u128,
                 60,
                 30,
@@ -812,7 +818,7 @@ mod tests {
                 Vesting::assign_vesting(
                     RuntimeOrigin::root(),
                     alice,
-                    b"sch16".to_vec(),
+                    b"sch10".to_vec(),
                     1_000_000u128,
                 ),
                 Error::<Test>::MaxVestingSchedules

@@ -52,6 +52,7 @@ pub mod pallet {
     pub enum Error<T> {
         TableNotFound,
         TableNotActive,
+        AddressTooLong,
         TableFull,
         MaxTablesExceeded,
         NotTableOwner,

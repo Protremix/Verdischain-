@@ -719,6 +719,7 @@ parameter_types! {
 }
 
 impl pallet_vesting::Config for Runtime {
+    type MaxSchedulesPerAccount = frame_support::traits::ConstU32<10>;
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type PalletId = VestingPalletId;

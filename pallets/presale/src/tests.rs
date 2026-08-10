@@ -262,6 +262,7 @@ fn test_whitelist() {
     new_test_ext().execute_with(|| {
         set_block(1);
         create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::set_whitelist_required(RuntimeOrigin::root(), 0, true));
         assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
         assert_noop!(
@@ -654,9 +655,11 @@ fn test_per_round_cap_independence() {
 
 #[test]
 fn test_per_round_whitelist_independence() {
+    // H-02 FIX: whitelist_required flag must be set per round
     new_test_ext().execute_with(|| {
         set_block(1);
         create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::set_whitelist_required(RuntimeOrigin::root(), 0, true));
         create_and_activate_round(1, 5, 1000, 100, 1, 100, b"vest".to_vec());
 
         assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));
@@ -760,9 +763,11 @@ fn test_attacker_collection_before_round_end() {
 
 #[test]
 fn test_attacker_whitelist_bypass() {
+    // H-02 FIX: whitelist_required flag prevents bypass
     new_test_ext().execute_with(|| {
         set_block(1);
         create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::set_whitelist_required(RuntimeOrigin::root(), 0, true));
         assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));
 
         assert_noop!(
@@ -1165,9 +1170,11 @@ fn test_escrow_account_funded_in_genesis() {
 
 #[test]
 fn test_invariant_whitelist_restrictions_per_round() {
+    // H-02 FIX: whitelist_required flag enforces per-round restrictions
     new_test_ext().execute_with(|| {
         set_block(1);
         create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
+        assert_ok!(Presale::set_whitelist_required(RuntimeOrigin::root(), 0, true));
         create_and_activate_round(1, 5, 1000, 100, 1, 100, b"vest".to_vec());
 
         assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));
