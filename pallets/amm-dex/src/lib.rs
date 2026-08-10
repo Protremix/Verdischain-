@@ -15,7 +15,7 @@ use frame_support::{
     dispatch::DispatchResult,
     ensure,
     pallet_prelude::*,
-    traits::{Currency, Get, ReservableCurrency},
+    traits::{Currency, ExistenceRequirement, Get, ReservableCurrency},
     DefaultNoBound, PalletId,
 };
 use frame_system::pallet_prelude::*;
@@ -478,8 +478,9 @@ pub mod pallet {
                 lp
             };
 
-            T::Currency::reserve(&who, amount_a)?;
-            T::Currency::reserve(&who, amount_b)?;
+            let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
+            T::Currency::transfer(&who, &dex_account, amount_a, ExistenceRequirement::KeepAlive)?;
+            T::Currency::transfer(&who, &dex_account, amount_b, ExistenceRequirement::KeepAlive)?;
 
             if pool.total_lp == BalanceOf::<T>::zero() {
                 pool.reserve_a = amount_a;
@@ -550,8 +551,9 @@ pub mod pallet {
                 .ok_or(Error::<T>::ArithmeticOverflow)?
                 / pool.total_lp;
 
-            T::Currency::unreserve(&who, amount_a);
-            T::Currency::unreserve(&who, amount_b);
+            let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
+            T::Currency::transfer(&dex_account, &who, amount_a, ExistenceRequirement::KeepAlive)?;
+            T::Currency::transfer(&dex_account, &who, amount_b, ExistenceRequirement::KeepAlive)?;
 
             pool.reserve_a = pool
                 .reserve_a
@@ -674,8 +676,9 @@ pub mod pallet {
                     .ok_or(Error::<T>::ArithmeticUnderflow)?;
             }
 
-            T::Currency::reserve(&who, amount_in)?;
-            T::Currency::unreserve(&who, amount_out);
+            let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
+            T::Currency::transfer(&who, &dex_account, amount_in, ExistenceRequirement::KeepAlive)?;
+            T::Currency::transfer(&dex_account, &who, amount_out, ExistenceRequirement::KeepAlive)?;
 
             Pools::<T>::insert(pool_id, pool.clone());
 
