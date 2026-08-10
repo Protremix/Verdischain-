@@ -28,13 +28,17 @@ BLOCKED_METHODS = {
     "author_rotateKeysWithOwner",
     "author_submitExtrinsic",  # block unsigned/raw extrinsic submission
     "author_pendingExtrinsics",
+    "author_hasKey",
+    "author_hasSessionKeys",
+    "system_localListenAddresses",
+    "system_localPeerId",
     "system_addReservedPeer",
     "system_removeReservedPeer",
     "system_setHeapPages",
     "system_setStorage",
     "system_addLog",
     "system_addWellKnownLog",
-    "state_call",
+#    "state_call",  # Needed for DEX/staking API queries
 }
 
 # Allow author_submitExtrinsic for signed transactions (dapps need it)
