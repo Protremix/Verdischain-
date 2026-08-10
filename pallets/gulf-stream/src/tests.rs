@@ -24,9 +24,17 @@ parameter_types! {
     pub const MaxForwardedHistory: u32 = 1000;
 }
 
+// Mock validator checker that accepts all signed callers (for testing)
+impl ValidatorChecker<sp_core::crypto::AccountId32> for Test {
+    fn is_active_validator(_who: &sp_core::crypto::AccountId32) -> bool {
+        true
+    }
+}
+
 impl Config for Test {
     type MaxPendingForwards = MaxPendingForwards;
     type MaxForwardedHistory = MaxForwardedHistory;
+    type ValidatorChecker = Test;
 }
 
 pub fn new_test_ext() -> TestExternalities {

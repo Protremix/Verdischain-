@@ -204,6 +204,7 @@ pub mod pallet {
         ClientNotFound,
         ConnectionNotFound,
         ChannelNotFound,
+        PacketNotFound,
         ChannelNotOpen,
         InsufficientBalance,
         TransferAmountTooLarge,
@@ -441,8 +442,16 @@ pub mod pallet {
             // SECURITY: Any signed relayer can call timeout, but packet must not be acknowledged
             let _relayer = ensure_signed(origin)?;
 
+            // SECURITY: Verify channel exists and is not closed
+            let channel =
+                IbcChannels::<T>::get(channel_id).ok_or(Error::<T>::ChannelNotFound)?;
+            ensure!(
+                channel.state != 4,
+                Error::<T>::ChannelNotOpen
+            );
+
             let packet =
-                IbcPackets::<T>::get((channel_id, sequence)).ok_or(Error::<T>::ChannelNotFound)?;
+                IbcPackets::<T>::get((channel_id, sequence)).ok_or(Error::<T>::PacketNotFound)?;
 
             // SECURITY: Verify the packet has actually timed out
             let current_height: u64 = frame_system::Pallet::<T>::block_number()

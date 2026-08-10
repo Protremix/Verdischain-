@@ -1131,9 +1131,16 @@ pub const GreenTreasuryPalletId: PalletId = PalletId(*b"vrds/trs");
 
 // === Solana-inspired Config impls ===
 impl pallet_poh::Config for Runtime {}
+impl pallet_gulf_stream::ValidatorChecker<AccountId> for Runtime {
+    fn is_active_validator(who: &AccountId) -> bool {
+        pallet_dpos::ActiveValidators::<Runtime>::get().contains(who)
+    }
+}
+
 impl pallet_gulf_stream::Config for Runtime {
     type MaxPendingForwards = MaxPendingForwards;
     type MaxForwardedHistory = MaxForwardedHistory;
+    type ValidatorChecker = Runtime;
 }
 impl pallet_turbine::Config for Runtime {
     type MaxShards = MaxShardsTurbine;

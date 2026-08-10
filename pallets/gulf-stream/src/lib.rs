@@ -35,10 +35,17 @@ pub mod pallet {
     #[pallet::without_storage_info]
     pub struct Pallet<T>(_);
 
+    /// Trait for checking if an account is an active validator.
+    pub trait ValidatorChecker<AccountId> {
+        fn is_active_validator(who: &AccountId) -> bool;
+    }
+
     #[pallet::config]
     pub trait Config: frame_system::Config {
         type MaxPendingForwards: Get<u32>;
         type MaxForwardedHistory: Get<u32>;
+        /// Validator checker - connects to DPoS active validator set.
+        type ValidatorChecker: ValidatorChecker<Self::AccountId>;
     }
 
     #[derive(Encode, Decode, Clone, PartialEq, Eq, TypeInfo)]
@@ -252,9 +259,11 @@ pub mod pallet {
 
     impl<T: Config> Pallet<T> {
         /// Check if the caller is an active validator
-        fn ensure_active_validator(_who: &T::AccountId) -> Result<(), Error<T>> {
-            // In production, this would check the DPoS validator set
-            // For now, accept any signed caller as relayer/validator
+        fn ensure_active_validator(who: &T::AccountId) -> Result<(), Error<T>> {
+            ensure!(
+                T::ValidatorChecker::is_active_validator(who),
+                Error::<T>::NotActiveValidator
+            );
             Ok(())
         }
 
