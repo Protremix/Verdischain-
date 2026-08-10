@@ -355,13 +355,14 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         democracy: Default::default(),
         treasury: Default::default(),
         amm_dex: pallet_amm_dex::GenesisConfig {
-            initial_pools: vec![(
-                b"VRDX".to_vec(),
-                b"ECO".to_vec(),
-                100_000 * u,
-                100_000 * u,
-                3,
-            )],
+            initial_pools: vec![
+                (b"VRDX".to_vec(), b"ECO".to_vec(), 500_000 * u, 500_000 * u, 3),
+                (b"VRDX".to_vec(), b"CARBON".to_vec(), 300_000 * u, 300_000 * u, 3),
+                (b"VRDX".to_vec(), b"TREE".to_vec(), 200_000 * u, 200_000 * u, 3),
+                (b"VRDX".to_vec(), b"GREEN".to_vec(), 200_000 * u, 200_000 * u, 3),
+                (b"ECO".to_vec(), b"CARBON".to_vec(), 100_000 * u, 100_000 * u, 3),
+                (b"VRDX".to_vec(), b"REDD".to_vec(), 100_000 * u, 100_000 * u, 3),
+            ],
             _phantom: Default::default(),
         },
         eco: pallet_eco::GenesisConfig {
