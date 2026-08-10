@@ -62,7 +62,7 @@ fn mark_included_works() {
             256
         ));
         assert_ok!(Pallet::<Test>::mark_included(
-            frame_system::RawOrigin::Root.into(),
+            frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
             tx_hash,
             1,
             100
@@ -98,7 +98,7 @@ fn expire_transaction_works() {
             256
         ));
         assert_ok!(Pallet::<Test>::expire_transaction(
-            frame_system::RawOrigin::Root.into(),
+            frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
             tx_hash
         ));
         let stats = Pallet::<Test>::get_stats();

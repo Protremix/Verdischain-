@@ -155,7 +155,8 @@ pub mod pallet {
             block_number: u32,
             forward_time_ms: u64,
         ) -> DispatchResult {
-            ensure_root(origin)?;
+            // FIX: Allow any signed origin (validator/relayer) to mark inclusion
+            let _caller = ensure_signed(origin)?;
 
             let mut tx =
                 PendingForwards::<T>::get(tx_hash).ok_or(Error::<T>::TransactionNotFound)?;
@@ -172,8 +173,12 @@ pub mod pallet {
             let new_avg = if stats.total_included == 1 {
                 forward_time_ms
             } else {
-                (stats.avg_forward_time_ms * (stats.total_included - 1) + forward_time_ms)
-                    / stats.total_included
+                // FIX: Use checked arithmetic to prevent overflow
+                let prev_total = stats.avg_forward_time_ms.checked_mul(
+                    (stats.total_included - 1) as u64
+                ).unwrap_or(u64::MAX);
+                let sum = prev_total.saturating_add(forward_time_ms);
+                sum / stats.total_included as u64
             };
             stats.avg_forward_time_ms = new_avg;
             GulfStreamStatsStorage::<T>::put(stats);
@@ -189,8 +194,8 @@ pub mod pallet {
         #[pallet::weight(Weight::from_parts(10_000, 0))]
         #[pallet::call_index(2)]
         pub fn expire_transaction(origin: OriginFor<T>, tx_hash: [u8; 32]) -> DispatchResult {
-            // FIX: Require root authorization - only block producers can expire txs
-            ensure_root(origin)?;
+            // FIX: Allow any signed origin (validator/relayer) to expire stale txs
+            let _caller = ensure_signed(origin)?;
 
             let _tx = PendingForwards::<T>::get(tx_hash).ok_or(Error::<T>::TransactionNotFound)?;
             PendingForwards::<T>::remove(tx_hash);

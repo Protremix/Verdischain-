@@ -156,6 +156,12 @@ pub mod pallet {
             channel_id: u32,
             sequence: u64,
         },
+        RefundFailed {
+            channel_id: u32,
+            sequence: u64,
+            sender: T::AccountId,
+            amount: BalanceOf<T>,
+        },
         TransferInitiated {
             sender: T::AccountId,
             receiver: Vec<u8>,
@@ -183,6 +189,9 @@ pub mod pallet {
         PortIdTooLong,
         PacketDataTooLarge,
     }
+
+    type BalanceOf<T> =
+        <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
     // ============ Pallet ============
 
@@ -416,12 +425,21 @@ pub mod pallet {
                 let sender = T::AccountId::decode(&mut ft_data.sender.as_slice()).ok();
                 if let Some(sender) = sender {
                     let pallet_account = Self::account_id();
-                    let _ = T::Currency::transfer(
+                    let refund_amount: BalanceOf<T> = ft_data.amount.try_into().unwrap_or_else(|_| BalanceOf::<T>::zero());
+                    let refund_result = T::Currency::transfer(
                         &pallet_account,
                         &sender,
-                        ft_data.amount.try_into().unwrap_or_else(|_| 0u32.into()),
+                        refund_amount,
                         frame_support::traits::ExistenceRequirement::AllowDeath,
                     );
+                    if refund_result.is_err() {
+                        Self::deposit_event(Event::RefundFailed {
+                            channel_id,
+                            sequence,
+                            sender,
+                            amount: refund_amount,
+                        });
+                    }
                 }
             }
             

@@ -978,7 +978,7 @@ impl pallet_nfts::Config for Runtime {
 parameter_types! {
     pub const TreasuryPalletId: PalletId = PalletId(*b"verdist0");
     pub const TreasurySpendPeriod: BlockNumber = 600;
-    pub const TreasuryBurn: Permill = Permill::from_percent(0);
+    pub const TreasuryBurn: Permill = Permill::from_percent(1);
     pub const TreasuryMaxApprovals: u32 = 100;
     pub const TreasuryPayoutPeriod: BlockNumber = 600;
     pub TreasuryAccount: AccountId = TreasuryPalletId::get().into_account_truncating();
