@@ -229,7 +229,7 @@ parameter_types! {
     pub const ReportLongevity: u64 = 18_000_000; // 500 blocks * 6 epochs * 6s = covers slash defer period
 }
 impl pallet_babe::Config for Runtime {
-    type EpochDuration = ConstU64<500>;
+    type EpochDuration = ConstU64<20>;
     type ExpectedBlockTime = ConstU64<BLOCK_TIME>;
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = Session;
@@ -256,7 +256,7 @@ impl pallet_grandpa::Config for Runtime {
 // === Session ===
 
 parameter_types! {
-    pub const Period: BlockNumber = 500;
+    pub const Period: BlockNumber = 20;
     pub const Offset: BlockNumber = 0;
 }
 
@@ -543,7 +543,7 @@ parameter_types! {
     pub const ReactivationCooldown: u32 = 432_000; // ~30 days at 6s blocks (7200 blocks/day)
     pub const MinValidatorStake: Balance = 100_000_000 * UNITS; // 100M VRDX minimum (0.1% supply) for sybil resistance
     pub const MaxValidators: u32 = 100;
-    pub const ValidatorCount: u32 = 7; // 7 genesis validators (expand to 21 post-launch)
+    pub const ValidatorCount: u32 = 21; // 7 genesis validators (expand to 21 post-launch)
     pub const MinimumValidatorCount: u32 = 4; // Below 4 active validators, chain halts
     pub const BlockReward: Balance = 342 * UNITS; // 342 VRDX per block (1.8B annual, 6% APR at 30% stake)
     pub const EpochLength: BlockNumber = 500;
