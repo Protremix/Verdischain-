@@ -1,0 +1,54 @@
+You are reviewing a Substrate blockchain (Verdis Chain) security audit. Claude (Anthropic) found 501 issues across 15 pallets + runtime. Here are the CRITICAL findings. Cross-verify each one: is it a real vulnerability? Rate each as CONFIRMED, FALSE_POSITIVE, or NEEDS_INVESTIGATION. Then rank the top 10 by exploitability.
+
+CRITICAL FINDINGS:
+
+[DPoS] 1. Unbounded storage iteration in do_slash - Votes::iter() scans ALL voters globally, O(N) weight
+[DPoS] 2. Wrong slash fraction arithmetic - division before multiplication
+[DPoS] 3. slash_validator wrong unreserve semantics - slashing wrong amount
+[DPoS] 4. reactivate_validator arithmetic overflow on cooldown check (block + cooldown as u32)
+[DPoS] 5. reward_block_producer missing authorization - anyone can mint rewards to any validator
+[DPoS] 6. SlashingEvents counter overflow (*c += 1 unchecked)
+[DPoS] 7. TotalStaked underflow with capped slash (saturating_sub but reserve failed)
+[DPoS] 8. Non-atomic state in slash_validator - storage mutated before balance transfer
+
+[AMM-DEX] 9. State updated before transfer in swap - inconsistent ordering
+[AMM-DEX] 10. create_pool uses reserve() instead of transfer() - funds stay with user
+
+[Presale] 11. Single currency for payment + token - buyer pays in same token they receive (free money exploit)
+
+[Vesting] 12. TOCTOU in release_vested - two-pass block number read
+[Vesting] 13. Integer division truncation - permanent token lock (dust never released)
+[Vesting] 14. do_assign_vesting is pub with no origin check - anyone can assign vesting
+
+[Tokenomics] 15. purchase() collects no payment from buyer - free tokens
+[Tokenomics] 16. Arithmetic overflow in cost calculation
+[Tokenomics] 17. Non-atomic state updates enable double-spend
+
+[IBC] 18. acknowledge_packet no authorization - anyone can delete any packet
+[IBC] 19. timeout_packet inverted logic - removes packets when NOT timed out
+[IBC] 20. close_channel no authorization
+
+[Storage] 21. Unbounded iter().count() in register_storage - DoS
+[Storage] 22. request_pin missing auth - any user can pin any record
+
+[PoH] 23. Any signed user can advance/overwrite hash chain
+
+[GulfStream] 24. Any user can mutate any transaction (mark_included, expire_transaction)
+
+[Turbine] 25. rebuild_tree no root/sudo origin check - anyone can overwrite tree
+[Turbine] 26. Integer overflow in calc_depth (n *= fanout)
+
+[ZK-Compression] 27. verify_proof accepts caller-supplied boolean as proof - bypasses ALL verification
+[ZK-Compression] 28. create_tree u64→u32 truncation causes ID collision
+
+[ALT] 29. deactivate_table no ownership check - anyone can deactivate any table
+[ALT] 30. All counters use unchecked arithmetic
+
+[Runtime] 31. Treasury burn rate 10% per spend period - destroys funds
+[Runtime] 32. Uncapped treasury spend origin - can drain entire treasury
+[Runtime] 33. GreenTreasuryImpl uses hardcoded all-0xFF address (burn address)
+[Runtime] 34. BABE equivocation reporting disabled (returns None)
+[Runtime] 35. GRANDPA equivocation reporting disabled (returns None)
+[Runtime] 36. Sudo pallet present in production runtime
+[Runtime] 37. BABE c parameter set to 255/256 (near-deterministic, destroys VRF randomness)
+[Runtime] 38. No-op CallFilter - provides zero protection
