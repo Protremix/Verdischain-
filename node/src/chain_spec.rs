@@ -144,7 +144,15 @@ fn dev_validator_uris() -> Vec<&'static str> {
 // ─── 21-validator key set (testnet + mainnet) ───────────────────────────────
 
 fn testnet_validator_uris() -> Vec<&'static str> {
-    vec!["Alice", "Bob", "Charlie"]
+    vec![
+        "Alice",
+        "Bob",
+        "Charlie",
+        "Dave",
+        "Eve",
+        "Ferdie",
+        "Validator7",
+    ]
 }
 
 // ─── DEV spec ──────────────────────────────────────────────────────────────
@@ -218,7 +226,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
             _ => sr_from(&format!("//{}", uri)).public().into(),
         };
-        balances.push((acct, 10_001 * u));
+        balances.push((acct, 10_001_000 * u));
     }
 
     // Dev DPoS validators (6)
@@ -234,7 +242,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
                 "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
                 _ => sr_from(&format!("//{}", uri)).public().into(),
             };
-            (acct, 10_000 * u, true)
+            (acct, 10_000_000 * u, true)
         })
         .collect();
 
@@ -391,7 +399,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     let u = units();
     let bn = billion();
 
-    // 21 validators for testnet
+    // 7 validators for testnet
     let uris = testnet_validator_uris();
     let session_keys = build_session_keys(&uris);
 
@@ -414,10 +422,10 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (community_pool, 5 * bn),
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
-        // Team & Advisors (5B) minus 21 validator stakes (21 * 10K = 210K)
-        (sudo_account.clone(), 5 * bn - 2 * 10_001 * u),
+        // Team & Advisors (5B) minus 6 validator stakes (6 * 10M = 60M)
+        (sudo_account.clone(), 5 * bn - 6 * 10_001_000 * u),
     ];
-    // 2 validator stakes (skip Alice, she has the team allocation)
+    // 6 validator stakes (skip Alice, she has the team allocation)
     for uri in uris.iter().skip(1) {
         let acct: AccountId = match *uri {
             "Bob" => Sr25519Keyring::Bob.to_account_id(),
@@ -427,10 +435,10 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
             _ => sr_from(&format!("//{}", uri)).public().into(),
         };
-        balances.push((acct, 10_001 * u));
+        balances.push((acct, 10_001_000 * u));
     }
 
-    // DPoS validators (21)
+    // DPoS validators (7)
     let dpos_validators: Vec<(AccountId, u128, bool)> = uris
         .iter()
         .map(|uri| {
@@ -443,7 +451,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
                 "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
                 _ => sr_from(&format!("//{}", uri)).public().into(),
             };
-            (acct, 10_000 * u, true)
+            (acct, 10_000_000 * u, true)
         })
         .collect();
 
@@ -747,9 +755,9 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (community_pool, 5 * bn),
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
-        (sudo_account.clone(), 5 * bn - 2 * 10_001 * u),
+        (sudo_account.clone(), 5 * bn - 6 * 10_001_000 * u),
     ];
-    // 2 validator stakes (skip Alice, she has the team allocation)
+    // 6 validator stakes (skip Alice, she has the team allocation)
     for uri in uris.iter().skip(1) {
         let acct: AccountId = match *uri {
             "Bob" => Sr25519Keyring::Bob.to_account_id(),
@@ -759,10 +767,10 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
             _ => sr_from(&format!("//{}", uri)).public().into(),
         };
-        balances.push((acct, 10_001 * u));
+        balances.push((acct, 10_001_000 * u));
     }
 
-    // DPoS validators (21)
+    // DPoS validators (7)
     let dpos_validators: Vec<(AccountId, u128, bool)> = uris
         .iter()
         .map(|uri| {
@@ -775,7 +783,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
                 "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
                 _ => sr_from(&format!("//{}", uri)).public().into(),
             };
-            (acct, 10_000 * u, true)
+            (acct, 10_000_000 * u, true)
         })
         .collect();
 
