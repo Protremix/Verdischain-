@@ -523,3 +523,313 @@ fn test_same_asset_fails() {
         );
     });
 }
+
+// === PROPERTY TESTS: Economic Invariants ===
+
+/// Property: Constant product k = reserve_a * reserve_b must NEVER decrease after a swap.
+/// The fee ensures k increases slightly each trade. This is the core AMM safety invariant.
+#[test]
+fn prop_constant_product_never_decreases_after_swap() {
+    new_test_ext().execute_with(|| {
+        let token_a = b"VRDX".to_vec();
+        let token_b = b"ECO".to_vec();
+        let reserve_a: u128 = 1_000_000;
+        let reserve_b: u128 = 500_000;
+
+        // Create pool
+        assert_ok!(AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            token_a.clone(),
+            token_b.clone(),
+            reserve_a,
+            reserve_b,
+        ));
+
+        let pool = Pools::<Test>::get(0).unwrap();
+        let k_before = pool.reserve_a * pool.reserve_b;
+
+        // Swap A -> B
+        assert_ok!(AmmDex::swap(
+            RuntimeOrigin::signed(alice()),
+            0,
+            token_a.clone(),
+            10_000,
+            0,
+        ));
+
+        let pool = Pools::<Test>::get(0).unwrap();
+        let k_after_a_to_b = pool.reserve_a * pool.reserve_b;
+        assert!(
+            k_after_a_to_b >= k_before,
+            "CONSTANT PRODUCT VIOLATED (A->B): k_before={}, k_after={}",
+            k_before,
+            k_after_a_to_b
+        );
+
+        // Swap B -> A
+        assert_ok!(AmmDex::swap(
+            RuntimeOrigin::signed(alice()),
+            0,
+            token_b.clone(),
+            5_000,
+            0,
+        ));
+
+        let pool = Pools::<Test>::get(0).unwrap();
+        let k_after_b_to_a = pool.reserve_a * pool.reserve_b;
+        assert!(
+            k_after_b_to_a >= k_after_a_to_b,
+            "CONSTANT PRODUCT VIOLATED (B->A): k_prev={}, k_after={}",
+            k_after_a_to_b,
+            k_after_b_to_a
+        );
+    });
+}
+
+/// Property: Multiple consecutive swaps must never decrease k.
+/// Run N swaps in alternating directions and verify k is monotonically non-decreasing.
+#[test]
+fn prop_constant_product_monotonic_across_many_swaps() {
+    new_test_ext().execute_with(|| {
+        let token_a = b"VRDX".to_vec();
+        let token_b = b"ECO".to_vec();
+
+        assert_ok!(AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            token_a.clone(),
+            token_b.clone(),
+            10_000_000,
+            10_000_000,
+        ));
+
+        let mut last_k: u128 = {
+            let pool = Pools::<Test>::get(0).unwrap();
+            pool.reserve_a * pool.reserve_b
+        };
+
+        for i in 0..50 {
+            let token = if i % 2 == 0 { token_a.clone() } else { token_b.clone() };
+            let result = AmmDex::swap(
+                RuntimeOrigin::signed(bob()),
+                0,
+                token,
+                1_000,
+                0,
+            );
+            if result.is_ok() {
+                let pool = Pools::<Test>::get(0).unwrap();
+                let k = pool.reserve_a * pool.reserve_b;
+                assert!(
+                    k >= last_k,
+                    "CONSTANT PRODUCT DECREASED at swap {}: k_prev={}, k_new={}",
+                    i, last_k, k
+                );
+                last_k = k;
+            }
+        }
+    });
+}
+
+/// Property: Circuit breaker blocks swaps exceeding MaxPriceImpact (10% of reserves).
+#[test]
+fn prop_circuit_breaker_blocks_large_swaps() {
+    new_test_ext().execute_with(|| {
+        let token_a = b"VRDX".to_vec();
+        let token_b = b"ECO".to_vec();
+        let reserve: u128 = 1_000_000;
+
+        assert_ok!(AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            token_a.clone(),
+            token_b.clone(),
+            reserve,
+            reserve,
+        ));
+
+        // Swap within 10% limit should succeed
+        assert_ok!(AmmDex::swap(
+            RuntimeOrigin::signed(alice()),
+            0,
+            token_a.clone(),
+            50_000, // 5% of reserves
+            0,
+        ));
+
+        // Reset pool for large swap test
+        assert_ok!(AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            b"VRDX2".to_vec(),
+            b"ECO2".to_vec(),
+            reserve,
+            reserve,
+        ));
+
+        // Swap exceeding 10% should fail
+        assert_noop!(
+            AmmDex::swap(
+                RuntimeOrigin::signed(bob()),
+                1,
+                b"VRDX2".to_vec(),
+                200_000, // 20% of reserves - exceeds 10% cap
+                0,
+            ),
+            Error::<Test>::PriceImpactTooHigh
+        );
+    });
+}
+
+/// Property: Remove liquidity returns proportional amounts and k stays constant.
+/// Removing liquidity should not change the price ratio (k per LP token stays constant).
+#[test]
+fn prop_remove_liquidity_preserves_ratio() {
+    new_test_ext().execute_with(|| {
+        let token_a = b"VRDX".to_vec();
+        let token_b = b"ECO".to_vec();
+        let ra: u128 = 1_000_000;
+        let rb: u128 = 2_000_000;
+
+        assert_ok!(AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            token_a.clone(),
+            token_b.clone(),
+            ra,
+            rb,
+        ));
+
+        let pool = Pools::<Test>::get(0).unwrap();
+        let total_lp = pool.total_lp;
+        let half_lp = total_lp / 2;
+
+        // Remove half of LP
+        assert_ok!(AmmDex::remove_liquidity(
+            RuntimeOrigin::signed(alice()),
+            0,
+            half_lp,
+        ));
+
+        let pool_after = Pools::<Test>::get(0).unwrap();
+        // Reserves should be halved
+        assert!(
+            pool_after.reserve_a <= ra / 2 + 1,
+            "Reserve A not proportional: got {}, expected ~{}",
+            pool_after.reserve_a,
+            ra / 2
+        );
+        assert!(
+            pool_after.reserve_b <= rb / 2 + 1,
+            "Reserve B not proportional: got {}, expected ~{}",
+            pool_after.reserve_b,
+            rb / 2
+        );
+        // Ratio should be preserved
+        let ratio_before = ra / rb;
+        let ratio_after = pool_after.reserve_a / pool_after.reserve_b;
+        assert_eq!(
+            ratio_before, ratio_after,
+            "Price ratio changed after remove_liquidity"
+        );
+    });
+}
+
+/// Property: Swap output matches the AMM formula exactly.
+/// amount_out = (reserve_out * amount_in_after_fee) / (reserve_in + amount_in_after_fee)
+#[test]
+fn prop_swap_output_matches_formula() {
+    new_test_ext().execute_with(|| {
+        let token_a = b"VRDX".to_vec();
+        let token_b = b"ECO".to_vec();
+        let reserve_a: u128 = 1_000_000;
+        let reserve_b: u128 = 500_000;
+        let amount_in: u128 = 10_000;
+
+        assert_ok!(AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            token_a.clone(),
+            token_b.clone(),
+            reserve_a,
+            reserve_b,
+        ));
+
+        // Calculate expected output
+        let fee_num: u128 = FeeNumerator::get() as u128;
+        let fee_den: u128 = FeeDenominator::get() as u128;
+        let fee = amount_in * fee_num / fee_den;
+        let amount_in_after_fee = amount_in - fee;
+        let expected_out = (reserve_b * amount_in_after_fee) / (reserve_a + amount_in_after_fee);
+
+        // Execute swap
+        assert_ok!(AmmDex::swap(
+            RuntimeOrigin::signed(bob()),
+            0,
+            token_a.clone(),
+            amount_in,
+            0,
+        ));
+
+        // Verify reserve_b decreased by exactly expected_out
+        let pool = Pools::<Test>::get(0).unwrap();
+        let actual_out = reserve_b - pool.reserve_b;
+        assert_eq!(
+            actual_out, expected_out,
+            "Swap output mismatch: expected {}, got {}",
+            expected_out, actual_out
+        );
+    });
+}
+
+/// Property: Zero amount swaps are rejected.
+#[test]
+fn prop_zero_amount_swap_rejected() {
+    new_test_ext().execute_with(|| {
+        let token_a = b"VRDX".to_vec();
+        let token_b = b"ECO".to_vec();
+
+        assert_ok!(AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            token_a.clone(),
+            token_b.clone(),
+            1_000_000,
+            1_000_000,
+        ));
+
+        assert_noop!(
+            AmmDex::swap(
+                RuntimeOrigin::signed(bob()),
+                0,
+                token_a.clone(),
+                0,
+                0,
+            ),
+            Error::<Test>::ZeroAmount
+        );
+    });
+}
+
+/// Property: Slippage protection rejects unfavorable swaps.
+#[test]
+fn prop_slippage_protection_works() {
+    new_test_ext().execute_with(|| {
+        let token_a = b"VRDX".to_vec();
+        let token_b = b"ECO".to_vec();
+
+        assert_ok!(AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            token_a.clone(),
+            token_b.clone(),
+            1_000_000,
+            1_000_000,
+        ));
+
+        // Set min_amount_out impossibly high
+        assert_noop!(
+            AmmDex::swap(
+                RuntimeOrigin::signed(bob()),
+                0,
+                token_a.clone(),
+                10_000,
+                999_999_999, // impossibly high
+            ),
+            Error::<Test>::SlippageExceeded
+        );
+    });
+}

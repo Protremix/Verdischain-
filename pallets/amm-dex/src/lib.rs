@@ -412,8 +412,19 @@ pub mod pallet {
                 Error::<T>::AmountTooLow
             );
 
-            T::Currency::reserve(&who, amount_a)?;
-            T::Currency::reserve(&who, amount_b)?;
+            let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
+            T::Currency::transfer(
+                &who,
+                &dex_account,
+                amount_a,
+                ExistenceRequirement::KeepAlive,
+            )?;
+            T::Currency::transfer(
+                &who,
+                &dex_account,
+                amount_b,
+                ExistenceRequirement::KeepAlive,
+            )?;
 
             let pool = Pool {
                 id: pool_id,
