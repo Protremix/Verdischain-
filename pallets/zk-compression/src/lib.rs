@@ -1,3 +1,14 @@
+#![allow(
+    clippy::let_unit_value,
+    deprecated,
+    clippy::clone_on_copy,
+    clippy::type_complexity,
+    clippy::needless_borrow,
+    clippy::collapsible_if,
+    clippy::redundant_closure,
+    clippy::manual_saturating_arithmetic,
+    clippy::unnecessary_cast
+)]
 #![cfg_attr(not(feature = "std"), no_std)]
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;

@@ -262,7 +262,11 @@ fn test_whitelist() {
     new_test_ext().execute_with(|| {
         set_block(1);
         create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
-        assert_ok!(Presale::set_whitelist_required(RuntimeOrigin::root(), 0, true));
+        assert_ok!(Presale::set_whitelist_required(
+            RuntimeOrigin::root(),
+            0,
+            true
+        ));
         assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
         assert_noop!(
@@ -659,7 +663,11 @@ fn test_per_round_whitelist_independence() {
     new_test_ext().execute_with(|| {
         set_block(1);
         create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
-        assert_ok!(Presale::set_whitelist_required(RuntimeOrigin::root(), 0, true));
+        assert_ok!(Presale::set_whitelist_required(
+            RuntimeOrigin::root(),
+            0,
+            true
+        ));
         create_and_activate_round(1, 5, 1000, 100, 1, 100, b"vest".to_vec());
 
         assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));
@@ -767,7 +775,11 @@ fn test_attacker_whitelist_bypass() {
     new_test_ext().execute_with(|| {
         set_block(1);
         create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
-        assert_ok!(Presale::set_whitelist_required(RuntimeOrigin::root(), 0, true));
+        assert_ok!(Presale::set_whitelist_required(
+            RuntimeOrigin::root(),
+            0,
+            true
+        ));
         assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));
 
         assert_noop!(
@@ -1174,7 +1186,11 @@ fn test_invariant_whitelist_restrictions_per_round() {
     new_test_ext().execute_with(|| {
         set_block(1);
         create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
-        assert_ok!(Presale::set_whitelist_required(RuntimeOrigin::root(), 0, true));
+        assert_ok!(Presale::set_whitelist_required(
+            RuntimeOrigin::root(),
+            0,
+            true
+        ));
         create_and_activate_round(1, 5, 1000, 100, 1, 100, b"vest".to_vec());
 
         assert_ok!(Presale::update_whitelist(RuntimeOrigin::root(), 0, 1, true));

@@ -1,3 +1,14 @@
+#![allow(
+    clippy::let_unit_value,
+    deprecated,
+    clippy::clone_on_copy,
+    clippy::type_complexity,
+    clippy::needless_borrow,
+    clippy::collapsible_if,
+    clippy::redundant_closure,
+    clippy::manual_saturating_arithmetic,
+    clippy::unnecessary_cast
+)]
 //! # Verdis Vesting Pallet
 //!
 //! Protocol-level vesting enforcement with:

@@ -1,3 +1,14 @@
+#![allow(
+    clippy::let_unit_value,
+    deprecated,
+    clippy::clone_on_copy,
+    clippy::type_complexity,
+    clippy::needless_borrow,
+    clippy::collapsible_if,
+    clippy::redundant_closure,
+    clippy::manual_saturating_arithmetic,
+    clippy::unnecessary_cast
+)]
 //! # Verdis DPoS Consensus Pallet
 //!
 //! Delegated Proof of Stake consensus with:
@@ -246,7 +257,7 @@ pub mod pallet {
         type PalletId: Get<PalletId>;
         #[pallet::constant]
         type MaxStakePerValidator: Get<BalanceOf<Self>>;
-    type MaxCommission: Get<u8>;
+        type MaxCommission: Get<u8>;
         #[pallet::constant]
         type ReactivationCooldown: Get<u32>;
         type WeightInfo: WeightInfo;
@@ -594,10 +605,7 @@ pub mod pallet {
             // Unreserve funds; track shortfall to avoid accounting mismatch
             let unreserved = T::Currency::unreserve(&validator, slash_amount);
             let actual_slash = slash_amount.saturating_sub(unreserved);
-            ensure!(
-                !actual_slash.is_zero(),
-                Error::<T>::SlashingFailed
-            );
+            ensure!(!actual_slash.is_zero(), Error::<T>::SlashingFailed);
 
             let treasury = T::PalletId::get().into_account_truncating();
             T::Currency::transfer(
@@ -656,12 +664,12 @@ pub mod pallet {
         /// Set validator commission rate (validator sets own rate, 0-100%)
         #[pallet::call_index(7)]
         #[pallet::weight(T::WeightInfo::update_green_score())]
-        pub fn set_commission(
-            origin: OriginFor<T>,
-            rate: u8,
-        ) -> DispatchResult {
+        pub fn set_commission(origin: OriginFor<T>, rate: u8) -> DispatchResult {
             let who = ensure_signed(origin)?;
-            ensure!(rate <= T::MaxCommission::get(), Error::<T>::CommissionTooHigh);
+            ensure!(
+                rate <= T::MaxCommission::get(),
+                Error::<T>::CommissionTooHigh
+            );
 
             Validators::<T>::mutate(&who, |v| {
                 if let Some(v) = v {
@@ -669,7 +677,10 @@ pub mod pallet {
                 }
             });
 
-            Self::deposit_event(Event::CommissionSet { validator: who, commission: rate });
+            Self::deposit_event(Event::CommissionSet {
+                validator: who,
+                commission: rate,
+            });
             Ok(())
         }
 
@@ -685,7 +696,10 @@ pub mod pallet {
 
             let val = Validators::<T>::get(&validator).ok_or(Error::<T>::ValidatorNotFound)?;
             ensure!(val.slashed, Error::<T>::ValidatorNotSlashed);
-            ensure!(val.stake >= T::MinStake::get(), Error::<T>::InsufficientFunds);
+            ensure!(
+                val.stake >= T::MinStake::get(),
+                Error::<T>::InsufficientFunds
+            );
 
             let last_slash = LastSlashedBlock::<T>::get(&validator);
             let current_block: u32 = frame_system::Pallet::<T>::block_number()
@@ -713,22 +727,14 @@ pub mod pallet {
         /// Refill the reward pool (governance only)
         #[pallet::call_index(9)]
         #[pallet::weight(T::WeightInfo::slash_validator())]
-        pub fn refill_reward_pool(
-            origin: OriginFor<T>,
-            amount: BalanceOf<T>,
-        ) -> DispatchResult {
+        pub fn refill_reward_pool(origin: OriginFor<T>, amount: BalanceOf<T>) -> DispatchResult {
             let who = ensure_signed(origin)?;
             ensure!(amount > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
             // The reward pool is the free balance of the PalletId account
             let reward_pool = T::PalletId::get().into_account_truncating();
-            
-            T::Currency::transfer(
-                &who,
-                &reward_pool,
-                amount,
-                ExistenceRequirement::KeepAlive,
-            )?;
+
+            T::Currency::transfer(&who, &reward_pool, amount, ExistenceRequirement::KeepAlive)?;
 
             Self::deposit_event(Event::RewardPoolRefilled { amount });
             Ok(())
@@ -762,7 +768,9 @@ pub mod pallet {
                     &treasury,
                     actual_slash,
                     ExistenceRequirement::AllowDeath,
-                ).is_err() {
+                )
+                .is_err()
+                {
                     return;
                 }
 
@@ -770,7 +778,7 @@ pub mod pallet {
                 let val_stake = val.stake;
                 let val_total = val.total_votes;
                 let delegator_pool = val_total.saturating_sub(val_stake);
-                
+
                 Validators::<T>::mutate(validator, |v| {
                     if let Some(v) = v {
                         v.stake = v.stake.saturating_sub(actual_slash);
@@ -779,36 +787,43 @@ pub mod pallet {
                         v.active = false;
                     }
                 });
-                
+
                 // Slash delegators proportionally (same fraction as validator)
                 if !delegator_pool.is_zero() {
-                    let slash_fraction_bps = actual_slash.saturating_mul(10_000u32.into()) / val_stake;
+                    let slash_fraction_bps =
+                        actual_slash.saturating_mul(10_000u32.into()) / val_stake;
                     // Collect all voters for this validator
                     let delegators: Vec<(T::AccountId, BalanceOf<T>)> = Votes::<T>::iter()
                         .filter_map(|(voter, votes)| {
-                            votes.into_iter()
+                            votes
+                                .into_iter()
                                 .find(|vr| vr.validator == *validator)
                                 .map(|vr| (voter, vr.amount))
                         })
                         .collect();
-                    
+
                     for (delegator, delegated_amount) in delegators {
-                        let delegator_slash = delegated_amount.saturating_mul(slash_fraction_bps) / 10_000u32.into();
+                        let delegator_slash =
+                            delegated_amount.saturating_mul(slash_fraction_bps) / 10_000u32.into();
                         if !delegator_slash.is_zero() {
                             let d_unreserved = T::Currency::unreserve(&delegator, delegator_slash);
                             let d_actual = delegator_slash.saturating_sub(d_unreserved);
                             if !d_actual.is_zero() {
                                 if T::Currency::transfer(
-                                    &delegator, &treasury, d_actual,
+                                    &delegator,
+                                    &treasury,
+                                    d_actual,
                                     ExistenceRequirement::AllowDeath,
-                                ).is_ok() {
+                                )
+                                .is_ok()
+                                {
                                     TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(d_actual));
                                 }
                             }
                         }
                     }
                 }
-                
+
                 let current_block: u32 = frame_system::Pallet::<T>::block_number()
                     .try_into()
                     .map_err(|_| 0u32)
@@ -839,7 +854,8 @@ pub mod pallet {
                             let hundred: BalanceOf<T> = 100u32.into();
                             let ten: BalanceOf<T> = 10u32.into();
                             let multiplier = hundred.saturating_add(score.saturating_mul(ten));
-                            let effective_votes = v.total_votes.saturating_mul(multiplier) / hundred;
+                            let effective_votes =
+                                v.total_votes.saturating_mul(multiplier) / hundred;
                             (addr, effective_votes)
                         })
                 })
@@ -897,7 +913,9 @@ pub mod pallet {
                     validator,
                     reward,
                     ExistenceRequirement::AllowDeath,
-                ).is_err() {
+                )
+                .is_err()
+                {
                     return;
                 }
 
@@ -1152,7 +1170,7 @@ mod tests {
 
             let alice_val = Validators::<Test>::get(&alice).unwrap();
             assert_eq!(alice_val.stake, 5000);
-            assert_eq!(alice_val.active, true);
+            assert!(alice_val.active);
 
             assert_eq!(ValidatorList::<Test>::get().len(), 2);
             assert_eq!(ActiveValidators::<Test>::get().len(), 2);

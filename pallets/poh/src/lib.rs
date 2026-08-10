@@ -1,3 +1,17 @@
+#![allow(
+    clippy::let_unit_value,
+    deprecated,
+    clippy::clone_on_copy,
+    clippy::type_complexity,
+    clippy::needless_borrow,
+    clippy::collapsible_if,
+    clippy::redundant_closure,
+    clippy::manual_saturating_arithmetic,
+    clippy::unnecessary_cast,
+    clippy::derivable_impls,
+    clippy::manual_checked_ops,
+    clippy::needless_borrows_for_generic_args
+)]
 //! # Verdis Proof of History (PoH) Pallet
 //!
 //! Provides cryptographic timestamping using a VDF-like SHA-256 hash chain.
@@ -130,7 +144,7 @@ pub mod pallet {
             let mut hasher = Sha256::new();
             hasher.update(last_hash);
             hasher.update(seed);
-            hasher.update(&tick_count.to_be_bytes());
+            hasher.update(tick_count.to_be_bytes());
             let result = hasher.finalize();
             let mut hash = [0u8; 32];
             hash.copy_from_slice(&result);

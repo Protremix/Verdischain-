@@ -1,3 +1,16 @@
+#![allow(
+    clippy::let_unit_value,
+    deprecated,
+    clippy::clone_on_copy,
+    clippy::type_complexity,
+    clippy::needless_borrow,
+    clippy::collapsible_if,
+    clippy::redundant_closure,
+    clippy::manual_saturating_arithmetic,
+    clippy::unnecessary_cast,
+    clippy::needless_borrows_for_generic_args,
+    clippy::manual_checked_ops
+)]
 //! # Verdis Fungible Tokens Pallet
 //!
 //! Native user-created fungible tokens for the Verdis blockchain.

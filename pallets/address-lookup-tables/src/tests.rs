@@ -70,7 +70,7 @@ fn deactivate_table_works() {
             frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
             0
         ));
-        assert_eq!(TableActive::<Test>::get(0), false);
+        assert!(!TableActive::<Test>::get(0));
     });
 }
 

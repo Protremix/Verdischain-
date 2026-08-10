@@ -143,11 +143,12 @@ fn dev_validator_uris() -> Vec<&'static str> {
 
 // ─── 21-validator key set (testnet + mainnet) ───────────────────────────────
 
-
 fn mainnet_validator_uris() -> Vec<String> {
     // CRITICAL: PLACEHOLDER URIs - MUST be replaced before mainnet launch
     // Generate real keypairs: subkey generate --scheme sr25519
-    (1..=21).map(|i| format!("//MAINNET_VALIDATOR_{}", i)).collect()
+    (1..=21)
+        .map(|i| format!("//MAINNET_VALIDATOR_{}", i))
+        .collect()
 }
 
 fn testnet_validator_uris() -> Vec<&'static str> {

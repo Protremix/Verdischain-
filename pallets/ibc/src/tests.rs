@@ -1,5 +1,8 @@
 use crate::*;
-use frame_support::{assert_ok, construct_runtime, derive_impl, parameter_types, traits::{ConstU32, ConstU128}};
+use frame_support::{
+    assert_ok, construct_runtime, derive_impl, parameter_types,
+    traits::{ConstU128, ConstU32},
+};
 
 use sp_io::TestExternalities;
 use sp_runtime::{traits::IdentityLookup, BuildStorage};
@@ -223,7 +226,7 @@ fn transfer_works() {
         // Fund account for escrow
         use frame_support::traits::fungible::Mutate;
         pallet_balances::Pallet::<Test>::mint_into(&acct, 1_000_000_000_000_000_000).unwrap();
-        
+
         // Transfer
         assert_ok!(Pallet::<Test>::transfer(
             frame_system::RawOrigin::Signed(acct.clone()).into(),

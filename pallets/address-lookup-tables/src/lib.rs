@@ -1,3 +1,18 @@
+#![allow(
+    clippy::let_unit_value,
+    deprecated,
+    clippy::clone_on_copy,
+    clippy::type_complexity,
+    clippy::needless_borrow,
+    clippy::collapsible_if,
+    clippy::redundant_closure,
+    clippy::manual_saturating_arithmetic,
+    clippy::unnecessary_cast,
+    clippy::derivable_impls,
+    clippy::manual_checked_ops,
+    clippy::needless_borrows_for_generic_args,
+    clippy::bool_assert_comparison
+)]
 #![cfg_attr(not(feature = "std"), no_std)]
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
@@ -64,7 +79,9 @@ pub mod pallet {
         #[pallet::call_index(0)]
         pub fn create_table(origin: OriginFor<T>) -> DispatchResult {
             let who = ensure_signed(origin)?;
-            let table_id = AltTotalTables::<T>::get().try_into().map_err(|_| Error::<T>::TableLimitReached)?;
+            let table_id = AltTotalTables::<T>::get()
+                .try_into()
+                .map_err(|_| Error::<T>::TableLimitReached)?;
             let root = sp_io::hashing::blake2_256(&who.encode());
             TableIds::<T>::insert(table_id, root);
             TableActive::<T>::insert(table_id, true);

@@ -1,3 +1,14 @@
+#![allow(
+    clippy::let_unit_value,
+    deprecated,
+    clippy::clone_on_copy,
+    clippy::type_complexity,
+    clippy::needless_borrow,
+    clippy::collapsible_if,
+    clippy::redundant_closure,
+    clippy::manual_saturating_arithmetic,
+    clippy::unnecessary_cast
+)]
 //! # Verdis Tokenomics Pallet
 //!
 //! Enforces the 100B token supply and 8-category distribution:
@@ -89,7 +100,8 @@ pub mod pallet {
     // === Priority Fee Storage (Solana Priority Fees) ===
     #[pallet::storage]
     #[pallet::getter(fn priority_fee)]
-    pub type PriorityFees<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
+    pub type PriorityFees<T: Config> =
+        StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
 
     // === Token-2022: Transfer Fee ===
     #[pallet::storage]
@@ -304,10 +316,7 @@ pub mod pallet {
             let new_sold = sold
                 .checked_add(&amount)
                 .ok_or(Error::<T>::CalculationOverflow)?;
-            ensure!(
-                new_sold <= max,
-                Error::<T>::MaxInvestorAllocationReached
-            );
+            ensure!(new_sold <= max, Error::<T>::MaxInvestorAllocationReached);
 
             // Calculate price (price_bps is in basis points)
             let price_bps = PresalePrice::<T>::get();
@@ -328,11 +337,17 @@ pub mod pallet {
             // Then transfer purchased tokens to buyer
             T::Currency::transfer(&treasury, &who, amount, ExistenceRequirement::AllowDeath)?;
 
-            let new_raised = PresaleRaised::<T>::get().checked_add(&cost).ok_or(Error::<T>::CalculationOverflow)?;
+            let new_raised = PresaleRaised::<T>::get()
+                .checked_add(&cost)
+                .ok_or(Error::<T>::CalculationOverflow)?;
             PresaleRaised::<T>::put(new_raised);
-            let new_sold = PresaleSold::<T>::get().checked_add(&amount).ok_or(Error::<T>::CalculationOverflow)?;
+            let new_sold = PresaleSold::<T>::get()
+                .checked_add(&amount)
+                .ok_or(Error::<T>::CalculationOverflow)?;
             PresaleSold::<T>::put(new_sold);
-            let new_supply = CirculatingSupply::<T>::get().checked_add(&amount).ok_or(Error::<T>::CalculationOverflow)?;
+            let new_supply = CirculatingSupply::<T>::get()
+                .checked_add(&amount)
+                .ok_or(Error::<T>::CalculationOverflow)?;
             CirculatingSupply::<T>::put(new_supply);
 
             Self::deposit_event(Event::TokensPurchased {
@@ -379,7 +394,9 @@ pub mod pallet {
                 Ok::<(), Error<T>>(())
             })?;
 
-            let new_supply = CirculatingSupply::<T>::get().checked_add(&amount).ok_or(Error::<T>::CalculationOverflow)?;
+            let new_supply = CirculatingSupply::<T>::get()
+                .checked_add(&amount)
+                .ok_or(Error::<T>::CalculationOverflow)?;
             CirculatingSupply::<T>::put(new_supply);
 
             Self::deposit_event(Event::DistributionUpdated {

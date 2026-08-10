@@ -32,6 +32,7 @@ pub fn new_test_ext() -> TestExternalities {
     ext
 }
 
+#[allow(dead_code)]
 fn alice() -> sp_core::crypto::AccountId32 {
     sp_keyring::Sr25519Keyring::Alice.to_account_id()
 }

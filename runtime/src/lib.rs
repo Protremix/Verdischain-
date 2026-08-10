@@ -482,7 +482,6 @@ parameter_types! {
     pub const MaxCodeLen: u32 = 123 * 1024;
 }
 
-
 /// Restrictive call filter for pallet-contracts — only allows safe, non-privileged calls.
 /// Blocks: Sudo, Dpos (register/update/slash), Tokenomics (mint/burn/set_fee), Vesting, Presale, Eco admin calls
 pub struct VerdisContractCallFilter;

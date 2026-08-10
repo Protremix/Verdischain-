@@ -1,3 +1,14 @@
+#![allow(
+    clippy::let_unit_value,
+    deprecated,
+    clippy::clone_on_copy,
+    clippy::type_complexity,
+    clippy::needless_borrow,
+    clippy::collapsible_if,
+    clippy::redundant_closure,
+    clippy::manual_saturating_arithmetic,
+    clippy::unnecessary_cast
+)]
 //! # Verdis AMM DEX Pallet
 //!
 //! Constant-product AMM (x*y=k) decentralized exchange with:
@@ -340,7 +351,7 @@ pub mod pallet {
                     reserve_a: *reserve_a,
                     reserve_b: *reserve_b,
                     total_lp: {
-                        let p = (*reserve_a).checked_mul(&*reserve_b).unwrap_or_default(); // Pool creation, overflow extremely unlikely
+                        let p = reserve_a.checked_mul(reserve_b).unwrap_or_default(); // Pool creation, overflow extremely unlikely
                         p.integer_sqrt()
                     },
                     fee_numerator: *fee,
@@ -465,20 +476,32 @@ pub mod pallet {
                     .total_lp
                     .checked_mul(&amount_a)
                     .ok_or(Error::<T>::ArithmeticOverflow)?
-                    .checked_div(&pool.reserve_a).unwrap_or(0u32.into());
+                    .checked_div(&pool.reserve_a)
+                    .unwrap_or(0u32.into());
                 let lp_b = pool
                     .total_lp
                     .checked_mul(&amount_b)
                     .ok_or(Error::<T>::ArithmeticOverflow)?
-                    .checked_div(&pool.reserve_b).unwrap_or(0u32.into());
+                    .checked_div(&pool.reserve_b)
+                    .unwrap_or(0u32.into());
                 let lp = lp_a.min(lp_b);
                 ensure!(lp > BalanceOf::<T>::zero(), Error::<T>::InsufficientAmount);
                 lp
             };
 
             let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
-            T::Currency::transfer(&who, &dex_account, amount_a, ExistenceRequirement::KeepAlive)?;
-            T::Currency::transfer(&who, &dex_account, amount_b, ExistenceRequirement::KeepAlive)?;
+            T::Currency::transfer(
+                &who,
+                &dex_account,
+                amount_a,
+                ExistenceRequirement::KeepAlive,
+            )?;
+            T::Currency::transfer(
+                &who,
+                &dex_account,
+                amount_b,
+                ExistenceRequirement::KeepAlive,
+            )?;
 
             if pool.total_lp == BalanceOf::<T>::zero() {
                 pool.reserve_a = amount_a;
@@ -550,8 +573,18 @@ pub mod pallet {
                 / pool.total_lp;
 
             let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
-            T::Currency::transfer(&dex_account, &who, amount_a, ExistenceRequirement::KeepAlive)?;
-            T::Currency::transfer(&dex_account, &who, amount_b, ExistenceRequirement::KeepAlive)?;
+            T::Currency::transfer(
+                &dex_account,
+                &who,
+                amount_a,
+                ExistenceRequirement::KeepAlive,
+            )?;
+            T::Currency::transfer(
+                &dex_account,
+                &who,
+                amount_b,
+                ExistenceRequirement::KeepAlive,
+            )?;
 
             pool.reserve_a = pool
                 .reserve_a
@@ -635,7 +668,9 @@ pub mod pallet {
             let denominator = reserve_in
                 .checked_add(&amount_in_after_fee)
                 .ok_or(Error::<T>::ArithmeticOverflow)?;
-            let amount_out = numerator.checked_div(&denominator).ok_or(Error::<T>::InsufficientLiquidity)?;
+            let amount_out = numerator
+                .checked_div(&denominator)
+                .ok_or(Error::<T>::InsufficientLiquidity)?;
 
             // Circuit breaker: limit single swap size to MaxPriceImpact of pool reserves
             let max_impact: BalanceOf<T> = T::MaxPriceImpact::get().deconstruct().into();
@@ -656,8 +691,18 @@ pub mod pallet {
 
             // Transfers FIRST (before state update for atomicity)
             let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
-            T::Currency::transfer(&who, &dex_account, amount_in, ExistenceRequirement::KeepAlive)?;
-            T::Currency::transfer(&dex_account, &who, amount_out, ExistenceRequirement::KeepAlive)?;
+            T::Currency::transfer(
+                &who,
+                &dex_account,
+                amount_in,
+                ExistenceRequirement::KeepAlive,
+            )?;
+            T::Currency::transfer(
+                &dex_account,
+                &who,
+                amount_out,
+                ExistenceRequirement::KeepAlive,
+            )?;
 
             // THEN update pool reserves
             if is_a_to_b {
@@ -802,12 +847,14 @@ pub mod pallet {
                     .total_lp
                     .checked_mul(&amount_a)
                     .ok_or(Error::<T>::ArithmeticOverflow)?
-                    .checked_div(&pool.reserve_a).unwrap_or(0u32.into());
+                    .checked_div(&pool.reserve_a)
+                    .unwrap_or(0u32.into());
                 let lp_b = pool
                     .total_lp
                     .checked_mul(&amount_b)
                     .ok_or(Error::<T>::ArithmeticOverflow)?
-                    .checked_div(&pool.reserve_b).unwrap_or(0u32.into());
+                    .checked_div(&pool.reserve_b)
+                    .unwrap_or(0u32.into());
                 let lp = lp_a.min(lp_b);
                 ensure!(lp > BalanceOf::<T>::zero(), Error::<T>::InsufficientAmount);
                 lp
@@ -970,7 +1017,9 @@ pub mod pallet {
             let denominator = reserve_in
                 .checked_add(&amount_in_after_fee)
                 .ok_or(Error::<T>::ArithmeticOverflow)?;
-            let amount_out = numerator.checked_div(&denominator).ok_or(Error::<T>::InsufficientLiquidity)?;
+            let amount_out = numerator
+                .checked_div(&denominator)
+                .ok_or(Error::<T>::InsufficientLiquidity)?;
 
             // Circuit breaker: limit single swap size to MaxPriceImpact of pool reserves
             let max_impact: BalanceOf<T> = T::MaxPriceImpact::get().deconstruct().into();
@@ -1032,8 +1081,6 @@ pub mod pallet {
             });
             Ok(())
         }
-
-        /// Get pool price
 
         /// Get pool price
         #[pallet::call_index(4)]

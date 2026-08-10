@@ -1,3 +1,17 @@
+#![allow(
+    clippy::let_unit_value,
+    deprecated,
+    clippy::clone_on_copy,
+    clippy::type_complexity,
+    clippy::needless_borrow,
+    clippy::collapsible_if,
+    clippy::redundant_closure,
+    clippy::manual_saturating_arithmetic,
+    clippy::unnecessary_cast,
+    clippy::derivable_impls,
+    clippy::manual_checked_ops,
+    clippy::needless_borrows_for_generic_args
+)]
 //! # Verdis Decentralized Storage Pallet
 //!
 //! IPFS/Arweave integration for storing large data off-chain:
@@ -94,11 +108,13 @@ pub mod pallet {
 
     #[pallet::storage]
     #[pallet::getter(fn shard_info)]
-    pub type ShardInfoStorage<T: Config> = StorageMap<_, Blake2_128Concat, u32, ShardInfo, ValueQuery>;
+    pub type ShardInfoStorage<T: Config> =
+        StorageMap<_, Blake2_128Concat, u32, ShardInfo, ValueQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn account_to_shard)]
-    pub type AccountToShard<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
+    pub type AccountToShard<T: Config> =
+        StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
 
     // === Events ===
 

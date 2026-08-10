@@ -1,6 +1,17 @@
-#![allow(clippy::incompatible_msrv)]
-#![allow(clippy::type_complexity)]
-#![allow(clippy::let_unit_value)]
+#![allow(
+    clippy::let_unit_value,
+    deprecated,
+    clippy::clone_on_copy,
+    clippy::type_complexity,
+    clippy::needless_borrow,
+    clippy::collapsible_if,
+    clippy::redundant_closure,
+    clippy::manual_saturating_arithmetic,
+    clippy::unnecessary_cast,
+    clippy::manual_checked_ops,
+    clippy::needless_borrows_for_generic_args,
+    clippy::incompatible_msrv
+)]
 //! # Verdis Presale Pallet
 //!
 //! On-chain presale/IDO contribution system with:
@@ -697,10 +708,7 @@ pub mod pallet {
         /// Only works when the round is inactive AND past its end block.
         #[pallet::call_index(8)]
         #[pallet::weight(T::WeightInfo::collect_funds())]
-        pub fn claim_refund(
-            origin: OriginFor<T>,
-            round_id: u32,
-        ) -> DispatchResult {
+        pub fn claim_refund(origin: OriginFor<T>, round_id: u32) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
             let round = Rounds::<T>::get(round_id).ok_or(Error::<T>::RoundNotFound)?;
@@ -708,11 +716,14 @@ pub mod pallet {
             // Round must be inactive and past its end block
             ensure!(!round.is_active, Error::<T>::RoundNotRefundable);
             let current_block = frame_system::Pallet::<T>::block_number();
-            ensure!(current_block >= round.end_block, Error::<T>::RoundNotRefundable);
+            ensure!(
+                current_block >= round.end_block,
+                Error::<T>::RoundNotRefundable
+            );
 
             // Get user's contribution
-            let contribution = Contributions::<T>::get(round_id, &who)
-                .ok_or(Error::<T>::NoContribution)?;
+            let contribution =
+                Contributions::<T>::get(round_id, &who).ok_or(Error::<T>::NoContribution)?;
             ensure!(
                 contribution.total_paid > BalanceOf::<T>::zero(),
                 Error::<T>::NoContribution

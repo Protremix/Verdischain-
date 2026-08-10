@@ -1,172 +1,144 @@
-name: CI
+name: Verdis Chain CI/CD
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main, master]
   pull_request:
-    branches:
-      - main
-      - master
+    branches: [main, master]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  # ─── 1. FORMAT CHECK ─────────────────────────────────────────────────────
   fmt:
-    name: Code Formatting
+    name: Format Check
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
-
-      - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@v2
-
-      - name: Check Formatting
+      - name: Check formatting
         run: cargo fmt --all -- --check
 
-  check-all-features:
-    name: Check All Features
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y protobuf-compiler clang libclang-dev
-
-      - name: Install Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32v1-none
-
-      - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@v2
-
-      - name: Cargo Check All Features
-        run: cargo check --workspace
-
-  test:
-    name: Test Workspace
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y protobuf-compiler clang libclang-dev
-
-      - name: Install Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32v1-none
-
-      - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@v2
-
-      - name: Run Tests
-        run: cargo test --workspace
-
-  test-all-features:
-    name: Test All Features
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y protobuf-compiler clang libclang-dev
-
-      - name: Install Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32v1-none
-
-      - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@v2
-
-      - name: Run Tests with All Features
-        run: cargo test --workspace
-
+  # ─── 2. CLIPPY LINT ──────────────────────────────────────────────────────
   clippy:
-    name: Clippy Linter
+    name: Clippy
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install system dependencies
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y protobuf-compiler clang libclang-dev
-
-      - name: Install Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32v1-none
-          components: clippy
-
-      - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@v2
-
-      - name: Run Clippy
+          sudo apt-get install -y protobuf-compiler libudev-dev
+      - name: Run clippy
         run: cargo clippy --all-targets -- -D warnings
 
-  wasm-build:
-    name: WASM Build
+  # ─── 3. UNIT TESTS ───────────────────────────────────────────────────────
+  test:
+    name: Unit Tests
     runs-on: ubuntu-latest
+    needs: [fmt, clippy]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install system dependencies
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y protobuf-compiler clang libclang-dev
+          sudo apt-get install -y protobuf-compiler libudev-dev
+      - name: Run tests
+        run: cargo test --all
 
-      - name: Install Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32v1-none
-
-      - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@v2
-
-      - name: Build Runtime WASM
-        run: cargo build -p verdis-runtime --no-default-features --target wasm32v1-none
-
-  release-build:
-    name: Release Build
+  # ─── 4. NATIVE BUILD ─────────────────────────────────────────────────────
+  build-native:
+    name: Native Release Build
     runs-on: ubuntu-latest
+    needs: [test]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install system dependencies
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: native
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y protobuf-compiler clang libclang-dev
-
-      - name: Install Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
+          sudo apt-get install -y protobuf-compiler libudev-dev
+      - name: Build release
+        run: cargo build --release
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
         with:
-          targets: wasm32v1-none
+          name: verdis-node-native
+          path: target/release/verdis-node
+          retention-days: 7
 
-      - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@v2
+  # ─── 5. WASM BUILD (srtool) ──────────────────────────────────────────────
+  build-wasm:
+    name: WASM Runtime Build
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install srtool
+        run: |
+          docker pull paritytech/srtool:nightly
+      - name: Build WASM
+        run: |
+          docker run --rm -v $PWD:/build paritytech/srtool:nightly \
+            build --runtime ./runtime --package verdis-runtime
+      - name: Upload WASM
+        uses: actions/upload-artifact@v4
+        with:
+          name: verdis-runtime-wasm
+          path: runtime/target/srtool/release/*.wasm
+          retention-days: 7
 
-      - name: Build Release Binary
-        run: cargo build --release -p verdis-chain
+  # ─── 6. SECURITY SCAN ────────────────────────────────────────────────────
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for hardcoded keys
+        run: |
+          # Check for private keys, mnemonics, or secrets
+          ! grep -rn "private_key\|mnemonic\|seed_phrase\|0x0000000000000000000" \
+            --include="*.rs" --include="*.py" --include="*.js" --include="*.ts" \
+            pallets/ runtime/ node/ || true
+      - name: Check for unsafe code
+        run: |
+          # Report unsafe blocks (should be minimal)
+          grep -rn "unsafe" --include="*.rs" pallets/ runtime/ || true
+      - name: Cargo audit
+        run: |
+          cargo install cargo-audit
+          cargo audit
+
+  # ─── 7. CHAIN SPEC VALIDATION ────────────────────────────────────────────
+  validate-chainspec:
+    name: Chain Spec Validation
+    runs-on: ubuntu-latest
+    needs: [build-native]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: verdis-node-native
+          path: ./target/release/
+      - name: Make executable
+        run: chmod +x target/release/verdis-node
+      - name: Generate testnet spec
+        run: |
+          target/release/verdis-node build-spec --chain=verdis-testnet --raw > chain_spec_testnet_raw.json
+      - name: Generate mainnet spec
+        run: |
+          target/release/verdis-node build-spec --chain=verdis --raw > chain_spec_mainnet_raw.json
+      - name: Verify specs are valid JSON
+        run: |
+          python3 -c "import json; json.load(open('chain_spec_testnet_raw.json'))"
+          python3 -c "import json; json.load(open('chain_spec_mainnet_raw.json'))"

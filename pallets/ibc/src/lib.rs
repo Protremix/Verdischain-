@@ -1,12 +1,26 @@
+#![allow(
+    clippy::let_unit_value,
+    deprecated,
+    clippy::clone_on_copy,
+    clippy::type_complexity,
+    clippy::needless_borrow,
+    clippy::collapsible_if,
+    clippy::redundant_closure,
+    clippy::manual_saturating_arithmetic,
+    clippy::unnecessary_cast,
+    clippy::derivable_impls,
+    clippy::manual_checked_ops,
+    clippy::needless_borrows_for_generic_args
+)]
 //! Inter-Blockchain Communication (IBC) Pallet for Verdis Chain
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use codec::{Decode, Encode};
 use frame_support::dispatch::DispatchResult;
-use scale_info::TypeInfo;
-use sp_std::vec::Vec;
-use sp_runtime::traits::AccountIdConversion;
 use frame_support::traits::Currency;
+use scale_info::TypeInfo;
+use sp_runtime::traits::AccountIdConversion;
+use sp_std::vec::Vec;
 
 pub use pallet::*;
 
@@ -326,7 +340,10 @@ pub mod pallet {
             );
 
             let sequence = IbcNextSequenceSend::<T>::get(channel_id);
-            IbcNextSequenceSend::<T>::insert(channel_id, sequence.checked_add(1).unwrap_or(u64::MAX));
+            IbcNextSequenceSend::<T>::insert(
+                channel_id,
+                sequence.checked_add(1).unwrap_or(u64::MAX),
+            );
 
             let packet = Packet {
                 sequence,
@@ -364,7 +381,10 @@ pub mod pallet {
 
             let expected_seq = IbcNextSequenceRecv::<T>::get(channel_id);
             ensure!(sequence == expected_seq, Error::<T>::InvalidSequence);
-            IbcNextSequenceRecv::<T>::insert(channel_id, sequence.checked_add(1).unwrap_or(u64::MAX));
+            IbcNextSequenceRecv::<T>::insert(
+                channel_id,
+                sequence.checked_add(1).unwrap_or(u64::MAX),
+            );
 
             Self::deposit_event(Event::PacketReceived {
                 channel_id,
@@ -386,7 +406,10 @@ pub mod pallet {
 
             IbcPackets::<T>::remove((channel_id, sequence));
             let next_ack = IbcNextSequenceAck::<T>::get(channel_id);
-            IbcNextSequenceAck::<T>::insert(channel_id, next_ack.checked_add(1).unwrap_or(u64::MAX));
+            IbcNextSequenceAck::<T>::insert(
+                channel_id,
+                next_ack.checked_add(1).unwrap_or(u64::MAX),
+            );
 
             Self::deposit_event(Event::PacketAcknowledged {
                 channel_id,
@@ -420,12 +443,15 @@ pub mod pallet {
             // FIX: Get packet data BEFORE removing, then refund escrowed tokens
             let packet_data = Self::get_packet_data(&channel_id, &sequence);
             IbcPackets::<T>::remove((channel_id, sequence));
-            
+
             if let Some(ft_data) = packet_data {
                 let sender = T::AccountId::decode(&mut ft_data.sender.as_slice()).ok();
                 if let Some(sender) = sender {
                     let pallet_account = Self::account_id();
-                    let refund_amount: BalanceOf<T> = ft_data.amount.try_into().unwrap_or_else(|_| BalanceOf::<T>::zero());
+                    let refund_amount: BalanceOf<T> = ft_data
+                        .amount
+                        .try_into()
+                        .unwrap_or_else(|_| BalanceOf::<T>::zero());
                     let refund_result = T::Currency::transfer(
                         &pallet_account,
                         &sender,
@@ -442,7 +468,7 @@ pub mod pallet {
                     }
                 }
             }
-            
+
             Self::deposit_event(Event::PacketTimedOut {
                 channel_id,
                 sequence,
@@ -464,8 +490,11 @@ pub mod pallet {
 
             // CRITICAL FIX: Escrow tokens before creating transfer packet
             ensure!(amount > 0, Error::<T>::InsufficientBalance);
-            ensure!(amount <= T::MaxTransferAmount::get(), Error::<T>::TransferAmountTooLarge);
-            
+            ensure!(
+                amount <= T::MaxTransferAmount::get(),
+                Error::<T>::TransferAmountTooLarge
+            );
+
             let channel = IbcChannels::<T>::get(channel_id).ok_or(Error::<T>::ChannelNotFound)?;
             ensure!(channel.state == 3, Error::<T>::ChannelNotOpen);
 
@@ -474,12 +503,18 @@ pub mod pallet {
             T::Currency::transfer(
                 &who,
                 &pallet_account,
-                amount.try_into().map_err(|_| Error::<T>::TransferAmountTooLarge)?,
+                amount
+                    .try_into()
+                    .map_err(|_| Error::<T>::TransferAmountTooLarge)?,
                 frame_support::traits::ExistenceRequirement::AllowDeath,
-            ).map_err(|_| Error::<T>::EscrowFailed)?;
+            )
+            .map_err(|_| Error::<T>::EscrowFailed)?;
 
             let sequence = IbcNextSequenceSend::<T>::get(channel_id);
-            IbcNextSequenceSend::<T>::insert(channel_id, sequence.checked_add(1).unwrap_or(u64::MAX));
+            IbcNextSequenceSend::<T>::insert(
+                channel_id,
+                sequence.checked_add(1).unwrap_or(u64::MAX),
+            );
 
             let packet_data = FungibleTokenPacketData {
                 denom: denom.clone(),

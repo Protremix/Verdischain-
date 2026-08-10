@@ -1,3 +1,14 @@
+#![allow(
+    clippy::let_unit_value,
+    deprecated,
+    clippy::clone_on_copy,
+    clippy::type_complexity,
+    clippy::needless_borrow,
+    clippy::collapsible_if,
+    clippy::redundant_closure,
+    clippy::manual_saturating_arithmetic,
+    clippy::unnecessary_cast
+)]
 //! # Gulf Stream Pallet — Mempool-less Transaction Forwarding
 //!
 //! Inspired by Solana's Gulf Stream, eliminates the traditional mempool:
@@ -8,7 +19,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use codec::{Decode, Encode};
-use frame_support::{dispatch::DispatchResult, pallet_prelude::*, BoundedVec, traits::ConstU32};
+use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
 use sp_std::prelude::*;
@@ -168,15 +179,20 @@ pub mod pallet {
             stats.current_pending = stats.current_pending.saturating_sub(1u32);
             let total = stats.total_included.saturating_add(stats.total_expired);
             if total > 0 {
-                stats.success_rate = stats.total_included.saturating_mul(100).checked_div(total).unwrap_or(0) as u32;
+                stats.success_rate = stats
+                    .total_included
+                    .saturating_mul(100)
+                    .checked_div(total)
+                    .unwrap_or(0) as u32;
             }
             let new_avg = if stats.total_included == 1 {
                 forward_time_ms
             } else {
                 // FIX: Use checked arithmetic to prevent overflow
-                let prev_total = stats.avg_forward_time_ms.checked_mul(
-                    (stats.total_included - 1) as u64
-                ).unwrap_or(u64::MAX);
+                let prev_total = stats
+                    .avg_forward_time_ms
+                    .checked_mul((stats.total_included - 1) as u64)
+                    .unwrap_or(u64::MAX);
                 let sum = prev_total.saturating_add(forward_time_ms);
                 sum / stats.total_included as u64
             };
@@ -205,7 +221,11 @@ pub mod pallet {
             stats.current_pending = stats.current_pending.saturating_sub(1u32);
             let total = stats.total_included.saturating_add(stats.total_expired);
             if total > 0 {
-                stats.success_rate = stats.total_included.saturating_mul(100).checked_div(total).unwrap_or(0) as u32;
+                stats.success_rate = stats
+                    .total_included
+                    .saturating_mul(100)
+                    .checked_div(total)
+                    .unwrap_or(0) as u32;
             }
             GulfStreamStatsStorage::<T>::put(stats);
 

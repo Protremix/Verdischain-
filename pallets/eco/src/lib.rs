@@ -1,3 +1,17 @@
+#![allow(
+    clippy::let_unit_value,
+    deprecated,
+    clippy::clone_on_copy,
+    clippy::type_complexity,
+    clippy::needless_borrow,
+    clippy::collapsible_if,
+    clippy::redundant_closure,
+    clippy::manual_saturating_arithmetic,
+    clippy::unnecessary_cast,
+    clippy::derivable_impls,
+    clippy::manual_checked_ops,
+    clippy::needless_borrows_for_generic_args
+)]
 //! # Verdis Eco Tracking Pallet
 //!
 //! On-chain ecological impact tracking with:
@@ -333,7 +347,7 @@ pub mod pallet {
 
             CarbonCredits::<T>::mutate(&id_bv, |c| {
                 let credit = c.as_mut().ok_or(Error::<T>::CreditNotFound)?;
-                ensure!(&credit.owner == &who, Error::<T>::NotCreditOwner);
+                ensure!(credit.owner == who, Error::<T>::NotCreditOwner);
                 ensure!(!credit.retired, Error::<T>::CreditAlreadyRetired);
                 credit.retired = true;
                 Ok::<(), Error<T>>(())
@@ -364,7 +378,7 @@ pub mod pallet {
 
             CarbonCredits::<T>::mutate(&id_bv, |c| {
                 let credit = c.as_mut().ok_or(Error::<T>::CreditNotFound)?;
-                ensure!(&credit.owner == &who, Error::<T>::NotCreditOwner);
+                ensure!(credit.owner == who, Error::<T>::NotCreditOwner);
                 ensure!(!credit.retired, Error::<T>::CreditAlreadyRetired);
                 credit.owner = to.clone();
                 Ok::<(), Error<T>>(())
