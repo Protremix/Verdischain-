@@ -509,6 +509,7 @@ impl pallet_contracts::Config for Runtime {
 parameter_types! {
     pub const DposPalletId: PalletId = PalletId(*b"verdisdp");
     pub const MaxStakePerValidator: Balance = 1_000_000_000 * UNITS; // 1B VRDX (1% of total supply)
+    pub const ReactivationCooldown: u32 = 432_000; // ~30 days at 6s blocks (7200 blocks/day)
     pub const MinValidatorStake: Balance = 100_000_000 * UNITS; // 100M VRDX minimum (0.1% supply) for sybil resistance
     pub const MaxValidators: u32 = 100;
     pub const ValidatorCount: u32 = 7; // 7 genesis validators (expand to 21 post-launch)
@@ -529,6 +530,7 @@ impl pallet_dpos::Config for Runtime {
     type UnbondingPeriod = UnbondingPeriod;
     type PalletId = DposPalletId;
     type MaxStakePerValidator = MaxStakePerValidator;
+    type ReactivationCooldown = ReactivationCooldown;
     type WeightInfo = pallet_dpos::SubstrateWeight<Runtime>;
 }
 

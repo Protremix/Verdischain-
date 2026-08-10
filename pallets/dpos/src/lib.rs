@@ -117,6 +117,11 @@ pub mod pallet {
         StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
 
     #[pallet::storage]
+    #[pallet::getter(fn last_slashed_block)]
+    pub type LastSlashedBlock<T: Config> =
+        StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
+
+    #[pallet::storage]
     #[pallet::getter(fn validator_names)]
     pub type ValidatorNames<T: Config> =
         StorageMap<_, Blake2_128Concat, T::AccountId, BoundedVec<u8, ConstU32<32>>>;
@@ -182,6 +187,9 @@ pub mod pallet {
             who: T::AccountId,
             amount: BalanceOf<T>,
         },
+        RewardPoolRefilled {
+            amount: BalanceOf<T>,
+        },
     }
 
     // === Errors ===
@@ -209,6 +217,9 @@ pub mod pallet {
         VoteStorageFull,
         UnbondingQueueFull,
         ZeroAmount,
+        ReactivationCooldownNotElapsed,
+        ValidatorNotSlashed,
+        RewardRefillFailed,
     }
 
     // === Config ===
@@ -232,6 +243,8 @@ pub mod pallet {
         type PalletId: Get<PalletId>;
         #[pallet::constant]
         type MaxStakePerValidator: Get<BalanceOf<Self>>;
+        #[pallet::constant]
+        type ReactivationCooldown: Get<u32>;
         type WeightInfo: WeightInfo;
     }
 
@@ -655,6 +668,67 @@ pub mod pallet {
             Self::deposit_event(Event::GreenScoreUpdated { validator: who, score: rate });
             Ok(())
         }
+
+        /// Reactivate a slashed validator after cooldown period
+        #[pallet::call_index(8)]
+        #[pallet::weight(T::WeightInfo::update_green_score())]
+        pub fn reactivate_validator(
+            origin: OriginFor<T>,
+            validator: T::AccountId,
+        ) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+            ensure!(who == validator, Error::<T>::NotValidator);
+
+            let val = Validators::<T>::get(&validator).ok_or(Error::<T>::ValidatorNotFound)?;
+            ensure!(val.slashed, Error::<T>::ValidatorNotSlashed);
+            ensure!(val.stake >= T::MinStake::get(), Error::<T>::InsufficientFunds);
+
+            let last_slash = LastSlashedBlock::<T>::get(&validator);
+            let current_block: u32 = frame_system::Pallet::<T>::block_number()
+                .try_into()
+                .map_err(|_| Error::<T>::InvalidSlashReason)?;
+            ensure!(
+                current_block >= last_slash + T::ReactivationCooldown::get(),
+                Error::<T>::ReactivationCooldownNotElapsed
+            );
+
+            Validators::<T>::mutate(&validator, |v| {
+                if let Some(v) = v {
+                    v.slashed = false;
+                    v.active = true;
+                }
+            });
+
+            Self::deposit_event(Event::ValidatorRegistered {
+                who: validator,
+                stake: val.stake,
+            });
+            Ok(())
+        }
+
+        /// Refill the reward pool (governance only)
+        #[pallet::call_index(9)]
+        #[pallet::weight(T::WeightInfo::slash_validator())]
+        pub fn refill_reward_pool(
+            origin: OriginFor<T>,
+            amount: BalanceOf<T>,
+        ) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+            ensure!(amount > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
+
+            // The reward pool is the free balance of the PalletId account
+            let reward_pool = T::PalletId::get().into_account_truncating();
+            
+            T::Currency::transfer(
+                &who,
+                &reward_pool,
+                amount,
+                ExistenceRequirement::KeepAlive,
+            )?;
+
+            Self::deposit_event(Event::RewardPoolRefilled { amount });
+            Ok(())
+        }
     }
 
     // === Internal Functions ===
@@ -688,6 +762,11 @@ pub mod pallet {
                     return;
                 }
 
+                // Calculate delegator slash: proportionally slash all delegators
+                let val_stake = val.stake;
+                let val_total = val.total_votes;
+                let delegator_pool = val_total.saturating_sub(val_stake);
+                
                 Validators::<T>::mutate(validator, |v| {
                     if let Some(v) = v {
                         v.stake = v.stake.saturating_sub(actual_slash);
@@ -696,6 +775,41 @@ pub mod pallet {
                         v.active = false;
                     }
                 });
+                
+                // Slash delegators proportionally (same fraction as validator)
+                if !delegator_pool.is_zero() {
+                    let slash_fraction_bps = actual_slash.saturating_mul(10_000u32.into()) / val_stake;
+                    // Collect all voters for this validator
+                    let delegators: Vec<(T::AccountId, BalanceOf<T>)> = Votes::<T>::iter()
+                        .filter_map(|(voter, votes)| {
+                            votes.into_iter()
+                                .find(|vr| vr.validator == *validator)
+                                .map(|vr| (voter, vr.amount))
+                        })
+                        .collect();
+                    
+                    for (delegator, delegated_amount) in delegators {
+                        let delegator_slash = delegated_amount.saturating_mul(slash_fraction_bps) / 10_000u32.into();
+                        if !delegator_slash.is_zero() {
+                            let d_unreserved = T::Currency::unreserve(&delegator, delegator_slash);
+                            let d_actual = delegator_slash.saturating_sub(d_unreserved);
+                            if !d_actual.is_zero() {
+                                if T::Currency::transfer(
+                                    &delegator, &treasury, d_actual,
+                                    ExistenceRequirement::AllowDeath,
+                                ).is_ok() {
+                                    TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(d_actual));
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                let current_block: u32 = frame_system::Pallet::<T>::block_number()
+                    .try_into()
+                    .map_err(|_| 0u32)
+                    .unwrap_or(0);
+                LastSlashedBlock::<T>::insert(validator, current_block);
                 SlashingEvents::<T>::mutate(validator, |c| *c += 1);
                 TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(actual_slash));
                 ActiveValidators::<T>::mutate(|v| v.retain(|a| a != validator));
@@ -964,6 +1078,7 @@ mod tests {
         pub const UnbondingPeriod: u32 = 20;
         pub const DposPalletId: PalletId = PalletId(*b"v/dposps");
         pub const MaxStakePerValidator: u128 = 100_000;
+        pub const ReactivationCooldown: u32 = 10;
     }
 
     impl Config for Test {
@@ -977,6 +1092,7 @@ mod tests {
         type UnbondingPeriod = UnbondingPeriod;
         type PalletId = DposPalletId;
         type MaxStakePerValidator = MaxStakePerValidator;
+        type ReactivationCooldown = ReactivationCooldown;
         type WeightInfo = SubstrateWeight<Test>;
     }
 
