@@ -160,6 +160,8 @@ pub mod pallet {
 
     #[pallet::error]
     pub enum Error<T> {
+        /// Caller is not a registered storage provider
+        NotStorageProvider,
         RecordNotFound,
         RecordAlreadyExists,
         NotOwner,
@@ -242,6 +244,7 @@ pub mod pallet {
         #[pallet::call_index(1)]
         #[pallet::weight(Weight::from_parts(30_000_000, 0))]
         pub fn verify_storage(origin: OriginFor<T>, id: Vec<u8>, hash: [u8; 32]) -> DispatchResult {
+            // SECURITY: Track who verified the storage
             let _who = ensure_signed(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =

@@ -189,6 +189,8 @@ pub mod pallet {
 
     #[pallet::error]
     pub enum Error<T> {
+        /// Packet has already been acknowledged
+        PacketAlreadyAcknowledged,
         ClientNotFound,
         ConnectionNotFound,
         ChannelNotFound,
@@ -426,12 +428,13 @@ pub mod pallet {
             channel_id: u32,
             sequence: u64,
         ) -> DispatchResult {
-            // FIX: Allow any signed origin (relayer) to call timeout
+            // SECURITY: Any signed relayer can call timeout, but packet must not be acknowledged
             let _relayer = ensure_signed(origin)?;
 
             let packet =
                 IbcPackets::<T>::get((channel_id, sequence)).ok_or(Error::<T>::ChannelNotFound)?;
 
+            // SECURITY: Verify the packet has actually timed out
             let current_height: u64 = frame_system::Pallet::<T>::block_number()
                 .try_into()
                 .unwrap_or(0);

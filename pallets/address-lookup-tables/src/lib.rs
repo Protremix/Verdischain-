@@ -92,8 +92,13 @@ pub mod pallet {
         #[pallet::weight(0)]
         #[pallet::call_index(1)]
         pub fn add_address(origin: OriginFor<T>, table_id: u32) -> DispatchResult {
-            ensure_signed(origin)?;
+            // SECURITY: Only table owner can add addresses
+            let who = ensure_signed(origin)?;
             ensure!(TableActive::<T>::get(table_id), Error::<T>::TableNotActive);
+            // Verify caller is the table owner
+            let root = TableIds::<T>::get(table_id).ok_or(Error::<T>::TableNotFound)?;
+            let expected_root = sp_io::hashing::blake2_256(&who.encode());
+            ensure!(root == expected_root, Error::<T>::NotTableOwner);
             let count = TableAddressCount::<T>::get(table_id);
             ensure!(
                 count < T::MaxAddressesPerTable::get(),
@@ -124,7 +129,7 @@ pub mod pallet {
         #[pallet::weight(0)]
         #[pallet::call_index(3)]
         pub fn lookup_address(origin: OriginFor<T>, table_id: u32, index: u32) -> DispatchResult {
-            ensure_signed(origin)?;
+            let _who = ensure_signed(origin)?;
             AltTotalLookups::<T>::mutate(|l| *l = l.saturating_add(1));
             AltBytesSaved::<T>::mutate(|b| *b = b.saturating_add(30));
             Self::deposit_event(Event::LookupPerformed {

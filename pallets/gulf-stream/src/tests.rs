@@ -54,6 +54,8 @@ fn forward_tx_works() {
 #[test]
 fn mark_included_works() {
     new_test_ext().execute_with(|| {
+        // Set block number so mark_included block validation passes
+        frame_system::Pallet::<Test>::set_block_number(2);
         let tx_hash = [0u8; 32];
         assert_ok!(Pallet::<Test>::forward_transaction(
             frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
