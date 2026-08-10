@@ -571,33 +571,38 @@ pub mod pallet {
                 Error::<T>::SlashingFailed
             );
 
-            // Best-effort unreserve: move reserved funds back to free balance
-            // Then transfer the slash amount from free balance to treasury
-            let _ = T::Currency::unreserve(&validator, slash_amount);
+            // Unreserve funds; track shortfall to avoid accounting mismatch
+            let unreserved = T::Currency::unreserve(&validator, slash_amount);
+            let actual_slash = slash_amount.saturating_sub(unreserved);
+            ensure!(
+                !actual_slash.is_zero(),
+                Error::<T>::SlashingFailed
+            );
+
             let treasury = T::PalletId::get().into_account_truncating();
             T::Currency::transfer(
                 &validator,
                 &treasury,
-                slash_amount,
+                actual_slash,
                 ExistenceRequirement::AllowDeath,
             )?;
 
             Validators::<T>::mutate(&validator, |v| {
                 if let Some(v) = v {
-                    v.stake = v.stake.saturating_sub(slash_amount);
-                    v.total_votes = v.total_votes.saturating_sub(slash_amount);
+                    v.stake = v.stake.saturating_sub(actual_slash);
+                    v.total_votes = v.total_votes.saturating_sub(actual_slash);
                     v.slashed = true;
                     v.active = false;
                 }
             });
 
             SlashingEvents::<T>::mutate(&validator, |c| *c += 1);
-            TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(slash_amount));
+            TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(actual_slash));
             ActiveValidators::<T>::mutate(|v| v.retain(|a| a != &validator));
 
             Self::deposit_event(Event::ValidatorSlashed {
                 who: validator,
-                penalty: slash_amount,
+                penalty: actual_slash,
                 reason,
             });
             Ok(())
@@ -636,28 +641,44 @@ pub mod pallet {
         pub fn do_slash(validator: &T::AccountId, slash_amount: BalanceOf<T>) {
             if let Some(val) = Validators::<T>::get(validator) {
                 let slash_amount = slash_amount.min(val.stake);
-                let _ = T::Currency::unreserve(validator, slash_amount);
+                if slash_amount.is_zero() {
+                    return;
+                }
+
+                // Unreserve funds first; track any shortfall
+                let unreserved = T::Currency::unreserve(validator, slash_amount);
+                let actual_slash = slash_amount.saturating_sub(unreserved);
+
+                if actual_slash.is_zero() {
+                    return;
+                }
+
                 let treasury = T::PalletId::get().into_account_truncating();
-                let _ = T::Currency::transfer(
+
+                // Transfer slash to treasury — if it fails, do NOT update storage
+                if T::Currency::transfer(
                     validator,
                     &treasury,
-                    slash_amount,
+                    actual_slash,
                     ExistenceRequirement::AllowDeath,
-                );
+                ).is_err() {
+                    return;
+                }
+
                 Validators::<T>::mutate(validator, |v| {
                     if let Some(v) = v {
-                        v.stake = v.stake.saturating_sub(slash_amount);
-                        v.total_votes = v.total_votes.saturating_sub(slash_amount);
+                        v.stake = v.stake.saturating_sub(actual_slash);
+                        v.total_votes = v.total_votes.saturating_sub(actual_slash);
                         v.slashed = true;
                         v.active = false;
                     }
                 });
                 SlashingEvents::<T>::mutate(validator, |c| *c += 1);
-                TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(slash_amount));
+                TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(actual_slash));
                 ActiveValidators::<T>::mutate(|v| v.retain(|a| a != validator));
                 Self::deposit_event(Event::ValidatorSlashed {
                     who: validator.clone(),
-                    penalty: slash_amount,
+                    penalty: actual_slash,
                     reason: b"equivocation".to_vec(),
                 });
             }
@@ -721,12 +742,14 @@ pub mod pallet {
                     return;
                 }
 
-                let _ = T::Currency::transfer(
+                if T::Currency::transfer(
                     &reward_pool,
                     validator,
                     reward,
                     ExistenceRequirement::AllowDeath,
-                );
+                ).is_err() {
+                    return;
+                }
 
                 Validators::<T>::mutate(validator, |v| {
                     if let Some(v) = v {
