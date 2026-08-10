@@ -112,13 +112,7 @@ mod benches {
         let location = b"Brazil".to_vec();
 
         #[extrinsic_call]
-        create_reforest_project(
-            RawOrigin::Root,
-            id.clone(),
-            name,
-            trees_planted,
-            location,
-        );
+        create_reforest_project(RawOrigin::Root, id.clone(), name, trees_planted, location);
 
         let id_bv: BoundedVec<u8, ConstU32<64>> = id.try_into().unwrap();
         assert!(ReforestProjects::<T>::contains_key(&id_bv));

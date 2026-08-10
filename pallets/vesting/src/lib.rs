@@ -391,7 +391,6 @@ pub mod pallet {
         fn assign_vesting(s: u32) -> Weight;
         fn release_vested(s: u32) -> Weight;
     }
-
 }
 
 #[cfg(test)]

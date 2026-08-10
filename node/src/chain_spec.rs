@@ -52,58 +52,84 @@ fn billion() -> u128 {
 fn build_session_keys(uris: &[&str]) -> Vec<(AccountId, AccountId, SessionKeys)> {
     uris.iter()
         .enumerate()
-        .map(|(i, uri)| {
-            match i {
-                0 => {
-                    let controller = Sr25519Keyring::Alice.to_account_id();
-                    (controller.clone(), controller, SessionKeys {
+        .map(|(i, uri)| match i {
+            0 => {
+                let controller = Sr25519Keyring::Alice.to_account_id();
+                (
+                    controller.clone(),
+                    controller,
+                    SessionKeys {
                         babe: Sr25519Keyring::Alice.public().into(),
                         grandpa: Ed25519Keyring::Alice.public().into(),
-                    })
-                }
-                1 => {
-                    let controller = Sr25519Keyring::Bob.to_account_id();
-                    (controller.clone(), controller, SessionKeys {
+                    },
+                )
+            }
+            1 => {
+                let controller = Sr25519Keyring::Bob.to_account_id();
+                (
+                    controller.clone(),
+                    controller,
+                    SessionKeys {
                         babe: Sr25519Keyring::Bob.public().into(),
                         grandpa: Ed25519Keyring::Bob.public().into(),
-                    })
-                }
-                2 => {
-                    let controller = Sr25519Keyring::Charlie.to_account_id();
-                    (controller.clone(), controller, SessionKeys {
+                    },
+                )
+            }
+            2 => {
+                let controller = Sr25519Keyring::Charlie.to_account_id();
+                (
+                    controller.clone(),
+                    controller,
+                    SessionKeys {
                         babe: Sr25519Keyring::Charlie.public().into(),
                         grandpa: Ed25519Keyring::Charlie.public().into(),
-                    })
-                }
-                3 => {
-                    let controller = Sr25519Keyring::Dave.to_account_id();
-                    (controller.clone(), controller, SessionKeys {
+                    },
+                )
+            }
+            3 => {
+                let controller = Sr25519Keyring::Dave.to_account_id();
+                (
+                    controller.clone(),
+                    controller,
+                    SessionKeys {
                         babe: Sr25519Keyring::Dave.public().into(),
                         grandpa: Ed25519Keyring::Dave.public().into(),
-                    })
-                }
-                4 => {
-                    let controller = Sr25519Keyring::Eve.to_account_id();
-                    (controller.clone(), controller, SessionKeys {
+                    },
+                )
+            }
+            4 => {
+                let controller = Sr25519Keyring::Eve.to_account_id();
+                (
+                    controller.clone(),
+                    controller,
+                    SessionKeys {
                         babe: Sr25519Keyring::Eve.public().into(),
                         grandpa: Ed25519Keyring::Eve.public().into(),
-                    })
-                }
-                5 => {
-                    let controller = Sr25519Keyring::Ferdie.to_account_id();
-                    (controller.clone(), controller, SessionKeys {
+                    },
+                )
+            }
+            5 => {
+                let controller = Sr25519Keyring::Ferdie.to_account_id();
+                (
+                    controller.clone(),
+                    controller,
+                    SessionKeys {
                         babe: Sr25519Keyring::Ferdie.public().into(),
                         grandpa: Ed25519Keyring::Ferdie.public().into(),
-                    })
-                }
-                _ => {
-                    let pair = sr_from(&format!("//{}", uri));
-                    let controller: AccountId = pair.public().into();
-                    (controller.clone(), controller, SessionKeys {
+                    },
+                )
+            }
+            _ => {
+                let pair = sr_from(&format!("//{}", uri));
+                let controller: AccountId = pair.public().into();
+                (
+                    controller.clone(),
+                    controller,
+                    SessionKeys {
                         babe: pair.public().into(),
                         grandpa: ed_from(&format!("//{}", uri)).public().into(),
-                    })
-                }
+                    },
+                )
             }
         })
         .collect()
@@ -118,11 +144,7 @@ fn dev_validator_uris() -> Vec<&'static str> {
 // ─── 21-validator key set (testnet + mainnet) ───────────────────────────────
 
 fn testnet_validator_uris() -> Vec<&'static str> {
-    vec![
-        "Alice",
-        "Bob",
-        "Charlie",
-    ]
+    vec!["Alice", "Bob", "Charlie"]
 }
 
 // ─── DEV spec ──────────────────────────────────────────────────────────────

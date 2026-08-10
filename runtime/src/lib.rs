@@ -578,11 +578,13 @@ impl pallet_amm_dex::TokenHandler<AccountId, u128> for Runtime {
     fn fund_for_benchmark(asset: &pallet_amm_dex::AssetId, who: &AccountId, amount: u128) {
         match asset {
             pallet_amm_dex::AssetId::Native => {
-                let _ = <pallet_balances::Pallet<Runtime> as frame_support::traits::Currency<AccountId>>::deposit_creating(who, amount);
+                let _ = <pallet_balances::Pallet<Runtime> as frame_support::traits::Currency<
+                    AccountId,
+                >>::deposit_creating(who, amount);
             }
             pallet_amm_dex::AssetId::Custom(token_id) => {
-                use pallet_fungible_tokens::{TokenInfo, TokenBalances, Tokens};
                 use frame_support::BoundedVec;
+                use pallet_fungible_tokens::{TokenBalances, TokenInfo, Tokens};
                 if Tokens::<Runtime>::get(token_id).is_none() {
                     let token = TokenInfo {
                         owner: who.clone(),

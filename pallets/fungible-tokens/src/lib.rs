@@ -66,18 +66,42 @@ pub trait WeightInfo {
 }
 
 impl WeightInfo for () {
-    fn create() -> Weight { Weight::from_parts(10_000, 0) }
-    fn mint() -> Weight { Weight::from_parts(5_000, 0) }
-    fn burn() -> Weight { Weight::from_parts(5_000, 0) }
-    fn transfer() -> Weight { Weight::from_parts(5_000, 0) }
-    fn approve() -> Weight { Weight::from_parts(3_000, 0) }
-    fn transfer_from() -> Weight { Weight::from_parts(5_000, 0) }
-    fn set_metadata(_n: u32) -> Weight { Weight::from_parts(3_000, 0) }
-    fn freeze() -> Weight { Weight::from_parts(2_000, 0) }
-    fn thaw() -> Weight { Weight::from_parts(2_000, 0) }
-    fn destroy() -> Weight { Weight::from_parts(5_000, 0) }
-    fn batch_transfer(_b: u32) -> Weight { Weight::from_parts(10_000, 0) }
-    fn transfer_ownership() -> Weight { Weight::from_parts(3_000, 0) }
+    fn create() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn mint() -> Weight {
+        Weight::from_parts(5_000, 0)
+    }
+    fn burn() -> Weight {
+        Weight::from_parts(5_000, 0)
+    }
+    fn transfer() -> Weight {
+        Weight::from_parts(5_000, 0)
+    }
+    fn approve() -> Weight {
+        Weight::from_parts(3_000, 0)
+    }
+    fn transfer_from() -> Weight {
+        Weight::from_parts(5_000, 0)
+    }
+    fn set_metadata(_n: u32) -> Weight {
+        Weight::from_parts(3_000, 0)
+    }
+    fn freeze() -> Weight {
+        Weight::from_parts(2_000, 0)
+    }
+    fn thaw() -> Weight {
+        Weight::from_parts(2_000, 0)
+    }
+    fn destroy() -> Weight {
+        Weight::from_parts(5_000, 0)
+    }
+    fn batch_transfer(_b: u32) -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn transfer_ownership() -> Weight {
+        Weight::from_parts(3_000, 0)
+    }
 }
 
 #[frame_support::pallet]

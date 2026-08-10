@@ -5,7 +5,10 @@ use frame_support::{
     traits::{ConstU32, ConstU64, Currency},
 };
 use sp_io::TestExternalities;
-use sp_runtime::{traits::{AccountIdConversion, IdentityLookup}, BuildStorage};
+use sp_runtime::{
+    traits::{AccountIdConversion, IdentityLookup},
+    BuildStorage,
+};
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -324,9 +327,17 @@ fn test_payment_transferred_to_escrow_not_reserved() {
         assert_eq!(escrow_change, 10i64 - 50, "Escrow: +10 payment, -50 tokens");
         // User: -10 payment + 50 tokens = +40 net
         let user1_change = user1_after as i64 - user1_before as i64;
-        assert_eq!(user1_change, -10i64 + 50, "User net: -10 payment + 50 tokens");
+        assert_eq!(
+            user1_change,
+            -10i64 + 50,
+            "User net: -10 payment + 50 tokens"
+        );
         // No reserved balance
-        assert_eq!(Balances::reserved_balance(1), 0, "No reserved balance for buyer");
+        assert_eq!(
+            Balances::reserved_balance(1),
+            0,
+            "No reserved balance for buyer"
+        );
     });
 }
 
@@ -680,7 +691,10 @@ fn test_price_formula_large_payment() {
         set_block(1);
         create_and_activate_round(0, 5, 100_000_000, 100_000_000, 1, 100, b"vest".to_vec());
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10_000_000));
-        assert_eq!(Presale::contributions(0, 1).unwrap().total_purchased, 50_000_000);
+        assert_eq!(
+            Presale::contributions(0, 1).unwrap().total_purchased,
+            50_000_000
+        );
     });
 }
 
@@ -799,7 +813,15 @@ fn test_attacker_allocation_bypass() {
 fn test_attacker_overflow_attempt() {
     new_test_ext().execute_with(|| {
         set_block(1);
-        create_and_activate_round(0, u64::MAX / 2, 10000, 100_000_000, 1, 100, b"vest".to_vec());
+        create_and_activate_round(
+            0,
+            u64::MAX / 2,
+            10000,
+            100_000_000,
+            1,
+            100,
+            b"vest".to_vec(),
+        );
         assert_noop!(
             Presale::contribute(RuntimeOrigin::signed(1), 0, 3),
             Error::<Test>::CalculationOverflow
@@ -904,7 +926,11 @@ fn test_attacker_maximum_value_edge_cases() {
     new_test_ext().execute_with(|| {
         set_block(1);
         create_and_activate_round(0, 1, u64::MAX, u64::MAX, 1, 100, b"vest".to_vec());
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 999_999_999));
+        assert_ok!(Presale::contribute(
+            RuntimeOrigin::signed(1),
+            0,
+            999_999_999
+        ));
         assert_eq!(Presale::rounds(0).unwrap().sold, 999_999_999);
     });
 }
@@ -1028,31 +1054,66 @@ fn test_invariant_create_round_validates_inputs() {
         set_block(1);
         assert_noop!(
             Presale::create_round(
-                RuntimeOrigin::root(), b"test".to_vec(), 0, 1000, 100, 1, 100, b"vest".to_vec()
+                RuntimeOrigin::root(),
+                b"test".to_vec(),
+                0,
+                1000,
+                100,
+                1,
+                100,
+                b"vest".to_vec()
             ),
             Error::<Test>::InsufficientPayment
         );
         assert_noop!(
             Presale::create_round(
-                RuntimeOrigin::root(), b"test".to_vec(), 5, 0, 100, 1, 100, b"vest".to_vec()
+                RuntimeOrigin::root(),
+                b"test".to_vec(),
+                5,
+                0,
+                100,
+                1,
+                100,
+                b"vest".to_vec()
             ),
             Error::<Test>::InsufficientPayment
         );
         assert_noop!(
             Presale::create_round(
-                RuntimeOrigin::root(), b"test".to_vec(), 5, 1000, 100, 100, 100, b"vest".to_vec()
+                RuntimeOrigin::root(),
+                b"test".to_vec(),
+                5,
+                1000,
+                100,
+                100,
+                100,
+                b"vest".to_vec()
             ),
             Error::<Test>::RoundNotStarted
         );
         assert_noop!(
             Presale::create_round(
-                RuntimeOrigin::root(), vec![0u8; 33], 5, 1000, 100, 1, 100, b"vest".to_vec()
+                RuntimeOrigin::root(),
+                vec![0u8; 33],
+                5,
+                1000,
+                100,
+                1,
+                100,
+                b"vest".to_vec()
             ),
             Error::<Test>::LabelTooLong
         );
         assert_noop!(
             Presale::create_round(
-                RuntimeOrigin::root(), b"test".to_vec(), 5, 1000, 100, 1, 100, vec![0u8; 65]
+                RuntimeOrigin::root(),
+                b"test".to_vec(),
+                5,
+                1000,
+                100,
+                1,
+                100,
+                vec![0u8; 65]
             ),
             Error::<Test>::VestingLabelTooLong
         );
@@ -1065,7 +1126,14 @@ fn test_invariant_empty_vesting_label_rejected() {
         set_block(1);
         assert_noop!(
             Presale::create_round(
-                RuntimeOrigin::root(), b"test".to_vec(), 5, 1000, 100, 1, 100, vec![],
+                RuntimeOrigin::root(),
+                b"test".to_vec(),
+                5,
+                1000,
+                100,
+                1,
+                100,
+                vec![],
             ),
             Error::<Test>::EmptyVestingLabel
         );

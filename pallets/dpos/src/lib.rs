@@ -690,7 +690,10 @@ pub mod pallet {
 
             let mut bounded_active: BoundedVec<T::AccountId, ConstU32<1001>> =
                 BoundedVec::default();
-            for addr in new_active.iter().take(T::ActiveValidatorCount::get() as usize) {
+            for addr in new_active
+                .iter()
+                .take(T::ActiveValidatorCount::get() as usize)
+            {
                 let _ = bounded_active.try_push(addr.clone());
             }
             ActiveValidators::<T>::put(bounded_active);
@@ -791,7 +794,7 @@ pub mod pallet {
                     None
                 } else {
                     ActiveValidators::<T>::put(
-                        BoundedVec::try_from(initial.clone()).unwrap_or_default()
+                        BoundedVec::try_from(initial.clone()).unwrap_or_default(),
                     );
                     Some(initial)
                 }
@@ -831,7 +834,6 @@ pub mod pallet {
         fn update_green_score() -> Weight;
         fn withdraw_unbonded() -> Weight;
     }
-
 }
 
 // === Type Aliases ===

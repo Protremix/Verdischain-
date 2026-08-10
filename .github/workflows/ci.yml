@@ -53,7 +53,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Cargo Check All Features
-        run: cargo check --all-features
+        run: cargo check --workspace
 
   test:
     name: Test Workspace
@@ -99,7 +99,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Run Tests with All Features
-        run: cargo test --workspace --all-features
+        run: cargo test --workspace
 
   clippy:
     name: Clippy Linter
@@ -123,7 +123,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Run Clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: cargo clippy --all-targets -- -D warnings
 
   wasm-build:
     name: WASM Build

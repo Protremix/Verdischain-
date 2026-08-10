@@ -562,7 +562,6 @@ pub mod pallet {
         fn register_green_validator() -> Weight;
         fn update_green_score() -> Weight;
     }
-
 }
 
 #[cfg(feature = "runtime-benchmarks")]

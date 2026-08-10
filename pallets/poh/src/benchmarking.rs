@@ -3,9 +3,9 @@
 #![allow(unused_imports, clippy::all)]
 
 use super::*;
+use crate::Pallet as Poh;
 use frame_benchmarking::v2::*;
 use frame_system::RawOrigin;
-use crate::Pallet as Poh;
 
 #[benchmarks]
 mod benches {

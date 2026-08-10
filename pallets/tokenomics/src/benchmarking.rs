@@ -12,7 +12,6 @@ use frame_support::{
 };
 use frame_system::RawOrigin;
 use sp_runtime::traits::AccountIdConversion;
-use sp_runtime::traits::TryConvert;
 
 type BalanceOf<T> =
     <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;

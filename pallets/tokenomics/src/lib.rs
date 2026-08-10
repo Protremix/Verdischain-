@@ -377,7 +377,6 @@ pub mod pallet {
         fn update_presale_price() -> Weight;
         fn release_distribution() -> Weight;
     }
-
 }
 
 pub struct TestGreenTreasury;

@@ -616,10 +616,7 @@ pub mod pallet {
 
             // Verify round has ended (block >= end_block)
             let current_block = frame_system::Pallet::<T>::block_number();
-            ensure!(
-                current_block >= round.end_block,
-                Error::<T>::RoundNotEnded
-            );
+            ensure!(current_block >= round.end_block, Error::<T>::RoundNotEnded);
 
             // Prevent double collection
             ensure!(
@@ -652,7 +649,6 @@ pub mod pallet {
 
             Ok(())
         }
-
     }
 
     pub trait WeightInfo {
