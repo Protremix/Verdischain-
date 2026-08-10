@@ -508,12 +508,12 @@ impl pallet_contracts::Config for Runtime {
 
 parameter_types! {
     pub const DposPalletId: PalletId = PalletId(*b"verdisdp");
-    pub const MaxStakePerValidator: Balance = 10_000_000_000 * UNITS; // 10B VRDX (10% of total supply)
-    pub const MinValidatorStake: Balance = 10_000 * UNITS;
+    pub const MaxStakePerValidator: Balance = 1_000_000_000 * UNITS; // 1B VRDX (1% of total supply)
+    pub const MinValidatorStake: Balance = 10_000_000 * UNITS; // 10M VRDX minimum
     pub const MaxValidators: u32 = 100;
-    pub const ValidatorCount: u32 = 21;
-    pub const MinimumValidatorCount: u32 = 14; // 2/3 of 21 — below this, chain halts
-    pub const BlockReward: Balance = 16 * UNITS;
+    pub const ValidatorCount: u32 = 7; // 7 genesis validators (expand to 21 post-launch)
+    pub const MinimumValidatorCount: u32 = 4; // Below 4 active validators, chain halts
+    pub const BlockReward: Balance = 342 * UNITS; // 342 VRDX per block (1.8B annual, 6% APR at 30% stake)
     pub const EpochLength: BlockNumber = 500;
     pub const UnbondingPeriod: u32 = 201_600; // 14 days at 6s blocks (14*24*3600/6)
 }
