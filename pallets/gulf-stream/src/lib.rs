@@ -178,8 +178,10 @@ pub mod pallet {
             let current_block: u32 = frame_system::Pallet::<T>::block_number()
                 .try_into()
                 .unwrap_or(0);
+            // SECURITY: Only mark inclusion within a 5-block window — prevents
+            // validators from retroactively marking txs as included in old blocks
             ensure!(
-                block_number <= current_block,
+                current_block.saturating_sub(block_number) <= 5,
                 Error::<T>::InvalidBlockNumber
             );
 

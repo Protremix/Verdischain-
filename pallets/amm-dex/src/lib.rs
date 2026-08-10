@@ -351,7 +351,7 @@ pub mod pallet {
                     reserve_a: *reserve_a,
                     reserve_b: *reserve_b,
                     total_lp: {
-                        let p = reserve_a.checked_mul(reserve_b).unwrap_or_default(); // Pool creation, overflow extremely unlikely
+                        let p = reserve_a.checked_mul(reserve_b).expect("pool reserve overflow at genesis");
                         p.integer_sqrt()
                     },
                     fee_numerator: *fee,

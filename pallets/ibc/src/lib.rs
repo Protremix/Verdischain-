@@ -118,6 +118,16 @@ pub mod pallet {
     #[pallet::getter(fn ibc_total_volume)]
     pub type IbcTotalVolume<T> = StorageValue<_, u128, ValueQuery>;
 
+    /// Failed refund entries that can be retried via governance
+    #[pallet::storage]
+    pub type FailedRefunds<T: Config> = StorageMap<
+        _,
+        Blake2_128Concat,
+        (u32, u64),
+        (T::AccountId, BalanceOf<T>),
+        OptionQuery,
+    >;
+
     // ============ Config ============
 
     #[pallet::config]
@@ -462,6 +472,11 @@ pub mod pallet {
                         frame_support::traits::ExistenceRequirement::AllowDeath,
                     );
                     if refund_result.is_err() {
+                        // SECURITY: Store failed refund for governance retry instead of losing tokens
+                        FailedRefunds::<T>::insert(
+                            (channel_id, sequence),
+                            (sender.clone(), refund_amount),
+                        );
                         Self::deposit_event(Event::RefundFailed {
                             channel_id,
                             sequence,
