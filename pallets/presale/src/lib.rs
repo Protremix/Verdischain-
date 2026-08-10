@@ -37,7 +37,6 @@
 //! where `token_price` = tokens per payment unit (e.g. price=5 means 5 VRDX per 1 unit of payment).
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![allow(deprecated)]
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{
     ensure,

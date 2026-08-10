@@ -8,8 +8,6 @@
 //! - Presale price tracking ($0.0005/VRDX)
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![allow(deprecated)]
-#![allow(clippy::all)]
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{
     dispatch::DispatchResult,
@@ -91,7 +89,7 @@ pub mod pallet {
     // === Priority Fee Storage (Solana Priority Fees) ===
     #[pallet::storage]
     #[pallet::getter(fn priority_fee)]
-    pub type PriorityFees<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, u32, ValueQuery>;
+    pub type PriorityFees<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
 
     // === Token-2022: Transfer Fee ===
     #[pallet::storage]
@@ -106,7 +104,7 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn confidential_accounts)]
     pub type ConfidentialAccounts<T: Config> =
-        StorageMap<_, Twox64Concat, T::AccountId, bool, ValueQuery>;
+        StorageMap<_, Blake2_128Concat, T::AccountId, bool, ValueQuery>;
 
     // === Token-2022: Permanent Delegate ===
     #[pallet::storage]
@@ -130,7 +128,7 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn frozen_accounts)]
     pub type FrozenAccounts<T: Config> =
-        StorageMap<_, Twox64Concat, T::AccountId, bool, ValueQuery>;
+        StorageMap<_, Blake2_128Concat, T::AccountId, bool, ValueQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn freeze_authority)]

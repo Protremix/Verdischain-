@@ -7,10 +7,8 @@
 //! - Tracks forwarding statistics and success rates
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![allow(deprecated)]
-#![allow(clippy::all)]
 use codec::{Decode, Encode};
-use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
+use frame_support::{dispatch::DispatchResult, pallet_prelude::*, BoundedVec, traits::ConstU32};
 use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
 use sp_std::prelude::*;
@@ -108,7 +106,7 @@ pub mod pallet {
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         /// Forward a transaction to the next validator (mempool-less)
-        #[pallet::weight(0)]
+        #[pallet::weight(Weight::from_parts(10_000, 0))]
         #[pallet::call_index(0)]
         pub fn forward_transaction(
             origin: OriginFor<T>,
@@ -137,8 +135,8 @@ pub mod pallet {
             ForwardedTxs::<T>::mutate(|txs| txs.push(tx_hash));
 
             let mut stats = GulfStreamStatsStorage::<T>::get();
-            stats.total_forwarded += 1;
-            stats.current_pending += 1;
+            stats.total_forwarded = stats.total_forwarded.saturating_add(1u64);
+            stats.current_pending = stats.current_pending.saturating_add(1u32);
             GulfStreamStatsStorage::<T>::put(stats);
 
             Self::deposit_event(Event::TransactionForwarded {
@@ -149,7 +147,7 @@ pub mod pallet {
         }
 
         /// Mark a forwarded transaction as included in a block
-        #[pallet::weight(0)]
+        #[pallet::weight(Weight::from_parts(10_000, 0))]
         #[pallet::call_index(1)]
         pub fn mark_included(
             origin: OriginFor<T>,
@@ -165,11 +163,11 @@ pub mod pallet {
             PendingForwards::<T>::remove(tx_hash);
 
             let mut stats = GulfStreamStatsStorage::<T>::get();
-            stats.total_included += 1;
-            stats.current_pending = stats.current_pending.saturating_sub(1);
-            let total = stats.total_included + stats.total_expired;
+            stats.total_included = stats.total_included.saturating_add(1u64);
+            stats.current_pending = stats.current_pending.saturating_sub(1u32);
+            let total = stats.total_included.saturating_add(stats.total_expired);
             if total > 0 {
-                stats.success_rate = (stats.total_included * 100 / total) as u32;
+                stats.success_rate = stats.total_included.saturating_mul(100).checked_div(total).unwrap_or(0) as u32;
             }
             let new_avg = if stats.total_included == 1 {
                 forward_time_ms
@@ -188,20 +186,21 @@ pub mod pallet {
         }
 
         /// Expire a forwarded transaction that was never included
-        #[pallet::weight(0)]
+        #[pallet::weight(Weight::from_parts(10_000, 0))]
         #[pallet::call_index(2)]
         pub fn expire_transaction(origin: OriginFor<T>, tx_hash: [u8; 32]) -> DispatchResult {
-            let _ = ensure_signed(origin)?;
+            // FIX: Require root authorization - only block producers can expire txs
+            ensure_root(origin)?;
 
             let _tx = PendingForwards::<T>::get(tx_hash).ok_or(Error::<T>::TransactionNotFound)?;
             PendingForwards::<T>::remove(tx_hash);
 
             let mut stats = GulfStreamStatsStorage::<T>::get();
-            stats.total_expired += 1;
-            stats.current_pending = stats.current_pending.saturating_sub(1);
-            let total = stats.total_included + stats.total_expired;
+            stats.total_expired = stats.total_expired.saturating_add(1u64);
+            stats.current_pending = stats.current_pending.saturating_sub(1u32);
+            let total = stats.total_included.saturating_add(stats.total_expired);
             if total > 0 {
-                stats.success_rate = (stats.total_included * 100 / total) as u32;
+                stats.success_rate = stats.total_included.saturating_mul(100).checked_div(total).unwrap_or(0) as u32;
             }
             GulfStreamStatsStorage::<T>::put(stats);
 

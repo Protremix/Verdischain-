@@ -1,5 +1,6 @@
 use crate::*;
-use frame_support::{assert_ok, construct_runtime, derive_impl, parameter_types};
+use frame_support::{assert_ok, construct_runtime, derive_impl, parameter_types, traits::{ConstU32, ConstU128}};
+
 use sp_io::TestExternalities;
 use sp_runtime::{traits::IdentityLookup, BuildStorage};
 
@@ -8,6 +9,7 @@ type Block = frame_system::mocking::MockBlock<Test>;
 construct_runtime!(
     pub enum Test {
         System: frame_system,
+        Balances: pallet_balances,
         Ibc: crate,
     }
 );
@@ -17,17 +19,38 @@ impl frame_system::Config for Test {
     type AccountId = sp_core::crypto::AccountId32;
     type Lookup = IdentityLookup<Self::AccountId>;
     type Block = Block;
+    type AccountData = pallet_balances::AccountData<u128>;
+}
+
+impl pallet_balances::Config for Test {
+    type MaxLocks = ConstU32<50>;
+    type MaxReserves = ConstU32<50>;
+    type ReserveIdentifier = [u8; 8];
+    type Balance = u128;
+    type RuntimeEvent = RuntimeEvent;
+    type DustRemoval = ();
+    type ExistentialDeposit = ConstU128<1>;
+    type AccountStore = System;
+    type WeightInfo = ();
+    type FreezeIdentifier = ();
+    type MaxFreezes = ConstU32<0>;
+    type RuntimeHoldReason = ();
+    type RuntimeFreezeReason = ();
+    type DoneSlashHandler = ();
 }
 
 parameter_types! {
     pub const IbcMaxPortIdLen: u32 = 128;
     pub const IbcMaxPacketDataLen: u32 = 1024;
+        pub const IbcMaxTransferAmount: u128 = 1_000_000_000_000_000;
 }
 
 impl Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type MaxPortIdLen = IbcMaxPortIdLen;
     type MaxPacketDataLen = IbcMaxPacketDataLen;
+    type Currency = Balances;
+    type MaxTransferAmount = IbcMaxTransferAmount;
 }
 
 pub fn new_test_ext() -> TestExternalities {
@@ -197,6 +220,10 @@ fn transfer_works() {
             0,
             b"transfer".to_vec()
         ));
+        // Fund account for escrow
+        use frame_support::traits::fungible::Mutate;
+        pallet_balances::Pallet::<Test>::mint_into(&acct, 1_000_000_000_000_000_000).unwrap();
+        
         // Transfer
         assert_ok!(Pallet::<Test>::transfer(
             frame_system::RawOrigin::Signed(acct.clone()).into(),

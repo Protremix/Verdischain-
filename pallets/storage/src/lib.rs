@@ -8,8 +8,6 @@
 //! - Pinning requests and status tracking
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![allow(deprecated)]
-#![allow(clippy::all)]
 use codec::{Decode, DecodeWithMemTracking, Encode, MaxEncodedLen};
 use frame_support::{dispatch::DispatchResult, ensure, pallet_prelude::*, traits::Get, PalletId};
 use frame_system::pallet_prelude::*;
@@ -92,15 +90,15 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn account_shards)]
     pub type AccountShards<T: Config> =
-        StorageMap<_, Twox64Concat, u32, BoundedVec<T::AccountId, ConstU32<1024>>, ValueQuery>;
+        StorageMap<_, Blake2_128Concat, u32, BoundedVec<T::AccountId, ConstU32<1024>>, ValueQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn shard_info)]
-    pub type ShardInfoStorage<T: Config> = StorageMap<_, Twox64Concat, u32, ShardInfo, ValueQuery>;
+    pub type ShardInfoStorage<T: Config> = StorageMap<_, Blake2_128Concat, u32, ShardInfo, ValueQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn account_to_shard)]
-    pub type AccountToShard<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, u32, ValueQuery>;
+    pub type AccountToShard<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
 
     // === Events ===
 

@@ -1,6 +1,4 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-#![allow(deprecated)]
-#![allow(clippy::all)]
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
 pub use pallet::*;
@@ -25,11 +23,11 @@ pub mod pallet {
     #[pallet::storage]
     pub type AltBytesSaved<T> = StorageValue<_, u64, ValueQuery>;
     #[pallet::storage]
-    pub type TableIds<T> = StorageMap<_, Twox64Concat, u32, [u8; 32]>;
+    pub type TableIds<T> = StorageMap<_, Blake2_128Concat, u32, [u8; 32]>;
     #[pallet::storage]
-    pub type TableAddressCount<T> = StorageMap<_, Twox64Concat, u32, u32, ValueQuery>;
+    pub type TableAddressCount<T> = StorageMap<_, Blake2_128Concat, u32, u32, ValueQuery>;
     #[pallet::storage]
-    pub type TableActive<T> = StorageMap<_, Twox64Concat, u32, bool, ValueQuery>;
+    pub type TableActive<T> = StorageMap<_, Blake2_128Concat, u32, bool, ValueQuery>;
     #[pallet::event]
     #[pallet::generate_deposit(fn deposit_event)]
     pub enum Event<T: Config> {

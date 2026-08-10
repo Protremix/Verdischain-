@@ -9,8 +9,6 @@
 //! - Epoch-based validator rotation
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![allow(deprecated)]
-#![allow(clippy::all)]
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::traits::tokens::ExistenceRequirement;
 use frame_support::{

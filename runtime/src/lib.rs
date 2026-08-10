@@ -471,6 +471,26 @@ parameter_types! {
     pub const MaxCodeLen: u32 = 123 * 1024;
 }
 
+
+/// Restrictive call filter for pallet-contracts — only allows safe, non-privileged calls.
+/// Blocks: Sudo, Dpos (register/update/slash), Tokenomics (mint/burn/set_fee), Vesting, Presale, Eco admin calls
+pub struct VerdisContractCallFilter;
+impl frame_support::traits::Contains<RuntimeCall> for VerdisContractCallFilter {
+    fn contains(call: &RuntimeCall) -> bool {
+        match call {
+            // Allow: Balances transfers, AMM-DEX swaps/liquidity, Fungible token transfers
+            RuntimeCall::Balances(_) => true,
+            RuntimeCall::AmmDex(_) => true,
+            RuntimeCall::FungibleTokens(pallet_fungible_tokens::Call::transfer { .. }) => true,
+            RuntimeCall::System(frame_system::Call::remark { .. }) => true,
+            RuntimeCall::System(frame_system::Call::remark_with_event { .. }) => true,
+            // Block everything else — especially privileged calls
+            _ => false,
+        }
+    }
+}
+
+// === Contracts ===
 impl pallet_contracts::Config for Runtime {
     type Time = Timestamp;
     type Randomness = pallet_babe::RandomnessFromOneEpochAgo<Runtime>;
@@ -478,7 +498,7 @@ impl pallet_contracts::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
     type RuntimeHoldReason = RuntimeHoldReason;
-    type CallFilter = Everything;
+    type CallFilter = VerdisContractCallFilter;
     type DepositPerItem = DepositPerItem;
     type DepositPerByte = DepositPerByte;
     type MaxStorageKeyLen = MaxStorageKeyLen;
@@ -1129,12 +1149,15 @@ impl pallet_sealevel::Config for Runtime {
 parameter_types! {
     pub const IbcMaxPortIdLen: u32 = 128;
     pub const IbcMaxPacketDataLen: u32 = 1024;
+    pub const IbcMaxTransferAmount: u128 = 1_000_000_000_000_000; // 1B VRDX with 9 decimals
 }
 
 impl pallet_ibc::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type MaxPortIdLen = IbcMaxPortIdLen;
     type MaxPacketDataLen = IbcMaxPacketDataLen;
+    type Currency = Balances;
+    type MaxTransferAmount = IbcMaxTransferAmount;
 }
 
 construct_runtime! {

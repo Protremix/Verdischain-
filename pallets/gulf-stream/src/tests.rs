@@ -98,7 +98,7 @@ fn expire_transaction_works() {
             256
         ));
         assert_ok!(Pallet::<Test>::expire_transaction(
-            frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+            frame_system::RawOrigin::Root.into(),
             tx_hash
         ));
         let stats = Pallet::<Test>::get_stats();
