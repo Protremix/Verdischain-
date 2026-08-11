@@ -752,12 +752,14 @@ impl pallet_presale::VestingHandler<AccountId, u128> for PresaleVestingHandler {
 parameter_types! {
     pub const StoragePalletId: PalletId = PalletId(*b"verdisst");
     pub const MaxStorageRecords: u32 = 10_000;
+    pub const MaxStorageSizeBytes: u64 = 1_000_000_000_000;  // 1 TB max per record
 }
 
 impl pallet_storage::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type PalletId = StoragePalletId;
     type MaxRecords = MaxStorageRecords;
+        type MaxSizeBytes = MaxStorageSizeBytes;
     type ShardCount = StorageShardCount;
     type WeightInfo = pallet_storage::SubstrateWeight<Runtime>;
 }

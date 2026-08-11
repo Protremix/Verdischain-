@@ -43,6 +43,10 @@ pub mod pallet {
     pub type TableAddressCount<T> = StorageMap<_, Blake2_128Concat, u32, u32, ValueQuery>;
     #[pallet::storage]
     pub type TableActive<T> = StorageMap<_, Blake2_128Concat, u32, bool, ValueQuery>;
+    /// Track how many tables each account has created (DoS prevention)
+    #[pallet::storage]
+    pub type TablesPerAccount<T: Config> =
+        StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
     #[pallet::event]
     #[pallet::generate_deposit(fn deposit_event)]
     pub enum Event<T: Config> {
@@ -79,6 +83,14 @@ pub mod pallet {
         #[pallet::call_index(0)]
         pub fn create_table(origin: OriginFor<T>) -> DispatchResult {
             let who = ensure_signed(origin)?;
+
+            // SECURITY: Enforce MaxTablesPerAccount to prevent DoS
+            let current_count = TablesPerAccount::<T>::get(&who);
+            ensure!(
+                current_count < T::MaxTablesPerAccount::get(),
+                Error::<T>::MaxTablesExceeded
+            );
+
             let table_id = AltTotalTables::<T>::get()
                 .try_into()
                 .map_err(|_| Error::<T>::TableLimitReached)?;
@@ -86,16 +98,16 @@ pub mod pallet {
             TableIds::<T>::insert(table_id, root);
             TableActive::<T>::insert(table_id, true);
             AltTotalTables::<T>::mutate(|t| *t = t.saturating_add(1));
+            TablesPerAccount::<T>::insert(&who, current_count.saturating_add(1));
+
             Self::deposit_event(Event::TableCreated { table_id, root });
             Ok(())
         }
         #[pallet::weight(0)]
         #[pallet::call_index(1)]
         pub fn add_address(origin: OriginFor<T>, table_id: u32) -> DispatchResult {
-            // SECURITY: Only table owner can add addresses
             let who = ensure_signed(origin)?;
             ensure!(TableActive::<T>::get(table_id), Error::<T>::TableNotActive);
-            // Verify caller is the table owner
             let root = TableIds::<T>::get(table_id).ok_or(Error::<T>::TableNotFound)?;
             let expected_root = sp_io::hashing::blake2_256(&who.encode());
             ensure!(root == expected_root, Error::<T>::NotTableOwner);
@@ -118,11 +130,11 @@ pub mod pallet {
         pub fn deactivate_table(origin: OriginFor<T>, table_id: u32) -> DispatchResult {
             let who = ensure_signed(origin)?;
             ensure!(TableActive::<T>::get(table_id), Error::<T>::TableNotActive);
-            // Only table owner can deactivate
             let root = TableIds::<T>::get(table_id).ok_or(Error::<T>::TableNotFound)?;
             let expected_root = sp_io::hashing::blake2_256(&who.encode());
             ensure!(root == expected_root, Error::<T>::NotTableOwner);
             TableActive::<T>::insert(table_id, false);
+            TablesPerAccount::<T>::mutate(&who, |c| *c = c.saturating_sub(1));
             Self::deposit_event(Event::TableDeactivated { table_id });
             Ok(())
         }

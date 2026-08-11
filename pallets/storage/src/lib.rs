@@ -174,6 +174,7 @@ pub mod pallet {
         MaxRecordsReached,
         IdTooLong,
         EndpointTooLong,
+        SizeTooLarge,
     }
 
     // === Config ===
@@ -185,6 +186,8 @@ pub mod pallet {
         type PalletId: Get<PalletId>;
         #[pallet::constant]
         type MaxRecords: Get<u32>;
+        #[pallet::constant]
+        type MaxSizeBytes: Get<u64>;
         #[pallet::constant]
         type ShardCount: Get<u32>;
         type WeightInfo: WeightInfo;
@@ -217,6 +220,10 @@ pub mod pallet {
                 StorageRecordCount::<T>::get() < T::MaxRecords::get(),
                 Error::<T>::MaxRecordsReached
             );
+            ensure!(
+                size_bytes <= T::MaxSizeBytes::get(),
+                Error::<T>::SizeTooLarge
+            );
 
             let record = StorageRecord {
                 id: id_bv.clone(),
@@ -225,10 +232,11 @@ pub mod pallet {
                 size_bytes,
                 blake3_hash,
                 pinned: false,
-                created_at: 0,
+                created_at: frame_system::Pallet::<T>::block_number().try_into().unwrap_or(0),
             };
 
             StorageRecords::<T>::insert(id_bv, record);
+            StorageRecordCount::<T>::mutate(|c| *c = c.saturating_add(1));
             TotalStored::<T>::mutate(|t| *t = t.saturating_add(size_bytes));
 
             Self::deposit_event(Event::StorageRecordCreated {
@@ -426,6 +434,7 @@ mod tests {
     parameter_types! {
         pub const StorPalletId: PalletId = PalletId(*b"v/stores");
         pub const MaxRecords: u32 = 1000;
+    pub const MaxSizeBytes: u64 = 1_000_000_000_000;
     }
 
     impl Config for Test {
@@ -433,6 +442,7 @@ mod tests {
         type RuntimeEvent = RuntimeEvent;
         type PalletId = StorPalletId;
         type MaxRecords = MaxRecords;
+        type MaxSizeBytes = MaxSizeBytes;
         type WeightInfo = SubstrateWeight<Test>;
     }
 
