@@ -239,7 +239,8 @@ pub mod pallet {
             initial_height: u64,
             trusting_period: u64,
         ) -> DispatchResult {
-            let _who = ensure_signed(origin)?;
+            // SECURITY: Only root/governance can create IBC clients
+            ensure_root(origin)?;
 
             let client_id = IbcClientCounter::<T>::get();
             IbcClientCounter::<T>::put(client_id.checked_add(1).unwrap_or(u32::MAX));
@@ -267,7 +268,8 @@ pub mod pallet {
             client_id: u32,
             counterparty_client_id: u32,
         ) -> DispatchResult {
-            let _who = ensure_signed(origin)?;
+            // SECURITY: Only root/governance can open IBC connections
+            ensure_root(origin)?;
 
             let client = IbcClients::<T>::get(client_id).ok_or(Error::<T>::ClientNotFound)?;
             ensure!(!client.frozen, Error::<T>::ClientFrozen);
@@ -298,7 +300,8 @@ pub mod pallet {
             ordering: u8,
             port_id: Vec<u8>,
         ) -> DispatchResult {
-            let _who = ensure_signed(origin)?;
+            // SECURITY: Only root/governance can open IBC channels
+            ensure_root(origin)?;
 
             let connection =
                 IbcConnections::<T>::get(connection_id).ok_or(Error::<T>::ConnectionNotFound)?;
@@ -350,6 +353,14 @@ pub mod pallet {
             ensure!(
                 data.len() as u32 <= T::MaxPacketDataLen::get(),
                 Error::<T>::PacketDataTooLarge
+            );
+            // SECURITY: timeout_height must be in the future
+            let current_height: u64 = frame_system::Pallet::<T>::block_number()
+                .try_into()
+                .unwrap_or(0);
+            ensure!(
+                timeout_height > current_height,
+                Error::<T>::PacketTimeout
             );
 
             let sequence = IbcNextSequenceSend::<T>::get(channel_id);
@@ -525,6 +536,13 @@ pub mod pallet {
             let channel = IbcChannels::<T>::get(channel_id).ok_or(Error::<T>::ChannelNotFound)?;
             ensure!(channel.state == 3, Error::<T>::ChannelNotOpen);
 
+            // SECURITY: Verify the connection's client is not frozen
+            let connection = IbcConnections::<T>::get(channel.connection_id)
+                .ok_or(Error::<T>::ConnectionNotFound)?;
+            let client = IbcClients::<T>::get(connection.client_id)
+                .ok_or(Error::<T>::ClientNotFound)?;
+            ensure!(!client.frozen, Error::<T>::ClientFrozen);
+
             // CRITICAL FIX: Escrow tokens from sender to pallet account
             let pallet_account = Self::account_id();
             T::Currency::transfer(
@@ -592,6 +610,47 @@ pub mod pallet {
             });
 
             Self::deposit_event(Event::ChannelClosed { channel_id });
+            Ok(())
+        }
+
+        /// Update a light client's latest height
+        #[pallet::call_index(9)]
+        #[pallet::weight(Weight::from_parts(10_000, 0))]
+        pub fn update_client(
+            origin: OriginFor<T>,
+            client_id: u32,
+            new_height: u64,
+        ) -> DispatchResult {
+            // SECURITY: Only root/governance can update client state
+            ensure_root(origin)?;
+
+            let mut client =
+                IbcClients::<T>::get(client_id).ok_or(Error::<T>::ClientNotFound)?;
+            ensure!(!client.frozen, Error::<T>::ClientFrozen);
+            // SECURITY: Height must advance (no regressions)
+            ensure!(
+                new_height > client.latest_height,
+                Error::<T>::InvalidSequence
+            );
+            client.latest_height = new_height;
+            IbcClients::<T>::insert(client_id, client);
+            Ok(())
+        }
+
+        /// Freeze a light client (on misbehavior or suspected fault)
+        #[pallet::call_index(10)]
+        #[pallet::weight(Weight::from_parts(5_000, 0))]
+        pub fn freeze_client(
+            origin: OriginFor<T>,
+            client_id: u32,
+        ) -> DispatchResult {
+            // SECURITY: Only root/governance can freeze clients
+            ensure_root(origin)?;
+
+            let mut client =
+                IbcClients::<T>::get(client_id).ok_or(Error::<T>::ClientNotFound)?;
+            client.frozen = true;
+            IbcClients::<T>::insert(client_id, client);
             Ok(())
         }
     }
