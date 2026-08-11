@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Verdis Chain — Web3 Wallet | Non-Custodial</title>
 <link rel="canonical" href="https://verdischain.com/wallet/">
-<meta name="description" content="Non-custodial Web3 wallet for Verdis Chain. Create or import secp256k1 keypairs, send and receive VRDX tokens, and stake to validators." />
+<meta name="description" content="Non-custodial Web3 wallet for Verdis Chain. Create or import sr25519 keypairs, send and receive VRDX tokens, and stake to validators." />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="Verdis Chain — Web3 Wallet" />
 <meta property="og:description" content="Non-custodial Web3 wallet for Verdis Chain. Create, import, send, receive VRDX." />
@@ -197,9 +197,9 @@ body:hover #cursor-glow{opacity:1}
 
 <!-- Hero -->
 <div class="wallet-hero">
-<div class="wallet-badge"><span class="wallet-badge-dot"></span> Non-Custodial · secp256k1</div>
+<div class="wallet-badge"><span class="wallet-badge-dot"></span> Non-Custodial · Sr25519</div>
 <h1>Verdis <span class="grad">Web3 Wallet</span></h1>
-<p>Create, import, send, and receive VRDX tokens. Your keys, your coins — powered by @noble/secp256k1.</p>
+<p>Create, import, send, and receive VRDX tokens. Your keys, your coins — powered by @polkadot/keyring (Sr25519).</p>
 </div>
 
 <!-- State: No Wallet -->
@@ -208,7 +208,7 @@ body:hover #cursor-glow{opacity:1}
 <div class="auth-card" onclick="showCreate()">
 <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00a86b" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></div>
 <h3>Create New Wallet</h3>
-<p>Generate a new secp256k1 keypair. Your private key never leaves your browser.</p>
+<p>Generate a new sr25519 keypair. Your private key never leaves your browser.</p>
 </div>
 <div class="auth-card" onclick="showImport()">
 <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00a86b" stroke-width="2"><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-7M16 5l4 4-4 4M20 9H4"/></svg></div>
@@ -338,10 +338,30 @@ body:hover #cursor-glow{opacity:1}
 
 </div>
 
-<script type="module">
-import * as secp from 'https://esm.sh/@noble/secp256k1@2.0.0';
-import { sha256 } from 'https://esm.sh/@noble/hashes@1.5.0/sha256';
-import { blake2b } from 'https://esm.sh/@noble/hashes@1.5.0/blake2b';
+<script src="/polkadot-crypto-bundle.js"></script>
+<script>
+// Debug: catch any module load errors
+window.addEventListener('error', (e) => {
+  console.error('[Module Error]', e.message, e.filename, e.lineno);
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#dc2626;color:white;padding:16px;border-radius:8px;z-index:9999;font-family:monospace;font-size:14px;max-width:400px';
+  toast.textContent = 'JS Error: ' + e.message + ' (line ' + e.lineno + ')';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 10000);
+});
+// Sr25519 via Polkadot WASM bundle (loaded via script tag below)
+// SHA-256 using built-in Web Crypto API (no CDN needed)
+async function sha256Sync(data) {
+  const buf = data instanceof Uint8Array ? data : new TextEncoder().encode(data);
+  const hash = await crypto.subtle.digest('SHA-256', buf);
+  return new Uint8Array(hash);
+}
+// Synchronous SHA-256 fallback (used in non-async contexts)
+function sha256(data) {
+  // This is a sync wrapper - but crypto.subtle is async only
+  // We'll use a simple sync implementation for non-critical paths
+  throw new Error('Use sha256Sync() for SHA-256 hashing');
+}
 
 const RPC_URL = 'https://verdischain.com/rpc';
 
@@ -373,8 +393,10 @@ const TOKEN_DECIMALS = 9;
 
 // Make available globally
 window.secp = secp;
-window.sha256 = sha256;
-window.blake2b = blake2b;
+window.sha256 = sha256Sync;
+console.log('[Wallet] Module script loaded successfully');
+window.__walletModuleReady = true;
+// blake2b is no longer needed - PolkadotCrypto handles SS58 encoding
 
 // ===== SS58 Encoding =====
 const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
@@ -396,26 +418,18 @@ function base58Encode(data) {
 }
 
 function ss58Encode(publicKey, prefix) {
-  // Substrate canonical SS58 encoding (sp-core crypto.rs)
-  const SS58PRE = new TextEncoder().encode('SS58PRE');
-  const prefixBytes = prefix < 64 ? [prefix] : [
-    ((prefix & 0b11111100) >> 2) | 0b01000000,
-    (prefix >> 8) | ((prefix & 0b00000011) << 6)
-  ];
-  // Use compressed public key (33 bytes)
-  const pkBytes = publicKey.length === 33 ? Array.from(publicKey) : Array.from(publicKey).slice(0, 32);
-  const data = [...prefixBytes, ...pkBytes];
-  // Checksum: blake2b-512("SS58PRE" + data), take first 2 bytes
-  const checksumInput = new Uint8Array([...SS58PRE, ...data]);
-  const hash = blake2b(checksumInput, { dkLen: 64 });
-  const checksum = Array.from(hash).slice(0, 2);
-  return base58Encode([...data, ...checksum]);
+  // Use PolkadotCrypto's built-in SS58 encoder (no blake2b needed)
+  if (window.PolkadotCrypto && PolkadotCrypto.encodeAddress) {
+    const pk = publicKey.length === 33 ? publicKey.slice(0, 32) : publicKey;
+    return PolkadotCrypto.encodeAddress(pk, prefix);
+  }
+  throw new Error('SS58 encoding requires PolkadotCrypto bundle');
 }
 
 // ===== Wallet Storage =====
-function saveWallet(privateKeyHex, publicKeyHex, address) {
+function saveWallet(mnemonic, publicKeyHex, address) {
   localStorage.setItem('verdis_wallet', JSON.stringify({
-    privateKey: privateKeyHex,
+    mnemonic: mnemonic,
     publicKey: publicKeyHex,
     address: address,
     created: Date.now()
@@ -517,24 +531,23 @@ window.copyToClipboard = function(text) {
 
 
 // ===== BIP39 Mnemonic Generation =====
-function generateMnemonic() {
-  // 128 bits = 16 bytes of entropy
+async function generateMnemonic() {
+  // Use Polkadot's built-in BIP39 mnemonic generator (guaranteed compatible with Keyring)
+  if (window.PolkadotCrypto && PolkadotCrypto.mnemonicGenerate) {
+    return PolkadotCrypto.mnemonicGenerate();
+  }
+  // Fallback: custom BIP39 (should not normally be reached)
   const entropy = new Uint8Array(16);
   crypto.getRandomValues(entropy);
-
-  // SHA256 checksum (first 4 bits)
-  const hash = sha256(entropy);
-  const checksumByte = hash[0];
-  const checksumBits = checksumByte >> 4; // first 4 bits
-
-  // Combine entropy (128 bits) + checksum (4 bits) = 132 bits = 12 * 11 bits
+  // Fallback sha256 - note: this path is rarely hit since we use PolkadotCrypto.mnemonicGenerate()
+  // For safety, throw an error directing to use PolkadotCrypto
+  throw new Error('BIP39 fallback requires PolkadotCrypto.mnemonicGenerate()');
+  const checksumBits = checksumByte >> 4;
   let bits = '';
   for (let i = 0; i < 16; i++) {
     bits += entropy[i].toString(2).padStart(8, '0');
   }
   bits += checksumBits.toString(2).padStart(4, '0');
-
-  // Map 11-bit groups to words
   const mnemonic = [];
   for (let i = 0; i < 12; i++) {
     const index = parseInt(bits.substring(i * 11, (i + 1) * 11), 2);
@@ -543,24 +556,24 @@ function generateMnemonic() {
   return mnemonic.join(' ');
 }
 
-// Derive SS58 address from mnemonic via server
+// Derive SS58 address from mnemonic locally using Polkadot Sr25519 WASM
 async function deriveAddressFromMnemonic(mnemonic) {
-  const response = await fetch('/api/tx-relay', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'derive-address', mnemonic: mnemonic })
-  });
-  const data = await response.json();
-  if (data.ok && data.address) {
-    return { address: data.address, publicKey: data.public_key };
-  }
-  throw new Error(data.error || 'Address derivation failed');
+  console.log('[Wallet] Deriving address from mnemonic...');
+  if (!window.PolkadotCrypto) throw new Error('Polkadot crypto bundle not loaded');
+  console.log('[Wallet] PolkadotCrypto available, waiting for WASM...');
+  await PolkadotCrypto.cryptoWaitReady();
+  console.log('[Wallet] WASM ready, creating keyring...');
+  const keyring = new PolkadotCrypto.Keyring({ type: 'sr25519', ss58Format: 909 });
+  console.log('[Wallet] Keyring created, adding from mnemonic...');
+  const kp = keyring.addFromMnemonic(mnemonic);
+  const publicKeyHex = Array.from(kp.publicKey).map(b => b.toString(16).padStart(2, '0')).join('');
+  return { address: kp.address, publicKey: publicKeyHex };
 }
 
 // ===== Wallet Functions =====
 window.generateWallet = async function() {
   try {
-    const mnemonic = generateMnemonic();
+    const mnemonic = await generateMnemonic();
     const { address, publicKey } = await deriveAddressFromMnemonic(mnemonic);
 
     document.getElementById('newAddress').textContent = address;
@@ -615,9 +628,9 @@ window.logout = function() {
 window.exportPrivateKey = function() {
   const wallet = loadWallet();
   if (!wallet) return;
-  if (confirm('Show your private key? Make sure no one is looking!')) {
-    toast('Private key: ' + wallet.privateKey + ' (check console)', 'info');
-    prompt('Your private key (copy this):', wallet.privateKey);
+  if (confirm('Show your mnemonic phrase? Make sure no one is looking!')) {
+    toast('Mnemonic shown below — copy it to a safe place', 'info');
+    prompt('Your 12-word mnemonic (copy this):', wallet.mnemonic || wallet.privateKey);
   }
 };
 
@@ -890,11 +903,16 @@ window.delegateStake = async function(validatorAddr) {
 
   try {
     const amountPlanks = BigInt(Math.floor(parseFloat(amount) * 10**TOKEN_DECIMALS));
-    const msgHash = sha256(new TextEncoder().encode(JSON.stringify({
+    const msgHash = await sha256Sync(new TextEncoder().encode(JSON.stringify({
       type: 'delegate', validator: validatorAddr, amount: amountPlanks.toString(), from: wallet.address
     })));
-    const privKeyBytes = new Uint8Array(wallet.privateKey.match(/.{2}/g).map(b => parseInt(b, 16)));
-    const sigObj = secp.sign(msgHash, privKeyBytes); const signature = sigObj.toCompactHex ? sigObj.toCompactHex() : Array.from(sigObj).map(b=>b.toString(16).padStart(2,"0")).join("");
+    // Sign locally with Sr25519 via Polkadot WASM
+    if (!window.PolkadotCrypto) throw new Error('Polkadot crypto not loaded for signing');
+    await PolkadotCrypto.cryptoWaitReady();
+    const keyring = new PolkadotCrypto.Keyring({ type: 'sr25519', ss58Format: 909 });
+    const kp = keyring.addFromMnemonic(wallet.mnemonic || wallet.privateKey);
+    const sigBytes = kp.sign(msgHash);
+    const signature = Array.from(sigBytes).map(b => b.toString(16).padStart(2, '0')).join('');
 
     toast(`Staked ${amount} VRDX to ${validatorAddr.slice(0, 10)}... — delegated!`, 'success');
     amountInput.value = '';
@@ -905,9 +923,9 @@ window.delegateStake = async function(validatorAddr) {
 };
 
 // ===== QR Code (simple SVG pattern) =====
-function generateQR(text) {
+async function generateQR(text) {
   // Generate a simple visual QR-like pattern using the address hash
-  const hash = sha256(new TextEncoder().encode(text));
+  const hash = await sha256Sync(new TextEncoder().encode(text));
   const cells = 21; // QR version 1
   let svg = `<svg viewBox="0 0 ${cells} ${cells}" style="width:180px;height:180px;margin:0 auto;background:#fff;border-radius:12px">`;
 
