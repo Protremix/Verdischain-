@@ -456,6 +456,15 @@ function saveWallet(mnemonic, publicKeyHex, address) {
 }
 
 function loadWallet() {
+  // Only return wallet if unlocked and not timed out
+  if (!isUnlocked()) return null;
+  const publicKey = localStorage.getItem('verdis_pubkey');
+  const address = localStorage.getItem('verdis_address');
+  if (!_sessionMnemonic || !publicKey || !address) return null;
+  return { mnemonic: _sessionMnemonic, publicKey, address };
+}
+
+function loadWalletMeta() {
   try {
     const data = localStorage.getItem('verdis_wallet');
     if (!data) return null;
