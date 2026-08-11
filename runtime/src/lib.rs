@@ -763,14 +763,21 @@ parameter_types! {
     pub const StoragePalletId: PalletId = PalletId(*b"verdisst");
     pub const MaxStorageRecords: u32 = 10_000;
     pub const MaxStorageSizeBytes: u64 = 1_000_000_000_000;  // 1 TB max per record
+    pub const StorageBaseDeposit: u128 = 1_000_000_000_000;  // 1 VRDX (9 decimals)
+    pub const StorageDepositPerByte: u128 = 1_000_000;  // 0.001 VRDX per byte
+    pub const StorageExpiryBlocks: u32 = 259_200;  // ~30 days at 10s blocks
 }
 
 impl pallet_storage::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type PalletId = StoragePalletId;
     type MaxRecords = MaxStorageRecords;
-        type MaxSizeBytes = MaxStorageSizeBytes;
+    type MaxSizeBytes = MaxStorageSizeBytes;
     type ShardCount = StorageShardCount;
+    type Currency = Balances;
+    type BaseDeposit = StorageBaseDeposit;
+    type DepositPerByte = StorageDepositPerByte;
+    type ExpiryBlocks = StorageExpiryBlocks;
     type WeightInfo = pallet_storage::SubstrateWeight<Runtime>;
 }
 
