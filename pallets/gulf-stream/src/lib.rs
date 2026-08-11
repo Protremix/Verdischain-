@@ -279,3 +279,6 @@ pub mod pallet {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;

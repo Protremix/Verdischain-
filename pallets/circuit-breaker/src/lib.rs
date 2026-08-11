@@ -89,3 +89,6 @@ pub mod pallet {
         }
     }
 }
+
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;

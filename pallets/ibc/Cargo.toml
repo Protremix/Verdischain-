@@ -10,10 +10,14 @@ scale-info = { workspace = true, features = ["derive"] }
 serde = { workspace = true, optional = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
+frame-benchmarking = { workspace = true, optional = true }
 sp-std = { workspace = true }
 sp-runtime = { workspace = true }
 sp-io = { workspace = true }
 sp-core = { workspace = true }
+
+[dev-dependencies]
+pallet-balances = { workspace = true }
 
 [features]
 default = ["std"]
@@ -23,12 +27,14 @@ std = [
     "serde",
     "frame-support/std",
     "frame-system/std",
+    "frame-benchmarking?/std",
     "sp-runtime/std",
     "sp-std/std",
     "sp-io/std",
     "sp-core/std",
 ]
-
-[dev-dependencies]
-pallet-balances = { workspace = true }
-
+runtime-benchmarks = [
+    "frame-benchmarking/runtime-benchmarks",
+    "frame-support/runtime-benchmarks",
+    "frame-system/runtime-benchmarks",
+]

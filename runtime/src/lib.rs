@@ -1384,6 +1384,15 @@ frame_benchmarking::define_benchmarks!(
     [pallet_tokenomics, Tokenomics]
     [pallet_vesting, Vesting]
     [pallet_fungible_tokens, FungibleTokens]
+    [pallet_storage, Storage]
+    [pallet_circuit_breaker, CircuitBreaker]
+    [pallet_gulf_stream, GulfStream]
+    [pallet_ibc, Ibc]
+    [pallet_address_lookup_tables, AddressLookupTables]
+    [pallet_presale, Presale]
+    [pallet_sealevel, Sealevel]
+    [pallet_turbine, Turbine]
+    [pallet_zk_compression, ZkCompression]
 );
 
 // === Runtime API Implementation ===
