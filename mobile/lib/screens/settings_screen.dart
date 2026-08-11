@@ -373,7 +373,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text('App Version', style: TextStyle(color: Color(0xFF94a3b8), fontSize: 12)),
-                        Text('v1.0.0 (Solscan Clean Dark)', style: TextStyle(color: Color(0xFFFFFFFF), fontSize: 12)),
+                        Text('v1.0.0 (Verdis Wallet)', style: TextStyle(color: Color(0xFFFFFFFF), fontSize: 12)),
                       ],
                     ),
                     SizedBox(height: 8),

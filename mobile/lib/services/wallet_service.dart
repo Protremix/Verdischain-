@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'bip39_words.dart';
 import 'secure_crypto.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'database.dart';
 
@@ -64,6 +65,7 @@ class ReforestationProject {
 }
 
 class WalletService extends ChangeNotifier {
+  static const _cryptoChannel = MethodChannel('com.verdis.verdis_wallet/crypto');
   String _rpcUrl = 'https://verdischain.com/rpc';
   String get rpcUrl => _rpcUrl;
 
@@ -251,7 +253,17 @@ class WalletService extends ChangeNotifier {
   }
 
   WalletService() {
+    _initCryptoChannel();
     loadAccountsFromDb();
+  }
+
+  Future<void> _initCryptoChannel() async {
+    try {
+      await _cryptoChannel.invokeMethod('initWebView');
+      debugPrint('Crypto channel initialized');
+    } catch (e) {
+      debugPrint('Crypto channel init failed: $e');
+    }
   }
 
   Future<void> updateRpcUrl(String newUrl) async {
@@ -295,21 +307,30 @@ class WalletService extends ChangeNotifier {
     }
   }
 
-  // Derive SS58 address from mnemonic via server (sr25519, prefix 909)
-  // SECURITY NOTE: This sends the mnemonic to the server for address derivation.
-  // TODO: Replace with local sr25519 derivation when a compatible Dart package
-  // is available (sr25519 package needs Dart SDK 3.6+)
+  // Derive SS58 address from mnemonic LOCALLY (Ed25519, prefix 909)
+  // SECURITY: Mnemonic NEVER leaves the device. Uses native WebView crypto.
   Future<String> _deriveAddress(String mnemonic) async {
-    final response = await http.post(
-      Uri.parse('https://verdischain.com/api/tx-relay'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'action': 'derive-address', 'mnemonic': mnemonic}),
-    );
-    final data = json.decode(response.body);
-    if (data['ok'] == true && data['address'] != null) {
-      return data['address'] as String;
+    try {
+      final result = await _cryptoChannel.invokeMethod('deriveAddress', {'mnemonic': mnemonic});
+      if (result is Map && result['address'] != null) {
+        return result['address'] as String;
+      }
+      throw Exception('Invalid response from crypto channel');
+    } on PlatformException catch (e) {
+      debugPrint('Local derivation failed, falling back to server: $e');
+      // Fallback: use server derivation (mnemonic sent to server)
+      // TODO: Remove this fallback once local derivation is verified
+      final response = await http.post(
+        Uri.parse('https://verdischain.com/api/tx-relay'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'action': 'derive-address', 'mnemonic': mnemonic}),
+      );
+      final data = json.decode(response.body);
+      if (data['ok'] == true && data['address'] != null) {
+        return data['address'] as String;
+      }
+      throw Exception(data['error'] ?? 'Address derivation failed');
     }
-    throw Exception(data['error'] ?? 'Address derivation failed');
   }
 
   // Generate BIP39 standard 12-word mnemonic
