@@ -139,6 +139,8 @@ pub mod pallet {
         type Currency: frame_support::traits::Currency<Self::AccountId>;
         /// Maximum transfer amount
         type MaxTransferAmount: Get<u128>;
+        /// Maximum height jump per update_client call
+        type MaxHeightJump: Get<u64>;
     }
 
     // ============ Events ============
@@ -213,6 +215,8 @@ pub mod pallet {
         ClientFrozen,
         InvalidSequence,
         PacketTimeout,
+        HeightJumpTooLarge,
+        PacketNotAcknowledged,
         PortIdTooLong,
         PacketDataTooLarge,
     }
@@ -403,6 +407,13 @@ pub mod pallet {
             let channel = IbcChannels::<T>::get(channel_id).ok_or(Error::<T>::ChannelNotFound)?;
             ensure!(channel.state == 3, Error::<T>::ChannelNotOpen);
 
+            // SECURITY: Verify the connection's client is not frozen
+            let connection = IbcConnections::<T>::get(channel.connection_id)
+                .ok_or(Error::<T>::ConnectionNotFound)?;
+            let client = IbcClients::<T>::get(connection.client_id)
+                .ok_or(Error::<T>::ClientNotFound)?;
+            ensure!(!client.frozen, Error::<T>::ClientFrozen);
+
             let expected_seq = IbcNextSequenceRecv::<T>::get(channel_id);
             ensure!(sequence == expected_seq, Error::<T>::InvalidSequence);
             IbcNextSequenceRecv::<T>::insert(
@@ -428,6 +439,11 @@ pub mod pallet {
         ) -> DispatchResult {
             let _who = ensure_signed(origin)?;
 
+            // SECURITY: Verify packet exists before removing (prevent silent no-ops)
+            ensure!(
+                IbcPackets::<T>::contains_key((channel_id, sequence)),
+                Error::<T>::PacketNotAcknowledged
+            );
             IbcPackets::<T>::remove((channel_id, sequence));
             let next_ack = IbcNextSequenceAck::<T>::get(channel_id);
             IbcNextSequenceAck::<T>::insert(
@@ -631,6 +647,12 @@ pub mod pallet {
             ensure!(
                 new_height > client.latest_height,
                 Error::<T>::InvalidSequence
+            );
+            // SECURITY: Bound height jump to prevent arbitrary jumps
+            let jump = new_height.saturating_sub(client.latest_height);
+            ensure!(
+                jump <= T::MaxHeightJump::get(),
+                Error::<T>::HeightJumpTooLarge
             );
             client.latest_height = new_height;
             IbcClients::<T>::insert(client_id, client);

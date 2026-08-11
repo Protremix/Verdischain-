@@ -46,6 +46,7 @@ parameter_types! {
     pub const IbcMaxPortIdLen: u32 = 128;
     pub const IbcMaxPacketDataLen: u32 = 1024;
     pub const IbcMaxTransferAmount: u128 = 1_000_000_000_000_000;
+    pub const IbcMaxHeightJump: u64 = 1_000_000;
 }
 
 impl Config for Test {
@@ -54,6 +55,7 @@ impl Config for Test {
     type MaxPacketDataLen = IbcMaxPacketDataLen;
     type Currency = Balances;
     type MaxTransferAmount = IbcMaxTransferAmount;
+        type MaxHeightJump = IbcMaxHeightJump;
 }
 
 pub fn new_test_ext() -> TestExternalities {

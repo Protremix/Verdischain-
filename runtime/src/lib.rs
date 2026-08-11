@@ -1172,6 +1172,7 @@ parameter_types! {
     pub const IbcMaxPortIdLen: u32 = 128;
     pub const IbcMaxPacketDataLen: u32 = 1024;
     pub const IbcMaxTransferAmount: u128 = 1_000_000_000_000_000; // 1B VRDX with 9 decimals
+    pub const IbcMaxHeightJump: u64 = 1_000_000;  // Max 1M block height jump per update
 }
 
 impl pallet_ibc::Config for Runtime {
@@ -1180,6 +1181,7 @@ impl pallet_ibc::Config for Runtime {
     type MaxPacketDataLen = IbcMaxPacketDataLen;
     type Currency = Balances;
     type MaxTransferAmount = IbcMaxTransferAmount;
+        type MaxHeightJump = IbcMaxHeightJump;
 }
 
 construct_runtime! {
