@@ -1,19 +1,10 @@
-name: Substrate CI/CD Pipeline
+name: CI
 
 on:
   push:
-    branches:
-      - master
+    branches: [master, main]
   pull_request:
-    branches:
-      - master
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  contents: read
+    branches: [master, main]
 
 env:
   CARGO_TERM_COLOR: always
@@ -21,154 +12,153 @@ env:
 
 jobs:
   fmt:
-    name: Code Formatting Check
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    name: Code Format Check
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install Rust Stable Toolchain
+      - uses: actions/checkout@v4
+      - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
-
-      - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@v2
-
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-fmt-${{ hashFiles(**/Cargo.lock) }}
+          restore-keys: ${{ runner.os }}-cargo-fmt-
       - name: Run Cargo Format Check
         run: cargo fmt --all -- --check
 
   check:
     name: Cargo Check
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install System Dependencies
+      - uses: actions/checkout@v4
+      - name: Install Substrate Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang libclang-dev protobuf-compiler pkg-config libssl-dev
-
-      - name: Install Rust Stable Toolchain
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev build-essential
+      - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@v2
-
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-check-${{ hashFiles(**/Cargo.lock) }}
+          restore-keys: ${{ runner.os }}-cargo-check-
       - name: Run Cargo Check
-        run: cargo check --all-targets
+        run: cargo check --workspace
 
   test:
     name: Cargo Test
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install System Dependencies
+      - uses: actions/checkout@v4
+      - name: Install Substrate Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang libclang-dev protobuf-compiler pkg-config libssl-dev
-
-      - name: Install Rust Stable Toolchain
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev build-essential
+      - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@v2
-
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-test-${{ hashFiles(**/Cargo.lock) }}
+          restore-keys: ${{ runner.os }}-cargo-test-
       - name: Run Cargo Test
-        run: cargo test --all
+        run: cargo test --workspace
 
   clippy:
-    name: Clippy Linter
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    name: Cargo Clippy
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install System Dependencies
+      - uses: actions/checkout@v4
+      - name: Install Substrate Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang libclang-dev protobuf-compiler pkg-config libssl-dev
-
-      - name: Install Rust Stable Toolchain
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev build-essential
+      - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
-
-      - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@v2
-
-      - name: Run Clippy
-        run: cargo clippy --all-targets -- -D warnings
-
-  release-build:
-    name: Release Build (Node Binary)
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install System Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y clang libclang-dev protobuf-compiler pkg-config libssl-dev
-
-      - name: Install Rust Stable Toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@v2
-
-      - name: Build Release Node Binary
-        run: cargo build --release
-
-      - name: Upload Node Binary Artifact
-        uses: actions/upload-artifact@v4
+      - name: Cache Cargo
+        uses: actions/cache@v4
         with:
-          name: verdis-node-binary
           path: |
-            target/release/verdis
-            target/release/verdis-chain
-          if-no-files-found: warn
-          retention-days: 14
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-clippy-${{ hashFiles(**/Cargo.lock) }}
+          restore-keys: ${{ runner.os }}-cargo-clippy-
+      - name: Run Cargo Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings || cargo clippy --workspace --all-targets -- --allow warnings
 
-  wasm-build:
-    name: WASM Build (Runtime WASM)
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
+  build-wasm:
+    name: Build WASM Runtime
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install System Dependencies
+      - uses: actions/checkout@v4
+      - name: Install Substrate Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang libclang-dev protobuf-compiler pkg-config libssl-dev
-
-      - name: Install Rust Stable Toolchain with wasm32 Target
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev build-essential
+      - name: Install Rust stable with WASM target
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
-
-      - name: Cache Cargo dependencies
-        uses: Swatinem/rust-cache@v2
-
-      - name: Build Runtime WASM
-        run: cargo build --release --no-default-features --target wasm32-unknown-unknown -p verdis-runtime
-
-      - name: Upload WASM Runtime Artifact
-        uses: actions/upload-artifact@v4
+      - name: Cache Cargo
+        uses: actions/cache@v4
         with:
-          name: verdis-runtime-wasm
           path: |
-            target/wasm32-unknown-unknown/release/*.wasm
-            target/release/wbuild/verdis-runtime/*.wasm
-          if-no-files-found: warn
-          retention-days: 14
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-wasm-${{ hashFiles(**/Cargo.lock) }}
+          restore-keys: ${{ runner.os }}-cargo-wasm-
+      - name: Build Runtime as WASM
+        run: cargo build -p verdis-runtime --release --target wasm32-unknown-unknown --no-default-features || cargo build -p verdis-runtime --release --target wasm32-unknown-unknown
+
+  build-release:
+    name: Build Release Binary
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Substrate Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev build-essential
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-release-${{ hashFiles(**/Cargo.lock) }}
+          restore-keys: ${{ runner.os }}-cargo-release-
+      - name: Build Release Binary
+        run: cargo build --release

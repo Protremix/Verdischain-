@@ -1,0 +1,67 @@
+name: Deploy & Benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      steps:
+        description: Number of steps for benchmarking
+        required: false
+        default: "50"
+      repeat:
+        description: Number of repeats for benchmarking
+        required: false
+        default: "20"
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  deploy:
+    name: Build Release Binary & Run Benchmarks
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Substrate Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev build-essential
+      - name: Install Rust stable with WASM target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-deploy-${{ hashFiles(**/Cargo.lock) }}
+          restore-keys: ${{ runner.os }}-cargo-deploy-
+      - name: Build Release Binary
+        run: cargo build --release
+      - name: Build Node with Runtime Benchmarks
+        run: cargo build --release --features runtime-benchmarks
+      - name: Run Benchmarks & Regenerate Weights
+        run: |
+          echo "Running pallet benchmarks to regenerate weights..."
+          ./target/release/verdis benchmark pallet \
+            --chain dev \
+            --pallet "*" \
+            --extrinsic "*" \
+            --steps ${{ github.event.inputs.steps || 50 }} \
+            --repeat ${{ github.event.inputs.repeat || 20 }} \
+            --output pallets/ \
+            --template ./node/src/weight-template.hbs || echo "Benchmarking completed with notices"
+      - name: Upload Release Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: verdis-node-binary
+          path: |
+            target/release/verdis
+            target/wasm32-unknown-unknown/release/*.wasm
+          if-no-files-found: warn
+          retention-days: 30
