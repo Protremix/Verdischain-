@@ -387,15 +387,7 @@ const RELAY_URL = window.location.origin + '/tx-relay/';
 let RELAY_SIGNER = null;
 let RELAY_BALANCE = 0n;
 
-async function fetchRelayInfo() {
-  try {
-    const resp = await fetch(RELAY_URL);
-    const json = await resp.json();
-    if (json.status === 'ok') {
-      RELAY_SIGNER = json.signer;
-      RELAY_BALANCE = BigInt(json.signer_balance || 0);
-      return json;
-    }
+// fetchRelayInfo removed — relay v3 is non-custodial
   } catch (e) {
     console.error('Relay fetch error:', e);
   }
@@ -443,14 +435,24 @@ function ss58Encode(publicKey, prefix) {
   throw new Error('SS58 encoding requires PolkadotCrypto bundle');
 }
 
-// ===== Wallet Storage =====
+// ===== Wallet Storage (Non-Custodial v3) =====
+// CRITICAL: Mnemonic is NEVER stored in localStorage.
+// Only publicKey + address are persisted. Mnemonic stays in memory only.
+let _sessionMnemonic = null; // cleared on page reload
+let _sessionKeypair = null;   // sr25519 keypair in memory
+let _lastActivity = Date.now();
+const LOCK_TIMEOUT = 15 * 60 * 1000; // 15 minutes auto-lock
+
 function saveWallet(mnemonic, publicKeyHex, address) {
+  // Store ONLY public info in localStorage — NO mnemonic
   localStorage.setItem('verdis_wallet', JSON.stringify({
-    mnemonic: mnemonic,
     publicKey: publicKeyHex,
     address: address,
     created: Date.now()
   }));
+  // Keep mnemonic in memory only (lost on page refresh)
+  _sessionMnemonic = mnemonic;
+  _lastActivity = Date.now();
 }
 
 function loadWallet() {
@@ -461,9 +463,43 @@ function loadWallet() {
   } catch { return null; }
 }
 
+function isUnlocked() {
+  return _sessionMnemonic !== null && (Date.now() - _lastActivity) < LOCK_TIMEOUT;
+}
+
+function touchActivity() {
+  _lastActivity = Date.now();
+}
+
+async function unlockWallet(mnemonic) {
+  if (!window.PolkadotCrypto) throw new Error('Polkadot crypto bundle not loaded');
+  await PolkadotCrypto.cryptoWaitReady();
+  const keyring = new PolkadotCrypto.Keyring({ type: 'sr25519', ss58Format: 909 });
+  const kp = keyring.addFromMnemonic(mnemonic);
+  _sessionMnemonic = mnemonic;
+  _sessionKeypair = kp;
+  _lastActivity = Date.now();
+  return kp;
+}
+
+function lockWallet() {
+  _sessionMnemonic = null;
+  _sessionKeypair = null;
+}
+
 function clearWallet() {
   localStorage.removeItem('verdis_wallet');
+  lockWallet();
 }
+
+// Auto-lock on inactivity
+setInterval(() => {
+  if (_sessionMnemonic && (Date.now() - _lastActivity) >= LOCK_TIMEOUT) {
+    lockWallet();
+    toast('Wallet auto-locked after 15 min inactivity', 'info');
+    if (typeof loadDashboard === 'function') loadDashboard();
+  }
+}, 60000);
 
 // ===== RPC Helper =====
 async function rpcCall(method, params = []) {
@@ -512,11 +548,11 @@ async function getBalance(address) {
   }
 }
 
-// Get the active on-chain balance (relay signer's balance)
+// Get the user's on-chain balance (NOT relay signer's)
 async function getActiveBalance() {
-  if (!RELAY_SIGNER) await fetchRelayInfo();
-  if (!RELAY_SIGNER) return 0n;
-  return await getBalance(RELAY_SIGNER);
+  const wallet = loadWallet();
+  if (!wallet) return 0n;
+  return await getBalance(wallet.address);
 }
 
 async function getAccountInfo(address) {
@@ -598,12 +634,9 @@ window.generateWallet = async function() {
     document.getElementById('newPrivKeyLabel').textContent = 'Your 12-Word Mnemonic (SAVE THIS!)';
 
     // Store mnemonic locally (non-custodial)
-    localStorage.setItem('verdis_wallet', JSON.stringify({
-      mnemonic: mnemonic,
-      publicKey: publicKey,
-      address: address
-    }));
-    toast('Wallet created! Saving to browser...', 'success');
+    saveWallet(mnemonic, publicKey, address);
+    _sessionKeypair = kp;
+    toast('Wallet created! Mnemonic kept in memory only — not stored.', 'success');
 
     setTimeout(() => {
       loadDashboard();
@@ -623,11 +656,8 @@ window.importWallet = async function() {
 
     const { address, publicKey } = await deriveAddressFromMnemonic(input);
 
-    localStorage.setItem('verdis_wallet', JSON.stringify({
-      mnemonic: input,
-      publicKey: publicKey,
-      address: address
-    }));
+    saveWallet(input, publicKey, address);
+    _sessionKeypair = kp;
     toast('Wallet imported successfully!', 'success');
     setTimeout(loadDashboard, 500);
   } catch (e) {
@@ -645,9 +675,13 @@ window.logout = function() {
 window.exportPrivateKey = function() {
   const wallet = loadWallet();
   if (!wallet) return;
+  if (!_sessionMnemonic) {
+    toast('Wallet is locked. Re-enter your mnemonic to view seed phrase.', 'error');
+    return;
+  }
   if (confirm('Show your mnemonic phrase? Make sure no one is looking!')) {
     toast('Mnemonic shown below — copy it to a safe place', 'info');
-    prompt('Your 12-word mnemonic (copy this):', wallet.mnemonic || wallet.privateKey);
+    prompt('Your 12-word mnemonic (copy this):', _sessionMnemonic);
   }
 };
 
@@ -663,12 +697,12 @@ async function loadDashboard() {
   document.getElementById('stateDash').classList.add('active');
   
   // Show relay signer as the active on-chain account (funded)
-  const activeAddr = RELAY_SIGNER || wallet.address;
+  const activeAddr = wallet.address;
   document.getElementById('dashAddress').textContent = activeAddr;
   document.getElementById('receiveAddress').textContent = activeAddr;
 
   // Generate QR code (simple SVG QR placeholder using address hash pattern)
-  generateQR(RELAY_SIGNER || wallet.address);
+  generateQR(wallet.address);
 
   // Load balance
   refreshBalance();
@@ -743,18 +777,39 @@ window.sendTransaction = async function() {
   btn.innerHTML = '<span class="loading"></span> Signing & Submitting...';
 
   try {
-    // Build the transaction payload
-    const amountPlanks = BigInt(Math.floor(parseFloat(amount) * 10**TOKEN_DECIMALS));
-    const activeAddr = RELAY_SIGNER || wallet.address;
+    // Check if wallet is unlocked (mnemonic in memory)
+    if (!isUnlocked()) {
+      toast('Wallet locked. Please re-enter your mnemonic to unlock.', 'error');
+      showUnlockPrompt();
+      return;
+    }
+    touchActivity();
 
-    // Submit real on-chain transfer via TX Relay v2.0
+    const amountPlanks = BigInt(Math.floor(parseFloat(amount) * 10**TOKEN_DECIMALS));
+
+    // Sign transaction CLIENT-SIDE using PolkadotCrypto WASM
+    if (!window.PolkadotCrypto) throw new Error('Polkadot crypto bundle not loaded');
+    await PolkadotCrypto.cryptoWaitReady();
+
+    // Create API instance for signing
+    const provider = new PolkadotCrypto.WsProvider(RPC_URL);
+    const api = await PolkadotCrypto.ApiPromise.create({ provider, noInitWarn: true });
+
+    // Get the keypair from session memory
+    const keyring = new PolkadotCrypto.Keyring({ type: 'sr25519', ss58Format: 909 });
+    const kp = keyring.addFromMnemonic(_sessionMnemonic);
+
+    // Create and sign the transfer extrinsic
+    const transfer = api.tx.balances.transferAllowDeath(to, amountPlanks);
+    const signedExtrinsic = await transfer.signAsync(kp, { nonce: -1, era: 64 });
+
+    // Submit the SIGNED extrinsic via relay (relay does NOT sign)
     const res = await fetch(RELAY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        action: 'transfer',
-        dest: to,
-        amount: amountPlanks.toString()
+        action: 'submit-extrinsic',
+        extrinsic: signedExtrinsic.toHex()
       })
     });
 
@@ -762,11 +817,11 @@ window.sendTransaction = async function() {
     try { result = await res.json(); } catch { result = null; }
 
     if (result && result.ok) {
-      toast(`✅ Transfer on-chain! Hash: ${result.extrinsic_hash?.slice(0, 18) || 'pending'}...`, 'success');
+      toast(`✅ Transfer signed & submitted! Hash: ${result.data?.tx_hash?.slice(0, 18) || 'pending'}...`, 'success');
     } else if (result && result.error) {
       toast('❌ Transfer failed: ' + result.error, 'error');
     } else {
-      toast('❌ Relay unavailable. Is the TX Relay service running?', 'error');
+      toast('❌ Relay unavailable. Is the TX Relay v3 service running?', 'error');
     }
 
     // Reset form
