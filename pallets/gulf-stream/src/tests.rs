@@ -1,5 +1,5 @@
 use crate::*;
-use frame_support::{assert_ok, construct_runtime, derive_impl, parameter_types};
+use frame_support::{assert_ok, assert_err, construct_runtime, derive_impl, parameter_types};
 use sp_io::TestExternalities;
 use sp_runtime::{traits::IdentityLookup, BuildStorage};
 
@@ -22,6 +22,7 @@ impl frame_system::Config for Test {
 parameter_types! {
     pub const MaxPendingForwards: u32 = 10000;
     pub const MaxForwardedHistory: u32 = 1000;
+    pub const MaxForwardTimeMs: u64 = 60_000;
 }
 
 // Mock validator checker that accepts all signed callers (for testing)
@@ -34,6 +35,7 @@ impl ValidatorChecker<sp_core::crypto::AccountId32> for Test {
 impl Config for Test {
     type MaxPendingForwards = MaxPendingForwards;
     type MaxForwardedHistory = MaxForwardedHistory;
+    type MaxForwardTimeMs = MaxForwardTimeMs;
     type ValidatorChecker = Test;
 }
 
@@ -113,5 +115,62 @@ fn expire_transaction_works() {
         ));
         let stats = Pallet::<Test>::get_stats();
         assert_eq!(stats.total_expired, 1);
+    });
+}
+
+#[test]
+fn mark_included_already_processed_fails() {
+    new_test_ext().execute_with(|| {
+        frame_system::Pallet::<Test>::set_block_number(2);
+        let tx_hash = [0u8; 32];
+        let validator = sp_core::crypto::AccountId32::from([0xff; 32]);
+        assert_ok!(Pallet::<Test>::forward_transaction(
+            frame_system::RawOrigin::Signed(validator.clone()).into(),
+            tx_hash,
+            vec![1, 2, 3],
+            256
+        ));
+        // First mark_included succeeds
+        assert_ok!(Pallet::<Test>::mark_included(
+            frame_system::RawOrigin::Signed(validator.clone()).into(),
+            tx_hash,
+            1,
+            100
+        ));
+        // Second mark_included should fail - already removed
+        assert_err!(
+            Pallet::<Test>::mark_included(
+                frame_system::RawOrigin::Signed(validator).into(),
+                tx_hash,
+                1,
+                100
+            ),
+            Error::<Test>::TransactionNotFound
+        );
+    });
+}
+
+#[test]
+fn mark_included_excessive_forward_time_fails() {
+    new_test_ext().execute_with(|| {
+        frame_system::Pallet::<Test>::set_block_number(2);
+        let tx_hash = [0u8; 32];
+        let validator = sp_core::crypto::AccountId32::from([0xff; 32]);
+        assert_ok!(Pallet::<Test>::forward_transaction(
+            frame_system::RawOrigin::Signed(validator.clone()).into(),
+            tx_hash,
+            vec![1, 2, 3],
+            256
+        ));
+        // forward_time_ms = 999_999 exceeds MaxForwardTimeMs (60_000)
+        assert_err!(
+            Pallet::<Test>::mark_included(
+                frame_system::RawOrigin::Signed(validator).into(),
+                tx_hash,
+                1,
+                999_999
+            ),
+            Error::<Test>::InvalidForwardTime
+        );
     });
 }

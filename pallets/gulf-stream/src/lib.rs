@@ -44,6 +44,7 @@ pub mod pallet {
     pub trait Config: frame_system::Config {
         type MaxPendingForwards: Get<u32>;
         type MaxForwardedHistory: Get<u32>;
+        type MaxForwardTimeMs: Get<u64>;
         /// Validator checker - connects to DPoS active validator set.
         type ValidatorChecker: ValidatorChecker<Self::AccountId>;
     }
@@ -122,6 +123,8 @@ pub mod pallet {
         MaxPendingExceeded,
         AlreadyForwarded,
         TransactionNotFound,
+        AlreadyProcessed,
+        InvalidForwardTime,
     }
 
     // === Extrinsics ===
@@ -192,9 +195,12 @@ pub mod pallet {
                 Error::<T>::InvalidBlockNumber
             );
 
-            let mut tx =
+            let tx =
                 PendingForwards::<T>::get(tx_hash).ok_or(Error::<T>::TransactionNotFound)?;
-            tx.status = ForwardStatus::Included;
+            // SECURITY: Verify the transaction is still pending (not already processed)
+            ensure!(tx.status == ForwardStatus::Pending, Error::<T>::AlreadyProcessed);
+            // SECURITY: Bound forward_time_ms to prevent stat manipulation
+            ensure!(forward_time_ms <= T::MaxForwardTimeMs::get(), Error::<T>::InvalidForwardTime);
             PendingForwards::<T>::remove(tx_hash);
 
             let mut stats = GulfStreamStatsStorage::<T>::get();
@@ -220,7 +226,13 @@ pub mod pallet {
                 sum / stats.total_included as u64
             };
             stats.avg_forward_time_ms = new_avg;
+            let tf = stats.total_forwarded;
+            let sr = stats.success_rate;
             GulfStreamStatsStorage::<T>::put(stats);
+            Self::deposit_event(Event::StatsUpdated {
+                total_forwarded: tf,
+                success_rate: sr,
+            });
 
             Self::deposit_event(Event::TransactionIncluded {
                 tx_hash,

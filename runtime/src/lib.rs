@@ -159,13 +159,11 @@ parameter_types! {
 }
 
 // === Production Call Filter ===
-/// Production call filter - blocks Sudo calls and checks CircuitBreaker pause registry.
+/// Production call filter - blocks dangerous calls and checks CircuitBreaker pause registry.
 pub struct VerdisBaseCallFilter;
 impl frame_support::traits::Contains<RuntimeCall> for VerdisBaseCallFilter {
     fn contains(call: &RuntimeCall) -> bool {
         match call {
-            // Block ALL sudo calls in production
-            RuntimeCall::Sudo(_) => false,
             // Circuit breaker: check if the pallet is paused by governance
             RuntimeCall::Ibc(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Ibc") => false,
             RuntimeCall::AmmDex(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"AmmDex") => false,
@@ -175,17 +173,19 @@ impl frame_support::traits::Contains<RuntimeCall> for VerdisBaseCallFilter {
             RuntimeCall::Presale(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Presale") => false,
             RuntimeCall::AddressLookupTables(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"AddressLookupTables") => false,
             RuntimeCall::GulfStream(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"GulfStream") => false,
-            // Recursively check Utility batch calls for nested Sudo
+            // Recursively check Utility batch calls for nested dangerous calls
             RuntimeCall::Utility(pallet_utility::Call::batch { calls })
             | RuntimeCall::Utility(pallet_utility::Call::batch_all { calls })
             | RuntimeCall::Utility(pallet_utility::Call::force_batch { calls }) => {
                 calls.iter().all(|c| Self::contains(c))
             }
-            // Block Scheduler schedule calls that wrap Sudo
+            // Block Scheduler schedule calls that wrap dangerous calls
             RuntimeCall::Scheduler(pallet_scheduler::Call::schedule { call, .. })
             | RuntimeCall::Scheduler(pallet_scheduler::Call::schedule_named { call, .. }) => {
                 Self::contains(call.as_ref())
             }
+            // Block dangerous system calls (runtime upgrade without governance)
+            RuntimeCall::System(frame_system::Call::set_code { .. }) => false,
             // Allow everything else
             _ => true,
         }
@@ -447,12 +447,6 @@ impl pallet_transaction_payment::Config for Runtime {
     type WeightInfo = ();
 }
 
-// === Sudo ===
-impl pallet_sudo::Config for Runtime {
-    type RuntimeEvent = RuntimeEvent;
-    type RuntimeCall = RuntimeCall;
-    type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
-}
 
 // === Scheduler ===
 impl pallet_scheduler::Config for Runtime {
@@ -493,7 +487,7 @@ parameter_types! {
 }
 
 /// Restrictive call filter for pallet-contracts — only allows safe, non-privileged calls.
-/// Blocks: Sudo, Dpos (register/update/slash), Tokenomics (mint/burn/set_fee), Vesting, Presale, Eco admin calls
+/// Blocks: Dpos (register/update/slash), Tokenomics (mint/burn/set_fee), Vesting, Presale, Eco admin calls
 pub struct VerdisContractCallFilter;
 impl frame_support::traits::Contains<RuntimeCall> for VerdisContractCallFilter {
     fn contains(call: &RuntimeCall) -> bool {
@@ -1141,6 +1135,7 @@ parameter_types! {
     pub const MaxParallelBatches: u32 = 128;
     pub const MaxPendingForwards: u32 = 1000;
     pub const MaxForwardedHistory: u32 = 10000;
+    pub const MaxGulfForwardTimeMs: u64 = 60_000;
     pub const StorageShardCount: u32 = 16;
     // Green treasury - uses PalletId for account derivation
 pub const GreenTreasuryPalletId: PalletId = PalletId(*b"vrds/trs");
@@ -1159,6 +1154,7 @@ impl pallet_gulf_stream::ValidatorChecker<AccountId> for Runtime {
 impl pallet_gulf_stream::Config for Runtime {
     type MaxPendingForwards = MaxPendingForwards;
     type MaxForwardedHistory = MaxForwardedHistory;
+    type MaxForwardTimeMs = MaxGulfForwardTimeMs;
     type ValidatorChecker = Runtime;
 }
 impl pallet_turbine::Config for Runtime {
@@ -1193,13 +1189,22 @@ parameter_types! {
     pub const CircuitBreakerMaxPalletNameLen: u32 = 32;
 }
 
+/// Provides current timestamp in milliseconds for IBC timeout handling
+pub struct IbcTimestampProvider;
+impl Get<u64> for IbcTimestampProvider {
+    fn get() -> u64 {
+        Timestamp::get()
+    }
+}
+
 impl pallet_ibc::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type MaxPortIdLen = IbcMaxPortIdLen;
     type MaxPacketDataLen = IbcMaxPacketDataLen;
     type Currency = Balances;
     type MaxTransferAmount = IbcMaxTransferAmount;
-        type MaxHeightJump = IbcMaxHeightJump;
+    type MaxHeightJump = IbcMaxHeightJump;
+    type TimestampProvider = IbcTimestampProvider;
 }
 
 impl pallet_circuit_breaker::Config for Runtime {
@@ -1215,7 +1220,6 @@ construct_runtime! {
         Grandpa: pallet_grandpa = 3,
         Balances: pallet_balances = 4,
         TransactionPayment: pallet_transaction_payment = 5,
-        Sudo: pallet_sudo = 6,
         Session: pallet_session = 7,
         Scheduler: pallet_scheduler = 8,
         Preimage: pallet_preimage = 9,

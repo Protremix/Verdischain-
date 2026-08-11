@@ -65,6 +65,8 @@ pub mod pallet {
         pub destination_channel: u32,
         pub data: Vec<u8>,
         pub timeout_height: u64,
+        /// Absolute timestamp (ms) after which packet times out. 0 = no timestamp timeout.
+        pub timeout_timestamp: u64,
     }
 
     #[derive(Encode, Decode, Clone, PartialEq, Eq, TypeInfo, Default)]
@@ -141,6 +143,8 @@ pub mod pallet {
         type MaxTransferAmount: Get<u128>;
         /// Maximum height jump per update_client call
         type MaxHeightJump: Get<u64>;
+        /// Timestamp provider for timestamp-based timeouts (milliseconds)
+        type TimestampProvider: Get<u64>;
     }
 
     // ============ Events ============
@@ -349,6 +353,7 @@ pub mod pallet {
             dest_port: Vec<u8>,
             data: Vec<u8>,
             timeout_height: u64,
+            timeout_timestamp: u64,
         ) -> DispatchResult {
             let _who = ensure_signed(origin)?;
 
@@ -381,6 +386,7 @@ pub mod pallet {
                 destination_channel: channel_id,
                 data,
                 timeout_height,
+                timeout_timestamp,
             };
 
             IbcPackets::<T>::insert((channel_id, sequence), packet);
@@ -481,11 +487,19 @@ pub mod pallet {
                 IbcPackets::<T>::get((channel_id, sequence)).ok_or(Error::<T>::PacketNotFound)?;
 
             // SECURITY: Verify the packet has actually timed out
+            // A packet is timed out if EITHER:
+            //   - current_height >= timeout_height (height-based timeout), OR
+            //   - timeout_timestamp > 0 AND current_timestamp >= timeout_timestamp (timestamp-based timeout)
             let current_height: u64 = frame_system::Pallet::<T>::block_number()
                 .try_into()
                 .unwrap_or(0);
+            let current_timestamp: u64 = T::TimestampProvider::get();
+
+            let height_expired = current_height >= packet.timeout_height;
+            let timestamp_expired = packet.timeout_timestamp > 0 && current_timestamp >= packet.timeout_timestamp;
+
             ensure!(
-                current_height >= packet.timeout_height,
+                height_expired || timestamp_expired,
                 Error::<T>::PacketTimeout
             );
 
@@ -597,6 +611,7 @@ pub mod pallet {
                 destination_channel: channel_id,
                 data: packet_data.encode(),
                 timeout_height: timeout,
+                timeout_timestamp: 0,
             };
 
             IbcPackets::<T>::insert((channel_id, sequence), packet);

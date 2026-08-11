@@ -183,10 +183,9 @@ pub fn dev_spec() -> VerdisChainSpec {
 }
 
 fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
-    use verdis_runtime::{BabeConfig, BalancesConfig, GrandpaConfig, SessionConfig, SudoConfig};
+    use verdis_runtime::{BabeConfig, BalancesConfig, GrandpaConfig, SessionConfig};
 
-    let sudo_account: AccountId = Sr25519Keyring::Alice.to_account_id();
-    let eco_pool: AccountId = PalletId(*b"verdisec").into_account_truncating();
+        let eco_pool: AccountId = PalletId(*b"verdisec").into_account_truncating();
     let staking_pool: AccountId = PalletId(*b"verdisdp").into_account_truncating();
     let treasury_account: AccountId = PalletId(*b"verdist0").into_account_truncating();
     let dev_pool: AccountId = PalletId(*b"verdisdv").into_account_truncating();
@@ -222,8 +221,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
         // Team & Advisors (5B) minus 6 validator stakes (6 * 10K = 60K)
-        (sudo_account.clone(), 5 * bn - 5 * 10_001 * u),
-    ];
+            ];
     // 5 validator stakes (skip Alice, she has the team allocation)
     for uri in uris.iter().skip(1) {
         let acct: AccountId = match *uri {
@@ -276,7 +274,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         b"Dev Test Carbon".to_vec(),
         100,
         true,
-        sudo_account.clone(),
+        Sr25519Keyring::Alice.to_account_id(),
     )];
     let eco_reforest = vec![(
         b"DEV-001".to_vec(),
@@ -309,10 +307,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             balances,
             dev_accounts: None,
         },
-        sudo: SudoConfig {
-            key: Some(sudo_account),
-        },
-        transaction_payment: Default::default(),
+                transaction_payment: Default::default(),
         babe: BabeConfig {
             authorities: vec![],
             epoch_config: sp_consensus_babe::BabeEpochConfiguration {
@@ -393,10 +388,9 @@ pub fn testnet_spec() -> VerdisChainSpec {
 }
 
 fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
-    use verdis_runtime::{BabeConfig, BalancesConfig, GrandpaConfig, SessionConfig, SudoConfig};
+    use verdis_runtime::{BabeConfig, BalancesConfig, GrandpaConfig, SessionConfig};
 
-    let sudo_account: AccountId = Sr25519Keyring::Alice.to_account_id();
-    let eco_pool: AccountId = PalletId(*b"verdisec").into_account_truncating();
+        let eco_pool: AccountId = PalletId(*b"verdisec").into_account_truncating();
     let staking_pool: AccountId = PalletId(*b"verdisdp").into_account_truncating();
     let treasury_account: AccountId = PalletId(*b"verdist0").into_account_truncating();
     let dev_pool: AccountId = PalletId(*b"verdisdv").into_account_truncating();
@@ -432,8 +426,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
         // Team & Advisors (5B) minus 6 validator stakes (6 * 10M = 60M)
-        (sudo_account.clone(), 5 * bn - 6 * 10_001_000 * u),
-    ];
+            ];
     // 6 validator stakes (skip Alice, she has the team allocation)
     for uri in uris.iter().skip(1) {
         let acct: AccountId = match *uri {
@@ -606,10 +599,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             balances,
             dev_accounts: None,
         },
-        sudo: SudoConfig {
-            key: Some(sudo_account),
-        },
-        transaction_payment: Default::default(),
+                transaction_payment: Default::default(),
         babe: BabeConfig {
             authorities: vec![],
             epoch_config: sp_consensus_babe::BabeEpochConfiguration {
@@ -792,7 +782,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         .collect();
 
     // Mainnet: NO test eco data, NO test DEX pools
-    // DEX pools will be initialized at runtime via governance or sudo
+    // DEX pools will be initialized at runtime via governance
     // Eco data will be populated by real carbon credit issuers
 
     let council_members: Vec<AccountId> = uris
@@ -807,8 +797,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             balances,
             dev_accounts: None,
         },
-        sudo: Default::default(), // Sudo disabled on mainnet (key = None)
-        transaction_payment: Default::default(),
+                transaction_payment: Default::default(),
         babe: BabeConfig {
             authorities: vec![],
             epoch_config: sp_consensus_babe::BabeEpochConfiguration {

@@ -1,7 +1,7 @@
 use crate::*;
 use frame_support::{
-    assert_ok, construct_runtime, derive_impl, parameter_types,
-    traits::{ConstU128, ConstU32},
+    assert_ok, assert_err, construct_runtime, derive_impl, parameter_types,
+    traits::{ConstU128, ConstU32, ConstU64},
 };
 
 use sp_io::TestExternalities;
@@ -55,7 +55,8 @@ impl Config for Test {
     type MaxPacketDataLen = IbcMaxPacketDataLen;
     type Currency = Balances;
     type MaxTransferAmount = IbcMaxTransferAmount;
-        type MaxHeightJump = IbcMaxHeightJump;
+    type MaxHeightJump = IbcMaxHeightJump;
+    type TimestampProvider = ConstU64<0>;
 }
 
 pub fn new_test_ext() -> TestExternalities {
@@ -141,7 +142,8 @@ fn send_packet_works() {
             b"transfer".to_vec(),
             b"transfer".to_vec(),
             vec![1, 2, 3],
-            10000
+            10000,
+            0
         ));
         assert_eq!(IbcNextSequenceSend::<Test>::get(0), 2);
         assert!(IbcPackets::<Test>::get((0, 1)).is_some());
@@ -160,7 +162,8 @@ fn recv_packet_works() {
             b"transfer".to_vec(),
             b"transfer".to_vec(),
             vec![1, 2, 3],
-            10000
+            10000,
+            0
         ));
         assert_ok!(Pallet::<Test>::recv_packet(
             frame_system::RawOrigin::Signed(acct.clone()).into(),
@@ -293,5 +296,54 @@ fn timeout_packet_works() {
             1
         ));
         assert!(IbcPackets::<Test>::get((0, 1)).is_none());
+    });
+}
+
+#[test]
+fn timeout_packet_not_yet_expired_fails() {
+    new_test_ext().execute_with(|| {
+        let acct = sp_core::crypto::AccountId32::from([0xff; 32]);
+        setup_chain();
+        use frame_support::traits::fungible::Mutate;
+        pallet_balances::Pallet::<Test>::mint_into(&acct, 1_000_000_000_000_000_000).unwrap();
+        assert_ok!(Pallet::<Test>::transfer(
+            frame_system::RawOrigin::Signed(acct.clone()).into(),
+            0,
+            vec![0xaa; 32],
+            1000000,
+            b"VRDX".to_vec()
+        ));
+        // Block 1, timeout is at 1000 — should fail
+        frame_system::Pallet::<Test>::set_block_number(1);
+        assert_err!(
+            Pallet::<Test>::timeout_packet(
+                frame_system::RawOrigin::Signed(acct).into(),
+                0,
+                1
+            ),
+            Error::<Test>::PacketTimeout
+        );
+        assert!(IbcPackets::<Test>::get((0, 1)).is_some());
+    });
+}
+
+#[test]
+fn send_packet_with_timestamp_timeout_works() {
+    new_test_ext().execute_with(|| {
+        let acct = sp_core::crypto::AccountId32::from([0xff; 32]);
+        setup_chain();
+        assert_ok!(Pallet::<Test>::send_packet(
+            frame_system::RawOrigin::Signed(acct.clone()).into(),
+            0,
+            b"transfer".to_vec(),
+            b"transfer".to_vec(),
+            vec![1, 2, 3],
+            10000,
+            0  // no timestamp timeout, only height
+        ));
+        assert_eq!(IbcNextSequenceSend::<Test>::get(0), 2);
+        let packet = IbcPackets::<Test>::get((0, 1)).unwrap();
+        assert_eq!(packet.timeout_timestamp, 0);
+        assert_eq!(packet.timeout_height, 10000);
     });
 }
