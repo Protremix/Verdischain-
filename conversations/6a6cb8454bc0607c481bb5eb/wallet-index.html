@@ -518,24 +518,22 @@ window.copyToClipboard = function(text) {
 
 
 // ===== BIP39 Mnemonic Generation =====
-function generateMnemonic() {
-  // 128 bits = 16 bytes of entropy
+async function generateMnemonic() {
+  // Use Polkadot's built-in BIP39 mnemonic generator (guaranteed compatible with Keyring)
+  if (window.PolkadotCrypto && PolkadotCrypto.mnemonicGenerate) {
+    return PolkadotCrypto.mnemonicGenerate();
+  }
+  // Fallback: custom BIP39 (should not normally be reached)
   const entropy = new Uint8Array(16);
   crypto.getRandomValues(entropy);
-
-  // SHA256 checksum (first 4 bits)
   const hash = sha256(entropy);
   const checksumByte = hash[0];
-  const checksumBits = checksumByte >> 4; // first 4 bits
-
-  // Combine entropy (128 bits) + checksum (4 bits) = 132 bits = 12 * 11 bits
+  const checksumBits = checksumByte >> 4;
   let bits = '';
   for (let i = 0; i < 16; i++) {
     bits += entropy[i].toString(2).padStart(8, '0');
   }
   bits += checksumBits.toString(2).padStart(4, '0');
-
-  // Map 11-bit groups to words
   const mnemonic = [];
   for (let i = 0; i < 12; i++) {
     const index = parseInt(bits.substring(i * 11, (i + 1) * 11), 2);
@@ -546,9 +544,13 @@ function generateMnemonic() {
 
 // Derive SS58 address from mnemonic locally using Polkadot Sr25519 WASM
 async function deriveAddressFromMnemonic(mnemonic) {
+  console.log('[Wallet] Deriving address from mnemonic...');
   if (!window.PolkadotCrypto) throw new Error('Polkadot crypto bundle not loaded');
+  console.log('[Wallet] PolkadotCrypto available, waiting for WASM...');
   await PolkadotCrypto.cryptoWaitReady();
+  console.log('[Wallet] WASM ready, creating keyring...');
   const keyring = new PolkadotCrypto.Keyring({ type: 'sr25519', ss58Format: 909 });
+  console.log('[Wallet] Keyring created, adding from mnemonic...');
   const kp = keyring.addFromMnemonic(mnemonic);
   const publicKeyHex = Array.from(kp.publicKey).map(b => b.toString(16).padStart(2, '0')).join('');
   return { address: kp.address, publicKey: publicKeyHex };
@@ -557,7 +559,7 @@ async function deriveAddressFromMnemonic(mnemonic) {
 // ===== Wallet Functions =====
 window.generateWallet = async function() {
   try {
-    const mnemonic = generateMnemonic();
+    const mnemonic = await generateMnemonic();
     const { address, publicKey } = await deriveAddressFromMnemonic(mnemonic);
 
     document.getElementById('newAddress').textContent = address;
