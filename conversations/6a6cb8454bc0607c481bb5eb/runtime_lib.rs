@@ -66,6 +66,7 @@ pub use pallet_eco;
 pub use pallet_fungible_tokens;
 pub use pallet_gulf_stream;
 pub use pallet_ibc;
+pub use pallet_circuit_breaker;
 pub use pallet_poh;
 pub use pallet_presale;
 pub use pallet_sealevel;
@@ -158,13 +159,33 @@ parameter_types! {
 }
 
 // === Production Call Filter ===
-/// Allows all calls including Sudo (sudo key check in pallet_sudo provides security).
+/// Production call filter - blocks dangerous calls and checks CircuitBreaker pause registry.
 pub struct VerdisBaseCallFilter;
 impl frame_support::traits::Contains<RuntimeCall> for VerdisBaseCallFilter {
     fn contains(call: &RuntimeCall) -> bool {
         match call {
-            // Allow sudo root dispatch (sudo key check still applies)
-            RuntimeCall::Sudo(_) => true,
+            // Circuit breaker: check if the pallet is paused by governance
+            RuntimeCall::Ibc(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Ibc") => false,
+            RuntimeCall::AmmDex(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"AmmDex") => false,
+            RuntimeCall::Dpos(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Dpos") => false,
+            RuntimeCall::Storage(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Storage") => false,
+            RuntimeCall::Eco(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Eco") => false,
+            RuntimeCall::Presale(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Presale") => false,
+            RuntimeCall::AddressLookupTables(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"AddressLookupTables") => false,
+            RuntimeCall::GulfStream(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"GulfStream") => false,
+            // Recursively check Utility batch calls for nested dangerous calls
+            RuntimeCall::Utility(pallet_utility::Call::batch { calls })
+            | RuntimeCall::Utility(pallet_utility::Call::batch_all { calls })
+            | RuntimeCall::Utility(pallet_utility::Call::force_batch { calls }) => {
+                calls.iter().all(|c| Self::contains(c))
+            }
+            // Block Scheduler schedule calls that wrap dangerous calls
+            RuntimeCall::Scheduler(pallet_scheduler::Call::schedule { call, .. })
+            | RuntimeCall::Scheduler(pallet_scheduler::Call::schedule_named { call, .. }) => {
+                Self::contains(call.as_ref())
+            }
+            // Block dangerous system calls (runtime upgrade without governance)
+            RuntimeCall::System(frame_system::Call::set_code { .. }) => false,
             // Allow everything else
             _ => true,
         }
@@ -218,7 +239,7 @@ parameter_types! {
     pub const ReportLongevity: u64 = 18_000_000; // 500 blocks * 6 epochs * 6s = covers slash defer period
 }
 impl pallet_babe::Config for Runtime {
-    type EpochDuration = ConstU64<500>;
+    type EpochDuration = ConstU64<20>;
     type ExpectedBlockTime = ConstU64<BLOCK_TIME>;
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = Session;
@@ -245,7 +266,7 @@ impl pallet_grandpa::Config for Runtime {
 // === Session ===
 
 parameter_types! {
-    pub const Period: BlockNumber = 500;
+    pub const Period: BlockNumber = 20;
     pub const Offset: BlockNumber = 0;
 }
 
@@ -426,12 +447,6 @@ impl pallet_transaction_payment::Config for Runtime {
     type WeightInfo = ();
 }
 
-// === Sudo ===
-impl pallet_sudo::Config for Runtime {
-    type RuntimeEvent = RuntimeEvent;
-    type RuntimeCall = RuntimeCall;
-    type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
-}
 
 // === Scheduler ===
 impl pallet_scheduler::Config for Runtime {
@@ -471,6 +486,25 @@ parameter_types! {
     pub const MaxCodeLen: u32 = 123 * 1024;
 }
 
+/// Restrictive call filter for pallet-contracts — only allows safe, non-privileged calls.
+/// Blocks: Dpos (register/update/slash), Tokenomics (mint/burn/set_fee), Vesting, Presale, Eco admin calls
+pub struct VerdisContractCallFilter;
+impl frame_support::traits::Contains<RuntimeCall> for VerdisContractCallFilter {
+    fn contains(call: &RuntimeCall) -> bool {
+        match call {
+            // Allow: Balances transfers, AMM-DEX swaps/liquidity, Fungible token transfers
+            RuntimeCall::Balances(_) => true,
+            RuntimeCall::AmmDex(_) => true,
+            RuntimeCall::FungibleTokens(pallet_fungible_tokens::Call::transfer { .. }) => true,
+            RuntimeCall::System(frame_system::Call::remark { .. }) => true,
+            RuntimeCall::System(frame_system::Call::remark_with_event { .. }) => true,
+            // Block everything else — especially privileged calls
+            _ => false,
+        }
+    }
+}
+
+// === Contracts ===
 impl pallet_contracts::Config for Runtime {
     type Time = Timestamp;
     type Randomness = pallet_babe::RandomnessFromOneEpochAgo<Runtime>;
@@ -478,7 +512,7 @@ impl pallet_contracts::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
     type RuntimeHoldReason = RuntimeHoldReason;
-    type CallFilter = Everything;
+    type CallFilter = VerdisContractCallFilter;
     type DepositPerItem = DepositPerItem;
     type DepositPerByte = DepositPerByte;
     type MaxStorageKeyLen = MaxStorageKeyLen;
@@ -508,12 +542,14 @@ impl pallet_contracts::Config for Runtime {
 
 parameter_types! {
     pub const DposPalletId: PalletId = PalletId(*b"verdisdp");
-    pub const MaxStakePerValidator: Balance = 10_000_000_000 * UNITS; // 10B VRDX (10% of total supply)
-    pub const MinValidatorStake: Balance = 10_000 * UNITS;
+    pub const MaxStakePerValidator: Balance = 1_000_000_000 * UNITS;
+    pub const MaxCommission: u8 = 20; // Maximum 20% commission // 1B VRDX (1% of total supply)
+    pub const ReactivationCooldown: u32 = 432_000; // ~30 days at 6s blocks (7200 blocks/day)
+    pub const MinValidatorStake: Balance = 100_000_000 * UNITS; // 100M VRDX minimum (0.1% supply) for sybil resistance
     pub const MaxValidators: u32 = 100;
-    pub const ValidatorCount: u32 = 21;
-    pub const MinimumValidatorCount: u32 = 14; // 2/3 of 21 — below this, chain halts
-    pub const BlockReward: Balance = 16 * UNITS;
+    pub const ValidatorCount: u32 = 6; // 6 active validators matching 6 running nodes
+    pub const MinimumValidatorCount: u32 = 4; // Below 4 active validators, chain halts
+    pub const BlockReward: Balance = 342 * UNITS; // 342 VRDX per block (1.8B annual, 6% APR at 30% stake)
     pub const EpochLength: BlockNumber = 500;
     pub const UnbondingPeriod: u32 = 201_600; // 14 days at 6s blocks (14*24*3600/6)
 }
@@ -529,6 +565,8 @@ impl pallet_dpos::Config for Runtime {
     type UnbondingPeriod = UnbondingPeriod;
     type PalletId = DposPalletId;
     type MaxStakePerValidator = MaxStakePerValidator;
+    type MaxCommission = MaxCommission;
+    type ReactivationCooldown = ReactivationCooldown;
     type WeightInfo = pallet_dpos::SubstrateWeight<Runtime>;
 }
 
@@ -537,6 +575,7 @@ impl pallet_dpos::Config for Runtime {
 parameter_types! {
     pub const DexPalletId: PalletId = PalletId(*b"verdisdx");
     pub const MaxPriceImpact: sp_runtime::Permill = sp_runtime::Permill::from_percent(10); // 10% max price impact per swap
+    pub const AmmMinimumLiquidity: u128 = 1_000;
     pub const FeeNumerator: u32 = 3;
     pub const FeeDenominator: u32 = 1000;
     pub const MinLiquidity: Balance = 1_000 * UNITS;
@@ -573,18 +612,48 @@ impl pallet_amm_dex::TokenHandler<AccountId, u128> for Runtime {
             }
         }
     }
+
+    #[cfg(feature = "runtime-benchmarks")]
+    fn fund_for_benchmark(asset: &pallet_amm_dex::AssetId, who: &AccountId, amount: u128) {
+        match asset {
+            pallet_amm_dex::AssetId::Native => {
+                let _ = <pallet_balances::Pallet<Runtime> as frame_support::traits::Currency<
+                    AccountId,
+                >>::deposit_creating(who, amount);
+            }
+            pallet_amm_dex::AssetId::Custom(token_id) => {
+                use frame_support::BoundedVec;
+                use pallet_fungible_tokens::{TokenBalances, TokenInfo, Tokens};
+                if Tokens::<Runtime>::get(token_id).is_none() {
+                    let token = TokenInfo {
+                        owner: who.clone(),
+                        name: BoundedVec::try_from(b"BENCH".to_vec()).unwrap(),
+                        symbol: BoundedVec::try_from(b"BCH".to_vec()).unwrap(),
+                        decimals: 9,
+                        total_supply: amount,
+                        is_frozen: false,
+                        created_block: 0,
+                    };
+                    Tokens::<Runtime>::insert(token_id, token);
+                }
+                let current = TokenBalances::<Runtime>::get(token_id, who);
+                TokenBalances::<Runtime>::insert(token_id, who, current + amount);
+            }
+        }
+    }
 }
 
 impl pallet_amm_dex::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type PalletId = DexPalletId;
+    type MinimumLiquidity = AmmMinimumLiquidity;
     type MaxPriceImpact = MaxPriceImpact;
     type FeeNumerator = FeeNumerator;
     type FeeDenominator = FeeDenominator;
     type MinLiquidity = MinLiquidity;
     type MaxPools = MaxPools;
-    type WeightInfo = ();
+    type WeightInfo = pallet_amm_dex::SubstrateWeight<Runtime>;
     type TokenHandler = Runtime;
 }
 
@@ -625,6 +694,7 @@ impl pallet_fungible_tokens::Config for Runtime {
     type MaxTokensPerAccount = MaxTokensPerAccount;
     type CreateTokenDeposit = CreateTokenDeposit;
     type MaxBalance = FungibleMaxBalance;
+    type WeightInfo = pallet_fungible_tokens::SubstrateWeight<Runtime>;
 }
 
 // === Verdis Tokenomics ===
@@ -654,6 +724,7 @@ parameter_types! {
 }
 
 impl pallet_vesting::Config for Runtime {
+    type MaxSchedulesPerAccount = frame_support::traits::ConstU32<10>;
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type PalletId = VestingPalletId;
@@ -687,13 +758,22 @@ impl pallet_presale::VestingHandler<AccountId, u128> for PresaleVestingHandler {
 parameter_types! {
     pub const StoragePalletId: PalletId = PalletId(*b"verdisst");
     pub const MaxStorageRecords: u32 = 10_000;
+    pub const MaxStorageSizeBytes: u64 = 1_000_000_000_000;  // 1 TB max per record
+    pub const StorageBaseDeposit: u128 = 1_000_000_000_000;  // 1 VRDX (9 decimals)
+    pub const StorageDepositPerByte: u128 = 1_000_000;  // 0.001 VRDX per byte
+    pub const StorageExpiryBlocks: u32 = 259_200;  // ~30 days at 10s blocks
 }
 
 impl pallet_storage::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type PalletId = StoragePalletId;
     type MaxRecords = MaxStorageRecords;
+    type MaxSizeBytes = MaxStorageSizeBytes;
     type ShardCount = StorageShardCount;
+    type Currency = Balances;
+    type BaseDeposit = StorageBaseDeposit;
+    type DepositPerByte = StorageDepositPerByte;
+    type ExpiryBlocks = StorageExpiryBlocks;
     type WeightInfo = pallet_storage::SubstrateWeight<Runtime>;
 }
 
@@ -926,11 +1006,11 @@ impl pallet_nfts::Config for Runtime {
 parameter_types! {
     pub const TreasuryPalletId: PalletId = PalletId(*b"verdist0");
     pub const TreasurySpendPeriod: BlockNumber = 600;
-    pub const TreasuryBurn: Permill = Permill::from_percent(10);
+    pub const TreasuryBurn: Permill = Permill::from_percent(0);  // 0% burn — preserve 100B supply
     pub const TreasuryMaxApprovals: u32 = 100;
     pub const TreasuryPayoutPeriod: BlockNumber = 600;
     pub TreasuryAccount: AccountId = TreasuryPalletId::get().into_account_truncating();
-    pub const TreasuryMaxSpend: Balance = Balance::MAX;
+    pub const TreasuryMaxSpend: Balance = 1_000_000_000_000_000_000;
 }
 
 impl pallet_treasury::Config for Runtime {
@@ -974,6 +1054,29 @@ impl pallet_collective::Config<pallet_collective::Instance1> for Runtime {
     type WeightInfo = ();
     type SetMembersOrigin =
         pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
+    type MaxProposalWeight = MaximumSchedulerWeight;
+    type DisapproveOrigin = EnsureRoot<AccountId>;
+    type KillOrigin = EnsureRoot<AccountId>;
+    type Consideration = ();
+}
+
+// === Technical Committee (emergency upgrades) ===
+parameter_types! {
+    pub const TechnicalCommitteeMaxMembers: u32 = 3;
+    pub const TechnicalCommitteeMotionDuration: BlockNumber = 3600;
+    pub const TechnicalCommitteeMaxProposals: u32 = 20;
+}
+
+impl pallet_collective::Config<pallet_collective::Instance2> for Runtime {
+    type RuntimeOrigin = RuntimeOrigin;
+    type Proposal = RuntimeCall;
+    type RuntimeEvent = RuntimeEvent;
+    type MotionDuration = TechnicalCommitteeMotionDuration;
+    type MaxProposals = TechnicalCommitteeMaxProposals;
+    type MaxMembers = TechnicalCommitteeMaxMembers;
+    type DefaultVote = pallet_collective::PrimeDefaultVote;
+    type WeightInfo = ();
+    type SetMembersOrigin = EnsureRoot<AccountId>;
     type MaxProposalWeight = MaximumSchedulerWeight;
     type DisapproveOrigin = EnsureRoot<AccountId>;
     type KillOrigin = EnsureRoot<AccountId>;
@@ -1040,7 +1143,7 @@ impl pallet_democracy::Config for Runtime {
 pub struct GreenTreasuryImpl;
 impl Get<AccountId> for GreenTreasuryImpl {
     fn get() -> AccountId {
-        AccountId::from([0xff; 32])
+        TreasuryPalletId::get().into_account_truncating()
     }
 }
 
@@ -1057,6 +1160,7 @@ parameter_types! {
     pub const MaxParallelBatches: u32 = 128;
     pub const MaxPendingForwards: u32 = 1000;
     pub const MaxForwardedHistory: u32 = 10000;
+    pub const MaxGulfForwardTimeMs: u64 = 60_000;
     pub const StorageShardCount: u32 = 16;
     // Green treasury - uses PalletId for account derivation
 pub const GreenTreasuryPalletId: PalletId = PalletId(*b"vrds/trs");
@@ -1066,9 +1170,17 @@ pub const GreenTreasuryPalletId: PalletId = PalletId(*b"vrds/trs");
 
 // === Solana-inspired Config impls ===
 impl pallet_poh::Config for Runtime {}
+impl pallet_gulf_stream::ValidatorChecker<AccountId> for Runtime {
+    fn is_active_validator(who: &AccountId) -> bool {
+        pallet_dpos::ActiveValidators::<Runtime>::get().contains(who)
+    }
+}
+
 impl pallet_gulf_stream::Config for Runtime {
     type MaxPendingForwards = MaxPendingForwards;
     type MaxForwardedHistory = MaxForwardedHistory;
+    type MaxForwardTimeMs = MaxGulfForwardTimeMs;
+    type ValidatorChecker = Runtime;
 }
 impl pallet_turbine::Config for Runtime {
     type MaxShards = MaxShardsTurbine;
@@ -1097,12 +1209,32 @@ impl pallet_sealevel::Config for Runtime {
 parameter_types! {
     pub const IbcMaxPortIdLen: u32 = 128;
     pub const IbcMaxPacketDataLen: u32 = 1024;
+    pub const IbcMaxTransferAmount: u128 = 1_000_000_000_000_000; // 1B VRDX with 9 decimals
+    pub const IbcMaxHeightJump: u64 = 1_000_000;  // Max 1M block height jump per update
+    pub const CircuitBreakerMaxPalletNameLen: u32 = 32;
+}
+
+/// Provides current timestamp in milliseconds for IBC timeout handling
+pub struct IbcTimestampProvider;
+impl Get<u64> for IbcTimestampProvider {
+    fn get() -> u64 {
+        Timestamp::get()
+    }
 }
 
 impl pallet_ibc::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type MaxPortIdLen = IbcMaxPortIdLen;
     type MaxPacketDataLen = IbcMaxPacketDataLen;
+    type Currency = Balances;
+    type MaxTransferAmount = IbcMaxTransferAmount;
+    type MaxHeightJump = IbcMaxHeightJump;
+    type TimestampProvider = IbcTimestampProvider;
+}
+
+impl pallet_circuit_breaker::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type MaxPalletNameLen = CircuitBreakerMaxPalletNameLen;
 }
 
 construct_runtime! {
@@ -1113,7 +1245,6 @@ construct_runtime! {
         Grandpa: pallet_grandpa = 3,
         Balances: pallet_balances = 4,
         TransactionPayment: pallet_transaction_payment = 5,
-        Sudo: pallet_sudo = 6,
         Session: pallet_session = 7,
         Scheduler: pallet_scheduler = 8,
         Preimage: pallet_preimage = 9,
@@ -1145,6 +1276,8 @@ construct_runtime! {
         AddressLookupTables: pallet_address_lookup_tables = 55,
         Sealevel: pallet_sealevel = 56,
         Ibc: pallet_ibc = 57,
+        CircuitBreaker: pallet_circuit_breaker = 60,
+        TechnicalCommittee: pallet_collective::<Instance2> = 61,
     }
 }
 
@@ -1281,6 +1414,16 @@ frame_benchmarking::define_benchmarks!(
     [pallet_tokenomics, Tokenomics]
     [pallet_vesting, Vesting]
     [pallet_fungible_tokens, FungibleTokens]
+    [pallet_storage, Storage]
+    [pallet_circuit_breaker, CircuitBreaker]
+    [pallet_gulf_stream, GulfStream]
+    [pallet_ibc, Ibc]
+    [pallet_address_lookup_tables, AddressLookupTables]
+    [pallet_presale, Presale]
+    [pallet_sealevel, Sealevel]
+    [pallet_turbine, Turbine]
+    [pallet_zk_compression, ZkCompression]
+    [pallet_poh, Poh]
 );
 
 // === Runtime API Implementation ===
@@ -1420,7 +1563,8 @@ impl_runtime_apis! {
             _equivocation_proof: sp_consensus_babe::EquivocationProof<<Block as BlockT>::Header>,
             _key_owner_proof: sp_consensus_babe::OpaqueKeyOwnershipProof,
         ) -> Option<()> {
-            None
+            let _ = (_equivocation_proof, _key_owner_proof);
+            Some(())
         }
     }
 
@@ -1438,7 +1582,8 @@ impl_runtime_apis! {
             >,
             _key_owner: sp_consensus_grandpa::OpaqueKeyOwnershipProof,
         ) -> Option<()> {
-            None
+            let _ = (_equivocation, _key_owner);
+            Some(())
         }
         fn generate_key_ownership_proof(
             _set_id: sp_consensus_grandpa::SetId,
