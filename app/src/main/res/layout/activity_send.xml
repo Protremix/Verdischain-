@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#18181a"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send VRS"
+        android:textColor="#e4e4e7"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Recipient Address"
+        android:textColor="#8b8b8f"
+        android:textSize="13sp"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/recipientInput"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:background="@drawable/bg_input"
+        android:hint="5D...address"
+        android:textColorHint="#555558"
+        android:textColor="#e4e4e7"
+        android:textSize="14sp"
+        android:padding="14dp"
+        android:inputType="text"
+        android:layout_marginBottom="20dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Amount (VRS)"
+        android:textColor="#8b8b8f"
+        android:textSize="13sp"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/amountInput"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:background="@drawable/bg_input"
+        android:hint="0.00"
+        android:textColorHint="#555558"
+        android:textColor="#e4e4e7"
+        android:textSize="14sp"
+        android:padding="14dp"
+        android:inputType="numberDecimal"
+        android:layout_marginBottom="32dp" />
+
+    <ProgressBar
+        android:id="@+id/sendProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:indeterminateTint="#00d97e" />
+
+    <Button
+        android:id="@+id/sendBtn"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@drawable/btn_primary"
+        android:text="Send"
+        android:textColor="#18181a"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+</LinearLayout>

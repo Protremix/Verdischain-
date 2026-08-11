@@ -1,0 +1,93 @@
+name: verdis_wallet
+description: Official Verdis Wallet — Production-grade cross-platform wallet for the Verdis blockchain ecosystem.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Routing
+  go_router: ^14.6.0
+
+  # Storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.4
+
+  # Models / Code Generation
+  freezed: ^2.5.7
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # Networking
+  dio: ^5.7.0
+  web_socket_channel: ^3.0.1
+
+  # Security
+  flutter_secure_storage: ^9.2.2
+  local_auth: ^2.3.0
+  crypto: ^3.0.5
+
+  # Cryptography (Verdis blockchain)
+  ed25519_hd_key: ^2.2.0
+  bip39: ^1.0.6
+  hex: ^0.2.0
+  bs58: ^1.0.2
+
+  # UI / Widgets
+  flutter_svg: ^2.0.10
+  google_fonts: ^6.2.1
+  shimmer: ^3.0.0
+  fl_chart: ^0.69.0
+  mobile_scanner: ^5.2.3
+  qr_flutter: ^4.1.0
+  cached_network_image: ^3.4.1
+  flutter_animate: ^4.5.0
+  smooth_page_indicator: ^1.1.0
+
+  # Utils
+  intl: ^0.19.0
+  uuid: ^4.5.1
+  permission_handler: ^11.3.1
+  url_launcher: ^6.3.1
+  share_plus: ^10.0.0
+  package_info_plus: ^8.0.0
+  device_info_plus: ^11.0.0
+  haptic_feedback: ^0.4.1
+  collection: ^1.18.0
+
+  # Platform
+  cupertino_icons: ^1.0.8
+  window_manager: ^0.4.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.13
+  riverpod_generator: ^2.4.3
+  json_serializable: ^6.8.0
+  integration_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icons/
+    - assets/images/
+  fonts:
+    - family: VerdisSans
+      fonts:
+        - asset: assets/fonts/VerdisSans-Regular.ttf
+        - asset: assets/fonts/VerdisSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/VerdisSans-Bold.ttf
+          weight: 700

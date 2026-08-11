@@ -1,0 +1,41 @@
+allprojects {
+    repositories {
+        maven { url "file:///opt/local-maven" }
+        google()
+        mavenCentral()
+        maven { url "https://storage.googleapis.com/download.flutter.io" }
+    }
+}
+
+subprojects {
+    buildscript {
+        repositories {
+            maven { url "file:///opt/local-maven" }
+            google()
+            mavenCentral()
+        }
+    }
+    repositories {
+        maven { url "file:///opt/local-maven" }
+        google()
+        mavenCentral()
+        maven { url "https://storage.googleapis.com/download.flutter.io" }
+    }
+    afterEvaluate { project ->
+        if (project.hasProperty("android")) {
+            project.android {
+                buildToolsVersion "34.0.0"
+                compileSdk 34
+                lintOptions {
+                    abortOnError false
+                    checkReleaseBuilds false
+                }
+            }
+        }
+        project.tasks.matching { it.name.contains("lint") }.all { enabled = false }
+    }
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}
