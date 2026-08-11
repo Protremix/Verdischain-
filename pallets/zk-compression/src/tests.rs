@@ -1,7 +1,7 @@
 use crate::*;
-use frame_support::{assert_ok, construct_runtime, derive_impl, parameter_types};
+use frame_support::{assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types};
 use sp_io::TestExternalities;
-use sp_runtime::{traits::IdentityLookup, BuildStorage};
+use sp_runtime::{traits::IdentityLookup, BuildStorage, DispatchError};
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -83,5 +83,90 @@ fn max_depth_exceeded() {
             999
         )
         .is_err());
+    });
+}
+
+#[test]
+fn create_tree_max_depth_exceeded_rejected() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            Pallet::<Test>::create_tree(
+                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+                21
+            ),
+            Error::<Test>::MaxDepthExceeded
+        );
+    });
+}
+
+#[test]
+fn create_tree_unsigned_rejected() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            Pallet::<Test>::create_tree(
+                frame_system::RawOrigin::None.into(),
+                10
+            ),
+            DispatchError::BadOrigin
+        );
+    });
+}
+
+#[test]
+fn compress_account_nonexistent_tree_works() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(Pallet::<Test>::compress_account(
+            frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+            999,
+            256
+        ));
+        assert_eq!(ZkTotalCompressed::<Test>::get(), 1);
+    });
+}
+
+#[test]
+fn compress_account_unsigned_rejected() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            Pallet::<Test>::compress_account(
+                frame_system::RawOrigin::None.into(),
+                0,
+                256
+            ),
+            DispatchError::BadOrigin
+        );
+    });
+}
+
+#[test]
+fn verify_proof_non_root_rejected() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            Pallet::<Test>::verify_proof(
+                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+                0,
+                0,
+                [0u8; 32]
+            ),
+            DispatchError::BadOrigin
+        );
+    });
+}
+
+#[test]
+fn verify_proof_root_works() {
+    new_test_ext().execute_with(|| {
+        System::set_block_number(1);
+        assert_ok!(Pallet::<Test>::verify_proof(
+            frame_system::RawOrigin::Root.into(),
+            0,
+            0,
+            [0u8; 32]
+        ));
+        System::assert_has_event(RuntimeEvent::ZkCompression(crate::Event::ProofVerified {
+            tree_id: 0,
+            leaf_index: 0,
+            verified: true,
+        }));
     });
 }

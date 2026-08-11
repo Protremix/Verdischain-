@@ -1,7 +1,7 @@
 use crate::*;
-use frame_support::{assert_ok, construct_runtime, derive_impl, parameter_types};
+use frame_support::{assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types};
 use sp_io::TestExternalities;
-use sp_runtime::{traits::IdentityLookup, BuildStorage};
+use sp_runtime::{traits::IdentityLookup, BuildStorage, DispatchError};
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -89,5 +89,78 @@ fn report_conflict_works() {
             2
         ));
         assert_eq!(SealevelConflicts::<Test>::get(), 1);
+    });
+}
+
+#[test]
+fn create_batch_max_size_exceeded_rejected() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            Pallet::<Test>::create_batch(
+                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+                1001,
+                false
+            ),
+            Error::<Test>::MaxBatchSizeExceeded
+        );
+    });
+}
+
+#[test]
+fn create_batch_unsigned_rejected() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            Pallet::<Test>::create_batch(
+                frame_system::RawOrigin::None.into(),
+                10,
+                false
+            ),
+            DispatchError::BadOrigin
+        );
+    });
+}
+
+#[test]
+fn report_execution_compute_budget_exceeded_rejected() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            Pallet::<Test>::report_execution(
+                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+                0,
+                1000001,
+                5
+            ),
+            Error::<Test>::ComputeBudgetExceeded
+        );
+    });
+}
+
+#[test]
+fn report_execution_unsigned_rejected() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            Pallet::<Test>::report_execution(
+                frame_system::RawOrigin::None.into(),
+                0,
+                5000,
+                5
+            ),
+            DispatchError::BadOrigin
+        );
+    });
+}
+
+#[test]
+fn report_conflict_unsigned_rejected() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            Pallet::<Test>::report_conflict(
+                frame_system::RawOrigin::None.into(),
+                0,
+                1,
+                2
+            ),
+            DispatchError::BadOrigin
+        );
     });
 }

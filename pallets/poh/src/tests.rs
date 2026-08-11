@@ -1,9 +1,9 @@
 //! Unit tests for pallet-poh
 
 use crate::*;
-use frame_support::{assert_ok, construct_runtime, derive_impl};
+use frame_support::{assert_noop, assert_ok, construct_runtime, derive_impl};
 use sp_io::TestExternalities;
-use sp_runtime::{traits::IdentityLookup, BuildStorage};
+use sp_runtime::{traits::IdentityLookup, BuildStorage, DispatchError};
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -76,15 +76,15 @@ fn tick_generates_vdf_hash() {
 fn record_block_works() {
     new_test_ext().execute_with(|| {
         System::set_block_number(1);
-        assert_ok!(Poh::record_block(RuntimeOrigin::root()));
+        assert_ok!(Poh::record_block(frame_system::RawOrigin::Root.into()));
 
-        let hash1 = Poh::get_poh_hash(1).expect("Block 1 should be stamped");
+        let hash1 = Poh::get_poh_hash(1).unwrap();
         assert_eq!(PohTick::<Test>::get(), 1);
 
         System::set_block_number(2);
-        assert_ok!(Poh::record_block(RuntimeOrigin::root()));
+        assert_ok!(Poh::record_block(frame_system::RawOrigin::Root.into()));
 
-        let hash2 = Poh::get_poh_hash(2).expect("Block 2 should be stamped");
+        let hash2 = Poh::get_poh_hash(2).unwrap();
         assert_eq!(PohTick::<Test>::get(), 2);
         assert_ne!(hash1, hash2);
     });
@@ -94,13 +94,13 @@ fn record_block_works() {
 fn verify_poh_works() {
     new_test_ext().execute_with(|| {
         System::set_block_number(1);
-        assert_ok!(Poh::record_block(RuntimeOrigin::root()));
+        assert_ok!(Poh::record_block(frame_system::RawOrigin::Root.into()));
 
         System::set_block_number(2);
-        assert_ok!(Poh::record_block(RuntimeOrigin::root()));
+        assert_ok!(Poh::record_block(frame_system::RawOrigin::Root.into()));
 
         System::set_block_number(3);
-        assert_ok!(Poh::record_block(RuntimeOrigin::root()));
+        assert_ok!(Poh::record_block(frame_system::RawOrigin::Root.into()));
 
         assert!(Poh::verify_poh(1, 3));
         assert!(Poh::verify_poh(1, 2));
@@ -120,7 +120,7 @@ fn set_config_works() {
         let seed = [7u8; 32];
         let last_hash = [9u8; 32];
 
-        assert_ok!(Poh::set_config(RuntimeOrigin::root(), seed, last_hash));
+        assert_ok!(Poh::set_config(frame_system::RawOrigin::Root.into(), seed, last_hash));
 
         let config = PohConfigVal::<Test>::get();
         assert_eq!(config.seed, seed);
@@ -135,7 +135,44 @@ fn set_config_works() {
 #[test]
 fn tick_extrinsic_works() {
     new_test_ext().execute_with(|| {
-        assert_ok!(Poh::tick_extrinsic(RuntimeOrigin::root()));
+        assert_ok!(Poh::tick_extrinsic(frame_system::RawOrigin::Root.into()));
         assert_eq!(PohTick::<Test>::get(), 1);
+    });
+}
+
+#[test]
+fn record_block_non_root_rejected() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            Poh::record_block(frame_system::RawOrigin::Signed(alice()).into()),
+            DispatchError::BadOrigin
+        );
+    });
+}
+
+#[test]
+fn set_config_non_root_rejected() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            Poh::set_config(frame_system::RawOrigin::Signed(alice()).into(), [1u8; 32], [2u8; 32]),
+            DispatchError::BadOrigin
+        );
+    });
+}
+
+#[test]
+fn tick_extrinsic_non_root_rejected() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            Poh::tick_extrinsic(frame_system::RawOrigin::Signed(alice()).into()),
+            DispatchError::BadOrigin
+        );
+    });
+}
+
+#[test]
+fn verify_poh_invalid_range_returns_false() {
+    new_test_ext().execute_with(|| {
+        assert!(!Poh::verify_poh(5, 1));
     });
 }

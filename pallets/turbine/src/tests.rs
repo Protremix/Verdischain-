@@ -1,7 +1,7 @@
 use crate::*;
-use frame_support::{assert_ok, construct_runtime, derive_impl, parameter_types};
+use frame_support::{assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types};
 use sp_io::TestExternalities;
-use sp_runtime::{traits::IdentityLookup, BuildStorage};
+use sp_runtime::{traits::IdentityLookup, BuildStorage, DispatchError};
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -64,6 +64,72 @@ fn rebuild_tree_works() {
 }
 
 #[test]
+fn max_shards_exceeded() {
+    new_test_ext().execute_with(|| {
+        assert!(Pallet::<Test>::register_shard(
+            frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+            1,
+            0,
+            999
+        )
+        .is_err());
+    });
+}
+
+#[test]
+fn register_shard_max_shards_exceeded_rejected() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            Pallet::<Test>::register_shard(
+                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+                1,
+                0,
+                257
+            ),
+            Error::<Test>::MaxShardsExceeded
+        );
+    });
+}
+
+#[test]
+fn rebuild_tree_non_root_rejected() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            Pallet::<Test>::rebuild_tree(
+                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+                64
+            ),
+            DispatchError::BadOrigin
+        );
+    });
+}
+
+#[test]
+fn rebuild_tree_zero_validators_rejected() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            Pallet::<Test>::rebuild_tree(
+                frame_system::RawOrigin::Root.into(),
+                0
+            ),
+            Error::<Test>::NoValidators
+        );
+    });
+}
+
+#[test]
+fn rebuild_tree_works_and_updates_depth() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(Pallet::<Test>::rebuild_tree(
+            frame_system::RawOrigin::Root.into(),
+            64
+        ));
+        assert_eq!(TurbineValidatorCount::<Test>::get(), 64);
+        assert_eq!(TurbineTreeDepth::<Test>::get(), 2);
+    });
+}
+
+#[test]
 fn mark_block_propagated_works() {
     new_test_ext().execute_with(|| {
         assert_ok!(Pallet::<Test>::mark_block_propagated(
@@ -75,14 +141,16 @@ fn mark_block_propagated_works() {
 }
 
 #[test]
-fn max_shards_exceeded() {
+fn register_shard_unsigned_rejected() {
     new_test_ext().execute_with(|| {
-        assert!(Pallet::<Test>::register_shard(
-            frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
-            1,
-            0,
-            999
-        )
-        .is_err());
+        assert_noop!(
+            Pallet::<Test>::register_shard(
+                frame_system::RawOrigin::None.into(),
+                1,
+                0,
+                10
+            ),
+            DispatchError::BadOrigin
+        );
     });
 }
