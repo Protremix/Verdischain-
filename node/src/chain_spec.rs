@@ -234,7 +234,8 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (community_pool, 5 * bn),
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
-        // Team & Advisors (5B) minus 6 validator stakes (6 * 10K = 60K)
+        // Team & Advisors (5B) minus 6 validator stakes (6 * 10.001M = 60.006M)
+        (PalletId(*b"verdistm").into_account_truncating(), 5 * bn - 6 * 10_001_000 * u),
             ];
     // Fund ALL 6 validators with stake + existential deposit
     for uri in uris.iter() {
@@ -448,10 +449,11 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (community_pool, 5 * bn),
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
-        // Team & Advisors (5B) minus 6 validator stakes (6 * 10M = 60M)
+        // Team & Advisors (5B) minus validator funding (6*10.001M + 15*1.001M = 75.021M)
+        (PalletId(*b"verdistm").into_account_truncating(), 5 * bn - 6 * 10_001_000 * u - 15 * 1_001_000 * u),
             ];
-    // Fund ALL 21 validators with stake + existential deposit
-    for uri in uris.iter() {
+    // Fund validators: 6 active (10.001M each) + 15 standby (1.001M each)
+    for (i, uri) in uris.iter().enumerate() {
         let acct: AccountId = match *uri {
             "Alice" => Sr25519Keyring::Alice.to_account_id(),
             "Bob" => Sr25519Keyring::Bob.to_account_id(),
@@ -461,13 +463,16 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
             _ => sr_from(&format!("//{}", uri)).public().into(),
         };
-        balances.push((acct, 10_001_000 * u));
+        let amount = if i < 6 { 10_001_000 * u } else { 1_001_000 * u };
+        balances.push((acct, amount));
     }
 
-    // DPoS validators (21)
+    // DPoS validators (21): 6 active (10M stake) + 15 standby (1M stake)
+    // Higher stake ensures rotate_epoch() selects validators with session keys
     let dpos_validators: Vec<(AccountId, u128, bool)> = uris
         .iter()
-        .map(|uri| {
+        .enumerate()
+        .map(|(i, uri)| {
             let acct: AccountId = match *uri {
                 "Alice" => Sr25519Keyring::Alice.to_account_id(),
                 "Bob" => Sr25519Keyring::Bob.to_account_id(),
@@ -477,7 +482,8 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
                 "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
                 _ => sr_from(&format!("//{}", uri)).public().into(),
             };
-            (acct, 10_000_000 * u, true)
+            let stake = if i < 6 { 10_000_000 * u } else { 1_000_000 * u };
+            (acct, stake, true)
         })
         .collect();
 
@@ -765,12 +771,16 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     let uri_refs: Vec<&str> = uris.iter().map(|s| s.as_str()).collect();
     let session_keys = build_session_keys(&uri_refs);
 
+    // Only first 6 validators are initial BABE/GRANDPA authorities
+    // (matching ActiveValidatorCount=6). Others join via epoch rotation.
     let babe_authorities: Vec<(BabeId, u64)> = session_keys
         .iter()
+        .take(6)
         .map(|(_, _, keys)| (keys.babe.clone(), 1))
         .collect();
     let grandpa_authorities: Vec<(GrandpaId, u64)> = session_keys
         .iter()
+        .take(6)
         .map(|(_, _, keys)| (keys.grandpa.clone(), 1))
         .collect();
 
@@ -784,20 +794,23 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (community_pool, 5 * bn),
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
-        (team_multisig.clone(), 5 * bn),
+        (team_multisig.clone(), 5 * bn - 6 * 10_001_000 * u - 15 * 1_001_000 * u),  // Team (5B) minus validator funding (6 active + 15 standby)
     ];
-    // Fund ALL 21 validators with stake + existential deposit
-    for uri in uris.iter() {
+    // Fund validators: 6 active (10.001M each) + 15 standby (1.001M each)
+    for (i, uri) in uris.iter().enumerate() {
         let acct: AccountId = sr_from(uri).public().into();
-        balances.push((acct, 10_001_000 * u));
+        let amount = if i < 6 { 10_001_000 * u } else { 1_001_000 * u };
+        balances.push((acct, amount));
     }
 
-    // DPoS validators (21)
+    // DPoS validators (21): 6 active (10M stake) + 15 standby (1M stake)
     let dpos_validators: Vec<(AccountId, u128, bool)> = uris
         .iter()
-        .map(|uri| {
+        .enumerate()
+        .map(|(i, uri)| {
             let acct: AccountId = sr_from(uri).public().into();
-            (acct, 10_000_000 * u, true)
+            let stake = if i < 6 { 10_000_000 * u } else { 1_000_000 * u };
+            (acct, stake, true)
         })
         .collect();
 
@@ -839,7 +852,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             _config: Default::default(),
         },
         session: SessionConfig {
-            keys: session_keys,
+            keys: session_keys.into_iter().take(6).collect(),
             non_authority_keys: Vec::new(),
         },
         dpos: pallet_dpos::GenesisConfig {
