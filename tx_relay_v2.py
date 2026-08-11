@@ -9,7 +9,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from substrateinterface import SubstrateInterface, Keypair
 
 substrate = SubstrateInterface(
-    url="http://127.0.0.1:9933",
+    url="http://127.0.0.1:9950",
     ss58_format=909,
     auto_discover=True,
     type_registry_preset=None
@@ -71,6 +71,92 @@ class RelayHandler(BaseHTTPRequestHandler):
         try:
             body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))))
             action = body.get("action", "remark")
+
+            if action == "balance":
+                address = body.get("address", "")
+                if not address: self._error("Missing address"); return
+                try:
+                    result = substrate.query("System", "Account", [address])
+                    if result:
+                        free = int(result.value.get("data", {}).get("free", 0))
+                        reserved = int(result.value.get("data", {}).get("reserved", 0))
+                        nonce = int(result.value.get("nonce", 0))
+                        self._success(None, {
+                            "address": address,
+                            "free": free,
+                            "reserved": reserved,
+                            "nonce": nonce,
+                            "free_formatted": f"{free / 10**TOKEN_DECIMALS:,.4f} VRDX",
+                            "decimals": TOKEN_DECIMALS
+                        })
+                    else:
+                        self._success(None, {"address": address, "free": 0, "reserved": 0, "nonce": 0, "free_formatted": "0 VRDX", "decimals": TOKEN_DECIMALS})
+                except Exception as e:
+                    self._error("Balance query failed: " + str(e))
+                return
+
+            if action == "chain-info":
+                try:
+                    health = substrate.rpc_request("system_health", [])
+                    chain = substrate.rpc_request("system_chain", [])
+                    props = substrate.rpc_request("system_properties", [])
+                    header = substrate.rpc_request("chain_getHeader", [])
+                    block_num = int(header.get("result", {}).get("number", "0x0"), 16)
+                    validators = substrate.rpc_request("dpos_allValidators", [])
+                    self._success(None, {
+                        "chain_name": chain.get("result", "Unknown"),
+                        "block_number": block_num,
+                        "peers": health.get("result", {}).get("peers", 0),
+                        "is_syncing": health.get("result", {}).get("isSyncing", False),
+                        "validator_count": len(validators.get("result", [])),
+                        "token_symbol": props.get("result", {}).get("tokenSymbol", "VRDX"),
+                        "token_decimals": props.get("result", {}).get("tokenDecimals", 9),
+                        "ss58_prefix": props.get("result", {}).get("ss58Format", 909)
+                    })
+                except Exception as e:
+                    self._error("Chain info failed: " + str(e))
+                return
+
+            if action == "validators":
+                try:
+                    validators_result = substrate.rpc_request("dpos_allValidators", [])
+                    validators = validators_result.get("result", [])
+                    validator_list = []
+                    for v_addr in validators:
+                        stake_result = substrate.rpc_request("dpos_validatorStake", [v_addr])
+                        stake = int(stake_result.get("result", 0))
+                        name_result = substrate.rpc_request("dpos_validatorName", [v_addr])
+                        name = name_result.get("result", v_addr[:12] + "...")
+                        green_result = substrate.rpc_request("eco_getGreenScore", [v_addr])
+                        green_score = green_result.get("result", 0)
+                        validator_list.append({
+                            "address": v_addr,
+                            "name": name,
+                            "stake": stake,
+                            "stake_formatted": f"{stake / 10**TOKEN_DECIMALS:,.2f} VRDX",
+                            "green_score": green_score
+                        })
+                    self._success(None, {"validators": validator_list, "count": len(validator_list)})
+                except Exception as e:
+                    self._error("Validator query failed: " + str(e))
+                return
+
+            if action == "dex-pools":
+                try:
+                    pools_result = substrate.rpc_request("amm_dex_getAllPools", [])
+                    pools = pools_result.get("result", [])
+                    pool_list = []
+                    for pool in pools:
+                        if isinstance(pool, dict):
+                            pool_list.append(pool)
+                        elif isinstance(pool, (int, str)):
+                            pool_id = int(pool)
+                            pool_detail = substrate.rpc_request("amm_dex_getPool", [pool_id])
+                            pool_list.append(pool_detail.get("result", {}))
+                    self._success(None, {"pools": pool_list, "count": len(pool_list)})
+                except Exception as e:
+                    self._error("DEX pools query failed: " + str(e))
+                return
 
             if action == "derive-address":
                 mnemonic = body.get("mnemonic", "")
