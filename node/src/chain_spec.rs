@@ -427,9 +427,10 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (presale_pool, 2 * bn),
         // Team & Advisors (5B) minus 6 validator stakes (6 * 10M = 60M)
             ];
-    // 6 validator stakes (skip Alice, she has the team allocation)
-    for uri in uris.iter().skip(1) {
+    // Fund ALL 7 validators with stake + existential deposit
+    for uri in uris.iter() {
         let acct: AccountId = match *uri {
+            "Alice" => Sr25519Keyring::Alice.to_account_id(),
             "Bob" => Sr25519Keyring::Bob.to_account_id(),
             "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
             "Dave" => Sr25519Keyring::Dave.to_account_id(),
@@ -758,8 +759,8 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (presale_pool, 2 * bn),
         (team_multisig.clone(), 5 * bn),
     ];
-    // 6 validator stakes (skip Alice, she has the team allocation)
-    for uri in uris.iter().skip(1) {
+    // Fund ALL 21 validators with stake + existential deposit
+    for uri in uris.iter() {
         let acct: AccountId = sr_from(uri).public().into();
         balances.push((acct, 10_001_000 * u));
     }
