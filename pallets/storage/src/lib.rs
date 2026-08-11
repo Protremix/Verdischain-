@@ -1,3 +1,4 @@
+#![allow(clippy::incompatible_msrv)]
 #![allow(
     clippy::let_unit_value,
     deprecated,
@@ -313,7 +314,7 @@ pub mod pallet {
         #[pallet::weight(Weight::from_parts(30_000_000, 0))]
         pub fn verify_storage(origin: OriginFor<T>, id: Vec<u8>, hash: [u8; 32]) -> DispatchResult {
             // SECURITY: Track who verified the storage
-            let _who = ensure_signed(origin)?;
+            let who = ensure_signed(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
                 id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
@@ -371,7 +372,7 @@ pub mod pallet {
         #[pallet::call_index(3)]
         #[pallet::weight(Weight::from_parts(20_000_000, 0))]
         pub fn request_pin(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
-            let who = ensure_signed(origin)?;
+            let _who = ensure_signed(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
                 id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
@@ -391,7 +392,7 @@ pub mod pallet {
         #[pallet::call_index(4)]
         #[pallet::weight(Weight::from_parts(20_000_000, 0))]
         pub fn remove_pin(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
-            let who = ensure_signed(origin)?;
+            let _who = ensure_signed(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
                 id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;

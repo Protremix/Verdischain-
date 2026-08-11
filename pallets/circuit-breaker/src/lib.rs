@@ -1,3 +1,6 @@
+#![allow(clippy::let_unit_value)]
+#![allow(deprecated)]
+#![allow(clippy::incompatible_msrv)]
 #![cfg_attr(not(feature = "std"), no_std)]
 //! # Circuit Breaker Pallet
 //!
@@ -52,7 +55,7 @@ pub mod pallet {
             ensure_root(origin)?;
 
             let name_bv: BoundedVec<u8, ConstU32<32>> =
-                Vec::from(pallet_name.clone()).try_into().map_err(|_| Error::<T>::PalletNameTooLong)?;
+                pallet_name.clone().try_into().map_err(|_| Error::<T>::PalletNameTooLong)?;
 
             ensure!(!PausedPallets::<T>::get(&name_bv), Error::<T>::AlreadyPaused);
             PausedPallets::<T>::insert(&name_bv, true);
@@ -68,7 +71,7 @@ pub mod pallet {
             ensure_root(origin)?;
 
             let name_bv: BoundedVec<u8, ConstU32<32>> =
-                Vec::from(pallet_name.clone()).try_into().map_err(|_| Error::<T>::PalletNameTooLong)?;
+                pallet_name.clone().try_into().map_err(|_| Error::<T>::PalletNameTooLong)?;
 
             ensure!(PausedPallets::<T>::get(&name_bv), Error::<T>::NotPaused);
             PausedPallets::<T>::remove(&name_bv);
