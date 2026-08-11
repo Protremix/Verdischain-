@@ -351,7 +351,7 @@ window.addEventListener('load', function() {
     checks.push('showCreate: ' + (typeof window.showCreate));
     checks.push('generateWallet: ' + (typeof window.generateWallet));
     checks.push('importWallet: ' + (typeof window.importWallet));
-    status.innerHTML = checks.join('<br>');
+    status.textContent = checks.join(' | ');
     document.body.appendChild(status);
   }, 2000);
 });
@@ -568,6 +568,11 @@ async function getAccountInfo(address) {
 }
 
 // ===== Toast =====
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 function toast(msg, type = 'info') {
   const t = document.createElement('div');
   t.className = 'toast ' + type + ' show';
@@ -631,11 +636,14 @@ window.generateWallet = async function() {
 
     document.getElementById('newAddress').textContent = address;
     document.getElementById('newPrivKey').textContent = mnemonic;
-    document.getElementById('newPrivKeyLabel').textContent = 'Your 12-Word Mnemonic (SAVE THIS!)';
+    const lbl = document.getElementById('newPrivKeyLabel'); if (lbl) lbl.textContent = 'Your 12-Word Mnemonic (SAVE THIS!)';
 
-    // Store mnemonic locally (non-custodial)
+    // Derive keypair and store in memory
+    await PolkadotCrypto.cryptoWaitReady();
+    const kr = new PolkadotCrypto.Keyring({ type: 'sr25519', ss58Format: 909 });
+    const newKp = kr.addFromMnemonic(mnemonic);
     saveWallet(mnemonic, publicKey, address);
-    _sessionKeypair = kp;
+    _sessionKeypair = newKp;
     toast('Wallet created! Mnemonic kept in memory only — not stored.', 'success');
 
     setTimeout(() => {
@@ -729,7 +737,7 @@ async function refreshBalance() {
     getBlockHeight()
   ]);
   const formatted = formatBalance(balance);
-  balanceEl.innerHTML = formatted + '<span class="unit">VRDX</span>';
+  balanceEl.textContent = formatted + ' VRDX';
 
   let subText = `≈ $${(Number(formatted) * 0.05).toFixed(2)} USD · Block #${blockHeight}`;
   if (info && info.nonce !== undefined) {
@@ -774,7 +782,7 @@ window.sendTransaction = async function() {
 
   const btn = document.getElementById('sendBtn');
   btn.disabled = true;
-  btn.innerHTML = '<span class="loading"></span> Signing & Submitting...';
+  btn.textContent = 'Signing & Submitting...';
 
   try {
     // Check if wallet is unlocked (mnemonic in memory)
@@ -845,12 +853,12 @@ async function loadHistory() {
   if (!wallet) return;
   const container = document.getElementById('txHistory');
   if (!container) return;
-  container.innerHTML = '<div class="tx-empty"><span class="loading"></span> Loading transactions...</div>';
+  container.textContent = 'Loading transactions...';
 
   try {
     // Scan recent blocks for signed system.remark extrinsics
     const header = await rpcCall('chain_getHeader', []);
-    if (!header) { container.innerHTML = '<div class="tx-empty">Cannot connect to node.</div>'; return; }
+    if (!header) { container.textContent = 'Cannot connect to node.'; return; }
     const currentBlock = parseInt(header.number, 16);
     const txs = [];
     
@@ -890,38 +898,41 @@ async function loadHistory() {
     }
     
     if (txs.length === 0) {
-      container.innerHTML = '<div class="tx-empty">No transactions found in recent blocks.</div>';
+      container.textContent = 'No transactions found in recent blocks.';
       return;
     }
 
     container.innerHTML = txs.map(tx => {
+      const safeSigner = escapeHtml((tx.signer || '').slice(0, 8) + '...' + (tx.signer || '').slice(-6));
+      const safeRemark = escapeHtml(String(tx.remark || '').substring(0, 100));
+      const safeBlock = escapeHtml(tx.block);
       return `
         <div class="tx-item">
           <div class="tx-left">
             <div class="tx-icon out">⟐</div>
             <div class="tx-detail">
-              <div class="tx-addr">${(tx.signer || '').slice(0, 8)}...${(tx.signer || '').slice(-6)}</div>
-              <div class="tx-time">Block #${tx.block} · ${tx.remark}</div>
+              <div class="tx-addr">${safeSigner}</div>
+              <div class="tx-time">Block #${safeBlock} · ${safeRemark}</div>
             </div>
           </div>
           <div class="tx-amount out">signed</div>
         </div>`;
     }).join('');
   } catch(e) {
-    container.innerHTML = '<div class="tx-empty">Failed to load: ' + (e.message || 'error') + '</div>';
+    container.textContent = 'Failed to load: ' + (e.message || 'error');
   }
 }
 
 // ===== Validators / Staking =====
 async function loadValidators() {
   const container = document.getElementById('validatorList');
-  container.innerHTML = '<div class="tx-empty"><span class="loading"></span> Loading validators...</div>';
+  container.textContent = 'Loading validators...';
 
   try {
     // Use RPC to fetch real validators
     const validatorAddresses = await rpcCall('dpos_allValidators', []);
     if (!validatorAddresses || !Array.isArray(validatorAddresses) || validatorAddresses.length === 0) {
-      container.innerHTML = '<div class="tx-empty">No validators found.</div>';
+      container.textContent = 'No validators found.';
       return;
     }
 
@@ -944,6 +955,9 @@ async function loadValidators() {
     }));
 
     container.innerHTML = valData.map(v => {
+      const safeAddr = escapeHtml(v.address || '');
+      const safeName = escapeHtml(v.name || '');
+      const safeStake = escapeHtml(v.stake || '');
       const scoreClass = v.score >= 75 ? 'high' : v.score >= 50 ? 'mid' : 'low';
       return `
         <div class="validator-item">
@@ -956,8 +970,8 @@ async function loadValidators() {
           </div>
           <div style="display:flex;align-items:center;gap:8px">
             <span class="green-score ${scoreClass}">🌿 ${v.score}</span>
-            <input type="number" placeholder="VRDX" id="stake-${v.address}" class="mono" />
-            <button class="btn-small" onclick="delegateStake('${v.address}')">Stake</button>
+            <input type="number" placeholder="VRDX" id="stake-${safeAddr}" class="mono" />
+            <button class="btn-small" onclick="delegateStake('${safeAddr}')">Stake</button>
           </div>
         </div>`;
     }).join('');
@@ -969,26 +983,48 @@ async function loadValidators() {
 window.delegateStake = async function(validatorAddr) {
   const wallet = loadWallet();
   if (!wallet) { toast('No wallet loaded', 'error'); return; }
+  if (!isUnlocked()) { toast('Wallet locked. Re-enter mnemonic to unlock.', 'error'); return; }
   const amountInput = document.getElementById('stake-' + validatorAddr);
   const amount = amountInput?.value;
   if (!amount || parseFloat(amount) <= 0) { toast('Enter a valid amount', 'error'); return; }
 
   try {
+    touchActivity();
     const amountPlanks = BigInt(Math.floor(parseFloat(amount) * 10**TOKEN_DECIMALS));
-    const msgHash = await sha256Sync(new TextEncoder().encode(JSON.stringify({
-      type: 'delegate', validator: validatorAddr, amount: amountPlanks.toString(), from: wallet.address
-    })));
-    // Sign locally with Sr25519 via Polkadot WASM
-    if (!window.PolkadotCrypto) throw new Error('Polkadot crypto not loaded for signing');
-    await PolkadotCrypto.cryptoWaitReady();
-    const keyring = new PolkadotCrypto.Keyring({ type: 'sr25519', ss58Format: 909 });
-    const kp = keyring.addFromMnemonic(wallet.mnemonic || wallet.privateKey);
-    const sigBytes = kp.sign(msgHash);
-    const signature = Array.from(sigBytes).map(b => b.toString(16).padStart(2, '0')).join('');
 
-    toast(`Staked ${amount} VRDX to ${validatorAddr.slice(0, 10)}... — delegated!`, 'success');
-    amountInput.value = '';
-    setTimeout(refreshBalance, 3000);
+    // Sign staking extrinsic CLIENT-SIDE and submit via relay
+    if (!window.PolkadotCrypto) throw new Error('Polkadot crypto not loaded');
+    await PolkadotCrypto.cryptoWaitReady();
+
+    const provider = new PolkadotCrypto.WsProvider(RPC_URL);
+    const api = await PolkadotCrypto.ApiPromise.create({ provider, noInitWarn: true });
+    const keyring = new PolkadotCrypto.Keyring({ type: 'sr25519', ss58Format: 909 });
+    const kp = keyring.addFromMnemonic(_sessionMnemonic);
+
+    // Create and sign the dpos.vote extrinsic
+    const vote = api.tx.dpos.vote(validatorAddr, amountPlanks);
+    const signedExtrinsic = await vote.signAsync(kp, { nonce: -1, era: 64 });
+
+    // Submit signed extrinsic via relay (relay does NOT sign)
+    const res = await fetch(RELAY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'submit-extrinsic',
+        extrinsic: signedExtrinsic.toHex()
+      })
+    });
+
+    let result;
+    try { result = await res.json(); } catch { result = null; }
+
+    if (result && result.ok) {
+      toast(`Staked ${amount} VRDX to ${validatorAddr.slice(0, 10)}... — on-chain!`, 'success');
+      amountInput.value = '';
+      setTimeout(refreshBalance, 3000);
+    } else {
+      toast('Staking failed: ' + (result?.error || 'Relay error'), 'error');
+    }
   } catch (e) {
     toast('Staking failed: ' + e.message, 'error');
   }
