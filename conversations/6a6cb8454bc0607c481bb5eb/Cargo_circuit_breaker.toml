@@ -1,0 +1,22 @@
+[package]
+name = "pallet-circuit-breaker"
+version = "0.1.0"
+edition = "2021"
+description = "Governance-controlled circuit breaker for emergency pallet pausing"
+
+[dependencies]
+codec = { workspace = true }
+scale-info = { workspace = true }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+sp-std = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+    "codec/std",
+    "scale-info/std",
+    "frame-support/std",
+    "frame-system/std",
+    "sp-std/std",
+]
