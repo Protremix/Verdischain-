@@ -148,7 +148,18 @@ pub mod pallet {
 
     // === Events ===
 
-    #[pallet::event]
+    
+    /// Annual inflation rate in basis points (200 = 2%)
+    #[pallet::storage]
+    #[pallet::getter(fn annual_inflation_rate)]
+    pub type AnnualInflationRate<T> = StorageValue<_, u32, ValueQuery>;
+
+    /// Total minted via inflation
+    #[pallet::storage]
+    #[pallet::getter(fn total_inflation_minted)]
+    pub type TotalInflationMinted<T> = StorageValue<_, u128, ValueQuery>;
+
+#[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         PriorityFeeSet {
@@ -199,6 +210,9 @@ pub mod pallet {
 
     #[pallet::error]
     pub enum Error<T> {
+    /// Inflation rate exceeds maximum allowed (10%)
+    InflationRateTooHigh,
+
         MaxPriorityFeeExceeded,
         AccountFrozen,
         NotFreezeAuthority,
@@ -279,6 +293,16 @@ pub mod pallet {
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
+        /// Set the annual inflation rate (requires root)
+        #[pallet::call_index(5)]
+        #[pallet::weight(T::WeightInfo::give_consent())]
+        pub fn set_inflation_rate(origin: OriginFor<T>, rate_bps: u32) -> DispatchResult {
+            ensure_root(origin)?;
+            ensure!(rate_bps <= 1000, Error::<T>::InflationRateTooHigh);
+            AnnualInflationRate::<T>::put(rate_bps);
+            Ok(())
+        }
+
         /// Give consent to tokenomics disclosure (required before purchase)
         #[pallet::call_index(0)]
         #[pallet::weight(T::WeightInfo::give_consent())]
@@ -540,3 +564,13 @@ mod tests {
 
 #[cfg(test)]
 mod economic_invariants;
+
+    // === Non-dispatchable helpers ===
+    impl<T: Config> Pallet<T> {
+        /// Calculate annual inflation amount
+        pub fn calculate_inflation(total_supply: u128, current_supply: u128) -> u128 {
+            let rate = Self::annual_inflation_rate() as u128;
+            let remaining = total_supply.saturating_sub(current_supply);
+            remaining.saturating_mul(rate) / 10000
+        }
+    }

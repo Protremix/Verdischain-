@@ -362,6 +362,14 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             ],
             phantom: Default::default(),
         },
+        technical_committee: pallet_collective::GenesisConfig {
+            members: vec![
+                Sr25519Keyring::Alice.to_account_id(),
+                Sr25519Keyring::Bob.to_account_id(),
+                Sr25519Keyring::Charlie.to_account_id(),
+            ],
+            phantom: Default::default(),
+        },
         democracy: Default::default(),
         treasury: Default::default(),
         amm_dex: pallet_amm_dex::GenesisConfig {
@@ -419,7 +427,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
 
     // 7 validators for testnet
     let uris = testnet_validator_uris();
-    let session_keys = build_session_keys(&uris);
+    let session_keys = build_session_keys(&["Alice", "Bob", "Charlie", "Dave", "Eve", "Ferdie"]);
 
     let babe_authorities: Vec<(BabeId, u64)> = session_keys
         .iter()
@@ -442,7 +450,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (presale_pool, 2 * bn),
         // Team & Advisors (5B) minus 6 validator stakes (6 * 10M = 60M)
             ];
-    // Fund ALL 7 validators with stake + existential deposit
+    // Fund ALL 21 validators with stake + existential deposit
     for uri in uris.iter() {
         let acct: AccountId = match *uri {
             "Alice" => Sr25519Keyring::Alice.to_account_id(),
@@ -456,7 +464,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         balances.push((acct, 10_001_000 * u));
     }
 
-    // DPoS validators (7)
+    // DPoS validators (21)
     let dpos_validators: Vec<(AccountId, u128, bool)> = uris
         .iter()
         .map(|uri| {
@@ -634,7 +642,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         },
         dpos: pallet_dpos::GenesisConfig {
             validators: dpos_validators,
-            validator_count: 7,
+            validator_count: 6,
             block_reward: 16 * u,
             validator_names,
         },
@@ -648,7 +656,11 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             ],
         },
         council: pallet_collective::GenesisConfig {
-            members: council_members,
+            members: council_members.clone(),
+            phantom: Default::default(),
+        },
+        technical_committee: pallet_collective::GenesisConfig {
+            members: council_members.into_iter().take(3).collect(),
             phantom: Default::default(),
         },
         democracy: Default::default(),
@@ -780,7 +792,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         balances.push((acct, 10_001_000 * u));
     }
 
-    // DPoS validators (7)
+    // DPoS validators (21)
     let dpos_validators: Vec<(AccountId, u128, bool)> = uris
         .iter()
         .map(|uri| {
@@ -846,7 +858,11 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             ],
         },
         council: pallet_collective::GenesisConfig {
-            members: council_members,
+            members: council_members.clone(),
+            phantom: Default::default(),
+        },
+        technical_committee: pallet_collective::GenesisConfig {
+            members: council_members.into_iter().take(3).collect(),
             phantom: Default::default(),
         },
         democracy: Default::default(),
@@ -870,7 +886,8 @@ pub fn load_spec(id: &str) -> VerdisChainSpec {
         "dev" | "" => dev_spec(),
         "testnet" => testnet_spec(),
         "mainnet" => mainnet_spec(),
-        _ => dev_spec(),
+        _ => VerdisChainSpec::from_json_file(std::path::PathBuf::from(id))
+            .expect("Failed to load chain spec from file: invalid path or format"),
     }
 }
 

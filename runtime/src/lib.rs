@@ -1060,6 +1060,29 @@ impl pallet_collective::Config<pallet_collective::Instance1> for Runtime {
     type Consideration = ();
 }
 
+// === Technical Committee (emergency upgrades) ===
+parameter_types! {
+    pub const TechnicalCommitteeMaxMembers: u32 = 3;
+    pub const TechnicalCommitteeMotionDuration: BlockNumber = 3600;
+    pub const TechnicalCommitteeMaxProposals: u32 = 20;
+}
+
+impl pallet_collective::Config<pallet_collective::Instance2> for Runtime {
+    type RuntimeOrigin = RuntimeOrigin;
+    type Proposal = RuntimeCall;
+    type RuntimeEvent = RuntimeEvent;
+    type MotionDuration = TechnicalCommitteeMotionDuration;
+    type MaxProposals = TechnicalCommitteeMaxProposals;
+    type MaxMembers = TechnicalCommitteeMaxMembers;
+    type DefaultVote = pallet_collective::PrimeDefaultVote;
+    type WeightInfo = ();
+    type SetMembersOrigin = EnsureRoot<AccountId>;
+    type MaxProposalWeight = MaximumSchedulerWeight;
+    type DisapproveOrigin = EnsureRoot<AccountId>;
+    type KillOrigin = EnsureRoot<AccountId>;
+    type Consideration = ();
+}
+
 // === Democracy ===
 
 parameter_types! {
@@ -1254,6 +1277,7 @@ construct_runtime! {
         Sealevel: pallet_sealevel = 56,
         Ibc: pallet_ibc = 57,
         CircuitBreaker: pallet_circuit_breaker = 60,
+        TechnicalCommittee: pallet_collective::<Instance2> = 61,
     }
 }
 
