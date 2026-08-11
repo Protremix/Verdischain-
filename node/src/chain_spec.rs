@@ -160,6 +160,20 @@ fn testnet_validator_uris() -> Vec<&'static str> {
         "Eve",
         "Ferdie",
         "Validator7",
+        "Validator8",
+        "Validator9",
+        "Validator10",
+        "Validator11",
+        "Validator12",
+        "Validator13",
+        "Validator14",
+        "Validator15",
+        "Validator16",
+        "Validator17",
+        "Validator18",
+        "Validator19",
+        "Validator20",
+        "Validator21",
     ]
 }
 
@@ -222,9 +236,10 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (presale_pool, 2 * bn),
         // Team & Advisors (5B) minus 6 validator stakes (6 * 10K = 60K)
             ];
-    // 5 validator stakes (skip Alice, she has the team allocation)
-    for uri in uris.iter().skip(1) {
+    // Fund ALL 6 validators with stake + existential deposit
+    for uri in uris.iter() {
         let acct: AccountId = match *uri {
+            "Alice" => Sr25519Keyring::Alice.to_account_id(),
             "Bob" => Sr25519Keyring::Bob.to_account_id(),
             "Charlie" => Sr25519Keyring::Charlie.to_account_id(),
             "Dave" => Sr25519Keyring::Dave.to_account_id(),
