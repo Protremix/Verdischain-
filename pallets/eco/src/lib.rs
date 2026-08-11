@@ -761,4 +761,346 @@ pub mod tests {
             assert_eq!(GreenValidators::<Test>::get(&alice).unwrap().score, 95);
         });
     }
+
+    #[test]
+    fn test_mint_carbon_credit_non_root_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_noop!(
+                Eco::mint_carbon_credit(
+                    RuntimeOrigin::signed(alice.clone()),
+                    alice,
+                    b"c1".to_vec(),
+                    b"Amazon".to_vec(),
+                    100,
+                ),
+                sp_runtime::DispatchError::BadOrigin
+            );
+        });
+    }
+
+    #[test]
+    fn test_verify_carbon_credit_non_root_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_noop!(
+                Eco::verify_carbon_credit(
+                    RuntimeOrigin::signed(alice),
+                    b"c1".to_vec(),
+                ),
+                sp_runtime::DispatchError::BadOrigin
+            );
+        });
+    }
+
+    #[test]
+    fn test_retire_nonexistent_credit_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_noop!(
+                Eco::retire_carbon_credit(
+                    RuntimeOrigin::signed(alice),
+                    b"nonexistent".to_vec(),
+                ),
+                Error::<Test>::CreditNotFound
+            );
+        });
+    }
+
+    #[test]
+    fn test_transfer_nonexistent_credit_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let bob = Sr25519Keyring::Bob.to_account_id();
+            assert_noop!(
+                Eco::transfer_carbon_credit(
+                    RuntimeOrigin::signed(alice),
+                    b"nonexistent".to_vec(),
+                    bob,
+                ),
+                Error::<Test>::CreditNotFound
+            );
+        });
+    }
+
+    #[test]
+    fn test_transfer_retired_credit_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let bob = Sr25519Keyring::Bob.to_account_id();
+            Eco::mint_carbon_credit(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"c1".to_vec(),
+                b"Amazon".to_vec(),
+                100,
+            )
+            .unwrap();
+            Eco::retire_carbon_credit(
+                RuntimeOrigin::signed(alice.clone()),
+                b"c1".to_vec(),
+            )
+            .unwrap();
+            assert_noop!(
+                Eco::transfer_carbon_credit(
+                    RuntimeOrigin::signed(alice),
+                    b"c1".to_vec(),
+                    bob,
+                ),
+                Error::<Test>::CreditAlreadyRetired
+            );
+        });
+    }
+
+    #[test]
+    fn test_transfer_credit_not_owner_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let bob = Sr25519Keyring::Bob.to_account_id();
+            let charlie = Sr25519Keyring::Charlie.to_account_id();
+            Eco::mint_carbon_credit(
+                RuntimeOrigin::root(),
+                alice,
+                b"c1".to_vec(),
+                b"Amazon".to_vec(),
+                100,
+            )
+            .unwrap();
+            assert_noop!(
+                Eco::transfer_carbon_credit(
+                    RuntimeOrigin::signed(bob),
+                    b"c1".to_vec(),
+                    charlie,
+                ),
+                Error::<Test>::NotCreditOwner
+            );
+        });
+    }
+
+    #[test]
+    fn test_create_reforest_non_root_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_noop!(
+                Eco::create_reforest_project(
+                    RuntimeOrigin::signed(alice),
+                    b"p1".to_vec(),
+                    b"Amazon".to_vec(),
+                    1000,
+                    b"Brazil".to_vec(),
+                ),
+                sp_runtime::DispatchError::BadOrigin
+            );
+        });
+    }
+
+    #[test]
+    fn test_create_duplicate_reforest_rejected() {
+        new_test_ext().execute_with(|| {
+            Eco::create_reforest_project(
+                RuntimeOrigin::root(),
+                b"p1".to_vec(),
+                b"Amazon".to_vec(),
+                1000,
+                b"Brazil".to_vec(),
+            )
+            .unwrap();
+            assert_noop!(
+                Eco::create_reforest_project(
+                    RuntimeOrigin::root(),
+                    b"p1".to_vec(),
+                    b"Amazon 2".to_vec(),
+                    2000,
+                    b"Peru".to_vec(),
+                ),
+                Error::<Test>::ProjectAlreadyExists
+            );
+        });
+    }
+
+    #[test]
+    fn test_update_reforest_non_root_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_noop!(
+                Eco::update_reforest_project(
+                    RuntimeOrigin::signed(alice),
+                    b"p1".to_vec(),
+                    1000,
+                    80,
+                ),
+                sp_runtime::DispatchError::BadOrigin
+            );
+        });
+    }
+
+    #[test]
+    fn test_update_nonexistent_reforest_rejected() {
+        new_test_ext().execute_with(|| {
+            assert_noop!(
+                Eco::update_reforest_project(
+                    RuntimeOrigin::root(),
+                    b"nonexistent".to_vec(),
+                    1000,
+                    80,
+                ),
+                Error::<Test>::ProjectNotFound
+            );
+        });
+    }
+
+    #[test]
+    fn test_register_green_validator_duplicate_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            Eco::register_green_validator(
+                RuntimeOrigin::signed(alice.clone()),
+                b"Solar".to_vec(),
+                500,
+                100,
+                90,
+            )
+            .unwrap();
+            assert_noop!(
+                Eco::register_green_validator(
+                    RuntimeOrigin::signed(alice),
+                    b"Wind".to_vec(),
+                    300,
+                    50,
+                    80,
+                ),
+                Error::<Test>::ValidatorAlreadyRegistered
+            );
+        });
+    }
+
+    #[test]
+    fn test_register_green_validator_invalid_score_high_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_noop!(
+                Eco::register_green_validator(
+                    RuntimeOrigin::signed(alice),
+                    b"Solar".to_vec(),
+                    500,
+                    100,
+                    101,
+                ),
+                Error::<Test>::InvalidScore
+            );
+        });
+    }
+
+    #[test]
+    fn test_update_green_score_non_root_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_noop!(
+                Eco::update_green_score(
+                    RuntimeOrigin::signed(alice.clone()),
+                    alice,
+                    95,
+                ),
+                sp_runtime::DispatchError::BadOrigin
+            );
+        });
+    }
+
+    #[test]
+    fn test_update_nonexistent_validator_score_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_noop!(
+                Eco::update_green_score(
+                    RuntimeOrigin::root(),
+                    alice,
+                    95,
+                ),
+                Error::<Test>::ValidatorNotFound
+            );
+        });
+    }
+
+    #[test]
+    fn test_mint_carbon_credit_id_too_long_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let long_id = vec![0u8; 65];
+            assert_noop!(
+                Eco::mint_carbon_credit(
+                    RuntimeOrigin::root(),
+                    alice,
+                    long_id,
+                    b"Amazon".to_vec(),
+                    100,
+                ),
+                Error::<Test>::IdTooLong
+            );
+        });
+    }
+
+    #[test]
+    fn test_mint_carbon_credit_name_too_long_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let long_name = vec![0u8; 129];
+            assert_noop!(
+                Eco::mint_carbon_credit(
+                    RuntimeOrigin::root(),
+                    alice,
+                    b"c1".to_vec(),
+                    long_name,
+                    100,
+                ),
+                Error::<Test>::NameTooLong
+            );
+        });
+    }
+
+    #[test]
+    fn test_retire_carbon_credit_works() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_ok!(Eco::mint_carbon_credit(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"c1".to_vec(),
+                b"Amazon".to_vec(),
+                100,
+            ));
+            assert_ok!(Eco::retire_carbon_credit(
+                RuntimeOrigin::signed(alice),
+                b"c1".to_vec()
+            ));
+            let id_bv: frame_support::BoundedVec<u8, frame_support::traits::ConstU32<64>> =
+                b"c1".to_vec().try_into().unwrap();
+            let credit = CarbonCredits::<Test>::get(&id_bv).unwrap();
+            assert!(credit.retired);
+            assert_eq!(TotalCreditsRetired::<Test>::get(), 100);
+        });
+    }
+
+    #[test]
+    fn test_transfer_carbon_credit_works() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let bob = Sr25519Keyring::Bob.to_account_id();
+            assert_ok!(Eco::mint_carbon_credit(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"c1".to_vec(),
+                b"Amazon".to_vec(),
+                100,
+            ));
+            assert_ok!(Eco::transfer_carbon_credit(
+                RuntimeOrigin::signed(alice),
+                b"c1".to_vec(),
+                bob.clone(),
+            ));
+            let id_bv: frame_support::BoundedVec<u8, frame_support::traits::ConstU32<64>> =
+                b"c1".to_vec().try_into().unwrap();
+            let credit = CarbonCredits::<Test>::get(&id_bv).unwrap();
+            assert_eq!(credit.owner, bob);
+        });
+    }
 }

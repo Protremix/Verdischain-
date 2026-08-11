@@ -25,10 +25,10 @@ parameter_types! {
     pub const MaxForwardTimeMs: u64 = 60_000;
 }
 
-// Mock validator checker that accepts all signed callers (for testing)
+// Mock validator checker: [0xff; 32] is active validator, others are not
 impl ValidatorChecker<sp_core::crypto::AccountId32> for Test {
-    fn is_active_validator(_who: &sp_core::crypto::AccountId32) -> bool {
-        true
+    fn is_active_validator(who: &sp_core::crypto::AccountId32) -> bool {
+        who == &sp_core::crypto::AccountId32::from([0xff; 32])
     }
 }
 
@@ -172,5 +172,254 @@ fn mark_included_excessive_forward_time_fails() {
             ),
             Error::<Test>::InvalidForwardTime
         );
+    });
+}
+
+#[test]
+fn test_forward_duplicate_rejected() {
+    new_test_ext().execute_with(|| {
+        let tx_hash = [1u8; 32];
+        let validator = sp_core::crypto::AccountId32::from([0xff; 32]);
+        assert_ok!(Pallet::<Test>::forward_transaction(
+            frame_system::RawOrigin::Signed(validator.clone()).into(),
+            tx_hash,
+            vec![1, 2, 3],
+            256
+        ));
+        assert_err!(
+            Pallet::<Test>::forward_transaction(
+                frame_system::RawOrigin::Signed(validator).into(),
+                tx_hash,
+                vec![1, 2, 3],
+                256
+            ),
+            Error::<Test>::AlreadyForwarded
+        );
+    });
+}
+
+#[test]
+fn test_forward_unsigned_rejected() {
+    new_test_ext().execute_with(|| {
+        let tx_hash = [2u8; 32];
+        assert_err!(
+            Pallet::<Test>::forward_transaction(
+                frame_system::RawOrigin::None.into(),
+                tx_hash,
+                vec![1, 2, 3],
+                256
+            ),
+            sp_runtime::DispatchError::BadOrigin
+        );
+    });
+}
+
+#[test]
+fn test_mark_included_non_validator_rejected() {
+    new_test_ext().execute_with(|| {
+        frame_system::Pallet::<Test>::set_block_number(2);
+        let tx_hash = [3u8; 32];
+        let validator = sp_core::crypto::AccountId32::from([0xff; 32]);
+        let non_validator = sp_core::crypto::AccountId32::from([0xee; 32]);
+        assert_ok!(Pallet::<Test>::forward_transaction(
+            frame_system::RawOrigin::Signed(validator).into(),
+            tx_hash,
+            vec![1, 2, 3],
+            256
+        ));
+        assert_err!(
+            Pallet::<Test>::mark_included(
+                frame_system::RawOrigin::Signed(non_validator).into(),
+                tx_hash,
+                1,
+                100
+            ),
+            Error::<Test>::NotActiveValidator
+        );
+    });
+}
+
+#[test]
+fn test_mark_included_future_block_rejected() {
+    new_test_ext().execute_with(|| {
+        frame_system::Pallet::<Test>::set_block_number(10);
+        let tx_hash = [4u8; 32];
+        let validator = sp_core::crypto::AccountId32::from([0xff; 32]);
+        assert_ok!(Pallet::<Test>::forward_transaction(
+            frame_system::RawOrigin::Signed(validator.clone()).into(),
+            tx_hash,
+            vec![1, 2, 3],
+            256
+        ));
+        // block_number = 16 > current(10) + 5
+        assert_err!(
+            Pallet::<Test>::mark_included(
+                frame_system::RawOrigin::Signed(validator).into(),
+                tx_hash,
+                16,
+                100
+            ),
+            Error::<Test>::InvalidBlockNumber
+        );
+    });
+}
+
+#[test]
+fn test_mark_included_old_block_rejected() {
+    new_test_ext().execute_with(|| {
+        frame_system::Pallet::<Test>::set_block_number(10);
+        let tx_hash = [5u8; 32];
+        let validator = sp_core::crypto::AccountId32::from([0xff; 32]);
+        assert_ok!(Pallet::<Test>::forward_transaction(
+            frame_system::RawOrigin::Signed(validator.clone()).into(),
+            tx_hash,
+            vec![1, 2, 3],
+            256
+        ));
+        // block_number = 4 is more than 5 blocks older than current(10) (10 - 4 = 6 > 5)
+        assert_err!(
+            Pallet::<Test>::mark_included(
+                frame_system::RawOrigin::Signed(validator).into(),
+                tx_hash,
+                4,
+                100
+            ),
+            Error::<Test>::InvalidBlockNumber
+        );
+    });
+}
+
+#[test]
+fn test_expire_nonexistent_rejected() {
+    new_test_ext().execute_with(|| {
+        let tx_hash = [99u8; 32];
+        let caller = sp_core::crypto::AccountId32::from([0xff; 32]);
+        assert_err!(
+            Pallet::<Test>::expire_transaction(
+                frame_system::RawOrigin::Signed(caller).into(),
+                tx_hash
+            ),
+            Error::<Test>::TransactionNotFound
+        );
+    });
+}
+
+#[test]
+fn test_expire_already_included_rejected() {
+    new_test_ext().execute_with(|| {
+        frame_system::Pallet::<Test>::set_block_number(2);
+        let tx_hash = [6u8; 32];
+        let validator = sp_core::crypto::AccountId32::from([0xff; 32]);
+        assert_ok!(Pallet::<Test>::forward_transaction(
+            frame_system::RawOrigin::Signed(validator.clone()).into(),
+            tx_hash,
+            vec![1, 2, 3],
+            256
+        ));
+        assert_ok!(Pallet::<Test>::mark_included(
+            frame_system::RawOrigin::Signed(validator.clone()).into(),
+            tx_hash,
+            1,
+            100
+        ));
+        // Expire after included fails with TransactionNotFound
+        assert_err!(
+            Pallet::<Test>::expire_transaction(
+                frame_system::RawOrigin::Signed(validator).into(),
+                tx_hash
+            ),
+            Error::<Test>::TransactionNotFound
+        );
+    });
+}
+
+#[test]
+fn test_forward_and_expire_works() {
+    new_test_ext().execute_with(|| {
+        let tx_hash = [7u8; 32];
+        let caller = sp_core::crypto::AccountId32::from([0xff; 32]);
+        assert_ok!(Pallet::<Test>::forward_transaction(
+            frame_system::RawOrigin::Signed(caller.clone()).into(),
+            tx_hash,
+            vec![1, 2, 3],
+            256
+        ));
+        assert_eq!(Pallet::<Test>::get_pending_count(), 1);
+        assert_ok!(Pallet::<Test>::expire_transaction(
+            frame_system::RawOrigin::Signed(caller).into(),
+            tx_hash
+        ));
+        assert_eq!(Pallet::<Test>::get_pending_count(), 0);
+    });
+}
+
+#[test]
+fn test_mark_included_without_forward_rejected() {
+    new_test_ext().execute_with(|| {
+        frame_system::Pallet::<Test>::set_block_number(2);
+        let tx_hash = [88u8; 32];
+        let validator = sp_core::crypto::AccountId32::from([0xff; 32]);
+        assert_err!(
+            Pallet::<Test>::mark_included(
+                frame_system::RawOrigin::Signed(validator).into(),
+                tx_hash,
+                1,
+                100
+            ),
+            Error::<Test>::TransactionNotFound
+        );
+    });
+}
+
+#[test]
+fn test_get_stats_after_operations() {
+    new_test_ext().execute_with(|| {
+        frame_system::Pallet::<Test>::set_block_number(10);
+        let tx1 = [10u8; 32];
+        let tx2 = [20u8; 32];
+        let tx3 = [30u8; 32];
+        let validator = sp_core::crypto::AccountId32::from([0xff; 32]);
+
+        // Forward 3 transactions
+        assert_ok!(Pallet::<Test>::forward_transaction(
+            frame_system::RawOrigin::Signed(validator.clone()).into(),
+            tx1,
+            vec![1, 2, 3],
+            256
+        ));
+        assert_ok!(Pallet::<Test>::forward_transaction(
+            frame_system::RawOrigin::Signed(validator.clone()).into(),
+            tx2,
+            vec![1, 2, 3],
+            256
+        ));
+        assert_ok!(Pallet::<Test>::forward_transaction(
+            frame_system::RawOrigin::Signed(validator.clone()).into(),
+            tx3,
+            vec![1, 2, 3],
+            256
+        ));
+
+        // Mark tx1 included
+        assert_ok!(Pallet::<Test>::mark_included(
+            frame_system::RawOrigin::Signed(validator.clone()).into(),
+            tx1,
+            10,
+            100
+        ));
+
+        // Expire tx2
+        assert_ok!(Pallet::<Test>::expire_transaction(
+            frame_system::RawOrigin::Signed(validator).into(),
+            tx2
+        ));
+
+        let stats = Pallet::<Test>::get_stats();
+        assert_eq!(stats.total_forwarded, 3);
+        assert_eq!(stats.total_included, 1);
+        assert_eq!(stats.total_expired, 1);
+        assert_eq!(stats.current_pending, 1);
+        assert_eq!(stats.success_rate, 50);
+        assert_eq!(stats.avg_forward_time_ms, 100);
     });
 }

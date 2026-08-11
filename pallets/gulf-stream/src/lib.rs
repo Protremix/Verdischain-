@@ -192,7 +192,7 @@ pub mod pallet {
             // SECURITY: Only mark inclusion within a 5-block window — prevents
             // validators from retroactively marking txs as included in old blocks
             ensure!(
-                current_block.saturating_sub(block_number) <= 5,
+                block_number <= current_block && current_block - block_number <= 5,
                 Error::<T>::InvalidBlockNumber
             );
 
