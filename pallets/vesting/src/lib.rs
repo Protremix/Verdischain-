@@ -30,7 +30,6 @@ use frame_support::{
 use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
 use sp_arithmetic::traits::SaturatedConversion;
-use sp_runtime::traits::Saturating;
 
 use sp_std::prelude::*;
 

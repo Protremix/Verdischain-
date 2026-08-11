@@ -313,7 +313,7 @@ pub mod pallet {
         #[pallet::weight(Weight::from_parts(30_000_000, 0))]
         pub fn verify_storage(origin: OriginFor<T>, id: Vec<u8>, hash: [u8; 32]) -> DispatchResult {
             // SECURITY: Track who verified the storage
-            let who = ensure_signed(origin)?;
+            let _who = ensure_signed(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
                 id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;

@@ -31,7 +31,7 @@ use frame_support::{
 use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
 use sp_arithmetic::traits::SaturatedConversion;
-use sp_runtime::traits::{AccountIdConversion, Saturating};
+use sp_runtime::traits::AccountIdConversion;
 use sp_std::prelude::*;
 
 pub use pallet::*;
