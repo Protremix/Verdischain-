@@ -340,6 +340,23 @@ body:hover #cursor-glow{opacity:1}
 
 <script src="/polkadot-crypto-bundle.js"></script>
 <script>
+// Diagnostic: check if functions are defined
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    var status = document.createElement('div');
+    status.id = 'diag-status';
+    status.style.cssText = 'position:fixed;bottom:10px;left:10px;background:#1a1a1a;color:#0f0;padding:12px;border-radius:8px;font-family:monospace;font-size:12px;z-index:99999;max-width:400px';
+    var checks = [];
+    checks.push('PolkadotCrypto: ' + (typeof window.PolkadotCrypto));
+    checks.push('showCreate: ' + (typeof window.showCreate));
+    checks.push('generateWallet: ' + (typeof window.generateWallet));
+    checks.push('importWallet: ' + (typeof window.importWallet));
+    status.innerHTML = checks.join('<br>');
+    document.body.appendChild(status);
+  }, 2000);
+});
+</script>
+<script>
 // Debug: catch any module load errors
 window.addEventListener('error', (e) => {
   console.error('[Module Error]', e.message, e.filename, e.lineno);
@@ -923,7 +940,7 @@ window.delegateStake = async function(validatorAddr) {
 };
 
 // ===== QR Code (simple SVG pattern) =====
-function generateQR(text) {
+async function generateQR(text) {
   // Generate a simple visual QR-like pattern using the address hash
   const hash = await sha256Sync(new TextEncoder().encode(text));
   const cells = 21; // QR version 1

@@ -582,7 +582,7 @@ window.delegateStake = async function(validatorAddr) {
 };
 
 // ===== QR Code (simple SVG pattern) =====
-function generateQR(text) {
+async function generateQR(text) {
   // Generate a simple visual QR-like pattern using the address hash
   const hash = await sha256Sync(new TextEncoder().encode(text));
   const cells = 21; // QR version 1
