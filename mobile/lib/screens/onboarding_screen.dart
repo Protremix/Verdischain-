@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../services/wallet_service.dart';
 import '../widgets/verdis_button.dart';
@@ -259,15 +260,36 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: const Color(0xFF16a34a).withOpacity(0.3)),
               ),
-              child: Text(
+              child: SelectableText(
                 mnemonic,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   color: Colors.white,
                   height: 1.8,
                   letterSpacing: 0.5,
                 ),
                 textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: mnemonic));
+                  ScaffoldMessenger.of(dialogContext).showSnackBar(
+                    const SnackBar(
+                      content: Text('Mnemonic copied to clipboard'),
+                      duration: Duration(seconds: 2),
+                      backgroundColor: Color(0xFF0D1410),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.copy, size: 16, color: Color(0xFF16a34a)),
+                label: const Text('Copy to clipboard', style: TextStyle(color: Color(0xFF16a34a))),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF16a34a)),
+                ),
               ),
             ),
             const SizedBox(height: 12),
