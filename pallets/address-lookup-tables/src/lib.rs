@@ -76,6 +76,7 @@ pub mod pallet {
         MaxTablesExceeded,
         NotTableOwner,
         TableLimitReached,
+        IndexOutOfBounds,
     }
     #[pallet::call]
     impl<T: Config> Pallet<T> {
@@ -142,6 +143,11 @@ pub mod pallet {
         #[pallet::call_index(3)]
         pub fn lookup_address(origin: OriginFor<T>, table_id: u32, index: u32) -> DispatchResult {
             let _who = ensure_signed(origin)?;
+            // SECURITY: Reject lookups on deactivated tables
+            ensure!(TableActive::<T>::get(table_id), Error::<T>::TableNotActive);
+            // SECURITY: Bounds-check index against table entry count
+            let count = TableAddressCount::<T>::get(table_id);
+            ensure!(index < count, Error::<T>::IndexOutOfBounds);
             AltTotalLookups::<T>::mutate(|l| *l = l.saturating_add(1));
             AltBytesSaved::<T>::mutate(|b| *b = b.saturating_add(30));
             Self::deposit_event(Event::LookupPerformed {

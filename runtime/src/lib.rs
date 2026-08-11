@@ -575,6 +575,7 @@ impl pallet_dpos::Config for Runtime {
 parameter_types! {
     pub const DexPalletId: PalletId = PalletId(*b"verdisdx");
     pub const MaxPriceImpact: sp_runtime::Permill = sp_runtime::Permill::from_percent(10); // 10% max price impact per swap
+    pub const AmmMinimumLiquidity: u128 = 1_000;
     pub const FeeNumerator: u32 = 3;
     pub const FeeDenominator: u32 = 1000;
     pub const MinLiquidity: Balance = 1_000 * UNITS;
@@ -646,6 +647,7 @@ impl pallet_amm_dex::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type PalletId = DexPalletId;
+    type MinimumLiquidity = AmmMinimumLiquidity;
     type MaxPriceImpact = MaxPriceImpact;
     type FeeNumerator = FeeNumerator;
     type FeeDenominator = FeeDenominator;

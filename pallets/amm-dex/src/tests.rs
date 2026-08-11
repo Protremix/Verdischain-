@@ -67,6 +67,7 @@ parameter_types! {
     pub const FeeNumerator: u32 = 3;
     pub const FeeDenominator: u32 = 1000;
     pub const MaxPriceImpact: sp_runtime::Permill = sp_runtime::Permill::from_percent(10);
+    pub const AmmMinimumLiquidity: u128 = 1_000;
     pub const MinLiquidity: u128 = 100;
     pub const MaxPools: u32 = 50;
 }
@@ -155,6 +156,7 @@ impl crate::pallet::Config for Test {
     type FeeDenominator = FeeDenominator;
     type MinLiquidity = MinLiquidity;
     type MaxPools = MaxPools;
+    type MinimumLiquidity = AmmMinimumLiquidity;
     type MaxPriceImpact = MaxPriceImpact;
     type WeightInfo = ();
     type TokenHandler = Test;

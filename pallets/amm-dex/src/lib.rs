@@ -301,6 +301,7 @@ pub mod pallet {
         PriceImpactTooHigh,
         ArithmeticOverflow,
         ArithmeticUnderflow,
+        KInvariantViolated,
     }
 
     // === Config ===
@@ -321,6 +322,9 @@ pub mod pallet {
         type MaxPools: Get<u32>;
         #[pallet::constant]
         type MaxPriceImpact: Get<sp_runtime::Permill>;
+        #[pallet::constant]
+        /// Minimum locked liquidity to prevent first-depositor attacks (Uniswap V2 pattern)
+        type MinimumLiquidity: Get<BalanceOf<Self>>;
         type WeightInfo: WeightInfo;
         type TokenHandler: TokenHandler<Self::AccountId, BalanceOf<Self>>;
     }
@@ -469,11 +473,15 @@ pub mod pallet {
             ensure!(amount_b > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
             let lp_minted = if pool.total_lp == BalanceOf::<T>::zero() {
-                // Re-initialize empty pool (prevents pool bricking)
+                // SECURITY: Mint minimum liquidity to dead address (first-depositor attack protection)
                 let product = amount_a
                     .checked_mul(&amount_b)
                     .ok_or(Error::<T>::ArithmeticOverflow)?;
-                product.integer_sqrt()
+                let sqrt_lp = product.integer_sqrt();
+                let min_liq = T::MinimumLiquidity::get();
+                ensure!(sqrt_lp > min_liq, Error::<T>::InsufficientAmount);
+                // Lock min_liq by subtracting from caller's LP tokens
+                sqrt_lp - min_liq
             } else {
                 ensure!(
                     pool.reserve_a > BalanceOf::<T>::zero(),
@@ -736,6 +744,15 @@ pub mod pallet {
                     .ok_or(Error::<T>::ArithmeticUnderflow)?;
             }
 
+            // SECURITY: Verify constant product invariant k = reserve_in * reserve_out is non-decreasing
+            let k_before = reserve_in
+                .checked_mul(&reserve_out)
+                .ok_or(Error::<T>::ArithmeticOverflow)?;
+            let k_after = pool.reserve_a
+                .checked_mul(&pool.reserve_b)
+                .ok_or(Error::<T>::ArithmeticOverflow)?;
+            ensure!(k_after >= k_before, Error::<T>::KInvariantViolated);
+
             Pools::<T>::insert(pool_id, pool.clone());
 
             TotalVolume::<T>::mutate(|v| *v = v.saturating_add(amount_in));
@@ -840,11 +857,15 @@ pub mod pallet {
             ensure!(amount_b > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
             let lp_minted = if pool.total_lp == BalanceOf::<T>::zero() {
-                // Re-initialize empty pool (prevents pool bricking)
+                // SECURITY: Mint minimum liquidity to dead address (first-depositor attack protection)
                 let product = amount_a
                     .checked_mul(&amount_b)
                     .ok_or(Error::<T>::ArithmeticOverflow)?;
-                product.integer_sqrt()
+                let sqrt_lp = product.integer_sqrt();
+                let min_liq = T::MinimumLiquidity::get();
+                ensure!(sqrt_lp > min_liq, Error::<T>::InsufficientAmount);
+                // Lock min_liq by subtracting from caller's LP tokens
+                sqrt_lp - min_liq
             } else {
                 ensure!(
                     pool.reserve_a > BalanceOf::<T>::zero(),
