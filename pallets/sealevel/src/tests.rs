@@ -97,7 +97,8 @@ fn create_batch_max_size_exceeded_rejected() {
     new_test_ext().execute_with(|| {
         assert_noop!(
             Pallet::<Test>::create_batch(
-                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32]))
+                    .into(),
                 1001,
                 false
             ),
@@ -110,11 +111,7 @@ fn create_batch_max_size_exceeded_rejected() {
 fn create_batch_unsigned_rejected() {
     new_test_ext().execute_with(|| {
         assert_noop!(
-            Pallet::<Test>::create_batch(
-                frame_system::RawOrigin::None.into(),
-                10,
-                false
-            ),
+            Pallet::<Test>::create_batch(frame_system::RawOrigin::None.into(), 10, false),
             DispatchError::BadOrigin
         );
     });
@@ -125,7 +122,8 @@ fn report_execution_compute_budget_exceeded_rejected() {
     new_test_ext().execute_with(|| {
         assert_noop!(
             Pallet::<Test>::report_execution(
-                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32]))
+                    .into(),
                 0,
                 1000001,
                 5
@@ -139,12 +137,7 @@ fn report_execution_compute_budget_exceeded_rejected() {
 fn report_execution_unsigned_rejected() {
     new_test_ext().execute_with(|| {
         assert_noop!(
-            Pallet::<Test>::report_execution(
-                frame_system::RawOrigin::None.into(),
-                0,
-                5000,
-                5
-            ),
+            Pallet::<Test>::report_execution(frame_system::RawOrigin::None.into(), 0, 5000, 5),
             DispatchError::BadOrigin
         );
     });
@@ -154,12 +147,7 @@ fn report_execution_unsigned_rejected() {
 fn report_conflict_unsigned_rejected() {
     new_test_ext().execute_with(|| {
         assert_noop!(
-            Pallet::<Test>::report_conflict(
-                frame_system::RawOrigin::None.into(),
-                0,
-                1,
-                2
-            ),
+            Pallet::<Test>::report_conflict(frame_system::RawOrigin::None.into(), 0, 1, 2),
             DispatchError::BadOrigin
         );
     });

@@ -54,10 +54,15 @@ pub mod pallet {
         pub fn pause_pallet(origin: OriginFor<T>, pallet_name: Vec<u8>) -> DispatchResult {
             ensure_root(origin)?;
 
-            let name_bv: BoundedVec<u8, ConstU32<32>> =
-                pallet_name.clone().try_into().map_err(|_| Error::<T>::PalletNameTooLong)?;
+            let name_bv: BoundedVec<u8, ConstU32<32>> = pallet_name
+                .clone()
+                .try_into()
+                .map_err(|_| Error::<T>::PalletNameTooLong)?;
 
-            ensure!(!PausedPallets::<T>::get(&name_bv), Error::<T>::AlreadyPaused);
+            ensure!(
+                !PausedPallets::<T>::get(&name_bv),
+                Error::<T>::AlreadyPaused
+            );
             PausedPallets::<T>::insert(&name_bv, true);
 
             Self::deposit_event(Event::PalletPaused { pallet_name });
@@ -70,8 +75,10 @@ pub mod pallet {
         pub fn unpause_pallet(origin: OriginFor<T>, pallet_name: Vec<u8>) -> DispatchResult {
             ensure_root(origin)?;
 
-            let name_bv: BoundedVec<u8, ConstU32<32>> =
-                pallet_name.clone().try_into().map_err(|_| Error::<T>::PalletNameTooLong)?;
+            let name_bv: BoundedVec<u8, ConstU32<32>> = pallet_name
+                .clone()
+                .try_into()
+                .map_err(|_| Error::<T>::PalletNameTooLong)?;
 
             ensure!(PausedPallets::<T>::get(&name_bv), Error::<T>::NotPaused);
             PausedPallets::<T>::remove(&name_bv);
@@ -99,9 +106,7 @@ mod benchmarking;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use frame_support::{
-        assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types,
-    };
+    use frame_support::{assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types};
     use sp_io::TestExternalities;
     use sp_keyring::Sr25519Keyring;
     use sp_runtime::{traits::IdentityLookup, BuildStorage};
@@ -133,7 +138,9 @@ mod tests {
     }
 
     pub fn new_test_ext() -> TestExternalities {
-        let t = frame_system::GenesisConfig::<Test>::default().build_storage().unwrap();
+        let t = frame_system::GenesisConfig::<Test>::default()
+            .build_storage()
+            .unwrap();
         let mut ext = TestExternalities::new(t);
         ext.execute_with(|| System::set_block_number(1));
         ext
@@ -171,10 +178,7 @@ mod tests {
                 b"AmmDex".to_vec()
             ));
             assert_noop!(
-                CircuitBreaker::pause_pallet(
-                    RuntimeOrigin::root(),
-                    b"AmmDex".to_vec()
-                ),
+                CircuitBreaker::pause_pallet(RuntimeOrigin::root(), b"AmmDex".to_vec()),
                 Error::<Test>::AlreadyPaused
             );
         });
@@ -185,10 +189,7 @@ mod tests {
         new_test_ext().execute_with(|| {
             let long_name = vec![b'a'; 33];
             assert_noop!(
-                CircuitBreaker::pause_pallet(
-                    RuntimeOrigin::root(),
-                    long_name
-                ),
+                CircuitBreaker::pause_pallet(RuntimeOrigin::root(), long_name),
                 Error::<Test>::PalletNameTooLong
             );
         });
@@ -231,10 +232,7 @@ mod tests {
     fn test_unpause_not_paused_rejected() {
         new_test_ext().execute_with(|| {
             assert_noop!(
-                CircuitBreaker::unpause_pallet(
-                    RuntimeOrigin::root(),
-                    b"AmmDex".to_vec()
-                ),
+                CircuitBreaker::unpause_pallet(RuntimeOrigin::root(), b"AmmDex".to_vec()),
                 Error::<Test>::NotPaused
             );
         });
@@ -245,10 +243,7 @@ mod tests {
         new_test_ext().execute_with(|| {
             let long_name = vec![b'a'; 33];
             assert_noop!(
-                CircuitBreaker::unpause_pallet(
-                    RuntimeOrigin::root(),
-                    long_name
-                ),
+                CircuitBreaker::unpause_pallet(RuntimeOrigin::root(), long_name),
                 Error::<Test>::PalletNameTooLong
             );
         });
@@ -329,10 +324,7 @@ mod tests {
     #[test]
     fn test_pause_empty_name_works() {
         new_test_ext().execute_with(|| {
-            assert_ok!(CircuitBreaker::pause_pallet(
-                RuntimeOrigin::root(),
-                vec![]
-            ));
+            assert_ok!(CircuitBreaker::pause_pallet(RuntimeOrigin::root(), vec![]));
             assert!(CircuitBreaker::is_paused(b""));
         });
     }
@@ -341,10 +333,7 @@ mod tests {
     fn test_unpause_empty_name_not_paused_rejected() {
         new_test_ext().execute_with(|| {
             assert_noop!(
-                CircuitBreaker::unpause_pallet(
-                    RuntimeOrigin::root(),
-                    vec![]
-                ),
+                CircuitBreaker::unpause_pallet(RuntimeOrigin::root(), vec![]),
                 Error::<Test>::NotPaused
             );
         });

@@ -81,7 +81,8 @@ fn register_shard_max_shards_exceeded_rejected() {
     new_test_ext().execute_with(|| {
         assert_noop!(
             Pallet::<Test>::register_shard(
-                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32]))
+                    .into(),
                 1,
                 0,
                 257
@@ -96,7 +97,8 @@ fn rebuild_tree_non_root_rejected() {
     new_test_ext().execute_with(|| {
         assert_noop!(
             Pallet::<Test>::rebuild_tree(
-                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32]))
+                    .into(),
                 64
             ),
             DispatchError::BadOrigin
@@ -108,10 +110,7 @@ fn rebuild_tree_non_root_rejected() {
 fn rebuild_tree_zero_validators_rejected() {
     new_test_ext().execute_with(|| {
         assert_noop!(
-            Pallet::<Test>::rebuild_tree(
-                frame_system::RawOrigin::Root.into(),
-                0
-            ),
+            Pallet::<Test>::rebuild_tree(frame_system::RawOrigin::Root.into(), 0),
             Error::<Test>::NoValidators
         );
     });
@@ -144,12 +143,7 @@ fn mark_block_propagated_works() {
 fn register_shard_unsigned_rejected() {
     new_test_ext().execute_with(|| {
         assert_noop!(
-            Pallet::<Test>::register_shard(
-                frame_system::RawOrigin::None.into(),
-                1,
-                0,
-                10
-            ),
+            Pallet::<Test>::register_shard(frame_system::RawOrigin::None.into(), 1, 0, 10),
             DispatchError::BadOrigin
         );
     });

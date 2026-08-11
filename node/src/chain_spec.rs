@@ -199,7 +199,7 @@ pub fn dev_spec() -> VerdisChainSpec {
 fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     use verdis_runtime::{BabeConfig, BalancesConfig, GrandpaConfig, SessionConfig};
 
-        let eco_pool: AccountId = PalletId(*b"verdisec").into_account_truncating();
+    let eco_pool: AccountId = PalletId(*b"verdisec").into_account_truncating();
     let staking_pool: AccountId = PalletId(*b"verdisdp").into_account_truncating();
     let treasury_account: AccountId = PalletId(*b"verdist0").into_account_truncating();
     let dev_pool: AccountId = PalletId(*b"verdisdv").into_account_truncating();
@@ -235,8 +235,11 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
         // Team & Advisors (5B) minus 6 validator stakes (6 * 10.001M = 60.006M)
-        (PalletId(*b"verdistm").into_account_truncating(), 5 * bn - 6 * 10_001_000 * u),
-            ];
+        (
+            PalletId(*b"verdistm").into_account_truncating(),
+            5 * bn - 6 * 10_001_000 * u,
+        ),
+    ];
     // Fund ALL 6 validators with stake + existential deposit
     for uri in uris.iter() {
         let acct: AccountId = match *uri {
@@ -323,7 +326,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             balances,
             dev_accounts: None,
         },
-                transaction_payment: Default::default(),
+        transaction_payment: Default::default(),
         babe: BabeConfig {
             authorities: vec![],
             epoch_config: sp_consensus_babe::BabeEpochConfiguration {
@@ -375,12 +378,48 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         treasury: Default::default(),
         amm_dex: pallet_amm_dex::GenesisConfig {
             initial_pools: vec![
-                (b"VRDX".to_vec(), b"ECO".to_vec(), 500_000 * u, 500_000 * u, 3),
-                (b"VRDX".to_vec(), b"CARBON".to_vec(), 300_000 * u, 300_000 * u, 3),
-                (b"VRDX".to_vec(), b"TREE".to_vec(), 200_000 * u, 200_000 * u, 3),
-                (b"VRDX".to_vec(), b"GREEN".to_vec(), 200_000 * u, 200_000 * u, 3),
-                (b"ECO".to_vec(), b"CARBON".to_vec(), 100_000 * u, 100_000 * u, 3),
-                (b"VRDX".to_vec(), b"REDD".to_vec(), 100_000 * u, 100_000 * u, 3),
+                (
+                    b"VRDX".to_vec(),
+                    b"ECO".to_vec(),
+                    500_000 * u,
+                    500_000 * u,
+                    3,
+                ),
+                (
+                    b"VRDX".to_vec(),
+                    b"CARBON".to_vec(),
+                    300_000 * u,
+                    300_000 * u,
+                    3,
+                ),
+                (
+                    b"VRDX".to_vec(),
+                    b"TREE".to_vec(),
+                    200_000 * u,
+                    200_000 * u,
+                    3,
+                ),
+                (
+                    b"VRDX".to_vec(),
+                    b"GREEN".to_vec(),
+                    200_000 * u,
+                    200_000 * u,
+                    3,
+                ),
+                (
+                    b"ECO".to_vec(),
+                    b"CARBON".to_vec(),
+                    100_000 * u,
+                    100_000 * u,
+                    3,
+                ),
+                (
+                    b"VRDX".to_vec(),
+                    b"REDD".to_vec(),
+                    100_000 * u,
+                    100_000 * u,
+                    3,
+                ),
             ],
             _phantom: Default::default(),
         },
@@ -414,7 +453,7 @@ pub fn testnet_spec() -> VerdisChainSpec {
 fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     use verdis_runtime::{BabeConfig, BalancesConfig, GrandpaConfig, SessionConfig};
 
-        let eco_pool: AccountId = PalletId(*b"verdisec").into_account_truncating();
+    let eco_pool: AccountId = PalletId(*b"verdisec").into_account_truncating();
     let staking_pool: AccountId = PalletId(*b"verdisdp").into_account_truncating();
     let treasury_account: AccountId = PalletId(*b"verdist0").into_account_truncating();
     let dev_pool: AccountId = PalletId(*b"verdisdv").into_account_truncating();
@@ -450,8 +489,11 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
         // Team & Advisors (5B) minus validator funding (6*10.001M + 15*1.001M = 75.021M)
-        (PalletId(*b"verdistm").into_account_truncating(), 5 * bn - 6 * 10_001_000 * u - 15 * 1_001_000 * u),
-            ];
+        (
+            PalletId(*b"verdistm").into_account_truncating(),
+            5 * bn - 6 * 10_001_000 * u - 15 * 1_001_000 * u,
+        ),
+    ];
     // Fund validators: 6 active (10.001M each) + 15 standby (1.001M each)
     for (i, uri) in uris.iter().enumerate() {
         let acct: AccountId = match *uri {
@@ -629,7 +671,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             balances,
             dev_accounts: None,
         },
-                transaction_payment: Default::default(),
+        transaction_payment: Default::default(),
         babe: BabeConfig {
             authorities: vec![],
             epoch_config: sp_consensus_babe::BabeEpochConfiguration {
@@ -794,7 +836,10 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (community_pool, 5 * bn),
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
-        (team_multisig.clone(), 5 * bn - 6 * 10_001_000 * u - 15 * 1_001_000 * u),  // Team (5B) minus validator funding (6 active + 15 standby)
+        (
+            team_multisig.clone(),
+            5 * bn - 6 * 10_001_000 * u - 15 * 1_001_000 * u,
+        ), // Team (5B) minus validator funding (6 active + 15 standby)
     ];
     // Fund validators: 6 active (10.001M each) + 15 standby (1.001M each)
     for (i, uri) in uris.iter().enumerate() {
@@ -838,7 +883,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             balances,
             dev_accounts: None,
         },
-                transaction_payment: Default::default(),
+        transaction_payment: Default::default(),
         babe: BabeConfig {
             authorities: vec![],
             epoch_config: sp_consensus_babe::BabeEpochConfiguration {

@@ -610,21 +610,21 @@ fn prop_constant_product_monotonic_across_many_swaps() {
         };
 
         for i in 0..50 {
-            let token = if i % 2 == 0 { token_a.clone() } else { token_b.clone() };
-            let result = AmmDex::swap(
-                RuntimeOrigin::signed(bob()),
-                0,
-                token,
-                1_000,
-                0,
-            );
+            let token = if i % 2 == 0 {
+                token_a.clone()
+            } else {
+                token_b.clone()
+            };
+            let result = AmmDex::swap(RuntimeOrigin::signed(bob()), 0, token, 1_000, 0);
             if result.is_ok() {
                 let pool = Pools::<Test>::get(0).unwrap();
                 let k = pool.reserve_a * pool.reserve_b;
                 assert!(
                     k >= last_k,
                     "CONSTANT PRODUCT DECREASED at swap {}: k_prev={}, k_new={}",
-                    i, last_k, k
+                    i,
+                    last_k,
+                    k
                 );
                 last_k = k;
             }
@@ -795,13 +795,7 @@ fn prop_zero_amount_swap_rejected() {
         ));
 
         assert_noop!(
-            AmmDex::swap(
-                RuntimeOrigin::signed(bob()),
-                0,
-                token_a.clone(),
-                0,
-                0,
-            ),
+            AmmDex::swap(RuntimeOrigin::signed(bob()), 0, token_a.clone(), 0, 0,),
             Error::<Test>::ZeroAmount
         );
     });
@@ -889,7 +883,11 @@ fn test_k_invariant_after_multiple_swaps() {
 
         // Alternate swaps back and forth
         for i in 0..10 {
-            let token_in = if i % 2 == 0 { b"VRS".to_vec() } else { b"ECO".to_vec() };
+            let token_in = if i % 2 == 0 {
+                b"VRS".to_vec()
+            } else {
+                b"ECO".to_vec()
+            };
             assert_ok!(AmmDex::swap(
                 RuntimeOrigin::signed(bob()),
                 0,
@@ -923,13 +921,7 @@ fn test_swap_zero_amount_rejected() {
         ));
 
         assert_noop!(
-            AmmDex::swap(
-                RuntimeOrigin::signed(bob()),
-                0,
-                b"VRS".to_vec(),
-                0,
-                0,
-            ),
+            AmmDex::swap(RuntimeOrigin::signed(bob()), 0, b"VRS".to_vec(), 0, 0,),
             Error::<Test>::ZeroAmount
         );
     });
@@ -977,13 +969,7 @@ fn test_price_impact_circuit_breaker() {
         // MaxPriceImpact is 10%, so max swap = 100,000 * 10% = 10,000
         // Try to swap 50,000 (50% of pool) — should be rejected
         assert_noop!(
-            AmmDex::swap(
-                RuntimeOrigin::signed(bob()),
-                0,
-                b"VRS".to_vec(),
-                50_000,
-                0,
-            ),
+            AmmDex::swap(RuntimeOrigin::signed(bob()), 0, b"VRS".to_vec(), 50_000, 0,),
             Error::<Test>::PriceImpactTooHigh
         );
     });
@@ -1003,11 +989,7 @@ fn test_remove_liquidity_insufficient_lp() {
 
         // Bob has no LP tokens, tries to remove liquidity
         assert_noop!(
-            AmmDex::remove_liquidity(
-                RuntimeOrigin::signed(bob()),
-                0,
-                10_000,
-            ),
+            AmmDex::remove_liquidity(RuntimeOrigin::signed(bob()), 0, 10_000,),
             Error::<Test>::InsufficientLpBalance
         );
     });
@@ -1026,12 +1008,7 @@ fn test_add_liquidity_zero_amount_rejected() {
         ));
 
         assert_noop!(
-            AmmDex::add_liquidity(
-                RuntimeOrigin::signed(bob()),
-                0,
-                0,
-                10_000,
-            ),
+            AmmDex::add_liquidity(RuntimeOrigin::signed(bob()), 0, 0, 10_000,),
             Error::<Test>::ZeroAmount
         );
     });

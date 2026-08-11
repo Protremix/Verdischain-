@@ -1,6 +1,6 @@
 use crate::*;
 use frame_support::{
-    assert_ok, assert_err, construct_runtime, derive_impl, parameter_types,
+    assert_err, assert_ok, construct_runtime, derive_impl, parameter_types,
     traits::{ConstU128, ConstU32, ConstU64},
 };
 
@@ -266,7 +266,7 @@ fn transfer_fails_on_frozen_client() {
             0,
             vec![0xaa; 32],
             1000000,
-            b"VRDX".to_vec()
+            b"VRDX".to_vec(),
         );
         assert!(result.is_err());
     });
@@ -316,11 +316,7 @@ fn timeout_packet_not_yet_expired_fails() {
         // Block 1, timeout is at 1000 — should fail
         frame_system::Pallet::<Test>::set_block_number(1);
         assert_err!(
-            Pallet::<Test>::timeout_packet(
-                frame_system::RawOrigin::Signed(acct).into(),
-                0,
-                1
-            ),
+            Pallet::<Test>::timeout_packet(frame_system::RawOrigin::Signed(acct).into(), 0, 1),
             Error::<Test>::PacketTimeout
         );
         assert!(IbcPackets::<Test>::get((0, 1)).is_some());
@@ -339,7 +335,7 @@ fn send_packet_with_timestamp_timeout_works() {
             b"transfer".to_vec(),
             vec![1, 2, 3],
             10000,
-            0  // no timestamp timeout, only height
+            0 // no timestamp timeout, only height
         ));
         assert_eq!(IbcNextSequenceSend::<Test>::get(0), 2);
         let packet = IbcPackets::<Test>::get((0, 1)).unwrap();
@@ -380,11 +376,7 @@ fn test_unauthorized_connection_opening_rejected() {
         ));
 
         frame_support::assert_noop!(
-            Pallet::<Test>::open_connection(
-                frame_system::RawOrigin::Signed(acct).into(),
-                0,
-                1
-            ),
+            Pallet::<Test>::open_connection(frame_system::RawOrigin::Signed(acct).into(), 0, 1),
             sp_runtime::DispatchError::BadOrigin
         );
     });
@@ -506,7 +498,7 @@ fn test_send_packet_past_timeout_rejected() {
                 b"transfer".to_vec(),
                 b"transfer".to_vec(),
                 b"data".to_vec(),
-                0,  // past timeout height
+                0, // past timeout height
                 0
             ),
             Error::<Test>::PacketTimeout
@@ -532,12 +524,7 @@ fn test_open_channel_port_id_too_long_rejected() {
 
         let long_port = vec![b'X'; 200]; // MaxPortIdLen = 128
         frame_support::assert_noop!(
-            Pallet::<Test>::open_channel(
-                frame_system::RawOrigin::Root.into(),
-                0,
-                1,
-                long_port
-            ),
+            Pallet::<Test>::open_channel(frame_system::RawOrigin::Root.into(), 0, 1, long_port),
             Error::<Test>::PortIdTooLong
         );
     });
@@ -548,11 +535,7 @@ fn test_open_channel_port_id_too_long_rejected() {
 fn test_open_connection_nonexistent_client_rejected() {
     new_test_ext().execute_with(|| {
         frame_support::assert_noop!(
-            Pallet::<Test>::open_connection(
-                frame_system::RawOrigin::Root.into(),
-                999,
-                1
-            ),
+            Pallet::<Test>::open_connection(frame_system::RawOrigin::Root.into(), 999, 1),
             Error::<Test>::ClientNotFound
         );
     });
@@ -593,11 +576,7 @@ fn test_open_connection_frozen_client_rejected() {
 
         // Try to open connection on frozen client
         frame_support::assert_noop!(
-            Pallet::<Test>::open_connection(
-                frame_system::RawOrigin::Root.into(),
-                0,
-                1
-            ),
+            Pallet::<Test>::open_connection(frame_system::RawOrigin::Root.into(), 0, 1),
             Error::<Test>::ClientFrozen
         );
     });
@@ -629,11 +608,7 @@ fn test_timeout_nonexistent_packet_rejected() {
         setup_chain();
 
         frame_support::assert_noop!(
-            Pallet::<Test>::timeout_packet(
-                frame_system::RawOrigin::Signed(acct).into(),
-                0,
-                999
-            ),
+            Pallet::<Test>::timeout_packet(frame_system::RawOrigin::Signed(acct).into(), 0, 999),
             Error::<Test>::PacketNotFound
         );
     });
@@ -646,10 +621,7 @@ fn test_close_channel_non_root_rejected() {
         let acct = sp_core::crypto::AccountId32::from([0xff; 32]);
         // close_channel requires root — non-root must be rejected
         frame_support::assert_noop!(
-            Pallet::<Test>::close_channel(
-                frame_system::RawOrigin::Signed(acct).into(),
-                999
-            ),
+            Pallet::<Test>::close_channel(frame_system::RawOrigin::Signed(acct).into(), 999),
             sp_runtime::DispatchError::BadOrigin
         );
     });

@@ -61,12 +61,12 @@ use frame_system::EnsureRoot;
 // === Verdis Custom Pallets ===
 pub use pallet_address_lookup_tables;
 pub use pallet_amm_dex;
+pub use pallet_circuit_breaker;
 pub use pallet_dpos;
 pub use pallet_eco;
 pub use pallet_fungible_tokens;
 pub use pallet_gulf_stream;
 pub use pallet_ibc;
-pub use pallet_circuit_breaker;
 pub use pallet_poh;
 pub use pallet_presale;
 pub use pallet_sealevel;
@@ -165,14 +165,42 @@ impl frame_support::traits::Contains<RuntimeCall> for VerdisBaseCallFilter {
     fn contains(call: &RuntimeCall) -> bool {
         match call {
             // Circuit breaker: check if the pallet is paused by governance
-            RuntimeCall::Ibc(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Ibc") => false,
-            RuntimeCall::AmmDex(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"AmmDex") => false,
-            RuntimeCall::Dpos(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Dpos") => false,
-            RuntimeCall::Storage(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Storage") => false,
-            RuntimeCall::Eco(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Eco") => false,
-            RuntimeCall::Presale(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Presale") => false,
-            RuntimeCall::AddressLookupTables(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"AddressLookupTables") => false,
-            RuntimeCall::GulfStream(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"GulfStream") => false,
+            RuntimeCall::Ibc(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Ibc") => {
+                false
+            }
+            RuntimeCall::AmmDex(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"AmmDex") =>
+            {
+                false
+            }
+            RuntimeCall::Dpos(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Dpos") =>
+            {
+                false
+            }
+            RuntimeCall::Storage(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Storage") =>
+            {
+                false
+            }
+            RuntimeCall::Eco(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Eco") => {
+                false
+            }
+            RuntimeCall::Presale(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Presale") =>
+            {
+                false
+            }
+            RuntimeCall::AddressLookupTables(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"AddressLookupTables") =>
+            {
+                false
+            }
+            RuntimeCall::GulfStream(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"GulfStream") =>
+            {
+                false
+            }
             // Recursively check Utility batch calls for nested dangerous calls
             RuntimeCall::Utility(pallet_utility::Call::batch { calls })
             | RuntimeCall::Utility(pallet_utility::Call::batch_all { calls })
@@ -446,7 +474,6 @@ impl pallet_transaction_payment::Config for Runtime {
     type FeeMultiplierUpdate = ();
     type WeightInfo = ();
 }
-
 
 // === Scheduler ===
 impl pallet_scheduler::Config for Runtime {

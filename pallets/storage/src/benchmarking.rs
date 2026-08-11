@@ -100,10 +100,7 @@ mod benches {
             1024,
             hash,
         );
-        let _ = Pallet::<T>::request_pin(
-            RawOrigin::Signed(caller.clone()).into(),
-            id.clone(),
-        );
+        let _ = Pallet::<T>::request_pin(RawOrigin::Signed(caller.clone()).into(), id.clone());
 
         #[extrinsic_call]
         remove_pin(RawOrigin::Signed(caller.clone()), id.clone());

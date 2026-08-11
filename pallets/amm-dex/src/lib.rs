@@ -303,6 +303,7 @@ pub mod pallet {
         ArithmeticOverflow,
         ArithmeticUnderflow,
         KInvariantViolated,
+        Overflow,
     }
 
     // === Config ===
@@ -356,7 +357,9 @@ pub mod pallet {
                     reserve_a: *reserve_a,
                     reserve_b: *reserve_b,
                     total_lp: {
-                        let p = reserve_a.checked_mul(reserve_b).expect("pool reserve overflow at genesis");
+                        let p = reserve_a
+                            .checked_mul(reserve_b)
+                            .expect("pool reserve overflow at genesis");
                         p.integer_sqrt()
                     },
                     fee_numerator: *fee,
@@ -546,9 +549,11 @@ pub mod pallet {
             LiquidityProviders::<T>::mutate(pool_id, &who, |lp| {
                 *lp = Some(
                     lp.unwrap_or(BalanceOf::<T>::zero())
-                        .saturating_add(lp_minted),
+                        .checked_add(&lp_minted)
+                        .ok_or(Error::<T>::Overflow)?,
                 );
-            });
+                Ok::<(), Error<T>>(())
+            })?;
 
             Self::deposit_event(Event::LiquidityAdded {
                 pool_id,
@@ -624,9 +629,11 @@ pub mod pallet {
             LiquidityProviders::<T>::mutate(pool_id, &who, |lp| {
                 *lp = Some(
                     lp.unwrap_or(BalanceOf::<T>::zero())
-                        .saturating_sub(lp_amount),
+                        .checked_sub(&lp_amount)
+                        .ok_or(Error::<T>::Overflow)?,
                 );
-            });
+                Ok::<(), Error<T>>(())
+            })?;
 
             Self::deposit_event(Event::LiquidityRemoved {
                 pool_id,
@@ -749,7 +756,8 @@ pub mod pallet {
             let k_before = reserve_in
                 .checked_mul(&reserve_out)
                 .ok_or(Error::<T>::ArithmeticOverflow)?;
-            let k_after = pool.reserve_a
+            let k_after = pool
+                .reserve_a
                 .checked_mul(&pool.reserve_b)
                 .ok_or(Error::<T>::ArithmeticOverflow)?;
             ensure!(k_after >= k_before, Error::<T>::KInvariantViolated);
@@ -928,9 +936,11 @@ pub mod pallet {
             TokenLiquidityProviders::<T>::mutate(pool_id, &who, |lp| {
                 *lp = Some(
                     lp.unwrap_or(BalanceOf::<T>::zero())
-                        .saturating_add(lp_minted),
+                        .checked_add(&lp_minted)
+                        .ok_or(Error::<T>::Overflow)?,
                 );
-            });
+                Ok::<(), Error<T>>(())
+            })?;
 
             Self::deposit_event(Event::TokenLiquidityAdded {
                 pool_id,
@@ -994,9 +1004,11 @@ pub mod pallet {
             TokenLiquidityProviders::<T>::mutate(pool_id, &who, |lp| {
                 *lp = Some(
                     lp.unwrap_or(BalanceOf::<T>::zero())
-                        .saturating_sub(lp_amount),
+                        .checked_sub(&lp_amount)
+                        .ok_or(Error::<T>::Overflow)?,
                 );
-            });
+                Ok::<(), Error<T>>(())
+            })?;
 
             Self::deposit_event(Event::TokenLiquidityRemoved {
                 pool_id,

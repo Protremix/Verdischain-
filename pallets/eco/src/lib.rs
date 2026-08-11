@@ -784,10 +784,7 @@ pub mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             assert_noop!(
-                Eco::verify_carbon_credit(
-                    RuntimeOrigin::signed(alice),
-                    b"c1".to_vec(),
-                ),
+                Eco::verify_carbon_credit(RuntimeOrigin::signed(alice), b"c1".to_vec(),),
                 sp_runtime::DispatchError::BadOrigin
             );
         });
@@ -798,10 +795,7 @@ pub mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             assert_noop!(
-                Eco::retire_carbon_credit(
-                    RuntimeOrigin::signed(alice),
-                    b"nonexistent".to_vec(),
-                ),
+                Eco::retire_carbon_credit(RuntimeOrigin::signed(alice), b"nonexistent".to_vec(),),
                 Error::<Test>::CreditNotFound
             );
         });
@@ -836,17 +830,10 @@ pub mod tests {
                 100,
             )
             .unwrap();
-            Eco::retire_carbon_credit(
-                RuntimeOrigin::signed(alice.clone()),
-                b"c1".to_vec(),
-            )
-            .unwrap();
+            Eco::retire_carbon_credit(RuntimeOrigin::signed(alice.clone()), b"c1".to_vec())
+                .unwrap();
             assert_noop!(
-                Eco::transfer_carbon_credit(
-                    RuntimeOrigin::signed(alice),
-                    b"c1".to_vec(),
-                    bob,
-                ),
+                Eco::transfer_carbon_credit(RuntimeOrigin::signed(alice), b"c1".to_vec(), bob,),
                 Error::<Test>::CreditAlreadyRetired
             );
         });
@@ -867,11 +854,7 @@ pub mod tests {
             )
             .unwrap();
             assert_noop!(
-                Eco::transfer_carbon_credit(
-                    RuntimeOrigin::signed(bob),
-                    b"c1".to_vec(),
-                    charlie,
-                ),
+                Eco::transfer_carbon_credit(RuntimeOrigin::signed(bob), b"c1".to_vec(), charlie,),
                 Error::<Test>::NotCreditOwner
             );
         });
@@ -996,11 +979,7 @@ pub mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             assert_noop!(
-                Eco::update_green_score(
-                    RuntimeOrigin::signed(alice.clone()),
-                    alice,
-                    95,
-                ),
+                Eco::update_green_score(RuntimeOrigin::signed(alice.clone()), alice, 95,),
                 sp_runtime::DispatchError::BadOrigin
             );
         });
@@ -1011,11 +990,7 @@ pub mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             assert_noop!(
-                Eco::update_green_score(
-                    RuntimeOrigin::root(),
-                    alice,
-                    95,
-                ),
+                Eco::update_green_score(RuntimeOrigin::root(), alice, 95,),
                 Error::<Test>::ValidatorNotFound
             );
         });

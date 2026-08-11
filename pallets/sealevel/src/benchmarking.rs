@@ -14,11 +14,7 @@ mod benches {
     fn create_batch() {
         let caller: T::AccountId = whitelisted_caller();
         #[extrinsic_call]
-        create_batch(
-            RawOrigin::Signed(caller.clone()),
-            10,
-            false,
-        );
+        create_batch(RawOrigin::Signed(caller.clone()), 10, false);
 
         assert!(SealevelTotalBatches::<T>::get() > 0);
     }
@@ -26,19 +22,10 @@ mod benches {
     #[benchmark]
     fn report_execution() {
         let caller: T::AccountId = whitelisted_caller();
-        let _ = Pallet::<T>::create_batch(
-            RawOrigin::Signed(caller.clone()).into(),
-            10,
-            false,
-        );
+        let _ = Pallet::<T>::create_batch(RawOrigin::Signed(caller.clone()).into(), 10, false);
 
         #[extrinsic_call]
-        report_execution(
-            RawOrigin::Signed(caller.clone()),
-            0,
-            1000,
-            10,
-        );
+        report_execution(RawOrigin::Signed(caller.clone()), 0, 1000, 10);
 
         assert!(SealevelTotalTxs::<T>::get() > 0);
     }
@@ -46,19 +33,10 @@ mod benches {
     #[benchmark]
     fn report_conflict() {
         let caller: T::AccountId = whitelisted_caller();
-        let _ = Pallet::<T>::create_batch(
-            RawOrigin::Signed(caller.clone()).into(),
-            10,
-            true,
-        );
+        let _ = Pallet::<T>::create_batch(RawOrigin::Signed(caller.clone()).into(), 10, true);
 
         #[extrinsic_call]
-        report_conflict(
-            RawOrigin::Signed(caller.clone()),
-            0,
-            0,
-            1,
-        );
+        report_conflict(RawOrigin::Signed(caller.clone()), 0, 0, 1);
 
         assert!(SealevelConflicts::<T>::get() > 0);
     }

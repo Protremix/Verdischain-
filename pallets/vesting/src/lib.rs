@@ -255,7 +255,8 @@ pub mod pallet {
 
             for v in &vesting {
                 let elapsed_blocks: u32 = current_block
-                    .saturating_sub(v.start_block)
+                    .checked_sub(&v.start_block)
+                    .ok_or(Error::<T>::Overflow)?
                     .try_into()
                     .unwrap_or(0);
                 let elapsed_days = elapsed_blocks / blocks_per_day;
@@ -270,12 +271,18 @@ pub mod pallet {
                 let vested = if elapsed_days >= schedule.vesting_days {
                     v.total_amount
                 } else {
-                    v.total_amount.saturating_mul(elapsed_days.saturated_into())
+                    v.total_amount
+                        .checked_mul(&elapsed_days.saturated_into())
+                        .ok_or(Error::<T>::Overflow)?
                         / schedule.vesting_days.saturated_into()
                 };
 
-                let releasable = vested.saturating_sub(v.released);
-                total_releasable = total_releasable.saturating_add(releasable);
+                let releasable = vested
+                    .checked_sub(&v.released)
+                    .ok_or(Error::<T>::Overflow)?;
+                total_releasable = total_releasable
+                    .checked_add(&releasable)
+                    .ok_or(Error::<T>::Overflow)?;
             }
 
             ensure!(
@@ -284,11 +291,12 @@ pub mod pallet {
             );
 
             // Update vesting records
-            UserVestings::<T>::mutate(&who, |vests| {
+            UserVestings::<T>::try_mutate(&who, |vests| -> Result<(), Error<T>> {
                 if let Some(vests) = vests {
                     for v in vests.iter_mut() {
                         let elapsed_blocks: u32 = current_block
-                            .saturating_sub(v.start_block)
+                            .checked_sub(&v.start_block)
+                            .ok_or(Error::<T>::Overflow)?
                             .try_into()
                             .unwrap_or(0);
                         let elapsed_days = elapsed_blocks / blocks_per_day;
@@ -298,17 +306,24 @@ pub mod pallet {
                                 let vested = if elapsed_days >= s.vesting_days {
                                     v.total_amount
                                 } else {
-                                    v.total_amount.saturating_mul(elapsed_days.saturated_into())
+                                    v.total_amount
+                                        .checked_mul(&elapsed_days.saturated_into())
+                                        .ok_or(Error::<T>::Overflow)?
                                         / s.vesting_days.saturated_into()
                                 };
                                 v.vested = vested;
-                                let releasable = vested.saturating_sub(v.released);
-                                v.released = v.released.saturating_add(releasable);
+                                let releasable = vested
+                                    .checked_sub(&v.released)
+                                    .ok_or(Error::<T>::Overflow)?;
+                                v.released = v.released
+                                    .checked_add(&releasable)
+                                    .ok_or(Error::<T>::Overflow)?;
                             }
                         }
                     }
                 }
-            });
+                Ok(())
+            })?;
 
             // Reduce locked balance tracking
             let new_locked = LockedBalances::<T>::get(&who)
@@ -399,7 +414,9 @@ pub mod pallet {
 
         /// Get the unlocked (free) balance for an account
         pub fn get_unlocked_balance(who: &T::AccountId) -> BalanceOf<T> {
-            T::Currency::free_balance(who).saturating_sub(LockedBalances::<T>::get(who))
+            T::Currency::free_balance(who)
+                .checked_sub(&LockedBalances::<T>::get(who))
+                .unwrap_or(0u32.into())
         }
     }
 

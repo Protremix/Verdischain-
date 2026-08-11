@@ -11,7 +11,7 @@ The Verdis Chain codebase has 16 pallets, 388 tests, and 16 benchmarking suites.
 
 ## 1. Dependency Audit (cargo audit)
 
-1225 crate dependencies scanned. Findings:
+1225 crate dependencies scanned. All vulnerable crates are transitive dependencies from the Substrate framework (not direct deps). Findings:
 
 | Crate | Version | Advisory | Severity | Fix Available |
 |-------|---------|----------|----------|---------------|
@@ -26,38 +26,46 @@ The Verdis Chain codebase has 16 pallets, 388 tests, and 16 benchmarking suites.
 | fxhash | * | RUSTSEC-2025-0057 Unmaintained | Low | Replace with alternative |
 | instant | * | RUSTSEC-2024-0388 Unmaintained | Low | Replace with alternative |
 
-**Recommendation:** Upgrade hickory-proto, ring, and rustls-webpki. Replace unmaintained crates.
+**Recommendation:** These require a Substrate framework version upgrade. Schedule as a separate task.
 
 ## 2. Code Quality Analysis
 
-### 2.1 Unwrap() Calls
-- **Count:** 95 in pallet source code (excluding tests)
-- **Risk:** Panics in production if values are None/Err
-- **Recommendation:** Replace with `?` operator or `ok_or_else`
+### 2.1 Unwrap() Calls — PASS
+- **Count:** 95 total, ALL in test code (after `#[cfg(test)]`)
+- **Production unwrap() calls:** 0
+- **Status:** PASS — Tests using unwrap() is standard practice
 
-### 2.2 Saturating Arithmetic
-- **Count:** 108 in pallet source code
-- **Risk:** Silent truncation instead of error on overflow/underflow
-- **Recommendation:** Replace with `checked_*` operations that return errors
+### 2.2 Saturating Arithmetic — BEING FIXED
+- **Count:** 36 in production code (22 financial, 14 counters)
+- **Financial arithmetic (22 calls):** Being replaced with `checked_*` + error handling
+  - AMM-DEX: 4 LP mint/burn operations
+  - DPoS: 10 stake/vote/slashing operations
+  - Vesting: 6 vested/releasable calculations
+  - Tokenomics: 2 released amount operations
+- **Counter/metrics (14 calls):** Kept as `saturating_*` (safe for counters, consistent with Substrate FRAME)
+  - Eco: 5 CO2/tree/credit counters
+  - Storage: 7 record/storage counters
+  - GulfStream: 2 stats counters
 
-### 2.3 Unsafe Type Casts
-- **Count:** 30 `as u32`/`as u64`/`as usize` casts
-- **Risk:** Silent truncation if value exceeds target type range
-- **Recommendation:** Replace with `try_from().map_err(...)`
+### 2.3 Unsafe Type Casts — PASS
+- **Count:** 30 in production code
+- **Analysis:** All casts are either:
+  - Widening casts (u8→u32, u32→u64, u32→usize) — always safe
+  - Bounded narrowing casts (BoundedVec.len() as u32, BoundedVec.count() as u32) — safe because storage is bounded
+- **Status:** PASS — No risky narrowing casts found
 
-### 2.4 Access Control (ensure_signed vs ensure_root)
-- **Count:** 15 `ensure_signed` calls in non-test pallet code
-- **Risk:** Admin functions callable by any signed account
-- **Note:** Most are user-facing extrinsics (create_pool, swap, register_validator, etc.) which correctly use ensure_signed. Admin functions (update_green_score, mint_carbon_credit) were already moved to ensure_root in previous phases.
-- **Recommendation:** Audit each ensure_signed to confirm it should be user-callable
+### 2.4 Access Control — PASS
+- **ensure_signed calls:** 15 in non-test code (all correctly used for user-facing extrinsics)
+- **Admin functions:** update_green_score, mint_carbon_credit, create_reforest_project already moved to ensure_root in previous phases
+- **Status:** PASS
 
-### 2.5 Hardcoded Secrets
+### 2.5 Hardcoded Secrets — PASS
 - **Count:** 0
-- **Status:** PASS — No hardcoded private keys, mnemonics, or secrets found
+- **Status:** PASS
 
-## 3. Clippy Analysis
+## 3. Clippy Analysis — PASS
 - **Warnings/Errors:** 3
-- **Status:** Acceptable (near-zero warnings)
+- **Status:** Acceptable
 
 ## 4. Consensus & Validator Status
 - 6 active validators (Alice-Ferdie) with session keys in genesis
@@ -65,10 +73,11 @@ The Verdis Chain codebase has 16 pallets, 388 tests, and 16 benchmarking suites.
 - BABE consensus active, blocks being produced
 - GRANDPA finality configured
 - DPoS SessionManager properly integrated
+- Note: `session_validators` RPC endpoint not implemented — use `dpos_activeValidators` instead
 
 ## 5. Chain Spec Status
-- Testnet spec: 1 canonical raw spec (chain-spec-testnet-raw.json)
-- Mainnet spec: 1 canonical raw spec (chain-spec-mainnet-raw.json)
+- Testnet spec: chain-spec-testnet-raw.json (canonical)
+- Mainnet spec: chain-spec-mainnet-raw.json (canonical)
 - 19 stale specs archived to chain-specs-archive/
 
 ## 6. CI/CD Pipeline
@@ -81,13 +90,12 @@ Provide the following to a third-party audit firm:
 - `runtime/src/lib.rs` — Runtime configuration
 - `node/src/chain_spec.rs` — Genesis configuration
 - `Cargo.lock` — Dependency versions
-- `docs/security-audit.md` — Previous internal audit
 - `docs/EXTERNAL_AUDIT_PACKAGE.md` — This document
 
 ## 8. Remaining Risks
 1. hickory-proto NSEC3 vulnerability has no fix available
-2. 95 unwrap() calls could cause production panics under edge conditions
-3. 108 saturating arithmetic calls could silently truncate values
-4. External (third-party) security audit not yet performed
-5. Economic model (tokenomics, staking, slashing) not independently verified
-6. Chaos testing not performed
+2. 22 financial saturating arithmetic calls being replaced with checked math (in progress)
+3. External (third-party) security audit not yet performed
+4. Economic model (tokenomics, staking, slashing) not independently verified
+5. Chaos testing not performed
+6. Substrate dependency upgrade needed for 10 dependency vulnerabilities

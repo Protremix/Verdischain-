@@ -1,5 +1,5 @@
 use crate::*;
-use frame_support::{assert_ok, assert_err, construct_runtime, derive_impl, parameter_types};
+use frame_support::{assert_err, assert_ok, construct_runtime, derive_impl, parameter_types};
 use sp_io::TestExternalities;
 use sp_runtime::{traits::IdentityLookup, BuildStorage};
 

@@ -91,7 +91,8 @@ fn create_tree_max_depth_exceeded_rejected() {
     new_test_ext().execute_with(|| {
         assert_noop!(
             Pallet::<Test>::create_tree(
-                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32]))
+                    .into(),
                 21
             ),
             Error::<Test>::MaxDepthExceeded
@@ -103,10 +104,7 @@ fn create_tree_max_depth_exceeded_rejected() {
 fn create_tree_unsigned_rejected() {
     new_test_ext().execute_with(|| {
         assert_noop!(
-            Pallet::<Test>::create_tree(
-                frame_system::RawOrigin::None.into(),
-                10
-            ),
+            Pallet::<Test>::create_tree(frame_system::RawOrigin::None.into(), 10),
             DispatchError::BadOrigin
         );
     });
@@ -128,11 +126,7 @@ fn compress_account_nonexistent_tree_works() {
 fn compress_account_unsigned_rejected() {
     new_test_ext().execute_with(|| {
         assert_noop!(
-            Pallet::<Test>::compress_account(
-                frame_system::RawOrigin::None.into(),
-                0,
-                256
-            ),
+            Pallet::<Test>::compress_account(frame_system::RawOrigin::None.into(), 0, 256),
             DispatchError::BadOrigin
         );
     });
@@ -143,7 +137,8 @@ fn verify_proof_non_root_rejected() {
     new_test_ext().execute_with(|| {
         assert_noop!(
             Pallet::<Test>::verify_proof(
-                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+                frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32]))
+                    .into(),
                 0,
                 0,
                 [0u8; 32]

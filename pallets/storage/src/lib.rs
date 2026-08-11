@@ -33,9 +33,9 @@ use frame_support::{
     traits::{Currency, Get, ReservableCurrency},
     PalletId,
 };
-use sp_runtime::traits::{CheckedAdd, CheckedMul, Saturating, Zero};
 use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
+use sp_runtime::traits::{CheckedAdd, CheckedMul, Saturating, Zero};
 use sp_std::prelude::*;
 
 pub use pallet::*;
@@ -279,8 +279,7 @@ pub mod pallet {
             T::Currency::reserve(&who, deposit)?;
 
             let current_block = frame_system::Pallet::<T>::block_number();
-            let expiry_block = current_block
-                + T::ExpiryBlocks::get().into();
+            let expiry_block = current_block + T::ExpiryBlocks::get().into();
 
             let record = StorageRecord {
                 id: id_bv.clone(),
@@ -452,11 +451,10 @@ pub mod pallet {
             let mut total_refund: BalanceOf<T> = Zero::zero();
 
             for id in ids.iter() {
-                let id_bv: BoundedVec<u8, ConstU32<64>> =
-                    match id.clone().try_into() {
-                        Ok(bv) => bv,
-                        Err(_) => continue,
-                    };
+                let id_bv: BoundedVec<u8, ConstU32<64>> = match id.clone().try_into() {
+                    Ok(bv) => bv,
+                    Err(_) => continue,
+                };
 
                 if let Some(record) = StorageRecords::<T>::get(&id_bv) {
                     if record.expiry_block <= current_block {
@@ -468,7 +466,8 @@ pub mod pallet {
                         TotalStored::<T>::mutate(|t| *t = t.saturating_sub(record.size_bytes));
                         PinRequests::<T>::remove(&id_bv);
 
-                        total_refund = Saturating::saturating_add(total_refund, record.deposit_amount);
+                        total_refund =
+                            Saturating::saturating_add(total_refund, record.deposit_amount);
                         cleaned += 1;
                     }
                 }
@@ -508,7 +507,13 @@ pub mod pallet {
 
         pub fn get_record(
             id: BoundedVec<u8, ConstU32<64>>,
-        ) -> Option<StorageRecord<T::AccountId, BalanceOf<T>, frame_system::pallet_prelude::BlockNumberFor<T>>> {
+        ) -> Option<
+            StorageRecord<
+                T::AccountId,
+                BalanceOf<T>,
+                frame_system::pallet_prelude::BlockNumberFor<T>,
+            >,
+        > {
             StorageRecords::<T>::get(&id)
         }
 
@@ -565,8 +570,8 @@ pub mod pallet {
     mod tests {
         use super::*;
         use frame_support::{
-            assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types, traits::ConstU32,
-            traits::ConstU64,
+            assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types,
+            traits::ConstU32, traits::ConstU64,
         };
         use sp_io::TestExternalities;
         use sp_keyring::Sr25519Keyring;
@@ -785,10 +790,7 @@ pub mod pallet {
 
                 // Bob tries to delete Alice's record
                 assert_noop!(
-                    Storage::delete_record(
-                        RuntimeOrigin::signed(bob),
-                        b"doc-1".to_vec(),
-                    ),
+                    Storage::delete_record(RuntimeOrigin::signed(bob), b"doc-1".to_vec(),),
                     Error::<Test>::NotRecordOwner
                 );
             });

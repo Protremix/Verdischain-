@@ -14,12 +14,7 @@ mod benches {
     fn register_shard() {
         let caller: T::AccountId = whitelisted_caller();
         #[extrinsic_call]
-        register_shard(
-            RawOrigin::Signed(caller.clone()),
-            1,
-            0,
-            4,
-        );
+        register_shard(RawOrigin::Signed(caller.clone()), 1, 0, 4);
 
         assert!(TurbineTotalShards::<T>::get() > 0);
     }

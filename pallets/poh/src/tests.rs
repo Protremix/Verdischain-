@@ -120,7 +120,11 @@ fn set_config_works() {
         let seed = [7u8; 32];
         let last_hash = [9u8; 32];
 
-        assert_ok!(Poh::set_config(frame_system::RawOrigin::Root.into(), seed, last_hash));
+        assert_ok!(Poh::set_config(
+            frame_system::RawOrigin::Root.into(),
+            seed,
+            last_hash
+        ));
 
         let config = PohConfigVal::<Test>::get();
         assert_eq!(config.seed, seed);
@@ -154,7 +158,11 @@ fn record_block_non_root_rejected() {
 fn set_config_non_root_rejected() {
     new_test_ext().execute_with(|| {
         assert_noop!(
-            Poh::set_config(frame_system::RawOrigin::Signed(alice()).into(), [1u8; 32], [2u8; 32]),
+            Poh::set_config(
+                frame_system::RawOrigin::Signed(alice()).into(),
+                [1u8; 32],
+                [2u8; 32]
+            ),
             DispatchError::BadOrigin
         );
     });

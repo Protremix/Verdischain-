@@ -39,12 +39,7 @@ mod benches {
         );
 
         #[extrinsic_call]
-        mark_included(
-            RawOrigin::Signed(caller.clone()),
-            tx_hash,
-            1,
-            100,
-        );
+        mark_included(RawOrigin::Signed(caller.clone()), tx_hash, 1, 100);
 
         assert!(!PendingForwards::<T>::contains_key(&tx_hash));
     }

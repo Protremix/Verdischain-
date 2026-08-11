@@ -123,13 +123,8 @@ pub mod pallet {
 
     /// Failed refund entries that can be retried via governance
     #[pallet::storage]
-    pub type FailedRefunds<T: Config> = StorageMap<
-        _,
-        Blake2_128Concat,
-        (u32, u64),
-        (T::AccountId, BalanceOf<T>),
-        OptionQuery,
-    >;
+    pub type FailedRefunds<T: Config> =
+        StorageMap<_, Blake2_128Concat, (u32, u64), (T::AccountId, BalanceOf<T>), OptionQuery>;
 
     // ============ Config ============
 
@@ -368,10 +363,7 @@ pub mod pallet {
             let current_height: u64 = frame_system::Pallet::<T>::block_number()
                 .try_into()
                 .unwrap_or(0);
-            ensure!(
-                timeout_height > current_height,
-                Error::<T>::PacketTimeout
-            );
+            ensure!(timeout_height > current_height, Error::<T>::PacketTimeout);
 
             let sequence = IbcNextSequenceSend::<T>::get(channel_id);
             IbcNextSequenceSend::<T>::insert(
@@ -417,8 +409,8 @@ pub mod pallet {
             // SECURITY: Verify the connection's client is not frozen
             let connection = IbcConnections::<T>::get(channel.connection_id)
                 .ok_or(Error::<T>::ConnectionNotFound)?;
-            let client = IbcClients::<T>::get(connection.client_id)
-                .ok_or(Error::<T>::ClientNotFound)?;
+            let client =
+                IbcClients::<T>::get(connection.client_id).ok_or(Error::<T>::ClientNotFound)?;
             ensure!(!client.frozen, Error::<T>::ClientFrozen);
 
             let expected_seq = IbcNextSequenceRecv::<T>::get(channel_id);
@@ -477,12 +469,8 @@ pub mod pallet {
             let _relayer = ensure_signed(origin)?;
 
             // SECURITY: Verify channel exists and is not closed
-            let channel =
-                IbcChannels::<T>::get(channel_id).ok_or(Error::<T>::ChannelNotFound)?;
-            ensure!(
-                channel.state != 4,
-                Error::<T>::ChannelNotOpen
-            );
+            let channel = IbcChannels::<T>::get(channel_id).ok_or(Error::<T>::ChannelNotFound)?;
+            ensure!(channel.state != 4, Error::<T>::ChannelNotOpen);
 
             let packet =
                 IbcPackets::<T>::get((channel_id, sequence)).ok_or(Error::<T>::PacketNotFound)?;
@@ -497,7 +485,8 @@ pub mod pallet {
             let current_timestamp: u64 = T::TimestampProvider::get();
 
             let height_expired = current_height >= packet.timeout_height;
-            let timestamp_expired = packet.timeout_timestamp > 0 && current_timestamp >= packet.timeout_timestamp;
+            let timestamp_expired =
+                packet.timeout_timestamp > 0 && current_timestamp >= packet.timeout_timestamp;
 
             ensure!(
                 height_expired || timestamp_expired,
@@ -570,8 +559,8 @@ pub mod pallet {
             // SECURITY: Verify the connection's client is not frozen
             let connection = IbcConnections::<T>::get(channel.connection_id)
                 .ok_or(Error::<T>::ConnectionNotFound)?;
-            let client = IbcClients::<T>::get(connection.client_id)
-                .ok_or(Error::<T>::ClientNotFound)?;
+            let client =
+                IbcClients::<T>::get(connection.client_id).ok_or(Error::<T>::ClientNotFound)?;
             ensure!(!client.frozen, Error::<T>::ClientFrozen);
 
             // CRITICAL FIX: Escrow tokens from sender to pallet account
@@ -656,8 +645,7 @@ pub mod pallet {
             // SECURITY: Only root/governance can update client state
             ensure_root(origin)?;
 
-            let mut client =
-                IbcClients::<T>::get(client_id).ok_or(Error::<T>::ClientNotFound)?;
+            let mut client = IbcClients::<T>::get(client_id).ok_or(Error::<T>::ClientNotFound)?;
             ensure!(!client.frozen, Error::<T>::ClientFrozen);
             // SECURITY: Height must advance (no regressions)
             ensure!(
@@ -678,15 +666,11 @@ pub mod pallet {
         /// Freeze a light client (on misbehavior or suspected fault)
         #[pallet::call_index(10)]
         #[pallet::weight(Weight::from_parts(5_000, 0))]
-        pub fn freeze_client(
-            origin: OriginFor<T>,
-            client_id: u32,
-        ) -> DispatchResult {
+        pub fn freeze_client(origin: OriginFor<T>, client_id: u32) -> DispatchResult {
             // SECURITY: Only root/governance can freeze clients
             ensure_root(origin)?;
 
-            let mut client =
-                IbcClients::<T>::get(client_id).ok_or(Error::<T>::ClientNotFound)?;
+            let mut client = IbcClients::<T>::get(client_id).ok_or(Error::<T>::ClientNotFound)?;
             client.frozen = true;
             IbcClients::<T>::insert(client_id, client);
             Ok(())

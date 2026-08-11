@@ -149,7 +149,6 @@ pub mod pallet {
 
     // === Events ===
 
-    
     /// Annual inflation rate in basis points (200 = 2%)
     #[pallet::storage]
     #[pallet::getter(fn annual_inflation_rate)]
@@ -160,7 +159,7 @@ pub mod pallet {
     #[pallet::getter(fn total_inflation_minted)]
     pub type TotalInflationMinted<T> = StorageValue<_, u128, ValueQuery>;
 
-#[pallet::event]
+    #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         PriorityFeeSet {
@@ -211,8 +210,8 @@ pub mod pallet {
 
     #[pallet::error]
     pub enum Error<T> {
-    /// Inflation rate exceeds maximum allowed (10%)
-    InflationRateTooHigh,
+        /// Inflation rate exceeds maximum allowed (10%)
+        InflationRateTooHigh,
 
         MaxPriorityFeeExceeded,
         AccountFrozen,
@@ -228,6 +227,7 @@ pub mod pallet {
         ZeroAmount,
         ZeroPrice,
         CalculationOverflow,
+        Overflow,
     }
 
     // === Config ===
@@ -412,10 +412,10 @@ pub mod pallet {
             Distribution::<T>::mutate(&cat_bv, |c| {
                 let cat = c.as_mut().ok_or(Error::<T>::InvalidCategory)?;
                 ensure!(
-                    cat.released.saturating_add(amount) <= cat.amount,
+                    cat.released.checked_add(&amount).ok_or(Error::<T>::Overflow)? <= cat.amount,
                     Error::<T>::DistributionComplete
                 );
-                cat.released = cat.released.saturating_add(amount);
+                cat.released = cat.released.checked_add(&amount).ok_or(Error::<T>::Overflow)?;
                 Ok::<(), Error<T>>(())
             })?;
 
@@ -565,7 +565,9 @@ mod tests {
     fn test_give_consent_duplicate_rejected() {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
-            assert_ok!(Tokenomics::give_consent(RuntimeOrigin::signed(alice.clone())));
+            assert_ok!(Tokenomics::give_consent(RuntimeOrigin::signed(
+                alice.clone()
+            )));
             assert_noop!(
                 Tokenomics::give_consent(RuntimeOrigin::signed(alice)),
                 Error::<Test>::AlreadyConsented
@@ -578,10 +580,7 @@ mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             assert_noop!(
-                Tokenomics::purchase(
-                    RuntimeOrigin::signed(alice),
-                    1_000_000
-                ),
+                Tokenomics::purchase(RuntimeOrigin::signed(alice), 1_000_000),
                 Error::<Test>::ConsentRequired
             );
         });
@@ -593,10 +592,7 @@ mod tests {
             let alice = Sr25519Keyring::Alice.to_account_id();
             Tokenomics::give_consent(RuntimeOrigin::signed(alice.clone())).unwrap();
             assert_noop!(
-                Tokenomics::purchase(
-                    RuntimeOrigin::signed(alice),
-                    0
-                ),
+                Tokenomics::purchase(RuntimeOrigin::signed(alice), 0),
                 Error::<Test>::ZeroAmount
             );
         });
@@ -607,10 +603,7 @@ mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             assert_noop!(
-                Tokenomics::set_inflation_rate(
-                    RuntimeOrigin::signed(alice),
-                    500
-                ),
+                Tokenomics::set_inflation_rate(RuntimeOrigin::signed(alice), 500),
                 sp_runtime::DispatchError::BadOrigin
             );
         });
@@ -620,10 +613,7 @@ mod tests {
     fn test_set_inflation_rate_too_high_rejected() {
         new_test_ext().execute_with(|| {
             assert_noop!(
-                Tokenomics::set_inflation_rate(
-                    RuntimeOrigin::root(),
-                    1001
-                ),
+                Tokenomics::set_inflation_rate(RuntimeOrigin::root(), 1001),
                 Error::<Test>::InflationRateTooHigh
             );
         });
@@ -670,7 +660,9 @@ mod tests {
     fn test_give_consent_works_and_verified() {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
-            assert_ok!(Tokenomics::give_consent(RuntimeOrigin::signed(alice.clone())));
+            assert_ok!(Tokenomics::give_consent(RuntimeOrigin::signed(
+                alice.clone()
+            )));
             assert!(ConsentGiven::<Test>::get(&alice).unwrap_or(false));
         });
     }
@@ -691,10 +683,7 @@ mod tests {
             // InvestorAllocation = 12B (12_000_000_000_000_000_000)
             // Try to purchase more than allocation
             assert_noop!(
-                Tokenomics::purchase(
-                    RuntimeOrigin::signed(alice),
-                    13_000_000_000_000_000_000u128
-                ),
+                Tokenomics::purchase(RuntimeOrigin::signed(alice), 13_000_000_000_000_000_000u128),
                 Error::<Test>::MaxInvestorAllocationReached
             );
         });
@@ -705,27 +694,22 @@ mod tests {
         new_test_ext().execute_with(|| {
             let long_cat = vec![b'X'; 40]; // Max category length is 32
             assert_noop!(
-                Tokenomics::release_distribution(
-                    RuntimeOrigin::root(),
-                    long_cat,
-                    1_000_000
-                ),
+                Tokenomics::release_distribution(RuntimeOrigin::root(), long_cat, 1_000_000),
                 Error::<Test>::InvalidCategory
             );
         });
     }
-
 }
 
 #[cfg(test)]
 mod economic_invariants;
 
-    // === Non-dispatchable helpers ===
-    impl<T: Config> Pallet<T> {
-        /// Calculate annual inflation amount
-        pub fn calculate_inflation(total_supply: u128, current_supply: u128) -> u128 {
-            let rate = Self::annual_inflation_rate() as u128;
-            let remaining = total_supply.saturating_sub(current_supply);
-            remaining.saturating_mul(rate) / 10000
-        }
+// === Non-dispatchable helpers ===
+impl<T: Config> Pallet<T> {
+    /// Calculate annual inflation amount
+    pub fn calculate_inflation(total_supply: u128, current_supply: u128) -> u128 {
+        let rate = Self::annual_inflation_rate() as u128;
+        let remaining = total_supply.saturating_sub(current_supply);
+        remaining.saturating_mul(rate) / 10000
     }
+}

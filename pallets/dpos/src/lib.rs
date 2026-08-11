@@ -235,6 +235,7 @@ pub mod pallet {
         ReactivationCooldownNotElapsed,
         ValidatorNotSlashed,
         RewardRefillFailed,
+        Overflow,
     }
 
     // === Config ===
@@ -299,7 +300,7 @@ pub mod pallet {
                     .expect("insufficient balance for validator stake at genesis");
                 list.try_push(addr.clone())
                     .expect("validator list overflow at genesis");
-                total = total.saturating_add(*stake);
+                total = total.checked_add(stake).expect("total staked overflow at genesis");
             }
             ValidatorList::<T>::put(list.clone());
             TotalStaked::<T>::put(total);
@@ -386,7 +387,7 @@ pub mod pallet {
                 v.try_push(who.clone())
                     .map_err(|_| Error::<T>::MaxValidatorsReached)
             })?;
-            TotalStaked::<T>::mutate(|t| *t = t.saturating_add(stake));
+            TotalStaked::<T>::try_mutate(|t| -> Result<(), Error<T>> { *t = t.checked_add(&stake).ok_or(Error::<T>::Overflow)?; Ok(()) })?;
 
             Self::deposit_event(Event::ValidatorRegistered { who, stake });
             Ok(())
@@ -409,7 +410,7 @@ pub mod pallet {
             Validators::<T>::remove(&who);
             ValidatorList::<T>::mutate(|v| v.retain(|a| a != &who));
             ActiveValidators::<T>::mutate(|v| v.retain(|a| a != &who));
-            TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(validator.stake));
+            TotalStaked::<T>::try_mutate(|t| -> Result<(), Error<T>> { *t = t.checked_sub(&validator.stake).ok_or(Error::<T>::Overflow)?; Ok(()) })?;
 
             Self::deposit_event(Event::ValidatorUnregistered { who });
             Ok(())
@@ -462,13 +463,14 @@ pub mod pallet {
                 .map_err(|_| Error::<T>::VoteStorageFull)?;
             Votes::<T>::insert(&who, existing_votes);
 
-            Validators::<T>::mutate(&validator, |val| {
+            Validators::<T>::try_mutate(&validator, |val| -> Result<(), Error<T>> {
                 if let Some(v) = val {
-                    v.total_votes = v.total_votes.saturating_add(amount);
+                    v.total_votes = v.total_votes.checked_add(&amount).ok_or(Error::<T>::Overflow)?;
                 }
-            });
+                Ok(())
+            })?;
 
-            TotalStaked::<T>::mutate(|t| *t = t.saturating_add(amount));
+            TotalStaked::<T>::try_mutate(|t| -> Result<(), Error<T>> { *t = t.checked_add(&amount).ok_or(Error::<T>::Overflow)?; Ok(()) })?;
 
             Self::deposit_event(Event::Voted {
                 voter: who,
@@ -501,14 +503,15 @@ pub mod pallet {
             votes.retain(|v| v.validator != validator);
             Votes::<T>::insert(&who, votes);
 
-            Validators::<T>::mutate(&validator, |val| {
+            Validators::<T>::try_mutate(&validator, |val| -> Result<(), Error<T>> {
                 if let Some(v) = val {
-                    v.total_votes = v.total_votes.saturating_sub(amount);
+                    v.total_votes = v.total_votes.checked_sub(&amount).ok_or(Error::<T>::Overflow)?;
                 }
-            });
+                Ok(())
+            })?;
 
             // Reduce total staked but keep funds locked in unbonding queue
-            TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(amount));
+            TotalStaked::<T>::try_mutate(|t| -> Result<(), Error<T>> { *t = t.checked_sub(&amount).ok_or(Error::<T>::Overflow)?; Ok(()) })?;
 
             // Queue the unbonding request
             let current_block: u32 = frame_system::Pallet::<T>::block_number()
@@ -553,14 +556,17 @@ pub mod pallet {
                 .map_err(|_| Error::<T>::InvalidSlashReason)?;
 
             let mut total_withdrawable: BalanceOf<T> = BalanceOf::<T>::zero();
-            queue.retain(|req| {
+            let mut remaining_queue = BoundedVec::default();
+            for req in queue {
                 if current_block >= req.unlock_block {
-                    total_withdrawable = total_withdrawable.saturating_add(req.amount);
-                    false // remove from queue
+                    total_withdrawable = total_withdrawable
+                        .checked_add(&req.amount)
+                        .ok_or(Error::<T>::Overflow)?;
                 } else {
-                    true // keep in queue
+                    let _ = remaining_queue.try_push(req);
                 }
-            });
+            }
+            queue = remaining_queue;
 
             ensure!(
                 total_withdrawable > BalanceOf::<T>::zero(),
@@ -605,7 +611,7 @@ pub mod pallet {
 
             // Unreserve funds; track shortfall to avoid accounting mismatch
             let unreserved = T::Currency::unreserve(&validator, slash_amount);
-            let actual_slash = slash_amount.saturating_sub(unreserved);
+            let actual_slash = slash_amount.checked_sub(&unreserved).ok_or(Error::<T>::Overflow)?;
             ensure!(!actual_slash.is_zero(), Error::<T>::SlashingFailed);
 
             let treasury = T::PalletId::get().into_account_truncating();
@@ -616,17 +622,18 @@ pub mod pallet {
                 ExistenceRequirement::AllowDeath,
             )?;
 
-            Validators::<T>::mutate(&validator, |v| {
+            Validators::<T>::try_mutate(&validator, |v| -> Result<(), Error<T>> {
                 if let Some(v) = v {
-                    v.stake = v.stake.saturating_sub(actual_slash);
-                    v.total_votes = v.total_votes.saturating_sub(actual_slash);
+                    v.stake = v.stake.checked_sub(&actual_slash).ok_or(Error::<T>::Overflow)?;
+                    v.total_votes = v.total_votes.checked_sub(&actual_slash).ok_or(Error::<T>::Overflow)?;
                     v.slashed = true;
                     v.active = false;
                 }
-            });
+                Ok(())
+            })?;
 
             SlashingEvents::<T>::mutate(&validator, |c| *c = c.saturating_add(1));
-            TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(actual_slash));
+            TotalStaked::<T>::try_mutate(|t| -> Result<(), Error<T>> { *t = t.checked_sub(&actual_slash).ok_or(Error::<T>::Overflow)?; Ok(()) })?;
             ActiveValidators::<T>::mutate(|v| v.retain(|a| a != &validator));
 
             Self::deposit_event(Event::ValidatorSlashed {
@@ -2188,7 +2195,10 @@ mod tests {
             // Alice controls 2 of 3 active validators = 66.7% cartel concentration
             // This is a SECURITY WARNING, not a pass condition — the test verifies
             // that the system accurately tracks concentration for monitoring.
-            let alice_controlled = active.iter().filter(|v| **v == alice || **v == charlie).count();
+            let alice_controlled = active
+                .iter()
+                .filter(|v| **v == alice || **v == charlie)
+                .count();
             assert_eq!(alice_controlled, 2, "Alice controls 2/3 active validators");
             assert!(
                 alice_controlled as f64 / active.len() as f64 > 0.33,
@@ -2222,11 +2232,7 @@ mod tests {
 
             // Bob votes 50,000 to Charlie (total_votes = 101000, exceeds 100,000 cap)
             assert_noop!(
-                Dpos::vote(
-                    RuntimeOrigin::signed(bob.clone()),
-                    charlie.clone(),
-                    50_000
-                ),
+                Dpos::vote(RuntimeOrigin::signed(bob.clone()), charlie.clone(), 50_000),
                 Error::<Test>::StakeExceedsCap
             );
 
@@ -2337,9 +2343,7 @@ mod tests {
             let bob_val = Validators::<Test>::get(&bob).unwrap();
             let charlie_val = Validators::<Test>::get(&charlie).unwrap();
 
-            let sum_votes = alice_val.total_votes
-                + bob_val.total_votes
-                + charlie_val.total_votes;
+            let sum_votes = alice_val.total_votes + bob_val.total_votes + charlie_val.total_votes;
 
             assert_eq!(
                 TotalStaked::<Test>::get(),
@@ -2375,7 +2379,10 @@ mod tests {
             ));
 
             let bob_val_after = Validators::<Test>::get(&bob).unwrap();
-            assert_eq!(bob_val_after.total_votes, 3000, "Bob's total_votes should be back to 3000");
+            assert_eq!(
+                bob_val_after.total_votes, 3000,
+                "Bob's total_votes should be back to 3000"
+            );
 
             let total_after = TotalStaked::<Test>::get();
             assert_eq!(
@@ -2395,11 +2402,7 @@ mod tests {
 
             // Dave only has 500 balance, tries to vote 1000 to Alice
             assert_noop!(
-                Dpos::vote(
-                    RuntimeOrigin::signed(dave),
-                    alice,
-                    1000
-                ),
+                Dpos::vote(RuntimeOrigin::signed(dave), alice, 1000),
                 Error::<Test>::InsufficientFunds
             );
         });
@@ -2503,11 +2506,7 @@ mod tests {
 
             // Alice (non-root) tries to update Bob's green score
             assert_noop!(
-                Dpos::update_green_score(
-                    RuntimeOrigin::signed(alice),
-                    bob,
-                    5
-                ),
+                Dpos::update_green_score(RuntimeOrigin::signed(alice), bob, 5),
                 DispatchError::BadOrigin
             );
         });
@@ -2522,11 +2521,7 @@ mod tests {
 
             // Dave is not a registered validator
             assert_noop!(
-                Dpos::vote(
-                    RuntimeOrigin::signed(alice),
-                    dave,
-                    1000
-                ),
+                Dpos::vote(RuntimeOrigin::signed(alice), dave, 1000),
                 Error::<Test>::ValidatorNotFound
             );
         });
@@ -2548,11 +2543,7 @@ mod tests {
 
             // Alice tries to vote again to Bob — should fail
             assert_noop!(
-                Dpos::vote(
-                    RuntimeOrigin::signed(alice),
-                    bob,
-                    1000
-                ),
+                Dpos::vote(RuntimeOrigin::signed(alice), bob, 1000),
                 Error::<Test>::AlreadyVoted
             );
         });

@@ -196,12 +196,17 @@ pub mod pallet {
                 Error::<T>::InvalidBlockNumber
             );
 
-            let tx =
-                PendingForwards::<T>::get(tx_hash).ok_or(Error::<T>::TransactionNotFound)?;
+            let tx = PendingForwards::<T>::get(tx_hash).ok_or(Error::<T>::TransactionNotFound)?;
             // SECURITY: Verify the transaction is still pending (not already processed)
-            ensure!(tx.status == ForwardStatus::Pending, Error::<T>::AlreadyProcessed);
+            ensure!(
+                tx.status == ForwardStatus::Pending,
+                Error::<T>::AlreadyProcessed
+            );
             // SECURITY: Bound forward_time_ms to prevent stat manipulation
-            ensure!(forward_time_ms <= T::MaxForwardTimeMs::get(), Error::<T>::InvalidForwardTime);
+            ensure!(
+                forward_time_ms <= T::MaxForwardTimeMs::get(),
+                Error::<T>::InvalidForwardTime
+            );
             PendingForwards::<T>::remove(tx_hash);
 
             let mut stats = GulfStreamStatsStorage::<T>::get();
