@@ -66,6 +66,7 @@ pub use pallet_eco;
 pub use pallet_fungible_tokens;
 pub use pallet_gulf_stream;
 pub use pallet_ibc;
+pub use pallet_circuit_breaker;
 pub use pallet_poh;
 pub use pallet_presale;
 pub use pallet_sealevel;
@@ -158,13 +159,22 @@ parameter_types! {
 }
 
 // === Production Call Filter ===
-/// Production call filter - blocks Sudo calls for security.
+/// Production call filter - blocks Sudo calls and checks CircuitBreaker pause registry.
 pub struct VerdisBaseCallFilter;
 impl frame_support::traits::Contains<RuntimeCall> for VerdisBaseCallFilter {
     fn contains(call: &RuntimeCall) -> bool {
         match call {
             // Block ALL sudo calls in production
             RuntimeCall::Sudo(_) => false,
+            // Circuit breaker: check if the pallet is paused by governance
+            RuntimeCall::Ibc(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Ibc") => false,
+            RuntimeCall::AmmDex(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"AmmDex") => false,
+            RuntimeCall::Dpos(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Dpos") => false,
+            RuntimeCall::Storage(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Storage") => false,
+            RuntimeCall::Eco(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Eco") => false,
+            RuntimeCall::Presale(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Presale") => false,
+            RuntimeCall::AddressLookupTables(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"AddressLookupTables") => false,
+            RuntimeCall::GulfStream(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"GulfStream") => false,
             // Recursively check Utility batch calls for nested Sudo
             RuntimeCall::Utility(pallet_utility::Call::batch { calls })
             | RuntimeCall::Utility(pallet_utility::Call::batch_all { calls })
@@ -1173,6 +1183,7 @@ parameter_types! {
     pub const IbcMaxPacketDataLen: u32 = 1024;
     pub const IbcMaxTransferAmount: u128 = 1_000_000_000_000_000; // 1B VRDX with 9 decimals
     pub const IbcMaxHeightJump: u64 = 1_000_000;  // Max 1M block height jump per update
+    pub const CircuitBreakerMaxPalletNameLen: u32 = 32;
 }
 
 impl pallet_ibc::Config for Runtime {
@@ -1182,6 +1193,11 @@ impl pallet_ibc::Config for Runtime {
     type Currency = Balances;
     type MaxTransferAmount = IbcMaxTransferAmount;
         type MaxHeightJump = IbcMaxHeightJump;
+}
+
+impl pallet_circuit_breaker::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type MaxPalletNameLen = CircuitBreakerMaxPalletNameLen;
 }
 
 construct_runtime! {
@@ -1224,6 +1240,7 @@ construct_runtime! {
         AddressLookupTables: pallet_address_lookup_tables = 55,
         Sealevel: pallet_sealevel = 56,
         Ibc: pallet_ibc = 57,
+        CircuitBreaker: pallet_circuit_breaker = 60,
     }
 }
 
