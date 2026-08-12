@@ -1555,7 +1555,7 @@ class="swap-container">
     // Fetch real signer balance from RPC
     async function fetchSignerBalance() {
       try {
-        const res = await rpcCall(system_account, [5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y]);
+        const res = await rpcCall(system_account, ['5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y']);
         if (res && res.data) {
           const free = parseInt(res.data.free) / 1e9;
           userBalances[VRDX] = free;
@@ -1711,7 +1711,7 @@ class="swap-container">
 
       const swapBtn = document.getElementById(swapSubmitBtn);
       swapBtn.disabled = true;
-      swapBtn.innerText = Submitting...;
+      swapBtn.innerText = 'Submitting...';
 
       try {
         const response = await fetch(/api/tx-relay, {
@@ -1801,200 +1801,6 @@ class="swap-container">
 // XSS Prevention: escape all external data before innerHTML
 function escapeHtml(str) {
   if (str === null || str === undefined) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-
-    function renderTopPoolsList() {
-      var container = document.getElementById('topPoolsList');
-      if (!container) return;
-      if (poolsData.length === 0) {
-        container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;font-size:13px;">No pools loaded</div>';
-        return;
-      }
-      var icons = {'VRDX':'⚡','ECO':'🌱','CARBON':'♻','TREE':'🌳','GREEN':'💚','REDD':'🔴'};
-      container.innerHTML = poolsData.slice(0, 6).map(function(p) {
-        var iconA = icons[p.tokenA] || '?';
-        var iconB = icons[p.tokenB] || '?';
-        var tokenA = escapeHtml(p.tokenA);
-        var tokenB = escapeHtml(p.tokenB);
-        var tvlStr = p.tvl > 1e6 ? '$' + (p.tvl/1e6).toFixed(1) + 'M TVL' : '$' + (p.tvl/1e3).toFixed(1) + 'K TVL';
-        return '<div class="pool-item" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#f8f9fa;border-radius:8px;cursor:pointer;">' +
-               '<div style="font-weight:600;display:flex;align-items:center;gap:8px;">' + iconA + ' ' + tokenA + ' / ' + iconB + ' ' + tokenB + '</div>' +
-               '<div style="font-size:13px;font-weight:600;color:#00a86b;">' + escapeHtml(tvlStr) + '</div></div>';
-      }).join('');
-    }
-
-    function renderPoolsTable() {
-      const tbody = document.getElementById("poolsTableBody");
-      tbody.innerHTML = "";
-
-      poolsData.forEach(p => {
-        const tr = document.createElement("tr");
-        var pair = escapeHtml(p.pair);
-        var reserves = escapeHtml(p.reserveA.toLocaleString()) + ' / ' + escapeHtml(p.reserveB.toLocaleString());
-        var tvl = '$' + escapeHtml(p.tvl.toLocaleString());
-        var vol = '$' + escapeHtml(p.volume24h.toLocaleString());
-        var apy = escapeHtml(p.apy) + '%';
-        var isPrimary = p.isPrimary ? '<span class="badge-primary">PRIMARY</span>' : '';
-        tr.innerHTML =
-          '<td><div class="pool-pair-cell"><div class="pair-icons">' +
-          '<div class="pair-icon" style="background:#16a34a; color:#000;">⚡</div>' +
-          '<div class="pair-icon" style="background:#3b82f6; color:#fff;">💵</div>' +
-          '</div><span>' + pair + '</span>' + isPrimary + '</div></td>' +
-          '<td class="mono">' + reserves + '</td>' +
-          '<td class="mono" style="font-weight:700;">' + tvl + '</td>' +
-          '<td class="mono">' + vol + '</td>' +
-          '<td class="mono" style="color:#22c55e; font-weight:700;">' + apy + '</td>' +
-          '<td><button class="btn-sm" data-token-a="' + escapeHtml(p.tokenA) + '" data-token-b="' + escapeHtml(p.tokenB) + '">Trade</button></td>';
-        var btn = tr.querySelector('button');
-        if (btn) {
-          btn.addEventListener('click', function() {
-            selectPoolForTrade(this.getAttribute('data-token-a'), this.getAttribute('data-token-b'));
-          });
-        }
-        tbody.appendChild(tr);
-      });
-    }
-
-    function selectPoolForTrade(tokenA, tokenB) {
-      currentTokenIn = tokenA;
-      currentTokenOut = tokenB;
-      switchTab('swap');
-      updateSwapCalculation();
-    }
-
-    // Add / Remove Liquidity Form Updates
-    function updateAddLiquidityForm(changedSide = 'A') {
-      const pair = document.getElementById("addPairSelect").value;
-      const [tokA, tokB] = pair.split('/');
-      
-      document.getElementById("addSymbolA").innerText = tokA;
-      document.getElementById("addSymbolB").innerText = tokB;
-
-      const pool = getPool(tokA, tokB);
-      if (!pool) return;
-
-      const ratio = pool.reserveB / pool.reserveA;
-      const inputA = parseFloat(document.getElementById("addAmountA").value) || 0;
-      
-      if (changedSide === 'A') {
-        document.getElementById("addAmountB").value = (inputA * ratio).toFixed(2);
-      }
-
-      const lpMinted = Math.sqrt(inputA * (inputA * ratio));
-      document.getElementById("addLpTokens").innerText = `${lpMinted.toFixed(2)} VLP`;
-    }
-
-    function executeAddLiquidity() {
-      const pair = document.getElementById("addPairSelect").value;
-      const amountA = parseFloat(document.getElementById("addAmountA").value) || 0;
-      if (amountA <= 0) return alert("Enter valid liquidity amount.");
-
-      alert(`✅ Successfully added liquidity to ${pair} pool! Minted LP tokens.`);
-    }
-
-    function updateRemoveLiquidityForm() {
-      const pct = document.getElementById("removeSlider").value;
-      document.getElementById("removePctText").innerText = `${pct}%`;
-
-      const receiveA = (2500 * (pct / 100) * 0.5).toFixed(2);
-      const receiveB = (2500 * (pct / 100) * 0.625).toFixed(2);
-
-      document.getElementById("removeReceiveA").innerText = `${receiveA} VRDX`;
-      document.getElementById("removeReceiveB").innerText = `${receiveB} USDC`;
-    }
-
-    function executeRemoveLiquidity() {
-      const pct = document.getElementById("removeSlider").value;
-      alert(`✅ Successfully burned ${pct}% LP tokens and withdrawn underlying liquidity.`);
-    }
-
-    // Price Chart Renderer (Canvas)
-    function drawPriceChart() {
-      const canvas = document.getElementById("priceChart");
-      if (!canvas) return;
-
-      const ctx = canvas.getContext("2d");
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Generate points
-      const points = [
-        1.18, 1.19, 1.21, 1.20, 1.22, 1.24, 1.23, 1.25, 1.27, 1.26, 1.28, 1.25
-      ];
-
-      const min = Math.min(...points) * 0.98;
-      const max = Math.max(...points) * 1.02;
-
-      ctx.beginPath();
-      ctx.strokeStyle = "#22c55e";
-      ctx.lineWidth = 3;
-
-      const stepX = canvas.width / (points.length - 1);
-
-      points.forEach((pt, i) => {
-        const x = i * stepX;
-        const y = canvas.height - ((pt - min) / (max - min)) * (canvas.height - 40) - 20;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
-
-      ctx.stroke();
-
-      // Fill Gradient
-      ctx.lineTo(canvas.width, canvas.height);
-      ctx.lineTo(0, canvas.height);
-      ctx.closePath();
-
-      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      grad.addColorStop(0, "rgba(34, 197, 94, 0.2)");
-      grad.addColorStop(1, "rgba(34, 197, 94, 0.0)");
-      ctx.fillStyle = grad;
-      ctx.fill();
-    }
-
-    function setTimeframe(tf, btn) {
-      activeChartTimeframe = tf;
-      document.querySelectorAll(".tf-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      drawPriceChart();
-    }
-
-    // Transaction History Renderer
-    function renderHistoryTable() {
-      const tbody = document.getElementById("historyTableBody");
-      tbody.innerHTML = "";
-
-      recentSwaps.forEach(sw => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="mono"><a href="https://verdischain.com/explorer/tx/${sw.hash}" target="_blank" style="color:#0f172a;">${sw.hash}</a></td>
-          <td><span style="font-weight:600; padding:2px 8px; background:#e2e8f0; border-radius:4px; font-size:0.75rem;">${sw.type}</span></td>
-          <td class="mono">${sw.details}</td>
-          <td class="mono">${sw.account}</td>
-          <td>${sw.time}</td>
-          <td><span style="color:#22c55e; font-weight:700;">● ${sw.status}</span></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function fetchRecentSwaps() {
-      renderHistoryTable();
-      alert("Transaction history synchronized with latest chain state.");
-    }
-
-    function toggleWalletModal() {
-      alert("Verdis Wallet Connected: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY");
-      document.getElementById("walletBtn").innerText = "5Grw...HG35";
-    }
-
-    function toggleSettingsModal() {
-      alert("Settings: Slippage Tolerance, Transaction Deadline, Expert Mode.");
-    }
-  </script>
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}function renderTopPoolsList() {var container = document.getElementById('topPoolsList');if (!container) return;if (poolsData.length === 0) {container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;font-size:13px;">No pools loaded</div>';return;}var icons = {'VRDX':'⚡','ECO':'🌱','CARBON':'♻','TREE':'🌳','GREEN':'💚','REDD':'🔴'};container.innerHTML = poolsData.slice(0, 6).map(function(p) {var iconA = icons[p.tokenA] || '?';var iconB = icons[p.tokenB] || '?';var tokenA = escapeHtml(p.tokenA);var tokenB = escapeHtml(p.tokenB);var tvlStr = p.tvl > 1e6 ? '$' + (p.tvl/1e6).toFixed(1) + 'M TVL' : '$' + (p.tvl/1e3).toFixed(1) + 'K TVL';return '<div class="pool-item" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#f8f9fa;border-radius:8px;cursor:pointer;">' +'<div style="font-weight:600;display:flex;align-items:center;gap:8px;">' + iconA + ' ' + tokenA + ' / ' + iconB + ' ' + tokenB + '</div>' +'<div style="font-size:13px;font-weight:600;color:#00a86b;">' + escapeHtml(tvlStr) + '</div></div>';}).join('');}function renderPoolsTable() {const tbody = document.getElementById("poolsTableBody");tbody.innerHTML = "";poolsData.forEach(p => {const tr = document.createElement("tr");var pair = escapeHtml(p.pair);var reserves = escapeHtml(p.reserveA.toLocaleString()) + ' / ' + escapeHtml(p.reserveB.toLocaleString());var tvl = '$' + escapeHtml(p.tvl.toLocaleString());var vol = '$' + escapeHtml(p.volume24h.toLocaleString());var apy = escapeHtml(p.apy) + '%';var isPrimary = p.isPrimary ? '<span class="badge-primary">PRIMARY</span>' : '';tr.innerHTML ='<td><div class="pool-pair-cell"><div class="pair-icons">' +'<div class="pair-icon" style="background:#16a34a; color:#000;">⚡</div>' +'<div class="pair-icon" style="background:#3b82f6; color:#fff;">💵</div>' +'</div><span>' + pair + '</span>' + isPrimary + '</div></td>' +'<td class="mono">' + reserves + '</td>' +'<td class="mono" style="font-weight:700;">' + tvl + '</td>' +'<td class="mono">' + vol + '</td>' +'<td class="mono" style="color:#22c55e; font-weight:700;">' + apy + '</td>' +'<td><button class="btn-sm" data-token-a="' + escapeHtml(p.tokenA) + '" data-token-b="' + escapeHtml(p.tokenB) + '">Trade</button></td>';var btn = tr.querySelector('button');if (btn) {btn.addEventListener('click', function() {selectPoolForTrade(this.getAttribute('data-token-a'), this.getAttribute('data-token-b'));});}tbody.appendChild(tr);});}function selectPoolForTrade(tokenA, tokenB) {currentTokenIn = tokenA;currentTokenOut = tokenB;switchTab('swap');updateSwapCalculation();}// Add / Remove Liquidity Form Updatesfunction updateAddLiquidityForm(changedSide = 'A') {const pair = document.getElementById("addPairSelect").value;const [tokA, tokB] = pair.split('/');document.getElementById("addSymbolA").innerText = tokA;document.getElementById("addSymbolB").innerText = tokB;const pool = getPool(tokA, tokB);if (!pool) return;const ratio = pool.reserveB / pool.reserveA;const inputA = parseFloat(document.getElementById("addAmountA").value) || 0;if (changedSide === 'A') {document.getElementById("addAmountB").value = (inputA * ratio).toFixed(2);}const lpMinted = Math.sqrt(inputA * (inputA * ratio));document.getElementById("addLpTokens").innerText = `${lpMinted.toFixed(2)} VLP`;}function executeAddLiquidity() {const pair = document.getElementById("addPairSelect").value;const amountA = parseFloat(document.getElementById("addAmountA").value) || 0;if (amountA <= 0) return alert("Enter valid liquidity amount.");alert(`✅ Successfully added liquidity to ${pair} pool! Minted LP tokens.`);}function updateRemoveLiquidityForm() {const pct = document.getElementById("removeSlider").value;document.getElementById("removePctText").innerText = `${pct}%`;const receiveA = (2500 * (pct / 100) * 0.5).toFixed(2);const receiveB = (2500 * (pct / 100) * 0.625).toFixed(2);document.getElementById("removeReceiveA").innerText = `${receiveA} VRDX`;document.getElementById("removeReceiveB").innerText = `${receiveB} USDC`;}function executeRemoveLiquidity() {const pct = document.getElementById("removeSlider").value;alert(`✅ Successfully burned ${pct}% LP tokens and withdrawn underlying liquidity.`);}// Price Chart Renderer (Canvas)function drawPriceChart() {const canvas = document.getElementById("priceChart");if (!canvas) return;const ctx = canvas.getContext("2d");const rect = canvas.getBoundingClientRect();canvas.width = rect.width;canvas.height = rect.height;ctx.clearRect(0, 0, canvas.width, canvas.height);// Generate pointsconst points = [1.18, 1.19, 1.21, 1.20, 1.22, 1.24, 1.23, 1.25, 1.27, 1.26, 1.28, 1.25];const min = Math.min(...points) * 0.98;const max = Math.max(...points) * 1.02;ctx.beginPath();ctx.strokeStyle = "#22c55e";ctx.lineWidth = 3;const stepX = canvas.width / (points.length - 1);points.forEach((pt, i) => {const x = i * stepX;const y = canvas.height - ((pt - min) / (max - min)) * (canvas.height - 40) - 20;if (i === 0) ctx.moveTo(x, y);else ctx.lineTo(x, y);});ctx.stroke();// Fill Gradientctx.lineTo(canvas.width, canvas.height);ctx.lineTo(0, canvas.height);ctx.closePath();const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);grad.addColorStop(0, "rgba(34, 197, 94, 0.2)");grad.addColorStop(1, "rgba(34, 197, 94, 0.0)");ctx.fillStyle = grad;ctx.fill();}function setTimeframe(tf, btn) {activeChartTimeframe = tf;document.querySelectorAll(".tf-btn").forEach(b => b.classList.remove("active"));btn.classList.add("active");drawPriceChart();}// Transaction History Rendererfunction renderHistoryTable() {const tbody = document.getElementById("historyTableBody");tbody.innerHTML = "";recentSwaps.forEach(sw => {const tr = document.createElement("tr");tr.innerHTML = `<td class="mono"><a href="https://verdischain.com/explorer/tx/${sw.hash}" target="_blank" style="color:#0f172a;">${sw.hash}</a></td><td><span style="font-weight:600; padding:2px 8px; background:#e2e8f0; border-radius:4px; font-size:0.75rem;">${sw.type}</span></td><td class="mono">${sw.details}</td><td class="mono">${sw.account}</td><td>${sw.time}</td><td><span style="color:#22c55e; font-weight:700;">● ${sw.status}</span></td>`;tbody.appendChild(tr);});}function fetchRecentSwaps() {renderHistoryTable();alert("Transaction history synchronized with latest chain state.");}function toggleWalletModal() {alert("Verdis Wallet Connected: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY");document.getElementById("walletBtn").innerText = "5Grw...HG35";}function toggleSettingsModal() {alert("Settings: Slippage Tolerance, Transaction Deadline, Expert Mode.");}</script>
 </body>
 </html>
