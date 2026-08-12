@@ -215,43 +215,81 @@ def query_balance(address):
     return 0
 
 def get_chain_info():
-    """Get chain health and properties."""
+    """Get chain health and properties — formatted for wallet/clients."""
     health = substrate.rpc_request("system_health", [])
     chain = substrate.rpc_request("system_chain", [])
     props = substrate.rpc_request("system_properties", [])
     header = substrate.rpc_request("chain_getHeader", [])
+    runtime = substrate.rpc_request("state_getRuntimeVersion", [])
+
+    h = health.get("result", {})
+    p = props.get("result", {})
+    hdr = header.get("result", {})
+    rt = runtime.get("result", {})
+
+    block_num = int(hdr.get("number", "0x0"), 16) if hdr.get("number") else 0
+
     return {
-        "health": health.get("result", {}),
-        "chain": chain.get("result", ""),
-        "properties": props.get("result", {}),
-        "header": header.get("result", {}),
+        "chainName": chain.get("result", "Verdis"),
+        "tokenSymbol": p.get("tokenSymbol", "VRDX"),
+        "decimals": p.get("tokenDecimals", 9),
+        "ss58Format": p.get("ss58Format", 909),
+        "blockNumber": block_num,
+        "blockHash": hdr.get("hash", ""),
+        "peerCount": h.get("peers", 0),
+        "isSyncing": h.get("isSyncing", False),
+        "specName": rt.get("specName", "verdis-chain"),
+        "specVersion": rt.get("specVersion", 0),
+        "runtimeVersion": rt.get("transactionVersion", 0),
     }
 
 def get_validators():
-    """Get all validators with stakes and names."""
+    """Get all validators with stakes, names, and green scores."""
     validators = substrate.rpc_request("dpos_allValidators", [])
     v_list = validators.get("result", [])
+    active_vals = substrate.rpc_request("dpos_activeValidators", [])
+    active_set = set(active_vals.get("result", []))
     result = []
     for v_addr in v_list:
         stake = substrate.rpc_request("dpos_validatorStake", [v_addr])
         name = substrate.rpc_request("dpos_validatorName", [v_addr])
         green = substrate.rpc_request("eco_getGreenScore", [v_addr])
+        s = stake.get("result", 0)
+        n = name.get("result", "")
+        g = green.get("result", 0)
+        if isinstance(s, dict):
+            s = s.get("stake", 0) if "stake" in s else s.get("amount", 0)
+        # Decode byte array names to string (RPC returns [86, 97, ...] not "Validator21")
+        if isinstance(n, list):
+            n = "".join(chr(b) for b in n if isinstance(b, int) and 32 <= b < 127)
+        if not n:
+            n = "Unknown"
         result.append({
             "address": v_addr,
-            "stake": int(stake.get("result", 0)),
-            "name": name.get("result", ""),
-            "green_score": int(green.get("result", 0)),
+            "stake": s,
+            "name": n,
+            "greenScore": g,
+            "isActive": v_addr in active_set,
         })
     return result
 
+
 def get_dex_pools():
-    """Get all DEX pools."""
+    """Get all DEX pools — getAllPools returns full data, no need for getPool calls."""
     pools = substrate.rpc_request("amm_dex_getAllPools", [])
-    pool_list = []
-    for pool_id in pools.get("result", []):
-        detail = substrate.rpc_request("amm_dex_getPool", [pool_id])
-        if detail and detail.get("result"):
-            pool_list.append(detail["result"])
+    pool_list = pools.get("result", [])
+    # Convert byte arrays to readable token names
+    for pool in pool_list:
+        if isinstance(pool, dict):
+            ta = pool.get("token_a", [])
+            tb = pool.get("token_b", [])
+            pool["tokenA"] = "".join(chr(b) for b in ta) if isinstance(ta, list) else str(ta)
+            pool["tokenB"] = "".join(chr(b) for b in tb) if isinstance(tb, list) else str(tb)
+            pool["reserveA"] = pool.get("reserve_a", 0)
+            pool["reserveB"] = pool.get("reserve_b", 0)
+            pool["totalLP"] = pool.get("total_lp", 0)
+            pool["feeNumerator"] = pool.get("fee_numerator", 3)
+            pool["feeDenominator"] = pool.get("fee_denominator", 1000)
     return pool_list
 
 # ===== Extrinsic Validation =====
