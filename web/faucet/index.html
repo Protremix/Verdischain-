@@ -341,7 +341,8 @@ async function requestTokens() {
     if (res.ok) {
       const data = await res.json();
       btn.textContent = '✓ Sent Successfully!';
-      addHistory(addr, selectedToken, selectedToken === 'VRDX' ? 100 : 50, data.tx_hash || 'pending'); alert('Success! ' ${selectedToken === 'VRDX' ? '100 VRDX' : '50 cVRDX'} sent to ${addr.slice(0, 16)}...\n\nTx Hash: ${data.txHash || 'pending'}`);
+      addHistory(addr, selectedToken, selectedToken === 'VRDX' ? 100 : 50, data.tx_hash || 'pending');
+      alert('Success! ' + (selectedToken === 'VRDX' ? '100 VRDX' : '50 cVRDX') + ' sent to ' + addr.slice(0, 16) + '...\n\nTx Hash: ' + (data.tx_hash || 'pending').toString().slice(0, 20) + '...');
     } else {
       throw new Error('API error');
     }
