@@ -1,5 +1,6 @@
 #![allow(unused_imports)]
-#[path = "presale_tests.rs"] mod presale_tests;
+#[path = "presale_tests.rs"]
+mod presale_tests;
 use crate::*;
 use frame_support::{
     assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types,

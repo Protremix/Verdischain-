@@ -300,7 +300,9 @@ pub mod pallet {
                     .expect("insufficient balance for validator stake at genesis");
                 list.try_push(addr.clone())
                     .expect("validator list overflow at genesis");
-                total = total.checked_add(stake).expect("total staked overflow at genesis");
+                total = total
+                    .checked_add(stake)
+                    .expect("total staked overflow at genesis");
             }
             ValidatorList::<T>::put(list.clone());
             TotalStaked::<T>::put(total);
@@ -387,7 +389,10 @@ pub mod pallet {
                 v.try_push(who.clone())
                     .map_err(|_| Error::<T>::MaxValidatorsReached)
             })?;
-            TotalStaked::<T>::try_mutate(|t| -> Result<(), Error<T>> { *t = t.checked_add(&stake).ok_or(Error::<T>::Overflow)?; Ok(()) })?;
+            TotalStaked::<T>::try_mutate(|t| -> Result<(), Error<T>> {
+                *t = t.checked_add(&stake).ok_or(Error::<T>::Overflow)?;
+                Ok(())
+            })?;
 
             Self::deposit_event(Event::ValidatorRegistered { who, stake });
             Ok(())
@@ -410,7 +415,12 @@ pub mod pallet {
             Validators::<T>::remove(&who);
             ValidatorList::<T>::mutate(|v| v.retain(|a| a != &who));
             ActiveValidators::<T>::mutate(|v| v.retain(|a| a != &who));
-            TotalStaked::<T>::try_mutate(|t| -> Result<(), Error<T>> { *t = t.checked_sub(&validator.stake).ok_or(Error::<T>::Overflow)?; Ok(()) })?;
+            TotalStaked::<T>::try_mutate(|t| -> Result<(), Error<T>> {
+                *t = t
+                    .checked_sub(&validator.stake)
+                    .ok_or(Error::<T>::Overflow)?;
+                Ok(())
+            })?;
 
             Self::deposit_event(Event::ValidatorUnregistered { who });
             Ok(())
@@ -465,12 +475,18 @@ pub mod pallet {
 
             Validators::<T>::try_mutate(&validator, |val| -> Result<(), Error<T>> {
                 if let Some(v) = val {
-                    v.total_votes = v.total_votes.checked_add(&amount).ok_or(Error::<T>::Overflow)?;
+                    v.total_votes = v
+                        .total_votes
+                        .checked_add(&amount)
+                        .ok_or(Error::<T>::Overflow)?;
                 }
                 Ok(())
             })?;
 
-            TotalStaked::<T>::try_mutate(|t| -> Result<(), Error<T>> { *t = t.checked_add(&amount).ok_or(Error::<T>::Overflow)?; Ok(()) })?;
+            TotalStaked::<T>::try_mutate(|t| -> Result<(), Error<T>> {
+                *t = t.checked_add(&amount).ok_or(Error::<T>::Overflow)?;
+                Ok(())
+            })?;
 
             Self::deposit_event(Event::Voted {
                 voter: who,
@@ -505,13 +521,19 @@ pub mod pallet {
 
             Validators::<T>::try_mutate(&validator, |val| -> Result<(), Error<T>> {
                 if let Some(v) = val {
-                    v.total_votes = v.total_votes.checked_sub(&amount).ok_or(Error::<T>::Overflow)?;
+                    v.total_votes = v
+                        .total_votes
+                        .checked_sub(&amount)
+                        .ok_or(Error::<T>::Overflow)?;
                 }
                 Ok(())
             })?;
 
             // Reduce total staked but keep funds locked in unbonding queue
-            TotalStaked::<T>::try_mutate(|t| -> Result<(), Error<T>> { *t = t.checked_sub(&amount).ok_or(Error::<T>::Overflow)?; Ok(()) })?;
+            TotalStaked::<T>::try_mutate(|t| -> Result<(), Error<T>> {
+                *t = t.checked_sub(&amount).ok_or(Error::<T>::Overflow)?;
+                Ok(())
+            })?;
 
             // Queue the unbonding request
             let current_block: u32 = frame_system::Pallet::<T>::block_number()
@@ -611,7 +633,9 @@ pub mod pallet {
 
             // Unreserve funds; track shortfall to avoid accounting mismatch
             let unreserved = T::Currency::unreserve(&validator, slash_amount);
-            let actual_slash = slash_amount.checked_sub(&unreserved).ok_or(Error::<T>::Overflow)?;
+            let actual_slash = slash_amount
+                .checked_sub(&unreserved)
+                .ok_or(Error::<T>::Overflow)?;
             ensure!(!actual_slash.is_zero(), Error::<T>::SlashingFailed);
 
             let treasury = T::PalletId::get().into_account_truncating();
@@ -624,8 +648,14 @@ pub mod pallet {
 
             Validators::<T>::try_mutate(&validator, |v| -> Result<(), Error<T>> {
                 if let Some(v) = v {
-                    v.stake = v.stake.checked_sub(&actual_slash).ok_or(Error::<T>::Overflow)?;
-                    v.total_votes = v.total_votes.checked_sub(&actual_slash).ok_or(Error::<T>::Overflow)?;
+                    v.stake = v
+                        .stake
+                        .checked_sub(&actual_slash)
+                        .ok_or(Error::<T>::Overflow)?;
+                    v.total_votes = v
+                        .total_votes
+                        .checked_sub(&actual_slash)
+                        .ok_or(Error::<T>::Overflow)?;
                     v.slashed = true;
                     v.active = false;
                 }
@@ -633,7 +663,10 @@ pub mod pallet {
             })?;
 
             SlashingEvents::<T>::mutate(&validator, |c| *c = c.saturating_add(1));
-            TotalStaked::<T>::try_mutate(|t| -> Result<(), Error<T>> { *t = t.checked_sub(&actual_slash).ok_or(Error::<T>::Overflow)?; Ok(()) })?;
+            TotalStaked::<T>::try_mutate(|t| -> Result<(), Error<T>> {
+                *t = t.checked_sub(&actual_slash).ok_or(Error::<T>::Overflow)?;
+                Ok(())
+            })?;
             ActiveValidators::<T>::mutate(|v| v.retain(|a| a != &validator));
 
             Self::deposit_event(Event::ValidatorSlashed {
@@ -1055,7 +1088,8 @@ mod benchmarking;
 
 #[cfg(test)]
 mod tests {
-    #[path = "slashing_tests.rs"] mod slashing_tests;
+    #[path = "slashing_tests.rs"]
+    mod slashing_tests;
     use super::*;
     use frame_support::{
         assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types,

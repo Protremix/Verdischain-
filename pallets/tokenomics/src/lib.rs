@@ -412,10 +412,16 @@ pub mod pallet {
             Distribution::<T>::mutate(&cat_bv, |c| {
                 let cat = c.as_mut().ok_or(Error::<T>::InvalidCategory)?;
                 ensure!(
-                    cat.released.checked_add(&amount).ok_or(Error::<T>::Overflow)? <= cat.amount,
+                    cat.released
+                        .checked_add(&amount)
+                        .ok_or(Error::<T>::Overflow)?
+                        <= cat.amount,
                     Error::<T>::DistributionComplete
                 );
-                cat.released = cat.released.checked_add(&amount).ok_or(Error::<T>::Overflow)?;
+                cat.released = cat
+                    .released
+                    .checked_add(&amount)
+                    .ok_or(Error::<T>::Overflow)?;
                 Ok::<(), Error<T>>(())
             })?;
 

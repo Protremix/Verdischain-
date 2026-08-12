@@ -314,7 +314,8 @@ pub mod pallet {
                                 let releasable = vested
                                     .checked_sub(&v.released)
                                     .ok_or(Error::<T>::Overflow)?;
-                                v.released = v.released
+                                v.released = v
+                                    .released
                                     .checked_add(&releasable)
                                     .ok_or(Error::<T>::Overflow)?;
                             }
@@ -429,7 +430,8 @@ pub mod pallet {
 
 #[cfg(test)]
 mod tests {
-    #[path = "vesting_tests.rs"] mod vesting_tests;
+    #[path = "vesting_tests.rs"]
+    mod vesting_tests;
     use super::*;
     use frame_support::traits::UnfilteredDispatchable;
     use frame_support::{
