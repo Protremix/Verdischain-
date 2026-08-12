@@ -26,6 +26,7 @@ parameter_types! {
 }
 
 impl Config for Test {
+    type WeightInfo = ();
     type MaxShards = MaxShards;
     type RedundancyFactor = RedundancyFactor;
     type MaxValidatorsPerNode = MaxValidatorsPerNode;
