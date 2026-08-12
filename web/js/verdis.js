@@ -11,15 +11,14 @@ const VERDIS_NAV_HTML = `
     Verdis
   </a>
   <ul class="verdis-nav-links">
-    <li><a href="/#what-is-verdis">Overview</a></li>
-    <li><a href="/#technology">Technology</a></li>
-    <li><a href="/#token">Token</a></li>
-    <li><a href="/explorer/">Explorer</a></li>
-    <li><a href="/wallet/">Wallet</a></li>
-    <li><a href="/download/">Download</a></li>
-    <li><a href="/developers/">Developers</a></li>
-    <li><a href="/docs/">Docs</a></li>
+    <li><a href="/explorer/">Verdiscan</a></li>
+    <li><a href="/dex/">DEX</a></li>
     <li><a href="/whitepaper/">Whitepaper</a></li>
+    <li><a href="/wallet/">Wallet</a></li>
+    <li><a href="/sale/">Sale</a></li>
+    <li><a href="/tokenomics/">Tokenomics</a></li>
+    <li><a href="/faucet/">Faucet</a></li>
+    <li><a href="/governance/">Governance</a></li>
   </ul>
   <div class="verdis-nav-cta">
     <a href="/wallet/" class="btn btn-primary btn-sm">Launch Wallet</a>
@@ -40,32 +39,32 @@ const VERDIS_FOOTER_HTML = `
     </div>
     <div class="verdis-footer-col">
       <h4>Ecosystem</h4>
-      <a href="/explorer/">Explorer</a>
-      <a href="/wallet/">Wallet</a>
-      <a href="/download/">Download</a>
+      <a href="/">Home</a>
+      <a href="/explorer/">Verdiscan</a>
       <a href="/dex/">DEX</a>
-      <a href="/faucet/">Faucet</a>
-      <a href="/validators/">Validators</a>
-    </div>
-    <div class="verdis-footer-col">
-      <h4>Developers</h4>
-      <a href="/developers/">Portal</a>
-      <a href="/docs/">Documentation</a>
       <a href="/whitepaper/">Whitepaper</a>
-      <a href="https://rpc.verdischain.com" target="_blank">RPC Endpoint</a>
+      <a href="/wallet/">Wallet</a>
+      <a href="/sale/">Sale</a>
+      <a href="/tokenomics/">Tokenomics</a>
+      <a href="/faucet/">Faucet</a>
+      <a href="/governance/">Governance</a>
     </div>
     <div class="verdis-footer-col">
       <h4>Resources</h4>
-      <a href="/#token">Token</a>
-      <a href="/tokenomics/">Tokenomics</a>
-      <a href="/token-sale/">Presale</a>
-      <a href="/blog/">Blog</a>
+      <a href="/validators/">Validators</a>
+      <a href="/eco/">Eco Metrics</a>
+      <a href="/referral/">Referral</a>
+      <a href="/incentives/">Incentives</a>
+      <a href="/contact/">Contact</a>
+      <a href="/docs/">Docs</a>
+      <a href="/api/">API</a>
     </div>
     <div class="verdis-footer-col">
       <h4>Community</h4>
-      <a href="https://github.com/verdischain" target="_blank">GitHub</a>
-      <a href="/#community">Join Us</a>
-      <a href="/#contact">Contact</a>
+      <a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a>
+      <a href="/blog/">Blog</a>
+      <a href="/developers/">Developers</a>
+      <a href="/download/">Download</a>
     </div>
   </div>
   <div class="verdis-footer-bottom">

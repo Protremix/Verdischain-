@@ -37,6 +37,35 @@
       }
     }
 
+
+    // --- Account Info via state_getStorage (system_account RPC not available) ---
+    const SYSTEM_ACCOUNT_PREFIX = 'REDACTED_KEY';
+    async function getAccountInfo(accountIdHex) {
+      try {
+        var acctHex = accountIdHex.startsWith('0x') ? accountIdHex.slice(2) : accountIdHex;
+        var acctBytes = new Uint8Array(acctHex.match(/.{2}/g).map(function(b) { return parseInt(b, 16); }));
+        var blakeHash = window.blake2b(acctBytes, { dkLen: 16 });
+        var blakeHex = Array.from(blakeHash).map(function(b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+        var storageKey = SYSTEM_ACCOUNT_PREFIX + blakeHex + acctHex;
+        var result = await rpcCall('state_getStorage', [storageKey]);
+        if (!result || result === '0x' || result.length < 10) return null;
+        var hex = result.slice(2);
+        var bytes = new Uint8Array(hex.match(/.{2}/g).map(function(b) { return parseInt(b, 16); }));
+        var nonce = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
+        function decodeU128LE(offset) {
+          var val = 0n;
+          for (var i = 0; i < 16; i++) { val += BigInt(bytes[offset + i]) << (8n * BigInt(i)); }
+          return val;
+        }
+        var free = decodeU128LE(16);
+        var reserved = decodeU128LE(32);
+        return { nonce: nonce, data: { free: free.toString(), reserved: reserved.toString() } };
+      } catch(e) {
+        console.warn('getAccountInfo error:', e);
+        return null;
+      }
+    }
+
     // --- Tab Switching ---
     function switchTab(tabId) {
       document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
@@ -114,11 +143,11 @@
         try {
           var pubKey = VerdisCrypto.ss58Decode(addr);
           var accountIdHex = '0x' + Array.from(pubKey).map(function(b) { return ('0' + b.toString(16)).slice(-2); }).join('');
-          var accountInfo = await rpcCall('system_account', [accountIdHex]);
+          var accountInfo = await getAccountInfo(accountIdHex);
           if (accountInfo && accountInfo.data) {
             var freeStr = accountInfo.data.free || '0';
-            var free = typeof freeStr === 'string' ? parseInt(freeStr, freeStr.startsWith('0x') ? 16 : 10) : freeStr;
-            walletState.balanceVRDX = free / 1e18;
+            var freeBigInt = BigInt(freeStr);
+            walletState.balanceVRDX = Number(freeBigInt / BigInt(1000000000)) + Number(freeBigInt % BigInt(1000000000)) / 1000000000;
             console.log('[Verdis Wallet] Balance:', walletState.balanceVRDX, 'VRDX');
           }
         } catch (e) {
