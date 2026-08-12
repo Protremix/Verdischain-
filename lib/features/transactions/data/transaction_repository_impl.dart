@@ -86,7 +86,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
       // Build signing payload: call + era + nonce + tip + specVer + txVer + genesis + blockHash
       final payload = <int>[];
       payload.addAll(callData);
-      payload.add(0); // Immortal era
+      // Era: mortal (64 blocks ~10min, prevents replay attacks)
+      const eraPeriod = 64;
+      final eraPhase = blockInfo["number"]! % eraPeriod;
+      payload.add((eraPeriod << 2 | 1) & 0xFF);
+      payload.add(eraPhase & 0xFF);
       payload.addAll(_encodeCompactInt(nonce));
       payload.add(0); // Tip = 0
       payload.addAll(_encodeU32(_specVersion));
@@ -104,7 +108,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
       ext.addAll(signerPubkey);
       ext.add(1); // SR25519 signature type
       ext.addAll(signature);
-      ext.add(0); // Immortal era
+      ext.add((eraPeriod << 2 | 1) & 0xFF);
+      ext.add(eraPhase & 0xFF);
       ext.addAll(_encodeCompactInt(nonce));
       ext.add(0); // Tip = 0
       ext.addAll(callData);
