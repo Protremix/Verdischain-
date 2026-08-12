@@ -4,7 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
@@ -26,7 +26,7 @@ import io.flutter.plugin.common.MethodChannel
  * VerdisSigner.getInitError() so the surfaced error is actionable instead of
  * a generic "not initialized yet".
  */
-class MainActivity: FlutterActivity() {
+class MainActivity: FlutterFragmentActivity() {
     private val CHANNEL = "com.verdis.verdis_wallet/crypto"
     private var webView: WebView? = null
     @Volatile private var webViewReady = false
