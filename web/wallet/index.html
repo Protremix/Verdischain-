@@ -1509,35 +1509,46 @@ async function loadHistory() {
       };
     }
 
-    for (let i = 0; i < 200 && currentBlock - i > 0; i++) {
-      if (txs.length >= 30) break;
-      const bn = currentBlock - i;
-      const blockHash = await rpcCall('chain_getBlockHash', [bn]);
-      if (!blockHash) continue;
-      const blockData = await rpcCall('chain_getBlock', [blockHash]);
-      if (!blockData || !blockData.block || !blockData.block.extrinsics) continue;
+    // Fetch blocks in parallel batches for speed
+    const SCAN_RANGE = 50;
+    const BATCH_SIZE = 10;
+    for (let batchStart = 0; batchStart < SCAN_RANGE && currentBlock - batchStart > 0 && txs.length < 30; batchStart += BATCH_SIZE) {
+      const batchEnd = Math.min(batchStart + BATCH_SIZE, SCAN_RANGE, currentBlock);
+      const blockNums = [];
+      for (let i = batchStart; i < batchEnd; i++) blockNums.push(currentBlock - i);
 
-      for (const ext of blockData.block.extrinsics) {
-        // Extrinsics come as hex strings from RPC — decode them
-        const extHex = typeof ext === 'string' ? ext : '0x' + ext.map(b => ('0' + b.toString(16)).slice(-2)).join('');
-        const decoded = decodeExtrinsicTx(extHex, bn, blockHash);
-        if (!decoded) continue;
+      // Fetch all block hashes + data in parallel
+      const blocks = await Promise.all(blockNums.map(async (bn) => {
+        const hash = await rpcCall('chain_getBlockHash', [bn]);
+        if (!hash) return null;
+        const block = await rpcCall('chain_getBlock', [hash]);
+        if (!block || !block.block || !block.block.extrinsics) return null;
+        return { bn, hash, extrinsics: block.block.extrinsics };
+      }));
 
-        const isSent = decoded.signer === myAddr;
-        const isReceived = decoded.dest === myAddr;
+      for (const blk of blocks) {
+        if (!blk || txs.length >= 30) continue;
+        for (const ext of blk.extrinsics) {
+          const extHex = typeof ext === 'string' ? ext : '0x' + ext.map(b => ('0' + b.toString(16)).slice(-2)).join('');
+          const decoded = decodeExtrinsicTx(extHex, blk.bn, blk.hash);
+          if (!decoded) continue;
 
-        if (isSent || isReceived) {
-          const existing = txs.find(t => t.block === bn && t.signer === decoded.signer);
-          if (!existing) {
-            txs.push({
-              hash: decoded.hash,
-              block: bn,
-              type: isSent ? 'sent' : 'received',
-              signer: decoded.signer,
-              dest: decoded.dest,
-              method: decoded.method,
-              value: decoded.value
-            });
+          const isSent = decoded.signer === myAddr;
+          const isReceived = decoded.dest === myAddr;
+
+          if (isSent || isReceived) {
+            const existing = txs.find(t => t.block === blk.bn && t.signer === decoded.signer);
+            if (!existing) {
+              txs.push({
+                hash: decoded.hash,
+                block: blk.bn,
+                type: isSent ? 'sent' : 'received',
+                signer: decoded.signer,
+                dest: decoded.dest,
+                method: decoded.method,
+                value: decoded.value
+              });
+            }
           }
         }
       }
