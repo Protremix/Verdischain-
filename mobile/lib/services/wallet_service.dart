@@ -309,7 +309,31 @@ class WalletService extends ChangeNotifier {
 
   // Derive SS58 address from mnemonic LOCALLY (Sr25519, prefix 909)
   // SECURITY: Mnemonic NEVER leaves the device. Uses Polkadot Sr25519 WASM.
+  String _decryptMnemonic() {
+    if (_activeAccount == null) throw Exception("No active account");
+    if (_activeAccount!.encryptedKey.isEmpty) throw Exception("No encrypted key");
+    String stored = _activeAccount!.encryptedKey;
+    if (_walletPin.isNotEmpty) {
+      try {
+        return SecureCrypto.decrypt(stored, _walletPin)!;
+      } catch (e) {
+        try {
+          return String.fromCharCodes(base64Decode(stored));
+        } catch (e2) {
+          throw Exception("Failed to decrypt mnemonic");
+        }
+      }
+    }
+    try {
+      return String.fromCharCodes(base64Decode(stored));
+    } catch (e) {
+      return stored;
+    }
+  }
+
   Future<String> _deriveAddress(String mnemonic) async {
+    // Non-custodial: derive address locally via WebView crypto channel
+    // NEVER send mnemonic to server
     try {
       final result = await _cryptoChannel.invokeMethod('deriveAddress', {'mnemonic': mnemonic});
       if (result is Map && result['address'] != null) {
@@ -317,19 +341,8 @@ class WalletService extends ChangeNotifier {
       }
       throw Exception('Invalid response from crypto channel');
     } on PlatformException catch (e) {
-      debugPrint('Local derivation failed, falling back to server: $e');
-      // Fallback: use server derivation (mnemonic sent to server)
-      // TODO: Remove this fallback once local derivation is verified
-      final response = await http.post(
-        Uri.parse('https://verdischain.com/api/tx-relay'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'action': 'derive-address', 'mnemonic': mnemonic}),
-      );
-      final data = json.decode(response.body);
-      if (data['ok'] == true && data['address'] != null) {
-        return data['address'] as String;
-      }
-      throw Exception(data['error'] ?? 'Address derivation failed');
+      debugPrint('Local derivation failed: $e');
+      throw Exception('Address derivation failed: ${e.message}. Please restart the app.');
     }
   }
 
@@ -551,20 +564,97 @@ class WalletService extends ChangeNotifier {
 
     String txHash = '0xpending';
     try {
-      final relayRes = await http.post(
-        Uri.parse('https://verdischain.com/api/tx-relay'),
+      // 1. Get nonce from chain
+      final nonceRes = await http.post(
+        Uri.parse(_rpcUrl),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'action': 'transfer',
-          'to': recipient,
-          'amount': (amount * 1e9).round(),
+          'jsonrpc': '2.0',
+          'method': 'system_accountNextIndex',
+          'params': [_activeAccount!.address],
+          'id': 1,
         }),
       );
-      final relayData = json.decode(relayRes.body);
-      if (relayData['ok'] == true) {
-        txHash = relayData['extrinsic_hash'] ?? '0xpending';
+      final nonceData = json.decode(nonceRes.body);
+      final nonce = nonceData['result'] as int? ?? 0;
+
+      // 2. Get genesis hash
+      final genesisRes = await http.post(
+        Uri.parse(_rpcUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'jsonrpc': '2.0',
+          'method': 'chain_getBlockHash',
+          'params': [0],
+          'id': 2,
+        }),
+      );
+      final genesisData = json.decode(genesisRes.body);
+      final genesisHash = genesisData['result'] as String?;
+
+      // 3. Get spec version
+      final versionRes = await http.post(
+        Uri.parse(_rpcUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'jsonrpc': '2.0',
+          'method': 'state_getRuntimeVersion',
+          'params': [],
+          'id': 3,
+        }),
+      );
+      final versionData = json.decode(versionRes.body);
+      final specVersion = versionData['result']?['specVersion'] as int? ?? 14;
+
+      // 4. Get current block hash
+      final blockHashRes = await http.post(
+        Uri.parse(_rpcUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'jsonrpc': '2.0',
+          'method': 'chain_getBlockHash',
+          'params': [],
+          'id': 4,
+        }),
+      );
+      final blockHashData = json.decode(blockHashRes.body);
+      final blockHash = blockHashData['result'] as String? ?? genesisHash;
+
+      // 5. Decrypt mnemonic
+      final mnemonic = _decryptMnemonic();
+
+      // 6. Sign extrinsic locally via WebView crypto channel
+      final amountAtoms = (amount * 1e9).round();
+      final signResult = await _cryptoChannel.invokeMethod('signTransfer', {
+        'mnemonic': mnemonic,
+        'destAddress': recipient,
+        'amountAtoms': amountAtoms,
+        'nonce': nonce,
+        'genesisHash': genesisHash,
+        'blockHash': blockHash,
+        'specVersion': specVersion,
+      });
+
+      if (signResult is Map && signResult['extrinsic'] != null) {
+        final extrinsicHex = signResult['extrinsic'] as String;
+
+        // 7. Submit pre-signed extrinsic to TX Relay v3
+        final relayRes = await http.post(
+          Uri.parse('https://verdischain.com/api/tx-relay'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'action': 'submit-extrinsic',
+            'extrinsic': extrinsicHex,
+          }),
+        );
+        final relayData = json.decode(relayRes.body);
+        if (relayData['ok'] == true) {
+          txHash = relayData['tx_hash'] ?? '0xpending';
+        } else {
+          throw Exception(relayData['error'] ?? 'TX Relay submission failed');
+        }
       } else {
-        throw Exception(relayData['error'] ?? 'TX Relay failed');
+        throw Exception('Signing failed');
       }
 
       _vrdxBalance -= amount;

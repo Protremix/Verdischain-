@@ -36,6 +36,17 @@ class MainActivity: FlutterActivity() {
                     if (!webViewReady) initWebView()
                     validateMnemonic(mnemonic, result)
                 }
+                "signTransfer" -> {
+                    val mnemonic = call.argument<String>("mnemonic") ?: ""
+                    val destAddress = call.argument<String>("destAddress") ?: ""
+                    val amountAtoms = call.argument<Number>("amountAtoms")?.toLong() ?: 0L
+                    val nonce = call.argument<Number>("nonce")?.toLong() ?: 0L
+                    val genesisHash = call.argument<String>("genesisHash") ?: ""
+                    val blockHash = call.argument<String>("blockHash") ?: ""
+                    val specVersion = call.argument<Number>("specVersion")?.toInt() ?: 0
+                    if (!webViewReady) initWebView()
+                    signTransfer(mnemonic, destAddress, amountAtoms, nonce, genesisHash, blockHash, specVersion, result)
+                }
                 else -> result.notImplemented()
             }
         }
@@ -123,8 +134,7 @@ class MainActivity: FlutterActivity() {
         }
 
         if (latch.await(10, TimeUnit.SECONDS)) {
-            val cleaned = resultJson?.trim()
-                ?.removeSurrounding("\"")
+            val cleaned = resultJson?.trim()?.removeSurrounding("\"")
                 ?.replace("\\\"", "\"")
                 ?.replace("\\\\", "\\")
                 ?.replace("\\n", "\n")
@@ -185,6 +195,60 @@ class MainActivity: FlutterActivity() {
             }
         } else {
             result.error("TIMEOUT", "Generation timed out", null)
+        }
+    }
+
+    private fun signTransfer(mnemonic: String, destAddress: String, amountAtoms: Long, nonce: Long, genesisHash: String, blockHash: String, specVersion: Int, result: MethodChannel.Result) {
+        var wasmReady = waitForWasm()
+        if (!wasmReady) { Thread.sleep(1000); wasmReady = waitForWasm() }
+        if (!wasmReady) { Thread.sleep(1000); wasmReady = waitForWasm() }
+
+        val latch = CountDownLatch(1)
+        var resultJson: String? = null
+
+        val safeMnemonic = mnemonic.replace("\\", "\\\\").replace("'", "\\'")
+        val safeDest = destAddress.replace("\\", "\\\\").replace("'", "\\'")
+
+        runOnUiThread {
+            val wv = webView
+            if (wv != null) {
+                val js = "VerdisSigner.signTransfer('" + safeMnemonic + "', '" + safeDest + "', " + amountAtoms + ", " + nonce + ", '" + genesisHash + "', '" + blockHash + "', " + specVersion + ")"
+                wv.evaluateJavascript(js, object : ValueCallback<String> {
+                    override fun onReceiveValue(value: String?) {
+                        resultJson = value
+                        latch.countDown()
+                    }
+                })
+            } else {
+                result.error("WEBVIEW_ERROR", "WebView not initialized", null)
+                latch.countDown()
+            }
+        }
+
+        if (latch.await(15, TimeUnit.SECONDS)) {
+            val cleaned = resultJson?.trim()?.removeSurrounding("\"")
+                ?.replace("\\\"", "\"")
+                ?.replace("\\\\", "\\")
+                ?.replace("\\n", "\n")
+            if (cleaned != null && cleaned.startsWith("{")) {
+                try {
+                    val parsed = org.json.JSONObject(cleaned)
+                    if (parsed.has("error")) {
+                        result.error("SIGN_ERROR", parsed.getString("error"), null)
+                    } else {
+                        result.success(mapOf(
+                            "extrinsic" to parsed.getString("extrinsic"),
+                            "signer" to parsed.optString("signer", "")
+                        ))
+                    }
+                } catch (e: Exception) {
+                    result.error("PARSE_ERROR", e.message, null)
+                }
+            } else {
+                result.error("SIGN_ERROR", "Invalid response: $cleaned", null)
+            }
+        } else {
+            result.error("TIMEOUT", "Signing timed out", null)
         }
     }
 

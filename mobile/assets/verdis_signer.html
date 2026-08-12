@@ -2308,6 +2308,166 @@ console.log("[VerdisCrypto] Module loaded — Sr25519 + BIP39 + SS58 (via Polkad
 </script>
 
 <script>
+
+// ============================================================
+// SCALE Encoding + Extrinsic Signing (added for non-custodial wallet)
+// ============================================================
+
+// SS58 decode: convert SS58 address to 32-byte public key
+function ss58Decode(address) {
+  // SS58 format: prefix + 32-byte public key + 2-byte checksum
+  // Base58 decode
+  var ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  var decoded = [];
+  for (var i = 0; i < address.length; i++) {
+    var c = ALPHABET.indexOf(address[i]);
+    if (c < 0) throw new Error('Invalid SS58 character: ' + address[i]);
+    for (var j = 0; j < decoded.length; j++) {
+      c += decoded[j] * 58;
+      decoded[j] = c & 0xff;
+      c >>= 8;
+    }
+    while (c > 0) {
+      decoded.push(c & 0xff);
+      c >>= 8;
+    }
+  }
+  // decoded is little-endian, reverse to big-endian
+  decoded.reverse();
+  
+  // Check we have enough bytes: 1 prefix + 32 pubkey + 2 checksum = 35
+  if (decoded.length < 35) throw new Error('SS58 address too short: ' + decoded.length);
+  
+  // Extract public key (skip first byte which is the SS58 prefix)
+  var pubkey = decoded.slice(1, 33);
+  return new Uint8Array(pubkey);
+}
+
+// SCALE compact encoding
+function compactEncode(n) {
+  if (n < 0) throw new Error('Negative not supported');
+  if (n < 64) {
+    return new Uint8Array([n << 2]);
+  } else if (n < 16384) {
+    return new Uint8Array([(n << 2) | 0x01 & 0xff, (n << 2) >> 8 & 0xff]);
+  } else if (n < 1073741824) {
+    var b = new Uint8Array(4);
+    b[0] = ((n << 2) | 0x02) & 0xff;
+    b[1] = ((n << 2) >> 8) & 0xff;
+    b[2] = ((n << 2) >> 16) & 0xff;
+    b[3] = ((n << 2) >> 24) & 0xff;
+    return b;
+  } else {
+    // Big integer mode
+    var hex = n.toString(16);
+    if (hex.length % 2) hex = '0' + hex;
+    var bytes = [];
+    for (var i = 0; i < hex.length; i += 2) {
+      bytes.push(parseInt(hex.substr(i, 2), 16));
+    }
+    // Reverse for little-endian
+    bytes.reverse();
+    var prefix = ((bytes.length - 4) << 2) | 0x03;
+    return new Uint8Array([prefix].concat(bytes));
+  }
+}
+
+// Encode u128 as SCALE bytes (little-endian, 16 bytes)
+function encodeU128(n) {
+  var bytes = new Uint8Array(16);
+  var val = n;
+  for (var i = 0; i < 16; i++) {
+    bytes[i] = val & 0xff;
+    val = Math.floor(val / 256);
+  }
+  return bytes;
+}
+
+// Concatenate Uint8Arrays
+function concatBytes() {
+  var total = 0;
+  for (var i = 0; i < arguments.length; i++) {
+    total += arguments[i].length;
+  }
+  var result = new Uint8Array(total);
+  var offset = 0;
+  for (var i = 0; i < arguments.length; i++) {
+    result.set(arguments[i], offset);
+    offset += arguments[i].length;
+  }
+  return result;
+}
+
+// Convert Uint8Array to hex string
+function bytesToHex(bytes) {
+  return Array.from(bytes).map(function(b) {
+    return (b < 16 ? '0' : '') + b.toString(16);
+  }).join('');
+}
+
+// Create Balances.transfer call (pallet=4, function=0)
+// transfer(dest: MultiAddress<AccountId32>, value: u128)
+function createTransferCall(destAddress, amountAtoms) {
+  var destPubkey = ss58Decode(destAddress);
+  // Call index: [4, 0] for Balances.transfer
+  var callIndex = new Uint8Array([4, 0]);
+  // MultiAddress::Address32 = variant 0, then 32 bytes
+  var multiAddressTag = new Uint8Array([0x00]);
+  // Amount as compact-encoded u128
+  var amount = compactEncode(amountAtoms);
+  
+  return concatBytes(callIndex, multiAddressTag, destPubkey, amount);
+}
+
+// Sign a Balances.transfer extrinsic locally
+// Returns signed extrinsic hex string
+async function signTransferExtrinsic(mnemonic, destAddress, amountAtoms, nonce, genesisHashHex, blockHashHex, specVersion) {
+  if (!window._polkadotReady) throw new Error('WASM not ready');
+  
+  // 1. Create the call bytes
+  var callBytes = createTransferCall(destAddress, amountAtoms);
+  
+  // 2. Create signing payload
+  // Era: immortal (0x00)
+  var era = new Uint8Array([0x00]);
+  // Nonce: compact-encoded
+  var nonceEncoded = compactEncode(nonce);
+  // Tip: 0 (compact-encoded)
+  var tip = new Uint8Array([0x00]);
+  // Spec version: u32 LE (4 bytes)
+  var specVerBytes = new Uint8Array(4);
+  specVerBytes[0] = specVersion & 0xff;
+  specVerBytes[1] = (specVersion >> 8) & 0xff;
+  specVerBytes[2] = (specVersion >> 16) & 0xff;
+  specVerBytes[3] = (specVersion >> 24) & 0xff;
+  
+  // Genesis hash: 32 bytes from hex
+  var genesisHash = hexToUint8(genesisHashHex);
+  // Block hash: 32 bytes from hex (same as genesis for immortal era)
+  var blockHash = hexToUint8(blockHashHex);
+  
+  var signingPayload = concatBytes(callBytes, era, nonceEncoded, tip, specVerBytes, genesisHash, blockHash);
+  
+  // 3. Sign with sr25519
+  var keyring = new PolkadotCrypto.Keyring({ type: 'sr25519', ss58Format: 909 });
+  var kp = keyring.addFromMnemonic(mnemonic);
+  var signature = kp.sign(signingPayload);
+  
+  // 4. Create the signed extrinsic
+  // Format: [version=0x84] [signature=64 bytes] [signer=32 bytes] [era=1 byte] [nonce compact] [tip compact] [call]
+  var version = new Uint8Array([0x84]);
+  var signerPubkey = new Uint8Array(kp.publicKey);
+  
+  var extrinsic = concatBytes(version, signature, signerPubkey, era, nonceEncoded, tip, callBytes);
+  
+  // 5. Add compact length prefix
+  var lengthPrefix = compactEncode(extrinsic.length);
+  var finalExtrinsic = concatBytes(lengthPrefix, extrinsic);
+  
+  return bytesToHex(finalExtrinsic);
+}
+
+
 // ============================================================
 // JavaScript Interface for Android WebView (called from Kotlin)
 // ============================================================
@@ -2346,6 +2506,53 @@ var VerdisSigner = {
       return VerdisCrypto.validateMnemonic(mnemonic);
     } catch(e) {
       return false;
+    }
+  },
+  
+  signTransfer: function(mnemonic, destAddress, amountAtoms, nonce, genesisHash, blockHash, specVersion) {
+    try {
+      if (!window._polkadotReady) {
+        return JSON.stringify({ error: WASM_NOT_READY });
+      }
+      // Call async function and return result
+      // Since evaluateJavascript doesn't support promises, we need a callback approach
+      // For now, use a synchronous approach by pre-signing
+      var keyring = new PolkadotCrypto.Keyring({ type: sr25519, ss58Format: 909 });
+      var kp = keyring.addFromMnemonic(mnemonic);
+      
+      // Create the call bytes
+      var callBytes = createTransferCall(destAddress, amountAtoms);
+      
+      // Create signing payload
+      var era = new Uint8Array([0x00]);
+      var nonceEncoded = compactEncode(nonce);
+      var tip = new Uint8Array([0x00]);
+      var specVerBytes = new Uint8Array(4);
+      specVerBytes[0] = specVersion & 0xff;
+      specVerBytes[1] = (specVersion >> 8) & 0xff;
+      specVerBytes[2] = (specVersion >> 16) & 0xff;
+      specVerBytes[3] = (specVersion >> 24) & 0xff;
+      var genHash = hexToUint8(genesisHash);
+      var blkHash = hexToUint8(blockHash);
+      
+      var signingPayload = concatBytes(callBytes, era, nonceEncoded, tip, specVerBytes, genHash, blkHash);
+      
+      // Sign
+      var signature = kp.sign(signingPayload);
+      var signerPubkey = new Uint8Array(kp.publicKey);
+      
+      // Create extrinsic
+      var version = new Uint8Array([0x84]);
+      var extrinsic = concatBytes(version, signature, signerPubkey, era, nonceEncoded, tip, callBytes);
+      var lengthPrefix = compactEncode(extrinsic.length);
+      var finalExtrinsic = concatBytes(lengthPrefix, extrinsic);
+      
+      return JSON.stringify({
+        extrinsic: 0x + bytesToHex(finalExtrinsic),
+        signer: kp.address
+      });
+    } catch(e) {
+      return JSON.stringify({ error: e.message });
     }
   }
 };

@@ -121,20 +121,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Verdis Wallet',
-                            style: TextStyle(
-                              color: Color(0xFF94a3b8),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          Image.asset(
+                            'assets/images/verdis-logo-nav-white.png',
+                            height: 28,
+                            fit: BoxFit.contain,
                           ),
+                          const SizedBox(height: 4),
                           Text(
                             activeAcc?.name ?? 'Main Wallet',
                             style: const TextStyle(
-                              color: Color(0xFFFFFFFF),
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF94a3b8),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
