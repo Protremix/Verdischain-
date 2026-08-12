@@ -1542,26 +1542,6 @@ async function loadHistory() {
         }
       }
     }
-            let remark = 'System.remark';
-            try {
-              const bytes = callHex.slice(6);
-              const len = parseInt(bytes.slice(0, 4), 16);
-              if (len > 0 && len < 256) {
-                const remarkHex = bytes.slice(4, 4 + len * 2);
-                remark = decodeURIComponent(remarkHex.replace(/../g, '%$&'));
-              }
-            } catch {}
-            const existing = txs.find(t => t.block === bn && t.signer === signer);
-            if (!existing) {
-              txs.push({
-                hash: ext.hash || blockHash,
-                block: bn,
-                type: 'remark',
-                signer: signer,
-                method: 'System.remark',
-                value: remark
-              });
-            }
 
     txs.sort((a, b) => b.block - a.block);
 
