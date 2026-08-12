@@ -341,16 +341,16 @@ async function requestTokens() {
     if (res.ok) {
       const data = await res.json();
       btn.textContent = '✓ Sent Successfully!';
-      alert(`Success! ${selectedToken === 'VRDX' ? '100 VRDX' : '50 cVRDX'} sent to ${addr.slice(0, 16)}...\n\nTx Hash: ${data.txHash || 'pending'}`);
+      addHistory(addr, selectedToken, selectedToken === 'VRDX' ? 100 : 50, data.tx_hash || 'pending'); alert('Success! ' ${selectedToken === 'VRDX' ? '100 VRDX' : '50 cVRDX'} sent to ${addr.slice(0, 16)}...\n\nTx Hash: ${data.txHash || 'pending'}`);
     } else {
       throw new Error('API error');
     }
   } catch (e) {
-    // Faucet API error - do not fake success
-    btn.textContent = '✓ Sent Successfully!';
-    const txHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
-    alert(`Success! ${selectedToken === 'VRDX' ? '100 VRDX' : '50 cVRDX'} sent to ${addr.slice(0, 16)}...\n\nTx Hash: ${txHash.slice(0, 20)}...\n\nThe tokens will appear in your wallet within a few seconds.`);
-    addHistory(addr, selectedToken, selectedToken === 'VRDX' ? 100 : 50, data.txHash || txHash);
+    btn.textContent = 'Request Failed';
+    btn.style.background = '#ef4444';
+    alert('Faucet request failed: ' + (e.message || 'Network error') + '. Please try again.');
+    setTimeout(() => { btn.disabled = false; btn.style.background = ''; btn.textContent = 'Request ' + (selectedToken === 'VRDX' ? '100 VRDX' : '50 cVRDX'); }, 2000);
+    return;
   }
 
   // Start cooldown

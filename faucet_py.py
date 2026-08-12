@@ -72,7 +72,7 @@ def send_drip(dest_address):
             )
             extrinsic = substrate.create_signed_extrinsic(call=call, keypair=faucet_kp)
             tx_hash = substrate.submit_extrinsic(extrinsic, wait_for_inclusion=False)
-            return True, str(extrinsic.extrinsic_hash)
+            return True, "0x" + extrinsic.extrinsic_hash.hex()
         except Exception as e:
             return False, str(e)
 
