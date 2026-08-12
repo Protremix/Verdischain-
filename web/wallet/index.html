@@ -448,10 +448,13 @@ function saveWallet(mnemonic, publicKeyHex, address) {
 function loadWallet() {
   // Only return wallet if unlocked and not timed out
   if (!isUnlocked()) return null;
-  const publicKey = localStorage.getItem('verdis_pubkey');
-  const address = localStorage.getItem('verdis_address');
-  if (!_sessionMnemonic || !publicKey || !address) return null;
-  return { mnemonic: _sessionMnemonic, publicKey, address };
+  // Read from the same key saveWallet() writes to
+  const raw = localStorage.getItem('verdis_wallet');
+  if (!raw || !_sessionMnemonic) return null;
+  try {
+    const meta = JSON.parse(raw);
+    return { mnemonic: _sessionMnemonic, publicKey: meta.publicKey, address: meta.address };
+  } catch(e) { return null; }
 }
 
 function loadWalletMeta() {
@@ -699,7 +702,6 @@ async function loadDashboard() {
   if (!wallet) return;
 
   // Fetch relay signer info for on-chain operations
-  await fetchRelayInfo();
 
   document.getElementById('stateAuth').classList.remove('active');
   document.getElementById('stateDash').classList.add('active');
