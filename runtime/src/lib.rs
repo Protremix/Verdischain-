@@ -1220,10 +1220,12 @@ impl pallet_turbine::Config for Runtime {
 impl pallet_zk_compression::Config for Runtime {
     type MaxLeaves = MaxZkLeaves;
     type MaxDepth = MaxZkDepth;
+    type WeightInfo = pallet_zk_compression::SubstrateWeight<Runtime>;
 }
 impl pallet_address_lookup_tables::Config for Runtime {
     type MaxAddressesPerTable = MaxAddressesPerTable;
     type MaxTablesPerAccount = MaxTablesPerAccount;
+    type WeightInfo = pallet_address_lookup_tables::SubstrateWeight<Runtime>;
 }
 impl pallet_sealevel::Config for Runtime {
     type MaxComputeUnits = MaxComputeUnits;

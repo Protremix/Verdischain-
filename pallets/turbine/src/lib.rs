@@ -56,7 +56,7 @@ pub mod pallet {
     }
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        #[pallet::weight(0)]
+        #[pallet::weight(T::WeightInfo::register_shard())]
         #[pallet::call_index(0)]
         pub fn register_shard(
             origin: OriginFor<T>,
@@ -77,7 +77,7 @@ pub mod pallet {
             });
             Ok(())
         }
-        #[pallet::weight(0)]
+        #[pallet::weight(T::WeightInfo::rebuild_tree(0))]
         #[pallet::call_index(1)]
         pub fn rebuild_tree(origin: OriginFor<T>, validator_count: u32) -> DispatchResult {
             ensure_root(origin)?;
@@ -91,7 +91,7 @@ pub mod pallet {
             });
             Ok(())
         }
-        #[pallet::weight(0)]
+        #[pallet::weight(T::WeightInfo::mark_block_propagated())]
         #[pallet::call_index(2)]
         pub fn mark_block_propagated(origin: OriginFor<T>, block_number: u32) -> DispatchResult {
             let _ = ensure_signed(origin)?;

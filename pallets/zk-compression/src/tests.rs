@@ -27,6 +27,7 @@ parameter_types! {
 impl Config for Test {
     type MaxLeaves = MaxLeaves;
     type MaxDepth = MaxDepth;
+    type WeightInfo = ();
 }
 
 pub fn new_test_ext() -> TestExternalities {
