@@ -199,7 +199,7 @@ body:hover #cursor-glow{opacity:1}
 <div class="wallet-hero">
 <div class="wallet-badge"><span class="wallet-badge-dot"></span> Non-Custodial · Sr25519</div>
 <h1>Verdis <span class="grad">Web3 Wallet</span></h1>
-<p>Create, import, send, and receive VRDX tokens. Your keys, your coins — powered by @polkadot/keyring (Sr25519).
+<p>Create, import, send, and receive VRDX tokens. Your keys, your coins — secured by Verdis sr25519 cryptography.
 <div style="margin-top:10px;font-size:12px;color:#00ff88;letter-spacing:0.5px;font-weight:600">Powered by Verdis &amp; EvolvixOS</div></p>
 </div>
 
@@ -245,6 +245,14 @@ body:hover #cursor-glow{opacity:1}
 <div class="private-key-display" id="newPrivKey" onclick="copyToClipboard(this.textContent)">Click "Generate" to create...</div>
 </div>
 <button class="btn-primary" onclick="generateWallet()">Generate New Wallet</button>
+
+    <div class="form-group" id="createPinGroup" style="margin-top:16px">
+      <label>Set a PIN (4-6 digits) — needed to unlock after refresh</label>
+      <input type="password" id="createPinInput" placeholder="e.g. 1234" maxlength="6"
+        style="text-align:center;font-size:20px;letter-spacing:6px;font-weight:600"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+      <p style="font-size:12px;color:#6b7280;margin-top:4px">This PIN encrypts your wallet locally. Without it, your wallet can't be restored on this device.</p>
+    </div>
 <button class="btn-primary" id="enterWalletBtn" onclick="enterWallet()" style="display:none;margin-top:8px;background:#00a86b;font-size:16px;padding:14px">Enter Wallet →</button>
 <button class="btn-primary back-btn" style="margin-top:8px" onclick="backToAuth()">Back</button>
 </div>
@@ -257,6 +265,14 @@ body:hover #cursor-glow{opacity:1}
 <label>Private Key (hex) or 12-Word Mnemonic</label>
 <textarea id="importInput" placeholder="0x... or word1 word2 word3... word12"></textarea>
 </div>
+
+    <div class="form-group" style="margin-top:16px">
+      <label>Set a PIN (4-6 digits) — needed to unlock after refresh</label>
+      <input type="password" id="importPinInput" placeholder="e.g. 1234" maxlength="6"
+        style="text-align:center;font-size:20px;letter-spacing:6px;font-weight:600"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+      <p style="font-size:12px;color:#6b7280;margin-top:4px">This PIN encrypts your wallet locally for persistence across page refreshes.</p>
+    </div>
 <button class="btn-primary" onclick="importWallet()">Import Wallet</button>
 <button class="btn-primary back-btn" style="margin-top:8px" onclick="backToAuth()">Back</button>
 </div>
@@ -485,6 +501,108 @@ function saveWallet(mnemonic, publicKeyHex, address) {
   _lastActivity = Date.now();
 }
 
+// Save encrypted mnemonic with PIN for persistence across refreshes
+async function saveWalletWithPin(mnemonic, publicKeyHex, address, pin) {
+  const encrypted = await encryptMnemonic(mnemonic, pin);
+  localStorage.setItem('verdis_wallet_encrypted', JSON.stringify({
+    ciphertext: encrypted.ciphertext,
+    salt: encrypted.salt,
+    iv: encrypted.iv,
+    publicKey: publicKeyHex,
+    address: address,
+    created: Date.now()
+  }));
+  // Also store public info for quick access
+  localStorage.setItem('verdis_wallet', JSON.stringify({
+    publicKey: publicKeyHex,
+    address: address,
+    created: Date.now()
+  }));
+  _sessionMnemonic = mnemonic;
+  _lastActivity = Date.now();
+}
+
+// Load encrypted wallet metadata (without decrypting)
+function loadEncryptedWallet() {
+  try {
+    const data = localStorage.getItem('verdis_wallet_encrypted');
+    if (!data) return null;
+    return JSON.parse(data);
+  } catch { return null; }
+}
+
+// Unlock wallet with PIN (called on page refresh)
+async function unlockWithPin() {
+  const pin = document.getElementById('pinUnlockInput').value.trim();
+  const errEl = document.getElementById('pinUnlockError');
+  errEl.style.display = 'none';
+
+  if (!pin || pin.length < 4) {
+    errEl.textContent = 'PIN must be at least 4 digits';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  try {
+    const enc = loadEncryptedWallet();
+    if (!enc) { errEl.textContent = 'No encrypted wallet found'; errEl.style.display = 'block'; return; }
+
+    const mnemonic = await decryptMnemonic(enc.ciphertext, enc.salt, enc.iv, pin);
+    await unlockWallet(mnemonic);
+    toast('Wallet unlocked!', 'success');
+
+    // Hide PIN screen, show dashboard
+    document.getElementById('pinUnlockForm').style.display = 'none';
+    document.getElementById('authCards').style.display = 'none';
+    setTimeout(loadDashboard, 300);
+  } catch (e) {
+    errEl.textContent = 'Wrong PIN. Try again.';
+    errEl.style.display = 'block';
+    document.getElementById('pinUnlockInput').value = '';
+    document.getElementById('pinUnlockInput').focus();
+  }
+}
+window.unlockWithPin = unlockWithPin;
+
+// Show PIN unlock screen on refresh
+function showPinUnlock() {
+  const enc = loadEncryptedWallet();
+  if (!enc) return false;
+
+  document.getElementById('authCards').style.display = 'none';
+  document.getElementById('createForm').style.display = 'none';
+  document.getElementById('importForm').style.display = 'none';
+  document.getElementById('pinUnlockForm').style.display = 'block';
+
+  const addrEl = document.getElementById('pinUnlockAddress');
+  if (addrEl && enc.address) {
+    addrEl.textContent = enc.address.substring(0, 10) + '...' + enc.address.substring(enc.address.length - 8);
+  }
+
+  setTimeout(() => document.getElementById('pinUnlockInput').focus(), 100);
+  return true;
+}
+
+// Forget wallet on this device (clears encrypted mnemonic)
+function forgetWalletOnDevice(e) {
+  if (e) e.preventDefault();
+  if (confirm('This will remove your wallet from this browser. Make sure you have your 12-word mnemonic saved!')) {
+    localStorage.removeItem('verdis_wallet_encrypted');
+    localStorage.removeItem('verdis_wallet');
+    lockWallet();
+    location.reload();
+  }
+}
+window.forgetWalletOnDevice = forgetWalletOnDevice;
+
+// Clear encrypted wallet too
+const _originalClearWallet = clearWallet;
+clearWallet = function() {
+  localStorage.removeItem('verdis_wallet_encrypted');
+  localStorage.removeItem('verdis_wallet');
+  lockWallet();
+};
+
 function loadWallet() {
   // Only return wallet if unlocked and not timed out
   if (!isUnlocked()) return null;
@@ -709,7 +827,24 @@ window.importWallet = async function() {
 
     saveWallet(input, publicKey, address);
     await unlockWallet(input); // derives keypair again and sets _sessionMnemonic/_sessionKeypair correctly
-    toast('Wallet imported successfully!', 'success');
+
+    // Check if user set a PIN
+    const pinEl = document.getElementById('importPinInput');
+    if (pinEl) {
+      const pin = pinEl.value.trim();
+      if (pin && pin.length >= 4) {
+        try {
+          await saveWalletWithPin(input, publicKey, address, pin);
+          toast('Wallet imported and secured with PIN!', 'success');
+        } catch (e) {
+          toast('Wallet imported, but PIN encryption failed: ' + e.message, 'error');
+        }
+      } else {
+        toast('Wallet imported. Set a PIN next time to persist across refreshes.', 'info');
+      }
+    } else {
+      toast('Wallet imported successfully!', 'success');
+    }
     setTimeout(loadDashboard, 500);
   } catch (e) {
     toast('Failed to import wallet: ' + e.message, 'error');
@@ -717,8 +852,10 @@ window.importWallet = async function() {
 };
 
 window.logout = function() {
-  if (confirm('Remove wallet from this browser? Make sure you have your private key saved!')) {
-    clearWallet();
+  if (confirm('Remove wallet from this browser? Make sure you have your 12-word mnemonic saved!')) {
+    localStorage.removeItem('verdis_wallet_encrypted');
+    localStorage.removeItem('verdis_wallet');
+    lockWallet();
     location.reload();
   }
 };
@@ -1174,9 +1311,17 @@ window.showReceive = function() {
 
 // ===== Init =====
 window.addEventListener('load', () => {
-  const wallet = loadWallet();
-  if (wallet) {
-    loadDashboard();
+  // Check if wallet is encrypted (needs PIN to unlock)
+  const enc = loadEncryptedWallet();
+  if (enc) {
+    // Wallet exists but needs PIN to unlock
+    showPinUnlock();
+  } else {
+    // No encrypted wallet, check if wallet is in memory (fresh create)
+    const wallet = loadWallet();
+    if (wallet) {
+      loadDashboard();
+    }
   }
 
   // Fetch block height for nav
@@ -1204,7 +1349,28 @@ document.addEventListener('mousemove', e => {
 
 
 // ===== ENTER WALLET =====
-function enterWallet() { loadDashboard(); }
+async function enterWallet() {
+  const pinEl = document.getElementById('createPinInput');
+  if (pinEl) {
+    const pin = pinEl.value.trim();
+    if (!pin || pin.length < 4) {
+      toast('Please set a PIN (4-6 digits) to protect your wallet', 'error');
+      pinEl.focus();
+      return;
+    }
+    // Encrypt mnemonic with PIN and store for persistence
+    try {
+      await saveWalletWithPin(_sessionMnemonic,
+        Array.from(_sessionKeypair.publicKey).map(b => b.toString(16).padStart(2,'0')).join(''),
+        _sessionKeypair.address, pin);
+      toast('Wallet secured with PIN. It will persist across refreshes.', 'success');
+    } catch (e) {
+      toast('PIN encryption failed: ' + e.message, 'error');
+      return;
+    }
+  }
+  loadDashboard();
+}
 
 // ===== SHOW RECOVER EMAIL FORM =====
 function showRecoverEmail() {
@@ -1217,6 +1383,30 @@ function showEmailSync() {
   const form = document.getElementById('emailSyncForm');
   form.style.display = form.style.display === 'none' ? 'block' : 'none';
 }
+
+
+<!-- PIN Unlock Screen (shown on page refresh if wallet is encrypted) -->
+<div id="pinUnlockForm" style="display:none" class="auth-card">
+  <div style="text-align:center;margin-bottom:20px">
+    <div style="width:56px;height:56px;background:rgba(34,197,94,.1);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+    </div>
+    <h3 style="font-size:20px;font-weight:700;color:var(--text-1);margin-bottom:6px">Unlock Wallet</h3>
+    <p style="font-size:14px;color:var(--text-3);margin-bottom:20px">Enter your PIN to access your wallet</p>
+    <div id="pinUnlockAddress" style="font-size:13px;color:var(--text-3);margin-bottom:16px;font-family:monospace"></div>
+  </div>
+  <div class="form-group">
+    <label>PIN</label>
+    <input type="password" id="pinUnlockInput" placeholder="Enter your PIN" maxlength="6"
+      style="text-align:center;font-size:24px;letter-spacing:8px;font-weight:600"
+      onkeydown="if(event.key==='Enter') unlockWithPin()">
+  </div>
+  <button onclick="unlockWithPin()" class="btn-primary" style="width:100%;margin-top:16px">Unlock →</button>
+  <div id="pinUnlockError" style="display:none;color:#ef4444;font-size:13px;text-align:center;margin-top:12px"></div>
+  <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid #e2e8f0">
+    <a href="/wallet/" onclick="forgetWalletOnDevice(event)" style="color:#ef4444;font-size:13px">Forgot PIN? Remove wallet from this device</a>
+  </div>
+</div>
 
 // ===== CLIENT-SIDE CRYPTO (PBKDF2 + AES-GCM) =====
 async function deriveKeyFromPassword(password, saltBytes) {
