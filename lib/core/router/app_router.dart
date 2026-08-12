@@ -9,6 +9,7 @@ import '../../features/onboarding/presentation/verify_phrase_page.dart';
 import '../../features/onboarding/presentation/biometric_setup_page.dart';
 import '../../features/onboarding/presentation/pin_setup_page.dart';
 import '../../features/onboarding/presentation/security_notice_page.dart';
+import '../../features/onboarding/presentation/email_recovery_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/transactions/presentation/send_page.dart';
 import '../../features/transactions/presentation/receive_page.dart';
@@ -41,6 +42,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/welcome', builder: (c, s) => const WelcomePage()),
       GoRoute(path: '/create-wallet', builder: (c, s) => const CreateWalletPage()),
       GoRoute(path: '/import-wallet', builder: (c, s) => const ImportWalletPage()),
+      GoRoute(path: '/email-recovery', builder: (c, s) => const EmailRecoveryPage()),
       GoRoute(path: '/backup-phrase', builder: (c, s) => const BackupPhrasePage()),
       GoRoute(path: '/verify-phrase', builder: (c, s) => const VerifyPhrasePage()),
       GoRoute(path: '/biometric-setup', builder: (c, s) => const BiometricSetupPage()),

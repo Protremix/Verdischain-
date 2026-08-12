@@ -166,6 +166,18 @@ class _WelcomePageState extends State<WelcomePage> {
                       context.push(RouteNames.importWallet);
                     },
                   ),
+                  const SizedBox(height: 12),
+
+                  TextButton.icon(
+                    onPressed: () {
+                      context.push('/email-recovery');
+                    },
+                    icon: const Icon(Icons.email_outlined, size: 18, color: Color(0xFF00FF88)),
+                    label: const Text(
+                      'Recover with Email',
+                      style: TextStyle(color: Color(0xFF00FF88), fontSize: 14),
+                    ),
+                  ),
                 ],
               ),
             ],

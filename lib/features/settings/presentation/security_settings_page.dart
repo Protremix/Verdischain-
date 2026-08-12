@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:verdis_wallet/core/security/biometric_auth.dart';
 import 'package:verdis_wallet/core/security/secure_storage.dart';
 import 'package:verdis_wallet/shared/widgets/verdis_widgets.dart';
+import 'package:go_router/go_router.dart';
 
 class SecuritySettingsPage extends ConsumerStatefulWidget {
   const SecuritySettingsPage({super.key});
@@ -293,11 +294,7 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
         final mnemonic = utf8.decode(decrypted);
 
         if (mounted) {
-          Navigator.pushNamed(
-            context,
-            '/import-wallet',
-            arguments: mnemonic,
-          );
+          context.push('/import-wallet', extra: mnemonic);
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -346,7 +343,7 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
                   title: const Text('Change PIN'),
                   subtitle: const Text('Change your 6-digit PIN'),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () => Navigator.pushNamed(context, '/pin-setup'),
+                  onTap: () => context.push('/pin-setup'),
                 ),
               ],
             ),

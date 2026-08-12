@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:verdis_wallet/core/config/network_config.dart';
 import 'package:verdis_wallet/shared/widgets/verdis_widgets.dart';
+import 'package:go_router/go_router.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -15,7 +16,7 @@ class SettingsPage extends ConsumerWidget {
         children: [
           const _SectionHeader('Account'),
           VerdisCard(
-            onTap: () => Navigator.pushNamed(context, '/settings/account'),
+            onTap: () => context.push('/settings/account'),
             child: const ListTile(
               leading: Icon(Icons.account_circle, size: 32),
               title: Text('Wallet Account'),
@@ -27,7 +28,7 @@ class SettingsPage extends ConsumerWidget {
 
           const _SectionHeader('Security'),
           VerdisCard(
-            onTap: () => Navigator.pushNamed(context, '/settings/security'),
+            onTap: () => context.push('/settings/security'),
             child: const ListTile(
               leading: Icon(Icons.security, size: 32),
               title: Text('Security & Authentication'),
@@ -39,7 +40,7 @@ class SettingsPage extends ConsumerWidget {
 
           const _SectionHeader('Network'),
           VerdisCard(
-            onTap: () => Navigator.pushNamed(context, '/settings/network'),
+            onTap: () => context.push('/settings/network'),
             child: const ListTile(
               leading: Icon(Icons.language, size: 32),
               title: Text('Network & RPC'),
@@ -51,7 +52,7 @@ class SettingsPage extends ConsumerWidget {
 
           const _SectionHeader('About'),
           VerdisCard(
-            onTap: () => Navigator.pushNamed(context, '/settings/about'),
+            onTap: () => context.push('/settings/about'),
             child: const ListTile(
               leading: Icon(Icons.info, size: 32),
               title: Text('About Verdis'),
