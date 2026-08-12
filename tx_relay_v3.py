@@ -102,6 +102,7 @@ def get_backup(email):
 
 # ===== PIN SECURITY (server-side PIN verification) =====
 import hashlib
+import hmac
 import secrets as _secrets
 
 PIN_STORE_FILE = os.environ.get('PIN_STORE_FILE', '/opt/verdis-chain-rust/wallet_pin_store.json')
@@ -155,7 +156,7 @@ def verify_pin(address, pin):
         remaining = int(entry['locked_until'] - now)
         return False, f"locked:{remaining}", 0
     pin_hash, _ = hash_pin(address, pin, entry['salt'])
-    if pin_hash == entry['pin_hash']:
+    if hmac.compare_digest(pin_hash, entry['pin_hash']):
         entry['failed_attempts'] = 0
         entry['locked_until'] = 0
         entry['updated_at'] = now
