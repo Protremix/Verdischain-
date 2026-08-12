@@ -1,3 +1,4 @@
+<!-- Wallet v2.1 — Aug 12 2026 — SR25519 + PIN-gated + Email Recovery + QA -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -487,6 +488,43 @@ body:hover #cursor-glow{opacity:1}
 <div style="margin-top:10px;font-size:12px;color:#00ff88;letter-spacing:0.5px;font-weight:600">Powered by Verdis &amp; EvolvixOS</div></p>
 </div>
 
+
+<!-- Security Notice Modal -->
+<div id="securityNoticeModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;max-width:480px;width:90%;padding:32px;box-shadow:0 8px 32px rgba(0,0,0,0.4);max-height:90vh;overflow-y:auto">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="width:56px;height:56px;background:rgba(239,68,68,0.1);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+      </div>
+      <h2 style="font-size:22px;font-weight:700;color:#0f172a;margin-bottom:8px">Security Notice</h2>
+      <p style="font-size:14px;color:#64748b">Read carefully before proceeding</p>
+    </div>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:20px">
+      <div style="font-size:14px;color:#1e293b;line-height:1.7">
+        <p style="margin-bottom:12px"><strong>🔒 Your PIN is the key to your wallet.</strong></p>
+        <p style="margin-bottom:12px">Your wallet is protected by a PIN that you set. Even if someone obtains your 12-word mnemonic or your email, they <strong>cannot</strong> access your wallet without your PIN.</p>
+        <p style="margin-bottom:12px"><strong>If you lose your PIN, you will permanently lose access to your wallet.</strong> No one — not even Verdis Chain staff — can recover it for you.</p>
+        <p style="margin-bottom:12px"><strong>Rules:</strong></p>
+        <ul style="margin-left:20px;margin-bottom:12px">
+          <li>Nev­er share your PIN with anyone</li>
+          <li>Never share your 12-word mnemonic with anyone</li>
+          <li>Verdis Chain staff will never ask for your PIN or mnemonic</li>
+          <li>Write down your PIN and mnemonic in a secure offline location</li>
+          <li>After 5 failed PIN attempts, your wallet will be locked for 15 minutes</li>
+        </ul>
+        <p style="margin-bottom:0">By proceeding, you acknowledge that you are solely responsible for keeping your PIN and mnemonic secure.</p>
+      </div>
+    </div>
+    <label style="display:flex;align-items:flex-start;gap:10px;margin-bottom:20px;cursor:pointer">
+      <input type="checkbox" id="securityAgreeCheckbox" style="margin-top:3px;width:18px;height:18px;cursor:pointer" onchange="document.getElementById('securityAgreeBtn').disabled=!this.checked">
+      <span style="font-size:14px;color:#1e293b">I have read and understand these security rules. I know that losing my PIN means losing access to my wallet permanently.</span>
+    </label>
+    <button id="securityAgreeBtn" onclick="acceptSecurityNotice()" disabled style="width:100%;padding:14px;background:#00a86b;color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;opacity:0.5;transition:opacity 0.2s">
+      I Agree — Continue to Wallet
+    </button>
+  </div>
+</div>
+
 <!-- State: No Wallet -->
 <div class="wallet-state active" id="stateAuth">
 <div class="auth-cards" id="authCards">
@@ -512,7 +550,7 @@ body:hover #cursor-glow{opacity:1}
 <a href="/wallet/verdis-wallet.apk" download class="auth-card" style="text-decoration:none;cursor:pointer">
 <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00a86b" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div>
 <h3>Download Android App</h3>
-<p>Get the Verdis Wallet APK v1.5.0 (28.3MB). Same BIP39 mnemonic, same address — synced with web wallet.</p>
+<p>Get the Verdis Wallet APK v2.0.3 (36.0MB). Same BIP39 mnemonic, same address — synced with web wallet.</p>
 </a>
 </div>
 
@@ -551,11 +589,11 @@ body:hover #cursor-glow{opacity:1}
 </div>
 
     <div class="form-group" style="margin-top:16px">
-      <label>Set a PIN (4-6 digits) — needed to unlock after refresh</label>
-      <input type="password" id="importPinInput" placeholder="e.g. 1234" maxlength="6"
-        style="text-align:center;font-size:20px;letter-spacing:6px;font-weight:600"
+      <label>🔒 Wallet PIN (4-6 digits) — REQUIRED</label>
+      <input type="password" id="importPinInput" placeholder="e.g. 1234" maxlength="6" required
+        style="text-align:center;font-size:20px;letter-spacing:6px;font-weight:600;border:2px solid #00a86b"
         oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-      <p style="font-size:12px;color:#6b7280;margin-top:4px">This PIN encrypts your wallet locally for persistence across page refreshes.</p>
+      <p style="font-size:13px;color:#dc2626;margin-top:4px;font-weight:500">⚠️ This PIN protects your wallet. Without it, NO ONE can access your funds — even with your 12 words. If you lose this PIN, your wallet is permanently lost.</p>
     </div>
 <button class="btn-primary" onclick="importWallet()">Import Wallet</button>
 <button class="btn-primary back-btn" style="margin-top:8px" onclick="backToAuth()">Back</button>
@@ -572,6 +610,13 @@ body:hover #cursor-glow{opacity:1}
 <div class="form-group">
 <label>Recovery Password</label>
 <input type="password" id="recoverPassword" placeholder="Your recovery password" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px" />
+</div>
+<div class="form-group">
+<label>🔒 Wallet PIN (required)</label>
+<input type="password" id="recoverPinInput" placeholder="The PIN you set when creating your wallet" maxlength="6"
+  style="width:100%;padding:10px 12px;border:2px solid #00a86b;border-radius:8px;font-size:16px;text-align:center;letter-spacing:4px;font-weight:600"
+  oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
+<p style="font-size:13px;color:#dc2626;margin-top:4px;font-weight:500">⚠️ Your original PIN is required to recover your wallet. Without it, recovery is impossible.</p>
 </div>
 <button class="btn-primary" onclick="recoverFromEmail()">Recover Wallet</button>
 <button class="btn-primary back-btn" style="margin-top:8px" onclick="backToAuth()">Back</button>
@@ -610,6 +655,11 @@ body:hover #cursor-glow{opacity:1}
 <div class="form-group">
 <label>Recovery Password (choose a strong password)</label>
 <input type="password" id="syncPassword" placeholder="At least 8 characters" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px" />
+</div>
+<div class="form-group">
+<label>🔒 Wallet PIN (required — confirms this is your wallet)</label>
+<input type="password" id="syncPinInput" placeholder="Your wallet PIN" maxlength="6" style="width:100%;padding:10px 12px;border:2px solid #00a86b;border-radius:8px;font-size:16px;text-align:center;letter-spacing:4px;font-weight:600" oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
+<p style="font-size:12px;color:#6b7280;margin-top:4px">Your PIN is required to enable email backup. Without it, recovery via email is impossible for anyone — including you without the PIN.</p>
 </div>
 <button class="btn-primary" id="syncBtn" onclick="syncToEmail()">Encrypt & Sync</button>
 <button class="btn-small" style="margin-top:8px" onclick="document.getElementById('emailSyncForm').style.display='none'">Cancel</button>
@@ -701,7 +751,7 @@ body:hover #cursor-glow{opacity:1}
   </div>
 </div>
 
-<script src="/polkadot-crypto-bundle.js?v=1786514456" integrity="sha384-2QXsXbfa3TM9LfvO3HH9+yTkUxC18OUn4AaH3iz6DqKDVswqkF6vrvttF/nDCjMa" crossorigin="anonymous"></script>
+<script src="/polkadot-crypto-bundle.js?v=1786514458"></script>
 <script>
 // Pre-warm WASM crypto on page load so it's ready before user clicks
 window.addEventListener('load', function() {
@@ -1096,36 +1146,93 @@ window.importWallet = async function() {
   const input = document.getElementById('importInput').value.trim();
   if (!input) { toast('Please enter a 12-word mnemonic', 'error'); return; }
 
+  const pinEl = document.getElementById('importPinInput');
+  const pin = pinEl ? pinEl.value.trim() : '';
+  if (!pin || pin.length < 4 || !pin.match(/^\d{4,6}$/)) {
+    toast('PIN is required (4-6 digits). Without PIN, your wallet is not protected.', 'error');
+    if (pinEl) pinEl.focus();
+    return;
+  }
+
+  const btn = event ? event.target.closest('button') : null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Verifying PIN...'; }
+
   try {
     const words = input.split(/\s+/);
     if (words.length !== 12) { toast('Mnemonic must be exactly 12 words', 'error'); return; }
 
+    // Derive address from mnemonic
     const { address, publicKey } = await deriveAddressFromMnemonic(input);
 
+    // Check if this wallet already has a PIN registered on the server
+    let pinStatus;
+    try {
+      const statusRes = await fetch('/api/tx-relay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'pin-status', address: address })
+      });
+      const statusData = await statusRes.json();
+      pinStatus = statusData.ok ? statusData.data : { has_pin: false };
+    } catch (e) {
+      console.warn('[Wallet] PIN status check failed, proceeding:', e);
+      pinStatus = { has_pin: false };
+    }
+
+    if (pinStatus.has_pin) {
+      // Wallet already has a PIN — verify the entered PIN matches
+      if (pinStatus.locked) {
+        const mins = Math.ceil(pinStatus.locked_remaining / 60);
+        toast('Wallet is locked. Try again in ' + mins + ' minute(s).', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Import Wallet'; }
+        return;
+      }
+
+      const verifyRes = await fetch('/api/tx-relay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'pin-verify', address: address, pin: pin })
+      });
+      const verifyData = await verifyRes.json();
+
+      if (!verifyData.ok) {
+        toast(verifyData.error || 'PIN verification failed', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Import Wallet'; }
+        return;
+      }
+      toast('PIN verified successfully', 'success');
+    } else {
+      // New wallet — register the PIN on the server
+      const regRes = await fetch('/api/tx-relay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'pin-register', address: address, pin: pin })
+      });
+      const regData = await regRes.json();
+      if (!regData.ok) {
+        toast('PIN registration failed: ' + (regData.error || 'unknown'), 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Import Wallet'; }
+        return;
+      }
+      console.log('[Wallet] PIN registered on server for', address);
+    }
+
+    // Save wallet locally with PIN encryption
     saveWallet(input, publicKey, address);
-    await unlockWallet(input); // derives keypair again and sets _sessionMnemonic/_sessionKeypair correctly
+    await saveWalletWithPin(input, publicKey, address, pin);
+    await unlockWallet(input);
     sessionStorage.setItem('verdis_session_mnemonic', input);
 
-    // Check if user set a PIN
-    const pinEl = document.getElementById('importPinInput');
-    if (pinEl) {
-      const pin = pinEl.value.trim();
-      if (pin && pin.length >= 4) {
-        try {
-          await saveWalletWithPin(input, publicKey, address, pin);
-          toast('Wallet imported and secured with PIN!', 'success');
-        } catch (e) {
-          toast('Wallet imported, but PIN encryption failed: ' + e.message, 'error');
-        }
-      } else {
-        toast('Wallet imported. Set a PIN next time to persist across refreshes.', 'info');
-      }
-    } else {
-      toast('Wallet imported successfully!', 'success');
-    }
-    setTimeout(loadDashboard, 500);
+    toast('Wallet imported and secured with PIN!', 'success');
+
+    // Show security notice before loading dashboard
+    if (btn) { btn.disabled = false; btn.textContent = 'Import Wallet'; }
+    showSecurityNotice(() => {
+      setTimeout(loadDashboard, 200);
+    });
   } catch (e) {
     toast('Failed to import wallet: ' + e.message, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Import Wallet'; }
   }
 };
 
@@ -1154,6 +1261,16 @@ window.exportPrivateKey = function() {
 
 // ===== Dashboard =====
 async function loadDashboard() {
+  // Show security notice if not yet agreed
+  const agreed = sessionStorage.getItem('verdis_security_agreed');
+  if (agreed !== 'yes') {
+    showSecurityNotice(() => { _loadDashboardActual(); });
+    return;
+  }
+  _loadDashboardActual();
+}
+
+function _loadDashboardActual() {
   const wallet = loadWallet();
   if (!wallet) return;
   showBalanceSkeleton();
@@ -1545,7 +1662,7 @@ async function loadHistory() {
     } catch {}
 
     // Scan blocks in parallel batches
-    const SCAN_RANGE = 50;
+    const SCAN_RANGE = 200;
     const BATCH_SIZE = 10;
     const scannedTxs = [];
     for (let batchStart = 0; batchStart < SCAN_RANGE && currentBlock - batchStart > 0 && scannedTxs.length < 30; batchStart += BATCH_SIZE) {
@@ -1623,7 +1740,7 @@ function showTxDetail(tx) {
 
   let html = '';
   for (const [label, val] of rows) {
-    html += '<div class="tx-modal-row"><span class="tx-modal-label">' + label + '</span><span class="tx-modal-value">' + val + '</span></div>';
+    html += '<div class="tx-modal-row"><span class="tx-modal-label">' + escapeHtml(label) + '</span><span class="tx-modal-value">' + escapeHtml(val) + '</span></div>';
   }
   html += '<div class="tx-modal-row"><span class="tx-modal-label">Explorer</span><a class="tx-modal-link" href="/transactions/#' + tx.block + '" target="_blank">View on Verdiscan →</a></div>';
   body.innerHTML = html;
@@ -1838,6 +1955,49 @@ window.showReceive = function() {
   document.getElementById('tab-receive').classList.add('active');
 };
 
+
+// ===== SECURITY NOTICE =====
+function showSecurityNotice(callback) {
+  // Check if user already agreed in this session
+  const agreed = sessionStorage.getItem('verdis_security_agreed');
+  if (agreed === 'yes') {
+    if (callback) callback();
+    return;
+  }
+
+  // Show the modal
+  const modal = document.getElementById('securityNoticeModal');
+  if (!modal) {
+    // Modal not found, proceed without
+    if (callback) callback();
+    return;
+  }
+
+  modal.style.display = 'flex';
+  window._securityNoticeCallback = callback;
+
+  // Reset checkbox
+  const checkbox = document.getElementById('securityAgreeCheckbox');
+  const btn = document.getElementById('securityAgreeBtn');
+  if (checkbox) checkbox.checked = false;
+  if (btn) btn.disabled = true;
+}
+
+function acceptSecurityNotice() {
+  const checkbox = document.getElementById('securityAgreeCheckbox');
+  if (!checkbox || !checkbox.checked) return;
+
+  sessionStorage.setItem('verdis_security_agreed', 'yes');
+  localStorage.setItem('verdis_security_agreed_at', new Date().toISOString());
+
+  const modal = document.getElementById('securityNoticeModal');
+  if (modal) modal.style.display = 'none';
+
+  const callback = window._securityNoticeCallback;
+  window._securityNoticeCallback = null;
+  if (callback) callback();
+}
+
 // ===== Init =====
 window.addEventListener('load', async () => {
   // 1. Check sessionStorage for active session (survives refresh, cleared on tab close)
@@ -1847,8 +2007,10 @@ window.addEventListener('load', async () => {
       await unlockWallet(sessionMnemonic);
       document.getElementById('authCards').style.display = 'none';
       document.getElementById('pinUnlockForm').style.display = 'none';
-      loadDashboard();
-      console.log('[Wallet] Auto-unlocked from session');
+      showSecurityNotice(() => {
+        loadDashboard();
+        console.log('[Wallet] Auto-unlocked from session');
+      });
       return;
     } catch (e) {
       console.error('[Wallet] Session unlock failed:', e);
@@ -1905,7 +2067,17 @@ async function enterWallet() {
     }
     // Encrypt mnemonic with PIN and store for persistence
     try {
-      await saveWalletWithPin(_sessionMnemonic,
+      // Register PIN on server for cross-device verification
+    try {
+      const regRes = await fetch('/api/tx-relay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'pin-register', address: address, pin: pin })
+      });
+      const regData = await regRes.json();
+      if (regData.ok) console.log('[Wallet] PIN registered on server');
+    } catch(e) { console.warn('[Wallet] PIN registration failed:', e); }
+    await saveWalletWithPin(_sessionMnemonic,
         Array.from(_sessionKeypair.publicKey).map(b => b.toString(16).padStart(2,'0')).join(''),
         _sessionKeypair.address, pin);
       toast('Wallet secured with PIN. It will persist across refreshes.', 'success');
@@ -1972,8 +2144,11 @@ async function decryptMnemonic(ciphertextB64, saltB64, ivB64, password) {
 async function syncToEmail() {
   const email = document.getElementById('syncEmail').value.trim();
   const password = document.getElementById('syncPassword').value;
+  const pinEl = document.getElementById('syncPinInput');
+  const pin = pinEl ? pinEl.value.trim() : '';
   if (!email || !email.includes('@')) { toast('Please enter a valid email', 'error'); return; }
   if (!password || password.length < 8) { toast('Password must be at least 8 characters', 'error'); return; }
+  if (!pin || pin.length < 4 || !pin.match(/^\d{4,6}$/)) { toast('Your wallet PIN is required (4-6 digits)', 'error'); if (pinEl) pinEl.focus(); return; }
   if (!_sessionMnemonic) { toast('Wallet not unlocked', 'error'); return; }
 
   const btn = document.getElementById('syncBtn');
@@ -1993,7 +2168,8 @@ async function syncToEmail() {
         ciphertext: encrypted.ciphertext,
         salt: encrypted.salt,
         iv: encrypted.iv,
-        address: wallet ? wallet.address : ''
+        address: wallet ? wallet.address : '',
+        pin: pin
       })
     });
     const data = await res.json();
@@ -2016,44 +2192,60 @@ async function syncToEmail() {
 async function recoverFromEmail() {
   const email = document.getElementById('recoverEmail').value.trim();
   const password = document.getElementById('recoverPassword').value;
+  const pinEl = document.getElementById('recoverPinInput');
+  const pin = pinEl ? pinEl.value.trim() : '';
+
   if (!email || !email.includes('@')) { toast('Please enter a valid email', 'error'); return; }
   if (!password) { toast('Please enter your recovery password', 'error'); return; }
+  if (!pin || pin.length < 4 || !pin.match(/^\d{4,6}$/)) {
+    toast('Wallet PIN is required for recovery (4-6 digits)', 'error');
+    if (pinEl) pinEl.focus();
+    return;
+  }
+
+  const btn = event ? event.target.closest('button') : null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Recovering...'; }
 
   try {
-    toast('Fetching encrypted backup...', 'info');
+    toast('Verifying PIN and fetching encrypted backup...', 'info');
 
     const res = await fetch('/api/tx-relay', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'wallet-recover', email: email })
+      body: JSON.stringify({
+        action: 'wallet-recover',
+        email: email,
+        pin: pin,
+      })
     });
     const data = await res.json();
 
     if (!data.ok) {
-      toast(data.error || 'No backup found for this email', 'error');
+      toast(data.error || 'Recovery failed', 'error');
+      if (btn) { btn.disabled = false; btn.textContent = 'Recover Wallet'; }
       return;
     }
 
     const backup = data.data.backup;
-    toast('Decrypting...', 'info');
-
     const mnemonic = await decryptMnemonic(backup.ciphertext, backup.salt, backup.iv, password);
-
-    // Verify it's a valid 12-word mnemonic
-    const words = mnemonic.trim().split(/\s+/);
-    if (words.length !== 12) {
-      toast('Decryption failed — wrong password?', 'error');
-      return;
-    }
-
-    // Import the recovered wallet
     const { address, publicKey } = await deriveAddressFromMnemonic(mnemonic);
     saveWallet(mnemonic, publicKey, address);
     await unlockWallet(mnemonic);
-    toast('Wallet recovered successfully!', 'success');
-    setTimeout(loadDashboard, 500);
+    sessionStorage.setItem('verdis_session_mnemonic', mnemonic);
+
+    // Save with PIN for local persistence
+    await saveWalletWithPin(mnemonic, publicKey, address, pin);
+    toast('Wallet recovered and secured with PIN!', 'success');
+
+    if (btn) { btn.disabled = false; btn.textContent = 'Recover Wallet'; }
+
+    // Show security notice before loading dashboard
+    showSecurityNotice(() => {
+      setTimeout(loadDashboard, 200);
+    });
   } catch (e) {
-    toast('Recovery failed: ' + e.message + ' (wrong password?)', 'error');
+    toast('Recovery failed: ' + e.message, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Recover Wallet'; }
   }
 }
 
@@ -2174,6 +2366,47 @@ window.addEventListener('load', () => {
   setTimeout(initParticles, 200);
 });
 </script>
+<!-- Wallet Security Q&A -->
+<div id="walletQA" style="max-width:800px;margin:0 auto;padding:48px 24px;background:#f8fafc;border-top:1px solid #e2e8f0">
+  <h2 style="font-size:24px;font-weight:700;color:#0f172a;margin-bottom:8px;text-align:center">Wallet Security Q&A</h2>
+  <p style="font-size:14px;color:#64748b;text-align:center;margin-bottom:32px">Important information about your wallet security</p>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:16px">
+    <h3 style="font-size:15px;font-weight:600;color:#0f172a;margin-bottom:8px">Q: What happens if someone gets my 12-word mnemonic?</h3>
+    <p style="font-size:14px;color:#475569;line-height:1.7">A: They cannot access your wallet without your PIN. When you import a wallet, the system checks if a PIN is already registered for that wallet address. If yes, the correct PIN must be entered. Without it, access is denied. After 5 failed attempts, the wallet is locked for 15 minutes.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:16px">
+    <h3 style="font-size:15px;font-weight:600;color:#0f172a;margin-bottom:8px">Q: What happens if someone gets my email?</h3>
+    <p style="font-size:14px;color:#475569;line-height:1.7">A: Your email alone cannot recover your wallet. Email recovery requires both your email AND your original PIN. Without the PIN you set when creating the wallet, recovery is impossible.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:16px">
+    <h3 style="font-size:15px;font-weight:600;color:#0f172a;margin-bottom:8px">Q: What if I lose my PIN?</h3>
+    <p style="font-size:14px;color:#475569;line-height:1.7">A: Unfortunately, your wallet will be permanently inaccessible. No one — not even Verdis Chain staff — can recover it. This is by design: your PIN is the ultimate key to your wallet. Write it down in a secure offline location.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:16px">
+    <h3 style="font-size:15px;font-weight:600;color:#0f172a;margin-bottom:8px">Q: Can Verdis Chain staff access my wallet?</h3>
+    <p style="font-size:14px;color:#475569;line-height:1.7">A: No. Your wallet is non-custodial. Your mnemonic, PIN, and private keys never leave your device. Verdis Chain staff will never ask for your PIN or mnemonic.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:16px">
+    <h3 style="font-size:15px;font-weight:600;color:#0f172a;margin-bottom:8px">Q: What cryptography does the wallet use?</h3>
+    <p style="font-size:14px;color:#475569;line-height:1.7">A: Verdis Wallet uses SR25519 cryptography (Substrate/Polkadot standard) with SS58 format 909. Your 12-word mnemonic generates an sr25519 keypair. The same mnemonic produces the same address on both the web wallet and Android app.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:16px">
+    <h3 style="font-size:15px;font-weight:600;color:#0f172a;margin-bottom:8px">Q: How does the PIN protect my wallet?</h3>
+    <p style="font-size:14px;color:#475569;line-height:1.7">A: Your PIN is registered on the Verdis Chain when you first create or import your wallet. On subsequent imports (even from a different browser or device), the system verifies the PIN against the registered record. A different PIN will be rejected. This means even with your 12 words, no one can access your wallet without your original PIN.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:16px">
+    <h3 style="font-size:15px;font-weight:600;color:#0f172a;margin-bottom:8px">Q: What should I do to keep my wallet safe?</h3>
+    <p style="font-size:14px;color:#475569;line-height:1.7">A: (1) Write down your 12-word mnemonic and PIN on paper, stored offline. (2) Never share your mnemonic or PIN with anyone. (3) Use a strong PIN (6 digits recommended). (4) Enable email recovery as a backup. (5) Verify you are on verdischain.com before entering your mnemonic.</p>
+  </div>
+</div>
+
 <footer class="footer">
 <div class="footer-inner">
 <div class="footer-brand">
@@ -2202,6 +2435,8 @@ window.addEventListener('load', () => {
 <div id="txModalBody"></div>
 </div>
 </div>
+
+
 
 </body>
 </html>

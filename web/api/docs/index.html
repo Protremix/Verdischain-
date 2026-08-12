@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis API Documentation — RPC Endpoints Reference | Verdis Chain</title>
+<meta name="description" content="Complete Verdis Chain API documentation. 127 RPC endpoints across chain, state, AMM DEX, DPoS, and eco modules. Interactive Try It feature, code examples in 5 languages.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Verdis API Documentation — RPC Endpoints Reference">
+<meta property="og:description" content="Complete Verdis Chain API documentation with 127 RPC endpoints.">
+<link rel="canonical" href="https://verdischain.com/api/docs/">
+<link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f8fafc;--card:#fff;--text:#0f172a;--text-dim:#334155;--text-mute:#64748b;--border:#e2e8f0;--border-dim:#f1f5f9;--accent:#caff33;--accent-dim:#d4f860;--accent-bg:#f0ffe0;--code-bg:#0f172a;--code-text:#e2e8f0;--code-dim:#64748b;--success:#22c55e;--error:#ef4444;--warn:#f59e0b;--info:#3b82f6;--sidebar-w:280px;--font:'Inter',sans-serif;--font-mono:'JetBrains Mono',monospace;--font-head:'Space Grotesk',sans-serif;--radius:12px;--radius-sm:8px}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6}a{color:inherit;text-decoration:none}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}.nav-inner{max-width:100%;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}.nav-logo{display:flex;align-items:center;gap:8px;font-family:var(--font-head);font-weight:700;font-size:20px}.nav-logo img{height:32px}.nav-links{display:flex;align-items:center;gap:2px}.nav-links a{padding:8px 10px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;color:var(--text-dim);transition:all .2s}.nav-links a:hover{background:var(--accent-bg);color:var(--text)}.nav-links a.active{color:var(--text);font-weight:600}.nav-search{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;width:260px}.nav-search input{border:none;background:transparent;outline:none;font-size:13px;width:100%;color:var(--text)}.nav-search kbd{font-size:11px;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text-mute);font-family:var(--font-mono)}.nav-status{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--success);font-weight:500}.nav-status .dot{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success);animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}.hamburger{display:none;background:none;border:none;cursor:pointer;padding:8px}.hamburger span{display:block;width:20px;height:2px;background:var(--text);margin:4px 0}
+
+/* LAYOUT */
+.docs-layout{display:flex;max-width:1400px;margin:0 auto;padding:0 24px}
+.sidebar{width:var(--sidebar-w);flex-shrink:0;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;padding:24px 0 24px 0;border-right:1px solid var(--border)}.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.sidebar-search{padding:0 16px 16px}.sidebar-search input{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;outline:none}.sidebar-search input:focus{border-color:var(--accent)}
+.sidebar-group{margin-bottom:8px}.sidebar-group-title{padding:8px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-mute);cursor:pointer;display:flex;align-items:center;justify-content:space-between}.sidebar-group-title:hover{color:var(--text)}.sidebar-group-items{padding:0 8px}
+.sidebar-item{padding:6px 24px;font-size:13px;font-family:var(--font-mono);color:var(--text-dim);cursor:pointer;border-radius:var(--radius-sm);transition:.15s;display:flex;align-items:center;gap:6px}.sidebar-item:hover{background:var(--accent-bg);color:var(--text)}.sidebar-item.active{background:var(--accent);color:#0f172a;font-weight:600}.sidebar-item .m-badge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;text-transform:uppercase;flex-shrink:0}.m-get{background:#dcfce7;color:#166534}.m-post{background:#dbeafe;color:#1e40af}.m-ws{background:#fef3c7;color:#92400e}
+
+/* CONTENT */
+.content{flex:1;padding:32px 40px;min-width:0}
+.endpoint-header{margin-bottom:32px}
+.endpoint-header h1{font-family:var(--font-head);font-size:28px;font-weight:700;margin-bottom:8px}
+.endpoint-header .url{font-family:var(--font-mono);font-size:14px;background:var(--code-bg);color:var(--code-text);padding:12px 16px;border-radius:var(--radius-sm);display:flex;align-items:center;gap:8px}
+.endpoint-header .method{font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;text-transform:uppercase}
+.method-get{background:#22c55e;color:#fff}
+.method-post{background:#3b82f6;color:#fff}
+.method-ws{background:#f59e0b;color:#fff}
+.endpoint-header .desc{font-size:15px;color:var(--text-dim);margin-top:12px}
+
+/* SECTIONS */
+.section{margin-bottom:40px}
+.section h2{font-size:18px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.section h2 .num{background:var(--accent);color:#0f172a;font-size:12px;font-weight:700;padding:2px 8px;border-radius:4px}
+
+/* PARAMS TABLE */
+.params-table{width:100%;border-collapse:collapse;background:var(--card);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)}
+.params-table th{padding:12px 16px;text-align:left;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-mute);border-bottom:2px solid var(--border);background:var(--bg)}
+.params-table td{padding:12px 16px;font-size:14px;border-bottom:1px solid var(--border-dim)}
+.params-table td:first-child{font-family:var(--font-mono);font-weight:500;width:20%}
+.params-table td:nth-child(2){width:15%;color:var(--text-mute)}
+.params-table td:nth-child(3){width:10%}
+.params-table tr:last-child td{border-bottom:none}
+.req{color:var(--error);font-weight:600;font-size:11px;text-transform:uppercase}.opt{color:var(--text-mute);font-weight:600;font-size:11px;text-transform:uppercase}
+
+/* CODE TABS */
+.code-block{background:var(--code-bg);border-radius:var(--radius);overflow:hidden;border:1px solid #1e293b;margin-bottom:16px}
+.code-tabs{display:flex;background:#1e293b;padding:0 16px;gap:4px;align-items:center}
+.code-tab{padding:10px 16px;font-size:12px;font-weight:600;color:var(--code-dim);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;font-family:var(--font-mono)}
+.code-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.code-tab:hover{color:var(--code-text)}
+.code-content{padding:20px 24px;font-family:var(--font-mono);font-size:13px;line-height:1.7;overflow-x:auto;display:none;color:var(--code-text)}.code-content.active{display:block}
+.kw{color:#c084fc}.str{color:#86efac}.num{color:#fbbf24}.com{color:#64748b;font-style:italic}.fn{color:#60a5fa}.punct{color:#94a3b8}.key{color:#f0abfc}
+
+/* RESPONSE */
+.response-code{display:inline-block;font-size:13px;font-weight:700;padding:4px 12px;border-radius:6px;margin-right:8px}
+.rc-200{background:#dcfce7;color:#166534}.rc-400{background:#fee2e2;color:#991b1b}.rc-401{background:#fef3c7;color:#92400e}.rc-500{background:#fee2e2;color:#991b1b}
+.response-schema{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-top:8px}
+.response-schema .field{display:grid;grid-template-columns:180px 120px 1fr;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-dim);font-size:13px}
+.response-schema .field:last-child{border-bottom:none}
+.response-schema .fname{font-family:var(--font-mono);font-weight:500}
+.response-schema .ftype{color:var(--text-mute);font-family:var(--font-mono)}
+.response-schema .fdesc{color:var(--text-dim)}
+
+/* TRY IT */
+.try-it{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-top:16px}
+.try-it-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.try-it-header h3{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.try-it-body{padding:20px}
+.try-it-btn{background:var(--accent);color:#0f172a;border:none;padding:10px 24px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
+.try-it-btn:hover{background:var(--accent-dim)}
+.try-it-result{margin-top:16px;background:var(--code-bg);border-radius:var(--radius-sm);padding:16px;font-family:var(--font-mono);font-size:12px;color:var(--code-text);max-height:400px;overflow-y:auto;display:none}.try-it-result.show{display:block}
+.try-it-param{margin-bottom:12px}
+.try-it-param label{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
+.try-it-param label .req{margin-left:6px}
+.try-it-param input{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:var(--font-mono);outline:none}.try-it-param input:focus{border-color:var(--accent)}
+
+/* MOBILE SIDEBAR TOGGLE */
+.sidebar-toggle{display:none;position:fixed;bottom:24px;right:24px;z-index:99;background:var(--accent);color:#0f172a;border:none;width:48px;height:48px;border-radius:50%;font-size:20px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+
+@media(max-width:1024px){.sidebar{display:none;position:fixed;top:64px;left:0;width:280px;background:#fff;z-index:50;height:calc(100vh - 64px);box-shadow:2px 0 8px rgba(0,0,0,.1)}.sidebar.open{display:block}.content{padding:24px 16px}.sidebar-toggle{display:block}.nav-search{width:160px}}
+@media(max-width:768px){.nav-links{display:none;position:fixed;top:64px;left:0;right:0;background:#fff;flex-direction:column;padding:16px;border-bottom:1px solid var(--border);z-index:99}.nav-links.open{display:flex}.hamburger{display:block}.nav-search{display:none}.response-schema .field{grid-template-columns:1fr;gap:2px}}
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="nav-inner"><a href="/" class="nav-logo"><img src="/assets/verdis-logo-black.png" alt="Verdis" height="32"></a><div class="nav-links" id="navLinks"><a href="/">Home</a><a href="/explorer/">Verdiscan</a><a href="/dex/">DEX</a><a href="/validators/">Validators</a><a href="/eco/">Eco</a><a href="/faucet/">Faucet</a>
+      <a href="/governance/">Governance</a><a href="/wallet/">Wallet</a><a href="/sale/">Sale</a><a href="/contact/">Contact</a><a href="/api/" class="active">API</a><a href="/docs/">Docs</a></div><div style="display:flex;align-items:center;gap:12px"><div class="nav-status"><span class="dot"></span>Testnet</div><button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')"><span></span><span></span><span></span></button></div></div></nav>
+
+<div class="docs-layout">
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-search"><input type="text" placeholder="Search endpoints..." id="sidebarSearch" oninput="filterEndpoints()"></div>
+<div id="sidebarContent"></div>
+</aside>
+
+<main class="content" id="content">
+<div id="endpointView"></div>
+</main>
+</div>
+
+<button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+
+<script>
+// === ALL 127 ENDPOINTS ===
+var endpoints=[
+// Chain
+{g:'Chain',n:'chain_getBlock',m:'POST',d:'Get the full block (header + extrinsics) by block hash',params:[{n:'hash',t:'String',r:false,d:'Block hash. If omitted, returns the latest block.'}],resp:'{ block: { header: { number, parentHash, stateRoot, extrinsicsRoot, digest }, extrinsics: [hex] } }'},
+{g:'Chain',n:'chain_getBlockHash',m:'POST',d:'Get the hash of a block by its height',params:[{n:'blockNumber',t:'Number',r:false,d:'Block number. If omitted, returns the latest block hash.'}],resp:'{ result: "0x..." }'},
+{g:'Chain',n:'chain_getHeader',m:'POST',d:'Get the header of a block',params:[{n:'hash',t:'String',r:false,d:'Block hash. If omitted, returns the latest header.'}],resp:'{ number, parentHash, stateRoot, extrinsicsRoot, digest }'},
+{g:'Chain',n:'chain_getFinalizedHead',m:'POST',d:'Get the hash of the last finalized block',params:[],resp:'{ result: "0x..." }'},
+{g:'Chain',n:'chain_getRuntimeVersion',m:'POST',d:'Get the runtime version',params:[{n:'hash',t:'String',r:false,d:'Block hash (optional)'}],resp:'{ specName, implName, authoringVersion, specVersion, implVersion, apis, transactionVersion, stateVersion }'},
+{g:'Chain',n:'chain_subscribeNewHeads',m:'WS',d:'Subscribe to new block headers via WebSocket',params:[],resp:'{ number, parentHash, stateRoot, extrinsicsRoot, digest }'},
+{g:'Chain',n:'chain_subscribeAllHeads',m:'WS',d:'Subscribe to ALL block headers (including non-best)',params:[],resp:'{ number, parentHash, stateRoot, extrinsicsRoot }'},
+{g:'Chain',n:'chain_subscribeFinalizedHeads',m:'WS',d:'Subscribe to finalized block headers',params:[],resp:'{ number, parentHash, stateRoot, extrinsicsRoot }'},
+{g:'Chain',n:'chain_subscribeRuntimeVersion',m:'WS',d:'Subscribe to runtime version updates',params:[],resp:'{ specName, specVersion, implVersion }'},
+
+// State
+{g:'State',n:'state_getStorage',m:'POST',d:'Query a storage item',params:[{n:'key',t:'String',r:true,d:'Storage key (hex-encoded)'},{n:'hash',t:'String',r:false,d:'Block hash (optional)'}],resp:'{ result: "0x..." }'},
+{g:'State',n:'state_getStorageAt',m:'POST',d:'Query a storage item at a specific block',params:[{n:'key',t:'String',r:true,d:'Storage key'},{n:'hash',t:'String',r:true,d:'Block hash'}],resp:'{ result: "0x..." }'},
+{g:'State',n:'state_getKeys',m:'POST',d:'Get all storage keys with a given prefix',params:[{n:'prefix',t:'String',r:false,d:'Storage key prefix'},{n:'hash',t:'String',r:false,d:'Block hash'}],resp:'{ result: ["0x..."] }'},
+{g:'State',n:'state_getKeysPaged',m:'POST',d:'Get a page of storage keys with a given prefix',params:[{n:'prefix',t:'String',r:false,d:'Storage key prefix'},{n:'count',t:'Number',r:false,d:'Max keys to return'},{n:'startKey',t:'String',r:false,d:'Start key for pagination'},{n:'hash',t:'String',r:false,d:'Block hash'}],resp:'{ result: ["0x..."] }'},
+{g:'State',n:'state_getMetadata',m:'POST',d:'Get the runtime metadata',params:[{n:'hash',t:'String',r:false,d:'Block hash (optional)'}],resp:'{ result: "0x..." }'},
+{g:'State',n:'state_queryStorage',m:'POST',d:'Query storage changes across blocks',params:[{n:'keys',t:'Array<String>',r:true,d:'Storage keys to query'},{n:'fromBlock',t:'String',r:true,d:'Starting block hash'},{n:'toBlock',t:'String',r:false,d:'Ending block hash'}],resp:'[{ block: "0x...", changes: [["key","value"]] }]'},
+{g:'State',n:'state_queryStorageAt',m:'POST',d:'Query storage at a specific block',params:[{n:'keys',t:'Array<String>',r:true,d:'Storage keys'},{n:'at',t:'String',r:false,d:'Block hash'}],resp:'[{ block: "0x...", changes: [["key","value"]] }]'},
+{g:'State',n:'state_getRuntimeVersion',m:'POST',d:'Get the runtime version at a specific block',params:[{n:'hash',t:'String',r:false,d:'Block hash'}],resp:'{ specName, specVersion, implVersion }'},
+{g:'State',n:'state_subscribeStorage',m:'WS',d:'Subscribe to storage changes via WebSocket',params:[{n:'keys',t:'Array<String>',r:false,d:'Storage keys to watch'}],resp:'{ block: "0x...", changes: [["key","value"]] }'},
+{g:'State',n:'state_subscribeRuntimeVersion',m:'WS',d:'Subscribe to runtime version updates via WebSocket',params:[],resp:'{ specName, specVersion, implVersion }'},
+
+// System
+{g:'System',n:'system_health',m:'POST',d:'Get node health status',params:[],resp:'{ peers: number, isSyncing: boolean, shouldHavePeers: boolean }'},
+{g:'System',n:'system_peers',m:'POST',d:'Get connected peer list',params:[],resp:'[{ peerId, roles, protocolVersion, bestHash, bestNumber }]'},
+{g:'System',n:'system_chain',m:'POST',d:'Get the chain name',params:[],resp:'{ result: "Verdis Chain Testnet" }'},
+{g:'System',n:'system_chainType',m:'POST',d:'Get the chain type (Live, Development, Local)',params:[],resp:'{ result: "Development" }'},
+{g:'System',n:'system_name',m:'POST',d:'Get the node implementation name',params:[],resp:'{ result: "Verdis Node" }'},
+{g:'System',n:'system_version',m:'POST',d:'Get the node software version',params:[],resp:'{ result: "0.1.0" }'},
+{g:'System',n:'system_properties',m:'POST',d:'Get chain properties (token symbol, decimals, etc)',params:[],resp:'{ ss58Format, tokenSymbol: "VRDX", tokenDecimals: 12 }'},
+{g:'System',n:'system_syncState',m:'POST',d:'Get the current sync state',params:[],resp:'{ startingBlock, currentBlock, highestBlock }'},
+{g:'System',n:'system_nodeRoles',m:'POST',d:'Get the roles of this node (authority, full, light)',params:[],resp:'["Full"]'},
+{g:'System',n:'system_accountNextIndex',m:'POST',d:'Get the next account index for an account',params:[{n:'accountId',t:'String',r:true,d:'Account address (SS58 format)'}],resp:'{ result: number }'},
+
+// AMM DEX
+{g:'AMM DEX',n:'amm_dex_getAllPools',m:'POST',d:'Get all liquidity pools on the DEX',params:[],resp:'[{ poolId, tokenA, tokenB, reserveA, reserveB, totalLiquidity, feeRate }]'},
+{g:'AMM DEX',n:'amm_dex_getAllTokenPools',m:'POST',d:'Get all pools for a specific token',params:[{n:'tokenId',t:'String',r:true,d:'Token identifier'}],resp:'[{ poolId, tokenA, tokenB, reserveA, reserveB }]'},
+{g:'AMM DEX',n:'amm_dex_getPool',m:'POST',d:'Get details of a specific pool by ID',params:[{n:'poolId',t:'Number',r:true,d:'Pool ID'}],resp:'{ poolId, tokenA, tokenB, reserveA, reserveB, totalLiquidity, feeRate }'},
+{g:'AMM DEX',n:'amm_dex_getPoolCount',m:'POST',d:'Get the total number of pools',params:[],resp:'{ result: number }'},
+{g:'AMM DEX',n:'amm_dex_getPrice',m:'POST',d:'Get the current price of tokenA in terms of tokenB',params:[{n:'tokenA',t:'String',r:true,d:'Token A identifier'},{n:'tokenB',t:'String',r:true,d:'Token B identifier'}],resp:'{ price: number }'},
+{g:'AMM DEX',n:'amm_dex_getLiquidity',m:'POST',d:'Get the total liquidity of a pool',params:[{n:'poolId',t:'Number',r:true,d:'Pool ID'}],resp:'{ reserveA, reserveB, totalLiquidity }'},
+{g:'AMM DEX',n:'amm_dex_getTokenLiquidity',m:'POST',d:'Get total liquidity for a specific token across all pools',params:[{n:'tokenId',t:'String',r:true,d:'Token identifier'}],resp:'{ totalLiquidity: number, poolCount: number }'},
+{g:'AMM DEX',n:'amm_dex_getTokenPool',m:'POST',d:'Get the pool for a token pair',params:[{n:'tokenA',t:'String',r:true,d:'Token A'},{n:'tokenB',t:'String',r:true,d:'Token B'}],resp:'{ poolId, reserveA, reserveB }'},
+{g:'AMM DEX',n:'amm_dex_getTokenPoolCount',m:'POST',d:'Get the number of pools containing a token',params:[{n:'tokenId',t:'String',r:true,d:'Token identifier'}],resp:'{ result: number }'},
+
+// DPoS
+{g:'DPoS',n:'dpos_activeValidators',m:'POST',d:'Get the list of currently active validators',params:[],resp:'[{ accountId, stake, greenScore, commission }]'},
+{g:'DPoS',n:'dpos_allValidators',m:'POST',d:'Get all registered validators (active and inactive)',params:[],resp:'[{ accountId, stake, greenScore, commission, isActive }]'},
+{g:'DPoS',n:'dpos_currentEpoch',m:'POST',d:'Get the current DPoS epoch information',params:[],resp:'{ epoch: number, startIndex: number, validators: number, totalStaked: number }'},
+{g:'DPoS',n:'dpos_validatorStake',m:'POST',d:'Get the stake of a specific validator',params:[{n:'accountId',t:'String',r:true,d:'Validator account address'}],resp:'{ stake: number, nominators: number }'},
+
+// Eco
+{g:'Eco',n:'eco_getCarbonCreditCount',m:'POST',d:'Get the total number of carbon credits minted on-chain',params:[],resp:'{ result: number }'},
+{g:'Eco',n:'eco_getGreenValidatorCount',m:'POST',d:'Get the number of validators with green certification',params:[],resp:'{ result: number }'},
+{g:'Eco',n:'eco_getReforestProjectCount',m:'POST',d:'Get the number of registered reforestation projects',params:[],resp:'{ result: number }'},
+{g:'Eco',n:'eco_getTotalCO2Offset',m:'POST',d:'Get the total CO2 offset in tons',params:[],resp:'{ result: number }'},
+{g:'Eco',n:'eco_getTotalCreditsRetired',m:'POST',d:'Get the total carbon credits retired (burned)',params:[],resp:'{ result: number }'},
+{g:'Eco',n:'eco_getTotalTreesPlanted',m:'POST',d:'Get the total number of trees planted through eco pallet',params:[],resp:'{ result: number }'},
+
+// Author
+{g:'Author',n:'author_submitExtrinsic',m:'POST',d:'Submit a signed extrinsic to the network',params:[{n:'extrinsic',t:'String',r:true,d:'Signed extrinsic (hex-encoded)'}],resp:'{ result: "0x..." }'},
+{g:'Author',n:'author_submitAndWatchExtrinsic',m:'WS',d:'Submit a signed extrinsic and watch its status',params:[{n:'extrinsic',t:'String',r:true,d:'Signed extrinsic (hex-encoded)'}],resp:'{ status: "ready" | "inBlock" | "finalized" }'},
+{g:'Author',n:'author_pendingExtrinsics',m:'POST',d:'Get all pending extrinsics in the transaction pool',params:[],resp:'["0x..."]'},
+{g:'Author',n:'author_rotateKeys',m:'POST',d:'Generate new session keys (returns hex)',params:[],resp:'{ result: "0x..." }'},
+{g:'Author',n:'author_hasKey',m:'POST',d:'Check if a key exists in the keystore',params:[{n:'publicKey',t:'String',r:true,d:'Public key (hex)'},{n:'keyType',t:'String',r:true,d:'Key type identifier'}],resp:'{ result: boolean }'},
+{g:'Author',n:'author_hasSessionKeys',m:'POST',d:'Check if session keys exist',params:[{n:'sessionKeys',t:'String',r:true,d:'Session keys (hex)'}],resp:'{ result: boolean }'},
+{g:'Author',n:'author_insertKey',m:'POST',d:'Insert a key into the keystore',params:[{n:'keyType',t:'String',r:true,d:'Key type'},{n:'suri',t:'String',r:true,d:'Secret URI'},{n:'publicKey',t:'String',r:true,d:'Public key (hex)'}],resp:'{ result: "0x..." }'},
+
+// Payment
+{g:'Payment',n:'payment_queryFeeDetails',m:'POST',d:'Get the fee details for an extrinsic',params:[{n:'extrinsic',t:'String',r:true,d:'Extrinsic (hex-encoded)'},{n:'hash',t:'String',r:false,d:'Block hash (optional)'}],resp:'{ inclusionFee: { baseFee, lenFee, adjustedWeightFee }, tip }'},
+{g:'Payment',n:'payment_queryInfo',m:'POST',d:'Get the fee and weight info for an extrinsic',params:[{n:'extrinsic',t:'String',r:true,d:'Extrinsic (hex-encoded)'},{n:'hash',t:'String',r:false,d:'Block hash (optional)'}],resp:'{ weight, class, partialFee, output }'},
+
+// Contracts
+{g:'Contracts',n:'contracts_call',m:'POST',d:'Call a smart contract method (read-only)',params:[{n:'contract',t:'String',r:true,d:'Contract address'},{n:'method',t:'String',r:true,d:'Method name'},{n:'args',t:'Array',r:false,d:'Method arguments'}],resp:'{ result: "0x..." }'},
+{g:'Contracts',n:'contracts_getStorage',m:'POST',d:'Get a storage item from a contract',params:[{n:'contract',t:'String',r:true,d:'Contract address'},{n:'key',t:'String',r:true,d:'Storage key (hex)'}],resp:'{ result: "0x..." }'},
+{g:'Contracts',n:'contracts_instantiate',m:'POST',d:'Instantiate a new smart contract',params:[{n:'code',t:'String',r:true,d:'Contract code (WASM hex)'},{n:'data',t:'String',r:false,d:'Constructor arguments'},{n:'salt',t:'String',r:false,d:'Salt for address generation'}],resp:'{ accountId, rentDeposit, gasConsumed }'},
+
+// Chain Spec
+{g:'Chain Spec',n:'chainSpec_v1_chainName',m:'POST',d:'Get the blockchain name',params:[],resp:'{ result: "Verdis Chain" }'},
+{g:'Chain Spec',n:'chainSpec_v1_genesisHash',m:'POST',d:'Get the genesis block hash',params:[],resp:'{ result: "0x..." }'},
+{g:'Chain Spec',n:'chainSpec_v1_properties',m:'POST',d:'Get the chain properties (token, SS58, decimals)',params:[],resp:'{ tokenSymbol: "VRDX", ss58Format, tokenDecimals }'},
+
+// Child State
+{g:'Child State',n:'childstate_getKeys',m:'POST',d:'Get child storage keys',params:[{n:'childKey',t:'String',r:true,d:'Child storage key'},{n:'prefix',t:'String',r:false,d:'Key prefix'},{n:'hash',t:'String',r:false,d:'Block hash'}],resp:'{ result: ["0x..."] }'},
+{g:'Child State',n:'childstate_getStorage',m:'POST',d:'Get a child storage item',params:[{n:'childKey',t:'String',r:true,d:'Child storage key'},{n:'key',t:'String',r:true,d:'Storage key'},{n:'hash',t:'String',r:false,d:'Block hash'}],resp:'{ result: "0x..." }'},
+{g:'Child State',n:'childstate_getStorageHash',m:'POST',d:'Get the hash of a child storage item',params:[{n:'childKey',t:'String',r:true,d:'Child key'},{n:'key',t:'String',r:true,d:'Storage key'}],resp:'{ result: "0x..." }'},
+{g:'Child State',n:'childstate_getStorageSize',m:'POST',d:'Get the size of a child storage item',params:[{n:'childKey',t:'String',r:true,d:'Child key'},{n:'key',t:'String',r:true,d:'Storage key'}],resp:'{ result: number }'},
+
+// Offchain
+{g:'Offchain',n:'offchain_localStorageGet',m:'POST',d:'Get a value from offchain local storage',params:[{n:'key',t:'String',r:true,d:'Storage key'}],resp:'{ result: "0x..." }'},
+{g:'Offchain',n:'offchain_localStorageSet',m:'POST',d:'Set a value in offchain local storage',params:[{n:'key',t:'String',r:true,d:'Storage key'},{n:'value',t:'String',r:true,d:'Value (hex)'}],resp:'{ result: null }'},
+{g:'Offchain',n:'offchain_localStorageClear',m:'POST',d:'Clear a value from offchain local storage',params:[{n:'key',t:'String',r:true,d:'Storage key'}],resp:'{ result: null }'},
+
+// Chain Head v2
+{g:'Chain Head v2',n:'chainHead_v1_follow',m:'WS',d:'Subscribe to new block notifications (v2 API)',params:[{n:'runtime',t:'Boolean',r:false,d:'Include runtime updates'}],resp:'{ event: "newBlock" | "finalized", block: "0x..." }'},
+{g:'Chain Head v2',n:'chainHead_v1_body',m:'POST',d:'Get the body of a block (v2 API)',params:[{n:'subscriptionId',t:'String',r:true,d:'Subscription ID from follow'},{n:'hash',t:'String',r:true,d:'Block hash'}],resp:'{ result: ["0x..."] }'},
+{g:'Chain Head v2',n:'chainHead_v1_header',m:'POST',d:'Get the header of a block (v2 API)',params:[{n:'subscriptionId',t:'String',r:true,d:'Subscription ID'},{n:'hash',t:'String',r:true,d:'Block hash'}],resp:'{ number, parentHash, stateRoot }'},
+{g:'Chain Head v2',n:'chainHead_v1_storage',m:'POST',d:'Get storage items for a block (v2 API)',params:[{n:'subscriptionId',t:'String',r:true,d:'Subscription ID'},{n:'hash',t:'String',r:true,d:'Block hash'},{n:'items',t:'Array',r:true,d:'Storage keys'}],resp:'{ result: [{ key, value }] }'},
+{g:'Chain Head v2',n:'chainHead_v1_call',m:'POST',d:'Call a runtime function (v2 API)',params:[{n:'subscriptionId',t:'String',r:true,d:'Subscription ID'},{n:'hash',t:'String',r:true,d:'Block hash'},{n:'function',t:'String',r:true,d:'Function name'},{n:'args',t:'Array',r:false,d:'Arguments'}],resp:'{ result: "0x..." }'}
+];
+
+// Group them
+var groups={};
+endpoints.forEach(function(e){if(!groups[e.g])groups[e.g]=[];groups[e.g].push(e)});
+var groupCounts={};
+Object.keys(groups).forEach(function(g){groupCounts[g]=groups[g].length});
+
+// Render sidebar
+function renderSidebar(){
+var html='';
+Object.keys(groups).forEach(function(g){
+html+='<div class="sidebar-group"><div class="sidebar-group-title" onclick="this.parentElement.classList.toggle(\"collapsed\")">'+g+' <span style="color:var(--text-mute)">'+groupCounts[g]+'</span></div><div class="sidebar-group-items">';
+groups[g].forEach(function(e){
+var mc=e.m==='WS'?'m-ws':'m-post';
+html+='<div class="sidebar-item" data-name="'+e.n+'" onclick="selectEndpoint(\''+e.n+'\')"><span class="m-badge '+mc+'">'+e.m+'</span>'+e.n.replace(/_/,'_')+'</div>';
+});
+html+='</div></div>';
+});
+document.getElementById('sidebarContent').innerHTML=html;
+}
+
+// Filter
+function filterEndpoints(){
+var q=document.getElementById('sidebarSearch').value.toLowerCase();
+document.querySelectorAll('.sidebar-item').forEach(function(item){
+var name=item.dataset.name.toLowerCase();
+item.style.display=q&&!name.includes(q)?'none':'';
+});
+}
+
+// Select endpoint
+var currentEndpoint=null;
+function selectEndpoint(name){
+var ep=endpoints.find(function(e){return e.n===name});
+if(!ep)return;
+currentEndpoint=ep;
+// Update active state
+document.querySelectorAll('.sidebar-item').forEach(function(i){i.classList.remove('active')});
+document.querySelector('.sidebar-item[data-name="'+name+'"]').classList.add('active');
+// Close sidebar on mobile
+document.getElementById('sidebar').classList.remove('open');
+renderEndpoint(ep);
+}
+
+function renderEndpoint(e){
+var url = e.m==='WS' ? 'wss://verdischain.com/ws' : 'https://verdischain.com/rpc';
+var mc = e.m==='WS'?'method-ws':'method-post';
+
+// Params table
+var paramsHtml='';
+if(e.params.length===0){
+paramsHtml='<p style="color:var(--text-mute);font-size:14px;padding:12px 0">No parameters required</p>';
+}else{
+paramsHtml='<table class="params-table"><thead><tr><th>Name</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody>';
+e.params.forEach(function(p){
+paramsHtml+='<tr><td>'+p.n+'</td><td>'+p.t+'</td><td>'+(p.r?'<span class="req">Required</span>':'<span class="opt">Optional</span>')+'</td><td>'+p.d+'</td></tr>';
+});
+paramsHtml+='</tbody></table>';
+}
+
+// Try It inputs
+var tryItParams='';
+if(e.params.length>0){
+e.params.forEach(function(p){
+tryItParams+='<div class="try-it-param"><label>'+p.n+(p.r?' <span class="req">required</span>':'')+'</label><input type="text" id="param_'+p.n+'" placeholder="'+p.t+'" data-default=""></div>';
+});
+}
+
+// Request body template
+var reqBody = '{"jsonrpc":"2.0","id":1,"method":"'+e.n+'","params":[';
+if(e.params.length>0){
+reqBody+=e.params.map(function(p){return p.r?'""':'null'}).join(',');
+}
+reqBody+=']}';
+
+// JS code
+var jsCode = "<span class=\"kw\">const</span> response = <span class=\"fn\">await</span> <span class=\"fn\">fetch</span>(<span class=\"str\">'"+url+"'</span>, {\n  method: <span class=\"str\">'POST'</span>,\n  headers: { <span class=\"str\">'Content-Type'</span>: <span class=\"str\">'application/json'</span> },\n  body: <span class=\"str\">JSON.stringify("+reqBody.replace(/"/g,'\\"')+"</span>.replace(/\\\\\"/g,'\"'))\n});\n<span class=\"kw\">const</span> data = <span class=\"fn\">await</span> response.<span class=\"fn\">json</span>();\nconsole.<span class=\"fn\">log</span>(data);";
+
+// Shell code
+var shellCode = "<span class=\"fn\">curl</span> -X POST <span class=\"str\">'"+url+"'</span> \\\n  -H <span class=\"str\">'Content-Type: application/json'</span> \\\n  -d <span class=\"str\">'"+reqBody.replace(/'/g,"'\\''")+"'</span>";
+
+// Python code
+var pyCode = "<span class=\"kw\">import</span> requests\n\nresponse = requests.<span class=\"fn\">post</span>(\n  <span class=\"str\">'"+url+"'</span>,\n  json="+reqBody.replace(/"/g,'\"').replace(/\\\\"/g,'\"')+",\n  headers={<span class=\"str\">'Content-Type'</span>: <span class=\"str\">'application/json'</span>}\n)\n<span class=\"fn\">print</span>(response.<span class=\"fn\">json</span>())";
+
+// Go code
+var goCode = "<span class=\"kw\">package</span> main\n\n<span class=\"kw\">import</span> (\n  <span class=\"str\">\"bytes\"</span>\n  <span class=\"str\">\"encoding/json\"</span>\n  <span class=\"str\">\"net/http\"</span>\n)\n\nbody, _ := json.<span class=\"fn\">Marshal</span>(map[string]interface{}{\n  <span class=\"str\">\"jsonrpc\"</span>: <span class=\"str\">\"2.0\"</span>,\n  <span class=\"str\">\"id\"</span>: <span class=\"num\">1</span>,\n  <span class=\"str\">\"method\"</span>: <span class=\"str\">\""+e.n+"\"</span>,\n  <span class=\"str\">\"params\"</span>: [],\n})\nresp, _ := http.<span class=\"fn\">Post</span>(<span class=\"str\">\""+url+"\"</span>, <span class=\"str\">\"application/json\"</span>, bytes.<span class=\"fn\">NewBuffer</span>(body))\n<span class=\"kw\">defer</span> resp.Body.<span class=\"fn\">Close</span>()";
+
+// Rust code
+var rustCode = "<span class=\"kw\">use</span> reqwest;\n\n<span class=\"kw\">let</span> client = reqwest::Client::new();\n<span class=\"kw\">let</span> resp = client.post(<span class=\"str\">\""+url+"\"</span>)\n  .header(<span class=\"str\">\"Content-Type\"</span>, <span class=\"str\">\"application/json\"</span>)\n  .body(<span class=\"str\">r#\""+reqBody+"\"#</span>)\n  .send()\n  .<span class=\"fn\">await</span>?;\n<span class=\"kw\">let</span> data: serde_json::Value = resp.json().<span class=\"fn\">await</span>?;";
+
+var html = '<div class="endpoint-header">'+
+  '<h1>'+e.n+'</h1>'+
+  '<div class="url"><span class="method '+mc+'">'+e.m+'</span> '+url+'</div>'+
+  '<p class="desc">'+e.d+'</p>'+
+  '</div>'+
+
+  '<div class="section">'+
+  '<h2><span class="num">1</span> Parameters</h2>'+
+  paramsHtml+
+  '</div>'+
+
+  '<div class="section">'+
+  '<h2><span class="num">2</span> Request Body</h2>'+
+  '<div class="code-block"><div class="code-tabs"><div class="code-tab active" onclick="switchCode(this,\'body\')">JSON</div></div>'+
+  '<div class="code-content active" id="code-body"><pre>'+reqBody+'</pre></div></div>'+
+  '</div>'+
+
+  '<div class="section">'+
+  '<h2><span class="num">3</span> Code Examples</h2>'+
+  '<div class="code-block"><div class="code-tabs">'+
+  '<div class="code-tab active" onclick="switchCode(this,\'shell\')">Shell</div>'+
+  '<div class="code-tab" onclick="switchCode(this,\'js\')">JavaScript</div>'+
+  '<div class="code-tab" onclick="switchCode(this,\'py\')">Python</div>'+
+  '<div class="code-tab" onclick="switchCode(this,\'go\')">Go</div>'+
+  '<div class="code-tab" onclick="switchCode(this,\'rust\')">Rust</div>'+
+  '</div>'+
+  '<div class="code-content active" id="code-shell"><pre>'+shellCode+'</pre></div>'+
+  '<div class="code-content" id="code-js"><pre>'+jsCode+'</pre></div>'+
+  '<div class="code-content" id="code-py"><pre>'+pyCode+'</pre></div>'+
+  '<div class="code-content" id="code-go"><pre>'+goCode+'</pre></div>'+
+  '<div class="code-content" id="code-rust"><pre>'+rustCode+'</pre></div>'+
+  '</div>'+
+  '</div>'+
+
+  '<div class="section">'+
+  '<h2><span class="num">4</span> Response</h2>'+
+  '<div style="margin-bottom:12px"><span class="response-code rc-200">200 OK</span> <span style="font-size:14px;color:var(--text-mute)">Successful response</span></div>'+
+  '<div class="response-schema">'+
+  '<div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--text-mute);text-transform:uppercase;letter-spacing:.5px">Response Schema</div>'+
+  '<pre style="font-family:var(--font-mono);font-size:13px;white-space:pre-wrap;color:var(--text-dim)">'+e.resp+'</pre>'+
+  '</div>'+
+  '<div style="margin-top:12px"><span class="response-code rc-400">400</span> <span style="font-size:14px;color:var(--text-mute)">Bad Request — Invalid parameters</span></div>'+
+  '<div style="margin-top:4px"><span class="response-code rc-401">401</span> <span style="font-size:14px;color:var(--text-mute)">Unauthorized — API key required (mainnet)</span></div>'+
+  '<div style="margin-top:4px"><span class="response-code rc-500">500</span> <span style="font-size:14px;color:var(--text-mute)">Internal Server Error</span></div>'+
+  '</div>'+
+
+  '<div class="section">'+
+  '<h2><span class="num">5</span> Try It!</h2>'+
+  '<div class="try-it"><div class="try-it-header"><h3>Interactive Request</h3></div><div class="try-it-body">'+
+  tryItParams+
+  '<button class="try-it-btn" onclick="tryEndpoint()">Send Request</button>'+
+  '<div class="try-it-result" id="tryResult"></div>'+
+  '</div></div>'+
+  '</div>';
+
+document.getElementById('endpointView').innerHTML=html;
+}
+
+// Switch code tabs
+function switchCode(tab,id){
+var block=tab.closest('.code-block');
+block.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+tab.classList.add('active');
+block.querySelectorAll('.code-content').forEach(c=>c.classList.remove('active'));
+block.querySelector('#code-'+id).classList.add('active');
+}
+
+// Try It
+async function tryEndpoint(){
+if(!currentEndpoint)return;
+var res=document.getElementById('tryResult');
+res.classList.add('show');
+res.innerHTML='<span style="color:#fbbf24">Sending request...</span>';
+
+// Build params
+var params=[];
+if(currentEndpoint.params.length>0){
+currentEndpoint.params.forEach(function(p){
+var val=document.getElementById('param_'+p.n).value;
+if(val){
+// Try to parse as number
+if(p.t==='Number')params.push(parseInt(val));
+else params.push(val);
+}else{
+params.push(null);
+}
+});
+}
+
+var body=JSON.stringify({jsonrpc:'2.0',id:1,method:currentEndpoint.n,params:params});
+
+try{
+var response=await fetch('/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:body});
+var data=await response.json();
+res.innerHTML='<span style="color:#86efac">// Response ('+response.status+' '+response.statusText+')</span>\n'+JSON.stringify(data,null,2);
+}catch(err){
+res.innerHTML='<span style="color:#ef4444">Error: '+err.message+'</span>';
+}
+}
+
+// Init
+renderSidebar();
+selectEndpoint('chain_getBlock');
+</script>
+</body>
+</html>

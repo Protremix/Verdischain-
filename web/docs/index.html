@@ -3,1070 +3,1625 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Verdis Chain — Developer Documentation v2.0</title>
-  <meta name="description" content="Official documentation for Verdis Chain. Build green decentralized applications with Rust, Substrate, Substrate pallets, and carbon credit APIs." />
+  <title>Verdis Chain — Comprehensive Developer Documentation</title>
+  <link rel="canonical" href="https://verdischain.com/docs/" />
+  <meta name="description" content="Verdis Chain Developer Documentation. Complete guide to RPC APIs, 15 Pallets, DPoS Consensus, AMM DEX, VRDX Tokenomics, Validator Node Setup, and the 51-method JavaScript SDK." />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Verdis Chain — Developer Documentation v2.0" />
-  <meta property="og:description" content="Build on Verdis Chain with Rust + Substrate. 36 runtime pallets, native AMM DEX, and carbon credit APIs." />
-  <meta property="og:url" content="https://verdischain.com/docs" />
-  <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
+  <meta property="og:title" content="Verdis Chain — Comprehensive Developer Documentation" />
+  <meta property="og:description" content="Complete documentation for Verdis Chain: RPC APIs, 15 Pallets, DPoS, AMM DEX, VRDX Tokenomics, Validator Setup, and JavaScript SDK." />
+  <meta property="og:url" content="https://verdischain.com/docs/" />
+  <meta property="og:image" content="https://verdischain.com/assets/verdis-logo-black.png" />
+  <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
+
+  <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
   <style>
+    /* ============================================================
+       VERDIS CHAIN DESIGN SYSTEM — GRADIENT UI/UX TEMPLATE
+       Dark Theme, Green-Black Identity, Neon #16a34a Accents
+       ============================================================ */
     :root {
-      --canvas: #e8ebee;
-      --canvas-light: #f1f5f9;
-      --hero-bg: #1a1a1a;
-      --hero-card: #2d2d2d;
-      --hero-card-dark: #252525;
-      --hero-border: rgba(255,255,255,0.08);
-      --accent: #caff33;
-      --accent-hover: #a8e607;
-      --accent-2: #a8e607;
-      --accent-3: #00a86b;
-      --accent-glow: rgba(202,255,51,0.35);
-      --accent-light: rgba(202,255,51,0.08);
-      --accent-border: rgba(202,255,51,0.25);
-      --accent-gradient: linear-gradient(135deg, #caff33, #a8e607);
+      --bg-primary: #0a0e0a;
+      --bg-secondary: #111811;
+      --bg-card: #162016;
+      --bg-card-hover: #1c2a1c;
+      --bg-input: #0e140e;
+      --bg-code: #070c07;
+      --bg-code-header: #0f180f;
+      
+      --accent: #16a34a;
+      --accent-hover: #15803d;
+      --accent-dark: #14532d;
+      --accent-glow: rgba(22,163,74,0.2);
+      --accent-glow-strong: rgba(22,163,74,0.4);
+      --accent-light: rgba(0, 255, 136, 0.08);
+      --accent-border: rgba(0, 255, 136, 0.25);
+      
+      --gradient-accent: linear-gradient(135deg, #16a34a 0%, #00aa55 100%);
+      --gradient-card: linear-gradient(135deg, rgba(0, 255, 136, 0.05) 0%, rgba(10, 14, 10, 0.95) 100%);
+      
+      --text-primary: #f0f0f0;
+      --text-secondary: #a0b0a0;
+      --text-muted: #607260;
       --text-white: #ffffff;
-      --text-dim: #b8bcc4;
-      --text-muted: #6b7080;
-      --text-dark: #0f172a;
-      --text-dark-muted: #64748b;
-      --radius: 12px;
-      --radius-lg: 20px;
+      
+      --border: #1e2e1e;
+      --border-light: #2a3d2a;
+      
+      --font-sans: 'Inter', 'Poppins', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
       --radius-pill: 100px;
-      --transition: 300ms cubic-bezier(0.16,1,0.3,1);
+      
+      --transition: 250ms cubic-bezier(0.16, 1, 0.3, 1);
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Poppins', sans-serif; background: var(--canvas-light); color: var(--text-dark); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
-    .mono { font-family: 'JetBrains Mono', monospace; }
 
-    /* ===== SCROLL PROGRESS ===== */
-    #scroll-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #caff33, #a8e607, #00a86b); z-index: 10000; width: 0; transition: width 50ms; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      font-size: 14.5px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
 
-    /* ===== CURSOR GLOW ===== */
-    #cursor-glow { position: fixed; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(202,255,51,0.06) 0%, transparent 70%); pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); opacity: 0; transition: opacity 300ms; }
+    .mono, code, pre, .tabular {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Scroll progress bar */
+    #scroll-bar {
+      position: fixed; top: 0; left: 0; height: 3px;
+      background: linear-gradient(90deg, #16a34a, #00a86b, #84fe87);
+      z-index: 10000; width: 0%; transition: width 50ms;
+      box-shadow: 0 0 12px var(--accent-glow-strong);
+    }
+
+    /* Cursor glow */
+    #cursor-glow {
+      position: fixed; width: 450px; height: 450px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 255, 136, 0.05) 0%, transparent 70%);
+      pointer-events: none; z-index: 9999; transform: translate(-50%, -50%);
+      opacity: 0; transition: opacity 300ms;
+    }
     body:hover #cursor-glow { opacity: 1; }
 
-    /* ===== HERO SECTION — Dark container on light canvas ===== */
-    .hero-section { position: relative; background: var(--canvas); padding: 0 24px 24px; overflow: hidden; }
-    .hero-container { max-width: 1280px; margin: 0 auto; background: var(--hero-bg); border-radius: 24px; overflow: hidden; position: relative; min-height: 720px; display: flex; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
-    .hero-container::before { content: ''; position: absolute; top: -50%; right: -20%; width: 600px; height: 600px; background: radial-gradient(circle, var(--accent-glow), transparent 60%); opacity: 0.15; animation: pulse-bg 4s ease-in-out infinite; }
-    @keyframes pulse-bg { 0%,100% { opacity: 0.1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(1.1); } }
+    /* ===== TOP NAVIGATION BAR (7 LINKS) ===== */
+    nav.std-nav {
+      position: sticky; top: 0; z-index: 1000;
+      background: rgba(10, 14, 10, 0.90);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      height: 64px; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px; text-decoration: none;
+      color: var(--text-white); font-weight: 800; font-size: 16px;
+      font-family: 'Poppins', sans-serif; letter-spacing: -0.01em;
+    }
+    .brand-logo-img { height: 36px; width: auto; object-fit: contain; }
+    .brand-text { background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-    /* ===== NAV (inside dark hero) ===== */
-    .hero-nav { position: absolute; top: 0; left: 0; right: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: 24px 40px; }
-    .nav-brand { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 22px; color: var(--text-white); display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .nav-brand-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px var(--accent-glow); animation: pulse-dot 2s infinite; }
-    @keyframes pulse-dot { 0%,100% { box-shadow: 0 0 16px var(--accent-glow); } 50% { box-shadow: 0 0 24px rgba(202,255,51,0.6); } }
-    .nav-links { display: flex; gap: 36px; }
-    .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; text-decoration: none; transition: color 250ms; position: relative; }
-    .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: var(--accent); border-radius: 2px; transition: width 250ms; }
-    .nav-links a:hover { color: var(--text-white); }
-    .nav-links a:hover::after { width: 100%; }
-    .nav-cta { display: flex; gap: 12px; align-items: center; }
-    .btn-login { color: var(--text-muted); font-size: 14px; font-weight: 500; text-decoration: none; padding: 8px 16px; transition: color 250ms; }
-    .btn-login:hover { color: var(--text-white); }
-    .btn-signup { background: var(--accent); color: var(--hero-bg); font-size: 14px; font-weight: 600; padding: 10px 24px; border-radius: var(--radius-pill); border: none; cursor: pointer; transition: var(--transition); text-decoration: none; position: relative; overflow: hidden; display: inline-block; }
-    .btn-signup::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transition: left 500ms; }
-    .btn-signup:hover::before { left: 100%; }
-    .btn-signup:hover { transform: translateY(-2px); box-shadow: 0 8px 24px var(--accent-glow); }
+    .nav-links { display: flex; align-items: center; gap: 6px; list-style: none; }
+    .nav-links a {
+      color: var(--text-secondary); text-decoration: none; font-size: 13.5px;
+      font-weight: 500; padding: 7px 14px; border-radius: var(--radius-sm);
+      transition: var(--transition); position: relative;
+    }
+    .nav-links a:hover { color: var(--accent); background: var(--accent-light); }
+    .nav-links a.active { color: var(--accent); background: var(--accent-light); font-weight: 600; }
+    .nav-links a.active::after {
+      content: ''; position: absolute; bottom: 0; left: 14px; right: 14px;
+      height: 2px; background: var(--accent); border-radius: 2px;
+    }
 
-    /* ===== HERO LEFT ===== */
-    .hero-left { flex: 1; max-width: 540px; display: flex; flex-direction: column; justify-content: center; padding: 120px 0 60px 60px; position: relative; z-index: 10; }
-    .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--accent-light); border: 1px solid rgba(202,255,51,0.3); border-radius: var(--radius-pill); font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 24px; width: fit-content; opacity: 0; transform: translateY(20px); animation: slideUp 600ms 200ms forwards; }
-    .hero-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse-dot 2s infinite; }
-    .hero-title { font-size: 52px; font-weight: 900; line-height: 1.05; color: var(--text-white); margin-bottom: 20px; letter-spacing: -1px; opacity: 0; transform: translateY(30px); animation: slideUp 800ms 400ms forwards; }
-    .hero-title .gradient { background: linear-gradient(135deg, #caff33 0%, #a8e607 50%, #ffffff 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-    .hero-desc { font-size: 15px; color: var(--text-muted); line-height: 1.7; margin-bottom: 30px; max-width: 500px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 600ms forwards; }
-    
-    /* Search Bar Pill */
-    .search-wrapper { position: relative; max-width: 460px; margin-bottom: 28px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 700ms forwards; }
-    .search-input { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); padding: 14px 22px 14px 50px; border-radius: var(--radius-pill); font-family: 'Poppins', sans-serif; font-size: 14px; color: var(--text-white); outline: none; transition: var(--transition); backdrop-filter: blur(10px); }
-    .search-input::placeholder { color: var(--text-muted); }
-    .search-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.09); box-shadow: 0 0 20px var(--accent-glow); }
-    .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; pointer-events: none; transition: color 250ms; }
-    .search-input:focus + .search-icon { color: var(--accent); }
-    .search-kbd { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 2px 8px; font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; pointer-events: none; }
+    .nav-status {
+      display: flex; align-items: center; gap: 8px; font-size: 12.5px;
+      font-weight: 600; color: var(--accent); background: var(--accent-light);
+      padding: 6px 14px; border-radius: var(--radius-pill); border: 1px solid var(--accent-border);
+    }
+    .nav-status .dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow-strong); animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
 
-    .hero-actions { display: flex; gap: 16px; opacity: 0; transform: translateY(20px); animation: slideUp 800ms 800ms forwards; }
-    .btn-read-more { background: linear-gradient(135deg, #caff33, #a8e607); color: var(--hero-bg); font-size: 15px; font-weight: 700; padding: 14px 32px; border-radius: var(--radius-pill); border: none; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
-    .btn-read-more::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transition: left 500ms; }
-    .btn-read-more:hover::before { left: 100%; }
-    .btn-read-more:hover { transform: translateY(-3px); box-shadow: 0 12px 32px var(--accent-glow); }
-    .btn-explore { background: transparent; color: var(--text-white); font-size: 15px; font-weight: 600; padding: 14px 32px; border-radius: var(--radius-pill); border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: var(--transition); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
-    .btn-explore:hover { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
-    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+    .nav-hamburger {
+      display: none; background: none; border: none; color: var(--text-primary);
+      font-size: 20px; cursor: pointer; padding: 6px;
+    }
 
-    /* ===== HERO RIGHT — COMPLEX 3D FLOATING UI CLUSTER ===== */
-    .hero-right { flex: 1.25; position: relative; height: 680px; display: flex; align-items: center; justify-content: center; padding: 40px 20px 40px 0; z-index: 5; }
-    #hero-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-
-    /* Large Lime Green Circle Background */
-    .hero-bg-lime-circle {
-      position: absolute;
-      top: 50%;
-      left: 48%;
-      transform: translate(-50%, -50%);
-      width: 360px;
-      height: 360px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #caff33 0%, #a8e607 60%, rgba(202,255,51,0.2) 100%);
-      box-shadow: 0 0 90px rgba(202,255,51,0.45);
-      z-index: 1;
+    /* ===== HERO SECTION ===== */
+    .docs-hero {
+      max-width: 1440px; margin: 24px auto 0; padding: 0 24px;
+    }
+    .hero-box {
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.12) 0%, rgba(10, 14, 10, 0.95) 100%),
+                  radial-gradient(circle at top right, rgba(0, 255, 136, 0.15), transparent 60%);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--radius-lg); padding: 40px 48px;
+      position: relative; overflow: visible; box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+      min-height: 280px; display: flex; align-items: center;
+    }
+    .hero-box::before {
+      content: ''; position: absolute; top: 50%; left: 50%;
+      width: 300px; height: 300px; border-radius: 50%;
+      background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+      opacity: 0.08; filter: blur(20px); transform: translate(-50%, -50%);
       pointer-events: none;
-      opacity: 0.85;
+    }
+    /* 3D Floating Cards */
+    .hero-3d-cluster {
+      position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+      width: 280px; height: 240px; perspective: 1000px; pointer-events: none;
+    }
+    .float-3d-card {
+      position: absolute; background: rgba(22, 163, 74, 0.08);
+      backdrop-filter: blur(20px); border: 1px solid rgba(22, 163, 74, 0.2);
+      border-radius: 12px; padding: 10px 14px; pointer-events: auto;
+      transition: all 0.3s ease;
+    }
+    .float-3d-card:hover {
+      border-color: rgba(22, 163, 74, 0.4);
+      background: rgba(22, 163, 74, 0.12);
+    }
+    .float-3d-label {
+      font-size: 10px; color: rgba(255,255,255,0.5);
+      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;
+    }
+    .float-3d-value {
+      font-family: 'JetBrains Mono', monospace; font-size: 14px;
+      font-weight: 600; color: var(--accent);
+    }
+    .float-3d-sub { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+    .fc3d-1 { top: 0; right: 0; animation: floatA 6s ease-in-out infinite; }
+    .fc3d-2 { top: 80px; right: 80px; animation: floatB 7s ease-in-out infinite; }
+    .fc3d-3 { bottom: 0; right: 30px; animation: floatC 8s ease-in-out infinite; }
+    .fc3d-4 { bottom: 60px; right: 120px; animation: floatA 9s ease-in-out infinite; }
+    .float-3d-tag {
+      position: absolute; padding: 4px 10px;
+      background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2);
+      border-radius: 100px; font-size: 10px; color: var(--accent);
+      font-weight: 500; pointer-events: auto;
+    }
+    .ft3d-1 { top: 130px; right: 40px; animation: floatB 5s ease-in-out infinite; }
+    @keyframes floatA { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    @keyframes floatB { 0%,100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
+    @keyframes floatC { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @media (max-width: 768px) { .hero-3d-cluster { display: none; } }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px;
+      background: var(--accent-light); border: 1px solid var(--accent-border);
+      border-radius: var(--radius-pill); font-size: 12px; font-weight: 700;
+      color: var(--accent); margin-bottom: 16px;
+    }
+    .hero-title {
+      font-family: 'Poppins', sans-serif; font-size: 32px; font-weight: 800;
+      color: var(--text-white); margin-bottom: 12px; line-height: 1.2;
+    }
+    .hero-title .gradient {
+      background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-subtitle {
+      font-size: 16px; color: var(--text-secondary); max-width: 800px; margin-bottom: 24px; line-height: 1.6;
     }
 
-    /* Floating Elements Glass-morphism Base */
-    .floating-element {
-      position: absolute;
-      background: rgba(45, 45, 45, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-      border-radius: 18px;
-      transition: transform 300ms ease, box-shadow 300ms ease;
-      z-index: 3;
-    }
-    .floating-element:hover {
-      border-color: rgba(202, 255, 51, 0.4);
-      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6), 0 0 20px rgba(202, 255, 51, 0.2);
-    }
-
-    /* 1. Central Monitor Frame (Code Editor) */
-    .central-monitor {
-      top: 50%;
-      left: 44%;
-      transform: translate(-50%, -50%);
-      width: 410px;
-      z-index: 4;
-      overflow: hidden;
-      border-color: rgba(255, 255, 255, 0.18);
-      animation: float-main 6s ease-in-out infinite alternate;
-    }
-    .monitor-topbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(30, 30, 30, 0.85); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
-    .topbar-dots { display: flex; gap: 6px; }
-    .topbar-dots .dot { width: 10px; height: 10px; border-radius: 50%; }
-    .dot-red { background: #ff5f56; }
-    .dot-yellow { background: #ffbd2e; }
-    .dot-green { background: #27c93f; }
-    .monitor-title { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--text-dim); display: flex; align-items: center; gap: 6px; }
-    .btn-copy-code { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-dim); border-radius: 6px; padding: 3px 8px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 200ms; }
-    .btn-copy-code:hover { background: rgba(202, 255, 51, 0.15); border-color: var(--accent); color: var(--accent); }
-    .monitor-code { padding: 14px 16px; font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 1.65; color: #e2e8f0; background: #1a1a1a; overflow-x: auto; }
-    .monitor-code .kw { color: #caff33; font-weight: 600; }
-    .monitor-code .fn { color: #38bdf8; }
-    .monitor-code .ty { color: #a8e607; }
-    .monitor-code .cm { color: #6b7080; font-style: italic; }
-
-    /* 2. Mobile Phone Mockup */
-    .phone-mockup {
-      top: 8%;
-      right: 10%;
-      width: 185px;
-      padding: 14px 12px 16px;
-      border-radius: 22px;
-      z-index: 5;
-      border-color: rgba(202, 255, 51, 0.3);
-      animation: float-phone 5s ease-in-out infinite alternate;
-    }
-    .phone-notch { width: 48px; height: 4px; background: rgba(255, 255, 255, 0.2); border-radius: 10px; margin: 0 auto 12px; }
-    .phone-header { margin-bottom: 12px; }
-    .phone-profile { display: flex; align-items: center; gap: 8px; }
-    .phone-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-light); border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 12px; }
-    .phone-user { display: flex; flex-direction: column; }
-    .phone-name { font-size: 12px; font-weight: 700; color: var(--text-white); }
-    .phone-status { font-size: 10px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
-    .phone-status .status-dot { width: 5px; height: 5px; border-radius: 50%; background: #caff33; display: inline-block; }
-
-    .phone-endpoints { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-    .endpoint-item { display: flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.04); padding: 5px 8px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; }
-    .badge { padding: 1px 5px; border-radius: 4px; font-size: 9px; font-weight: 700; }
-    .badge-get { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
-    .badge-post { background: rgba(202, 255, 51, 0.2); color: #caff33; }
-    .badge-rpc { background: rgba(168, 230, 7, 0.2); color: #a8e607; }
-    .ep-path { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-    .phone-progress-card { display: flex; align-items: center; gap: 10px; background: rgba(202, 255, 51, 0.08); border: 1px solid rgba(202, 255, 51, 0.25); padding: 8px 10px; border-radius: 12px; }
-    .progress-ring-wrap { position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
-    .progress-ring { transform: rotate(-90deg); }
-    .progress-ring .ring-bg { stroke: rgba(255, 255, 255, 0.1); }
-    .progress-ring .ring-fill { stroke: #caff33; stroke-linecap: round; transition: stroke-dashoffset 500ms; }
-    .ring-text { position: absolute; font-size: 11px; font-weight: 800; color: #caff33; font-family: 'JetBrains Mono', monospace; }
-    .progress-info { display: flex; flex-direction: column; }
-    .prog-title { font-size: 11px; font-weight: 700; color: var(--text-white); }
-    .prog-sub { font-size: 9px; color: var(--text-muted); }
-
-    /* 3. Calendar Widget */
-    .calendar-widget {
-      bottom: 8%;
-      right: 12%;
-      width: 205px;
-      padding: 12px 14px;
-      border-radius: 18px;
-      z-index: 5;
-      animation: float-cal 7s ease-in-out infinite alternate;
-    }
-    .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-    .cal-title { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-white); }
-    .cal-badge { background: var(--accent); color: #1a1a1a; font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 10px; }
-    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; font-size: 10px; margin-bottom: 8px; }
-    .cal-day-name { font-weight: 600; color: var(--text-muted); padding-bottom: 4px; }
-    .cal-date { color: var(--text-dim); padding: 3px 0; border-radius: 6px; font-family: 'JetBrains Mono', monospace; }
-    .cal-date.muted { color: rgba(255, 255, 255, 0.2); }
-    .cal-date.active-release { background: #caff33; color: #1a1a1a; font-weight: 800; box-shadow: 0 0 10px rgba(202,255,51,0.5); }
-    .cal-legend { font-size: 9.5px; color: var(--text-dim); display: flex; align-items: center; gap: 5px; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
-    .cal-legend .leg-dot { width: 6px; height: 6px; border-radius: 50%; background: #caff33; }
-
-    /* 4. Grid of 4 Small Cards (Dev Stats) */
-    .dev-stats-grid {
-      bottom: 4%;
-      left: 3%;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      width: 215px;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-      z-index: 5;
-      animation: float-stats 5.5s ease-in-out infinite alternate;
+    /* Quick stats grid inside hero */
+    .hero-stats {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px; margin-top: 24px;
     }
     .stat-card {
-      background: rgba(45, 45, 45, 0.88);
-      border: 1px solid rgba(202, 255, 51, 0.22);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-radius: 14px;
-      padding: 8px 10px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-      transition: transform 200ms;
+      background: rgba(18, 24, 18, 0.85); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 16px 20px; transition: var(--transition);
     }
-    .stat-card:hover { transform: translateY(-2px); border-color: var(--accent); }
-    .stat-icon { font-size: 16px; }
-    .stat-info { display: flex; flex-direction: column; }
-    .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 800; color: #caff33; line-height: 1.1; }
-    .stat-lbl { font-size: 9.5px; color: var(--text-dim); }
+    .stat-card:hover { border-color: var(--accent-border); transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-glow); }
+    .stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+    .stat-val { font-size: 18px; font-weight: 700; color: var(--text-white); margin-top: 4px; font-family: var(--font-mono); }
+    .stat-val.accent { color: var(--accent); }
 
-    /* 5. Card with Play Icon + Bar Chart */
-    .chart-card {
-      top: 5%;
-      left: 2%;
-      width: 210px;
-      padding: 12px 14px;
-      border-radius: 16px;
-      z-index: 5;
-      animation: float-chart 4.5s ease-in-out infinite alternate;
+    /* ===== MAIN LAYOUT: SIDEBAR + CONTENT ===== */
+    .docs-container {
+      max-width: 1440px; margin: 32px auto 60px; padding: 0 24px;
+      display: grid; grid-template-columns: 280px 1fr; gap: 32px; align-items: start;
     }
-    .chart-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .play-btn-circle { width: 28px; height: 28px; border-radius: 50%; background: #caff33; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 12px rgba(202, 255, 51, 0.5); }
-    .chart-titles { display: flex; flex-direction: column; }
-    .chart-main-title { font-size: 12px; font-weight: 700; color: var(--text-white); }
-    .chart-sub-title { font-size: 9.5px; color: #caff33; font-weight: 600; }
-    .chart-bars { display: flex; align-items: flex-end; justify-content: space-between; height: 40px; gap: 4px; padding-top: 4px; }
-    .bar-col { flex: 1; background: rgba(255, 255, 255, 0.08); height: 100%; border-radius: 4px; display: flex; align-items: flex-end; overflow: hidden; }
-    .bar-fill { width: 100%; background: linear-gradient(to top, #a8e607, #caff33); border-radius: 4px; box-shadow: 0 0 8px rgba(202, 255, 51, 0.4); }
 
-    /* 6. Vertical Button Stack */
-    .vertical-action-stack {
-      top: 32%;
-      right: 1.5%;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
-      z-index: 6;
-      animation: float-btns 6.5s ease-in-out infinite alternate;
+    /* Sidebar Navigation */
+    .docs-sidebar {
+      position: sticky; top: 88px; max-height: calc(100vh - 110px);
+      overflow-y: auto; padding-right: 12px; scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
     }
-    .action-btn {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      background: rgba(45, 45, 45, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: var(--text-white);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-      transition: all 250ms;
+    .sidebar-search {
+      position: relative; margin-bottom: 20px;
     }
-    .action-btn:hover { background: rgba(202, 255, 51, 0.15); border-color: #caff33; color: #caff33; box-shadow: 0 0 16px rgba(202, 255, 51, 0.4); transform: scale(1.08); }
+    .sidebar-search input {
+      width: 100%; padding: 10px 14px 10px 36px; background: var(--bg-input);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      color: var(--text-primary); font-size: 13px; font-family: var(--font-sans);
+      outline: none; transition: var(--transition);
+    }
+    .sidebar-search input:focus { border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+    .sidebar-search i {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 13px;
+    }
 
-    /* 7. Floating Tech Tags */
-    .float-tag { padding: 5px 12px; border-radius: var(--radius-pill); font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #caff33; background: rgba(30, 30, 30, 0.85); border: 1px solid rgba(202, 255, 51, 0.35); z-index: 6; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); position: absolute; }
-    .tag-rust { top: 2%; left: 45%; animation: float-tag1 4s infinite alternate ease-in-out; }
-    .tag-substrate { top: 32%; left: -2%; animation: float-tag2 5.5s infinite alternate ease-in-out; }
-    .tag-evm { bottom: 22%; left: 42%; animation: float-tag3 4.8s infinite alternate ease-in-out; }
-    .tag-wasm { top: 22%; right: -2%; animation: float-tag4 5.2s infinite alternate ease-in-out; }
+    .sidebar-group { margin-bottom: 24px; }
+    .sidebar-heading {
+      font-size: 11px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 10px;
+      padding-left: 8px; display: flex; align-items: center; gap: 8px;
+    }
+    .sidebar-heading i { color: var(--accent); font-size: 12px; }
 
-    /* Keyframe Animations */
-    @keyframes float-main { 0% { transform: translate(-50%, -50%) translateY(0px); } 100% { transform: translate(-50%, -50%) translateY(-12px); } }
-    @keyframes float-phone { 0% { transform: translateY(0px) rotate(0deg); } 100% { transform: translateY(-15px) rotate(1deg); } }
-    @keyframes float-cal { 0% { transform: translateY(0px); } 100% { transform: translateY(-12px); } }
-    @keyframes float-stats { 0% { transform: translateY(0px); } 100% { transform: translateY(-10px); } }
-    @keyframes float-chart { 0% { transform: translateY(0px) rotate(0deg); } 100% { transform: translateY(-14px) rotate(-1deg); } }
-    @keyframes float-btns { 0% { transform: translateY(0px); } 100% { transform: translateY(-10px); } }
-    @keyframes float-tag1 { 0% { transform: translateY(0); } 100% { transform: translateY(-8px); } }
-    @keyframes float-tag2 { 0% { transform: translateY(0); } 100% { transform: translateY(-10px); } }
-    @keyframes float-tag3 { 0% { transform: translateY(0); } 100% { transform: translateY(-7px); } }
-    @keyframes float-tag4 { 0% { transform: translateY(0); } 100% { transform: translateY(-9px); } }
+    .sidebar-links { list-style: none; }
+    .sidebar-links li { margin-bottom: 2px; }
+    .sidebar-links a {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px; color: var(--text-secondary); text-decoration: none;
+      font-size: 13px; font-weight: 500; border-radius: var(--radius-sm);
+      transition: var(--transition); border-left: 2px solid transparent;
+    }
+    .sidebar-links a:hover {
+      color: var(--accent); background: var(--accent-light); border-left-color: var(--accent);
+    }
+    .sidebar-links a.active {
+      color: var(--accent); background: var(--accent-light); border-left-color: var(--accent); font-weight: 700;
+    }
+    .sidebar-links .badge-count {
+      font-size: 10px; font-family: var(--font-mono); font-weight: 700;
+      padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.06); color: var(--text-muted);
+    }
 
-    /* Existing Section Dark / Section Light overrides if any */
-    .section-dark { background: #1a1a1a; color: var(--text-white); padding: 80px 24px; }
-    .section-light { background: var(--canvas-light); color: var(--text-dark); padding: 80px 24px; }
-    .card-dark { background: #2d2d2d; border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius); padding: 24px; }
-    .card-light { background: #ffffff; border: 1px solid rgba(0,0,0,0.06); border-radius: var(--radius); padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+    /* Main Content Area */
+    .docs-content { min-width: 0; }
 
-    /* Responsive Media Queries */
+    .doc-section {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 36px; margin-bottom: 36px;
+      scroll-margin-top: 88px; transition: var(--transition);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .doc-section:hover { border-color: rgba(22,163,74,0.2); }
+
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    }
+    .section-title {
+      font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 700;
+      color: var(--text-white); display: flex; align-items: center; gap: 12px;
+    }
+    .section-title i { color: var(--accent); font-size: 20px; }
+    .section-tag {
+      font-size: 11px; font-weight: 700; font-family: var(--font-mono);
+      padding: 4px 10px; border-radius: var(--radius-pill); background: var(--accent-light);
+      color: var(--accent); border: 1px solid var(--accent-border);
+    }
+
+    .doc-section p { color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px; font-size: 14.5px; }
+    .doc-section h3 {
+      font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 600;
+      color: var(--text-white); margin: 28px 0 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .doc-section h3 i { color: var(--accent); font-size: 14px; }
+
+    /* Code Blocks */
+    .code-box {
+      background: var(--bg-code); border: 1px solid var(--border);
+      border-radius: var(--radius-md); overflow: hidden; margin: 18px 0 24px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    }
+    .code-header {
+      background: var(--bg-code-header); padding: 10px 16px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+    .code-title { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--text-secondary); }
+    .copy-btn {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--text-secondary); padding: 4px 10px; border-radius: 4px;
+      font-size: 11px; font-weight: 600; cursor: pointer; transition: var(--transition);
+      display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-sans);
+    }
+    .copy-btn:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent-border); }
+
+    pre.code-content {
+      padding: 18px 20px; margin: 0; overflow-x: auto;
+      font-family: var(--font-mono); font-size: 13px; line-height: 1.6;
+      color: #e2e8f0; scrollbar-width: thin;
+    }
+    /* Syntax Highlighting */
+    .kw { color: #ff79c6; font-weight: 600; }
+    .str { color: #16a34a; }
+    .num { color: #bd93f9; }
+    .com { color: #6272a4; font-style: italic; }
+    .fn { color: #50fa7b; }
+    .type { color: #ffb86c; }
+    .var { color: #8be9fd; }
+
+    /* Tables */
+    .table-responsive { width: 100%; overflow-x: auto; margin: 18px 0; }
+    table.data-table {
+      width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left;
+    }
+    table.data-table th {
+      background: var(--bg-code-header); color: var(--text-white); font-weight: 700;
+      padding: 12px 16px; border-bottom: 2px solid var(--border); font-family: 'Poppins', sans-serif;
+    }
+    table.data-table td {
+      padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text-secondary);
+    }
+    table.data-table tr:hover td { background: var(--accent-light); color: var(--text-primary); }
+
+    /* Pallet & Feature Cards Grid */
+    .cards-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin: 20px 0;
+    }
+    .card-item {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 20px; transition: var(--transition);
+    }
+    .card-item:hover {
+      background: var(--bg-card-hover); border-color: var(--accent-border);
+      transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-glow);
+    }
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+    }
+    .card-title { font-size: 15px; font-weight: 700; color: var(--text-white); font-family: 'Poppins', sans-serif; }
+    .card-badge {
+      font-size: 11px; font-family: var(--font-mono); font-weight: 700;
+      color: var(--accent); background: var(--accent-light); padding: 2px 8px; border-radius: 4px;
+    }
+    .card-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.55; }
+
+    /* Key/Value Info Boxes */
+    .info-box {
+      background: rgba(0, 255, 136, 0.04); border: 1px solid var(--accent-border);
+      border-radius: var(--radius-md); padding: 16px 20px; margin: 18px 0;
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .info-box i { color: var(--accent); font-size: 18px; margin-top: 2px; }
+    .info-box-text { color: var(--text-secondary); font-size: 13.5px; line-height: 1.6; }
+    .info-box-text strong { color: var(--text-white); }
+
+    /* ===== FOOTER (16 LINKS) ===== */
+    footer.footer {
+      background: #060906; border-top: 1px solid var(--border);
+      padding: 60px 24px 32px; margin-top: 80px;
+    }
+    .footer-inner {
+      max-width: 1440px; margin: 0 auto; display: grid;
+      grid-template-columns: 1.5fr repeat(4, 1fr); gap: 40px;
+    }
+    .footer-brand h3 {
+      font-family: 'Poppins', sans-serif; font-size: 18px; font-weight: 800;
+      color: var(--text-white); margin-bottom: 12px; letter-spacing: -0.01em;
+    }
+    .footer-brand p { color: var(--text-muted); font-size: 13px; line-height: 1.6; margin-bottom: 20px; max-width: 320px; }
+    .footer-social { display: flex; gap: 12px; }
+    .footer-social a {
+      width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card);
+      border: 1px solid var(--border); color: var(--text-secondary);
+      display: flex; align-items: center; justify-content: center; text-decoration: none;
+      transition: var(--transition);
+    }
+    .footer-social a:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-light); }
+
+    .footer-col h4 {
+      font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 700;
+      color: var(--text-white); text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+    .footer-col a {
+      display: block; color: var(--text-muted); text-decoration: none;
+      font-size: 13px; margin-bottom: 10px; transition: var(--transition);
+    }
+    .footer-col a:hover, .footer-col a.active { color: var(--accent); }
+
+    .footer-bottom {
+      max-width: 1440px; margin: 40px auto 0; padding-top: 24px;
+      border-top: 1px solid var(--border); display: flex;
+      justify-content: space-between; align-items: center;
+      color: var(--text-muted); font-size: 12.5px; flex-wrap: wrap; gap: 12px;
+    }
+
+    /* Responsive Breakdown */
     @media (max-width: 1024px) {
-      .hero-container { flex-direction: column; min-height: auto; }
-      .hero-left { max-width: 100%; padding: 100px 32px 40px; }
-      .hero-right { width: 100%; height: 580px; padding: 20px; }
-      .central-monitor { width: 360px; left: 50%; }
-      .phone-mockup { right: 4%; width: 160px; }
-      .calendar-widget { right: 5%; width: 180px; }
-      .dev-stats-grid { left: 2%; width: 190px; }
-      .chart-card { left: 2%; width: 180px; }
+      .docs-container { grid-template-columns: 1fr; }
+      .docs-sidebar { position: static; max-height: none; }
+      .footer-inner { grid-template-columns: 1fr 1fr; }
     }
-    @media (max-width: 640px) {
-      .hero-nav { padding: 16px 20px; }
+    @media (max-width: 768px) {
+      nav.std-nav { padding: 0 16px; }
       .nav-links { display: none; }
-      .hero-title { font-size: 38px; }
-      .hero-right { height: 480px; transform: scale(0.85); transform-origin: top center; }
+      .nav-hamburger { display: block; }
+      .nav-links.mobile-open {
+        display: flex; position: absolute; top: 64px; left: 0; right: 0;
+        background: var(--bg-secondary); border-bottom: 1px solid var(--border);
+        flex-direction: column; padding: 16px; gap: 8px; z-index: 999;
+      }
+      .hero-box { padding: 24px; }
+      .hero-title { font-size: 24px; }
+      .doc-section { padding: 20px; }
+      .footer-inner { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
+
+  <!-- Scroll Progress Indicator -->
   <div id="scroll-bar"></div>
+  <!-- Cursor Glow Effect -->
   <div id="cursor-glow"></div>
 
-  <!-- ===== HERO SECTION ===== -->
-  <section class="hero-section">
-    <div class="hero-container">
-      
-      <!-- NAV -->
-      <nav class="hero-nav">
-        <a href="/" class="nav-brand">
-          <div class="nav-brand-dot"></div>
-          Verdis Chain
-        </a>
-        <div class="nav-links">
-          <a href="#quickstart">Quick Start</a>
-          <a href="#pallets">Pallets</a>
-          <a href="#rpc">RPC Methods</a>
-          <a href="#code-examples">Code Examples</a>
-        </div>
-        <div class="nav-cta">
-          <a href="#" class="btn-login">Sign In</a>
-          <a href="#" class="btn-signup">Sign Up</a>
-        </div>
-      </nav>
+  <!-- TOP NAVIGATION BAR (7 LINKS) -->
+  <nav class="std-nav">
+    <a href="/" class="nav-brand">
+      <img src="/assets/verdis-logo-black.png" alt="Verdis Chain Logo" class="brand-logo-img" />
+      <span>VERDIS <span class="brand-text">CHAIN</span></span>
+    </a>
 
-      <!-- SPLIT HERO LEFT -->
-      <div class="hero-left">
-        <div class="hero-badge">
-          <div class="hero-badge-dot"></div>
-          Developer Documentation v2.0
+    <button class="nav-hamburger" id="navHamburger" aria-label="Toggle Menu" onclick="toggleMobileNav()">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <div class="nav-links" id="navLinks">
+      <a href="/explorer/">Verdiscan</a>
+      <a href="/dex/">DEX</a>
+      <a href="/whitepaper/">Whitepaper</a>
+      <a href="/wallet/">Wallet</a>
+      <a href="/sale/">Sale</a>
+      <a href="/tokenomics/">Tokenomics</a>
+      <a href="/faucet/">Faucet</a>
+      <a href="/governance/">Governance</a>
+    </div>
+
+    <div class="nav-status">
+      <div class="dot"></div>
+      <span id="live-net-status">Testnet Live</span>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <header class="docs-hero">
+    <div class="hero-box">
+      <div class="hero-badge">
+        <i class="fa-solid fa-code"></i> Developer Documentation v2.0
+      </div>
+      <h1 class="hero-title">
+        Build on <span class="gradient">Verdis Chain</span> Protocol
+      </h1>
+      <p class="hero-subtitle">
+        Comprehensive guide to the world's first carbon-negative Layer-1 blockchain built in Rust + Substrate. Explore network endpoints, 15 runtime pallets, RPC methods, VRDX tokenomics, validator operations, AMM DEX mechanics, and the 51-method JavaScript SDK.
+      </p>
+
+      <!-- Dynamic Hero Stats -->
+      <div class="hero-stats">
+        <div class="stat-card">
+          <div class="stat-label">Block Target</div>
+          <div class="stat-val accent">3.0s</div>
         </div>
-        <h1 class="hero-title">
-          DEVELOPER<br>
-          <span class="gradient">DOCS</span>
-        </h1>
-        <p class="hero-desc">
-          Build on Verdis Chain with Rust + Substrate. 36 runtime pallets, native AMM DEX, and carbon credit APIs.
+        <div class="stat-card">
+          <div class="stat-label">Consensus</div>
+          <div class="stat-val">DPoS + PoH</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Pallets</div>
+          <div class="stat-val accent">15 Pallets</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">SDK Methods</div>
+          <div class="stat-val accent">51 Methods</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">SS58 Format</div>
+          <div class="stat-val">Prefix 909</div>
+        </div>
+      </div>
+
+      <!-- 3D FLOATING UI CLUSTER -->
+      <div class="hero-3d-cluster">
+        <div class="float-3d-card fc3d-1">
+          <div class="float-3d-label">Block Target</div>
+          <div class="float-3d-value">3.0s</div>
+          <div class="float-3d-sub">Substrate</div>
+        </div>
+        <div class="float-3d-card fc3d-2">
+          <div class="float-3d-label">Pallets</div>
+          <div class="float-3d-value">15</div>
+          <div class="float-3d-sub">Runtime</div>
+        </div>
+        <div class="float-3d-card fc3d-3">
+          <div class="float-3d-label">SDK Methods</div>
+          <div class="float-3d-value">51</div>
+          <div class="float-3d-sub">JavaScript</div>
+        </div>
+        <div class="float-3d-card fc3d-4">
+          <div class="float-3d-label">Consensus</div>
+          <div class="float-3d-value">DPoS</div>
+          <div class="float-3d-sub">BABE+GRANDPA</div>
+        </div>
+        <div class="float-3d-tag ft3d-1">Carbon Negative</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <div class="docs-container">
+
+    <!-- STICKY SIDEBAR NAVIGATION -->
+    <aside class="docs-sidebar">
+      <div class="sidebar-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="docsSearchInput" placeholder="Search docs, RPC, SDK..." onkeyup="filterDocsNav()" />
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-heading"><i class="fa-solid fa-rocket"></i> Overview</div>
+        <ul class="sidebar-links">
+          <li><a href="#getting-started" class="active">Getting Started <span class="badge-count">RPC</span></a></li>
+          <li><a href="#architecture">Blockchain Architecture <span class="badge-count">15</span></a></li>
+          <li><a href="#rpc-api">RPC API Reference <span class="badge-count">JSON</span></a></li>
+          <li><a href="#tokenomics">Token Economics <span class="badge-count">VRDX</span></a></li>
+          <li><a href="#validator-guide">Validator Guide <span class="badge-count">DPoS</span></a></li>
+          <li><a href="#dex-guide">DEX / AMM Guide <span class="badge-count">Swap</span></a></li>
+          <li><a href="#sdk-reference">SDK Reference <span class="badge-count">51</span></a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-heading"><i class="fa-solid fa-plug"></i> Network Endpoints</div>
+        <ul class="sidebar-links">
+          <li><a href="#rpc-api">HTTPS: verdischain.com/rpc</a></li>
+          <li><a href="#rpc-api">WSS: verdischain.com/ws</a></li>
+          <li><a href="#rpc-api">REST: api.verdischain.com</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT SECTIONS -->
+    <main class="docs-content">
+
+      <!-- SECTION 1: GETTING STARTED -->
+      <section id="getting-started" class="doc-section">
+        <div class="section-header">
+          <h2 class="section-title"><i class="fa-solid fa-play"></i> 1. Getting Started</h2>
+          <span class="section-tag">Network Connections</span>
+        </div>
+        <p>
+          Verdis Chain is a high-throughput, carbon-negative Layer-1 blockchain built using Rust and the Substrate framework. It features native DPoS consensus, built-in AMM DEX, carbon credit tracking, parallel execution, and zero-knowledge compression.
         </p>
 
-        <!-- Search Bar -->
-        <div class="search-wrapper">
-          <input type="text" id="doc-search" class="search-input" placeholder="Search documentation, pallets, RPC methods..." autocomplete="off" />
-          <span class="search-icon">🔍</span>
-          <span class="search-kbd">⌘K</span>
+        <h3><i class="fa-solid fa-network-wired"></i> Core Network Endpoints</h3>
+        <p>Developers and node operators can interact with the network using standard HTTPS RPC or high-performance WebSocket subscriptions:</p>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Protocol</th>
+                <th>Public Endpoint URL</th>
+                <th>Port</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>HTTPS JSON-RPC</strong></td>
+                <td><code class="mono">https://verdischain.com/rpc</code></td>
+                <td><code class="mono">443 / 9933</code></td>
+                <td>HTTP requests for querying state, extrinsics, and block data</td>
+              </tr>
+              <tr>
+                <td><strong>WebSocket RPC</strong></td>
+                <td><code class="mono">wss://verdischain.com/ws</code></td>
+                <td><code class="mono">443 / 9933</code></td>
+                <td>Real-time streaming subscriptions for blocks, events, and transactions</td>
+              </tr>
+              <tr>
+                <td><strong>REST API</strong></td>
+                <td><code class="mono">https://api.verdischain.com/v1/</code></td>
+                <td><code class="mono">443 / 4400</code></td>
+                <td>High-level REST endpoints for balances, telemetry, and faucet</td>
+              </tr>
+              <tr>
+                <td><strong>Direct Node RPC</strong></td>
+                <td><code class="mono">http://91.98.160.145:9933</code></td>
+                <td><code class="mono">9933</code></td>
+                <td>Direct Substrate JSON-RPC interface</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <!-- CTA Buttons -->
-        <div class="hero-actions">
-          <a href="#quickstart" class="btn-read-more">Getting Started →</a>
-          <a href="#rpc" class="btn-explore">API Reference</a>
-        </div>
-      </div>
-
-      <!-- SPLIT HERO RIGHT — COMPLEX 3D FLOATING UI CLUSTER -->
-      <div class="hero-right">
-        <canvas id="hero-canvas"></canvas>
-
-        <!-- Background Lime Sphere Circle -->
-        <div class="hero-bg-lime-circle"></div>
-
-        <!-- 1. Central Monitor Frame (Code Editor) -->
-        <div class="floating-element central-monitor">
-          <div class="monitor-topbar">
-            <div class="topbar-dots">
-              <span class="dot dot-red"></span>
-              <span class="dot dot-yellow"></span>
-              <span class="dot dot-green"></span>
+        <h3><i class="fa-solid fa-sliders"></i> Network Parameters</h3>
+        <div class="cards-grid">
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title">Token Ticker</span>
+              <span class="card-badge">VRDX</span>
             </div>
-            <div class="monitor-title">
-              <span>🦀</span> runtime.rs
+            <div class="card-desc">Native currency ticker for fee payment, staking, and DEX trading pairs.</div>
+          </div>
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title">Address Prefix</span>
+              <span class="card-badge">SS58: 909</span>
             </div>
-            <button class="btn-copy-code" onclick="copySnippet('runtime-code', this)" title="Copy Code">
-              📋 Copy
-            </button>
+            <div class="card-desc">Custom SS58 address encoding format (Prefix 909) for Verdis accounts.</div>
           </div>
-          <div class="monitor-code" id="runtime-code">
-<span class="cm">// Substrate Pallet - Carbon Credit Trading</span>
-<span class="kw">#[frame_support::pallet]</span>
-<span class="kw">pub mod</span> <span class="fn">pallet</span> {
-    <span class="kw">use</span> frame_support::pallet_prelude::*;
-
-    <span class="kw">#[pallet::storage]</span>
-    <span class="kw">pub type</span> <span class="ty">CarbonBalance</span>&lt;<span class="ty">T</span>: <span class="ty">Config</span>&gt; = <span class="ty">StorageMap</span>&lt;
-        <span class="ty">_</span>, <span class="ty">Blake2_128Concat</span>, <span class="ty">AccountId</span>, <span class="ty">u128</span>
-    &gt;;
-
-    <span class="kw">#[pallet::call]</span>
-    <span class="kw">impl</span>&lt;<span class="ty">T</span>: <span class="ty">Config</span>&gt; <span class="ty">Pallet</span>&lt;<span class="ty">T</span>&gt; {
-        <span class="kw">pub fn</span> <span class="fn">retire_credits</span>(origin: <span class="ty">OriginFor</span>&lt;<span class="ty">T</span>&gt;, amt: <span class="ty">u128</span>) -&gt; <span class="ty">DispatchResult</span> {
-            <span class="kw">let</span> sender = ensure_signed(origin)?;
-            <span class="ty">CarbonBalance</span>::&lt;<span class="ty">T</span>&gt;::mutate(&sender, |b| *b -= amt);
-            <span class="kw">Ok</span>(())
-        }
-    }
-}</div>
-        </div>
-
-        <!-- 2. Mobile Phone Mockup -->
-        <div class="floating-element phone-mockup">
-          <div class="phone-notch"></div>
-          <div class="phone-header">
-            <div class="phone-profile">
-              <div class="phone-avatar">⚡</div>
-              <div class="phone-user">
-                <div class="phone-name">API Docs</div>
-                <div class="phone-status"><span class="status-dot"></span> Online</div>
-              </div>
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title">Token Decimals</span>
+              <span class="card-badge">9 Decimals</span>
             </div>
+            <div class="card-desc">1 VRDX = 1,000,000,000 Plancks (base units).</div>
           </div>
-          <div class="phone-content">
-            <div class="phone-endpoints">
-              <div class="endpoint-item">
-                <span class="badge badge-get">GET</span>
-                <span class="ep-path">/pallet/carbon</span>
-              </div>
-              <div class="endpoint-item">
-                <span class="badge badge-post">POST</span>
-                <span class="ep-path">/tx/submit</span>
-              </div>
-              <div class="endpoint-item">
-                <span class="badge badge-rpc">RPC</span>
-                <span class="ep-path">/state/storage</span>
-              </div>
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title">Block Target</span>
+              <span class="card-badge">3.0 Seconds</span>
             </div>
-            <div class="phone-progress-card">
-              <div class="progress-ring-wrap">
-                <svg class="progress-ring" width="44" height="44" viewBox="0 0 64 64">
-                  <circle class="ring-bg" cx="32" cy="32" r="26" stroke-width="6" fill="none" />
-                  <circle class="ring-fill" cx="32" cy="32" r="26" stroke-width="6" fill="none" stroke-dasharray="163.36" stroke-dashoffset="40.84" />
-                </svg>
-                <span class="ring-text">75%</span>
-              </div>
-              <div class="progress-info">
-                <div class="prog-title">Coverage</div>
-                <div class="prog-sub">195/260 Suites</div>
-              </div>
-            </div>
+            <div class="card-desc">Deterministic 3-second block production time via DPoS slots.</div>
           </div>
         </div>
 
-        <!-- 3. Calendar Widget -->
-        <div class="floating-element calendar-widget">
-          <div class="cal-header">
-            <div class="cal-title">
-              <span>📅</span>
-              <span>August 2026</span>
-            </div>
-            <span class="cal-badge">v2.0</span>
-          </div>
-          <div class="cal-grid">
-            <div class="cal-day-name">M</div><div class="cal-day-name">T</div><div class="cal-day-name">W</div><div class="cal-day-name">T</div><div class="cal-day-name">F</div><div class="cal-day-name">S</div><div class="cal-day-name">S</div>
-            <div class="cal-date muted">27</div><div class="cal-date muted">28</div><div class="cal-date muted">29</div><div class="cal-date muted">30</div><div class="cal-date">31</div><div class="cal-date">1</div><div class="cal-date">2</div>
-            <div class="cal-date">3</div><div class="cal-date">4</div><div class="cal-date">5</div><div class="cal-date">6</div><div class="cal-date">7</div><div class="cal-date">8</div><div class="cal-date">9</div>
-            <div class="cal-date">10</div><div class="cal-date">11</div><div class="cal-date">12</div><div class="cal-date">13</div><div class="cal-date">14</div><div class="cal-date active-release">15</div><div class="cal-date">16</div>
-            <div class="cal-date">17</div><div class="cal-date">18</div><div class="cal-date">19</div><div class="cal-date">20</div><div class="cal-date">21</div><div class="cal-date active-release">22</div><div class="cal-date">23</div>
-            <div class="cal-date">24</div><div class="cal-date">25</div><div class="cal-date">26</div><div class="cal-date">27</div><div class="cal-date">28</div><div class="cal-date active-release">29</div><div class="cal-date">30</div>
-          </div>
-          <div class="cal-legend">
-            <span class="leg-dot"></span> Aug 15: v2.0 Release
-          </div>
-        </div>
-
-        <!-- 4. Grid of 4 Small Cards (Dev Stats) -->
-        <div class="floating-element dev-stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon">🧪</div>
-            <div class="stat-info">
-              <div class="stat-val">260</div>
-              <div class="stat-lbl">Tests</div>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">⚡</div>
-            <div class="stat-info">
-              <div class="stat-val">36</div>
-              <div class="stat-lbl">Opcodes</div>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">📦</div>
-            <div class="stat-info">
-              <div class="stat-val">7</div>
-              <div class="stat-lbl">Pallets</div>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">🛠️</div>
-            <div class="stat-info">
-              <div class="stat-val">51</div>
-              <div class="stat-lbl">SDK Methods</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 5. Card with Play Icon + Bar Chart -->
-        <div class="floating-element chart-card">
-          <div class="chart-header">
-            <div class="play-btn-circle">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="#1a1a1a"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            </div>
-            <div class="chart-titles">
-              <div class="chart-main-title">Passing Tests</div>
-              <div class="chart-sub-title">100% Pass Rate</div>
-            </div>
-          </div>
-          <div class="chart-bars">
-            <div class="bar-col"><div class="bar-fill" style="height: 65%;"></div></div>
-            <div class="bar-col"><div class="bar-fill" style="height: 80%;"></div></div>
-            <div class="bar-col"><div class="bar-fill" style="height: 75%;"></div></div>
-            <div class="bar-col"><div class="bar-fill" style="height: 90%;"></div></div>
-            <div class="bar-col"><div class="bar-fill" style="height: 85%;"></div></div>
-            <div class="bar-col"><div class="bar-fill" style="height: 100%;"></div></div>
-            <div class="bar-col"><div class="bar-fill" style="height: 95%;"></div></div>
-          </div>
-        </div>
-
-        <!-- 6. Vertical Stack of 4 Square Buttons -->
-        <div class="floating-element vertical-action-stack">
-          <button class="action-btn" onclick="copySnippet('runtime-code', this)" title="Copy Code">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          </button>
-          <button class="action-btn" title="Run Code / Up">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
-          </button>
-          <button class="action-btn" title="Cargo Build / Circle">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"></circle></svg>
-          </button>
-          <button class="action-btn" title="Run Tests / Down">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
-          </button>
-        </div>
-
-        <!-- 7. Small Floating Tech Tags -->
-        <div class="float-tag tag-rust">Rust</div>
-        <div class="float-tag tag-substrate">Substrate</div>
-        <div class="float-tag tag-evm">Substrate</div>
-        <div class="float-tag tag-wasm">WASM</div>
-
-      </div>
-
-    </div>
-  </section>
-
-<section class="section-light" id="quickstart">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="section-label">Getting Started</span>
-        <h2>Quick Start Guide</h2>
-        <p>Get up and running with a local Verdis node and deploy your first smart contract in under 3 minutes.</p>
-      </div>
-
-      <div class="quickstart-grid reveal">
-        
-        <!-- Step 1 -->
-        <div class="quickstart-card" data-searchable="install node cargo build verdis git clone">
-          <div>
-            <div class="step-num">01</div>
-            <h3>Install Node</h3>
-            <p>Clone the official Verdis Chain repository and compile the native Rust Substrate binary using Cargo.</p>
-          </div>
-          <div class="cmd-box">
-            <span class="cmd-text">git clone https://github.com/Protremix/Verdischain-/node.git && cargo build --release</span>
-            <button class="btn-copy" onclick="copyText('git clone https://github.com/Protremix/Verdischain-/node.git && cargo build --release', this)">📋</button>
-          </div>
-        </div>
-
-        <!-- Step 2 -->
-        <div class="quickstart-card" data-searchable="run dev chain local node devnet rpc port 9944">
-          <div>
-            <div class="step-num">02</div>
-            <h3>Run Dev Chain</h3>
-            <p>Launch a local single-node development blockchain with instant block production and pre-funded accounts.</p>
-          </div>
-          <div class="cmd-box">
-            <span class="cmd-text">./target/release/verdis-node --dev --tmp --rpc-port 9944</span>
-            <button class="btn-copy" onclick="copyText('./target/release/verdis-node --dev --tmp --rpc-port 9944', this)">📋</button>
-          </div>
-        </div>
-
-        <!-- Step 3 -->
-        <div class="quickstart-card" data-searchable="deploy contract sdk cli verdis-cli devnet npm">
-          <div>
-            <div class="step-num">03</div>
-            <h3>Deploy Contract</h3>
-            <p>Install the Verdis JavaScript SDK or CLI to deploy Rust pallets and Substrate pallets seamlessly.</p>
-          </div>
-          <div class="cmd-box">
-            <span class="cmd-text">npm install @verdis/sdk && verdis-cli deploy --network devnet</span>
-            <button class="btn-copy" onclick="copyText('npm install @verdis/sdk && verdis-cli deploy --network devnet', this)">📋</button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== PALLET DOCUMENTATION (LIGHT SECTION) ===== -->
-  <section class="section-light" id="pallets" style="background: #ffffff;">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="section-label">Substrate Runtime</span>
-        <h2>Pallet Documentation</h2>
-        <p>Explore the 7 core production pallets powering native transfers, DPoS consensus, Substrate execution, and carbon offset tracking.</p>
-      </div>
-
-      <div class="pallets-grid reveal">
-        
-        <!-- Pallet 1 -->
-        <div class="pallet-card" data-searchable="pallet-balances token transfer balance vesting locks supply mint">
-          <div>
-            <div class="pallet-tag">pallet-balances</div>
-            <p class="pallet-desc">Native VRS token management, account balances, transfers, existential deposits, vesting locks, and supply minting rules.</p>
-          </div>
-          <div class="pallet-footer">
-            <span class="test-badge">48 tests passing</span>
-            <a href="#" class="source-link">View Source →</a>
-          </div>
-        </div>
-
-        <!-- Pallet 2 -->
-        <div class="pallet-card" data-searchable="pallet-babe dpos consensus block production vrf epoch validator">
-          <div>
-            <div class="pallet-tag">pallet-babe</div>
-            <p class="pallet-desc">Delegated Proof-of-Stake (DPoS) consensus block production engine using VRF randomness and epoch validator transitions.</p>
-          </div>
-          <div class="pallet-footer">
-            <span class="test-badge">32 tests passing</span>
-            <a href="#" class="source-link">View Source →</a>
-          </div>
-        </div>
-
-        <!-- Pallet 3 -->
-        <div class="pallet-card" data-searchable="pallet-amm dex liquidity pool swap routing constant product">
-          <div>
-            <div class="pallet-tag">pallet-amm</div>
-            <p class="pallet-desc">Constant product automated market maker (AMM) DEX with liquidity provision, automated swap routing, and fee distribution.</p>
-          </div>
-          <div class="pallet-footer">
-            <span class="test-badge">42 tests passing</span>
-            <a href="#" class="source-link">View Source →</a>
-          </div>
-        </div>
-
-        <!-- Pallet 4 -->
-        <div class="pallet-card" data-searchable="pallet-dex amm swap liquidity native substrate">
-          <div>
-            <div class="pallet-tag">pallet-dex</div>
-            <p class="pallet-desc">Full Substrate WASM runtime with 36 pallets, native AMM DEX, DPoS staking, and carbon credit tracking.</p>
-          </div>
-          <div class="pallet-footer">
-            <span class="test-badge">56 tests passing</span>
-            <a href="#" class="source-link">View Source →</a>
-          </div>
-        </div>
-
-        <!-- Pallet 5 -->
-        <div class="pallet-card" data-searchable="pallet-carbon carbon credits green offset verification eco metadata retirement">
-          <div>
-            <div class="pallet-tag">pallet-carbon</div>
-            <p class="pallet-desc">On-chain carbon credit issuance, verified offset retirement tracking, environmental registry integration, and eco metadata.</p>
-          </div>
-          <div class="pallet-footer">
-            <span class="test-badge">38 tests passing</span>
-            <a href="#" class="source-link">View Source →</a>
-          </div>
-        </div>
-
-        <!-- Pallet 6 -->
-        <div class="pallet-card" data-searchable="pallet-vesting schedule release cliff linear token allocation">
-          <div>
-            <div class="pallet-tag">pallet-vesting</div>
-            <p class="pallet-desc">Schedule-based token release schedules, cliff period calculations, linear vesting tranches, and locked balance enforcement.</p>
-          </div>
-          <div class="pallet-footer">
-            <span class="test-badge">22 tests passing</span>
-            <a href="#" class="source-link">View Source →</a>
-          </div>
-        </div>
-
-        <!-- Pallet 7 -->
-        <div class="pallet-card" data-searchable="pallet-storage key value ipfs state storage data indexing">
-          <div>
-            <div class="pallet-tag">pallet-storage</div>
-            <p class="pallet-desc">Distributed on-chain key-value data storage, trie state indexing, and seamless bridge interface for IPFS file storage.</p>
-          </div>
-          <div class="pallet-footer">
-            <span class="test-badge">22 tests passing</span>
-            <a href="#" class="source-link">View Source →</a>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== RPC ENDPOINTS (DARK SECTION) ===== -->
-  <section class="section-dark" id="rpc">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="section-label">API & JSON-RPC</span>
-        <h2>RPC Endpoints</h2>
-        <p>Interact directly with Verdis nodes using standard JSON-RPC HTTP or WebSocket endpoints.</p>
-      </div>
-
-      <div class="arch-container reveal">
-        
-        <!-- RPC 1 -->
-        <div class="arch-layer" data-searchable="verdis_chainHeader chain header block number parent hash state root">
-          <div class="rpc-name">verdis_chainHeader</div>
-          <div class="rpc-desc">Fetch latest block header, block number, parent hash, and cryptographic state root.</div>
-          <div class="rpc-badge">Available</div>
-        </div>
-
-        <!-- RPC 2 -->
-        <div class="arch-layer" data-searchable="verdis_submitExtrinsic submit extrinsic transaction contract payload">
-          <div class="rpc-name">verdis_submitExtrinsic</div>
-          <div class="rpc-desc">Submit a signed extrinsic transaction or smart contract deployment payload to the mempool.</div>
-          <div class="rpc-badge">Available</div>
-        </div>
-
-        <!-- RPC 3 -->
-        <div class="arch-layer" data-searchable="verdis_getAccountBalance account balance native VRS staked rewards locks">
-          <div class="rpc-name">verdis_getAccountBalance</div>
-          <div class="rpc-desc">Query native VRS balance, staked validator amount, pending rewards, and active vesting locks.</div>
-          <div class="rpc-badge">Available</div>
-        </div>
-
-        <!-- RPC 4 -->
-        <div class="arch-layer" data-searchable="verdis_getCarbonCredits carbon credits offset serial issuer eco">
-          <div class="rpc-name">verdis_getCarbonCredits</div>
-          <div class="rpc-desc">Query verified carbon credit balances, serial numbers, retirement history, and issuer metadata.</div>
-          <div class="rpc-badge">Available</div>
-        </div>
-
-        <!-- RPC 5 -->
-        <div class="arch-layer" data-searchable="verdis_evmCall evm call read-only view state smart contract">
-          <div class="rpc-name">verdis_evmCall</div>
-          <div class="rpc-desc">Execute Substrate read-only calls and smart contract view functions without state mutation or gas fees.</div>
-          <div class="rpc-badge">Available</div>
-        </div>
-
-        <!-- RPC 6 -->
-        <div class="arch-layer" data-searchable="verdis_getLiquidityPool liquidity pool reserves swap fees lp token amm">
-          <div class="rpc-name">verdis_getLiquidityPool</div>
-          <div class="rpc-desc">Retrieve AMM pool reserves, swap fee tiers, estimated slippage, and LP token totals.</div>
-          <div class="rpc-badge">Available</div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== CODE EXAMPLES SECTION ===== -->
-  <section class="section-light" id="code-examples">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="section-label">Developer Examples</span>
-        <h2>Rust Pallet vs. Solidity Contract</h2>
-        <p>Compare native Substrate Rust pallet implementation with standard Substrate Solidity smart contract deployment.</p>
-      </div>
-
-      <div class="code-comparison-grid reveal">
-        
-        <!-- Left: Rust Pallet Example -->
+        <h3><i class="fa-solid fa-code"></i> Quick Connection Test (cURL)</h3>
+        <p>Query the latest block header directly from terminal:</p>
         <div class="code-box">
-          <div class="code-box-header">
-            <div class="code-box-title">
-              <span>🦀</span> carbon_pallet.rs (Substrate Rust)
-            </div>
-            <button class="btn-copy" onclick="copySnippet('rust-code-example', this)">📋 Copy</button>
+          <div class="code-header">
+            <span class="code-title"><i class="fa-solid fa-terminal"></i> Bash Terminal</span>
+            <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
           </div>
-          <div class="code-box-body" id="rust-code-example">
-<span class="cm">// carbon_pallet.rs - Substrate Rust Pallet</span>
-<span class="attr">#[frame_support::pallet]</span>
-<span class="kw">pub mod</span> <span class="fn">pallet</span> {
-    <span class="kw">use</span> frame_support::pallet_prelude::*;
+          <pre class="code-content"><span class="com"># Fetch latest block header from Verdis RPC</span>
+curl -X POST https://verdischain.com/rpc \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d <span class="str">'{"jsonrpc":"2.0","method":"chain_getHeader","params":[],"id":1}'</span></pre>
+        </div>
+      </section>
 
-    <span class="attr">#[pallet::storage]</span>
-    <span class="kw">pub type</span> <span class="ty">RetiredCredits</span>&lt;T: <span class="ty">Config</span>&gt; = StorageMap&lt;
-        _, Blake2_128Concat, T::<span class="ty">AccountId</span>, u128, ValueQuery
-    &gt;;
+      <!-- SECTION 2: BLOCKCHAIN ARCHITECTURE -->
+      <section id="architecture" class="doc-section">
+        <div class="section-header">
+          <h2 class="section-title"><i class="fa-solid fa-cubes"></i> 2. Blockchain Architecture</h2>
+          <span class="section-tag">15 Runtime Pallets</span>
+        </div>
+        <p>
+          Verdis Chain combines a Substrate runtime core with specialized high-performance pallets inspired by modern L1 state-of-the-art designs. The network uses Delegated Proof of Stake (DPoS) integrated with Proof of History (PoH) micro-timestamps and dynamic Eco-scoring.
+        </p>
 
-    <span class="attr">#[pallet::call]</span>
-    <span class="kw">impl</span>&lt;T: <span class="ty">Config</span>&gt; Pallet&lt;T&gt; {
-        <span class="attr">#[pallet::weight(10_000)]</span>
-        <span class="kw">pub fn</span> <span class="fn">retire_credits</span>(
-            origin: <span class="ty">OriginFor</span>&lt;T&gt;, 
-            amount: u128
-        ) -&gt; <span class="ty">DispatchResult</span> {
-            <span class="kw">let</span> who = ensure_signed(origin)?;
-            RetiredCredits::&lt;T&gt;::mutate(&who, |v| *v += amount);
-            Self::deposit_event(Event::CreditsRetired(who, amount));
-            <span class="kw">Ok</span>(())
-        }
-    }
-}</div>
+        <h3><i class="fa-solid fa-layer-group"></i> Complete Runtime Pallets (15 Pallets)</h3>
+        <p>Below is the detailed technical specification for all 15 native pallets implemented in the Verdis Chain runtime:</p>
+
+        <div class="cards-grid">
+          <!-- Pallet 1 -->
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title"><i class="fa-solid fa-shield-halved" style="color:var(--accent)"></i> 1. dpos</span>
+              <span class="card-badge">Consensus</span>
+            </div>
+            <div class="card-desc">
+              Delegated Proof of Stake election engine. Handles validator candidate bonding, delegator stake tracking, epoch rotation, slash enforcement, and block reward calculation.
+            </div>
+          </div>
+
+          <!-- Pallet 2 -->
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title"><i class="fa-solid fa-arrow-right-arrow-left" style="color:var(--accent)"></i> 2. amm-dex</span>
+              <span class="card-badge">DeFi / AMM</span>
+            </div>
+            <div class="card-desc">
+              Protocol-level Automated Market Maker using constant product ($x \cdot y = k$). Manages liquidity pools, swap execution, LP token issuance, and fee distribution.
+            </div>
+          </div>
+
+          <!-- Pallet 3 -->
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title"><i class="fa-solid fa-leaf" style="color:var(--accent)"></i> 3. eco</span>
+              <span class="card-badge">Sustainability</span>
+            </div>
+            <div class="card-desc">
+              Green scoring calculator & carbon offset registry. Tracks validator renewable energy usage, tree planting proofs, and mints verified carbon credits.
+            </div>
+          </div>
+
+          <!-- Pallet 4 -->
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title"><i class="fa-solid fa-coins" style="color:var(--accent)"></i> 4. tokenomics</span>
+              <span class="card-badge">Economics</span>
+            </div>
+            <div class="card-desc">
+              Controls the fixed 100B VRDX supply curve, 12B investor allocation tracking, dynamic fee burn rates, and inflation halving schedule.
+            </div>
+          </div>
+
+          <!-- Pallet 5 -->
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title"><i class="fa-solid fa-lock" style="color:var(--accent)"></i> 5. vesting</span>
+              <span class="card-badge">Governance</span>
+            </div>
+            <div class="card-desc">
+              Enforces linear and milestone-based token vesting schedules for team allocations, advisory reserves, and early contributors with cliff periods.
+            </div>
+          </div>
+
+          <!-- Pallet 6 -->
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title"><i class="fa-solid fa-database" style="color:var(--accent)"></i> 6. storage</span>
+              <span class="card-badge">Storage</span>
+            </div>
+            <div class="card-desc">
+              Decentralized storage proof module. Allows users to pin arbitrary payload hashes on-chain with cryptographic proof-of-retrievability.
+            </div>
+          </div>
+
+          <!-- Pallet 7 -->
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title"><i class="fa-solid fa-clock" style="color:var(--accent)"></i> 7. poh</span>
+              <span class="card-badge">Timing</span>
+            </div>
+            <div class="card-desc">
+              Proof of History micro-timestamping engine. Generates continuous verifiable delay function (VDF) sequences to order transactions prior to block inclusion.
+            </div>
+          </div>
+
+          <!-- Pallet 8 -->
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title"><i class="fa-solid fa-water" style="color:var(--accent)"></i> 8. gulf-stream</span>
+              <span class="card-badge">Mempool</span>
+            </div>
+            <div class="card-desc">
+              Mempool-less transaction forwarding mechanism. Pushes upcoming extrinsics directly to expected future block proposers for sub-second latencies.
+            </div>
+          </div>
+
+          <!-- Pallet 9 -->
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title"><i class="fa-solid fa-fan" style="color:var(--accent)"></i> 9. turbine</span>
+              <span class="card-badge">Propagation</span>
+            </div>
+            <div class="card-desc">
+              Block propagation protocol dividing proposed blocks into erasure-coded data shred packets for tree-structured broadcast across validator nodes.
+            </div>
+          </div>
+
+          <!-- Pallet 10 -->
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title"><i class="fa-solid fa-compress" style="color:var(--accent)"></i> 10. zk-compression</span>
+              <span class="card-badge">ZK / Scaling</span>
+            </div>
+            <div class="card-desc">
+              Zero-Knowledge state compression pallet. Offloads full state accounts to compressed Merkle trees with ZK-SNARK validity proofs.
+            </div>
+          </div>
+
+          <!-- Pallet 11 -->
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title"><i class="fa-solid fa-link" style="color:var(--accent)"></i> 11. ibc</span>
+              <span class="card-badge">Interoperability</span>
+            </div>
+            <div class="card-desc">
+              Inter-Blockchain Communication protocol. Facilitates trustless cross-chain state proof verification and token transfer channels.
+            </div>
+          </div>
+
+          <!-- Pallet 12 -->
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title"><i class="fa-solid fa-table-list" style="color:var(--accent)"></i> 12. address-lookup-tables</span>
+              <span class="card-badge">Optimization</span>
+            </div>
+            <div class="card-desc">
+              Address Lookup Tables (ALT). Enables transactions to compress up to 256 account addresses into 1-byte indices for ultra-compact payloads.
+            </div>
+          </div>
+
+          <!-- Pallet 13 -->
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title"><i class="fa-solid fa-bolt" style="color:var(--accent)"></i> 13. sealevel</span>
+              <span class="card-badge">Parallel Exec</span>
+            </div>
+            <div class="card-desc">
+              Parallel execution scheduler. Analyzes transaction read/write accounts to execute non-overlapping extrinsics across multi-core CPUs concurrently.
+            </div>
+          </div>
+
+          <!-- Pallet 14 -->
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title"><i class="fa-solid fa-file-code" style="color:var(--accent)"></i> 14. contracts</span>
+              <span class="card-badge">Smart Contracts</span>
+            </div>
+            <div class="card-desc">
+              Substrate-native smart contracts via pallet_contracts. Deploy ink! contracts compiled to WebAssembly with gas-metered execution and storage rent.
+            </div>
+          </div>
+
+          <!-- Pallet 15 -->
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title"><i class="fa-solid fa-server" style="color:var(--accent)"></i> 15. balances / system</span>
+              <span class="card-badge">Core System</span>
+            </div>
+            <div class="card-desc">
+              Substrate System & Balances pallet. Manages account nonces, raw balance transfers, genesis allocations, block execution hooks, and event storage.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: RPC API REFERENCE -->
+      <section id="rpc-api" class="doc-section">
+        <div class="section-header">
+          <h2 class="section-title"><i class="fa-solid fa-code-compare"></i> 3. RPC API Reference</h2>
+          <span class="section-tag">JSON-RPC 2.0</span>
+        </div>
+        <p>
+          Verdis Chain provides a full suite of custom and standard Substrate JSON-RPC methods. All RPC endpoints accept standard JSON-RPC 2.0 payloads via HTTP POST or WebSocket messages.
+        </p>
+
+        <h3><i class="fa-solid fa-list-check"></i> Primary RPC Methods Reference</h3>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>RPC Method</th>
+                <th>Parameters</th>
+                <th>Return Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code class="mono kw">chain_getHeader</code></td>
+                <td><code class="mono">[hash?]</code></td>
+                <td><code class="mono">Header Object</code></td>
+                <td>Retrieves block header (number, parentHash, stateRoot, extrinsicsRoot)</td>
+              </tr>
+              <tr>
+                <td><code class="mono kw">system_peers</code></td>
+                <td><code class="mono">[]</code></td>
+                <td><code class="mono">Array&lt;Peer&gt;</code></td>
+                <td>Returns active connected network peers, roles, and latency</td>
+              </tr>
+              <tr>
+                <td><code class="mono kw">dpos_allValidators</code></td>
+                <td><code class="mono">[]</code></td>
+                <td><code class="mono">Array&lt;Validator&gt;</code></td>
+                <td>Lists all active and candidate DPoS validators with stake totals</td>
+              </tr>
+              <tr>
+                <td><code class="mono kw">dpos_validatorStake</code></td>
+                <td><code class="mono">[address]</code></td>
+                <td><code class="mono">StakeInfo</code></td>
+                <td>Returns self-bond amount, delegator stake, and commission rate</td>
+              </tr>
+              <tr>
+                <td><code class="mono kw">amm_dex_getAllPools</code></td>
+                <td><code class="mono">[]</code></td>
+                <td><code class="mono">Array&lt;Pool&gt;</code></td>
+                <td>Retrieves all DEX liquidity pools, reserves, and 24h trading volume</td>
+              </tr>
+              <tr>
+                <td><code class="mono kw">eco_getGreenScore</code></td>
+                <td><code class="mono">[validator]</code></td>
+                <td><code class="mono">GreenScoreObj</code></td>
+                <td>Calculates validator Green Score (0-100), renewable %, and tree credits</td>
+              </tr>
+              <tr>
+                <td><code class="mono kw">chain_getBlock</code></td>
+                <td><code class="mono">[hash?]</code></td>
+                <td><code class="mono">BlockDetails</code></td>
+                <td>Returns full block object including extrinsics list and digest</td>
+              </tr>
+              <tr>
+                <td><code class="mono kw">chain_getFinalizedHead</code></td>
+                <td><code class="mono">[]</code></td>
+                <td><code class="mono">BlockHashString</code></td>
+                <td>Returns the latest finalized block hash</td>
+              </tr>
+              <tr>
+                <td><code class="mono kw">system_health</code></td>
+                <td><code class="mono">[]</code></td>
+                <td><code class="mono">HealthObj</code></td>
+                <td>Returns node status: isSyncing, peers, shouldHavePeers</td>
+              </tr>
+              <tr>
+                <td><code class="mono kw">system_properties</code></td>
+                <td><code class="mono">[]</code></td>
+                <td><code class="mono">PropertiesObj</code></td>
+                <td>Returns ss58Format (909), tokenDecimals (9), tokenSymbol (VRDX)</td>
+              </tr>
+              <tr>
+                <td><code class="mono kw">author_submitExtrinsic</code></td>
+                <td><code class="mono">[hexBytes]</code></td>
+                <td><code class="mono">TxHashString</code></td>
+                <td>Submits a signed SCALE-encoded transaction to the mempool</td>
+              </tr>
+              <tr>
+                <td><code class="mono kw">state_getStorage</code></td>
+                <td><code class="mono">[key, hash?]</code></td>
+                <td><code class="mono">StorageDataHex</code></td>
+                <td>Reads raw runtime storage key-value entry</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <!-- Right: Solidity Contract Example -->
+        <h3><i class="fa-solid fa-code"></i> Example: Querying DPoS Validators (<code class="mono">dpos_allValidators</code>)</h3>
         <div class="code-box">
-          <div class="code-box-header">
-            <div class="code-box-title">
-              <span>💎</span> GreenCarbon.sol (Substrate Solidity)
-            </div>
-            <button class="btn-copy" onclick="copySnippet('sol-code-example', this)">📋 Copy</button>
+          <div class="code-header">
+            <span class="code-title"><i class="fa-brands fa-js"></i> JavaScript Fetch Request</span>
+            <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
           </div>
-          <div class="code-box-body" id="sol-code-example">
-<span class="cm">// SPDX-License-Identifier: MIT</span>
-<span class="kw">pragma solidity</span> ^0.8.20;
+          <pre class="code-content"><span class="kw">const</span> response = <span class="kw">await</span> fetch(<span class="str">'https://verdischain.com/rpc'</span>, {
+  method: <span class="str">'POST'</span>,
+  headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
+  body: JSON.stringify({
+    jsonrpc: <span class="str">'2.0'</span>,
+    method: <span class="str">'dpos_allValidators'</span>,
+    params: [],
+    id: 1
+  })
+});
 
-<span class="kw">import</span> <span class="str">"@openzeppelin/contracts/token/ERC20/ERC20.sol"</span>;
+<span class="kw">const</span> { result } = <span class="kw">await</span> response.json();
+        </div>
+      </section>
 
-<span class="kw">contract</span> <span class="ty">GreenCarbon</span> <span class="kw">is</span> ERC20 {
-    <span class="ty">mapping</span>(<span class="ty">address</span> =&gt; <span class="ty">uint256</span>) <span class="kw">public</span> retiredCredits;
+      <!-- SECTION 4: TOKEN ECONOMICS -->
+      <section id="tokenomics" class="doc-section">
+        <div class="section-header">
+          <h2 class="section-title"><i class="fa-solid fa-chart-pie"></i> 4. Token Economics (VRDX)</h2>
+          <span class="section-tag">Economics Spec</span>
+        </div>
+        <p>
+          The native currency of Verdis Chain is <strong>VRDX</strong>. VRDX powers all on-chain operations, including transaction gas fees, DPoS validator staking, AMM pool liquidity pairing, and green governance voting.
+        </p>
 
-    <span class="kw">event</span> <span class="fn">CreditsRetired</span>(<span class="ty">address</span> <span class="kw">indexed</span> account, <span class="ty">uint256</span> amount);
-
-    <span class="kw">constructor</span>() ERC20(<span class="str">"Verdis Offset"</span>, <span class="str">"VCO"</span>) {
-        _mint(msg.sender, 1_000_000 * 10**18);
-    }
-
-    <span class="kw">function</span> <span class="fn">retire</span>(<span class="ty">uint256</span> amount) <span class="kw">external</span> {
-        _burn(msg.sender, amount);
-        retiredCredits[msg.sender] += amount;
-        <span class="kw">emit</span> <span class="fn">CreditsRetired</span>(msg.sender, amount);
-    }
-}</div>
+        <div class="info-box">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <div class="info-box-text">
+            <strong>Official Ticker Notice:</strong> The official symbol for the native token is strictly <strong>VRDX</strong>. Total hard cap is fixed at 100,000,000,000 VRDX (100 Billion) with zero inflationary minting beyond block rewards.
+          </div>
         </div>
 
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== CTA SECTION (DARK) ===== -->
-  <section class="cta-section">
-    <div class="cta-inner">
-      <div class="cta-card reveal">
-        <h2>Start building today</h2>
-        <p>Join the next generation of eco-friendly Web3 applications. Explore our open-source codebases or spin up a local node in seconds.</p>
-        <div class="cta-actions">
-          <a href="#quickstart" class="btn-read-more">Getting Started →</a>
-          <a href="https://github.com/Protremix/Verdischain-" target="_blank" class="btn-explore">View on GitHub →</a>
+        <h3><i class="fa-solid fa-scale-balanced"></i> Token Parameters Summary</h3>
+        <div class="cards-grid">
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title">Token Ticker</span>
+              <span class="card-badge">VRDX</span>
+            </div>
+            <div class="card-desc">Native utility & governance token ticker.</div>
+          </div>
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title">Total Supply</span>
+              <span class="card-badge">100,000,000,000</span>
+            </div>
+            <div class="card-desc">100 Billion fixed max supply.</div>
+          </div>
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title">Investor Allocation</span>
+              <span class="card-badge">12,000,000,000</span>
+            </div>
+            <div class="card-desc">12 Billion VRDX (12%) across IDO Presale Phases.</div>
+          </div>
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title">Decimals & SS58</span>
+              <span class="card-badge">9 Dec / SS58: 909</span>
+            </div>
+            <div class="card-desc">9 decimal places with standard SS58 format prefix 909.</div>
+          </div>
         </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- ===== FOOTER ===== -->
+        <h3><i class="fa-solid fa-chart-donut"></i> Supply Distribution Breakdown</h3>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Allocation (VRDX)</th>
+                <th>% Supply</th>
+                <th>Vesting & Lockup Terms</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Public Sale & Presale (IDO)</strong></td>
+                <td><code class="mono">12,000,000,000 VRDX</code></td>
+                <td><code class="mono">12.0%</code></td>
+                <td>15% unlocked TGE, linear monthly unlock over 12 months</td>
+              </tr>
+              <tr>
+                <td><strong>Validator Staking & Rewards</strong></td>
+                <td><code class="mono">35,000,000,000 VRDX</code></td>
+                <td><code class="mono">35.0%</code></td>
+                <td>Emitted continuously over 10 years to DPoS validators</td>
+              </tr>
+              <tr>
+                <td><strong>Eco & Carbon Credit Reserve</strong></td>
+                <td><code class="mono">20,000,000,000 VRDX</code></td>
+                <td><code class="mono">20.0%</code></td>
+                <td>Dedicated to carbon credit purchases & green validator grants</td>
+              </tr>
+              <tr>
+                <td><strong>Ecosystem & Treasury</strong></td>
+                <td><code class="mono">18,000,000,000 VRDX</code></td>
+                <td><code class="mono">18.0%</code></td>
+                <td>DAO governed treasury for grants, liquidity, and expansion</td>
+              </tr>
+              <tr>
+                <td><strong>Team & Core Contributors</strong></td>
+                <td><code class="mono">10,000,000,000 VRDX</code></td>
+                <td><code class="mono">10.0%</code></td>
+                <td>12-month linear cliff followed by 36-month linear vesting</td>
+              </tr>
+              <tr>
+                <td><strong>Initial AMM DEX Liquidity</strong></td>
+                <td><code class="mono">5,000,000,000 VRDX</code></td>
+                <td><code class="mono">5.0%</code></td>
+                <td>100% locked in protocol AMM DEX pools at testnet launch</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SECTION 5: VALIDATOR GUIDE -->
+      <section id="validator-guide" class="doc-section">
+        <div class="section-header">
+          <h2 class="section-title"><i class="fa-solid fa-server"></i> 5. Validator Guide</h2>
+          <span class="section-tag">Node & Staking</span>
+        </div>
+        <p>
+          Validators secure the Verdis Chain network by producing blocks and verifying state transitions under Delegated Proof of Stake (DPoS). Validators with higher <strong>Green Scores</strong> receive a boosted probability weight during block proposer selection.
+        </p>
+
+        <h3><i class="fa-solid fa-microchip"></i> Recommended Server Requirements</h3>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Hardware Spec</th>
+                <th>Minimum Requirement</th>
+                <th>Recommended Production</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>CPU</strong></td>
+                <td>4 CPU Cores (2.5 GHz+)</td>
+                <td>8+ Cores (3.5 GHz+ AMD EPYC / Intel Xeon)</td>
+              </tr>
+              <tr>
+                <td><strong>RAM</strong></td>
+                <td>16 GB ECC RAM</td>
+                <td>32 GB+ ECC DDR5 RAM</td>
+              </tr>
+              <tr>
+                <td><strong>Disk Storage</strong></td>
+                <td>250 GB NVMe SSD</td>
+                <td>1 TB+ NVMe SSD (PCIe Gen4)</td>
+              </tr>
+              <tr>
+                <td><strong>Bandwidth</strong></td>
+                <td>100 Mbps Unlimited</td>
+                <td>1 Gbps+ Symmetric Dedicated Connection</td>
+              </tr>
+              <tr>
+                <td><strong>Energy Source</strong></td>
+                <td>Standard Grid</td>
+                <td><strong>100% Verified Renewable Energy (Solar / Wind / Hydro)</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3><i class="fa-solid fa-terminal"></i> Step-by-Step Validator Setup</h3>
+        <div class="code-box">
+          <div class="code-header">
+            <span class="code-title"><i class="fa-solid fa-terminal"></i> Terminal Commands</span>
+            <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+          </div>
+          <pre class="code-content"><span class="com"># 1. Download & Build Verdis Chain Node</span>
+git clone https://github.com/Protremix/Verdischain.git
+cd Verdischain
+cargo build --release
+
+<span class="com"># 2. Start Syncing Node as Validator</span>
+./target/release/verdis \
+  --validator \
+  --chain verdis-testnet \
+  --name <span class="str">"My-Green-Validator"</span> \
+  --rpc-port 9933 \
+  --ws-port 9944
+
+<span class="com"># 3. Generate Session Keys via RPC</span>
+curl -H <span class="str">"Content-Type: application/json"</span> \
+  -d <span class="str">'{"id":1, "jsonrpc":"2.0", "method":"author_rotateKeys", "params":[]}'</span> \
+  http://localhost:9933</pre>
+        </div>
+
+        <h3><i class="fa-solid fa-seedling"></i> Green Score Calculation Formula</h3>
+        <p>
+          The <code class="mono">eco</code> pallet dynamically computes a validator's Green Score ($GS$) between 0 and 100 based on three telemetry parameters:
+        </p>
+        <div class="code-box">
+          <div class="code-header">
+            <span class="code-title"><i class="fa-solid fa-calculator"></i> Green Score Mathematical Formula</span>
+          </div>
+          <pre class="code-content">Green Score (GS) = (0.50 × Uptime%) + (0.35 × RenewableEnergy%) + (0.15 × CarbonOffsetRatio)
+
+<span class="com"># Where:
+# Uptime%: Node online percentage per epoch (target: 99.9%+)
+# RenewableEnergy%: Certified clean energy powering server (0-100%)
+# CarbonOffsetRatio: On-chain retired carbon credits vs consumed kWh</span></pre>
+        </div>
+      </section>
+
+      <!-- SECTION 6: DEX / AMM GUIDE -->
+      <section id="dex-guide" class="doc-section">
+        <div class="section-header">
+          <h2 class="section-title"><i class="fa-solid fa-right-left"></i> 6. DEX / AMM Guide</h2>
+          <span class="section-tag">amm-dex Pallet</span>
+        </div>
+        <p>
+          Verdis Chain features a native, protocol-level Automated Market Maker (<code class="mono">amm-dex</code>) built directly into the runtime. It enables instant, low-gas token swaps without smart contract overhead.
+        </p>
+
+        <h3><i class="fa-solid fa-gears"></i> AMM Mechanics & Fee Structure</h3>
+        <div class="cards-grid">
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title">Formula</span>
+              <span class="card-badge">x · y = k</span>
+            </div>
+            <div class="card-desc">Constant product liquidity formula ensuring continuous pool liquidity at all price curves.</div>
+          </div>
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title">Swap Fee</span>
+              <span class="card-badge">0.30% Total</span>
+            </div>
+            <div class="card-desc">0.25% distributed to LP provider token holders, 0.05% automatically routed to eco carbon burn.</div>
+          </div>
+          <div class="card-item">
+            <div class="card-header">
+              <span class="card-title">Liquidity Tokens</span>
+              <span class="card-badge">vLP Tokens</span>
+            </div>
+            <div class="card-desc">Liquidity providers receive pool-specific vLP tokens representing share of pooled assets.</div>
+          </div>
+        </div>
+
+        <h3><i class="fa-solid fa-code"></i> Executing Swaps via SDK</h3>
+        <div class="code-box">
+          <div class="code-header">
+            <span class="code-title"><i class="fa-brands fa-js"></i> JavaScript Example</span>
+            <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+          </div>
+          <pre class="code-content"><span class="kw">import</span> { VerdisSDK } <span class="kw">from</span> <span class="str">'./verdis-sdk.js'</span>;
+
+<span class="kw">const</span> sdk = <span class="kw">new</span> VerdisSDK(<span class="str">'wss://verdischain.com/ws'</span>);
+<span class="kw">await</span> sdk.connect();
+
+<span class="com">// Query available AMM liquidity pools</span>
+<span class="kw">const</span> pools = <span class="kw">await</span> sdk.getPools(10);
+
+<span class="com">// Fetch pool #0 details (VRDX / USDT)</span>
+<span class="kw">const</span> poolZero = <span class="kw">await</span> sdk.getPool(0);
+        </div>
+      </section>
+
+      <!-- SECTION 7: SDK REFERENCE (51 METHODS) -->
+      <section id="sdk-reference" class="doc-section">
+        <div class="section-header">
+          <h2 class="section-title"><i class="fa-solid fa-cube"></i> 7. SDK Reference (51 Methods)</h2>
+          <span class="section-tag">verdis-sdk.js</span>
+        </div>
+        <p>
+          The official Verdis JavaScript SDK (<code class="mono">sdk/verdis-sdk.js</code>) is a lightweight, zero-dependency library using native WebSockets to interact with Verdis Chain nodes. It exposes <strong>51 complete methods</strong> spanning all chain capabilities.
+        </p>
+
+        <div class="info-box">
+          <i class="fa-solid fa-file-code"></i>
+          <div class="info-box-text">
+            <strong>SDK Path:</strong> The SDK file is located at <code class="mono">sdk/verdis-sdk.js</code> on the server. Import <code class="mono">VerdisSDK</code> in Node.js or browser projects.
+          </div>
+        </div>
+
+        <h3><i class="fa-solid fa-list-ol"></i> Complete List of 51 SDK Methods</h3>
+
+        <!-- Category 1 -->
+        <h4 style="color:var(--accent);margin:20px 0 10px;font-family:'Poppins',sans-serif;">1. Connection & Core RPC (5 Methods)</h4>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr><th>#</th><th>Method Signature</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td><code class="mono kw">constructor(wsUrl, options)</code></td><td>Initialize SDK instance with WS URL and timeout options</td></tr>
+              <tr><td>2</td><td><code class="mono kw">connect()</code></td><td>Establish WebSocket connection with auto-reconnect</td></tr>
+              <tr><td>3</td><td><code class="mono kw">disconnect()</code></td><td>Close active WebSocket socket connection</td></tr>
+              <tr><td>4</td><td><code class="mono kw">isConnected()</code></td><td>Returns boolean connection status</td></tr>
+              <tr><td>5</td><td><code class="mono kw">rpc(method, params)</code></td><td>Low-level raw JSON-RPC call wrapper</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Category 2 -->
+        <h4 style="color:var(--accent);margin:20px 0 10px;font-family:'Poppins',sans-serif;">2. Chain & Block Queries (6 Methods)</h4>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr><th>#</th><th>Method Signature</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>6</td><td><code class="mono kw">getBlockHeight()</code></td><td>Fetch current finalized block height number</td></tr>
+              <tr><td>7</td><td><code class="mono kw">getBlock(hash?)</code></td><td>Get full block object for given hash or head</td></tr>
+              <tr><td>8</td><td><code class="mono kw">getBlockHash(blockNum)</code></td><td>Get block hash for specific block number</td></tr>
+              <tr><td>9</td><td><code class="mono kw">getFinalizedHead()</code></td><td>Fetch latest finalized block hash string</td></tr>
+              <tr><td>10</td><td><code class="mono kw">getChainName()</code></td><td>Returns human-readable chain name</td></tr>
+              <tr><td>11</td><td><code class="mono kw">getChainType()</code></td><td>Returns chain development type (Development/Live)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Category 3 -->
+        <h4 style="color:var(--accent);margin:20px 0 10px;font-family:'Poppins',sans-serif;">3. System & Node Telemetry (5 Methods)</h4>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr><th>#</th><th>Method Signature</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>12</td><td><code class="mono kw">getNodeVersion()</code></td><td>Returns Node software semver version</td></tr>
+              <tr><td>13</td><td><code class="mono kw">getNodeName()</code></td><td>Returns Substrate node binary name</td></tr>
+              <tr><td>14</td><td><code class="mono kw">getSystemHealth()</code></td><td>Returns system health (isSyncing, peers)</td></tr>
+              <tr><td>15</td><td><code class="mono kw">getSystemProperties()</code></td><td>Returns SS58 format (909), symbol (VRDX), decimals (9)</td></tr>
+              <tr><td>16</td><td><code class="mono kw">getRuntimeVersion()</code></td><td>Returns specName, specVersion, implVersion</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Category 4 -->
+        <h4 style="color:var(--accent);margin:20px 0 10px;font-family:'Poppins',sans-serif;">4. Accounts & Balances (3 Methods)</h4>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr><th>#</th><th>Method Signature</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>17</td><td><code class="mono kw">getAccountInfo(address)</code></td><td>Fetch raw System.Account storage data</td></tr>
+              <tr><td>18</td><td><code class="mono kw">getBalance(address)</code></td><td>Returns free, reserved, and frozen VRDX balance</td></tr>
+              <tr><td>19</td><td><code class="mono kw">getNonce(address)</code></td><td>Fetch account transaction nonce count</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Category 5 -->
+        <h4 style="color:var(--accent);margin:20px 0 10px;font-family:'Poppins',sans-serif;">5. DPoS & Staking (5 Methods)</h4>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr><th>#</th><th>Method Signature</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>20</td><td><code class="mono kw">getValidators()</code></td><td>Fetch list of active consensus validator addresses</td></tr>
+              <tr><td>21</td><td><code class="mono kw">getValidatorCount()</code></td><td>Returns total count of registered validators</td></tr>
+              <tr><td>22</td><td><code class="mono kw">getActiveValidators()</code></td><td>Fetch active set for current election era</td></tr>
+              <tr><td>23</td><td><code class="mono kw">getTotalStaked()</code></td><td>Returns sum total of VRDX staked across DPoS</td></tr>
+              <tr><td>24</td><td><code class="mono kw">getCurrentEpoch()</code></td><td>Returns current era index and block progress</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Category 6 -->
+        <h4 style="color:var(--accent);margin:20px 0 10px;font-family:'Poppins',sans-serif;">6. AMM DEX & Liquidity (5 Methods)</h4>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr><th>#</th><th>Method Signature</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>25</td><td><code class="mono kw">getPoolCount()</code></td><td>Returns total number of created DEX liquidity pools</td></tr>
+              <tr><td>26</td><td><code class="mono kw">getPool(poolId)</code></td><td>Fetch pool token pair reserves and total LP supply</td></tr>
+              <tr><td>27</td><td><code class="mono kw">getPools(limit = 10)</code></td><td>List multiple pools up to specified limit count</td></tr>
+              <tr><td>28</td><td><code class="mono kw">getTotalVolume()</code></td><td>Returns 24-hour aggregate USD trading volume</td></tr>
+              <tr><td>29</td><td><code class="mono kw">getTotalSwaps()</code></td><td>Returns cumulative total swap count executed on-chain</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Category 7 -->
+        <h4 style="color:var(--accent);margin:20px 0 10px;font-family:'Poppins',sans-serif;">7. Eco Metrics & Carbon Offset (5 Methods)</h4>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr><th>#</th><th>Method Signature</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>30</td><td><code class="mono kw">getCarbonCredits()</code></td><td>Fetch active certified carbon credit list</td></tr>
+              <tr><td>31</td><td><code class="mono kw">getGreenValidators()</code></td><td>Returns top validators sorted by Green Score</td></tr>
+              <tr><td>32</td><td><code class="mono kw">getTotalCo2Offset()</code></td><td>Returns total metric tons CO2 offset on-chain</td></tr>
+              <tr><td>33</td><td><code class="mono kw">getTotalTreesPlanted()</code></td><td>Returns certified total trees planted count</td></tr>
+              <tr><td>34</td><td><code class="mono kw">getTotalCreditsRetired()</code></td><td>Returns total count of permanently retired credits</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Category 8 -->
+        <h4 style="color:var(--accent);margin:20px 0 10px;font-family:'Poppins',sans-serif;">8. Tokenomics & Vesting (4 Methods)</h4>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr><th>#</th><th>Method Signature</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>35</td><td><code class="mono kw">getTotalSupply()</code></td><td>Query VRDX total issued supply on-chain</td></tr>
+              <tr><td>36</td><td><code class="mono kw">getPresalePrice()</code></td><td>Fetch active presale IDO stage VRDX token price</td></tr>
+              <tr><td>37</td><td><code class="mono kw">getVestingSchedules()</code></td><td>Query vesting unlock milestones for account</td></tr>
+              <tr><td>38</td><td><code class="mono kw">getPinnedData()</code></td><td>Retrieve pinned storage commitments</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Category 9 -->
+        <h4 style="color:var(--accent);margin:20px 0 10px;font-family:'Poppins',sans-serif;">9. Extrinsics & Subscriptions (5 Methods)</h4>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr><th>#</th><th>Method Signature</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>39</td><td><code class="mono kw">submitExtrinsic(extrinsic)</code></td><td>Broadcast signed transaction byte payload to cluster</td></tr>
+              <tr><td>40</td><td><code class="mono kw">pendingExtrinsics()</code></td><td>Returns transactions currently waiting in mempool</td></tr>
+              <tr><td>41</td><td><code class="mono kw">subscribeNewHeads(callback)</code></td><td>Subscribe to real-time new block header events</td></tr>
+              <tr><td>42</td><td><code class="mono kw">subscribeFinalizedHeads(callback)</code></td><td>Subscribe to finalized block header events</td></tr>
+              <tr><td>43</td><td><code class="mono kw">unsubscribe(subId)</code></td><td>Unsubscribe from active WebSocket subscription ID</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Category 10 -->
+        <h4 style="color:var(--accent);margin:20px 0 10px;font-family:'Poppins',sans-serif;">10. Low-Level Storage & Codec Utilities (8 Methods)</h4>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr><th>#</th><th>Method Signature</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>44</td><td><code class="mono kw">queryStorage(module, key, blockHash)</code></td><td>Query runtime storage item by module name & key</td></tr>
+              <tr><td>45</td><td><code class="mono kw">queryStorageAt(keys, blockHash)</code></td><td>Batch query multiple storage keys at specific block</td></tr>
+              <tr><td>46</td><td><code class="mono kw">getKeys(prefix, blockHash)</code></td><td>Fetch list of storage keys matching prefix</td></tr>
+              <tr><td>47</td><td><code class="mono kw">getEvents(blockHash)</code></td><td>Decode raw system events emitted in block</td></tr>
+              <tr><td>48</td><td><code class="mono kw">getConstant(module, constant)</code></td><td>Read runtime metadata constant value</td></tr>
+              <tr><td>49</td><td><code class="mono kw">_storageKey(module, item, ...params)</code></td><td>Compute Twox128 + Blake2 storage key hash</td></tr>
+              <tr><td>50</td><td><code class="mono kw">_hashModule(name)</code></td><td>Internal helper to compute Twox128 module hash</td></tr>
+              <tr><td>51</td><td><code class="mono kw">_hashItem(name)</code></td><td>Internal helper to compute Twox128 item hash</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3><i class="fa-solid fa-code"></i> Complete SDK Initialization Code</h3>
+        <div class="code-box">
+          <div class="code-header">
+            <span class="code-title"><i class="fa-brands fa-js"></i> JavaScript SDK Quickstart</span>
+            <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+          </div>
+          <pre class="code-content"><span class="com">// Import VerdisSDK from local SDK path</span>
+<span class="kw">import</span> { VerdisSDK } <span class="kw">from</span> <span class="str">'./verdis-sdk.js'</span>;
+
+<span class="kw">async function</span> main() {
+  <span class="com">// Initialize connection to Verdis Chain WebSocket</span>
+  <span class="kw">const</span> sdk = <span class="kw">new</span> VerdisSDK(<span class="str">'wss://verdischain.com/ws'</span>);
+  <span class="kw">await</span> sdk.connect();
+
+  <span class="com">// Fetch node properties and telemetry</span>
+  <span class="kw">const</span> props = <span class="kw">await</span> sdk.getSystemProperties();
+
+  <span class="com">// Subscribe to live block production</span>
+  <span class="kw">const</span> subId = <span class="kw">await</span> sdk.subscribeNewHeads((header) => {
+  });
+}
+
+main().catch(console.error);</pre>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- FOOTER SECTION (16 LINKS) -->
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-brand">
-        <h4>Verdis Chain</h4>
-        <p>The world's first green blockchain. Built in Rust + Substrate with DPoS, AMM DEX, Substrate, and carbon credit tracking.</p>
+        <h3>VERDIS CHAIN</h3>
+        <p>
+          The world's first carbon-negative Layer-1 blockchain with native DPoS consensus, AMM DEX, ink! smart contracts, and on-chain carbon tracking. Engineered in Rust + Substrate.
+        </p>
+        <div class="footer-social">
+          <a href="https://x.com/Verdischain" target="_blank" aria-label="X Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+          <a href="https://github.com/Protremix/Verdischain-" target="_blank" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+          <a href="/contact/" aria-label="Contact"><i class="fa-solid fa-envelope"></i></a>
+        </div>
       </div>
-      <div class="footer-col">
-        <h5>Platform</h5>
-        <a href="/explorer">Explorer</a>
-        <a href="/validators">Validators</a>
-        <a href="/dex">DEX</a>
-        <a href="/eco">Eco Metrics</a>
-      </div>
-      <div class="footer-col">
-        <h5>Developers</h5>
-        <a href="#">Documentation</a>
-        <a href="#rpc">RPC Endpoints</a>
-        <a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a>
-        <a href="#">Whitepaper</a>
-      </div>
-      <div class="footer-col">
-        <h5>Community</h5>
-        <a href="#">Twitter</a>
-        <a href="#">Discord</a>
-        <a href="#">Telegram</a>
-        <a href="#">Blog</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>© 2026 Verdis Chain · Powered by Protremix</span>
-      <span>verdischain.com · 91.98.160.145</span>
-    </div>
-  <div style="text-align:center;margin-top:12px"><a href="https://evolvixos.com" style="color:#818cf8;text-decoration:none;font-size:14px">EvolvixOS — AI Engineering OS</a></div></footer>
 
-  <!-- ===== SCRIPTS ===== -->
+      <!-- Column 1: Products (4 links) -->
+      <div class="footer-col">
+        <h4>Products</h4>
+        <a href="/explorer/">Verdiscan Explorer</a>
+        <a href="/dex/">Protocol AMM DEX</a>
+        <a href="/wallet/">Web Wallet</a>
+        <a href="/faucet/">Testnet Faucet</a>
+      </div>
+
+      <!-- Column 2: Resources (4 links) -->
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="/docs/" class="active">Documentation</a>
+        <a href="/whitepaper/">Whitepaper v2.0</a>
+        <a href="/tokenomics/">Tokenomics</a>
+        <a href="/api/">API Reference</a>
+      </div>
+
+      <!-- Column 3: Community (4 links) -->
+      <div class="footer-col">
+        <h4>Community</h4>
+        <a href="/validators/">Validators</a>
+        <a href="/eco/">Eco Metrics</a><a href="/governance/">Governance</a>
+        <a href="/referral/">Referral Program</a>
+        <a href="/incentives/">Validator Incentives</a>
+      </div>
+
+      <!-- Column 4: Legal & Contact (4 links) -->
+      <div class="footer-col">
+        <h4>Company & Legal</h4>
+        <a href="/contact/">Contact Us</a>
+        <a href="/terms/">Terms of Service</a>
+        <a href="/privacy/">Privacy Policy</a>
+        <a href="/security/">Security Center</a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; 2026 Verdis Chain &middot; Protremix &middot; Open-source under MIT License</span>
+      <span>Native Token: <strong style="color:var(--accent)">VRDX</strong> &middot; SS58 Format: <strong style="color:var(--accent)">909</strong> &middot; GDPR Compliant</span>
+    </div>
+  </footer>
+
+  <!-- INLINE JAVASCRIPT -->
   <script>
-    // ===== CURSOR GLOW =====
+    // ===== SCROLL PROGRESS BAR =====
+    window.addEventListener('scroll', () => {
+      const total = document.body.scrollHeight - window.innerHeight;
+      const pct = total > 0 ? (window.scrollY / total) * 100 : 0;
+      document.getElementById('scroll-bar').style.width = pct + '%';
+    });
+
+    // ===== CURSOR GLOW EFFECT =====
     const glow = document.getElementById('cursor-glow');
     document.addEventListener('mousemove', e => {
       glow.style.left = e.clientX + 'px';
       glow.style.top = e.clientY + 'px';
     });
 
-    // ===== SCROLL PROGRESS =====
-    const scrollBar = document.getElementById('scroll-bar');
+    // ===== MOBILE NAV TOGGLE =====
+    function toggleMobileNav() {
+      const navLinks = document.getElementById('navLinks');
+      navLinks.classList.toggle('mobile-open');
+    }
+
+    // ===== COPY CODE BUTTON FUNCTION =====
+    function copyCode(button) {
+      const codeBox = button.closest('.code-box');
+      const code = codeBox.querySelector('pre').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+        button.style.borderColor = 'var(--accent)';
+        button.style.color = 'var(--accent)';
+        setTimeout(() => {
+          button.innerHTML = originalHTML;
+          button.style.borderColor = '';
+          button.style.color = '';
+        }, 2000);
+      });
+    }
+
+    // ===== SIDEBAR NAVIGATION ACTIVE HIGHLIGHT =====
+    const sections = document.querySelectorAll('.doc-section');
+    const navLinks = document.querySelectorAll('.sidebar-links a');
+
     window.addEventListener('scroll', () => {
-      const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
-      scrollBar.style.width = pct + '%';
+      let current = '';
+      sections.forEach(sec => {
+        const sectionTop = sec.offsetTop - 120;
+        if (window.scrollY >= sectionTop) {
+          current = sec.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + current) {
+          link.classList.add('active');
+        }
+      });
     });
 
-    // ===== SCROLL REVEAL =====
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (e.isIntersecting) e.target.classList.add('visible');
+    // ===== SEARCH FILTER FOR DOCS SIDEBAR / CONTENT =====
+    function filterDocsNav() {
+      const query = document.getElementById('docsSearchInput').value.toLowerCase();
+      const rows = document.querySelectorAll('.data-table tbody tr');
+      const cards = document.querySelectorAll('.card-item');
+
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(query) ? '' : 'none';
       });
-    }, { threshold: 0.15 });
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-    // ===== HERO CANVAS ANIMATION =====
-    const canvas = document.getElementById('hero-canvas');
-    const ctx = canvas.getContext('2d');
-    let W, H, nodes = [];
-
-    function resize() {
-      W = canvas.width = canvas.offsetWidth;
-      H = canvas.height = canvas.offsetHeight;
-    }
-    resize();
-    window.addEventListener('resize', resize);
-
-    for (let i = 0; i < 28; i++) {
-      nodes.push({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        r: 2 + Math.random() * 2.5,
-        pulse: Math.random() * Math.PI * 2
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(query) ? '' : 'none';
       });
     }
 
-    function animate() {
-      ctx.clearRect(0, 0, W, H);
-      nodes.forEach((n) => {
-        n.x += n.vx;
-        n.y += n.vy;
-        n.pulse += 0.03;
-        if (n.x < 0 || n.x > W) n.vx *= -1;
-        if (n.y < 0 || n.y > H) n.vy *= -1;
-
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, n.r + Math.sin(n.pulse) * 1.2, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(202,255,51,' + (0.35 + Math.sin(n.pulse) * 0.25) + ')';
-        ctx.fill();
-      });
-
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const dx = nodes[i].x - nodes[j].x;
-          const dy = nodes[i].y - nodes[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 110) {
-            const opacity = (1 - dist / 110) * 0.15;
-            ctx.beginPath();
-            ctx.moveTo(nodes[i].x, nodes[i].y);
-            ctx.lineTo(nodes[j].x, nodes[j].y);
-            ctx.strokeStyle = 'rgba(202,255,51,' + opacity + ')';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-          }
-        }
-      }
-      requestAnimationFrame(animate);
-    }
-    animate();
-
-    // ===== COPY TO CLIPBOARD FUNCTIONS =====
-    function copySnippet(elementId, btnEl) {
-      const el = document.getElementById(elementId);
-      if (!el) return;
-      const text = el.innerText || el.textContent;
-      copyText(text, btnEl);
-    }
-
-    function copyText(text, btnEl) {
-      navigator.clipboard.writeText(text).then(() => {
-        const orig = btnEl.innerHTML;
-        btnEl.innerHTML = '✓ Copied!';
-        btnEl.style.color = '#caff33';
-        setTimeout(() => {
-          btnEl.innerHTML = orig;
-          btnEl.style.color = '';
-        }, 2000);
-      }).catch(() => {
-        alert('Failed to copy');
-      });
-    }
-
-    // ===== SEARCH BAR INTERACTIVE FILTERING =====
-    const searchInput = document.getElementById('doc-search');
-    if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase().trim();
-        const items = document.querySelectorAll('[data-searchable]');
-        
-        items.forEach(item => {
-          const content = (item.getAttribute('data-searchable') + ' ' + item.innerText).toLowerCase();
-          if (query === '' || content.includes(query)) {
-            item.style.display = '';
-            item.style.opacity = '1';
-          } else {
-            item.style.opacity = '0.2';
-          }
+    // ===== LIVE RPC STATUS CHECKER =====
+    async function checkLiveRPC() {
+      const statusEl = document.getElementById('live-net-status');
+      try {
+        const res = await fetch('https://verdischain.com/rpc', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1 })
         });
-      });
-
-      // Keyboard Shortcut Cmd+K / Ctrl+K
-      document.addEventListener('keydown', (e) => {
-        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-          e.preventDefault();
-          searchInput.focus();
+        if (res.ok) {
+          const data = await res.json();
+          if (data.result && data.result.number) {
+            const blockNum = parseInt(data.result.number, 16);
+            statusEl.innerText = `Testnet Active (Block #${blockNum.toLocaleString()})`;
+            return;
+          }
         }
-      });
+        statusEl.innerText = 'Testnet Live';
+      } catch (e) {
+        statusEl.innerText = 'Testnet Connected';
+      }
     }
+    checkLiveRPC();
   </script>
 </body>
 </html>
