@@ -1,7 +1,9 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import 'package:verdis_wallet/core/router/route_names.dart';
 import 'home_providers.dart';
 import 'widgets/balance_card.dart';
 import 'widgets/network_status.dart';
@@ -42,6 +44,7 @@ class PortfolioView extends ConsumerWidget {
               // Large Balance Card
               BalanceCard(
                 balance: data.balance,
+                totalStaked: data.stakingSummary.totalStaked,
                 vrdxPriceUsd: 0.25,
                 change24hPercent: 5.4,
               ),
@@ -130,10 +133,10 @@ class PortfolioView extends ConsumerWidget {
   void _handleQuickAction(BuildContext context, QuickActionType type, WidgetRef ref) {
     switch (type) {
       case QuickActionType.send:
-        _showActionBottomSheet(context, 'Send VRDX', Icons.send);
+        context.push(RouteNames.send);
         break;
       case QuickActionType.receive:
-        _showActionBottomSheet(context, 'Receive VRDX', Icons.download);
+        context.push(RouteNames.receive);
         break;
       case QuickActionType.swap:
         ref.read(bottomNavIndexProvider.notifier).state = 2; // Switch to DEX tab
@@ -142,41 +145,6 @@ class PortfolioView extends ConsumerWidget {
         ref.read(bottomNavIndexProvider.notifier).state = 3; // Switch to Staking tab
         break;
     }
-  }
-
-  void _showActionBottomSheet(BuildContext context, String title, IconData icon) {
-    final theme = Theme.of(context);
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: theme.colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 40, color: theme.colorScheme.primary),
-              const SizedBox(height: 12),
-              Text(title, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Text(
-                'Initiating $title transaction on Verdis Network...',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Dismiss'),
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   void _showToast(BuildContext context, String message) {

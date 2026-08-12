@@ -1,25 +1,50 @@
+import 'dart:math' show pow;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:verdis_wallet/core/config/network_config.dart';
 import 'package:verdis_wallet/core/network/rpc_client.dart';
 import 'package:verdis_wallet/shared/models/wallet_models.dart';
+import 'package:verdis_wallet/features/home/presentation/home_providers.dart'
+    show selectedAddressProvider, balanceProvider;
+import 'package:verdis_wallet/features/onboarding/presentation/onboarding_providers.dart'
+    show onboardingWalletProvider;
 import '../data/transaction_repository_impl.dart';
 import '../domain/transaction_repository.dart';
 
-/// User's current primary wallet address
-final userWalletAddressProvider = StateProvider<String>((ref) {
-  return 'verdis1q83f7k94a9z2m3v4x5y6z7w8v9u0a1b2c3d4e5f';
+/// User's current primary wallet address.
+/// Mirrors the real active wallet address (home_providers.selectedAddressProvider),
+/// which is set from secure storage during onboarding/PIN-unlock/recovery.
+/// Previously this was a hardcoded fake address, causing Send/Receive to
+/// operate on an address nobody controls.
+final userWalletAddressProvider = Provider<String>((ref) {
+  return ref.watch(selectedAddressProvider);
 });
 
-/// User's current available VRDX balance
-final userWalletBalanceProvider = StateProvider<double>((ref) {
-  return 1250.75;
+/// User's current available VRDX balance, converted from real on-chain base
+/// units (home_providers.balanceProvider). Previously hardcoded to 1250.75.
+final userWalletBalanceProvider = Provider<double>((ref) {
+  final raw = ref.watch(balanceProvider).valueOrNull ?? 0;
+  return raw / pow(10, NetworkConfig.decimals);
 });
 
-/// Transaction repository provider
+/// Transaction repository provider.
+/// Loads the wallet mnemonic from secure storage so extrinsics can be signed
+/// client-side (non-custodial). The mnemonic is only held in memory for the
+/// lifetime of this repository instance and is never transmitted anywhere.
 final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
   final rpc = ref.watch(rpcClientProvider);
-  final address = ref.watch(userWalletAddressProvider);
-  return TransactionRepositoryImpl(rpc, userAddress: address);
+  final address = ref.watch(selectedAddressProvider);
+  final repo = TransactionRepositoryImpl(rpc, userAddress: address);
+
+  ref.read(onboardingWalletProvider).loadWallet().then((wallet) {
+    final mnemonic = wallet?['mnemonic'];
+    if (mnemonic != null) {
+      repo.setMnemonic(mnemonic);
+    }
+  });
+
+  return repo;
 });
 
 /// Selected filter tab for transaction history
@@ -168,23 +193,14 @@ class SendTransactionNotifier extends StateNotifier<SendTransactionState> {
         feeLevel: speed,
       );
 
-      // Deduct balance locally for instant feedback
-      final currentBal = _ref.read(userWalletBalanceProvider);
-      final fee = await _repository.estimateFee(
-        recipient: recipient,
-        amount: amount,
-        speed: speed,
-      );
-      final newBal = (currentBal - amount - fee).clamp(0.0, double.infinity);
-      _ref.read(userWalletBalanceProvider.notifier).state = newBal;
-
-      // Refresh transaction history
+      // Refresh real on-chain balance + transaction history so the UI
+      // reflects the chain's true state (no optimistic/fake local math).
+      _ref.invalidate(balanceProvider);
       await _ref.read(transactionHistoryProvider.notifier).fetchHistory(isRefresh: true);
 
       state = SendTransactionState(
         isSubmitting: false,
         txHash: txHash,
-        blockNumber: 1284525,
         isSuccess: true,
       );
       return true;
