@@ -68,6 +68,38 @@ def get_cors_header(origin):
         return origin
     return ALLOWED_ORIGINS[0]  # Default to main domain
 
+
+# ===== Wallet Email Backup Storage =====
+WALLET_BACKUPS_FILE = os.environ.get('WALLET_BACKUPS_FILE', '/opt/verdis-chain-rust/wallet_backups.json')
+backup_lock = threading.Lock()
+
+def load_backups():
+    """Load email→encrypted-wallet mappings from file."""
+    try:
+        with open(WALLET_BACKUPS_FILE, 'r') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+def save_backup(email, encrypted_data):
+    """Store encrypted wallet blob for an email."""
+    with backup_lock:
+        backups = load_backups()
+        backups[email.lower()] = {
+            'ciphertext': encrypted_data.get('ciphertext', ''),
+            'salt': encrypted_data.get('salt', ''),
+            'iv': encrypted_data.get('iv', ''),
+            'address': encrypted_data.get('address', ''),
+            'updated': time.time(),
+        }
+        with open(WALLET_BACKUPS_FILE, 'w') as f:
+            json.dump(backups, f, indent=2)
+
+def get_backup(email):
+    """Retrieve encrypted wallet blob for an email."""
+    backups = load_backups()
+    return backups.get(email.lower())
+
 # ===== Substrate Connection =====
 substrate = SubstrateInterface(
     url=NODE_URL,
@@ -332,8 +364,46 @@ class RelayHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 self._error(f"Fee estimation failed: {str(e)}")
 
+        # ===== WALLET EMAIL BACKUP (encrypted client-side, server never sees plaintext) =====
+        elif action == "wallet-backup":
+            email = body.get("email", "").strip().lower()
+            ciphertext = body.get("ciphertext", "")
+            salt = body.get("salt", "")
+            iv = body.get("iv", "")
+            address = body.get("address", "")
+
+            if not email or not ciphertext or not salt or not iv:
+                self._error("Missing email, ciphertext, salt, or iv")
+                return
+            if len(email) > 256 or len(ciphertext) > 4096:
+                self._error("Payload too large")
+                return
+
+            try:
+                save_backup(email, {
+                    'ciphertext': ciphertext,
+                    'salt': salt,
+                    'iv': iv,
+                    'address': address,
+                })
+                self._success({'email': email, 'saved': True})
+            except Exception as e:
+                self._error(f"Backup failed: {str(e)}")
+
+        elif action == "wallet-recover":
+            email = body.get("email", "").strip().lower()
+            if not email:
+                self._error("Missing email")
+                return
+
+            backup = get_backup(email)
+            if not backup:
+                self._error("No wallet backup found for this email", 404)
+                return
+            self._success({'backup': backup})
+
         else:
-            self._error(f"Unknown action: {action}. Supported: balance, chain-info, validators, dex-pools, submit-extrinsic, estimate-fee")
+            self._error(f"Unknown action: {action}. Supported: balance, chain-info, validators, dex-pools, submit-extrinsic, estimate-fee, wallet-backup, wallet-recover")
 
     def log_message(self, format, *args):
         # Minimal logging — no sensitive data

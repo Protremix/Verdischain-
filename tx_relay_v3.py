@@ -68,6 +68,38 @@ def get_cors_header(origin):
         return origin
     return ALLOWED_ORIGINS[0]  # Default to main domain
 
+
+# ===== Wallet Email Backup Storage =====
+WALLET_BACKUPS_FILE = os.environ.get('WALLET_BACKUPS_FILE', '/opt/verdis-chain-rust/wallet_backups.json')
+backup_lock = threading.Lock()
+
+def load_backups():
+    """Load email→encrypted-wallet mappings from file."""
+    try:
+        with open(WALLET_BACKUPS_FILE, 'r') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+def save_backup(email, encrypted_data):
+    """Store encrypted wallet blob for an email."""
+    with backup_lock:
+        backups = load_backups()
+        backups[email.lower()] = {
+            'ciphertext': encrypted_data.get('ciphertext', ''),
+            'salt': encrypted_data.get('salt', ''),
+            'iv': encrypted_data.get('iv', ''),
+            'address': encrypted_data.get('address', ''),
+            'updated': time.time(),
+        }
+        with open(WALLET_BACKUPS_FILE, 'w') as f:
+            json.dump(backups, f, indent=2)
+
+def get_backup(email):
+    """Retrieve encrypted wallet blob for an email."""
+    backups = load_backups()
+    return backups.get(email.lower())
+
 # ===== Substrate Connection =====
 substrate = SubstrateInterface(
     url=NODE_URL,
@@ -130,15 +162,59 @@ def get_dex_pools():
             pool_list.append(detail["result"])
     return pool_list
 
-def submit_signed_extrinsic(extrinsic_hex):
-    """Submit a pre-signed extrinsic to the node. NO signing on server."""
+# ===== Extrinsic Validation =====
+MAX_EXTRINSIC_SIZE = 256 * 1024  # 256KB max
+submitted_tx_cache = set()
+cache_lock = threading.Lock()
+
+def validate_extrinsic(extrinsic_hex):
+    """Validate a pre-signed extrinsic before submitting to node."""
     if not extrinsic_hex:
         raise ValueError("Missing extrinsic hex")
     if not extrinsic_hex.startswith("0x"):
         raise ValueError("Extrinsic must be hex-encoded (0x...)")
-    # Just submit — we never sign anything
+
+    # Size limit (DoS protection)
+    raw_hex = extrinsic_hex[2:]
+    if len(raw_hex) / 2 > MAX_EXTRINSIC_SIZE:
+        raise ValueError(f"Extrinsic too large: {len(raw_hex) / 2} bytes (max {MAX_EXTRINSIC_SIZE})")
+
+    # Replay protection — reject duplicate submissions
+    ext_hash = hex(abs(hash(extrinsic_hex)))[2:]  # Quick hash for dedup
+    with cache_lock:
+        if ext_hash in submitted_tx_cache:
+            raise ValueError("Duplicate extrinsic — already submitted")
+        # Keep cache size bounded
+        if len(submitted_tx_cache) > 10000:
+            submitted_tx_cache.clear()
+        submitted_tx_cache.add(ext_hash)
+
+    # Basic format validation: minimum length for a signed extrinsic
+    # (version byte + signature + signer + era + nonce + tip + call)
+    min_len = (1 + 64 + 32 + 1 + 2 + 1 + 2) * 2  # ~103 hex chars
+    if len(raw_hex) < min_len:
+        raise ValueError(f"Extrinsic too short: {len(raw_hex)} hex chars (min {min_len})")
+
+    # Verify it's a signed extrinsic (version byte 0x84 = signed, 0x80 = unsigned)
+    try:
+        version_byte = int(raw_hex[:2], 16)
+        if not (version_byte & 0x80):
+            raise ValueError("Extrinsic must be signed (bit 7 must be set)")
+    except ValueError:
+        raise ValueError("Invalid extrinsic version byte")
+
+    return True
+
+
+def submit_signed_extrinsic(extrinsic_hex):
+    """Validate and submit a pre-signed extrinsic to the node. NO signing on server."""
+    validate_extrinsic(extrinsic_hex)  # Throws on invalid
+
     result = substrate.rpc_request("author_submitExtrinsic", [extrinsic_hex])
-    return result.get("result", "")
+    tx_hash = result.get("result", "")
+    if not tx_hash:
+        raise ValueError("Node rejected extrinsic: " + str(result.get("error", "unknown")))
+    return tx_hash
 
 def estimate_fee(call_data_hex):
     """Estimate transaction fee from a pre-signed or unsigned extrinsic."""
@@ -288,8 +364,46 @@ class RelayHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 self._error(f"Fee estimation failed: {str(e)}")
 
+        # ===== WALLET EMAIL BACKUP (encrypted client-side, server never sees plaintext) =====
+        elif action == "wallet-backup":
+            email = body.get("email", "").strip().lower()
+            ciphertext = body.get("ciphertext", "")
+            salt = body.get("salt", "")
+            iv = body.get("iv", "")
+            address = body.get("address", "")
+
+            if not email or not ciphertext or not salt or not iv:
+                self._error("Missing email, ciphertext, salt, or iv")
+                return
+            if len(email) > 256 or len(ciphertext) > 4096:
+                self._error("Payload too large")
+                return
+
+            try:
+                save_backup(email, {
+                    'ciphertext': ciphertext,
+                    'salt': salt,
+                    'iv': iv,
+                    'address': address,
+                })
+                self._success({'email': email, 'saved': True})
+            except Exception as e:
+                self._error(f"Backup failed: {str(e)}")
+
+        elif action == "wallet-recover":
+            email = body.get("email", "").strip().lower()
+            if not email:
+                self._error("Missing email")
+                return
+
+            backup = get_backup(email)
+            if not backup:
+                self._error("No wallet backup found for this email", 404)
+                return
+            self._success({'backup': backup})
+
         else:
-            self._error(f"Unknown action: {action}. Supported: balance, chain-info, validators, dex-pools, submit-extrinsic, estimate-fee")
+            self._error(f"Unknown action: {action}. Supported: balance, chain-info, validators, dex-pools, submit-extrinsic, estimate-fee, wallet-backup, wallet-recover")
 
     def log_message(self, format, *args):
         # Minimal logging — no sensitive data

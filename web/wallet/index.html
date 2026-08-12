@@ -199,7 +199,8 @@ body:hover #cursor-glow{opacity:1}
 <div class="wallet-hero">
 <div class="wallet-badge"><span class="wallet-badge-dot"></span> Non-Custodial · Sr25519</div>
 <h1>Verdis <span class="grad">Web3 Wallet</span></h1>
-<p>Create, import, send, and receive VRDX tokens. Your keys, your coins — powered by @polkadot/keyring (Sr25519).</p>
+<p>Create, import, send, and receive VRDX tokens. Your keys, your coins — powered by @polkadot/keyring (Sr25519).
+<div style="margin-top:10px;font-size:12px;color:#00ff88;letter-spacing:0.5px;font-weight:600">Powered by Verdis &amp; EvolvixOS</div></p>
 </div>
 
 <!-- State: No Wallet -->
@@ -214,6 +215,11 @@ body:hover #cursor-glow{opacity:1}
 <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00a86b" stroke-width="2"><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2v-7M16 5l4 4-4 4M20 9H4"/></svg></div>
 <h3>Import Wallet</h3>
 <p>Import an existing wallet using your private key or 12-word mnemonic.</p>
+</div>
+<div class="auth-card" onclick="showRecoverEmail()">
+<div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00a86b" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg></div>
+<h3>Recover from Email</h3>
+<p>Restore your wallet using your email and recovery password.</p>
 </div>
 </div>
 
@@ -239,6 +245,7 @@ body:hover #cursor-glow{opacity:1}
 <div class="private-key-display" id="newPrivKey" onclick="copyToClipboard(this.textContent)">Click "Generate" to create...</div>
 </div>
 <button class="btn-primary" onclick="generateWallet()">Generate New Wallet</button>
+<button class="btn-primary" id="enterWalletBtn" onclick="enterWallet()" style="display:none;margin-top:8px;background:#00a86b;font-size:16px;padding:14px">Enter Wallet →</button>
 <button class="btn-primary back-btn" style="margin-top:8px" onclick="backToAuth()">Back</button>
 </div>
 
@@ -251,6 +258,22 @@ body:hover #cursor-glow{opacity:1}
 <textarea id="importInput" placeholder="0x... or word1 word2 word3... word12"></textarea>
 </div>
 <button class="btn-primary" onclick="importWallet()">Import Wallet</button>
+<button class="btn-primary back-btn" style="margin-top:8px" onclick="backToAuth()">Back</button>
+</div>
+
+<div class="import-form" id="recoverEmailForm" style="display:none">
+<div class="private-key-warning" style="background:#fef3c7;border:1px solid #fde68a;padding:12px;border-radius:8px;margin-bottom:16px">
+<strong>📧 Email Recovery:</strong> Enter the email and recovery password you used when syncing your wallet.
+</div>
+<div class="form-group">
+<label>Email Address</label>
+<input type="email" id="recoverEmail" placeholder="your@email.com" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px" />
+</div>
+<div class="form-group">
+<label>Recovery Password</label>
+<input type="password" id="recoverPassword" placeholder="Your recovery password" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px" />
+</div>
+<button class="btn-primary" onclick="recoverFromEmail()">Recover Wallet</button>
 <button class="btn-primary back-btn" style="margin-top:8px" onclick="backToAuth()">Back</button>
 </div>
 </div>
@@ -270,9 +293,26 @@ body:hover #cursor-glow{opacity:1}
 <button class="btn-small" onclick="copyToClipboard(document.getElementById('dashAddress').textContent)">Copy Address</button>
 <button class="btn-small" onclick="showReceive()">Receive</button>
 <button class="btn-small" onclick="exportPrivateKey()">Export Key</button>
+<button class="btn-small" onclick="showEmailSync()">📧 Sync Email</button>
 <button class="btn-small" onclick="logout()" style="color:#ef4444;border-color:#fecaca">Logout</button>
 </div>
 </div>
+</div>
+
+<!-- Email Sync Form (hidden by default) -->
+<div class="form-card" id="emailSyncForm" style="display:none;margin-top:16px;padding:20px;border:1px solid #d1d5db;border-radius:12px;background:white">
+<h3 style="font-size:16px;font-weight:700;margin-bottom:8px">📧 Sync Wallet to Email</h3>
+<p style="font-size:13px;color:#6b7280;margin-bottom:16px">Encrypt your wallet with a password and store it with your email. You can recover it later using your email + password. Your mnemonic is encrypted in your browser before sending — the server never sees it.</p>
+<div class="form-group">
+<label>Email Address</label>
+<input type="email" id="syncEmail" placeholder="your@email.com" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px" />
+</div>
+<div class="form-group">
+<label>Recovery Password (choose a strong password)</label>
+<input type="password" id="syncPassword" placeholder="At least 8 characters" style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:14px" />
+</div>
+<button class="btn-primary" id="syncBtn" onclick="syncToEmail()">Encrypt & Sync</button>
+<button class="btn-small" style="margin-top:8px" onclick="document.getElementById('emailSyncForm').style.display='none'">Cancel</button>
 </div>
 
 <div class="tab-bar">
@@ -647,11 +687,11 @@ window.generateWallet = async function() {
     const newKp = kr.addFromMnemonic(mnemonic);
     saveWallet(mnemonic, publicKey, address);
     _sessionKeypair = newKp;
-    toast('Wallet created! Mnemonic kept in memory only — not stored.', 'success');
+    toast('Wallet created! Save your 12 words, then click Enter Wallet.', 'success');
 
-    setTimeout(() => {
-      loadDashboard();
-    }, 1000);
+    // Show the Enter Wallet button so user has time to copy mnemonic
+    const enterBtn = document.getElementById('enterWalletBtn');
+    if (enterBtn) enterBtn.style.display = 'block';
   } catch (e) {
     toast('Failed to generate wallet: ' + e.message, 'error');
   }
@@ -1153,6 +1193,145 @@ document.addEventListener('mousemove', e => {
   glow.style.left = e.clientX + 'px';
   glow.style.top = e.clientY + 'px';
 });
+
+
+// ===== ENTER WALLET =====
+function enterWallet() { loadDashboard(); }
+
+// ===== SHOW RECOVER EMAIL FORM =====
+function showRecoverEmail() {
+  document.getElementById('authCards').style.display = 'none';
+  document.getElementById('recoverEmailForm').style.display = 'block';
+}
+
+// ===== SHOW EMAIL SYNC FORM =====
+function showEmailSync() {
+  const form = document.getElementById('emailSyncForm');
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+// ===== CLIENT-SIDE CRYPTO (PBKDF2 + AES-GCM) =====
+async function deriveKeyFromPassword(password, saltBytes) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: saltBytes, iterations: 150000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
+}
+
+async function encryptMnemonic(mnemonic, password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKeyFromPassword(password, salt);
+  const enc = new TextEncoder();
+  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, enc.encode(mnemonic));
+  return {
+    ciphertext: btoa(String.fromCharCode(...new Uint8Array(ciphertext))),
+    salt: btoa(String.fromCharCode(...salt)),
+    iv: btoa(String.fromCharCode(...iv))
+  };
+}
+
+async function decryptMnemonic(ciphertextB64, saltB64, ivB64, password) {
+  const salt = Uint8Array.from(atob(saltB64), c => c.charCodeAt(0));
+  const iv = Uint8Array.from(atob(ivB64), c => c.charCodeAt(0));
+  const ciphertext = Uint8Array.from(atob(ciphertextB64), c => c.charCodeAt(0));
+  const key = await deriveKeyFromPassword(password, salt);
+  const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ciphertext);
+  return new TextDecoder().decode(decrypted);
+}
+
+// ===== SYNC TO EMAIL =====
+async function syncToEmail() {
+  const email = document.getElementById('syncEmail').value.trim();
+  const password = document.getElementById('syncPassword').value;
+  if (!email || !email.includes('@')) { toast('Please enter a valid email', 'error'); return; }
+  if (!password || password.length < 8) { toast('Password must be at least 8 characters', 'error'); return; }
+  if (!_sessionMnemonic) { toast('Wallet not unlocked', 'error'); return; }
+
+  const btn = document.getElementById('syncBtn');
+  btn.textContent = 'Encrypting...';
+  btn.disabled = true;
+
+  try {
+    const wallet = loadWallet();
+    const encrypted = await encryptMnemonic(_sessionMnemonic, password);
+
+    const res = await fetch('/api/tx-relay', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'wallet-backup',
+        email: email,
+        ciphertext: encrypted.ciphertext,
+        salt: encrypted.salt,
+        iv: encrypted.iv,
+        address: wallet ? wallet.address : ''
+      })
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      toast('Wallet synced to ' + email + ' — encrypted before sending', 'success');
+      document.getElementById('emailSyncForm').style.display = 'none';
+    } else {
+      toast('Sync failed: ' + (data.error || 'unknown'), 'error');
+    }
+  } catch (e) {
+    toast('Sync failed: ' + e.message, 'error');
+  } finally {
+    btn.textContent = 'Encrypt & Sync';
+    btn.disabled = false;
+  }
+}
+
+// ===== RECOVER FROM EMAIL =====
+async function recoverFromEmail() {
+  const email = document.getElementById('recoverEmail').value.trim();
+  const password = document.getElementById('recoverPassword').value;
+  if (!email || !email.includes('@')) { toast('Please enter a valid email', 'error'); return; }
+  if (!password) { toast('Please enter your recovery password', 'error'); return; }
+
+  try {
+    toast('Fetching encrypted backup...', 'info');
+
+    const res = await fetch('/api/tx-relay', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'wallet-recover', email: email })
+    });
+    const data = await res.json();
+
+    if (!data.ok) {
+      toast(data.error || 'No backup found for this email', 'error');
+      return;
+    }
+
+    const backup = data.data.backup;
+    toast('Decrypting...', 'info');
+
+    const mnemonic = await decryptMnemonic(backup.ciphertext, backup.salt, backup.iv, password);
+
+    // Verify it's a valid 12-word mnemonic
+    const words = mnemonic.trim().split(/\s+/);
+    if (words.length !== 12) { toast('Decryption failed — wrong password?', 'error'); return; }
+
+    // Import the recovered wallet
+    const { address, publicKey } = await deriveAddressFromMnemonic(mnemonic);
+    saveWallet(mnemonic, publicKey, address);
+    await unlockWallet(mnemonic);
+    toast('Wallet recovered successfully!', 'success');
+    setTimeout(loadDashboard, 500);
+
+  } catch (e) {
+    toast('Recovery failed: ' + e.message + ' (wrong password?)', 'error');
+  }
+}
+
 </script>
 <footer class="footer">
 <div class="footer-inner">
