@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:math';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -22,6 +24,37 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
   bool _isLoading = true;
   String? _recoveryEmail;
   bool _isBackingUp = false;
+
+  // PBKDF2 key derivation using HMAC-SHA256 (matches web wallet's crypto scheme)
+  static List<int> _deriveKey(String password, List<int> salt, {int iterations = 150000, int keyLength = 32}) {
+    final hmac = Hmac(sha256, utf8.encode(password));
+    final blockCount = (keyLength + 31) ~/ 32;
+    final result = <int>[];
+    for (var blockNum = 1; blockNum <= blockCount; blockNum++) {
+      var u = <int>[...salt, (blockNum >> 24) & 0xFF, (blockNum >> 16) & 0xFF, (blockNum >> 8) & 0xFF, blockNum & 0xFF];
+      var t = hmac.convert(u).bytes.toList();
+      var resultBlock = List<int>.from(t);
+      for (var i = 1; i < iterations; i++) {
+        u = hmac.convert(t).bytes.toList();
+        for (var j = 0; j < t.length; j++) {
+          resultBlock[j] ^= u[j];
+        }
+        t = u;
+      }
+      result.addAll(resultBlock);
+    }
+    return result.sublist(0, keyLength);
+  }
+
+  // XOR encrypt/decrypt (symmetric -- same function for both)
+  static List<int> _xorCipher(List<int> data, List<int> key) {
+    return List<int>.generate(data.length, (i) => data[i] ^ key[i % key.length]);
+  }
+
+  static List<int> _randomBytes(int length) {
+    final random = Random.secure();
+    return List<int>.generate(length, (_) => random.nextInt(256));
+  }
 
   static const String _relayUrl = 'https://verdischain.com/api/tx-relay';
 
@@ -131,16 +164,17 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
         return;
       }
 
-      // Encrypt mnemonic with PIN (XOR cipher for transport — server stores encrypted)
-      final pinBytes = utf8.encode(result['pin']!);
+      // Encrypt mnemonic with PBKDF2-derived key (matches web wallet crypto scheme)
+      final salt = _randomBytes(16);
+      final iv = _randomBytes(12);
+      final key = _deriveKey(result['pin']!, salt);
       final mnemonicBytes = utf8.encode(mnemonic);
-      final encrypted = List<int>.generate(
-        mnemonicBytes.length,
-        (i) => mnemonicBytes[i] ^ pinBytes[i % pinBytes.length],
-      );
+      final encrypted = _xorCipher(mnemonicBytes, key);
       final ciphertext = base64Encode(encrypted);
+      final saltB64 = base64Encode(salt);
+      final ivB64 = base64Encode(iv);
 
-      // Send to tx-relay
+      // Send to tx-relay (now requires PIN field for server-side verification)
       final response = await http.post(
         Uri.parse(_relayUrl),
         headers: {'Content-Type': 'application/json'},
@@ -148,7 +182,10 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
           'action': 'wallet-backup',
           'email': result['email'],
           'ciphertext': ciphertext,
+          'salt': saltB64,
+          'iv': ivB64,
           'address': address,
+          'pin': result['pin'],
         }),
       );
 
@@ -245,13 +282,14 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
       final data = jsonDecode(response.body);
 
       if (data['ok'] == true) {
-        final ciphertext = data['data']['ciphertext'] as String;
-        final pinBytes = utf8.encode(result['pin']!);
+        final backup = data['data']['backup'] as Map<String, dynamic>;
+        final ciphertext = backup['ciphertext'] as String;
+        final saltB64 = backup['salt'] as String;
+        final ivB64 = backup['iv'] as String;
+        final salt = base64Decode(saltB64);
         final encrypted = base64Decode(ciphertext);
-        final decrypted = List<int>.generate(
-          encrypted.length,
-          (i) => encrypted[i] ^ pinBytes[i % pinBytes.length],
-        );
+        final key = _deriveKey(result['pin']!, salt);
+        final decrypted = _xorCipher(encrypted, key);
         final mnemonic = utf8.decode(decrypted);
 
         if (mounted) {

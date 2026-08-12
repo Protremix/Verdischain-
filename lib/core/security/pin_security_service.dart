@@ -137,7 +137,8 @@ class PinSecurityService {
 
       final data = json.decode(response.body) as Map<String, dynamic>;
       if (data['ok'] == true) {
-        return (data['backup']) as Map<String, dynamic>?;
+        final d = data['data'] as Map<String, dynamic>?;
+        return d?['backup'] as Map<String, dynamic>?;
       } else {
         return null;
       }
