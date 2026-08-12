@@ -15,6 +15,9 @@ use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
 pub use pallet::*;
 use sp_std::prelude::*;
+pub mod weights;
+pub use weights::WeightInfo;
+pub use weights::SubstrateWeight;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -24,6 +27,7 @@ pub mod pallet {
     #[pallet::config]
     pub trait Config: frame_system::Config {
         type MaxLeaves: Get<u32>;
+        type WeightInfo: WeightInfo;
         type MaxDepth: Get<u32>;
     }
     #[pallet::storage]
@@ -65,7 +69,7 @@ pub mod pallet {
     }
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        #[pallet::weight(0)]
+        #[pallet::weight(T::WeightInfo::create_tree())]
         #[pallet::call_index(0)]
         pub fn create_tree(origin: OriginFor<T>, depth: u32) -> DispatchResult {
             let who = ensure_signed(origin)?;
@@ -78,7 +82,7 @@ pub mod pallet {
             Self::deposit_event(Event::TreeCreated { tree_id, root });
             Ok(())
         }
-        #[pallet::weight(0)]
+        #[pallet::weight(T::WeightInfo::compress_account())]
         #[pallet::call_index(1)]
         pub fn compress_account(
             origin: OriginFor<T>,
@@ -100,7 +104,7 @@ pub mod pallet {
             Ok(())
         }
         /// Verify a ZK proof (root/authority only — off-chain prover submits result)
-        #[pallet::weight(0)]
+        #[pallet::weight(T::WeightInfo::verify_proof())]
         #[pallet::call_index(2)]
         pub fn verify_proof(
             origin: OriginFor<T>,

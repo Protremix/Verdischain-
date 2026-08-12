@@ -17,6 +17,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
+pub mod weights;
+pub use weights::WeightInfo;
+pub use weights::SubstrateWeight;
 pub use pallet::*;
 use sp_std::prelude::*;
 
@@ -29,6 +32,7 @@ pub mod pallet {
     pub trait Config: frame_system::Config {
         type MaxAddressesPerTable: Get<u32>;
         type MaxTablesPerAccount: Get<u32>;
+        type WeightInfo: WeightInfo;
     }
     #[pallet::storage]
     pub type AltTotalTables<T> = StorageValue<_, u64, ValueQuery>;
@@ -81,7 +85,7 @@ pub mod pallet {
     }
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        #[pallet::weight(0)]
+        #[pallet::weight(T::WeightInfo::create_table())]
         #[pallet::call_index(0)]
         pub fn create_table(origin: OriginFor<T>) -> DispatchResult {
             let who = ensure_signed(origin)?;
@@ -105,7 +109,7 @@ pub mod pallet {
             Self::deposit_event(Event::TableCreated { table_id, root });
             Ok(())
         }
-        #[pallet::weight(0)]
+        #[pallet::weight(T::WeightInfo::add_address())]
         #[pallet::call_index(1)]
         pub fn add_address(origin: OriginFor<T>, table_id: u32) -> DispatchResult {
             let who = ensure_signed(origin)?;
@@ -127,7 +131,7 @@ pub mod pallet {
             });
             Ok(())
         }
-        #[pallet::weight(0)]
+        #[pallet::weight(T::WeightInfo::deactivate_table())]
         #[pallet::call_index(2)]
         pub fn deactivate_table(origin: OriginFor<T>, table_id: u32) -> DispatchResult {
             let who = ensure_signed(origin)?;
@@ -140,7 +144,7 @@ pub mod pallet {
             Self::deposit_event(Event::TableDeactivated { table_id });
             Ok(())
         }
-        #[pallet::weight(0)]
+        #[pallet::weight(T::WeightInfo::lookup_address())]
         #[pallet::call_index(3)]
         pub fn lookup_address(origin: OriginFor<T>, table_id: u32, index: u32) -> DispatchResult {
             let _who = ensure_signed(origin)?;

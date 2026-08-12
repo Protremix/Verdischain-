@@ -27,6 +27,7 @@ parameter_types! {
 impl Config for Test {
     type MaxAddressesPerTable = MaxAddressesPerTable;
     type MaxTablesPerAccount = MaxTablesPerAccount;
+    type WeightInfo = ();
 }
 
 pub fn new_test_ext() -> TestExternalities {

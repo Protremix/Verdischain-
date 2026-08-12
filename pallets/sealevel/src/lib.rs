@@ -79,7 +79,7 @@ pub mod pallet {
     }
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        #[pallet::weight(0)]
+        #[pallet::weight(T::WeightInfo::create_batch())]
         #[pallet::call_index(0)]
         pub fn create_batch(
             origin: OriginFor<T>,
@@ -113,7 +113,7 @@ pub mod pallet {
             });
             Ok(())
         }
-        #[pallet::weight(0)]
+        #[pallet::weight(T::WeightInfo::report_execution())]
         #[pallet::call_index(1)]
         pub fn report_execution(
             origin: OriginFor<T>,
@@ -143,7 +143,7 @@ pub mod pallet {
             });
             Ok(())
         }
-        #[pallet::weight(0)]
+        #[pallet::weight(T::WeightInfo::report_conflict())]
         #[pallet::call_index(2)]
         pub fn report_conflict(
             origin: OriginFor<T>,
