@@ -1,221 +1,129 @@
-import asyncio
-import json
-import os
 import re
-from playwright.async_api import async_playwright
+import os
+from bs4 import BeautifulSoup
 
 PAGES = [
-    {"name": "Homepage", "url": "https://verdischain.com/"},
-    {"name": "Explorer", "url": "https://verdischain.com/explorer/"},
-    {"name": "DEX", "url": "https://verdischain.com/dex/"},
-    {"name": "Wallet", "url": "https://verdischain.com/wallet/"},
-    {"name": "Validators", "url": "https://verdischain.com/validators/"},
-    {"name": "Token Sale", "url": "https://verdischain.com/sale/"},
-    {"name": "Tokenomics", "url": "https://verdischain.com/tokenomics/"},
-    {"name": "Faucet", "url": "https://verdischain.com/faucet/"},
-    {"name": "Eco Dashboard", "url": "https://verdischain.com/eco/"},
-    {"name": "Whitepaper", "url": "https://verdischain.com/whitepaper/"},
-    {"name": "Docs", "url": "https://verdischain.com/docs/"},
+    ('eco', 'Eco'),
+    ('docs', 'Documentation'),
+    ('faucet', 'Faucet'),
+    ('wallet', 'Web Wallet'),
+    ('monitoring', 'Monitoring'),
+    ('analytics', 'Analytics'),
+    ('status', 'Status'),
+    ('security', 'Security')
 ]
 
-os.makedirs("screenshots", exist_ok=True)
+STD_NAV_LINKS = ['verdiscan', 'dex', 'whitepaper', 'wallet', 'sale', 'tokenomics', 'faucet']
+STD_FOOTER_LINKS = ['home', 'explorer', 'dex', 'whitepaper', 'wallet', 'sale', 'tokenomics', 'faucet', 'validators', 'eco', 'docs', 'governance', 'github']
 
-EVAL_JS = """
-() => {
-    const pageText = document.body ? document.body.innerText : '';
-    const bodyHtml = document.body ? document.body.innerHTML : '';
-    
-    const allNodes = document.querySelectorAll('*');
-    let neonGreenCount = 0;
-    let darkGreenCount = 0;
-    let neonElements = [];
-    let neonInStyles = [];
+def run_audit():
+    for folder, name in PAGES:
+        filepath = f"audit_pages/{folder}/index.html"
+        if not os.path.exists(filepath):
+            print(f"File not found: {filepath}")
+            continue
 
-    const htmlLower = bodyHtml.toLowerCase();
-    const hasNeonHex = htmlLower.includes('#caff33') || htmlLower.includes('rgb(202, 255, 51)') || htmlLower.includes('202,255,51');
-    
-    try {
-        for (let styleSheet of document.styleSheets) {
-            try {
-                for (let rule of styleSheet.cssRules) {
-                    if (rule.cssText && (rule.cssText.toLowerCase().includes('#caff33') || rule.cssText.toLowerCase().includes('202, 255, 51'))) {
-                        neonInStyles.push(rule.cssText.slice(0, 100));
-                    }
-                }
-            } catch (e) {}
-        }
-    } catch (e) {}
+        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+            html = f.read()
 
-    allNodes.forEach(el => {
-        try {
-            const style = window.getComputedStyle(el);
-            const color = style.color || '';
-            const bg = style.backgroundColor || '';
-            const border = style.borderColor || '';
+        soup = BeautifulSoup(html, 'html.parser')
 
-            if (color.includes('202, 255, 51') || bg.includes('202, 255, 51') || border.includes('202, 255, 51')) {
-                neonGreenCount++;
-                neonElements.push(el.tagName + '.' + el.className + ' | ' + (el.innerText ? el.innerText.slice(0, 30) : ''));
-            }
-            if (color.includes('22, 163, 74') || bg.includes('22, 163, 74') || border.includes('22, 163, 74')) {
-                darkGreenCount++;
-            }
-        } catch (e) {}
-    });
+        print("="*60)
+        print(f"PAGE: {folder} ({name})")
+        print("="*60)
 
-    const navLinks = Array.from(document.querySelectorAll('nav a, header a')).map(a => ({
-        text: a.innerText.trim(),
-        href: a.getAttribute('href'),
-        fullHref: a.href
-    }));
-
-    const footerLinks = Array.from(document.querySelectorAll('footer a')).map(a => ({
-        text: a.innerText.trim(),
-        href: a.getAttribute('href')
-    }));
-
-    const canvases = Array.from(document.querySelectorAll('canvas')).map(c => ({
-        width: c.width,
-        height: c.height,
-        clientWidth: c.clientWidth,
-        clientHeight: c.clientHeight,
-        webglContext: !!(c.getContext('webgl') || c.getContext('webgl2'))
-    }));
-
-    const sections = Array.from(document.querySelectorAll('section, main > div, div[class*="section"], div[class*="container"]'));
-    const emptySections = [];
-    sections.forEach((sec, idx) => {
-        const rect = sec.getBoundingClientRect();
-        const text = sec.innerText.trim();
-        if (rect.height > 100 && text.length === 0) {
-            emptySections.push({ index: idx, class: sec.className, height: rect.height });
-        }
-    });
-
-    const headings = Array.from(document.querySelectorAll('h1, h2, h3, p, button, a')).map(el => {
-        const rect = el.getBoundingClientRect();
-        const style = window.getComputedStyle(el);
-        return {
-            tag: el.tagName,
-            text: el.innerText ? el.innerText.slice(0, 40).replace(/\\n/g, ' ') : '',
-            color: style.color,
-            bg: style.backgroundColor,
-            fontSize: style.fontSize,
-            visible: rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden',
-            top: rect.top,
-            bottom: rect.bottom,
-            height: rect.height
-        };
-    });
-
-    return {
-        pageLength: pageText.length,
-        previewText: pageText.slice(0, 300).replace(/\\s+/g, ' '),
-        hasNeonHex,
-        neonGreenCount,
-        darkGreenCount,
-        neonInStyles,
-        neonElements: neonElements.slice(0, 10),
-        navLinks,
-        footerLinks,
-        canvases,
-        emptySections,
-        headingCount: headings.length,
-        headingsSample: headings.slice(0, 15)
-    };
-}
-"""
-
-async def audit_page(context, page_info):
-    page = await context.new_page()
-    
-    console_logs = []
-    failed_requests = []
-    
-    page.on("console", lambda msg: console_logs.append({
-        "type": msg.type,
-        "text": msg.text,
-        "location": str(msg.location)
-    }))
-    
-    page.on("requestfailed", lambda req: failed_requests.append({
-        "url": req.url,
-        "failure": str(req.failure)
-    }))
-    
-    page.on("response", lambda res: failed_requests.append({
-        "url": res.url,
-        "status": res.status
-    }) if res.status >= 400 else None)
-
-    url = page_info["url"]
-    name = page_info["name"]
-    slug = re.sub(r'[^a-zA-Z0-9]', '_', name.lower())
-
-    print(f"--- Auditing: {name} ({url}) ---")
-    
-    response = None
-    try:
-        response = await page.goto(url, wait_until="networkidle", timeout=20000)
-    except Exception as e:
-        print(f"Goto timeout/error for {url}: {e}")
-        try:
-            response = await page.goto(url, wait_until="domcontentloaded", timeout=10000)
-        except Exception as e2:
-            print(f"Secondary goto error: {e2}")
-
-    await page.wait_for_timeout(3000)
-
-    http_status = response.status if response else "Unknown"
-    title = await page.title()
-
-    viewport_path = f"screenshots/{slug}_viewport.png"
-    full_path = f"screenshots/{slug}_full.png"
-    await page.screenshot(path=viewport_path)
-    try:
-        await page.screenshot(path=full_path, full_page=True)
-    except Exception as e:
-        print(f"Full page screenshot failed for {name}: {e}")
-        full_path = viewport_path
-
-    analysis = await page.evaluate(EVAL_JS)
-
-    await page.close()
-
-    return {
-        "name": name,
-        "url": url,
-        "http_status": http_status,
-        "title": title,
-        "viewport_path": viewport_path,
-        "full_path": full_path,
-        "console_logs": console_logs,
-        "failed_requests": failed_requests,
-        "analysis": analysis
-    }
-
-async def main():
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(
-            headless=True,
-            args=['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-        )
-        context = await browser.new_context(
-            viewport={"width": 1440, "height": 900},
-            device_scale_factor=1,
-            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        )
+        # 1. LOGO
+        logo_imgs = []
+        for img in soup.find_all('img'):
+            src = img.get('src', '')
+            alt = img.get('alt', '')
+            cls = " ".join(img.get('class', []))
+            id_ = img.get('id', '')
+            if 'logo' in src.lower() or 'logo' in alt.lower() or 'logo' in cls.lower() or 'logo' in id_.lower():
+                logo_imgs.append((src, alt, cls))
         
-        results = []
-        for page_info in PAGES:
-            res = await audit_page(context, page_info)
-            results.append(res)
-            
-        await browser.close()
+        # also search for brand/logo divs or svgs or CSS background
+        brand = soup.find(class_=re.compile(r'brand|logo', re.I)) or soup.find(id=re.compile(r'brand|logo', re.I))
         
-        with open("audit_results.json", "w") as f:
-            json.dump(results, f, indent=2)
-        print("Audit run complete! Saved to audit_results.json")
+        print("--- LOGO ---")
+        if logo_imgs:
+            for src, alt, cls in logo_imgs:
+                print(f"Img logo src: {src} | alt: '{alt}' | class: '{cls}'")
+        elif brand:
+            print(f"Brand element found (no <img> logo): {brand.prettify()[:200]}")
+        else:
+            print("No logo image or brand element found!")
 
-if __name__ == "__main__":
-    asyncio.run(main())
+        # 2. NAVIGATION
+        print("\n--- NAVIGATION ---")
+        nav = soup.find('nav') or soup.find('header')
+        if nav:
+            nav_a = nav.find_all('a')
+            nav_links = [(a.get_text(strip=True), a.get('href', '')) for a in nav_a]
+            print(f"Nav found with {len(nav_links)} links:")
+            for txt, href in nav_links:
+                print(f"  - '{txt}' -> {href}")
+        else:
+            print("No <nav> or <header> tag found!")
+
+        # 3. FOOTER
+        print("\n--- FOOTER ---")
+        footer = soup.find('footer')
+        if footer:
+            footer_a = footer.find_all('a')
+            footer_links = [(a.get_text(strip=True), a.get('href', '')) for a in footer_a]
+            print(f"Footer found with {len(footer_links)} links:")
+            for txt, href in footer_links:
+                print(f"  - '{txt}' -> {href}")
+        else:
+            print("No <footer> tag found!")
+
+        # 4. TEXT & DATA
+        print("\n--- TEXT & DATA CHECKS ---")
+        # Check tickers: VERDIS as ticker vs VRDX
+        # Search for token supply: 100B / 100,000,000,000
+        # Search for decimals
+        # Search for hardcoded data / fake stats / stale pricing
+        
+        # Token Ticker matches
+        verdis_ticker_matches = re.findall(r'\bVERDIS\b', html)
+        vrdx_ticker_matches = re.findall(r'\bVRDX\b', html)
+        print(f"VERDIS count: {len(verdis_ticker_matches)} | VRDX count: {len(vrdx_ticker_matches)}")
+
+        # Print snippets containing VERDIS or VRDX
+        ticker_snippets = re.findall(r'.{0,40}(?:VERDIS|VRDX).{0,40}', html, re.IGNORECASE)
+        print("Ticker snippets sample (first 10):")
+        for snip in ticker_snippets[:10]:
+            print("  ", repr(snip.strip().replace('\n', ' ')))
+
+        # Supply / Decimals
+        supply_snips = re.findall(r'.{0,40}(?:supply|billion|100b|100,000,000,000|decimal).{0,40}', html, re.IGNORECASE)
+        print("Supply/Decimal snippets sample (first 10):")
+        for snip in supply_snips[:10]:
+            print("  ", repr(snip.strip().replace('\n', ' ')))
+
+        # Link audit (#, javascript:void, dead links)
+        all_links = soup.find_all('a')
+        hash_links = [a.get('href') for a in all_links if a.get('href') == '#' or a.get('href', '').startswith('javascript:')]
+        print(f"Placeholder/Hash links count: {len(hash_links)} ({hash_links[:5]})")
+
+        # 5. DESIGN
+        print("\n--- DESIGN CHECKS ---")
+        has_bg1 = '--bg-1' in html
+        has_bg2 = '--bg-2' in html
+        has_accent = '--accent' in html
+        has_grad_ui = 'gradient-ui-ux' in html or 'gradient' in html
+        print(f"CSS Variables: --bg-1: {has_bg1}, --bg-2: {has_bg2}, --accent: {has_accent}")
+        print(f"Gradient UI reference: {has_grad_ui}")
+
+        # Check 3D cluster
+        has_3d = any(k in html.lower() for k in ['3d', 'cluster', 'floating-ui', 'floating_ui', 'ui-cluster', 'perspective', 'spline', 'three.js', 'canvas', 'hero-3d'])
+        print(f"3D Floating UI cluster check: {has_3d}")
+
+        # Check hardcoded colors sample
+        hex_colors = re.findall(r'#(?:[0-9a-fA-F]{3}){1,2}\b', html)
+        print(f"Hardcoded hex colors count: {len(hex_colors)} (Sample: {set(hex_colors[:10])})")
+
+        print("\n\n")
+
+run_audit()

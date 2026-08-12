@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis Chain — Privacy Policy</title>
+<meta property="og:title" content="Verdis Chain — Legal">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://verdischain.com/legal/privacy.html">
+<meta name="description" content="Privacy Policy for Verdis Chain testnet, wallet, DEX, and all associated services.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0d0d;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.7;padding:0}
+.nav{position:sticky;top:0;background:#111;border-bottom:1px solid #222;padding:16px 32px;display:flex;justify-content:space-between;align-items:center;z-index:100}
+.nav-brand{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:600;color:#fff}
+.nav-brand span{width:28px;height:28px;background:#caff33;color:#000;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px}
+.nav-links{display:flex;gap:16px}
+.nav-links a{color:#b8bcc4;text-decoration:none;font-size:13px}
+.nav-links a:hover{color:#caff33}
+.container{max-width:800px;margin:0 auto;padding:32px}
+h1{font-size:18px;color:#fff;margin-bottom:8px;border-bottom:1px solid #222;padding-bottom:16px}
+h2{font-size:18px;color:#caff33;margin:24px 0 12px}
+h3{font-size:16px;color:#fff;margin:16px 0 8px}
+p{margin:8px 0;color:#e8ebf0}
+ul,ol{margin:8px 0 8px 24px}
+li{margin:4px 0;color:#e8ebf0}
+strong{color:#fff}
+code{background:#1a1a1a;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:13px;color:#caff33}
+.updated{color:#b8bcc4;font-size:13px;margin-bottom:24px}
+@media(max-width:768px){.nav-links{display:none}.container{padding:16px}h1{font-size:20px}}
+</style>
+<link rel="icon" type="image/png" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png">
+</head>
+<body>
+<nav class="nav">
+<div class="nav-brand"><img src="/assets/verdis-v-icon.png" alt="Verdis Chain" style="height:36px;width:36px;object-fit:contain;"><span style="font-weight:700;font-size:18px;color:#fff;margin-left:6px;">Verdis Chain</span></div>
+<div class="nav-links">
+<a href="/">Home</a>
+<a href="/explorer/">Explorer</a>
+<a href="/dex/">DEX</a>
+<a href="/validators/">Validators</a>
+<a href="/eco/">Eco</a>
+<a href="/faucet/">Faucet</a>
+<a href="/wallet/">Wallet</a>
+<a href="/sale/">Sale</a>
+<a href="/docs/">Docs</a>
+</div>
+</nav>
+<div class="container">
+<h1>Privacy Policy</h1>
+<p class="updated">Last updated: August 7, 2026</p>
+
+<h2>1. Overview</h2>
+<p>Verdis Chain is a public blockchain platform. This Privacy Policy explains how we handle data in connection with our web services (wallet, DEX, explorer, faucet, documentation) hosted at verdischain.com.</p>
+
+<h2>2. Data We Do Not Collect</h2>
+<ul>
+<li><strong>Private keys or seed phrases</strong> — These are generated and stored locally in your browser (localStorage). They never leave your device.</li>
+<li><strong>Personal identification</strong> — We do not require KYC/AML verification for testnet usage.</li>
+<li><strong>Email addresses</strong> — Not required to use any service.</li>
+<li><strong>IP addresses for tracking</strong> — We do not track or profile users by IP.</li>
+</ul>
+
+<h2>3. Data That Is Public (On-Chain)</h2>
+<p>As a public blockchain, the following data is visible to everyone via the explorer:</p>
+<ul>
+<li>Wallet addresses (sr25519 public keys)</li>
+<li>Transaction amounts and recipients</li>
+<li>Block contents and timestamps</li>
+<li>Validator addresses and green scores</li>
+<li>AMM pool reserves and swap history</li>
+<li>Carbon credit minting events</li>
+<li>Reforestation logging data</li>
+</ul>
+<p>This data is immutable and cannot be deleted. It is an inherent feature of blockchain technology.</p>
+
+<h2>4. Technical Data We Process</h2>
+<h3>4.1 Server Logs</h3>
+<p>Our nginx web server automatically logs:</p>
+<ul>
+<li>IP addresses (for security/rate limiting only, not stored long-term)</li>
+<li>Request timestamps</li>
+<li>Requested URLs and HTTP methods</li>
+<li>User-Agent strings</li>
+<li>Response status codes</li>
+</ul>
+<p>Logs are used for security monitoring (Fail2Ban), rate limiting, and debugging. They are rotated and deleted after 7 days.</p>
+
+<h3>4.2 Local Storage</h3>
+<p>The web wallet stores the following in your browser's localStorage:</p>
+<ul>
+<li>Mnemonic seed phrase (encrypted with your browser's origin)</li>
+<li>Account address</li>
+<li>Transaction history (local only, not synced)</li>
+</ul>
+<p>This data never leaves your browser. Clearing your browser data will permanently delete your wallet access.</p>
+
+<h3>4.3 Cookies</h3>
+<p>We do not use tracking cookies. Grafana (at /grafana/) uses a session cookie for authentication, but this is internal-only and not exposed to regular users.</p>
+
+<h2>5. Data Sharing</h2>
+<p>We do not sell, share, or transfer user data to third parties. Blockchain transaction data is inherently public and visible to all network participants.</p>
+
+<h2>6. Data Security</h2>
+<ul>
+<li>HTTPS/TLS 1.3 encryption for all web traffic</li>
+<li>HSTS preload enabled</li>
+<li>Content Security Policy (CSP) headers</li>
+<li>UFW firewall (only ports 22, 80, 443, 30333-30341 open)</li>
+<li>Fail2Ban intrusion prevention</li>
+<li>SSH key-only authentication</li>
+<li>Rate limiting on all endpoints</li>
+<li>RPC filter proxy for external access</li>
+</ul>
+
+<h2>7. Your Rights (GDPR)</h2>
+<p>Under GDPR, you have the right to:</p>
+<ul>
+<li><strong>Access</strong> — Request a copy of any personal data we hold (server logs)</li>
+<li><strong>Rectification</strong> — Request correction of inaccurate data</li>
+<li><strong>Erasure</strong> — Request deletion of server log data (on-chain data is immutable and cannot be deleted)</li>
+<li><strong>Portability</strong> — Request export of your data in machine-readable format</li>
+<li><strong>Objection</strong> — Object to processing of your data</li>
+<li><strong>Withdrawal</strong> — Withdraw consent at any time</li>
+</ul>
+<p>To exercise these rights, contact: privacy@verdischain.com</p>
+
+<h2>8. Children's Privacy</h2>
+<p>Verdis Chain is not directed at children under 13. We do not knowingly collect data from children. If you believe a child has provided personal data, contact us for immediate deletion.</p>
+
+<h2>9. International Data Transfers</h2>
+<p>Our servers are located in Germany (Hetzner Cloud, Nuremberg). Data may be processed in the European Union. We comply with EU data protection regulations including GDPR.</p>
+
+<h2>10. Changes to This Policy</h2>
+<p>We may update this Privacy Policy periodically. Changes will be posted on this page with an updated date.</p>
+
+<h2>11. Contact</h2>
+<p>For privacy questions or GDPR requests:</p>
+<ul>
+<li>Email: privacy@verdischain.com</li>
+<li>Data Protection Officer: dpo@verdischain.com</li>
+</ul>
+</div>
+</body>
+</html>

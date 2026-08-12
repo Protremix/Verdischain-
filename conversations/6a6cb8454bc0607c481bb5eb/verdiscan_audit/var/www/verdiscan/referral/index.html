@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdis Chain Referral Program — Earn VRDX</title>
+<link rel="canonical" href="https://verdischain.com/referral/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="VRDX Referral Program — Earn VRDX">
+<meta property="og:description" content="Earn VRDX tokens through the Verdis Chain referral program. 3-tier commission system with 10%/5%/2.5% rewards.">
+<meta property="og:url" content="https://verdischain.com/referral/">
+<meta property="og:image" content="https://verdischain.com/assets/verdis-logo-black.png">
+<meta name="description" content="Earn VRDX tokens through the Verdis Chain referral program. 3-tier commission system with 10%/5%/2.5% rewards.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f5f9;--bg-1:#f8fafc;--bg-2:#f1f5f9;--card:#ffffff;--border:#e2e8f0;--border-2:#333;--text:#0f172a;--text-2:#475569;--text-3:#334155;--accent:#16a34a;--accent-2:#15803d;--accent-glow:rgba(22,163,74,0.15);--success:#4ade80;--warning:#fbbf24;--error:#ef4444;--radius:12px;--radius-sm:8px
+--hero-bg: #1a1a1a;}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--bg,#f1f5f9);color:var(--text,#0f172a);line-height:1.6;overflow-x:hidden}.mono{font-family:'JetBrains Mono',monospace}
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;height:76px;display:flex;align-items:center;justify-content:space-between}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text,#0f172a)}.nav-brand .logo{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;font-size:14px}.nav-brand span{font-weight:600;font-size:14px}
+.nav-links{display:flex;gap:4px}.nav-links a{color:var(--text-2);text-decoration:none;padding:8px 14px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;transition:all .2s}.nav-links a:hover,.nav-links a.active{color:var(--accent);background:#ffffff}
+.hero{padding:56px 16px 40px;max-width:100%;overflow-x:hidden;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+@media(max-width:900px){.hero{grid-template-columns:1fr}}
+.hero-left .badge{display:inline-flex;align-items:center;gap:8px;background:var(--accent-glow);border:1px solid var(--accent);border-radius:100px;padding:6px 16px;font-size:13px;color:var(--accent);font-weight:600;margin-bottom:16px}
+.hero-left .badge .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hero-left h1{font-family:'Space Grotesk',sans-serif;font-size: 20px;font-weight:700;margin-bottom:12px;line-height:1.1}.hero-left h1 .accent{color:var(--accent)}
+.hero-left p{color:var(--text-2);font-size:14px;margin-bottom:12px;max-width:520px}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:480px}
+.hero-stat{background:#ffffff;border:1px solid var(--border);border-radius:var(--radius);padding:14px}.hero-stat .label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3)}.hero-stat .value{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--accent);margin-top:4px}
+.hero-right{position:relative;height:440px;perspective:1000px}
+.float-card{position:absolute;background:#ffffff;border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:0 20px 60px rgba(0,0,0,0.5);animation:float 6s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-12px) rotate(1deg)}}
+.fc-main{top:20px;left:5%;width:80%;z-index:3}.fc-stats{top:50%;right:0%;width:50%;z-index:2;animation-delay:1.5s}.fc-leader{bottom:10%;left:8%;width:55%;z-index:1;animation-delay:3s}
+.price-big{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent)}
+.mini-row{display:flex;justify-content:space-between;font-size:12px;margin-top:6px}.mini-row .l{color:var(--text-3)}.mini-row .v{font-family:'JetBrains Mono',monospace;color:var(--text-2)}
+.bar-chart{display:flex;align-items:flex-end;gap:3px;height:60px;margin-top:12px}.bar-chart .bar{flex:1;background:linear-gradient(180deg,var(--accent),var(--accent-2));border-radius:2px 2px 0 0;opacity:.7}
+.section{max-width:100%;margin:0 auto 48px;padding:0 24px}
+.section-title{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;margin-bottom:8px}.section-sub{color:var(--text-2);font-size:13px;margin-bottom:32px}
+.dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+@media(max-width:768px){.dash-grid{grid-template-columns:1fr 1fr}}
+.dash-card{background:#ffffff;border:1px solid var(--border);border-radius:var(--radius);padding:20px}.dash-card .icon{font-size:13px;margin-bottom:8px}.dash-card .label{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3)}.dash-card .value{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--accent);margin-top:4px}.dash-card .sub{font-size:13px;color:var(--text-2);margin-top:4px}
+.referral-link-box{background:#ffffff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:12px}
+.referral-link-box h3{font-size:13px;font-weight:600;margin-bottom:16px}
+.link-row{display:flex;gap:8px;align-items:center}
+.link-row input{flex:1;background:var(--bg-1);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;color:var(--accent);font-size:14px;font-family:'JetBrains Mono',monospace;outline:none}
+.link-row input:focus{border-color:var(--accent)}
+.share-btn{padding:14px 20px;border-radius:var(--radius-sm);border:none;font-weight:600;cursor:pointer;font-size:14px;transition:all .2s;white-space:nowrap}
+.share-btn.copy{background:var(--accent);color:#000}.share-btn.copy:hover{background:var(--accent-2)}
+.share-btn.social{background:var(--bg-1);border:1px solid var(--border-2);color:var(--text-2)}.share-btn.social:hover{border-color:var(--accent);color:var(--accent)}
+.share-buttons{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.tiers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:32px}
+@media(max-width:768px){.tiers-grid{grid-template-columns:1fr}}
+.tier-card{background:#ffffff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;text-align:center;position:relative;overflow:hidden}
+.tier-card.highlight{border-color:var(--accent);box-shadow:0 0 24px var(--accent-glow)}
+.tier-card .tier-num{position:absolute;top:-10px;right:-10px;width:60px;height:60px;border-radius:50%;background:var(--bg-1);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent)}
+.tier-card .tier-pct{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent);margin:12px 0}
+.tier-card .tier-name{font-size:14px;font-weight:600;margin-bottom:8px}
+.tier-card .tier-desc{font-size:13px;color:var(--text-2)}
+.calc-box{background:#ffffff;border:1px solid var(--border);border-radius:var(--radius);padding:32px;margin-bottom:32px;max-width:720px}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media(max-width:768px){.calc-grid{grid-template-columns:1fr}}
+.calc-input{background:var(--bg-1);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px}
+.calc-input label{display:block;font-size:13px;color:var(--text-3);margin-bottom:8px}
+.calc-input input{width:100%;background:transparent;border:none;color:var(--text,#0f172a);font-size:13px;font-family:'JetBrains Mono',monospace;outline:none}
+.calc-input input::placeholder{color:var(--text-3)}
+.calc-result{background:var(--bg-1);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px}
+.calc-result .label{font-size:13px;color:var(--text-3)}
+.calc-result .value{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent);margin-top:4px}
+.calc-breakdown{background:var(--bg-1);border-radius:var(--radius-sm);padding:16px}
+.calc-breakdown .row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px}.calc-breakdown .row .l{color:var(--text-3)}.calc-breakdown .row .v{font-family:'JetBrains Mono',monospace;color:var(--text-2)}
+.leaderboard{background:#ffffff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:32px}
+.leaderboard table{width:100%;border-collapse:collapse}
+.leaderboard th{text-align:left;padding:14px 20px;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);border-bottom:1px solid var(--border)}
+.leaderboard td{padding:14px 20px;border-bottom:1px solid var(--border);font-size:14px}
+.leaderboard tr:hover{background:var(--bg-1)}.leaderboard tr:last-child td{border-bottom:none}
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-weight:700;font-size:13px}
+.rank-1{background:rgba(251,191,36,0.2);color:var(--warning)}.rank-2{background:rgba(192,192,192,0.15);color:#334155}.rank-3{background:rgba(205,127,50,0.15);color:#cd7f32}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:32px}
+@media(max-width:768px){.steps-grid{grid-template-columns:1fr}}
+.step-card{background:#ffffff;border:1px solid var(--border);border-radius:var(--radius);padding:24px}
+.step-card .step-num{width:36px;height:36px;border-radius:50%;background:var(--accent);color:#000;display:flex;align-items:center;justify-content:center;font-weight:700;margin-bottom:12px}
+.step-card h3{font-size:14px;font-weight:600;margin-bottom:8px}.step-card p{font-size:14px;color:var(--text-2)}
+.faq-item{background:#ffffff;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
+.faq-q{padding:16px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px}
+.faq-q .arrow{color:var(--text-3);transition:transform .2s}
+.faq-item.open .faq-q .arrow{transform:rotate(180deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.faq-item.open .faq-a{max-height:300px}
+.faq-a-inner{padding:0 20px 16px;font-size:14px;color:var(--text-2);line-height:1.6}
+footer{border-top:1px solid var(--border);padding:32px 24px;text-align:center;color:var(--text-3);font-size:14px}
+footer .links{display:flex;gap:20px;justify-content:center;margin-bottom:12px}footer a{color:var(--accent);text-decoration:none}
+@media(max-width:768px){.nav-links{display:none}.hero h1{font-size: 18px}.hero-right{display:none}}
+
+/* Mobile responsiveness */
+@media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:64px;padding:10px 16px}.card{padding:16px}h1{font-size:13px}}
+@media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:14px}.container{padding:20px}}
+
+     50% { filter: drop-shadow(0 0 16px rgba(22,163,74,0.7)); } }
+    
+    .nav-brand:hover 
+@media(max-width:768px) {  }
+
+nav.std-nav { position:sticky; top:0; z-index:1000; background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-bottom:1px solid rgba(0,0,0,0.06); padding:0 24px; height:76px; display:flex; align-items:center; justify-content:space-between; }
+nav.std-nav .nav-links { display:flex; gap:4px; flex-wrap:wrap; }
+nav.std-nav .nav-links a { color:#334155; text-decoration:none; padding:8px 12px; border-radius:8px; font-size:13px; font-weight:500; transition:all .2s; }
+nav.std-nav .nav-links a:hover, nav.std-nav .nav-links a.active { color:#16a34a; background:rgba(255,255,255,0.06); }
+nav.std-nav .nav-status { display:flex; align-items:center; gap:8px; font-size:13px; color:#334155; }
+nav.std-nav .nav-status .dot { width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px rgba(34,197,94,0.6); animation:std-nav-pulse 2s infinite; }
+@keyframes std-nav-pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+    .brand-logo-img { height:64px; width: auto; display: block; object-fit: contain; flex-shrink: 0; filter: drop-shadow(0 0 12px rgba(22,163,74,0.4)); animation: logo-pulse 3s ease-in-out infinite; transition: filter 0.3s; }
+    .brand-logo-img { filter: drop-shadow(0 0 20px rgba(22,163,74,0.7)); }
+    @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(22,163,74,0.35)); } 50% { filter: drop-shadow(0 0 16px rgba(22,163,74,0.6)); } }
+
+/* Mobile hamburger menu */
+.nav-hamburger{display:none;flex-direction:column;justify-content:center;gap:4px;width:40px;height:40px;background:transparent;border:none;cursor:pointer;padding:8px;z-index:1001}
+.nav-hamburger span{display:block;width:22px;height:2px;background:#16a34a;border-radius:2px;transition:all 250ms cubic-bezier(0.16,1,0.3,1)}
+.nav-hamburger.active span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.nav-hamburger.active span:nth-child(2){opacity:0}
+.nav-hamburger.active span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+@media(max-width:900px){.nav-hamburger{display:flex}.nav-links{position:fixed;top:76px;left:0;right:0;background:rgba(255,255,255,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex-direction:column!important;gap:0!important;padding:8px 16px 16px;border-bottom:1px solid rgba(0,0,0,0.06);transform:translateY(-120%);opacity:0;pointer-events:none;transition:all 300ms cubic-bezier(0.16,1,0.3,1);z-index:999;display:flex!important}.nav-links.open{transform:translateY(0);opacity:1;pointer-events:auto}.nav-links a{padding:14px 12px!important;font-size:14px!important;border-radius:8px;width:100%;text-align:left}.nav-links a:hover{background:rgba(255,255,255,0.06)}}
+
+/* Responsive tables - prevent viewport expansion */
+html{overflow-x:hidden;max-width:100vw}
+table{width:100%!important;max-width:100%!important;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+thead,tbody{display:table;width:100%}
+h2{font-size:14px;font-weight:600;margin-bottom:12px;line-height:1.3} h2 .accent{color:var(--accent)} .section-title{font-size:14px;font-weight:600;margin-bottom:12px;line-height:1.3} 
+/* === Footer (from homepage) === */
+.footer { background: var(--hero-bg, #1a1a1a); padding: 28px 24px 32px; max-width: none; margin: 0; border-top: none; margin-top: 0; }
+.footer-inner { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 48px; }
+.footer-brand h3 { font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 12px; }
+.footer-brand p { font-size: 14px; color: #94a3b8; max-width: 280px; }
+.footer-col h4 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 16px; }
+.footer-col a { display: block; font-size: 14px; color: #cbd5e1; margin-bottom: 10px; transition: color .2s; text-decoration: none; }
+.footer-col a:hover { color: #16a34a; }
+.footer-bottom { max-width: 1000px; margin: 32px auto 0; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; font-size: 13px; color: #64748b; }
+.footer-links { display: none; }
+.footer-copy { display: none; }
+@media (max-width: 768px) { .footer-inner { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .footer-inner { grid-template-columns: 1fr; gap: 24px; } .footer-bottom { flex-direction: column; gap: 8px; text-align: center; } }
+/* === End Footer === */
+
+</style>
+<link rel="icon" type="image/png" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png">
+<style id="nav-brand-no-underline-fix">a.nav-brand, .nav-brand, .nav-brand:link, .nav-brand:visited, .nav-brand:hover, .nav-brand:active { text-decoration: none !important; }h2{font-size:14px;font-weight:600;margin-bottom:12px;line-height:1.3} h2 .accent{color:var(--accent)} .section-title{font-size:14px;font-weight:600;margin-bottom:12px;line-height:1.3} .footer{max-width:1200px;margin:0 auto;padding:32px 24px;border-top:1px solid var(--border);margin-top:40px}
+.footer-social{display:flex;gap:10px;margin-top:16px}.footer-social a{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;color:var(--text-muted,#94a3b8);transition:all .2s}.footer-social a:hover{color:#fff;background:rgba(255,255,255,0.1)}
+.footer-links{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:12px;justify-content:center}
+.footer-links a{font-size:12px;color:var(--text-2);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--accent)}
+.footer-copy{font-size:11px;color:var(--text-3);text-align:center}
+</style></head>
+<body>
+<nav class="std-nav">
+  <a href="/" class="nav-brand"><img src="/assets/verdis-logo-black.png" alt="Verdis Chain" class="brand-logo-img" style="height:48px;width:auto;display:block;object-fit:contain;flex-shrink:0"></a>
+  <button class="nav-hamburger" id="navHamburger" aria-label="Menu"><span></span><span></span><span></span></button><div class="nav-links">
+    <a href="/explorer/">Verdiscan</a>
+      <a href="/dex/">DEX</a>
+      <a href="/whitepaper/">Whitepaper</a>
+      <a href="/wallet/">Wallet</a>
+      <a href="/sale/">Sale</a>
+      <a href="/tokenomics/">Tokenomics</a>
+      <a href="/faucet/">Faucet</a>
+      <a href="/governance/">Governance</a>
+    
+  </div>
+  <div class="nav-status"><div class="dot"></div><span class="nav-text">Connected</span></div>
+</nav>
+
+<section class="hero">
+<div class="hero-left">
+<div class="badge"><div class="dot"></div> Earn up to 17.5% commission</div>
+<h1>Earn <span class="accent">VRDX</span> by referring friends</h1>
+<p>Share your referral link and earn commission on every token purchase your friends make. 3-tier system means you earn from their referrals too.</p>
+<div class="hero-stats">
+<div class="hero-stat"><div class="label">Tier 1 Rate</div><div class="value">10%</div></div>
+<div class="hero-stat"><div class="label">Max Commission</div><div class="value">17.5%</div></div>
+<div class="hero-stat"><div class="label">Total Paid</div><div class="value">$0</div></div>
+</div>
+</div>
+<div class="hero-right">
+<div class="float-card fc-main">
+<div style="font-size:13px;color:var(--text-3);margin-bottom:8px">Your Earnings</div>
+<div class="price-big">$0</div>
+<div style="font-size:13px;color:var(--success);margin-top:4px">No earnings yet — token sale starting soon</div>
+<div class="bar-chart" id="heroChart"></div>
+<div class="mini-row"><span class="l">Total Referrals</span><span class="v">0</span></div>
+<div class="mini-row"><span class="l">Conversion Rate</span><span class="v">0%</span></div>
+</div>
+<div class="float-card fc-stats">
+<div style="font-size:12px;color:var(--text-3);margin-bottom:8px">Commission Tiers</div>
+<div class="mini-row"><span class="l">Tier 1 (direct)</span><span class="v" style="color:var(--accent)">10%</span></div>
+<div class="mini-row"><span class="l">Tier 2 (indirect)</span><span class="v" style="color:var(--accent)">5%</span></div>
+<div class="mini-row"><span class="l">Tier 3 (deep)</span><span class="v" style="color:var(--accent)">2.5%</span></div>
+</div>
+<div class="float-card fc-leader">
+<div style="font-size:12px;color:var(--text-3);margin-bottom:8px">Your Rank</div>
+<div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--accent)">—</div>
+<div class="mini-row"><span class="l">of 0 affiliates</span></div>
+</div>
+</div>
+</section>
+
+<div class="section">
+<h2 class="section-title">Your Referral Dashboard</h2>
+<p class="section-sub">Track your referral performance and earnings in real-time.</p>
+<div class="dash-grid">
+<div class="dash-card"><div class="icon">👥</div><div class="label">Total Referrals</div><div class="value">0</div><div class="sub">No referrals yet</div></div>
+<div class="dash-card"><div class="icon">💰</div><div class="label">Total Earnings</div><div class="value">$0</div><div class="sub">0 VRDX</div></div>
+<div class="dash-card"><div class="icon">📈</div><div class="label">Conversion Rate</div><div class="value">0%</div><div class="sub">No data yet</div></div>
+<div class="dash-card"><div class="icon">⚡</div><div class="label">Active This Week</div><div class="value">0</div><div class="sub">No activity yet</div></div>
+</div>
+
+<div class="referral-link-box">
+<h3>Your Unique Referral Link</h3>
+<div class="link-row">
+<input type="text" id="refLink" value="https://verdischain.com/sale?ref=0x1A2b3c4D" readonly>
+<button class="share-btn copy" onclick="copyLink()">Copy Link</button>
+</div>
+<div class="share-buttons">
+<button class="share-btn social" onclick="shareTwitter()">𝕏 Twitter</button>
+<button class="share-btn social" onclick="shareTelegram()">✈ Telegram</button>
+<button class="share-btn social" onclick="shareDiscord()">🎮 Discord</button>
+<button class="share-btn social" onclick="shareWhatsApp()">💬 WhatsApp</button>
+<button class="share-btn social" onclick="shareEmail()">📧 Email</button>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2 class="section-title">3-Tier Commission Structure</h2>
+<p class="section-sub">Earn from direct referrals and their referrals — up to 3 levels deep.</p>
+<div class="tiers-grid">
+<div class="tier-card highlight">
+<div class="tier-num">1</div>
+<div class="tier-pct">10%</div>
+<div class="tier-name">Tier 1 — Direct</div>
+<div class="tier-desc">You earn 10% of every purchase made by someone who used your referral link.</div>
+</div>
+<div class="tier-card">
+<div class="tier-num">2</div>
+<div class="tier-pct">5%</div>
+<div class="tier-name">Tier 2 — Indirect</div>
+<div class="tier-desc">When your direct referrals share their links, you earn 5% of those purchases too.</div>
+</div>
+<div class="tier-card">
+<div class="tier-num">3</div>
+<div class="tier-pct">2.5%</div>
+<div class="tier-name">Tier 3 — Deep Network</div>
+<div class="tier-desc">Your network extends 3 levels. Earn 2.5% from all Tier 3 purchases.</div>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2 class="section-title">Earnings Calculator</h2>
+<p class="section-sub">Estimate your potential VRDX earnings from referrals.</p>
+<div class="calc-box">
+<div class="calc-grid">
+<div class="calc-input">
+<label>Direct Referrals (Tier 1)</label>
+<input type="number" id="calcT1" value="50" oninput="calculate()">
+</div>
+<div class="calc-input">
+<label>Avg Purchase per Referral ($)</label>
+<input type="number" id="calcAvg" value="500" oninput="calculate()">
+</div>
+</div>
+<div class="calc-grid">
+<div class="calc-input">
+<label>Indirect Referrals (Tier 2)</label>
+<input type="number" id="calcT2" value="100" oninput="calculate()">
+</div>
+<div class="calc-input">
+<label>Deep Network (Tier 3)</label>
+<input type="number" id="calcT3" value="200" oninput="calculate()">
+</div>
+</div>
+<div class="calc-result">
+<div class="label">Your Total Earnings (in VRDX)</div>
+<div class="value" id="calcTotal">— VRDX</div>
+</div>
+<div class="calc-breakdown">
+<div class="row"><span class="l">Tier 1 (10% of direct)</span><span class="v" id="calcR1">—</span></div>
+<div class="row"><span class="l">Tier 2 (5% of indirect)</span><span class="v" id="calcR2">—</span></div>
+<div class="row"><span class="l">Tier 3 (2.5% of deep)</span><span class="v" id="calcR3">—</span></div>
+<div class="row" style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;font-weight:600"><span class="l">Total USD Value</span><span class="v" style="color:var(--accent)" id="calcUSD">—</span></div>
+<div class="row"><span class="l">At TGE Price ($0.005)</span><span class="v" style="color:var(--success)" id="calcListing">—</span></div>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h2 class="section-title">Top Affiliates Leaderboard</h2>
+<p class="section-sub">The top 10 referrers by total VRDX earned this month.</p>
+<div class="leaderboard">
+<table>
+<thead><tr><th>Rank</th><th>Affiliate</th><th>Referrals</th><th>Volume</th><th>Earnings (VRDX)</th><th>Badge</th></tr></thead>
+<tbody id="leaderbody"></tbody>
+</table>
+</div>
+</div>
+
+<div class="section">
+<h2 class="section-title">How It Works</h2>
+<p class="section-sub">Start earning VRDX in 3 simple steps.</p>
+<div class="steps-grid">
+<div class="step-card">
+<div class="step-num">1</div>
+<h3>Share Your Link</h3>
+<p>Copy your unique referral link and share it on social media, messaging apps, or your website. Anyone who clicks becomes your referral.</p>
+</div>
+<div class="step-card">
+<div class="step-num">2</div>
+<h3>Friends Buy VRDX</h3>
+<p>When your friends purchase VRDX tokens through your link, the transaction is automatically tracked and attributed to your account.</p>
+</div>
+<div class="step-card">
+<div class="step-num">3</div>
+<h3>You Earn Commission</h3>
+<p>Receive 10% commission instantly. When your referrals share their own links, you earn 5% and 2.5% from Tier 2 and Tier 3 purchases.</p>
+</div>
+</div>
+</div>
+
+<div class="section" style="max-width:720px">
+<h2 class="section-title" style="text-align:center;margin-bottom:32px">FAQ</h2>
+<div class="faq-item open"><div class="faq-q" onclick="toggleFAQ(this)">How are commissions paid? <span class="arrow">▾</span></div><div class="faq-a"><div class="faq-a-inner">Commissions are paid in VRDX tokens directly to your wallet at the Token Generation Event (TGE). You'll receive a single payment covering all tiers with your regular token allocation.</div></div></div>
+<div class="faq-item"><div class="faq-q" onclick="toggleFAQ(this)">Is there a limit on referrals? <span class="arrow">▾</span></div><div class="faq-a"><div class="faq-a-inner">No. You can refer as many people as you want. The more referrals, the more you earn. Start sharing your link early to maximize your earnings when the token sale goes live.</div></div></div>
+<div class="faq-item"><div class="faq-q" onclick="toggleFAQ(this)">Do referrals expire? <span class="arrow">▾</span></div><div class="faq-a"><div class="faq-a-inner">Referrals are valid for 90 days after someone clicks your link. If they purchase within that window, you earn commission. After 90 days, the cookie expires.</div></div></div>
+<div class="faq-item"><div class="faq-q" onclick="toggleFAQ(this)">Can I track my referrals? <span class="arrow">▾</span></div><div class="faq-a"><div class="faq-a-inner">Yes. Your dashboard will show total referrals, conversion rate, earnings breakdown by tier, and weekly activity charts. All updated in real-time once the token sale begins.</div></div></div>
+</div>
+</div>
+
+<footer class="footer">
+<div class="footer-inner">
+<div class="footer-brand">
+<h3>VERDIS CHAIN</h3>
+<p>The world's first green blockchain with native DPoS consensus, AMM DEX, and carbon credit tracking. Built on Substrate.</p>
+<div class="footer-social">
+<a href="https://x.com/Verdischain" target="_blank" aria-label="X (Twitter)"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+<a href="https://github.com/Protremix/Verdischain-" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.26.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.5 11.5 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.218.694.825.576C20.565 21.795 24 17.298 24 12 24 5.37 18.627 0 12 0z"/></svg></a>
+<a href="/contact/" aria-label="Contact"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M24 4l-12 7-12-7v-2l12 7 12-7v2zm0 2v14h-24v-14l12 7 12-7z"/></svg></a>
+<a href="/status/" aria-label="Network Status"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></a>
+</div>
+</div>
+<div class="footer-col"><h4>Products</h4><a href="/explorer/">Verdiscan</a><a href="/dex/">DEX</a><a href="/wallet/">Web Wallet</a><a href="/faucet/">Faucet</a>
+      <a href="/governance/">Governance</a><a href="/sale/">Token Sale</a></div>
+<div class="footer-col"><h4>Resources</h4><a href="/docs/">Documentation</a><a href="/whitepaper/">Whitepaper</a><a href="/tokenomics/">Tokenomics</a><a href="/api/">API Reference</a><a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a></div>
+<div class="footer-col"><h4>Community</h4><a href="/validators/">Validators</a><a href="/eco/">Eco Metrics</a><a href="/governance/">Governance</a><a href="/referral/">Referral Program</a><a href="/incentives/">Validator Incentives</a><a href="/contact/">Contact</a></div>
+<div class="footer-col"><h4>Legal</h4><a href="/terms/">Terms of Service</a><a href="/privacy/">Privacy Policy</a><a href="/cookies/">Cookie Policy</a><a href="/security/">Security</a><a href="/disclaimer/">Disclaimer</a></div>
+</div>
+<div class="footer-bottom"><span>&copy; 2026 Verdis Chain &middot; Protremix &middot; Open-source under MIT License</span><span><a href="/privacy/" style="color:#64748b;text-decoration:none">GDPR Compliant</a> &middot; <a href="/security/" style="color:#64748b;text-decoration:none">Security</a></span></div>
+</footer>
+
+<script>
+const TOKEN_PRICE=0.004,LISTING_PRICE=0.005;
+function initHeroChart(){const el=document.getElementById('heroChart');let bars='';for(let i=0;i<14;i++){const h=20+Math.random()*80;bars+=`<div class="bar" style="height:${h}%">`}el.innerHTML=bars}
+function copyLink(){const link=document.getElementById('refLink');link.select();navigator.clipboard.writeText(link.value).then(()=>alert('Referral link copied!')).catch(()=>alert('Link: '+link.value))}
+function shareTwitter(){window.open(`https://twitter.com/intent/tweet?text=Join the Verdis Chain presale and get 20% bonus VRDX! &url=${encodeURIComponent(document.getElementById('refLink').value)}`,'_blank')}
+function shareTelegram(){window.open(`https://t.me/share/url?url=${encodeURIComponent(document.getElementById('refLink').value)}&text=Get VRDX tokens at presale price + 20% bonus!`,'_blank')}
+function shareDiscord(){copyLink();alert('Link copied! Paste it in Discord: '+document.getElementById('refLink').value)}
+function shareWhatsApp(){window.open(`https://wa.me/?text=${encodeURIComponent('Get VRDX tokens at presale price + 20% bonus! '+document.getElementById('refLink').value)}`,'_blank')}
+function shareEmail(){window.open(`mailto:?subject=VRDX Token Presale - 20% Bonus&body=Get VRDX tokens at Seed price $0.0015 (TGE $0.005) with 70% discount: ${document.getElementById('refLink').value}`)}
+function calculate(){const t1=+document.getElementById('calcT1').value||0;const t2=+document.getElementById('calcT2').value||0;const t3=+document.getElementById('calcT3').value||0;const avg=+document.getElementById('calcAvg').value||0;const r1=t1*avg*0.10;const r2=t2*avg*0.05;const r3=t3*avg*0.025;const total=r1+r2+r3;const vrdx=total/TOKEN_PRICE;const listingVal=vrdx*LISTING_PRICE;document.getElementById('calcR1').textContent=r1.toLocaleString(undefined,{maximumFractionDigits:0})+' VRDX';document.getElementById('calcR2').textContent=r2.toLocaleString(undefined,{maximumFractionDigits:0})+' VRDX';document.getElementById('calcR3').textContent=r3.toLocaleString(undefined,{maximumFractionDigits:0})+' VRDX';document.getElementById('calcTotal').textContent=vrdx.toLocaleString(undefined,{maximumFractionDigits:0})+' VRDX';document.getElementById('calcUSD').textContent='$'+total.toLocaleString(undefined,{maximumFractionDigits:2});document.getElementById('calcListing').textContent='$'+listingVal.toLocaleString(undefined,{maximumFractionDigits:2})}
+function renderLeaderboard(){document.getElementById('leaderbody').innerHTML='<tr><td colspan="6" style="text-align:center;padding:48px 20px;color:var(--text-3);font-size:14px">No affiliates yet — be the first to share your referral link when the token sale goes live!</td></tr>'}
+function toggleFAQ(el){el.parentElement.classList.toggle('open')}
+initHeroChart();calculate();renderLeaderboard();
+</script>
+
+<script>
+async function loadPageMetrics() {
+    try {
+        const res = await fetch('/rpc', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1})
+        });
+        const data = await res.json();
+        const height = parseInt(data.result?.number || '0x0', 16);
+        document.querySelectorAll('[data-block-height]').forEach(el => {
+            el.textContent = '#' + height.toLocaleString();
+        });
+    } catch(e) {}
+}
+loadPageMetrics();
+setInterval(loadPageMetrics, 15000);
+</script>
+
+<script>
+(function(){var h=document.getElementById('navHamburger'),l=document.querySelector('.nav-links');if(!h||!l)return;h.addEventListener('click',function(){h.classList.toggle('active');l.classList.toggle('open');});l.addEventListener('click',function(e){if(e.target.tagName==='A'){h.classList.remove('active');l.classList.remove('open');}});})();
+</script>
+
+</body>
+</html>

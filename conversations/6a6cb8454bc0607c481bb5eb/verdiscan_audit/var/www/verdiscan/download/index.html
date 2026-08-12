@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Download Verdis Chain — Node & Wallet</title>
+<link rel="canonical" href="https://verdischain.com/download/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Download Verdis Chain — Node & Wallet">
+<meta property="og:description" content="Download the Verdis Chain node binary, CLI tools, and mobile wallet. Run a validator or interact with the green blockchain.">
+<meta property="og:url" content="https://verdischain.com/download/">
+<meta property="og:image" content="https://verdischain.com/assets/verdis-logo-black.png">
+<meta name="description" content="Download the Verdis Chain node binary, CLI tools, and mobile wallet. Run a validator or interact with the green blockchain.">
+<link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32"/>
+<link rel="icon" type="image/png" href="/favicon-16.png" sizes="16x16"/>
+<link rel="apple-touch-icon" href="/assets/favicon-192.png"/>
+<link rel="manifest" href="/site.webmanifest"/>
+<link rel="stylesheet" href="/css/verdis.css?v=3"/>
+<style>
+.download-hero{max-width:900px;margin:0 auto;padding:120px 24px 80px;text-align:center;}
+.download-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-bottom:64px;}
+.dl-card{border-radius:16px;padding:40px 24px;text-align:center;}
+.dl-android{background:rgba(202,255,51,0.05);border:1px solid rgba(202,255,51,0.2);}
+.dl-other{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);}
+.dl-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;font-weight:700;border-radius:8px;text-decoration:none;font-size:1rem;transition:all 0.2s;}
+.dl-btn-primary{background:#00C853;color:#0A0E0A;}
+.dl-btn-primary:hover{background:#caff33;}
+.dl-btn-secondary{background:rgba(202,255,51,0.1);color:#caff33;border:1px solid rgba(202,255,51,0.2);}
+.dl-btn-secondary:hover{background:rgba(202,255,51,0.15);}
+.dl-btn-disabled{background:rgba(255,255,255,0.05);color:#5a6a5a;border:1px solid rgba(255,255,255,0.08);}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
+.feature-card{padding:20px;background:rgba(255,255,255,0.02);border-radius:12px;border:1px solid rgba(255,255,255,0.05);}
+.feature-title{color:#caff33;font-size:1.2rem;margin-bottom:8px;}
+.feature-desc{color:#8B9D8B;font-size:0.95rem;}
+.install-guide{max-width:700px;margin:0 auto 64px;padding:32px;background:rgba(202,255,51,0.03);border-radius:16px;border:1px solid rgba(202,255,51,0.1);}
+.install-guide ol{color:#8B9D8B;line-height:2;font-size:1rem;padding-left:20px;}
+.spec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+.spec-card{padding:16px;background:rgba(255,255,255,0.02);border-radius:8px;}
+.spec-label{color:#5a6a5a;font-size:0.9rem;}
+.spec-value{color:#E8F0E8;font-weight:600;}
+.dl-cta{padding:28px;background:linear-gradient(135deg,rgba(0,200,83,0.08),rgba(202,255,51,0.04));border-radius:20px;text-align:center;max-width:800px;margin:0 auto 64px;}
+.dl-cta-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+
+/* Mobile responsiveness */
+@media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:64px;padding:10px 16px}.card{padding:16px}h1{font-size:13px}}
+@media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:14px}.container{padding:20px}}
+.footer-social{display:flex;gap:10px;margin-top:16px}.footer-social a{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;color:var(--text-muted,#94a3b8);transition:all .2s}.footer-social a:hover{color:#fff;background:rgba(255,255,255,0.1)}
+</style>
+</head>
+<body>
+<!-- Verdis V Logo Splash -->
+<div class="verdis-splash-overlay" id="verdis-splash">
+  <div class="verdis-splash-logo">
+    <svg class="verdis-anim-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:120px;height:120px">
+      <path class="hex-path" d="M20 3L34 11V27L20 35L6 27V11L20 3Z" stroke="#caff33" stroke-width="2" fill="rgba(202,255,51,0.03)" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="v-path" d="M13 13L20 27M27 13L20 27" stroke="#caff33" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="leaf-accent" d="M20 18C17 18 15 20 15 23C15 26 17 28 20 28C23 28 25 26 25 23C25 20 23 18 20 18Z" fill="#caff33" opacity="0.3"/>
+    </svg>
+  </div>
+  <div class="verdis-splash-text">VERDIS</div>
+  <div class="verdis-splash-spinner"></div>
+</div>
+
+<div id="verdis-nav"></div>
+
+<section class="download-hero">
+  <div style="margin-bottom:32px;">
+    <svg class="verdis-anim-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100px;height:100px;">
+      <path class="hex-path" d="M20 3L34 11V27L20 35L6 27V11L20 3Z" stroke="#caff33" stroke-width="2" fill="rgba(202,255,51,0.03)" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="v-path" d="M13 13L20 27M27 13L20 27" stroke="#caff33" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path class="leaf-accent" d="M20 18C17 18 15 20 15 23C15 26 17 28 20 28C23 28 25 26 25 23C25 20 23 18 20 18Z" fill="#caff33" opacity="0.3"/>
+    </svg>
+  </div>
+
+  <h1 style="font-size:2.8rem;font-weight:800;color:#E8F0E8;margin-bottom:16px;letter-spacing:-0.5px;">Download Verdis Wallet</h1>
+  <p style="font-size:1.2rem;color:#8B9D8B;margin-bottom:48px;max-width:600px;margin-left:auto;margin-right:auto;">
+    The world's first carbon-negative blockchain wallet. Native DPoS staking, AMM DEX, eco-impact tracking, and multi-platform support.
+  </p>
+
+  <div class="download-grid">
+    <div class="dl-card dl-android">
+      <div style="font-size: 20px;margin-bottom:16px;">🤖</div>
+      <h3 style="font-size:1.4rem;font-weight:700;color:#E8F0E8;margin-bottom:8px;">Android</h3>
+      <p style="color:#8B9D8B;margin-bottom:12px;">Android 8.0+ (API 26)<br>36 MB &middot; Release Build</p>
+      <a href="/verdis-wallet-release.apk" download class="dl-btn dl-btn-primary">⬇ Download APK</a>
+      <p style="color:#5a6a5a;font-size:0.85rem;margin-top:16px;">Direct download &middot; No Play Store required</p>
+    </div>
+
+    <div class="dl-card dl-other">
+      <div style="font-size: 20px;margin-bottom:16px;">📱</div>
+      <h3 style="font-size:1.4rem;font-weight:700;color:#E8F0E8;margin-bottom:8px;">iOS</h3>
+      <p style="color:#8B9D8B;margin-bottom:12px;">iOS 14.0+<br>Coming Soon</p>
+      <span class="dl-btn dl-btn-disabled">🍎 Coming Soon</span>
+      <p style="color:#5a6a5a;font-size:0.85rem;margin-top:16px;">TestFlight beta in Q4 2026</p>
+    </div>
+
+    <div class="dl-card dl-other">
+      <div style="font-size: 20px;margin-bottom:16px;">💻</div>
+      <h3 style="font-size:1.4rem;font-weight:700;color:#E8F0E8;margin-bottom:8px;">Desktop</h3>
+      <p style="color:#8B9D8B;margin-bottom:12px;">Windows, macOS, Linux<br>Web Wallet Available</p>
+      <a href="/wallet/" class="dl-btn dl-btn-secondary">🌐 Launch Web Wallet</a>
+      <p style="color:#5a6a5a;font-size:0.85rem;margin-top:16px;">No installation required</p>
+    </div>
+  </div>
+
+  <div style="text-align:left;max-width:800px;margin:0 auto 64px;">
+    <h2 style="font-size:1.8rem;font-weight:700;color:#E8F0E8;margin-bottom:32px;text-align:center;">Wallet Features</h2>
+    <div class="feature-grid">
+      <div class="feature-card"><div class="feature-title">⚡ Fast Transactions</div><div class="feature-desc">Send and receive VRDX with sub-second confirmation via BABE/GRANDPA consensus</div></div>
+      <div class="feature-card"><div class="feature-title">🌱 Eco Tracking</div><div class="feature-desc">Monitor your carbon credits, reforestation projects, and green validator scores</div></div>
+      <div class="feature-card"><div class="feature-title">💰 Native Staking</div><div class="feature-desc">Stake VRDX to validators, earn rewards, and track performance in real-time</div></div>
+      <div class="feature-card"><div class="feature-title">🔄 AMM DEX</div><div class="feature-desc">Swap tokens directly in-wallet with the native AMM DEX — no external dApps needed</div></div>
+      <div class="feature-card"><div class="feature-title">🔒 Bank-Grade Security</div><div class="feature-desc">SHA-256 PIN, biometric auth, 60s auto-lock, and local encrypted storage</div></div>
+      <div class="feature-card"><div class="feature-title">📊 Explorer</div><div class="feature-desc">Browse blocks, transactions, validators, and network stats — all in-wallet</div></div>
+    </div>
+  </div>
+
+  <div class="install-guide">
+    <h2 style="font-size:1.4rem;font-weight:700;color:#E8F0E8;margin-bottom:20px;">Android Installation Guide</h2>
+    <ol>
+      <li>Download the APK file by tapping "Download APK" above</li>
+      <li>Open the downloaded file in your file manager</li>
+      <li>If prompted, enable "Install from unknown sources" in Settings</li>
+      <li>Tap "Install" and wait for installation to complete</li>
+      <li>Open Verdis Wallet and create a new wallet or import an existing one</li>
+      <li>Set up your 6-digit PIN and enable biometric authentication</li>
+      <li>Back up your recovery phrase — this is the only way to recover your wallet</li>
+    </ol>
+    <p style="color:#5a6a5a;font-size:0.9rem;margin-top:16px;">⚠ Never share your recovery phrase with anyone. Verdis will never ask for it.</p>
+  </div>
+
+  <div style="text-align:left;max-width:700px;margin:0 auto 64px;">
+    <h2 style="font-size:1.4rem;font-weight:700;color:#E8F0E8;margin-bottom:20px;text-align:center;">Technical Specifications</h2>
+    <div class="spec-grid">
+      <div class="spec-card"><span class="spec-label">Version</span><br><span class="spec-value">1.1.6</span></div>
+      <div class="spec-card"><span class="spec-label">Size</span><br><span class="spec-value">36 MB</span></div>
+      <div class="spec-card"><span class="spec-label">Min Android</span><br><span class="spec-value">8.0 (API 26)</span></div>
+      <div class="spec-card"><span class="spec-label">Architecture</span><br><span class="spec-value">arm64-v8a</span></div>
+      <div class="spec-card"><span class="spec-label">Framework</span><br><span class="spec-value">Flutter 3.x</span></div>
+      <div class="spec-card"><span class="spec-label">Build Type</span><br><span class="spec-value">Release Signed</span></div>
+    </div>
+  </div>
+
+  <div class="dl-cta">
+    <h2 style="font-size:1.6rem;font-weight:700;color:#E8F0E8;margin-bottom:16px;">Ready to Go Green?</h2>
+    <p style="color:#8B9D8B;margin-bottom:32px;">Join the world's first carbon-negative blockchain ecosystem.</p>
+    <div class="dl-cta-btns">
+      <a href="/verdis-wallet-release.apk" download class="dl-btn dl-btn-primary">⬇ Download for Android</a>
+      <a href="/wallet/" class="dl-btn dl-btn-secondary">🌐 Launch Web Wallet</a>
+    </div>
+  </div>
+</section>
+
+<div id="verdis-footer"></div>
+<script src="/js/verdis.js?v=3"></script>
+<footer style="text-align:center;padding:24px;border-top:1px solid #222"><a href="https://evolvixos.com" style="color:#818cf8;text-decoration:none;font-size:14px">EvolvixOS — AI Engineering OS</a>  <div class="footer-copy">&copy; 2026 Verdis Chain. Powered by live Substrate RPC.</div>
+</footer></body>
+</html>
