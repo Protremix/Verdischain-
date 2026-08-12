@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:math' show Random;
 import 'package:crypto/crypto.dart';
+import 'package:cryptography/cryptography.dart' as pc;
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:hex/hex.dart';
 import 'package:bs58/bs58.dart';
@@ -126,6 +127,78 @@ class WalletCrypto {
   static String shortenAddress(String address, {int prefix = 6, int suffix = 6}) {
     if (address.length <= prefix + suffix + 3) return address;
     return '${address.substring(0, prefix)}...${address.substring(address.length - suffix)}';
+  }
+
+  // ===== EMAIL BACKUP ENCRYPTION (PBKDF2 + AES-256-GCM) =====
+  // Matches the web wallet's exact scheme (see verdischain.com/wallet index.html
+  // deriveKeyFromPassword/encryptMnemonic/decryptMnemonic) so backups made on
+  // one platform can be recovered from the other.
+  // Web Crypto AES-GCM iterations: 150,000 (different from the PIN hash above).
+  static final pc.Pbkdf2 _backupPbkdf2 = pc.Pbkdf2(
+    macAlgorithm: pc.Hmac.sha256(),
+    iterations: 150000,
+    bits: 256,
+  );
+
+  static final pc.AesGcm _backupAesGcm = pc.AesGcm.with256bits();
+
+  static Future<pc.SecretKey> _deriveBackupKey(String password, List<int> salt) async {
+    final secretKey = pc.SecretKey(utf8.encode(password));
+    return _backupPbkdf2.deriveKey(secretKey: secretKey, nonce: salt);
+  }
+
+  /// Encrypt mnemonic with password for email backup.
+  /// Returns {ciphertext, salt, iv} all base64-encoded, byte-for-byte
+  /// compatible with the web wallet's Web Crypto AES-GCM output
+  /// (ciphertext = raw ciphertext + 16-byte GCM tag appended).
+  static Future<Map<String, String>> encryptBackup(String mnemonic, String password) async {
+    final salt = _generateRandomBytes(16);
+    final nonce = _generateRandomBytes(12); // IV
+    final key = await _deriveBackupKey(password, salt);
+
+    final secretBox = await _backupAesGcm.encrypt(
+      utf8.encode(mnemonic),
+      secretKey: key,
+      nonce: nonce,
+    );
+
+    final combined = Uint8List.fromList([...secretBox.cipherText, ...secretBox.mac.bytes]);
+
+    return {
+      'ciphertext': base64Encode(combined),
+      'salt': base64Encode(salt),
+      'iv': base64Encode(nonce),
+    };
+  }
+
+  /// Decrypt an email backup with password. Throws if the password/PIN is wrong
+  /// (GCM authentication failure) or the payload is malformed.
+  static Future<String> decryptBackup(
+    String ciphertextB64,
+    String saltB64,
+    String ivB64,
+    String password,
+  ) async {
+    final salt = base64Decode(saltB64);
+    final nonce = base64Decode(ivB64);
+    final combined = base64Decode(ciphertextB64);
+
+    if (combined.length < 16) {
+      throw const FormatException('Invalid backup ciphertext: too short to contain GCM tag');
+    }
+    final cipherBytes = combined.sublist(0, combined.length - 16);
+    final macBytes = combined.sublist(combined.length - 16);
+
+    final key = await _deriveBackupKey(password, salt);
+
+    final secretBox = pc.SecretBox(
+      cipherBytes,
+      nonce: nonce,
+      mac: pc.Mac(macBytes),
+    );
+
+    final decrypted = await _backupAesGcm.decrypt(secretBox, secretKey: key);
+    return utf8.decode(decrypted);
   }
 }
 

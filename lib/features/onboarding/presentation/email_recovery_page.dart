@@ -1,18 +1,20 @@
 import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:verdis_wallet/core/config/network_config.dart';
 import 'package:verdis_wallet/core/security/secure_storage.dart';
+import 'package:verdis_wallet/core/security/wallet_crypto.dart';
 import 'package:verdis_wallet/features/home/presentation/home_providers.dart';
 import 'package:verdis_wallet/shared/widgets/verdis_widgets.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:hex/hex.dart';
 import 'package:polkadart_keyring/polkadart_keyring.dart';
 
-/// Email Recovery Page — restore wallet from email + PIN backup
+/// Email Recovery Page — restore wallet from email + password + PIN backup.
+/// Matches web wallet exactly: password encrypts/decrypts via PBKDF2+AES-256-GCM,
+/// PIN is only used for server-side backend verification/rate-limiting.
 class EmailRecoveryPage extends ConsumerStatefulWidget {
   const EmailRecoveryPage({super.key});
 
@@ -22,43 +24,28 @@ class EmailRecoveryPage extends ConsumerStatefulWidget {
 
 class _EmailRecoveryPageState extends ConsumerState<EmailRecoveryPage> {
   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _pinController = TextEditingController();
   bool _isLoading = false;
   String? _error;
 
   static const String _relayUrl = 'https://verdischain.com/api/tx-relay';
 
-  // PBKDF2 key derivation (matches web wallet + security settings page)
-  static List<int> _deriveKey(String password, List<int> salt, {int iterations = 150000, int keyLength = 32}) {
-    final hmac = Hmac(sha256, utf8.encode(password));
-    final blockCount = (keyLength + 31) ~/ 32;
-    final result = <int>[];
-    for (var blockNum = 1; blockNum <= blockCount; blockNum++) {
-      var u = <int>[...salt, (blockNum >> 24) & 0xFF, (blockNum >> 16) & 0xFF, (blockNum >> 8) & 0xFF, blockNum & 0xFF];
-      var t = hmac.convert(u).bytes.toList();
-      var resultBlock = List<int>.from(t);
-      for (var i = 1; i < iterations; i++) {
-        u = hmac.convert(t).bytes.toList();
-        for (var j = 0; j < t.length; j++) {
-          resultBlock[j] ^= u[j];
-        }
-        t = u;
-      }
-      result.addAll(resultBlock);
-    }
-    return result.sublist(0, keyLength);
-  }
-
-  static List<int> _xorCipher(List<int> data, List<int> key) {
-    return List<int>.generate(data.length, (i) => data[i] ^ key[i % key.length]);
-  }
-
   Future<void> _recover() async {
     final email = _emailController.text.trim();
+    final password = _passwordController.text;
     final pin = _pinController.text.trim();
 
-    if (email.isEmpty || pin.isEmpty) {
-      setState(() => _error = 'Please enter both email and PIN');
+    if (email.isEmpty) {
+      setState(() => _error = 'Please enter your email');
+      return;
+    }
+    if (password.isEmpty) {
+      setState(() => _error = 'Please enter your recovery password');
+      return;
+    }
+    if (pin.isEmpty || !RegExp(r'^\d{4,6}$').hasMatch(pin)) {
+      setState(() => _error = 'Wallet PIN is required (4-6 digits)');
       return;
     }
 
@@ -68,7 +55,7 @@ class _EmailRecoveryPageState extends ConsumerState<EmailRecoveryPage> {
     });
 
     try {
-      // 1. Fetch encrypted backup from TX Relay
+      // 1. Fetch encrypted backup from TX Relay (PIN verified server-side)
       final response = await http.post(
         Uri.parse(_relayUrl),
         headers: {'Content-Type': 'application/json'},
@@ -89,21 +76,20 @@ class _EmailRecoveryPageState extends ConsumerState<EmailRecoveryPage> {
         return;
       }
 
-      // 2. Decrypt mnemonic
+      // 2. Decrypt mnemonic using password (PBKDF2 + AES-256-GCM — matches web wallet)
       final backup = data['data']['backup'] as Map<String, dynamic>;
-      final ciphertext = backup['ciphertext'] as String;
-      final saltB64 = backup['salt'] as String;
-      final salt = base64Decode(saltB64);
-      final encrypted = base64Decode(ciphertext);
-      final key = _deriveKey(pin, salt);
-      final decrypted = _xorCipher(encrypted, key);
-      final mnemonic = utf8.decode(decrypted);
+      final mnemonic = await WalletCrypto.decryptBackup(
+        backup['ciphertext'] as String,
+        backup['salt'] as String,
+        backup['iv'] as String,
+        password,
+      );
 
       // 3. Validate mnemonic
       if (!bip39.validateMnemonic(mnemonic)) {
         setState(() {
           _isLoading = false;
-          _error = 'Decryption produced invalid mnemonic. Wrong PIN?';
+          _error = 'Decryption produced an invalid recovery phrase. Check your password.';
         });
         return;
       }
@@ -136,7 +122,11 @@ class _EmailRecoveryPageState extends ConsumerState<EmailRecoveryPage> {
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _error = 'Error: $e';
+        if (e is FormatException || e.toString().contains('SecretBox') || e.toString().contains('Mac')) {
+          _error = 'Wrong password or PIN — could not decrypt wallet.';
+        } else {
+          _error = 'Error: $e';
+        }
       });
     }
   }
@@ -144,6 +134,7 @@ class _EmailRecoveryPageState extends ConsumerState<EmailRecoveryPage> {
   @override
   void dispose() {
     _emailController.dispose();
+    _passwordController.dispose();
     _pinController.dispose();
     super.dispose();
   }
@@ -163,7 +154,7 @@ class _EmailRecoveryPageState extends ConsumerState<EmailRecoveryPage> {
         ),
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,7 +170,7 @@ class _EmailRecoveryPageState extends ConsumerState<EmailRecoveryPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Enter the email and PIN you used when setting up email recovery.',
+                'Enter the email, password, and PIN you used when setting up email recovery.',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: const Color(0xFF8B9D8B),
                 ),
@@ -193,6 +184,18 @@ class _EmailRecoveryPageState extends ConsumerState<EmailRecoveryPage> {
                 decoration: const InputDecoration(
                   labelText: 'Email Address',
                   prefixIcon: Icon(Icons.email, color: Color(0xFF00FF88)),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                style: const TextStyle(color: Color(0xFFE8F0E8)),
+                decoration: const InputDecoration(
+                  labelText: 'Recovery Password',
+                  helperText: 'The password you set when backing up (not your PIN)',
+                  prefixIcon: Icon(Icons.key, color: Color(0xFF00FF88)),
                 ),
               ),
               const SizedBox(height: 16),
@@ -224,7 +227,7 @@ class _EmailRecoveryPageState extends ConsumerState<EmailRecoveryPage> {
                 onPressed: _isLoading ? null : _recover,
               ),
 
-              const Spacer(),
+              const SizedBox(height: 32),
               Center(
                 child: TextButton(
                   onPressed: () => context.push('/import-wallet'),

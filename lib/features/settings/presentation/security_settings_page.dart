@@ -1,11 +1,10 @@
 import 'dart:convert';
-import 'dart:math';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:verdis_wallet/core/security/biometric_auth.dart';
 import 'package:verdis_wallet/core/security/secure_storage.dart';
+import 'package:verdis_wallet/core/security/wallet_crypto.dart';
 import 'package:verdis_wallet/shared/widgets/verdis_widgets.dart';
 import 'package:go_router/go_router.dart';
 
@@ -25,37 +24,6 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
   bool _isLoading = true;
   String? _recoveryEmail;
   bool _isBackingUp = false;
-
-  // PBKDF2 key derivation using HMAC-SHA256 (matches web wallet's crypto scheme)
-  static List<int> _deriveKey(String password, List<int> salt, {int iterations = 150000, int keyLength = 32}) {
-    final hmac = Hmac(sha256, utf8.encode(password));
-    final blockCount = (keyLength + 31) ~/ 32;
-    final result = <int>[];
-    for (var blockNum = 1; blockNum <= blockCount; blockNum++) {
-      var u = <int>[...salt, (blockNum >> 24) & 0xFF, (blockNum >> 16) & 0xFF, (blockNum >> 8) & 0xFF, blockNum & 0xFF];
-      var t = hmac.convert(u).bytes.toList();
-      var resultBlock = List<int>.from(t);
-      for (var i = 1; i < iterations; i++) {
-        u = hmac.convert(t).bytes.toList();
-        for (var j = 0; j < t.length; j++) {
-          resultBlock[j] ^= u[j];
-        }
-        t = u;
-      }
-      result.addAll(resultBlock);
-    }
-    return result.sublist(0, keyLength);
-  }
-
-  // XOR encrypt/decrypt (symmetric -- same function for both)
-  static List<int> _xorCipher(List<int> data, List<int> key) {
-    return List<int>.generate(data.length, (i) => data[i] ^ key[i % key.length]);
-  }
-
-  static List<int> _randomBytes(int length) {
-    final random = Random.secure();
-    return List<int>.generate(length, (_) => random.nextInt(256));
-  }
 
   static const String _relayUrl = 'https://verdischain.com/api/tx-relay';
 
@@ -95,52 +63,73 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
 
   Future<void> _setupEmailRecovery() async {
     final emailController = TextEditingController();
+    final passwordController = TextEditingController();
     final pinController = TextEditingController();
 
     final result = await showDialog<Map<String, String>>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Email Recovery Setup'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Your encrypted wallet will be backed up to this email. '
-              'You can recover your wallet using this email + your PIN.',
-              style: TextStyle(fontSize: 13),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email Address',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.email),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Your encrypted wallet will be backed up to this email. '
+                'You will need this email + password + PIN to recover your wallet.',
+                style: TextStyle(fontSize: 13),
               ),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: pinController,
-              decoration: const InputDecoration(
-                labelText: 'Wallet PIN',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.lock),
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Email Address',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.email),
+                ),
+                keyboardType: TextInputType.emailAddress,
               ),
-              keyboardType: TextInputType.number,
-              obscureText: true,
-            ),
-          ],
+              const SizedBox(height: 12),
+              TextField(
+                controller: passwordController,
+                decoration: const InputDecoration(
+                  labelText: 'Recovery Password',
+                  helperText: 'At least 8 characters. This encrypts your backup.',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.key),
+                ),
+                obscureText: true,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: pinController,
+                decoration: const InputDecoration(
+                  labelText: 'Wallet PIN',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.lock),
+                ),
+                keyboardType: TextInputType.number,
+                obscureText: true,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           FilledButton(
             onPressed: () {
-              if (emailController.text.isNotEmpty && pinController.text.isNotEmpty) {
+              if (emailController.text.isNotEmpty &&
+                  passwordController.text.length >= 8 &&
+                  pinController.text.isNotEmpty) {
                 Navigator.pop(context, {
                   'email': emailController.text.trim(),
+                  'password': passwordController.text,
                   'pin': pinController.text.trim(),
                 });
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Password must be at least 8 characters')),
+                );
               }
             },
             child: const Text('Backup'),
@@ -159,32 +148,28 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
       final address = await storage.getWalletAddress();
 
       if (mnemonic == null || address == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No wallet found to backup')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No wallet found to backup')),
+          );
+        }
+        setState(() => _isBackingUp = false);
         return;
       }
 
-      // Encrypt mnemonic with PBKDF2-derived key (matches web wallet crypto scheme)
-      final salt = _randomBytes(16);
-      final iv = _randomBytes(12);
-      final key = _deriveKey(result['pin']!, salt);
-      final mnemonicBytes = utf8.encode(mnemonic);
-      final encrypted = _xorCipher(mnemonicBytes, key);
-      final ciphertext = base64Encode(encrypted);
-      final saltB64 = base64Encode(salt);
-      final ivB64 = base64Encode(iv);
+      // Encrypt mnemonic with PBKDF2 + AES-256-GCM using PASSWORD (matches web wallet exactly)
+      final encrypted = await WalletCrypto.encryptBackup(mnemonic, result['password']!);
 
-      // Send to tx-relay (now requires PIN field for server-side verification)
+      // Send to tx-relay (PIN is verified server-side, NOT used for encryption)
       final response = await http.post(
         Uri.parse(_relayUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'action': 'wallet-backup',
           'email': result['email'],
-          'ciphertext': ciphertext,
-          'salt': saltB64,
-          'iv': ivB64,
+          'ciphertext': encrypted['ciphertext'],
+          'salt': encrypted['salt'],
+          'iv': encrypted['iv'],
           'address': address,
           'pin': result['pin'],
         }),
@@ -195,68 +180,90 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
       if (data['ok'] == true) {
         await storage.setRecoveryEmail(result['email']!);
         setState(() => _recoveryEmail = result['email']);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Email recovery enabled successfully')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Email recovery enabled successfully')),
+          );
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Backup failed: ${data['error'] ?? 'Unknown error'}')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Backup failed: ${data['error'] ?? 'Unknown error'}')),
+          );
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
     } finally {
-      setState(() => _isBackingUp = false);
+      if (mounted) setState(() => _isBackingUp = false);
     }
   }
 
   Future<void> _recoverViaEmail() async {
     final emailController = TextEditingController();
+    final passwordController = TextEditingController();
     final pinController = TextEditingController();
 
     final result = await showDialog<Map<String, String>>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Recover Wallet'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Enter your recovery email and PIN to restore your wallet.',
-              style: TextStyle(fontSize: 13),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email Address',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.email),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Enter your recovery email, password, and PIN to restore your wallet.',
+                style: TextStyle(fontSize: 13),
               ),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: pinController,
-              decoration: const InputDecoration(
-                labelText: 'Wallet PIN',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.lock),
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Email Address',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.email),
+                ),
+                keyboardType: TextInputType.emailAddress,
               ),
-              keyboardType: TextInputType.number,
-              obscureText: true,
-            ),
-          ],
+              const SizedBox(height: 12),
+              TextField(
+                controller: passwordController,
+                decoration: const InputDecoration(
+                  labelText: 'Recovery Password',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.key),
+                ),
+                obscureText: true,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: pinController,
+                decoration: const InputDecoration(
+                  labelText: 'Wallet PIN',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.lock),
+                ),
+                keyboardType: TextInputType.number,
+                obscureText: true,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           FilledButton(
             onPressed: () {
-              if (emailController.text.isNotEmpty && pinController.text.isNotEmpty) {
+              if (emailController.text.isNotEmpty &&
+                  passwordController.text.isNotEmpty &&
+                  pinController.text.isNotEmpty) {
                 Navigator.pop(context, {
                   'email': emailController.text.trim(),
+                  'password': passwordController.text,
                   'pin': pinController.text.trim(),
                 });
               }
@@ -284,27 +291,30 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
 
       if (data['ok'] == true) {
         final backup = data['data']['backup'] as Map<String, dynamic>;
-        final ciphertext = backup['ciphertext'] as String;
-        final saltB64 = backup['salt'] as String;
-        final ivB64 = backup['iv'] as String;
-        final salt = base64Decode(saltB64);
-        final encrypted = base64Decode(ciphertext);
-        final key = _deriveKey(result['pin']!, salt);
-        final decrypted = _xorCipher(encrypted, key);
-        final mnemonic = utf8.decode(decrypted);
+        final mnemonic = await WalletCrypto.decryptBackup(
+          backup['ciphertext'] as String,
+          backup['salt'] as String,
+          backup['iv'] as String,
+          result['password']!,
+        );
 
         if (mounted) {
           context.push('/import-wallet', extra: mnemonic);
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Recovery failed: ${data['error'] ?? 'Not found'}')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Recovery failed: ${data['error'] ?? 'Not found'}')),
+          );
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      if (mounted) {
+        final msg = (e is FormatException || e.toString().contains('SecretBox') || e.toString().contains('Mac'))
+            ? 'Wrong password or PIN — could not decrypt wallet.'
+            : 'Error: $e';
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      }
     }
   }
 
@@ -372,7 +382,7 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
                 ListTile(
                   leading: const Icon(Icons.restore),
                   title: const Text('Recover from Email'),
-                  subtitle: const Text('Restore wallet using email + PIN'),
+                  subtitle: const Text('Restore wallet using email + password + PIN'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: _recoverViaEmail,
                 ),
