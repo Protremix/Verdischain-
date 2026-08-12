@@ -925,21 +925,6 @@ async function loadHistory() {
         container.appendChild(div);
       });
 
-      const safeSigner = escapeHtml((tx.signer || '').slice(0, 8) + '...' + (tx.signer || '').slice(-6));
-      const safeRemark = escapeHtml(String(tx.remark || '').substring(0, 100));
-      const safeBlock = escapeHtml(tx.block);
-      return `
-        <div class="tx-item">
-          <div class="tx-left">
-            <div class="tx-icon out">⟐</div>
-            <div class="tx-detail">
-              <div class="tx-addr">${safeSigner}</div>
-              <div class="tx-time">Block #${safeBlock} · ${safeRemark}</div>
-            </div>
-          </div>
-          <div class="tx-amount out">signed</div>
-        </div>`;
-    }).join('');
   } catch(e) {
     container.textContent = 'Failed to load: ' + (e.message || 'error');
   }
