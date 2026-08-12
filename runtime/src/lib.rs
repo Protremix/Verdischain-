@@ -1215,7 +1215,8 @@ impl pallet_turbine::Config for Runtime {
     type MaxShards = MaxShardsTurbine;
     type RedundancyFactor = RedundancyFactor;
     type MaxValidatorsPerNode = MaxValidatorsPerNode;
-    type WeightInfo = pallet_turbine::SubstrateWeight<Runtime>;}
+    type WeightInfo = pallet_turbine::SubstrateWeight<Runtime>;
+}
 impl pallet_zk_compression::Config for Runtime {
     type MaxLeaves = MaxZkLeaves;
     type MaxDepth = MaxZkDepth;
@@ -1227,7 +1228,8 @@ impl pallet_address_lookup_tables::Config for Runtime {
 impl pallet_sealevel::Config for Runtime {
     type MaxComputeUnits = MaxComputeUnits;
     type MaxParallelBatches = MaxParallelBatches;
-    type WeightInfo = pallet_sealevel::SubstrateWeight<Runtime>;}
+    type WeightInfo = pallet_sealevel::SubstrateWeight<Runtime>;
+}
 
 // Update tokenomics config to add new traits
 // Note: The tokenomics Config already exists, we need to add the new constants
@@ -1259,7 +1261,8 @@ impl pallet_ibc::Config for Runtime {
     type MaxTransferAmount = IbcMaxTransferAmount;
     type MaxHeightJump = IbcMaxHeightJump;
     type TimestampProvider = IbcTimestampProvider;
-    type WeightInfo = pallet_ibc::SubstrateWeight<Runtime>;}
+    type WeightInfo = pallet_ibc::SubstrateWeight<Runtime>;
+}
 
 impl pallet_circuit_breaker::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;

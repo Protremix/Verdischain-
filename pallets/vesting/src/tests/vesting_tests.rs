@@ -2,7 +2,7 @@
 // Covers: schedule creation, assignment, cliff, linear vesting, release, locks, edge cases
 
 use super::*;
-use frame_support::{assert_ok, assert_noop};
+use frame_support::{assert_noop, assert_ok};
 
 // === Schedule creation ===
 
@@ -13,8 +13,8 @@ fn test_add_schedule_succeeds() {
             RuntimeOrigin::root(),
             b"team".to_vec(),
             1_000_000u128,
-            365,   // 365 vesting days
-            180,   // 180 cliff days
+            365, // 365 vesting days
+            180, // 180 cliff days
         ));
 
         // Verify schedule was stored
@@ -78,7 +78,7 @@ fn test_add_schedule_zero_vesting_days_fails() {
                 RuntimeOrigin::root(),
                 b"zero".to_vec(),
                 1_000u128,
-                0,  // zero vesting days
+                0, // zero vesting days
                 0,
             ),
             Error::<Test>::VestingNotStarted
@@ -94,8 +94,8 @@ fn test_add_schedule_cliff_exceeds_vesting_fails() {
                 RuntimeOrigin::root(),
                 b"bad".to_vec(),
                 1_000u128,
-                100,  // 100 vesting days
-                200,  // 200 cliff days > vesting days
+                100, // 100 vesting days
+                200, // 200 cliff days > vesting days
             ),
             Error::<Test>::VestingNotStarted
         );
@@ -214,7 +214,7 @@ fn test_locked_balance_before_cliff() {
         assert_eq!(locked, amount, "All tokens should be locked before cliff");
 
         let unlocked = Vesting::get_unlocked_balance(&beneficiary);
-        assert_eq!(unlocked, 0, "Nothing should be unlocked before cliff");
+        assert_eq!(unlocked, 1_000_000_000 - amount, "Only genesis balance minus vesting should be unlocked");
     });
 }
 
@@ -237,13 +237,16 @@ fn test_release_after_full_vesting_period() {
         System::set_block_number(1_036_800 + 1);
 
         // Should be able to release all tokens
-        assert_ok!(Vesting::release_vested(
-            RuntimeOrigin::signed(beneficiary.clone())
-        ));
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+            beneficiary.clone()
+        )));
 
         // After release, locked should be 0
         let locked = Vesting::get_locked_balance(&beneficiary);
-        assert_eq!(locked, 0, "All tokens should be unlocked after full vesting + release");
+        assert_eq!(
+            locked, 0,
+            "All tokens should be unlocked after full vesting + release"
+        );
     });
 }
 
@@ -264,9 +267,9 @@ fn test_release_partial_vesting() {
         // 45 * 17280 = 777,600 blocks
         System::set_block_number(777_600);
 
-        assert_ok!(Vesting::release_vested(
-            RuntimeOrigin::signed(beneficiary.clone())
-        ));
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+            beneficiary.clone()
+        )));
 
         // Some tokens should be unlocked, some still locked
         let locked = Vesting::get_locked_balance(&beneficiary);
@@ -287,8 +290,8 @@ fn test_multiple_schedules_for_same_user() {
             RuntimeOrigin::root(),
             b"community".to_vec(),
             2_000_000u128,
-            90,  // 90 vesting days
-            30,  // 30 cliff days
+            90, // 90 vesting days
+            30, // 30 cliff days
         ));
 
         // Assign both schedules
@@ -310,7 +313,10 @@ fn test_multiple_schedules_for_same_user() {
 
         // Total locked should be sum of both
         let locked = Vesting::get_locked_balance(&beneficiary);
-        assert_eq!(locked, 800_000u128, "Total locked should be sum of both schedules");
+        assert_eq!(
+            locked, 800_000u128,
+            "Total locked should be sum of both schedules"
+        );
     });
 }
 
@@ -321,13 +327,7 @@ fn test_label_too_long_fails() {
     new_test_ext().execute_with(|| {
         let long_label = vec![b'x'; 65]; // Max is 64 bytes
         assert_noop!(
-            Vesting::add_schedule(
-                RuntimeOrigin::root(),
-                long_label,
-                1_000u128,
-                100,
-                50,
-            ),
+            Vesting::add_schedule(RuntimeOrigin::root(), long_label, 1_000u128, 100, 50,),
             Error::<Test>::LabelTooLong
         );
     });

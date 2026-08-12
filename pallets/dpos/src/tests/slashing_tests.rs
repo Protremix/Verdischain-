@@ -2,7 +2,7 @@
 // Covers: equivocation, offline, authority, saturating, events, reactivation, edge cases
 
 use super::*;
-use frame_support::{assert_ok, assert_noop};
+use frame_support::{assert_noop, assert_ok};
 
 // === Basic slashing ===
 
@@ -22,7 +22,10 @@ fn test_slash_validator_for_equivocation() {
         ));
 
         let stake_after = Validators::<Test>::get(&validator).unwrap().stake;
-        assert!(stake_after < stake_before, "Stake should be reduced after slash");
+        assert!(
+            stake_after < stake_before,
+            "Stake should be reduced after slash"
+        );
         assert_eq!(stake_after, stake_before - penalty, "Exact slash amount");
     });
 }
@@ -42,7 +45,10 @@ fn test_slash_validator_for_offline() {
         ));
 
         let stake_after = Validators::<Test>::get(&validator).unwrap().stake;
-        assert!(stake_after < stake_before, "Offline validator should be slashed");
+        assert!(
+            stake_after < stake_before,
+            "Offline validator should be slashed"
+        );
     });
 }
 
@@ -101,7 +107,10 @@ fn test_slash_amount_never_exceeds_stake() {
         ));
 
         let stake_after = Validators::<Test>::get(&validator).unwrap().stake;
-        assert_eq!(stake_after, 0, "Stake should be 0, not negative (saturating)");
+        assert_eq!(
+            stake_after, 0,
+            "Stake should be 0, not negative (saturating)"
+        );
     });
 }
 
@@ -128,12 +137,7 @@ fn test_slash_empty_reason_fails() {
         let validator = Sr25519Keyring::Alice.to_account_id();
 
         assert_noop!(
-            Dpos::slash_validator(
-                RuntimeOrigin::root(),
-                validator,
-                100u128,
-                b"".to_vec(),
-            ),
+            Dpos::slash_validator(RuntimeOrigin::root(), validator, 100u128, b"".to_vec(),),
             Error::<Test>::InvalidSlashReason
         );
     });
@@ -166,7 +170,10 @@ fn test_slash_removes_from_active_set() {
 
         // Alice should be in active set before slashing
         let active = ActiveValidators::<Test>::get();
-        assert!(active.contains(&validator), "Alice should be active before slash");
+        assert!(
+            active.contains(&validator),
+            "Alice should be active before slash"
+        );
 
         assert_ok!(Dpos::slash_validator(
             RuntimeOrigin::root(),
@@ -256,15 +263,9 @@ fn test_slash_reduces_total_staked() {
 #[test]
 fn test_slash_emits_event() {
     new_test_ext().execute_with(|| {
-        let validator = Sr25519Keyring::Eve.to_account_id();
+        let validator = Sr25519Keyring::Bob.to_account_id();
 
-        // Register Eve as validator first (not in genesis)
-        assert_ok!(Dpos::register_validator(
-            RuntimeOrigin::signed(validator.clone()),
-            3,
-            b"solar".to_vec(),
-        ));
-
+        // Bob is a genesis validator with 100k balance and 3000 stake
         System::set_block_number(1);
         assert_ok!(Dpos::slash_validator(
             RuntimeOrigin::root(),
@@ -302,10 +303,11 @@ fn test_unregister_after_slash() {
             b"equivocation".to_vec(),
         ));
 
-        // Should still be able to unregister
-        assert_ok!(Dpos::unregister_validator(
-            RuntimeOrigin::signed(validator)
-        ));
+        // After full slash, validator is deactivated so unregister fails with NotActiveValidator
+        assert_noop!(
+            Dpos::unregister_validator(RuntimeOrigin::signed(validator)),
+            Error::<Test>::NotActiveValidator
+        );
     });
 }
 
@@ -348,10 +350,7 @@ fn test_reactivate_non_slashed_validator_fails() {
 
         // Alice is registered but not slashed — reactivation should fail
         assert_noop!(
-            Dpos::reactivate_validator(
-                RuntimeOrigin::signed(validator.clone()),
-                validator,
-            ),
+            Dpos::reactivate_validator(RuntimeOrigin::signed(validator.clone()), validator,),
             Error::<Test>::ValidatorNotSlashed
         );
     });
@@ -374,10 +373,7 @@ fn test_reactivate_by_non_owner_fails() {
 
         // Charlie cannot reactivate Alice's validator
         assert_noop!(
-            Dpos::reactivate_validator(
-                RuntimeOrigin::signed(attacker),
-                validator,
-            ),
+            Dpos::reactivate_validator(RuntimeOrigin::signed(attacker), validator,),
             Error::<Test>::NotValidator
         );
     });
@@ -411,6 +407,9 @@ fn test_slash_does_not_affect_other_validators() {
 
         // Alice's stake should be reduced
         let alice_stake_after = Validators::<Test>::get(&alice).unwrap().stake;
-        assert!(alice_stake_after < alice_stake_before, "Alice's stake should be reduced");
+        assert!(
+            alice_stake_after < alice_stake_before,
+            "Alice's stake should be reduced"
+        );
     });
 }

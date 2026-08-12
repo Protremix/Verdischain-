@@ -25,6 +25,7 @@ parameter_types! {
 }
 
 impl Config for Test {
+    type WeightInfo = ();
     type MaxComputeUnits = MaxComputeUnits;
     type MaxParallelBatches = MaxParallelBatches;
 }

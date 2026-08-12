@@ -57,6 +57,7 @@ impl Config for Test {
     type MaxTransferAmount = IbcMaxTransferAmount;
     type MaxHeightJump = IbcMaxHeightJump;
     type TimestampProvider = ConstU64<0>;
+    type WeightInfo = ();
 }
 
 pub fn new_test_ext() -> TestExternalities {
