@@ -1,40 +1,63 @@
 package com.verdis.verdis_wallet
 
+import android.os.Handler
+import android.os.Looper
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.webkit.ValueCallback
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
+/**
+ * Native crypto bridge: Flutter <-> hidden WebView running Polkadot WASM
+ * (verdis_signer.html / VerdisSigner JS object).
+ *
+ * IMPORTANT THREADING NOTE (fixed 2026-08-12):
+ * Flutter's MethodChannel handlers run on the Android platform thread, which
+ * IS the main/UI thread. WebView.evaluateJavascript() is asynchronous — its
+ * result callback is delivered by posting back to the UI thread's Looper.
+ * The previous implementation blocked the UI thread inside the very same
+ * handler call using CountDownLatch.await(), which froze the UI thread's
+ * message queue and therefore prevented the evaluateJavascript callback
+ * from EVER firing — a guaranteed self-deadlock that always timed out
+ * ("Address derivation failed: Derivation timed out"), on every call, every
+ * time. This rewrite is fully asynchronous: every step resolves the
+ * MethodChannel.Result from within an async callback, and readiness polling
+ * uses Handler.postDelayed instead of Thread.sleep + latch.await.
+ */
 class MainActivity: FlutterActivity() {
     private val CHANNEL = "com.verdis.verdis_wallet/crypto"
     private var webView: WebView? = null
-    private var webViewReady = false
+    @Volatile private var webViewReady = false
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "initWebView" -> {
-                    initWebView()
-                    result.success(true)
+                    ensureWebView { result.success(true) }
                 }
                 "deriveAddress" -> {
                     val mnemonic = call.argument<String>("mnemonic") ?: ""
-                    if (!webViewReady) initWebView()
-                    deriveAddress(mnemonic, result)
+                    ensureWasmReady(3) { ready ->
+                        if (!ready) result.error("WASM_NOT_READY", "Polkadot WASM not initialized yet", null)
+                        else deriveAddressAsync(mnemonic, result)
+                    }
                 }
                 "generateMnemonic" -> {
-                    if (!webViewReady) initWebView()
-                    generateMnemonic(result)
+                    ensureWasmReady(3) { ready ->
+                        if (!ready) result.error("WASM_NOT_READY", "Polkadot WASM not initialized yet", null)
+                        else generateMnemonicAsync(result)
+                    }
                 }
                 "validateMnemonic" -> {
                     val mnemonic = call.argument<String>("mnemonic") ?: ""
-                    if (!webViewReady) initWebView()
-                    validateMnemonic(mnemonic, result)
+                    ensureWasmReady(3) { ready ->
+                        if (!ready) result.error("WASM_NOT_READY", "Polkadot WASM not initialized yet", null)
+                        else validateMnemonicAsync(mnemonic, result)
+                    }
                 }
                 "signTransfer" -> {
                     val mnemonic = call.argument<String>("mnemonic") ?: ""
@@ -44,241 +67,223 @@ class MainActivity: FlutterActivity() {
                     val genesisHash = call.argument<String>("genesisHash") ?: ""
                     val blockHash = call.argument<String>("blockHash") ?: ""
                     val specVersion = call.argument<Number>("specVersion")?.toInt() ?: 0
-                    if (!webViewReady) initWebView()
-                    signTransfer(mnemonic, destAddress, amountAtoms, nonce, genesisHash, blockHash, specVersion, result)
+                    ensureWasmReady(3) { ready ->
+                        if (!ready) result.error("WASM_NOT_READY", "Polkadot WASM not initialized yet", null)
+                        else signTransferAsync(mnemonic, destAddress, amountAtoms, nonce, genesisHash, blockHash, specVersion, result)
+                    }
                 }
                 else -> result.notImplemented()
             }
         }
+
+        // Pre-warm the WebView + WASM as soon as the engine is ready so the
+        // first real crypto call doesn't pay the full cold-start cost.
+        ensureWebView { }
     }
 
-    private fun initWebView() {
-        runOnUiThread {
-            webView = WebView(this@MainActivity).apply {
-                settings.javaScriptEnabled = true
-                settings.domStorageEnabled = true
-                settings.allowFileAccess = true
-                settings.allowFileAccessFromFileURLs = true
-                settings.allowUniversalAccessFromFileURLs = true
-                webViewClient = object : WebViewClient() {
-                    override fun onPageFinished(view: WebView?, url: String?) {
-                        webViewReady = true
-                    }
+    /**
+     * Creates the WebView on first use (idempotent) and invokes [onReady]
+     * once the page has finished loading. Never blocks; safe to call from
+     * the UI thread (which is where MethodChannel handlers run).
+     */
+    private fun ensureWebView(onReady: () -> Unit) {
+        val existing = webView
+        if (existing != null && webViewReady) {
+            onReady()
+            return
+        }
+        if (existing != null) {
+            // WebView object exists but page hasn't finished loading yet —
+            // just wait for the first onReady() call already queued below.
+            pendingReadyCallbacks.add(onReady)
+            return
+        }
+
+        pendingReadyCallbacks.add(onReady)
+
+        mainHandler.post {
+            if (webView != null) return@post // guard against double-init races
+
+            val wv = WebView(this@MainActivity)
+            wv.settings.javaScriptEnabled = true
+            wv.settings.domStorageEnabled = true
+            wv.settings.allowFileAccess = true
+            wv.settings.allowFileAccessFromFileURLs = true
+            wv.settings.allowUniversalAccessFromFileURLs = true
+            wv.webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    webViewReady = true
+                    val callbacks = pendingReadyCallbacks.toList()
+                    pendingReadyCallbacks.clear()
+                    callbacks.forEach { it() }
                 }
-                try {
-                    // Load from file:///android_asset/ so relative script tags resolve correctly
-                    // Flutter assets are under flutter_assets/assets/ inside the APK
-                    val htmlPath = "file:///android_asset/flutter_assets/assets/verdis_signer.html"
-                    loadUrl(htmlPath)
-                } catch (e: Exception) {
-                    android.util.Log.e("VerdisSigner", "Failed to load signer: " + e.message)
+            }
+            webView = wv
+            try {
+                wv.loadUrl("file:///android_asset/flutter_assets/assets/verdis_signer.html")
+            } catch (e: Exception) {
+                android.util.Log.e("VerdisSigner", "Failed to load signer: " + e.message)
+                // Let readiness polling below handle the failure via timeout
+                // rather than hanging forever waiting for onPageFinished.
+                val callbacks = pendingReadyCallbacks.toList()
+                pendingReadyCallbacks.clear()
+                callbacks.forEach { it() }
+            }
+        }
+    }
+
+    private val pendingReadyCallbacks = mutableListOf<() -> Unit>()
+
+    /**
+     * Polls VerdisSigner.isReady() with up to [attemptsLeft] tries, 1s apart,
+     * fully asynchronously (Handler.postDelayed — never blocks a thread).
+     */
+    private fun ensureWasmReady(attemptsLeft: Int, callback: (Boolean) -> Unit) {
+        ensureWebView {
+            checkWasmReady { ready ->
+                if (ready) {
+                    callback(true)
+                } else if (attemptsLeft > 1) {
+                    mainHandler.postDelayed({ ensureWasmReady(attemptsLeft - 1, callback) }, 1000)
+                } else {
+                    callback(false)
                 }
             }
         }
-        // Allow page load + WASM init (typically <500ms, give 2s to be safe)
-        Thread.sleep(2000)
     }
 
-    private fun waitForWasm(): Boolean {
-        val latch = CountDownLatch(1)
-        var ready = false
-        runOnUiThread {
-            val wv = webView
-            if (wv != null) {
-                wv.evaluateJavascript("VerdisSigner.isReady()", object : ValueCallback<String> {
-                    override fun onReceiveValue(value: String?) {
-                        ready = value?.trim() == "true"
-                        latch.countDown()
-                    }
-                })
-            } else {
-                latch.countDown()
-            }
+    private fun checkWasmReady(callback: (Boolean) -> Unit) {
+        val wv = webView
+        if (wv == null) { callback(false); return }
+        wv.evaluateJavascript("VerdisSigner.isReady()") { value ->
+            callback(value?.trim() == "true")
         }
-        latch.await(5, TimeUnit.SECONDS)
-        return ready
     }
 
-    private fun deriveAddress(mnemonic: String, result: MethodChannel.Result) {
-        // Wait for WASM to be ready (retry up to 3 times with 1s delay)
-        var wasmReady = waitForWasm()
-        if (!wasmReady) {
-            Thread.sleep(1000)
-            wasmReady = waitForWasm()
-        }
-        if (!wasmReady) {
-            Thread.sleep(1000)
-            wasmReady = waitForWasm()
-        }
+    private fun escapeJs(s: String): String = s.replace("\\", "\\\\").replace("'", "\\'")
 
-        val latch = CountDownLatch(1)
-        var resultJson: String? = null
+    /** Cleans the raw JSON string returned by evaluateJavascript (which
+     * comes back as a JS string literal, e.g. "\"{...}\"" or "null"). */
+    private fun cleanJsResult(raw: String?): String? {
+        if (raw == null || raw == "null") return null
+        return raw.trim().removeSurrounding("\"")
+            .replace("\\\"", "\"")
+            .replace("\\\\", "\\")
+            .replace("\\n", "\n")
+    }
 
-        // Escape single quotes in mnemonic for JS string
-        val safeMnemonic = mnemonic.replace("\\", "\\\\").replace("'", "\\'")
-
-        runOnUiThread {
-            val wv = webView
-            if (wv != null) {
-                val js = "VerdisSigner.deriveAddress('$safeMnemonic')"
-                wv.evaluateJavascript(js, object : ValueCallback<String> {
-                    override fun onReceiveValue(value: String?) {
-                        resultJson = value
-                        latch.countDown()
-                    }
-                })
-            } else {
-                result.error("WEBVIEW_ERROR", "WebView not initialized", null)
-                latch.countDown()
+    /** Runs [block] once, then guarantees exactly one of block/timeout fires — never both. */
+    private fun withTimeout(ms: Long, onTimeout: () -> Unit, block: (markDone: () -> Boolean) -> Unit) {
+        var done = false
+        val markDone: () -> Boolean = {
+            synchronized(this) {
+                if (done) false else { done = true; true }
             }
         }
+        val timeoutRunnable = Runnable {
+            if (markDone()) onTimeout()
+        }
+        mainHandler.postDelayed(timeoutRunnable, ms)
+        block {
+            val first = markDone()
+            if (first) mainHandler.removeCallbacks(timeoutRunnable)
+            first
+        }
+    }
 
-        if (latch.await(10, TimeUnit.SECONDS)) {
-            val cleaned = resultJson?.trim()?.removeSurrounding("\"")
-                ?.replace("\\\"", "\"")
-                ?.replace("\\\\", "\\")
-                ?.replace("\\n", "\n")
-
-            if (cleaned != null && cleaned.startsWith("{")) {
-                try {
-                    val parsed = org.json.JSONObject(cleaned)
-                    if (parsed.has("error")) {
-                        val errMsg = parsed.getString("error")
-                        if (errMsg == "WASM_NOT_READY") {
-                            result.error("WASM_NOT_READY", "Polkadot WASM not initialized yet", null)
+    private fun deriveAddressAsync(mnemonic: String, result: MethodChannel.Result) {
+        val wv = webView
+        if (wv == null) { result.error("WEBVIEW_ERROR", "WebView not initialized", null); return }
+        val js = "VerdisSigner.deriveAddress('${escapeJs(mnemonic)}')"
+        withTimeout(10000, { result.error("TIMEOUT", "Derivation timed out", null) }) { markDone ->
+            wv.evaluateJavascript(js) { value ->
+                if (!markDone()) return@evaluateJavascript
+                val cleaned = cleanJsResult(value)
+                if (cleaned != null && cleaned.startsWith("{")) {
+                    try {
+                        val parsed = org.json.JSONObject(cleaned)
+                        if (parsed.has("error")) {
+                            val errMsg = parsed.getString("error")
+                            if (errMsg == "WASM_NOT_READY") result.error("WASM_NOT_READY", "Polkadot WASM not initialized yet", null)
+                            else result.error("DERIVE_ERROR", errMsg, null)
                         } else {
-                            result.error("DERIVE_ERROR", errMsg, null)
+                            result.success(mapOf(
+                                "address" to parsed.getString("address"),
+                                "publicKey" to parsed.optString("publicKey", ""),
+                                "secretKey" to parsed.optString("secretKey", "")
+                            ))
                         }
-                    } else {
-                        result.success(mapOf(
-                            "address" to parsed.getString("address"),
-                            "publicKey" to parsed.optString("publicKey", ""),
-                            "secretKey" to parsed.optString("secretKey", "")
-                        ))
+                    } catch (e: Exception) {
+                        result.error("PARSE_ERROR", e.message, null)
                     }
-                } catch (e: Exception) {
-                    result.error("PARSE_ERROR", e.message, null)
+                } else {
+                    result.error("DERIVE_ERROR", "Invalid response: $cleaned", null)
                 }
-            } else {
-                result.error("DERIVE_ERROR", "Invalid response: $cleaned", null)
             }
-        } else {
-            result.error("TIMEOUT", "Derivation timed out", null)
         }
     }
 
-    private fun generateMnemonic(result: MethodChannel.Result) {
-        val latch = CountDownLatch(1)
-        var resultStr: String? = null
-
-        runOnUiThread {
-            val wv = webView
-            if (wv != null) {
-                wv.evaluateJavascript("VerdisSigner.generateMnemonic()", object : ValueCallback<String> {
-                    override fun onReceiveValue(value: String?) {
-                        resultStr = value
-                        latch.countDown()
-                    }
-                })
-            } else {
-                result.error("WEBVIEW_ERROR", "WebView not initialized", null)
-                latch.countDown()
+    private fun generateMnemonicAsync(result: MethodChannel.Result) {
+        val wv = webView
+        if (wv == null) { result.error("WEBVIEW_ERROR", "WebView not initialized", null); return }
+        withTimeout(10000, { result.error("TIMEOUT", "Generation timed out", null) }) { markDone ->
+            wv.evaluateJavascript("VerdisSigner.generateMnemonic()") { value ->
+                if (!markDone()) return@evaluateJavascript
+                val cleaned = cleanJsResult(value)
+                if (cleaned != null) result.success(cleaned)
+                else result.error("GEN_ERROR", "No mnemonic returned", null)
             }
-        }
-
-        if (latch.await(10, TimeUnit.SECONDS)) {
-            val cleaned = resultStr?.trim()?.removeSurrounding("\"")
-            if (cleaned != null) {
-                result.success(cleaned)
-            } else {
-                result.error("GEN_ERROR", "No mnemonic returned", null)
-            }
-        } else {
-            result.error("TIMEOUT", "Generation timed out", null)
         }
     }
 
-    private fun signTransfer(mnemonic: String, destAddress: String, amountAtoms: Long, nonce: Long, genesisHash: String, blockHash: String, specVersion: Int, result: MethodChannel.Result) {
-        var wasmReady = waitForWasm()
-        if (!wasmReady) { Thread.sleep(1000); wasmReady = waitForWasm() }
-        if (!wasmReady) { Thread.sleep(1000); wasmReady = waitForWasm() }
-
-        val latch = CountDownLatch(1)
-        var resultJson: String? = null
-
-        val safeMnemonic = mnemonic.replace("\\", "\\\\").replace("'", "\\'")
-        val safeDest = destAddress.replace("\\", "\\\\").replace("'", "\\'")
-
-        runOnUiThread {
-            val wv = webView
-            if (wv != null) {
-                val js = "VerdisSigner.signTransfer('" + safeMnemonic + "', '" + safeDest + "', " + amountAtoms + ", " + nonce + ", '" + genesisHash + "', '" + blockHash + "', " + specVersion + ")"
-                wv.evaluateJavascript(js, object : ValueCallback<String> {
-                    override fun onReceiveValue(value: String?) {
-                        resultJson = value
-                        latch.countDown()
-                    }
-                })
-            } else {
-                result.error("WEBVIEW_ERROR", "WebView not initialized", null)
-                latch.countDown()
+    private fun validateMnemonicAsync(mnemonic: String, result: MethodChannel.Result) {
+        val wv = webView
+        if (wv == null) { result.error("WEBVIEW_ERROR", "WebView not initialized", null); return }
+        val js = "VerdisSigner.validateMnemonic('${escapeJs(mnemonic)}')"
+        withTimeout(10000, { result.error("TIMEOUT", "Validation timed out", null) }) { markDone ->
+            wv.evaluateJavascript(js) { value ->
+                if (!markDone()) return@evaluateJavascript
+                result.success(value?.trim() == "true")
             }
         }
+    }
 
-        if (latch.await(15, TimeUnit.SECONDS)) {
-            val cleaned = resultJson?.trim()?.removeSurrounding("\"")
-                ?.replace("\\\"", "\"")
-                ?.replace("\\\\", "\\")
-                ?.replace("\\n", "\n")
-            if (cleaned != null && cleaned.startsWith("{")) {
-                try {
-                    val parsed = org.json.JSONObject(cleaned)
-                    if (parsed.has("error")) {
-                        result.error("SIGN_ERROR", parsed.getString("error"), null)
-                    } else {
-                        result.success(mapOf(
-                            "extrinsic" to parsed.getString("extrinsic"),
-                            "signer" to parsed.optString("signer", "")
-                        ))
+    private fun signTransferAsync(
+        mnemonic: String,
+        destAddress: String,
+        amountAtoms: Long,
+        nonce: Long,
+        genesisHash: String,
+        blockHash: String,
+        specVersion: Int,
+        result: MethodChannel.Result
+    ) {
+        val wv = webView
+        if (wv == null) { result.error("WEBVIEW_ERROR", "WebView not initialized", null); return }
+        val js = "VerdisSigner.signTransfer('${escapeJs(mnemonic)}', '${escapeJs(destAddress)}', " +
+            "$amountAtoms, $nonce, '$genesisHash', '$blockHash', $specVersion)"
+        withTimeout(15000, { result.error("TIMEOUT", "Signing timed out", null) }) { markDone ->
+            wv.evaluateJavascript(js) { value ->
+                if (!markDone()) return@evaluateJavascript
+                val cleaned = cleanJsResult(value)
+                if (cleaned != null && cleaned.startsWith("{")) {
+                    try {
+                        val parsed = org.json.JSONObject(cleaned)
+                        if (parsed.has("error")) {
+                            result.error("SIGN_ERROR", parsed.getString("error"), null)
+                        } else {
+                            result.success(mapOf(
+                                "extrinsic" to parsed.getString("extrinsic"),
+                                "signer" to parsed.optString("signer", "")
+                            ))
+                        }
+                    } catch (e: Exception) {
+                        result.error("PARSE_ERROR", e.message, null)
                     }
-                } catch (e: Exception) {
-                    result.error("PARSE_ERROR", e.message, null)
+                } else {
+                    result.error("SIGN_ERROR", "Invalid response: $cleaned", null)
                 }
-            } else {
-                result.error("SIGN_ERROR", "Invalid response: $cleaned", null)
             }
-        } else {
-            result.error("TIMEOUT", "Signing timed out", null)
-        }
-    }
-
-    private fun validateMnemonic(mnemonic: String, result: MethodChannel.Result) {
-        val latch = CountDownLatch(1)
-        var resultStr: String? = null
-
-        val safeMnemonic = mnemonic.replace("\\", "\\\\").replace("'", "\\'")
-
-        runOnUiThread {
-            val wv = webView
-            if (wv != null) {
-                val js = "VerdisSigner.validateMnemonic('$safeMnemonic')"
-                wv.evaluateJavascript(js, object : ValueCallback<String> {
-                    override fun onReceiveValue(value: String?) {
-                        resultStr = value
-                        latch.countDown()
-                    }
-                })
-            } else {
-                result.error("WEBVIEW_ERROR", "WebView not initialized", null)
-                latch.countDown()
-            }
-        }
-
-        if (latch.await(10, TimeUnit.SECONDS)) {
-            val valid = resultStr?.trim() == "true"
-            result.success(valid)
-        } else {
-            result.error("TIMEOUT", "Validation timed out", null)
         }
     }
 }
