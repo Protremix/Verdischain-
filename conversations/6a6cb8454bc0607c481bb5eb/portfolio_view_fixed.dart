@@ -44,6 +44,7 @@ class PortfolioView extends ConsumerWidget {
               // Large Balance Card
               BalanceCard(
                 balance: data.balance,
+                totalStaked: data.stakingSummary.totalStaked,
                 vrdxPriceUsd: 0.25,
                 change24hPercent: 5.4,
               ),

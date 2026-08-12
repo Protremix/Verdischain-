@@ -1,22 +1,51 @@
 import 'package:flutter/material.dart';
 
+import 'package:verdis_wallet/core/config/network_config.dart';
+
 /// Glassmorphism card displaying total VRDX balance, USD value, 24h change, and allocation breakdown on tap.
 class BalanceCard extends StatelessWidget {
 
   const BalanceCard({
     super.key,
     required this.balance,
+    this.totalStaked = 0,
     this.vrdxPriceUsd = 0.25,
     this.change24hPercent = 5.4,
     this.onTap,
   });
-  final int balance; // In base units (10 decimals: 1 VRDX = 10,000,000,000)
+
+  /// Liquid (available) balance, in base units (9 decimals per NetworkConfig).
+  final int balance;
+
+  /// Currently staked balance, in base units (9 decimals). Real value comes
+  /// from StakingSummaryData.totalStaked — the breakdown sheet below used to
+  /// show a hardcoded fake 15,400 VRDX regardless of the actual stake.
+  final int totalStaked;
   final double vrdxPriceUsd;
   final double change24hPercent;
   final VoidCallback? onTap;
 
-  double get vrdxAmount => balance / 10000000000.0;
+  static double _pow10(int exp) {
+    var v = 1.0;
+    for (var i = 0; i < exp; i++) {
+      v *= 10.0;
+    }
+    return v;
+  }
+
+  double get vrdxAmount => balance / _pow10(NetworkConfig.decimals);
+  double get stakedVrdxAmount => totalStaked / _pow10(NetworkConfig.decimals);
+  double get totalVrdxAmount => vrdxAmount + stakedVrdxAmount;
   double get usdValue => vrdxAmount * vrdxPriceUsd;
+  double get totalUsdValue => totalVrdxAmount * vrdxPriceUsd;
+
+  /// Percentage of the given VRDX amount relative to the total portfolio
+  /// (liquid + staked). Returns 0 when there is no balance at all, instead
+  /// of dividing by zero.
+  double _percentOf(double amount) {
+    if (totalVrdxAmount <= 0) return 0;
+    return (amount / totalVrdxAmount) * 100;
+  }
 
   void _showAllocationBreakdown(BuildContext context) {
     final theme = Theme.of(context);
@@ -56,22 +85,22 @@ class BalanceCard extends StatelessWidget {
                 context,
                 title: 'Liquid VRDX',
                 amount: '${vrdxAmount.toStringAsFixed(2)} VRDX',
-                percentage: '44.7%',
+                percentage: '${_percentOf(vrdxAmount).toStringAsFixed(1)}%',
                 color: theme.colorScheme.primary,
               ),
               const Divider(height: 24),
               _buildAllocationRow(
                 context,
                 title: 'Staked VRDX (gVRDX)',
-                amount: '15,400.00 VRDX',
-                percentage: '55.3%',
+                amount: '${stakedVrdxAmount.toStringAsFixed(2)} VRDX',
+                percentage: '${_percentOf(stakedVrdxAmount).toStringAsFixed(1)}%',
                 color: const Color(0xFF00FF88),
               ),
               const Divider(height: 24),
               _buildAllocationRow(
                 context,
                 title: 'Total Portfolio Value',
-                amount: '\$${(usdValue + (15400 * vrdxPriceUsd)).toStringAsFixed(2)} USD',
+                amount: '\$${totalUsdValue.toStringAsFixed(2)} USD',
                 percentage: '100.0%',
                 color: Colors.white,
                 isBold: true,
