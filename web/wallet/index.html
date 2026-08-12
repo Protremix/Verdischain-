@@ -905,7 +905,26 @@ async function loadHistory() {
       return;
     }
 
-    container.innerHTML = txs.map(tx => {
+    // Safe DOM construction (no innerHTML) to prevent XSS
+      container.innerHTML = '';
+      txs.forEach(tx => {
+        const div = document.createElement('div');
+        div.className = 'tx-item';
+        const fromEl = document.createElement('span');
+        fromEl.className = 'tx-from';
+        fromEl.textContent = tx.signer || 'Unknown';
+        const toEl = document.createElement('span');
+        toEl.className = 'tx-to';
+        toEl.textContent = tx.method || '';
+        const amtEl = document.createElement('span');
+        amtEl.className = 'tx-amount';
+        amtEl.textContent = tx.value || '';
+        div.appendChild(fromEl);
+        div.appendChild(toEl);
+        div.appendChild(amtEl);
+        container.appendChild(div);
+      });
+      // Old code was: container.innerHTML = txs.map(tx => {
       const safeSigner = escapeHtml((tx.signer || '').slice(0, 8) + '...' + (tx.signer || '').slice(-6));
       const safeRemark = escapeHtml(String(tx.remark || '').substring(0, 100));
       const safeBlock = escapeHtml(tx.block);
