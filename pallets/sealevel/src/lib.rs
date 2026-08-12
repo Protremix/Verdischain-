@@ -13,6 +13,9 @@
     clippy::needless_borrows_for_generic_args
 )]
 #![cfg_attr(not(feature = "std"), no_std)]
+pub mod weights;
+use weights::WeightInfo;
+pub use weights::SubstrateWeight;
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
 pub use pallet::*;
@@ -25,6 +28,7 @@ pub mod pallet {
     pub struct Pallet<T>(_);
     #[pallet::config]
     pub trait Config: frame_system::Config {
+		type WeightInfo: WeightInfo;
         type MaxComputeUnits: Get<u64>;
         type MaxParallelBatches: Get<u32>;
     }
