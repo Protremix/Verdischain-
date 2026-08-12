@@ -1,7 +1,6 @@
 import urllib.request
 import re
 import ssl
-from urllib.parse import urljoin
 
 pages = [
     "https://verdischain.com/",
@@ -32,19 +31,9 @@ for url in pages:
     try:
         with urllib.request.urlopen(req, timeout=10, context=ctx) as resp:
             html = resp.read().decode('utf-8', errors='ignore')
-            # find all style tags or link tags
-            styles = re.findall(r'<style[^>]*>(.*?)</style>', html, re.DOTALL | re.IGNORECASE)
-            css_links = re.findall(r'href=["\']([^"\']+\.css[^"\']*)["\']', html)
-            css_content = "".join(styles)
-            for link in css_links:
-                full_css_url = urljoin(url, link)
-                try:
-                    c_req = urllib.request.Request(full_css_url, headers=headers)
-                    with urllib.request.urlopen(c_req, timeout=5, context=ctx) as c_resp:
-                        css_content += c_resp.read().decode('utf-8', errors='ignore')
-                except:
-                    pass
-            vars_found = set(re.findall(r'--[a-zA-Z0-9_-]+', css_content))
-            print(f"{url} -> CSS vars found: {sorted(list(vars_found))}")
+            # find all class attributes containing 'gradient' or 'bg-' or template markers
+            classes = re.findall(r'class=["\']([^"\']+)["\']', html)
+            gradient_cls = [c for c in classes if 'gradient' in c.lower()]
+            print(f"{url} -> {gradient_cls}")
     except Exception as e:
         print(f"{url} -> Error {e}")

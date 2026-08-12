@@ -1,51 +1,66 @@
-import json
-import httpx
-from urllib.parse import urljoin, urlparse
+import urllib.request
+import re
+import ssl
+from urllib.parse import urljoin
 
-client = httpx.Client(
-    headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'},
-    follow_redirects=True,
-    timeout=10.0
-)
+pages = [
+    "https://verdischain.com/",
+    "https://verdischain.com/explorer/",
+    "https://verdischain.com/dex/",
+    "https://verdischain.com/whitepaper/",
+    "https://verdischain.com/wallet/",
+    "https://verdischain.com/sale/",
+    "https://verdischain.com/faucet/",
+    "https://verdischain.com/validators/",
+    "https://verdischain.com/eco/",
+    "https://verdischain.com/docs/",
+    "https://verdischain.com/transactions/",
+    "https://verdischain.com/analytics/",
+    "https://verdischain.com/monitoring/",
+    "https://verdischain.com/governance/",
+    "https://verdischain.com/blog/"
+]
 
-for page_key in ["page1_api", "page2_api_docs", "page3_validators"]:
-    with open(f"{page_key}_parsed.json", "r") as f:
-        data = json.load(f)
-    
-    base_url = data['url']
-    print(f"\n=================== CHECKING LINKS FOR {page_key} ({base_url}) ===================")
-    
-    links = data['links']
-    tested = set()
-    
-    for l in links:
-        href = l['href']
-        text = l['text']
-        
-        # Resolve URL
-        full_url = urljoin(base_url, href)
-        if full_url in tested:
-            continue
-        tested.add(full_url)
-        
-        # Check fragment if present
-        parsed = urlparse(full_url)
-        
-        try:
-            r = client.get(full_url)
-            status = r.status_code
-            final_url = str(r.url)
-            
-            # Check if anchor exists in page if there's a fragment
-            anchor_ok = True
-            if parsed.fragment and status == 200:
-                if "#" in href or parsed.fragment:
-                    # check if element with id exists in response text
-                    soup_html = r.text
-                    if f'id="{parsed.fragment}"' not in soup_html and f"id='{parsed.fragment}'" not in soup_html and f'name="{parsed.fragment}"' not in soup_html:
-                        anchor_ok = False
-            
-            print(f"[{status}] '{text}' -> {href} (Full: {full_url}) | Final: {final_url} | Anchor OK: {anchor_ok}")
-        except Exception as e:
-            print(f"[ERROR] '{text}' -> {href} (Full: {full_url}) | Exception: {e}")
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
+headers = {'User-Agent': 'Mozilla/5.0'}
+
+checked_links = {}
+
+for p in pages:
+    req = urllib.request.Request(p, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=10, context=ctx) as resp:
+            html = resp.read().decode('utf-8', errors='ignore')
+            hrefs = re.findall(r'href=["\']([^"\']+)["\']', html)
+            for h in set(hrefs):
+                if h.startswith('#') or h.startswith('javascript:') or h.startswith('mailto:'):
+                    continue
+                full_url = urljoin(p, h)
+                if full_url not in checked_links:
+                    try:
+                        c_req = urllib.request.Request(full_url, headers=headers, method='HEAD')
+                        with urllib.request.urlopen(c_req, timeout=5, context=ctx) as c_resp:
+                            checked_links[full_url] = c_resp.status
+                    except urllib.error.HTTPError as e:
+                        if e.code == 405: # try GET
+                            try:
+                                g_req = urllib.request.Request(full_url, headers=headers)
+                                with urllib.request.urlopen(g_req, timeout=5, context=ctx) as g_resp:
+                                    checked_links[full_url] = g_resp.status
+                            except urllib.error.HTTPError as e2:
+                                checked_links[full_url] = e2.code
+                            except Exception as ex:
+                                checked_links[full_url] = f"ERR: {ex}"
+                        else:
+                            checked_links[full_url] = e.code
+                    except Exception as ex:
+                        checked_links[full_url] = f"ERR: {ex}"
+                
+                status = checked_links[full_url]
+                if status not in (200, 301, 302, 303, 307, 308):
+                    print(f"Page {p} -> Broken link: {h} (Status: {status})")
+    except Exception as e:
+        print(f"Error fetching page {p}: {e}")
 

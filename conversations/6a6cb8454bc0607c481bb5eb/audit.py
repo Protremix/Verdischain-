@@ -1,129 +1,158 @@
+import urllib.request
 import re
-import os
-from bs4 import BeautifulSoup
+import ssl
+from urllib.parse import urljoin, urlparse
 
-PAGES = [
-    ('eco', 'Eco'),
-    ('docs', 'Documentation'),
-    ('faucet', 'Faucet'),
-    ('wallet', 'Web Wallet'),
-    ('monitoring', 'Monitoring'),
-    ('analytics', 'Analytics'),
-    ('status', 'Status'),
-    ('security', 'Security')
+pages = [
+    "https://verdischain.com/",
+    "https://verdischain.com/explorer/",
+    "https://verdischain.com/dex/",
+    "https://verdischain.com/whitepaper/",
+    "https://verdischain.com/wallet/",
+    "https://verdischain.com/sale/",
+    "https://verdischain.com/token/",
+    "https://verdischain.com/faucet/",
+    "https://verdischain.com/validators/",
+    "https://verdischain.com/eco/",
+    "https://verdischain.com/docs/",
+    "https://verdischain.com/transactions/",
+    "https://verdischain.com/analytics/",
+    "https://verdischain.com/monitoring/",
+    "https://verdischain.com/governance/",
+    "https://verdischain.com/blog/"
 ]
 
-STD_NAV_LINKS = ['verdiscan', 'dex', 'whitepaper', 'wallet', 'sale', 'tokenomics', 'faucet']
-STD_FOOTER_LINKS = ['home', 'explorer', 'dex', 'whitepaper', 'wallet', 'sale', 'tokenomics', 'faucet', 'validators', 'eco', 'docs', 'governance', 'github']
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
 
-def run_audit():
-    for folder, name in PAGES:
-        filepath = f"audit_pages/{folder}/index.html"
-        if not os.path.exists(filepath):
-            print(f"File not found: {filepath}")
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+}
+
+def check_link(url):
+    req = urllib.request.Request(url, headers=headers, method='HEAD')
+    try:
+        with urllib.request.urlopen(req, timeout=5, context=ctx) as resp:
+            return resp.status
+    except urllib.error.HTTPError as e:
+        if e.code == 405: # Method Not Allowed for HEAD, try GET
+            try:
+                req_get = urllib.request.Request(url, headers=headers, method='GET')
+                with urllib.request.urlopen(req_get, timeout=5, context=ctx) as resp_get:
+                    return resp_get.status
+            except urllib.error.HTTPError as e2:
+                return e2.code
+            except Exception:
+                return "ERR"
+        return e.code
+    except Exception:
+        return "ERR"
+
+link_cache = {}
+
+for url in pages:
+    path = urlparse(url).path or '/'
+    req = urllib.request.Request(url, headers=headers)
+    status_code = None
+    html_content = ""
+    issues = []
+    
+    try:
+        with urllib.request.urlopen(req, timeout=10, context=ctx) as response:
+            status_code = response.getcode()
+            raw = response.read()
+            html_content = raw.decode('utf-8', errors='ignore')
+    except urllib.error.HTTPError as e:
+        status_code = e.code
+        try:
+            html_content = e.read().decode('utf-8', errors='ignore')
+        except:
+            html_content = ""
+    except Exception as e:
+        status_code = "ERR"
+        issues.append(f"Fetch failed ({str(e)})")
+
+    if status_code != 200 and status_code != "ERR":
+        issues.append(f"HTTP status {status_code}")
+
+    # Check 1: Logo image (grep for 'verdis-logo' or 'logo' in img tags or svg/src)
+    # Check img tags specifically for verdis-logo or logo
+    img_tags = re.findall(r'<img[^>]+>', html_content, re.IGNORECASE)
+    has_logo = False
+    for img in img_tags:
+        if 'verdis-logo' in img.lower() or 'logo' in img.lower():
+            has_logo = True
+            break
+    if not has_logo:
+        # Check svg or header logo references
+        if 'verdis-logo' in html_content.lower() or 'logo.png' in html_content.lower() or 'logo.svg' in html_content.lower():
+            has_logo = True
+
+    # Check 2: Footer (grep for 'footer' tag or class)
+    has_footer = bool(re.search(r'<footer|\bfooter\b', html_content, re.IGNORECASE))
+
+    # Check 3: Nav (grep for 'nav' or navigation links)
+    has_nav = bool(re.search(r'<nav|\bnav\b|\bnavbar\b|\bnavigation\b', html_content, re.IGNORECASE))
+
+    # Check 4: Gradient UI UX template (grep for 'gradient' class names)
+    has_gradient = bool(re.search(r'class=["\'][^"\']*\bgradient[^\s"\']*', html_content, re.IGNORECASE))
+
+    # Check 5: CSS variables (--bg-1, --primary, etc.)
+    # Check html content or linked css files
+    css_files = re.findall(r'href=["\']([^"\']+\.css[^"\']*)["\']', html_content, re.IGNORECASE)
+    css_content_combined = html_content
+    for css_href in css_files:
+        css_url = urljoin(url, css_href)
+        if css_url not in link_cache:
+            try:
+                c_req = urllib.request.Request(css_url, headers=headers)
+                with urllib.request.urlopen(c_req, timeout=5, context=ctx) as c_res:
+                    link_cache[css_url] = c_res.read().decode('utf-8', errors='ignore')
+            except Exception:
+                link_cache[css_url] = ""
+        css_content_combined += "\n" + link_cache[css_url]
+
+    has_css_vars = ('--bg-1' in css_content_combined) or ('--primary' in css_content_combined) or ('--bg-' in css_content_combined) or ('--text-' in css_content_combined) or ('--accent' in css_content_combined)
+
+    # Check missing items as issues
+    if not has_logo:
+        issues.append("Missing logo image")
+    if not has_footer:
+        issues.append("Missing footer")
+    if not has_nav:
+        issues.append("Missing navigation")
+    if not has_gradient:
+        issues.append("Missing gradient class names")
+    if not has_css_vars:
+        issues.append("Missing CSS variables (--bg-1, --primary)")
+
+    # Check 6: Broken links in hrefs on the page
+    hrefs = re.findall(r'href=["\']([^"\']+)["\']', html_content)
+    broken_hrefs = []
+    for h in set(hrefs):
+        if h.startswith('#') or h.startswith('javascript:') or h.startswith('mailto:') or h.startswith('tel:'):
             continue
-
-        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
-            html = f.read()
-
-        soup = BeautifulSoup(html, 'html.parser')
-
-        print("="*60)
-        print(f"PAGE: {folder} ({name})")
-        print("="*60)
-
-        # 1. LOGO
-        logo_imgs = []
-        for img in soup.find_all('img'):
-            src = img.get('src', '')
-            alt = img.get('alt', '')
-            cls = " ".join(img.get('class', []))
-            id_ = img.get('id', '')
-            if 'logo' in src.lower() or 'logo' in alt.lower() or 'logo' in cls.lower() or 'logo' in id_.lower():
-                logo_imgs.append((src, alt, cls))
-        
-        # also search for brand/logo divs or svgs or CSS background
-        brand = soup.find(class_=re.compile(r'brand|logo', re.I)) or soup.find(id=re.compile(r'brand|logo', re.I))
-        
-        print("--- LOGO ---")
-        if logo_imgs:
-            for src, alt, cls in logo_imgs:
-                print(f"Img logo src: {src} | alt: '{alt}' | class: '{cls}'")
-        elif brand:
-            print(f"Brand element found (no <img> logo): {brand.prettify()[:200]}")
+        full_href = urljoin(url, h)
+        # Check domain - focus on internal links or all links
+        if full_href not in link_cache:
+            st = check_link(full_href)
+            link_cache[full_href] = st
         else:
-            print("No logo image or brand element found!")
-
-        # 2. NAVIGATION
-        print("\n--- NAVIGATION ---")
-        nav = soup.find('nav') or soup.find('header')
-        if nav:
-            nav_a = nav.find_all('a')
-            nav_links = [(a.get_text(strip=True), a.get('href', '')) for a in nav_a]
-            print(f"Nav found with {len(nav_links)} links:")
-            for txt, href in nav_links:
-                print(f"  - '{txt}' -> {href}")
-        else:
-            print("No <nav> or <header> tag found!")
-
-        # 3. FOOTER
-        print("\n--- FOOTER ---")
-        footer = soup.find('footer')
-        if footer:
-            footer_a = footer.find_all('a')
-            footer_links = [(a.get_text(strip=True), a.get('href', '')) for a in footer_a]
-            print(f"Footer found with {len(footer_links)} links:")
-            for txt, href in footer_links:
-                print(f"  - '{txt}' -> {href}")
-        else:
-            print("No <footer> tag found!")
-
-        # 4. TEXT & DATA
-        print("\n--- TEXT & DATA CHECKS ---")
-        # Check tickers: VERDIS as ticker vs VRDX
-        # Search for token supply: 100B / 100,000,000,000
-        # Search for decimals
-        # Search for hardcoded data / fake stats / stale pricing
+            st = link_cache[full_href]
         
-        # Token Ticker matches
-        verdis_ticker_matches = re.findall(r'\bVERDIS\b', html)
-        vrdx_ticker_matches = re.findall(r'\bVRDX\b', html)
-        print(f"VERDIS count: {len(verdis_ticker_matches)} | VRDX count: {len(vrdx_ticker_matches)}")
+        if st not in (200, 301, 302, 303, 307, 308):
+            broken_hrefs.append(f"{h} ({st})")
 
-        # Print snippets containing VERDIS or VRDX
-        ticker_snippets = re.findall(r'.{0,40}(?:VERDIS|VRDX).{0,40}', html, re.IGNORECASE)
-        print("Ticker snippets sample (first 10):")
-        for snip in ticker_snippets[:10]:
-            print("  ", repr(snip.strip().replace('\n', ' ')))
+    if broken_hrefs:
+        issues.append(f"Broken links: {', '.join(broken_hrefs[:5])}" + (f" (+{len(broken_hrefs)-5} more)" if len(broken_hrefs)>5 else ""))
 
-        # Supply / Decimals
-        supply_snips = re.findall(r'.{0,40}(?:supply|billion|100b|100,000,000,000|decimal).{0,40}', html, re.IGNORECASE)
-        print("Supply/Decimal snippets sample (first 10):")
-        for snip in supply_snips[:10]:
-            print("  ", repr(snip.strip().replace('\n', ' ')))
+    logo_str = "YES" if has_logo else "NO"
+    footer_str = "YES" if has_footer else "NO"
+    nav_str = "YES" if has_nav else "NO"
+    gradient_str = "YES" if has_gradient else "NO"
+    css_str = "YES" if has_css_vars else "NO"
+    issues_str = ", ".join(issues) if issues else "None"
 
-        # Link audit (#, javascript:void, dead links)
-        all_links = soup.find_all('a')
-        hash_links = [a.get('href') for a in all_links if a.get('href') == '#' or a.get('href', '').startswith('javascript:')]
-        print(f"Placeholder/Hash links count: {len(hash_links)} ({hash_links[:5]})")
+    print(f"PAGE: {path} | HTTP: {status_code} | Logo: {logo_str} | Footer: {footer_str} | Nav: {nav_str} | Gradient: {gradient_str} | CSS vars: {css_str} | Issues: {issues_str}")
 
-        # 5. DESIGN
-        print("\n--- DESIGN CHECKS ---")
-        has_bg1 = '--bg-1' in html
-        has_bg2 = '--bg-2' in html
-        has_accent = '--accent' in html
-        has_grad_ui = 'gradient-ui-ux' in html or 'gradient' in html
-        print(f"CSS Variables: --bg-1: {has_bg1}, --bg-2: {has_bg2}, --accent: {has_accent}")
-        print(f"Gradient UI reference: {has_grad_ui}")
-
-        # Check 3D cluster
-        has_3d = any(k in html.lower() for k in ['3d', 'cluster', 'floating-ui', 'floating_ui', 'ui-cluster', 'perspective', 'spline', 'three.js', 'canvas', 'hero-3d'])
-        print(f"3D Floating UI cluster check: {has_3d}")
-
-        # Check hardcoded colors sample
-        hex_colors = re.findall(r'#(?:[0-9a-fA-F]{3}){1,2}\b', html)
-        print(f"Hardcoded hex colors count: {len(hex_colors)} (Sample: {set(hex_colors[:10])})")
-
-        print("\n\n")
-
-run_audit()

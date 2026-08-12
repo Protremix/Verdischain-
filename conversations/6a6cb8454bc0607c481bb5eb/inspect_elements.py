@@ -1,7 +1,6 @@
 import urllib.request
 import re
 import ssl
-from urllib.parse import urljoin
 
 pages = [
     "https://verdischain.com/",
@@ -32,19 +31,24 @@ for url in pages:
     try:
         with urllib.request.urlopen(req, timeout=10, context=ctx) as resp:
             html = resp.read().decode('utf-8', errors='ignore')
-            # find all style tags or link tags
-            styles = re.findall(r'<style[^>]*>(.*?)</style>', html, re.DOTALL | re.IGNORECASE)
-            css_links = re.findall(r'href=["\']([^"\']+\.css[^"\']*)["\']', html)
-            css_content = "".join(styles)
-            for link in css_links:
-                full_css_url = urljoin(url, link)
-                try:
-                    c_req = urllib.request.Request(full_css_url, headers=headers)
-                    with urllib.request.urlopen(c_req, timeout=5, context=ctx) as c_resp:
-                        css_content += c_resp.read().decode('utf-8', errors='ignore')
-                except:
-                    pass
-            vars_found = set(re.findall(r'--[a-zA-Z0-9_-]+', css_content))
-            print(f"{url} -> CSS vars found: {sorted(list(vars_found))}")
+            
+            # Check img tags with verdis-logo or logo
+            img_logos = re.findall(r'<img[^>]*?(?:verdis-logo|logo)[^>]*?>', html, re.IGNORECASE)
+            
+            # Check footer
+            footers = re.findall(r'<footer[^>]*>.*?</footer>|class=["\'][^"\']*footer[^"\']*["\']', html, re.DOTALL | re.IGNORECASE)
+            
+            # Check nav
+            navs = re.findall(r'<nav[^>]*>.*?</nav>|class=["\'][^"\']*(?:nav|navbar|navigation)[^"\']*["\']', html, re.DOTALL | re.IGNORECASE)
+
+            # Check broken links or bad URLs on page
+            hrefs = re.findall(r'href=["\']([^"\']+)["\']', html)
+            bad_hrefs = [h for h in hrefs if 'Protremix/Verdischain-' in h or h.endswith('404')]
+
+            print(f"URL: {url}")
+            print(f"  Img logos found: {len(img_logos)} -> {img_logos[:2]}")
+            print(f"  Footer found: {bool(footers)}")
+            print(f"  Nav found: {bool(navs)}")
+            print(f"  Bad hrefs: {bad_hrefs}")
     except Exception as e:
-        print(f"{url} -> Error {e}")
+        print(f"URL: {url} -> {e}")

@@ -1,148 +1,154 @@
-import asyncio
-import json
+import re
 import os
-from playwright.async_api import async_playwright
+import glob
+import urllib.request
+import urllib.parse
 
-EVAL_JS = """
-() => {
-    const headerNavLinks = Array.from(document.querySelectorAll('header a, nav a')).map(a => ({
-        text: a.innerText ? a.innerText.trim().replace(/\\n/g, ' ') : '',
-        href: a.getAttribute('href'),
-        fullHref: a.href,
-        visible: a.offsetWidth > 0 && a.offsetHeight > 0
-    }));
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AuditBot/1.0'}
 
-    const footerLinks = Array.from(document.querySelectorAll('footer a')).map(a => ({
-        text: a.innerText ? a.innerText.trim().replace(/\\n/g, ' ') : '',
-        href: a.getAttribute('href')
-    }));
+pages_info = [
+    ("/developers/", "developers.html"),
+    ("/download/", "download.html"),
+    ("/referral/", "referral.html"),
+    ("/incentives/", "incentives.html"),
+    ("/partners/", "partners_error.html"),
+    ("/roadmap/", "roadmap_error.html"),
+    ("/community/", "community_error.html"),
+    ("/staking/", "staking_error.html"),
+    ("/bridge/", "bridge_error.html"),
+    ("/nft/", "nft_error.html"),
+    ("/launchpad/", "launchpad_error.html"),
+    ("/api/", "api.html"),
+    ("/status/", "status.html"),
+    ("/support/", "support_error.html"),
+    ("/privacy/", "privacy.html"),
+    ("/terms/", "terms.html")
+]
 
-    const brokenImages = Array.from(document.querySelectorAll('img')).filter(img => !img.complete || img.naturalWidth === 0).map(img => ({
-        src: img.src,
-        alt: img.alt,
-        className: img.className
-    }));
+link_cache = {}
 
-    const canvases = Array.from(document.querySelectorAll('canvas')).map(c => {
-        const ctx2d = c.getContext('2d');
-        const ctxWebgl = c.getContext('webgl') || c.getContext('webgl2');
-        return {
-            id: c.id,
-            class: c.className,
-            width: c.width,
-            height: c.height,
-            clientWidth: c.clientWidth,
-            clientHeight: c.clientHeight,
-            has2dCtx: !!ctx2d,
-            hasWebglCtx: !!ctxWebgl
-        };
-    });
+def check_url_status(url):
+    if url in link_cache:
+        return link_cache[url]
+    try:
+        req = urllib.request.Request(url, headers=headers, method='HEAD')
+        with urllib.request.urlopen(req, timeout=5) as res:
+            link_cache[url] = res.getcode()
+            return res.getcode()
+    except urllib.error.HTTPError as e:
+        if e.code == 405: # Method Not Allowed for HEAD, try GET
+            try:
+                req = urllib.request.Request(url, headers=headers, method='GET')
+                with urllib.request.urlopen(req, timeout=5) as res:
+                    link_cache[url] = res.getcode()
+                    return res.getcode()
+            except urllib.error.HTTPError as e2:
+                link_cache[url] = e2.code
+                return e2.code
+            except Exception as e2:
+                link_cache[url] = f"ERR: {e2}"
+                return f"ERR: {e2}"
+        link_cache[url] = e.code
+        return e.code
+    except Exception as e:
+        link_cache[url] = f"ERR: {e}"
+        return f"ERR: {e}"
 
-    let cssTexts = '';
-    try {
-        const stylesheets = Array.from(document.styleSheets);
-        stylesheets.forEach(s => {
-            try {
-                Array.from(s.cssRules).forEach(r => cssTexts += r.cssText + ' ');
-            } catch(e) {}
-        });
-    } catch(e) {}
+for path, filename in pages_info:
+    filepath = os.path.join("html_dumps", filename)
+    print("==================================================")
+    print(f"PATH: {path}")
+    if not os.path.exists(filepath):
+        print("File not found -> HTTP: 404")
+        continue
+    
+    with open(filepath, "r", encoding="utf-8") as f:
+        html = f.read()
 
-    const hexColorRegex = /#(?:[0-9a-fA-F]{3,4}){1,2}\\b/g;
-    const matches = cssTexts.match(hexColorRegex) || [];
-    const colorCounts = {};
-    matches.forEach(c => colorCounts[c.toLowerCase()] = (colorCounts[c.toLowerCase()] || 0) + 1);
+    # 1. Status
+    is_404 = "error.html" in filename or "404" in html[:500]
+    http_status = 404 if is_404 else 200
 
-    const neonRegex = /#caff33|#00ff00|#39ff14|#a3e635|#4ade80|#22c55e|#16a34a|#15803d|#166534/gi;
-    const matchesGreen = cssTexts.match(neonRegex) || [];
+    if http_status == 404:
+        print(f"HTTP: 404 | Page not found")
+        continue
 
-    const mainElements = Array.from(document.querySelectorAll('header, main section, footer, card, div[class*="card"], div[class*="box"]'));
-    const elementBoxes = mainElements.map(el => {
-        const r = el.getBoundingClientRect();
-        return {
-            tag: el.tagName,
-            class: el.className.slice(0, 50),
-            top: r.top,
-            bottom: r.bottom,
-            left: r.left,
-            right: r.right,
-            width: r.width,
-            height: r.height,
-            text: el.innerText ? el.innerText.slice(0, 30).replace(/\\n/g, ' ') : ''
-        };
-    });
+    # 2. Logo image: grep for 'verdis-logo' or 'logo' in img tags
+    # Let's find all <img> tags
+    img_tags = re.findall(r'<img[^>]*>', html, re.IGNORECASE)
+    logo_imgs = [img for img in img_tags if 'verdis-logo' in img.lower() or 'logo' in img.lower()]
+    has_logo = len(logo_imgs) > 0
 
-    const buttons = Array.from(document.querySelectorAll('button, a.btn, a[class*="button"], a[class*="bg-"]')).map(b => ({
-        text: b.innerText ? b.innerText.trim().replace(/\\n/g, ' ') : '',
-        bg: window.getComputedStyle(b).backgroundColor,
-        color: window.getComputedStyle(b).color,
-        href: b.getAttribute('href')
-    }));
+    # Also check inline svg or class/id if img not found
+    svg_logo = re.findall(r'<svg[^>]*class="[^"]*logo[^"]*"[^>]*>', html, re.IGNORECASE)
+    
+    # 3. Footer: grep for 'footer' tag or class
+    footer_match = re.findall(r'<footer[^>]*>|class="[^"]*footer[^"]*"|id="footer"', html, re.IGNORECASE)
+    has_footer = len(footer_match) > 0
 
-    return {
-        headerNavLinks,
-        footerLinks,
-        brokenImages,
-        canvases,
-        colorCounts,
-        matchesGreen,
-        elementBoxes: elementBoxes.slice(0, 20),
-        buttons: buttons.slice(0, 15)
-    };
-}
-"""
+    # 4. Nav: grep for 'nav' or navigation links
+    nav_match = re.findall(r'<nav[^>]*>|class="[^"]*nav[^"]*"|id="nav"|<header[^>]*>', html, re.IGNORECASE)
+    has_nav = len(nav_match) > 0
 
-async def inspect_details():
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context(viewport={"width": 1440, "height": 900})
+    # 5. Gradient: grep for 'gradient' class names
+    gradient_matches = re.findall(r'class="[^"]*gradient[^"]*"', html, re.IGNORECASE)
+    # Also check any class attribute containing 'gradient'
+    all_classes = re.findall(r'class=["\']([^"\']+)["\']', html)
+    gradient_classes = [c for c in all_classes if 'gradient' in c.lower()]
+    has_gradient = len(gradient_classes) > 0
 
-        pages = [
-            ("Homepage", "https://verdischain.com/"),
-            ("Explorer", "https://verdischain.com/explorer/"),
-            ("DEX", "https://verdischain.com/dex/"),
-            ("Wallet", "https://verdischain.com/wallet/"),
-            ("Validators", "https://verdischain.com/validators/"),
-            ("Token Sale", "https://verdischain.com/sale/"),
-            ("Tokenomics", "https://verdischain.com/tokenomics/"),
-            ("Faucet", "https://verdischain.com/faucet/"),
-            ("Eco Dashboard", "https://verdischain.com/eco/"),
-            ("Whitepaper", "https://verdischain.com/whitepaper/"),
-            ("Docs", "https://verdischain.com/docs/"),
-        ]
+    # 6. CSS variables: check for --bg-1, --primary, etc.
+    # Check in HTML directly or link stylesheets
+    css_vars = re.findall(r'--[a-zA-Z0-9_-]+:', html)
+    # Check specifically for --bg-1, --primary
+    has_bg1 = '--bg-1' in html
+    has_primary = '--primary' in html
+    
+    # Also check linked CSS files
+    css_links = re.findall(r'<link[^>]+href=["\']([^"\']+\.css[^"\']*)["\']', html, re.IGNORECASE)
+    linked_vars = []
+    for css_rel in css_links:
+        css_url = urllib.parse.urljoin(f"https://verdischain.com{path}", css_rel)
+        try:
+            req = urllib.request.Request(css_url, headers=headers)
+            with urllib.request.urlopen(req, timeout=5) as c_res:
+                c_text = c_res.read().decode('utf-8', errors='ignore')
+                if '--bg-1' in c_text:
+                    has_bg1 = True
+                if '--primary' in c_text:
+                    has_primary = True
+                vars_found = re.findall(r'--[a-zA-Z0-9_-]+:', c_text)
+                linked_vars.extend(vars_found)
+        except Exception as e:
+            print(f"  CSS fetch error ({css_url}): {e}")
 
-        detailed_data = {}
+    has_css_vars = has_bg1 or has_primary or len(css_vars) > 0 or len(linked_vars) > 0
 
-        for name, url in pages:
-            page = await context.new_page()
-            
-            logs = []
-            requests_info = []
+    # 7. Check href values / broken links
+    hrefs = re.findall(r'href=["\']([^"\']+)["\']', html, re.IGNORECASE)
+    page_broken_links = []
+    for href in set(hrefs):
+        href_strip = href.strip()
+        if not href_strip or href_strip == '#':
+            page_broken_links.append(f"Empty/hash href ('{href}')")
+            continue
+        if href_strip.startswith(('javascript:', 'mailto:', 'tel:')):
+            continue
+        full_url = urllib.parse.urljoin(f"https://verdischain.com{path}", href_strip)
+        # test URL status
+        st = check_url_status(full_url)
+        if st != 200 and st != 301 and st != 302:
+            page_broken_links.append(f"{href_strip} -> HTTP {st}")
 
-            page.on("console", lambda msg: logs.append({"type": msg.type, "text": msg.text, "location": str(msg.location)}))
-            page.on("response", lambda res: requests_info.append({"url": res.url, "status": res.status}) if res.status >= 400 else None)
+    print(f"  HTTP: {http_status}")
+    print(f"  Logo Imgs found: {logo_imgs}")
+    print(f"  Has Logo: {has_logo}")
+    print(f"  Has Footer: {has_footer} (matches: {footer_match[:2]})")
+    print(f"  Has Nav: {has_nav} (matches: {nav_match[:2]})")
+    print(f"  Gradient classes: {gradient_classes}")
+    print(f"  Has Gradient: {has_gradient}")
+    print(f"  Has --bg-1: {has_bg1}, Has --primary: {has_primary}")
+    print(f"  Has CSS vars: {has_css_vars}")
+    print(f"  Hrefs count: {len(hrefs)}")
+    print(f"  Broken links: {page_broken_links}")
 
-            res = await page.goto(url, wait_until="networkidle", timeout=20000)
-            await page.wait_for_timeout(2000)
-
-            data = await page.evaluate(EVAL_JS)
-
-            detailed_data[name] = {
-                "url": url,
-                "status": res.status if res else None,
-                "title": await page.title(),
-                "logs": logs,
-                "failed_requests": requests_info,
-                "data": data
-            }
-
-            await page.close()
-
-        await browser.close()
-
-        with open("detailed_audit.json", "w") as f:
-            json.dump(detailed_data, f, indent=2)
-        print("Detailed audit complete.")
-
-if __name__ == "__main__":
-    asyncio.run(inspect_details())

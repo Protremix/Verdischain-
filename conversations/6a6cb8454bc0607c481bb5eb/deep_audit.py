@@ -1,157 +1,147 @@
-import os
+import urllib.request
 import re
-from bs4 import BeautifulSoup
-
-base_dir = "./verdiscan_audit/var/www/verdiscan"
+import ssl
+from urllib.parse import urljoin, urlparse
 
 pages = [
-    ("Blog", "blog/index.html"),
-    ("Developers", "developers/index.html"),
-    ("Download", "download/index.html"),
-    ("Contact", "contact/index.html"),
-    ("Referral", "referral/index.html"),
-    ("Incentives", "incentives/index.html"),
-    ("Disclaimer", "legal/disclaimer.html"),
-    ("Privacy", "legal/privacy.html"),
-    ("Terms", "legal/terms.html"),
-    ("404", "404/index.html"),
-    ("Token Sale", "token-sale/index.html"),
+    "https://verdischain.com/",
+    "https://verdischain.com/explorer/",
+    "https://verdischain.com/dex/",
+    "https://verdischain.com/whitepaper/",
+    "https://verdischain.com/wallet/",
+    "https://verdischain.com/sale/",
+    "https://verdischain.com/token/",
+    "https://verdischain.com/faucet/",
+    "https://verdischain.com/validators/",
+    "https://verdischain.com/eco/",
+    "https://verdischain.com/docs/",
+    "https://verdischain.com/transactions/",
+    "https://verdischain.com/analytics/",
+    "https://verdischain.com/monitoring/",
+    "https://verdischain.com/governance/",
+    "https://verdischain.com/blog/"
 ]
 
-REQUIRED_FOOTER_LINKS = [
-    ("Home", ["/", "/index.html"]),
-    ("Explorer", ["/explorer/", "/explorer"]),
-    ("DEX", ["/dex/", "/dex"]),
-    ("Whitepaper", ["/whitepaper/", "/whitepaper"]),
-    ("Wallet", ["/wallet/", "/wallet"]),
-    ("Sale", ["/sale/", "/sale"]),
-    ("Tokenomics", ["/tokenomics/", "/tokenomics"]),
-    ("Faucet", ["/faucet/", "/faucet"]),
-    ("Validators", ["/validators/", "/validators"]),
-    ("Eco", ["/eco/", "/eco"]),
-    ("Docs", ["/docs/", "/docs"]),
-    ("Governance", ["/governance/", "/governance"]),
-    ("GitHub", ["github.com", "https://github.com"])
-]
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
 
-def detailed_check(title, rel_path):
-    filepath = os.path.join(base_dir, rel_path)
-    if not os.path.exists(filepath):
-        print(f"=== {title}: FILE NOT FOUND ===")
-        return
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+}
 
-    with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
-        html = f.read()
+for url in pages:
+    path = urlparse(url).path or '/'
+    req = urllib.request.Request(url, headers=headers)
+    status_code = None
+    html_content = ""
+    
+    try:
+        with urllib.request.urlopen(req, timeout=10, context=ctx) as resp:
+            status_code = resp.getcode()
+            html_content = resp.read().decode('utf-8', errors='ignore')
+    except urllib.error.HTTPError as e:
+        status_code = e.code
+        try:
+            html_content = e.read().decode('utf-8', errors='ignore')
+        except:
+            html_content = ""
+    except Exception as e:
+        status_code = "ERR"
+        html_content = ""
 
-    soup = BeautifulSoup(html, 'html.parser')
+    issues = []
 
-    print(f"\n==================================================================")
-    print(f"AUDIT REPORT FOR: {title} ({rel_path})")
-    print(f"==================================================================")
+    # 1. Status check
+    if status_code != 200:
+        issues.append(f"HTTP {status_code}")
 
-    # --- LOGO ---
-    imgs = soup.find_all('img')
-    img_srcs = [img.get('src', '') for img in imgs]
-    print(f"1. LOGO ANALYSIS:")
-    print(f"   - Total img tags: {len(imgs)}")
-    print(f"   - All img srcs: {img_srcs}")
-    logo_file = None
-    for src in img_srcs:
-        if 'verdis' in src.lower() or 'logo' in src.lower():
-            logo_file = src
-            break
-    print(f"   - Detected Logo File: {logo_file if logo_file else 'NONE'}")
-    if logo_file == "/assets/verdis-logo-black.png":
-        print(f"   - Logo Check: OK (verdis-logo-black.png used)")
-    else:
-        print(f"   - Logo Check: ISSUE (Expected '/assets/verdis-logo-black.png', found '{logo_file}')")
+    # 2. Logo check: grep for 'verdis-logo' or 'logo' in img tags
+    # Let's inspect img tags specifically
+    img_matches = re.findall(r'<img[^>]*>', html_content, re.IGNORECASE)
+    has_logo_in_img = any('logo' in img.lower() or 'verdis-logo' in img.lower() for img in img_matches)
+    # Also check svg or general logo mention
+    has_logo_general = ('logo' in html_content.lower() or 'verdis-logo' in html_content.lower())
+    has_logo = has_logo_in_img or has_logo_general
 
-    # --- FOOTER ---
-    footer = soup.find('footer') or soup.find(class_=re.compile('footer', re.I))
-    print(f"\n2. FOOTER ANALYSIS:")
-    if not footer:
-        print("   - Footer Check: ISSUE - Footer element NOT FOUND")
-    else:
-        footer_links = footer.find_all('a')
-        footer_hrefs = [a.get('href', '') for a in footer_links]
-        footer_texts = [a.get_text(strip=True) for a in footer_links]
-        print(f"   - Footer Exists: YES ({len(footer_links)} links found)")
-        
-        # Check presence of required standard links
-        missing_footer = []
-        for name, patterns in REQUIRED_FOOTER_LINKS:
-            found = False
-            for text, href in zip(footer_texts, footer_hrefs):
-                if any(p.lower() in href.lower() for p in patterns) or name.lower() in text.lower():
-                    found = True
-                    break
-            if not found:
-                missing_footer.append(name)
-        
-        if missing_footer:
-            print(f"   - Footer Check: ISSUE - Missing links to: {missing_footer}")
-        else:
-            print(f"   - Footer Check: OK - Matches standard footer links")
+    # 3. Footer check: grep for 'footer' tag or class
+    has_footer_tag = bool(re.search(r'<footer[^>]*>', html_content, re.IGNORECASE))
+    has_footer_class = bool(re.search(r'class=["\'][^"\']*footer[^"\']*["\']', html_content, re.IGNORECASE))
+    has_footer = has_footer_tag or has_footer_class
 
-    # --- NAV ---
-    nav = soup.find('nav') or soup.find('header') or soup.find(class_=re.compile('nav|header', re.I))
-    print(f"\n3. NAV ANALYSIS:")
-    if not nav:
-        print("   - Nav Check: ISSUE - Navigation header NOT FOUND")
-    else:
-        nav_links = nav.find_all('a')
-        nav_hrefs = [a.get('href', '') for a in nav_links]
-        nav_texts = [a.get_text(strip=True) for a in nav_links]
-        print(f"   - Nav Exists: YES ({len(nav_links)} links found)")
-        print(f"   - Nav Links: {list(zip(nav_texts, nav_hrefs))}")
+    # 4. Nav check: grep for 'nav' or navigation links
+    has_nav_tag = bool(re.search(r'<nav[^>]*>', html_content, re.IGNORECASE))
+    has_nav_class = bool(re.search(r'class=["\'][^"\']*(?:nav|navbar|navigation)[^"\']*["\']', html_content, re.IGNORECASE))
+    has_nav = has_nav_tag or has_nav_class
 
-    # --- TEXT ---
-    print(f"\n4. TEXT & CONTENT ANALYSIS:")
-    # Check wrong ticker
-    # Look for 'VERDIS' used as ticker name in contexts where VRDX should be used
-    verdis_ticker_issues = re.findall(r'(\$\s*VERDIS\b|\bVERDIS\s+token\b|\bVERDIS\s+coins?\b|\bVERDIS\s+ticker\b|symbol:?\s*["\']?VERDIS["\']?)', html, re.IGNORECASE)
-    # Check ticker symbol definitions or text like "100 VERDIS"
-    verdis_amount = re.findall(r'(\d+[\d,.]*\s*VERDIS\b)', html)
-    print(f"   - VRDX count: {len(re.findall(r'VRDX', html))}")
-    print(f"   - Ticker issues found: {verdis_ticker_issues}")
-    print(f"   - 'VERDIS' used with amounts: {verdis_amount}")
+    # 5. Gradient UI UX template check: grep for 'gradient' class names
+    gradient_classes = re.findall(r'class=["\'][^"\']*\b(?:gradient|gradient-[a-zA-Z0-9_-]+)\b[^"\']*["\']', html_content, re.IGNORECASE)
+    has_gradient = len(gradient_classes) > 0
 
-    # Supply check
-    supplies = re.findall(r'(\b\d+[\d,.]*\s*(?:billion|B|M|million|trillion|VRDX|VERDIS|tokens?)\b|\b100B\b|\b100,000,000,000\b)', html, re.IGNORECASE)
-    print(f"   - Supply mentions: {supplies[:10]}")
+    # 6. CSS variables check: check for --bg-1, --primary, etc.
+    # Check in html or linked css files
+    css_links = re.findall(r'<link[^>]+href=["\']([^"\']+\.css[^"\']*)["\']', html_content, re.IGNORECASE)
+    css_links += re.findall(r'<link[^>]+href=["\']([^"\']+)["\'][^>]+rel=["\']stylesheet["\']', html_content, re.IGNORECASE)
+    
+    combined_css = html_content
+    for link in css_links:
+        full_css_url = urljoin(url, link)
+        try:
+            c_req = urllib.request.Request(full_css_url, headers=headers)
+            with urllib.request.urlopen(c_req, timeout=5, context=ctx) as c_resp:
+                combined_css += "\n" + c_resp.read().decode('utf-8', errors='ignore')
+        except:
+            pass
 
-    # Decimals check
-    decimals = re.findall(r'(\bdecimals?:?\s*\d+|\b9\s*decimals?\b|\b18\s*decimals?\b)', html, re.IGNORECASE)
-    print(f"   - Decimals mentions: {decimals}")
+    found_vars = []
+    for var in ['--bg-1', '--primary', '--bg-2', '--accent', '--text-primary', '--border']:
+        if var in combined_css:
+            found_vars.append(var)
 
-    # Hardcoded pricing / fake data / stale prices
-    prices = re.findall(r'(\$\d+\.?\d*|\b0\.\d+\s*USDT\b|\b\d+\.?\d*\s*USDT\b)', html)
-    print(f"   - Price mentions: {prices[:10]}")
+    has_css_vars = len(found_vars) > 0
 
-    # Typos / placeholder
-    lorem = re.findall(r'lorem\s+ipsum', html, re.IGNORECASE)
-    print(f"   - Lorem ipsum count: {len(lorem)}")
+    # 7. Check links on page for issues
+    hrefs = re.findall(r'href=["\']([^"\']+)["\']', html_content)
+    broken_links = []
+    for href in set(hrefs):
+        if href.startswith('#') or href.startswith('javascript:') or href.startswith('mailto:') or href.startswith('tel:'):
+            continue
+        full_url = urljoin(url, href)
+        # Check if URL looks broken or returns 404
+        if href.rstrip('/').endswith('-') or href.rstrip('/').endswith('github.com/Protremix/Verdischain-'):
+            broken_links.append(f"Incomplete URL ({href})")
+        elif full_url.startswith('https://verdischain.com'):
+            # test internal page
+            try:
+                t_req = urllib.request.Request(full_url, headers=headers)
+                with urllib.request.urlopen(t_req, timeout=5, context=ctx) as t_resp:
+                    if t_resp.status >= 400:
+                        broken_links.append(f"{href} ({t_resp.status})")
+            except urllib.error.HTTPError as e:
+                broken_links.append(f"{href} ({e.code})")
+            except Exception as e:
+                broken_links.append(f"{href} (error)")
 
-    # Broken links
-    broken_links = [a.get('href') for a in soup.find_all('a') if not a.get('href') or a.get('href') == '#' or 'javascript:void(0)' in a.get('href', '')]
-    print(f"   - Broken/empty links: {len(broken_links)}")
+    if not has_logo:
+        issues.append("Missing logo")
+    if not has_footer:
+        issues.append("Missing footer")
+    if not has_nav:
+        issues.append("Missing nav")
+    if not has_gradient:
+        issues.append("Missing gradient classes")
+    if not has_css_vars:
+        issues.append("Missing CSS variables")
+    if broken_links:
+        issues.append("Broken links: " + ", ".join(broken_links))
 
-    # --- DESIGN ---
-    print(f"\n5. DESIGN ANALYSIS:")
-    has_bg1 = "--bg-1" in html
-    has_bg2 = "--bg-2" in html
-    has_accent = "--accent" in html
-    print(f"   - CSS variables check: --bg-1: {has_bg1}, --bg-2: {has_bg2}, --accent: {has_accent}")
-    hardcoded_hex = re.findall(r'#(?:[0-9a-fA-F]{3}){1,2}\b', html)
-    print(f"   - Hardcoded hex colors count: {len(hardcoded_hex)}")
-
-    # --- PURPOSE ---
-    print(f"\n6. PAGE PURPOSE & FUNCTIONALITY:")
-    text_len = len(soup.get_text(strip=True))
-    print(f"   - Text length: {text_len} chars")
-    print(f"   - Form elements: {len(soup.find_all(['form', 'input', 'button', 'textarea']))}")
-    print(f"   - JS script tags: {len(soup.find_all('script'))}")
-
-for t, r in pages:
-    detailed_check(t, r)
+    print(f"PAGE: {path}")
+    print(f"  HTTP: {status_code}")
+    print(f"  Logo: {'YES' if has_logo else 'NO'} ({has_logo_in_img=}, {has_logo_general=})")
+    print(f"  Footer: {'YES' if has_footer else 'NO'} ({has_footer_tag=}, {has_footer_class=})")
+    print(f"  Nav: {'YES' if has_nav else 'NO'} ({has_nav_tag=}, {has_nav_class=})")
+    print(f"  Gradient: {'YES' if has_gradient else 'NO'} (found {len(gradient_classes)} matches)")
+    print(f"  CSS vars: {'YES' if has_css_vars else 'NO'} (found: {found_vars})")
+    print(f"  Issues: {', '.join(issues) if issues else 'None'}")
+    print("-" * 50)
 
