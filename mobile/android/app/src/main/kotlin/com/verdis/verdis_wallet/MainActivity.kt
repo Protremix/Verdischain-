@@ -12,24 +12,29 @@ import io.flutter.plugin.common.MethodChannel
  * Native crypto bridge: Flutter <-> hidden WebView running Polkadot WASM
  * (verdis_signer.html / VerdisSigner JS object).
  *
- * IMPORTANT THREADING NOTE (fixed 2026-08-12):
- * Flutter's MethodChannel handlers run on the Android platform thread, which
- * IS the main/UI thread. WebView.evaluateJavascript() is asynchronous — its
- * result callback is delivered by posting back to the UI thread's Looper.
- * The previous implementation blocked the UI thread inside the very same
- * handler call using CountDownLatch.await(), which froze the UI thread's
- * message queue and therefore prevented the evaluateJavascript callback
- * from EVER firing — a guaranteed self-deadlock that always timed out
- * ("Address derivation failed: Derivation timed out"), on every call, every
- * time. This rewrite is fully asynchronous: every step resolves the
- * MethodChannel.Result from within an async callback, and readiness polling
- * uses Handler.postDelayed instead of Thread.sleep + latch.await.
+ * THREADING (fixed 2026-08-12): MethodChannel handlers run on the Android
+ * platform/UI thread. WebView.evaluateJavascript() results are delivered
+ * asynchronously via that same UI thread's Looper. Never block that thread
+ * waiting for a callback that needs the thread to be free to fire — this
+ * class is fully async (Handler.postDelayed for polling, MethodChannel.Result
+ * resolved from within JS callbacks). No Thread.sleep, no CountDownLatch.
+ *
+ * WASM READINESS (fixed 2026-08-12): first-run WASM compile/instantiate can
+ * legitimately take a few seconds on slower devices. Poll generously (20
+ * attempts, 1s apart = ~20s ceiling) and pre-warm at engine startup so real
+ * user actions usually find it already ready. On genuine exhaustion, query
+ * VerdisSigner.getInitError() so the surfaced error is actionable instead of
+ * a generic "not initialized yet".
  */
 class MainActivity: FlutterActivity() {
     private val CHANNEL = "com.verdis.verdis_wallet/crypto"
     private var webView: WebView? = null
     @Volatile private var webViewReady = false
     private val mainHandler = Handler(Looper.getMainLooper())
+    private val pendingReadyCallbacks = mutableListOf<() -> Unit>()
+
+    // 20 attempts * 1s = ~20s ceiling for first-run WASM compile.
+    private val WASM_READY_ATTEMPTS = 20
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -41,21 +46,21 @@ class MainActivity: FlutterActivity() {
                 }
                 "deriveAddress" -> {
                     val mnemonic = call.argument<String>("mnemonic") ?: ""
-                    ensureWasmReady(3) { ready ->
-                        if (!ready) result.error("WASM_NOT_READY", "Polkadot WASM not initialized yet", null)
+                    ensureWasmReady(WASM_READY_ATTEMPTS) { ready ->
+                        if (!ready) failNotReady(result)
                         else deriveAddressAsync(mnemonic, result)
                     }
                 }
                 "generateMnemonic" -> {
-                    ensureWasmReady(3) { ready ->
-                        if (!ready) result.error("WASM_NOT_READY", "Polkadot WASM not initialized yet", null)
+                    ensureWasmReady(WASM_READY_ATTEMPTS) { ready ->
+                        if (!ready) failNotReady(result)
                         else generateMnemonicAsync(result)
                     }
                 }
                 "validateMnemonic" -> {
                     val mnemonic = call.argument<String>("mnemonic") ?: ""
-                    ensureWasmReady(3) { ready ->
-                        if (!ready) result.error("WASM_NOT_READY", "Polkadot WASM not initialized yet", null)
+                    ensureWasmReady(WASM_READY_ATTEMPTS) { ready ->
+                        if (!ready) failNotReady(result)
                         else validateMnemonicAsync(mnemonic, result)
                     }
                 }
@@ -67,8 +72,8 @@ class MainActivity: FlutterActivity() {
                     val genesisHash = call.argument<String>("genesisHash") ?: ""
                     val blockHash = call.argument<String>("blockHash") ?: ""
                     val specVersion = call.argument<Number>("specVersion")?.toInt() ?: 0
-                    ensureWasmReady(3) { ready ->
-                        if (!ready) result.error("WASM_NOT_READY", "Polkadot WASM not initialized yet", null)
+                    ensureWasmReady(WASM_READY_ATTEMPTS) { ready ->
+                        if (!ready) failNotReady(result)
                         else signTransferAsync(mnemonic, destAddress, amountAtoms, nonce, genesisHash, blockHash, specVersion, result)
                     }
                 }
@@ -76,15 +81,28 @@ class MainActivity: FlutterActivity() {
             }
         }
 
-        // Pre-warm the WebView + WASM as soon as the engine is ready so the
-        // first real crypto call doesn't pay the full cold-start cost.
-        ensureWebView { }
+        // Pre-warm WebView + kick off WASM readiness polling immediately so
+        // real user actions (a few seconds later) usually find it ready.
+        ensureWebView { ensureWasmReady(WASM_READY_ATTEMPTS) { } }
+    }
+
+    /** Resolves [result] with a WASM_NOT_READY error, including the real JS
+     * init error/status when available, instead of a generic message. */
+    private fun failNotReady(result: MethodChannel.Result) {
+        val wv = webView
+        if (wv == null) {
+            result.error("WASM_NOT_READY", "Polkadot WASM not initialized yet (WebView unavailable)", null)
+            return
+        }
+        wv.evaluateJavascript("VerdisSigner.getInitError ? VerdisSigner.getInitError() : 'unknown'") { value ->
+            val detail = cleanJsResult(value) ?: "unknown"
+            result.error("WASM_NOT_READY", "Polkadot WASM not initialized yet: $detail", null)
+        }
     }
 
     /**
      * Creates the WebView on first use (idempotent) and invokes [onReady]
-     * once the page has finished loading. Never blocks; safe to call from
-     * the UI thread (which is where MethodChannel handlers run).
+     * once the page has finished loading. Never blocks.
      */
     private fun ensureWebView(onReady: () -> Unit) {
         val existing = webView
@@ -92,14 +110,8 @@ class MainActivity: FlutterActivity() {
             onReady()
             return
         }
-        if (existing != null) {
-            // WebView object exists but page hasn't finished loading yet —
-            // just wait for the first onReady() call already queued below.
-            pendingReadyCallbacks.add(onReady)
-            return
-        }
-
         pendingReadyCallbacks.add(onReady)
+        if (existing != null) return // init already in flight; callback queued above
 
         mainHandler.post {
             if (webView != null) return@post // guard against double-init races
@@ -113,9 +125,7 @@ class MainActivity: FlutterActivity() {
             wv.webViewClient = object : WebViewClient() {
                 override fun onPageFinished(view: WebView?, url: String?) {
                     webViewReady = true
-                    val callbacks = pendingReadyCallbacks.toList()
-                    pendingReadyCallbacks.clear()
-                    callbacks.forEach { it() }
+                    drainReadyCallbacks()
                 }
             }
             webView = wv
@@ -123,16 +133,16 @@ class MainActivity: FlutterActivity() {
                 wv.loadUrl("file:///android_asset/flutter_assets/assets/verdis_signer.html")
             } catch (e: Exception) {
                 android.util.Log.e("VerdisSigner", "Failed to load signer: " + e.message)
-                // Let readiness polling below handle the failure via timeout
-                // rather than hanging forever waiting for onPageFinished.
-                val callbacks = pendingReadyCallbacks.toList()
-                pendingReadyCallbacks.clear()
-                callbacks.forEach { it() }
+                drainReadyCallbacks()
             }
         }
     }
 
-    private val pendingReadyCallbacks = mutableListOf<() -> Unit>()
+    private fun drainReadyCallbacks() {
+        val callbacks = pendingReadyCallbacks.toList()
+        pendingReadyCallbacks.clear()
+        callbacks.forEach { it() }
+    }
 
     /**
      * Polls VerdisSigner.isReady() with up to [attemptsLeft] tries, 1s apart,

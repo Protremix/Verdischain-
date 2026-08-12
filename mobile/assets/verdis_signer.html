@@ -22,16 +22,20 @@ window.onerror = function(msg, url, line, col, err) {
 // ============================================================
 
 window._polkadotReady = false;
+window._polkadotInitError = null;
+window._polkadotInitStartedAt = Date.now();
 
 // Initialize WASM on page load
 if (window.PolkadotCrypto) {
   PolkadotCrypto.cryptoWaitReady().then(function() {
     window._polkadotReady = true;
-    console.log("[VerdisCrypto] Polkadot WASM initialized — Sr25519 ready");
+    console.log("[VerdisCrypto] Polkadot WASM initialized — Sr25519 ready in " + (Date.now() - window._polkadotInitStartedAt) + "ms");
   }).catch(function(e) {
-    console.log("[VerdisCrypto] WASM init failed: " + e);
+    window._polkadotInitError = (e && e.message) ? e.message : String(e);
+    console.log("[VerdisCrypto] WASM init failed: " + window._polkadotInitError);
   });
 } else {
+  window._polkadotInitError = "PolkadotCrypto bundle not loaded (script tag failed or file missing)";
   console.log("[VerdisCrypto] Polkadot bundle not loaded!");
 }
 
@@ -2474,6 +2478,10 @@ async function signTransferExtrinsic(mnemonic, destAddress, amountAtoms, nonce, 
 var VerdisSigner = {
   isReady: function() {
     return window._polkadotReady === true;
+  },
+
+  getInitError: function() {
+    return window._polkadotInitError || (window.PolkadotCrypto ? "still initializing" : "bundle not loaded");
   },
   
   deriveAddress: function(mnemonic) {
