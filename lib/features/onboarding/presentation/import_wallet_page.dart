@@ -114,7 +114,7 @@ class _ImportWalletPageState extends ConsumerState<ImportWalletPage> {
                 ),
                 decoration: InputDecoration(
                   hintText: importState.wordCount == 12
-                      ? 'apple banana cherry dragon elephant figure green horizon pulse solar token verdis'
+                      ? 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'  // BIP39 test vector only
                       : 'Enter 24 words separated by spaces...',
                   alignLabelWithHint: true,
                   errorText: importState.error,

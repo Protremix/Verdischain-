@@ -327,7 +327,7 @@ class BalanceDisplay extends StatelessWidget {
     super.key,
     required this.amount,
     required this.symbol,
-    this.decimals = 18,
+    this.decimals = 9, // Verdis uses 9 decimals
     this.fontSize,
   });
   final int amount;

@@ -176,7 +176,7 @@ class TokenRepositoryImpl implements TokenRepository {
       id: address,
       name: address.length > 8 ? 'Imported Token (${address.substring(0, 6)})' : 'Token #$address',
       symbol: address.length > 4 ? address.substring(0, 4).toUpperCase() : 'CST',
-      decimals: 18,
+      decimals: 9,  // Verdis uses 9 decimals
       balance: 100.0,
       usdPrice: 1.25,
       change24h: 3.4,
@@ -226,7 +226,7 @@ class TokenRepositoryImpl implements TokenRepository {
         id: '1',
         name: 'Verdis Native',
         symbol: 'VRDX',
-        decimals: 18,
+        decimals: 9,  // Verdis uses 9 decimals
         balance: 12500.75,
         usdPrice: 2.45,
         change24h: 4.82,
@@ -240,7 +240,7 @@ class TokenRepositoryImpl implements TokenRepository {
         id: '2',
         name: 'Verdis Governance',
         symbol: 'VGD',
-        decimals: 18,
+        decimals: 9,  // Verdis uses 9 decimals
         balance: 3400.0,
         usdPrice: 5.12,
         change24h: -1.25,
@@ -254,7 +254,7 @@ class TokenRepositoryImpl implements TokenRepository {
         id: '3',
         name: 'Verdis Eco USD',
         symbol: 'VUSD',
-        decimals: 18,
+        decimals: 9,  // Verdis uses 9 decimals
         balance: 850.25,
         usdPrice: 1.00,
         change24h: 0.02,
@@ -268,7 +268,7 @@ class TokenRepositoryImpl implements TokenRepository {
         id: '4',
         name: 'Verdis Carbon Credit',
         symbol: 'VCARBON',
-        decimals: 18,
+        decimals: 9,  // Verdis uses 9 decimals
         balance: 420.0,
         usdPrice: 12.80,
         change24h: 12.45,
@@ -318,7 +318,7 @@ class TokenRepositoryImpl implements TokenRepository {
       id: tokenId,
       name: 'Verdis Asset $tokenId',
       symbol: 'VA$tokenId',
-      decimals: 18,
+      decimals: 9,  // Verdis uses 9 decimals
       balance: 0.0,
       usdPrice: 1.0,
       supply: 1000000,

@@ -307,8 +307,8 @@ class WalletService extends ChangeNotifier {
     }
   }
 
-  // Derive SS58 address from mnemonic LOCALLY (Ed25519, prefix 909)
-  // SECURITY: Mnemonic NEVER leaves the device. Uses native WebView crypto.
+  // Derive SS58 address from mnemonic LOCALLY (Sr25519, prefix 909)
+  // SECURITY: Mnemonic NEVER leaves the device. Uses Polkadot Sr25519 WASM.
   Future<String> _deriveAddress(String mnemonic) async {
     try {
       final result = await _cryptoChannel.invokeMethod('deriveAddress', {'mnemonic': mnemonic});

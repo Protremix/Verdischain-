@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:hex/hex.dart';
 import 'package:bs58/bs58.dart';
+import 'package:verdis_wallet/core/security/blake2b.dart';
 
 class WalletCrypto {
   WalletCrypto._();
@@ -38,9 +39,10 @@ class WalletCrypto {
     const int networkId = 909;
     final prefix = _encodeNetworkId(networkId);
     final input = Uint8List.fromList([...prefix, ...publicKey]);
-    final hash1 = sha256.convert(input);
-    final hash2 = sha256.convert(hash1.bytes);
-    final checksum = hash2.bytes.sublist(0, 2);
+    // Substrate SS58 uses Blake2b-256 for checksums (NOT SHA-256)
+    final hash1 = blake2b256(input);
+    final hash2 = blake2b256(hash1);
+    final checksum = hash2.sublist(0, 2);
     final address = Uint8List.fromList([...prefix, ...publicKey, ...checksum]);
     return base58.encode(address);
   }
@@ -49,7 +51,8 @@ class WalletCrypto {
     if (id < 64) {
       return Uint8List.fromList([id]);
     } else {
-      final first = ((id >> 2) & 0xC0) | 0x40;
+      // Correct SS58 multi-byte encoding for prefix >= 64
+      final first = 0xC0 | ((id >> 8) & 0x3F);
       final second = id & 0xFF;
       return Uint8List.fromList([first, second]);
     }

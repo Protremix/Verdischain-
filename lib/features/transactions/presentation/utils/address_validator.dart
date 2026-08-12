@@ -1,5 +1,7 @@
 import 'package:bs58/bs58.dart';
 import 'package:crypto/crypto.dart';
+import 'package:verdis_wallet/core/security/blake2b.dart';
+import 'dart:typed_data';
 
 /// Helper utility for validating and formatting Verdis SS58 wallet addresses.
 class AddressValidator {
@@ -48,10 +50,10 @@ class AddressValidator {
       final body = decoded.sublist(0, decoded.length - 2);
       final checksum = decoded.sublist(decoded.length - 2);
 
-      final hash1 = sha256.convert(body);
-      final hash2 = sha256.convert(hash1.bytes);
+      final hash1 = blake2b256(Uint8List.fromList(body));  // Substrate uses Blake2b
+      final hash2 = blake2b256(hash1);
 
-      return checksum[0] == hash2.bytes[0] && checksum[1] == hash2.bytes[1];
+      return checksum[0] == hash2[0] && checksum[1] == hash2[1];
     } catch (_) {
       return false;
     }

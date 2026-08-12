@@ -15,7 +15,7 @@ class NetworkConfig {
   static const int chainId = 909;
   static const String tokenSymbol = 'VRDX';
   static const String tokenName = 'Verdis';
-  static const int decimals = 18;
+  static const int decimals = 9; // Verdis uses 9 decimals
   static const String genesisHash = '0x...';
   static const int specVersion = 10;
   static const String runtimeVersion = '3.0.0';

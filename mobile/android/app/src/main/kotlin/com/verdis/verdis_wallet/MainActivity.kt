@@ -46,35 +46,71 @@ class MainActivity: FlutterActivity() {
             webView = WebView(this@MainActivity).apply {
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
+                settings.allowFileAccess = true
+                settings.allowFileAccessFromFileURLs = true
+                settings.allowUniversalAccessFromFileURLs = true
                 webViewClient = object : WebViewClient() {
                     override fun onPageFinished(view: WebView?, url: String?) {
                         webViewReady = true
                     }
                 }
                 try {
-                    val html = assets.open("flutter_assets/assets/verdis_signer.html").bufferedReader().use { it.readText() }
-                    loadDataWithBaseURL("about:blank", html, "text/html", "UTF-8", null)
+                    // Load from file:///android_asset/ so relative script tags resolve correctly
+                    // Flutter assets are under flutter_assets/assets/ inside the APK
+                    val htmlPath = "file:///android_asset/flutter_assets/assets/verdis_signer.html"
+                    loadUrl(htmlPath)
                 } catch (e: Exception) {
-                    try {
-                        val html = assets.open("flutter_assets/verdis_signer.html").bufferedReader().use { it.readText() }
-                        loadDataWithBaseURL("about:blank", html, "text/html", "UTF-8", null)
-                    } catch (e2: Exception) {
-                        android.util.Log.e("VerdisSigner", "Failed to load signer: " + e2.message)
-                    }
+                    android.util.Log.e("VerdisSigner", "Failed to load signer: " + e.message)
                 }
             }
         }
-        Thread.sleep(500)
+        // Allow page load + WASM init (typically <500ms, give 2s to be safe)
+        Thread.sleep(2000)
+    }
+
+    private fun waitForWasm(): Boolean {
+        val latch = CountDownLatch(1)
+        var ready = false
+        runOnUiThread {
+            val wv = webView
+            if (wv != null) {
+                wv.evaluateJavascript("VerdisSigner.isReady()", object : ValueCallback<String> {
+                    override fun onReceiveValue(value: String?) {
+                        ready = value?.trim() == "true"
+                        latch.countDown()
+                    }
+                })
+            } else {
+                latch.countDown()
+            }
+        }
+        latch.await(5, TimeUnit.SECONDS)
+        return ready
     }
 
     private fun deriveAddress(mnemonic: String, result: MethodChannel.Result) {
+        // Wait for WASM to be ready (retry up to 3 times with 1s delay)
+        var wasmReady = waitForWasm()
+        if (!wasmReady) {
+            Thread.sleep(1000)
+            wasmReady = waitForWasm()
+        }
+        if (!wasmReady) {
+            Thread.sleep(1000)
+            wasmReady = waitForWasm()
+        }
+
         val latch = CountDownLatch(1)
         var resultJson: String? = null
+
+        // Escape single quotes in mnemonic for JS string
+        val safeMnemonic = mnemonic.replace("\\", "\\\\").replace("'", "\\'")
 
         runOnUiThread {
             val wv = webView
             if (wv != null) {
-                wv.evaluateJavascript("VerdisSigner.deriveAddress('" + mnemonic.replace("'", "\\'") + "')", object : ValueCallback<String> {
+                val js = "VerdisSigner.deriveAddress('$safeMnemonic')"
+                wv.evaluateJavascript(js, object : ValueCallback<String> {
                     override fun onReceiveValue(value: String?) {
                         resultJson = value
                         latch.countDown()
@@ -97,19 +133,24 @@ class MainActivity: FlutterActivity() {
                 try {
                     val parsed = org.json.JSONObject(cleaned)
                     if (parsed.has("error")) {
-                        result.error("DERIVE_ERROR", parsed.getString("error"), null)
+                        val errMsg = parsed.getString("error")
+                        if (errMsg == "WASM_NOT_READY") {
+                            result.error("WASM_NOT_READY", "Polkadot WASM not initialized yet", null)
+                        } else {
+                            result.error("DERIVE_ERROR", errMsg, null)
+                        }
                     } else {
                         result.success(mapOf(
                             "address" to parsed.getString("address"),
-                            "publicKey" to parsed.getString("publicKey"),
-                            "secretKey" to parsed.getString("secretKey")
+                            "publicKey" to parsed.optString("publicKey", ""),
+                            "secretKey" to parsed.optString("secretKey", "")
                         ))
                     }
                 } catch (e: Exception) {
                     result.error("PARSE_ERROR", e.message, null)
                 }
             } else {
-                result.error("DERIVE_ERROR", "Invalid response", null)
+                result.error("DERIVE_ERROR", "Invalid response: $cleaned", null)
             }
         } else {
             result.error("TIMEOUT", "Derivation timed out", null)
@@ -151,10 +192,13 @@ class MainActivity: FlutterActivity() {
         val latch = CountDownLatch(1)
         var resultStr: String? = null
 
+        val safeMnemonic = mnemonic.replace("\\", "\\\\").replace("'", "\\'")
+
         runOnUiThread {
             val wv = webView
             if (wv != null) {
-                wv.evaluateJavascript("VerdisSigner.validateMnemonic('" + mnemonic.replace("'", "\\'") + "')", object : ValueCallback<String> {
+                val js = "VerdisSigner.validateMnemonic('$safeMnemonic')"
+                wv.evaluateJavascript(js, object : ValueCallback<String> {
                     override fun onReceiveValue(value: String?) {
                         resultStr = value
                         latch.countDown()

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:verdis_wallet/core/security/secure_storage.dart';
 import 'package:verdis_wallet/core/storage/hive_helper.dart';
@@ -48,10 +50,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
     final storedHash = await _secureStorage.getPinHash();
     if (storedHash == null) {
       // Default pin verification for demo/uninitialized state
-      return pin == '123456';
+      return false;  // No backdoor PIN
     }
     // Simple hash verification comparison
-    return storedHash == pin || pin == '123456';
+    return storedHash == pin;  // No backdoor PIN
   }
 
   @override
@@ -60,7 +62,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
     if (!isValid) {
       throw Exception('Incorrect current PIN code');
     }
-    await _secureStorage.storePinHash(newPin);
+    // Hash the new PIN before storing (never store raw PIN)
+    final bytes = utf8.encode('${newPin}_verdis_salt_2026');
+    final digest = sha256.convert(bytes);
+    await _secureStorage.storePinHash(digest.toString());
   }
 
   @override
@@ -79,7 +84,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       return privateKey;
     }
     // Return sample recovery phrase if not initialized
-    return 'solar forest green energy verdis chain validator clean stake decentralize ecosystem node block';
+    throw Exception('No wallet found. Please create or import a wallet first.');  // No hardcoded mnemonic
   }
 
   @override

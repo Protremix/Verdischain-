@@ -27,7 +27,7 @@ class TokenModel {
       id: json['id'] as String,
       name: json['name'] as String,
       symbol: json['symbol'] as String,
-      decimals: (json['decimals'] as num?)?.toInt() ?? 18,
+      decimals: (json['decimals'] as num?)?.toInt() ?? 9,  // Verdis uses 9 decimals
       balance: (json['balance'] as num?)?.toDouble() ?? 0.0,
       usdPrice: (json['usdPrice'] as num?)?.toDouble() ?? 0.0,
       change24h: (json['change24h'] as num?)?.toDouble() ?? 0.0,

@@ -1,21 +1,22 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:verdis_wallet/core/security/blake2b.dart';
 import 'package:bip39/bip39.dart' as bip39;
-import 'package:crypto/crypto.dart';
-import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:hex/hex.dart';
+import 'package:polkadart_keyring/polkadart_keyring.dart';
 import 'package:verdis_wallet/core/config/network_config.dart';
 import 'package:verdis_wallet/core/security/secure_storage.dart';
-import 'package:verdis_wallet/core/security/wallet_crypto.dart';
 import '../domain/wallet_repository.dart';
 
-/// Implementation of WalletRepository using bip39, ed25519_hd_key, crypto, and FlutterSecureStorage
+/// SR25519-based wallet repository using polkadart_keyring.
+/// Replaces Ed25519 derivation — now matches the web wallet's crypto scheme.
 class WalletRepositoryImpl implements WalletRepository {
 
   WalletRepositoryImpl(this._secureStorage);
   final SecureStorageHelper _secureStorage;
 
   static const String _mnemonicKey = 'verdis_mnemonic';
+  static const int _ss58Format = 909; // Verdis network prefix
 
   @override
   Future<String> generateMnemonic() async {
@@ -34,19 +35,18 @@ class WalletRepositoryImpl implements WalletRepository {
   @override
   Future<Map<String, String>> deriveKeypair(String mnemonic) async {
     final cleaned = mnemonic.trim().replaceAll(RegExp(r'\s+'), ' ');
-    final seed = bip39.mnemonicToSeed(cleaned);
 
-    // Derive Ed25519 HD keypair for Verdis coin type (909)
-    final keyData = await ED25519_HD_KEY.derivePath("m/44'/909'/0'/0/0", seed);
-    final privateKeyHex = HEX.encode(keyData.key);
+    // Derive SR25519 keypair from mnemonic (matches @polkadot/keyring addFromMnemonic)
+    final keyPair = KeyPair.sr25519;
+    keyPair.ss58Format = _ss58Format;
+    await keyPair.fromMnemonic(cleaned);
 
-    // Derive the proper Ed25519 public key (32 bytes) from the private key
-    final publicKeyBytes = await ED25519_HD_KEY.getPublicKey(keyData.key, false);
+    final address = keyPair.address;
+    final publicKeyBytes = keyPair.publicKey.bytes;
     final publicKeyHex = HEX.encode(publicKeyBytes);
 
-    // Generate proper SS58 address with network prefix 909
-    final publicKeyUint8 = Uint8List.fromList(publicKeyBytes);
-    final address = WalletCrypto.ss58Address(publicKeyUint8);
+    // For SR25519, the private key is the secret key bytes
+    final privateKeyHex = HEX.encode(keyPair.bytes());
 
     return {
       'mnemonic': cleaned,
@@ -108,9 +108,13 @@ class WalletRepositoryImpl implements WalletRepository {
 
   @override
   Future<String> hashPin(String pin) async {
-    final bytes = utf8.encode('${pin}_verdis_salt_2026');
-    final digest = sha256.convert(bytes);
-    return digest.toString();
+    // PBKDF2-like: iterate Blake2b with salt to resist brute-force
+    final salt = utf8.encode('verdis_pin_salt_2026');
+    var input = Uint8List.fromList([...utf8.encode(pin), ...salt]);
+    for (var i = 0; i < 10000; i++) {
+      input = blake2b256(input);
+    }
+    return HEX.encode(input);
   }
 
   @override
