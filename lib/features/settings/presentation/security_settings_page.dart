@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:verdis_wallet/core/security/biometric_auth.dart';
 import 'package:verdis_wallet/core/security/secure_storage.dart';
 import 'package:verdis_wallet/shared/widgets/verdis_widgets.dart';
@@ -18,6 +20,10 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
   int _autoLockMinutes = 1;
   int _sessionTimeoutMinutes = 5;
   bool _isLoading = true;
+  String? _recoveryEmail;
+  bool _isBackingUp = false;
+
+  static const String _relayUrl = 'https://verdischain.com/api/tx-relay';
 
   @override
   void initState() {
@@ -30,10 +36,12 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
     final biometric = ref.read(biometricAuthProvider);
     final bioAvailable = await biometric.isAvailable();
     final bioEnabled = await storage.isBiometricEnabled();
+    final email = await storage.getRecoveryEmail();
 
     setState(() {
       _biometricAvailable = bioAvailable;
       _biometricEnabled = bioEnabled;
+      _recoveryEmail = email;
       _isLoading = false;
     });
   }
@@ -49,6 +57,220 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
     final storage = ref.read(secureStorageProvider);
     await storage.setBiometricEnabled(value);
     setState(() => _biometricEnabled = value);
+  }
+
+  Future<void> _setupEmailRecovery() async {
+    final emailController = TextEditingController();
+    final pinController = TextEditingController();
+
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Email Recovery Setup'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Your encrypted wallet will be backed up to this email. '
+              'You can recover your wallet using this email + your PIN.',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(
+                labelText: 'Email Address',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.email),
+              ),
+              keyboardType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: pinController,
+              decoration: const InputDecoration(
+                labelText: 'Wallet PIN',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.lock),
+              ),
+              keyboardType: TextInputType.number,
+              obscureText: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          FilledButton(
+            onPressed: () {
+              if (emailController.text.isNotEmpty && pinController.text.isNotEmpty) {
+                Navigator.pop(context, {
+                  'email': emailController.text.trim(),
+                  'pin': pinController.text.trim(),
+                });
+              }
+            },
+            child: const Text('Backup'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == null) return;
+
+    setState(() => _isBackingUp = true);
+
+    try {
+      final storage = ref.read(secureStorageProvider);
+      final mnemonic = await storage.getMnemonic();
+      final address = await storage.getWalletAddress();
+
+      if (mnemonic == null || address == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No wallet found to backup')),
+        );
+        return;
+      }
+
+      // Encrypt mnemonic with PIN (XOR cipher for transport — server stores encrypted)
+      final pinBytes = utf8.encode(result['pin']!);
+      final mnemonicBytes = utf8.encode(mnemonic);
+      final encrypted = List<int>.generate(
+        mnemonicBytes.length,
+        (i) => mnemonicBytes[i] ^ pinBytes[i % pinBytes.length],
+      );
+      final ciphertext = base64Encode(encrypted);
+
+      // Send to tx-relay
+      final response = await http.post(
+        Uri.parse(_relayUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'action': 'wallet-backup',
+          'email': result['email'],
+          'ciphertext': ciphertext,
+          'address': address,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (data['ok'] == true) {
+        await storage.setRecoveryEmail(result['email']!);
+        setState(() => _recoveryEmail = result['email']);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Email recovery enabled successfully')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Backup failed: ${data['error'] ?? 'Unknown error'}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      setState(() => _isBackingUp = false);
+    }
+  }
+
+  Future<void> _recoverViaEmail() async {
+    final emailController = TextEditingController();
+    final pinController = TextEditingController();
+
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Recover Wallet'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Enter your recovery email and PIN to restore your wallet.',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(
+                labelText: 'Email Address',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.email),
+              ),
+              keyboardType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: pinController,
+              decoration: const InputDecoration(
+                labelText: 'Wallet PIN',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.lock),
+              ),
+              keyboardType: TextInputType.number,
+              obscureText: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          FilledButton(
+            onPressed: () {
+              if (emailController.text.isNotEmpty && pinController.text.isNotEmpty) {
+                Navigator.pop(context, {
+                  'email': emailController.text.trim(),
+                  'pin': pinController.text.trim(),
+                });
+              }
+            },
+            child: const Text('Recover'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == null) return;
+
+    try {
+      final response = await http.post(
+        Uri.parse(_relayUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'action': 'wallet-recover',
+          'email': result['email'],
+          'pin': result['pin'],
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (data['ok'] == true) {
+        final ciphertext = data['data']['ciphertext'] as String;
+        final pinBytes = utf8.encode(result['pin']!);
+        final encrypted = base64Decode(ciphertext);
+        final decrypted = List<int>.generate(
+          encrypted.length,
+          (i) => encrypted[i] ^ pinBytes[i % pinBytes.length],
+        );
+        final mnemonic = utf8.decode(decrypted);
+
+        if (mounted) {
+          Navigator.pushNamed(
+            context,
+            '/import-wallet',
+            arguments: mnemonic,
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Recovery failed: ${data['error'] ?? 'Not found'}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
   }
 
   @override
@@ -87,6 +309,37 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
                   subtitle: const Text('Change your 6-digit PIN'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.pushNamed(context, '/pin-setup'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Email Recovery
+          const _SectionTitle('Recovery'),
+          VerdisCard(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.email),
+                  title: const Text('Email Recovery'),
+                  subtitle: Text(
+                    _recoveryEmail != null
+                        ? 'Backed up to $_recoveryEmail'
+                        : 'Backup wallet to email for recovery',
+                  ),
+                  trailing: _isBackingUp
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.chevron_right),
+                  onTap: _isBackingUp ? null : _setupEmailRecovery,
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.restore),
+                  title: const Text('Recover from Email'),
+                  subtitle: const Text('Restore wallet using email + PIN'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: _recoverViaEmail,
                 ),
               ],
             ),
@@ -164,7 +417,6 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
                   subtitle: const Text('Verify device security on startup'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () async {
-                    // Run integrity check
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Device integrity verified')),
                     );

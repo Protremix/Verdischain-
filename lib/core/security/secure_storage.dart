@@ -53,6 +53,25 @@ class SecureStorageHelper {
     return value == 'true';
   }
 
+  // Email recovery
+  Future<String?> getRecoveryEmail() async {
+    return await _storage.read(key: 'recovery_email');
+  }
+
+  Future<void> setRecoveryEmail(String email) async {
+    await _storage.write(key: 'recovery_email', value: email);
+  }
+
+  // Wallet address (stored during wallet creation)
+  Future<String?> getWalletAddress() async {
+    return await _storage.read(key: 'verdis_wallet_address') ??
+        await _storage.read(key: 'wallet_address');
+  }
+
+  Future<void> storeWalletAddress(String address) async {
+    await _storage.write(key: 'verdis_wallet_address', value: address);
+  }
+
   Future<bool> hasWallet() async {
     // Check multiple key variants for backward compatibility
     final mnemonic = await getMnemonic();
@@ -73,6 +92,7 @@ class SecureStorageHelper {
     await _storage.delete(key: 'wallet_public_key');
     await _storage.delete(key: 'wallet_pin_hash');
     await _storage.delete(key: 'biometric_enabled');
+    await _storage.delete(key: 'recovery_email');
   }
 
   Future<void> write(String key, String value) async {

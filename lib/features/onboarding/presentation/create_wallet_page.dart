@@ -94,7 +94,7 @@ class _CreateWalletPageState extends ConsumerState<CreateWalletPage> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      'Ed25519 standard keypair derived',
+                                      'SR25519 keypair derived — matches web wallet',
                                       style: theme.textTheme.bodySmall?.copyWith(
                                         color: const Color(0xFF8B9D8B),
                                       ),
