@@ -5,6 +5,9 @@ import 'package:verdis_wallet/shared/widgets/verdis_widgets.dart';
 import 'home_providers.dart';
 import 'package:verdis_wallet/features/settings/presentation/settings_page.dart';
 import 'portfolio_view.dart';
+import 'tokens_view.dart';
+import 'dex_view.dart';
+import 'staking_view.dart';
 
 /// Main Dashboard Page with custom AppBar (Wallet Address + Network Status) and Bottom Navigation Bar.
 class HomePage extends ConsumerWidget {
@@ -57,28 +60,13 @@ class HomePage extends ConsumerWidget {
           const PortfolioView(),
 
           // Tab 1: Tokens View
-          _buildPlaceholderTab(
-            context,
-            icon: Icons.toll,
-            title: 'Token Assets',
-            subtitle: 'View and manage all eco-tokens on the Verdis Network.',
-          ),
+          const TokensView(),
 
           // Tab 2: DEX View
-          _buildPlaceholderTab(
-            context,
-            icon: Icons.swap_horizontal_circle,
-            title: 'Verdis DEX',
-            subtitle: 'Decentralized exchange with automated yield pools.',
-          ),
+          const DexView(),
 
           // Tab 3: Staking View
-          _buildPlaceholderTab(
-            context,
-            icon: Icons.energy_savings_leaf,
-            title: 'Staking & Governance',
-            subtitle: 'Stake VRDX with green validator nodes to earn rewards.',
-          ),
+          const StakingView(),
 
           // Tab 4: Settings
           const SettingsPage(),
@@ -130,20 +118,4 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildPlaceholderTab(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return Center(
-      child: EmptyState(
-        icon: icon,
-        title: title,
-        subtitle: subtitle,
-        actionLabel: 'Return to Home',
-        onAction: () {},
-      ),
-    );
-  }
 }
