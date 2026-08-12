@@ -310,6 +310,13 @@ function selectToken(token) {
   document.getElementById('faucetBtn').textContent = `Request ${amount}`;
 }
 
+
+// XSS Prevention: escape all external data before innerHTML
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 function generateCaptcha() {
   const a = Math.floor(Math.random() * 10) + 1;
   const b = Math.floor(Math.random() * 10) + 1;
@@ -394,15 +401,20 @@ const distributions = [
 ];
 
 function renderHistory() {
-  const html = distributions.map(d => `
-    <tr>
-      <td class="mono" style="font-size:13px">${d.addr.slice(0,16)}...${d.addr.slice(-8)}</td>
-      <td>${d.token}</td>
-      <td class="mono">${d.amount.toLocaleString()}</td>
-      <td class="mono" style="font-size:12px;color:var(--text-3)">${d.hash}</td>
-      <td style="color:var(--text-3)">${d.time}</td>
-    </tr>
-  `).join('');
+  const html = distributions.map(d => {
+    const addr = escapeHtml(d.addr);
+    const token = escapeHtml(d.token);
+    const amount = escapeHtml(d.amount.toLocaleString());
+    const hash = escapeHtml(d.hash);
+    const time = escapeHtml(d.time);
+    return '<tr>' +
+      '<td class="mono" style="font-size:13px">' + addr.slice(0,16) + '...' + addr.slice(-8) + '</td>' +
+      '<td>' + token + '</td>' +
+      '<td class="mono">' + amount + '</td>' +
+      '<td class="mono" style="font-size:12px;color:var(--text-3)">' + hash + '</td>' +
+      '<td style="color:var(--text-3)">' + time + '</td>' +
+      '</tr>';
+  }).join('');
   document.getElementById('historyBody').innerHTML = html;
 }
 
@@ -482,8 +494,8 @@ async function fetchLiveFaucetStats() {
         if (faucetStats.distributions && faucetStats.distributions.length > 0) {
             const tableBody = document.querySelector('table tbody');
             if (tableBody) {
-                tableBody.innerHTML = faucetStats.distributions.slice(0, 6).map(d => 
-                    '<tr><td>' + d.address + '</td><td>VRDX</td><td>' + d.amount + '</td><td>' + d.txHash + '</td><td>recent</td></tr>'
+                tableBody.innerHTML = faucetStats.distributions.slice(0, 6).map(d =>
+                    '<tr><td>' + escapeHtml(d.address) + '</td><td>VRDX</td><td>' + escapeHtml(d.amount) + '</td><td>' + escapeHtml(d.txHash) + '</td><td>recent</td></tr>'
                 ).join('');
             }
         }
