@@ -8,6 +8,7 @@ import '../../features/onboarding/presentation/backup_phrase_page.dart';
 import '../../features/onboarding/presentation/verify_phrase_page.dart';
 import '../../features/onboarding/presentation/biometric_setup_page.dart';
 import '../../features/onboarding/presentation/pin_setup_page.dart';
+import '../../features/onboarding/presentation/security_notice_page.dart';
 import '../../features/home/presentation/home_page.dart';
 import '../../features/transactions/presentation/send_page.dart';
 import '../../features/transactions/presentation/receive_page.dart';
