@@ -2,7 +2,7 @@ const http = require('http');
 const { ApiPromise, WsProvider, Keyring } = require('@polkadot/api');
 const fs = require('fs');
 
-const RPC_URL = 'ws://localhost:9948';
+const RPC_URL = 'ws://localhost:9933';
 const FAUCET_SEED = '//Alice';
 const AMOUNT = '1000000000000';
 const RATE_FILE = '/tmp/faucet-rate-limits.json';
