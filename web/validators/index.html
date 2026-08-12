@@ -422,36 +422,7 @@ async function loadValidators() {
 // XSS Prevention: escape all external data before innerHTML
 function escapeHtml(str) {
   if (str === null || str === undefined) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-
-    document.getElementById('validatorList').innerHTML = html;
-  } catch(e) {
-    console.error('Failed to load validators:', e);
-    document.getElementById('validatorList').innerHTML = '<div class="empty">Failed to fetch live data. Please try again.</div>';
-  }
-}
-
-// Staking calculator
-function updateCalculator() {
-  const amount = parseFloat(document.getElementById('stakeAmount').value) || 0;
-  const rate = parseFloat(document.getElementById('validatorType').value);
-  const yearly = amount * rate;
-  const monthly = yearly / 12;
-  const daily = yearly / 365;
-  document.getElementById('yearlyYield').textContent = yearly.toFixed(2) + ' VRDX';
-  document.getElementById('monthlyYield').textContent = monthly.toFixed(2);
-  document.getElementById('dailyYield').textContent = daily.toFixed(2);
-}
-
-document.getElementById('stakeAmount').addEventListener('input', updateCalculator);
-document.getElementById('validatorType').addEventListener('change', updateCalculator);
-updateCalculator();
-
-// Load and refresh
-loadValidators();
-setInterval(loadValidators, 15000);
-</script>
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}document.getElementById('validatorList').innerHTML = html;} catch(e) {console.error('Failed to load validators:', e);document.getElementById('validatorList').innerHTML = '<div class="empty">Failed to fetch live data. Please try again.</div>';}}// Staking calculatorfunction updateCalculator() {const amount = parseFloat(document.getElementById('stakeAmount').value) || 0;const rate = parseFloat(document.getElementById('validatorType').value);const yearly = amount * rate;const monthly = yearly / 12;const daily = yearly / 365;document.getElementById('yearlyYield').textContent = yearly.toFixed(2) + ' VRDX';document.getElementById('monthlyYield').textContent = monthly.toFixed(2);document.getElementById('dailyYield').textContent = daily.toFixed(2);}document.getElementById('stakeAmount').addEventListener('input', updateCalculator);document.getElementById('validatorType').addEventListener('change', updateCalculator);updateCalculator();// Load and refreshloadValidators();setInterval(loadValidators, 15000);</script>
 
 <script>
 (function(){var h=document.getElementById('navHamburger'),l=document.querySelector('.nav-links');if(!h||!l)return;h.addEventListener('click',function(){h.classList.toggle('active');l.classList.toggle('open');});l.addEventListener('click',function(e){if(e.target.tagName==='A'){h.classList.remove('active');l.classList.remove('open');}});})();
