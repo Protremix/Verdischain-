@@ -338,7 +338,7 @@ body:hover #cursor-glow{opacity:1}
 
 </div>
 
-<script src="/polkadot-crypto-bundle.js?v=1786513897"></script>
+<script src="/polkadot-crypto-bundle.js?v=1786514456" integrity="sha384-2QXsXbfa3TM9LfvO3HH9+yTkUxC18OUn4AaH3iz6DqKDVswqkF6vrvttF/nDCjMa" crossorigin="anonymous"></script>
 <script>
 // Diagnostic: check if functions are defined
 window.addEventListener('load', function() {
@@ -924,7 +924,7 @@ async function loadHistory() {
         div.appendChild(amtEl);
         container.appendChild(div);
       });
-      // Old code was: container.innerHTML = txs.map(tx => {
+
       const safeSigner = escapeHtml((tx.signer || '').slice(0, 8) + '...' + (tx.signer || '').slice(-6));
       const safeRemark = escapeHtml(String(tx.remark || '').substring(0, 100));
       const safeBlock = escapeHtml(tx.block);
@@ -976,29 +976,44 @@ async function loadValidators() {
       return { address: addr, name, stake, score };
     }));
 
-    container.innerHTML = valData.map(v => {
-      const safeAddr = escapeHtml(v.address || '');
-      const safeName = escapeHtml(v.name || '');
-      const safeStake = escapeHtml(v.stake || '');
-      const scoreClass = v.score >= 75 ? 'high' : v.score >= 50 ? 'mid' : 'low';
-      return `
-        <div class="validator-item">
-          <div class="validator-info">
-            <div class="validator-avatar">${v.name.charAt(0).toUpperCase()}</div>
-            <div class="validator-detail">
-              <div class="val-name">${v.name}</div>
-              <div class="val-stats">Stake: ${formatBalance(BigInt(v.stake))} VRDX</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span class="green-score ${scoreClass}">🌿 ${v.score}</span>
-            <input type="number" placeholder="VRDX" id="stake-${safeAddr}" class="mono" />
-            <button class="btn-small" onclick="delegateStake('${safeAddr}')">Stake</button>
-          </div>
-        </div>`;
-    }).join('');
+    // Safe DOM construction for validators (no innerHTML, prevent XSS)
+    container.innerHTML = '';
+    valData.forEach(v => {
+        const div = document.createElement('div');
+        div.className = 'validator-item';
+        const leftDiv = document.createElement('div');
+        leftDiv.className = 'val-left';
+        const nameEl = document.createElement('div');
+        nameEl.className = 'val-name';
+        nameEl.textContent = (v.name || v.address.substring(0, 8) + '...');
+        const statsEl = document.createElement('div');
+        statsEl.className = 'val-stats';
+        statsEl.textContent = 'Stake: ' + formatBalance(BigInt(v.stake || 0)) + ' VRDX';
+        leftDiv.appendChild(nameEl);
+        leftDiv.appendChild(statsEl);
+        const rightDiv = document.createElement('div');
+        rightDiv.style.cssText = 'display:flex;align-items:center;gap:8px';
+        const scoreEl = document.createElement('span');
+        scoreEl.className = 'green-score ' + (v.score >= 3 ? 'high' : v.score >= 1 ? 'medium' : 'low');
+        scoreEl.textContent = 'Score: ' + (v.score || 0);
+        const inputEl = document.createElement('input');
+        inputEl.type = 'number';
+        inputEl.placeholder = 'VRDX';
+        inputEl.className = 'mono';
+        inputEl.id = 'stake-' + v.address;
+        const btnEl = document.createElement('button');
+        btnEl.className = 'btn-small';
+        btnEl.textContent = 'Stake';
+        btnEl.addEventListener('click', () => delegateStake(v.address));
+        rightDiv.appendChild(scoreEl);
+        rightDiv.appendChild(inputEl);
+        rightDiv.appendChild(btnEl);
+        div.appendChild(leftDiv);
+        div.appendChild(rightDiv);
+        container.appendChild(div);
+    });
   } catch(e) {
-    container.innerHTML = '<div class="tx-empty">Failed to load validators: ' + e.message + '</div>';
+    container.textContent = 'Failed to load validators: ' + (e.message || 'error');
   }
 }
 
