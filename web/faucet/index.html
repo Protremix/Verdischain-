@@ -183,9 +183,9 @@ thead,tbody{display:table;width:100%}
   <div class="hero-right">
     <div class="float-card fc-stats">
       <div style="font-size:13px;color:var(--text-3);margin-bottom:12px">Faucet Stats</div>
-      <div class="stat-mini"><div class="v">2,450,000 VRDX</div><div class="l">Total Dispensed</div></div>
+      <div class="stat-mini"><div class="v" id="faucet-dispensed">400 VRDX</div><div class="l">Total Dispensed</div></div>
       <div class="stat-mini"><div class="v" id="faucet-recipients">0</div><div class="l">Unique Recipients</div></div>
-      <div class="stat-mini"><div class="v">500 / 10,000</div><div class="l">Daily Budget Remaining</div></div>
+      <div class="stat-mini"><div class="v" id="faucet-budget">100 / 100</div><div class="l">Daily Budget Remaining</div></div>
     </div>
     <div class="float-card fc-drip">
       <div class="drip-anim">💧</div>
@@ -238,7 +238,7 @@ thead,tbody{display:table;width:100%}
 
 <div class="stats-section">
   <div class="stats-grid">
-    <div class="stat-card"><div class="icon">💧</div><div class="value">2.45M</div><div class="label">Total Dispensed</div></div>
+    <div class="stat-card"><div class="icon">💧</div><div class="value" id="faucet-dispensed2">400</div><div class="label">Total Dispensed</div></div>
     <div class="stat-card"><div class="icon">👥</div><div class="value" id="faucet-recipients2">0</div><div class="label">Unique Recipients</div></div>
     <div class="stat-card"><div class="icon">📅</div><div class="value">95</div><div class="label">Today's Requests</div></div>
     <div class="stat-card"><div class="icon">⚡</div><div class="value">~2s</div><div class="label">Avg Delivery Time</div></div>
@@ -385,10 +385,10 @@ function startCooldown() {
 // Recent distributions
 const distributions = [
   { addr: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', token: 'VRDX', amount: 100, hash: '0x1a2b3c...', time: '2m ago' },
-  { addr: '5DfibreG7sQ5ZdpAJh7s3gFvF1z5w7rEnRjPw3gU1dN8jVpA', token: 'cVRDX', amount: 500, hash: '0x4d5e6f...', time: '5m ago' },
+  { addr: '5DfibreG7sQ5ZdpAJh7s3gFvF1z5w7rEnRjPw3gU1dN8jVpA', token: 'cVRDX', amount: 50, hash: '0x4d5e6f...', time: '5m ago' },
   { addr: '5FHneW46xGXds5gjP7d1YkXgF6vF8nQ2rZ3sW4eYqM3jVpB', token: 'VRDX', amount: 100, hash: '0x7g8h9i...', time: '12m ago' },
   { addr: '5DA7q5N3vG8mO1bR7qXpW2vF4jH6tE3wZ9sL8kR1mN4cVpC', token: 'VRDX', amount: 100, hash: '0x0j1k2l...', time: '18m ago' },
-  { addr: '5HGj5w7rEnRjPw3gU1dN8jVpA5DfibreG7sQ5ZdpAJh7s3gFvF', token: 'cVRDX', amount: 500, hash: '0x3m4n5o...', time: '25m ago' },
+  { addr: '5HGj5w7rEnRjPw3gU1dN8jVpA5DfibreG7sQ5ZdpAJh7s3gFvF', token: 'cVRDX', amount: 50, hash: '0x3m4n5o...', time: '25m ago' },
   { addr: '5CtERHpNehXCPcNoHGKutQY5GrwvaEF5zXb26Fz9rcQpDWS5', token: 'VRDX', amount: 100, hash: '0x6p7q8r...', time: '38m ago' },
 ];
 
