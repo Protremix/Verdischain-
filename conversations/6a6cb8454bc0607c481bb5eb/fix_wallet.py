@@ -1,259 +1,192 @@
 #!/usr/bin/env python3
-"""Fix wallet_service.dart for non-custodial transaction signing"""
-
+"""Fix the web wallet's broken recoverFromEmail function and subsequent code."""
 import sys
 
-filepath = "/opt/verdis-wallet/mobile/lib/services/wallet_service.dart"
-with open(filepath, "r") as f:
-    content = f.read()
+path = '/var/www/verdiscan/wallet/index.html'
 
-changes = []
+with open(path) as f:
+    lines = f.readlines()
 
-# 1. Remove insecure deriveAddress fallback
-old_derive = """  Future<String> _deriveAddress(String mnemonic) async {
-    try {
-      final result = await _cryptoChannel.invokeMethod('deriveAddress', {'mnemonic': mnemonic});
-      if (result is Map && result['address'] != null) {
-        return result['address'] as String;
-      }
-      throw Exception('Invalid response from crypto channel');
-    } on PlatformException catch (e) {
-      debugPrint('Local derivation failed, falling back to server: $e');
-      // Fallback: use server derivation (mnemonic sent to server)
-      // TODO: Remove this fallback once local derivation is verified
-      final response = await http.post(
-        Uri.parse('https://verdischain.com/api/tx-relay'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'action': 'derive-address', 'mnemonic': mnemonic}),
-      );
-      final data = json.decode(response.body);
-      if (data['ok'] == true && data['address'] != null) {
-        return data['address'] as String;
-      }
-      throw Exception(data['error'] ?? 'Address derivation failed');
-    }
-  }"""
+# Find the broken line
+broken_idx = None
+for i, line in enumerate(lines):
+    if '// Verify it' in line and 'mnemonicconst' in line:
+        broken_idx = i
+        break
 
-new_derive = """  Future<String> _deriveAddress(String mnemonic) async {
-    // Non-custodial: derive address locally via WebView crypto channel
-    // NEVER send mnemonic to server
-    try {
-      final result = await _cryptoChannel.invokeMethod('deriveAddress', {'mnemonic': mnemonic});
-      if (result is Map && result['address'] != null) {
-        return result['address'] as String;
-      }
-      throw Exception('Invalid response from crypto channel');
-    } on PlatformException catch (e) {
-      debugPrint('Local derivation failed: $e');
-      throw Exception('Address derivation failed: ${e.message}. Please restart the app.');
-    }
-  }"""
+if broken_idx is None:
+    print('ERROR: broken line not found')
+    sys.exit(1)
 
-if old_derive in content:
-    content = content.replace(old_derive, new_derive)
-    changes.append("Fixed deriveAddress (removed server fallback)")
-else:
-    # Try to find a partial match
-    if "falling back to server" in content:
-        # Use regex to replace the whole method
-        import re
-        pattern = r"Future<String> _deriveAddress\(String mnemonic\) async \{.*?\n  \}"
-        replacement = new_derive.strip()
-        content_new = re.sub(pattern, replacement, content, flags=re.DOTALL)
-        if content_new != content:
-            content = content_new
-            changes.append("Fixed deriveAddress (regex)")
-        else:
-            changes.append("WARNING: deriveAddress regex failed")
-    else:
-        changes.append("deriveAddress already fixed or not found")
+print(f'Found broken line at index {broken_idx} (line {broken_idx + 1}), length {len(lines[broken_idx])} chars')
 
-# 2. Replace sendTokens transfer action with local signing
-old_send = """      final relayRes = await http.post(
-        Uri.parse('https://verdischain.com/api/tx-relay'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'action': 'transfer',
-          'to': recipient,
-          'amount': (amount * 1e9).round(),
-        }),
-      );
-      final relayData = json.decode(relayRes.body);
-      if (relayData['ok'] == true) {
-        txHash = relayData['extrinsic_hash'] ?? '0xpending';
-      } else {
-        throw Exception(relayData['error'] ?? 'TX Relay failed');
-      }"""
+# Get prefix (everything before broken line)
+prefix = lines[:broken_idx]
 
-new_send = """      // 1. Get nonce from chain
-      final nonceRes = await http.post(
-        Uri.parse(_rpcUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'jsonrpc': '2.0',
-          'method': 'system_accountNextIndex',
-          'params': [_activeAccount!.address],
-          'id': 1,
-        }),
-      );
-      final nonceData = json.decode(nonceRes.body);
-      final nonce = nonceData['result'] as int? ?? 0;
+# Get the broken line content
+content = lines[broken_idx].rstrip('\n')
 
-      // 2. Get genesis hash
-      final genesisRes = await http.post(
-        Uri.parse(_rpcUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'jsonrpc': '2.0',
-          'method': 'chain_getBlockHash',
-          'params': [0],
-          'id': 2,
-        }),
-      );
-      final genesisData = json.decode(genesisRes.body);
-      final genesisHash = genesisData['result'] as String?;
+# Find where the comment starts
+comment_start = content.index('// Verify')
+indent = content[:comment_start]
 
-      // 3. Get spec version
-      final versionRes = await http.post(
-        Uri.parse(_rpcUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'jsonrpc': '2.0',
-          'method': 'state_getRuntimeVersion',
-          'params': [],
-          'id': 3,
-        }),
-      );
-      final versionData = json.decode(versionRes.body);
-      final specVersion = versionData['result']?['specVersion'] as int? ?? 14;
+# Get suffix (everything after broken line)
+suffix = lines[broken_idx + 1:]
 
-      // 4. Get current block hash
-      final blockHashRes = await http.post(
-        Uri.parse(_rpcUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'jsonrpc': '2.0',
-          'method': 'chain_getBlockHash',
-          'params': [],
-          'id': 4,
-        }),
-      );
-      final blockHashData = json.decode(blockHashRes.body);
-      final blockHash = blockHashData['result'] as String? ?? genesisHash;
+# Check if the broken line included </script> - if so, suffix won't have it
+# But we need to check if suffix has additional content
+has_script_close = '</script>' in content
+print(f'Broken line contains </script>: {has_script_close}')
 
-      // 5. Decrypt mnemonic
-      final mnemonic = _decryptMnemonic();
+# Build the fixed code
+fixed_lines = []
+fixed_lines.append(indent + "// Verify it's a valid 12-word mnemonic\n")
+fixed_lines.append('    const words = mnemonic.trim().split(/\\s+/);\n')
+fixed_lines.append('    if (words.length !== 12) {\n')
+fixed_lines.append("      toast('Decryption failed \u2014 wrong password?', 'error');\n")
+fixed_lines.append('      return;\n')
+fixed_lines.append('    }\n')
+fixed_lines.append('\n')
+fixed_lines.append('    // Import the recovered wallet\n')
+fixed_lines.append('    const { address, publicKey } = await deriveAddressFromMnemonic(mnemonic);\n')
+fixed_lines.append('    saveWallet(mnemonic, publicKey, address);\n')
+fixed_lines.append('    await unlockWallet(mnemonic);\n')
+fixed_lines.append("    toast('Wallet recovered successfully!', 'success');\n")
+fixed_lines.append('    setTimeout(loadDashboard, 500);\n')
+fixed_lines.append('  } catch (e) {\n')
+fixed_lines.append("    toast('Recovery failed: ' + e.message + ' (wrong password?)', 'error');\n")
+fixed_lines.append('  }\n')
+fixed_lines.append('}\n')
+fixed_lines.append('\n')
+fixed_lines.append('// ===== ANIMATED BALANCE COUNTER =====\n')
+fixed_lines.append('function animateBalance(targetStr) {\n')
+fixed_lines.append("  const el = document.getElementById('balanceDisplay');\n")
+fixed_lines.append('  if (!el) return;\n')
+fixed_lines.append('  // Parse target value\n')
+fixed_lines.append('  const target = parseFloat(targetStr) || 0;\n')
+fixed_lines.append("  const current = parseFloat(el.dataset.value || '0');\n")
+fixed_lines.append('  el.dataset.value = target;\n')
+fixed_lines.append('  // Flash the card\n')
+fixed_lines.append("  const card = el.closest('.balance-card');\n")
+fixed_lines.append('  if (card) {\n')
+fixed_lines.append("    card.classList.remove('updating');\n")
+fixed_lines.append('    void card.offsetWidth; // reflow\n')
+fixed_lines.append("    card.classList.add('updating');\n")
+fixed_lines.append('  }\n')
+fixed_lines.append('  const duration = 800;\n')
+fixed_lines.append('  const start = performance.now();\n')
+fixed_lines.append('  const diff = target - current;\n')
+fixed_lines.append('  function tick(now) {\n')
+fixed_lines.append('    const elapsed = now - start;\n')
+fixed_lines.append('    const progress = Math.min(elapsed / duration, 1);\n')
+fixed_lines.append('    // Ease-out cubic\n')
+fixed_lines.append('    const eased = 1 - Math.pow(1 - progress, 3);\n')
+fixed_lines.append('    const value = current + diff * eased;\n')
+fixed_lines.append('    // Format with 9 decimals\n')
+fixed_lines.append("    el.innerHTML = value.toFixed(9) + '<span class=\"unit\">VRDX</span>';\n")
+fixed_lines.append('    if (progress < 1) {\n')
+fixed_lines.append('      requestAnimationFrame(tick);\n')
+fixed_lines.append('    } else {\n')
+fixed_lines.append("      el.innerHTML = targetStr + '<span class=\"unit\">VRDX</span>';\n")
+fixed_lines.append('    }\n')
+fixed_lines.append('  }\n')
+fixed_lines.append('  requestAnimationFrame(tick);\n')
+fixed_lines.append('}\n')
+fixed_lines.append('\n')
+fixed_lines.append('// ===== SKELETON LOADER HELPERS =====\n')
+fixed_lines.append('function showSkeleton(elId, lines = 1) {\n')
+fixed_lines.append("  const el = document.getElementById(elId);\n")
+fixed_lines.append('  if (!el) return;\n')
+fixed_lines.append("  let html = '';\n")
+fixed_lines.append('  for (let i = 0; i < lines; i++) {\n')
+fixed_lines.append("    html += '<div class=\"skeleton skeleton-line\" style=\"width:' + (60 + Math.random() * 35) + '%\"></div>';\n")
+fixed_lines.append('  }\n')
+fixed_lines.append('  el.innerHTML = html;\n')
+fixed_lines.append('}\n')
+fixed_lines.append('\n')
+fixed_lines.append('function showBalanceSkeleton() {\n')
+fixed_lines.append("  const el = document.getElementById('balanceDisplay');\n")
+fixed_lines.append('  if (!el) return;\n')
+fixed_lines.append("  el.innerHTML = '<span class=\"skeleton\" style=\"display:inline-block;width:160px;height:22px\"></span>';\n")
+fixed_lines.append("  const sub = document.getElementById('balanceSub');\n")
+fixed_lines.append("  if (sub) sub.innerHTML = '<span class=\"skeleton\" style=\"display:inline-block;width:120px;height:14px\"></span>';\n")
+fixed_lines.append('}\n')
+fixed_lines.append('\n')
+fixed_lines.append('function showAddressSkeleton() {\n')
+fixed_lines.append("  const el = document.getElementById('dashAddress');\n")
+fixed_lines.append('  if (!el) return;\n')
+fixed_lines.append("  el.innerHTML = '<span class=\"skeleton\" style=\"display:inline-block;width:200px;height:16px\"></span>';\n")
+fixed_lines.append('}\n')
+fixed_lines.append('\n')
+fixed_lines.append('// ===== FLOATING PARTICLES IN HERO =====\n')
+fixed_lines.append('function initParticles() {\n')
+fixed_lines.append("  const hero = document.querySelector('.wallet-hero');\n")
+fixed_lines.append('  if (!hero) return;\n')
+fixed_lines.append('  for (let i = 0; i < 8; i++) {\n')
+fixed_lines.append("    const p = document.createElement('div');\n")
+fixed_lines.append("    p.className = 'particle';\n")
+fixed_lines.append('    const size = 2 + Math.random() * 4;\n')
+fixed_lines.append("    p.style.width = size + 'px';\n")
+fixed_lines.append("    p.style.height = size + 'px';\n")
+fixed_lines.append("    p.style.background = 'rgba(132,254,135,' + (0.2 + Math.random() * 0.3) + ')';\n")
+fixed_lines.append("    p.style.left = (Math.random() * 100) + '%';\n")
+fixed_lines.append("    p.style.bottom = '0';\n")
+fixed_lines.append("    p.style.animationDuration = (4 + Math.random() * 6) + 's';\n")
+fixed_lines.append("    p.style.animationDelay = (Math.random() * 5) + 's';\n")
+fixed_lines.append('    hero.appendChild(p);\n')
+fixed_lines.append('  }\n')
+fixed_lines.append('}\n')
+fixed_lines.append('\n')
+fixed_lines.append('// ===== COPY FEEDBACK =====\n')
+fixed_lines.append('const _originalCopy = window.copyToClipboard;\n')
+fixed_lines.append('if (_originalCopy) {\n')
+fixed_lines.append('  window.copyToClipboard = function(text) {\n')
+fixed_lines.append('    navigator.clipboard.writeText(text).then(() => {\n')
+fixed_lines.append("      toast('Copied to clipboard', 'success');\n")
+fixed_lines.append('      // Flash the address element if copying address\n')
+fixed_lines.append("      const addrEl = document.getElementById('dashAddress');\n")
+fixed_lines.append('      if (addrEl && addrEl.textContent === text) {\n')
+fixed_lines.append("        addrEl.classList.remove('copied');\n")
+fixed_lines.append('        void addrEl.offsetWidth;\n')
+fixed_lines.append("        addrEl.classList.add('copied');\n")
+fixed_lines.append('      }\n')
+fixed_lines.append('    });\n')
+fixed_lines.append('  };\n')
+fixed_lines.append('}\n')
+fixed_lines.append('\n')
+fixed_lines.append('// ===== LOADING SPINNER FOR BUTTONS =====\n')
+fixed_lines.append('function showBtnSpinner(btnId) {\n')
+fixed_lines.append("  const btn = document.getElementById(btnId);\n")
+fixed_lines.append('  if (!btn) return;\n')
+fixed_lines.append('  btn.dataset.originalText = btn.innerHTML;\n')
+fixed_lines.append('  btn.disabled = true;\n')
+fixed_lines.append("  btn.innerHTML = '<span class=\"spinner\"></span> Processing...';\n")
+fixed_lines.append('}\n')
+fixed_lines.append('\n')
+fixed_lines.append('function hideBtnSpinner(btnId) {\n')
+fixed_lines.append("  const btn = document.getElementById(btnId);\n")
+fixed_lines.append('  if (!btn) return;\n')
+fixed_lines.append('  btn.disabled = false;\n')
+fixed_lines.append('  if (btn.dataset.originalText) btn.innerHTML = btn.dataset.originalText;\n')
+fixed_lines.append('}\n')
+fixed_lines.append('\n')
+fixed_lines.append('// Init particles on page load\n')
+fixed_lines.append("window.addEventListener('load', () => {\n")
+fixed_lines.append('  setTimeout(initParticles, 200);\n')
+fixed_lines.append('});\n')
+fixed_lines.append('</script>\n')
 
-      // 6. Sign extrinsic locally via WebView crypto channel
-      final amountAtoms = (amount * 1e9).round();
-      final signResult = await _cryptoChannel.invokeMethod('signTransfer', {
-        'mnemonic': mnemonic,
-        'destAddress': recipient,
-        'amountAtoms': amountAtoms,
-        'nonce': nonce,
-        'genesisHash': genesisHash,
-        'blockHash': blockHash,
-        'specVersion': specVersion,
-      });
+# Skip suffix if it starts with </script> (which we already included)
+if suffix and '</script>' in suffix[0]:
+    # Check if there's more after </script>
+    after_script = suffix[0][suffix[0].index('</script>') + len('</script>'):]
+    suffix = suffix[1:]
+    if after_script.strip():
+        suffix = [after_script] + suffix
 
-      if (signResult is Map && signResult['extrinsic'] != null) {
-        final extrinsicHex = signResult['extrinsic'] as String;
+with open(path, 'w') as f:
+    f.writelines(prefix)
+    f.writelines(fixed_lines)
+    f.writelines(suffix)
 
-        // 7. Submit pre-signed extrinsic to TX Relay v3
-        final relayRes = await http.post(
-          Uri.parse('https://verdischain.com/api/tx-relay'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'action': 'submit-extrinsic',
-            'extrinsic': extrinsicHex,
-          }),
-        );
-        final relayData = json.decode(relayRes.body);
-        if (relayData['ok'] == true) {
-          txHash = relayData['tx_hash'] ?? '0xpending';
-        } else {
-          throw Exception(relayData['error'] ?? 'TX Relay submission failed');
-        }
-      } else {
-        throw Exception('Signing failed');
-      }"""
-
-if old_send in content:
-    content = content.replace(old_send, new_send)
-    changes.append("Fixed sendTokens (local signing + submit-extrinsic)")
-else:
-    if "'action': 'transfer'" in content:
-        import re
-        pattern = r"final relayRes = await http\.post\(.*?\}\n      \}\n      \}\n      _vrdxBalance"
-        # Find the transfer block and replace
-        idx = content.find("'action': 'transfer'")
-        if idx > 0:
-            # Find the start of the http.post call
-            start = content.rfind("final relayRes", 0, idx)
-            # Find the end (the line with _vrdxBalance)
-            end = content.find("_vrdxBalance -= amount;", idx)
-            if start > 0 and end > 0:
-                content = content[:start] + new_send + "\n\n      " + content[end:]
-                changes.append("Fixed sendTokens (regex)")
-            else:
-                changes.append("WARNING: Could not find sendTokens boundaries")
-        else:
-            changes.append("WARNING: transfer action not found")
-    else:
-        changes.append("sendTokens already fixed or not found")
-
-# 3. Add _decryptMnemonic helper
-if "_decryptMnemonic" not in content:
-    decrypt_method = """  String _decryptMnemonic() {
-    if (_activeAccount == null) throw Exception('No active account');
-    if (_activeAccount!.encryptedKey.isEmpty) throw Exception('No encrypted key');
-    String stored = _activeAccount!.encryptedKey;
-    if (_walletPin.isNotEmpty) {
-      try {
-        return SecureCrypto.decrypt(stored, _walletPin);
-      } catch (e) {
-        try {
-          return String.fromCharCodes(base64Decode(stored));
-        } catch (e2) {
-          throw Exception('Failed to decrypt mnemonic');
-        }
-      }
-    }
-    try {
-      return String.fromCharCodes(base64Decode(stored));
-    } catch (e) {
-      return stored;
-    }
-  }
-
-"""
-    if "  Future<String> _deriveAddress" in content:
-        content = content.replace(
-            "  Future<String> _deriveAddress",
-            decrypt_method + "  Future<String> _deriveAddress"
-        )
-        changes.append("Added _decryptMnemonic helper")
-    else:
-        changes.append("WARNING: Could not find _deriveAddress to insert helper")
-else:
-    changes.append("_decryptMnemonic already exists")
-
-# 4. Add dart:convert import if needed
-if "import 'dart:convert'" not in content:
-    if "import 'dart:async'" in content:
-        content = content.replace(
-            "import 'dart:async';",
-            "import 'dart:async';\nimport 'dart:convert';"
-        )
-        changes.append("Added dart:convert import")
-    else:
-        changes.append("WARNING: Could not find import location for dart:convert")
-else:
-    changes.append("dart:convert already imported")
-
-with open(filepath, "w") as f:
-    f.write(content)
-
-for c in changes:
-    print(c)
-print("All wallet service updates complete")
+print(f'Fixed: replaced broken line {broken_idx + 1} with {len(fixed_lines)} properly formatted lines')
