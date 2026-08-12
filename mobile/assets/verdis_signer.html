@@ -2586,7 +2586,7 @@ var VerdisSigner = {
       var finalExtrinsic = concatBytes(lengthPrefix, extrinsic);
       
       return JSON.stringify({
-        extrinsic: 0x + bytesToHex(finalExtrinsic),
+        extrinsic: "0x" + bytesToHex(finalExtrinsic),
         signer: kp.address
       });
     } catch(e) {
