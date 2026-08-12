@@ -18,6 +18,9 @@
 //! Provides cryptographic timestamping using a VDF-like SHA-256 hash chain.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+pub mod weights;
+use weights::WeightInfo;
+pub use weights::SubstrateWeight;
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
@@ -54,7 +57,8 @@ pub mod pallet {
     pub struct Pallet<T>(_);
 
     #[pallet::config]
-    pub trait Config: frame_system::Config {}
+    pub trait Config: frame_system::Config {
+		type WeightInfo: WeightInfo;}
 
     /// Map of block_number -> PoH hash
     #[pallet::storage]
@@ -98,7 +102,7 @@ pub mod pallet {
     impl<T: Config> Pallet<T> {
         /// Record a block by advancing the PoH hash chain and stamping the current block.
         #[pallet::call_index(0)]
-        #[pallet::weight(Weight::from_parts(10_000, 0))]
+        #[pallet::weight(T::WeightInfo::record_block())]
         pub fn record_block(origin: OriginFor<T>) -> DispatchResult {
             let _who = ensure_root(origin)?;
             let block_number = <frame_system::Pallet<T>>::block_number();
@@ -110,7 +114,7 @@ pub mod pallet {
 
         /// Set or reset the PoH seed and last_hash configuration.
         #[pallet::call_index(1)]
-        #[pallet::weight(Weight::from_parts(10_000, 0))]
+        #[pallet::weight(T::WeightInfo::set_config())]
         pub fn set_config(
             origin: OriginFor<T>,
             seed: [u8; 32],
@@ -130,7 +134,7 @@ pub mod pallet {
 
         /// Explicit extrinsic to generate a PoH tick.
         #[pallet::call_index(2)]
-        #[pallet::weight(Weight::from_parts(10_000, 0))]
+        #[pallet::weight(T::WeightInfo::tick_extrinsic())]
         pub fn tick_extrinsic(origin: OriginFor<T>) -> DispatchResult {
             let _who = ensure_root(origin)?;
             Self::tick();

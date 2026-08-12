@@ -16,6 +16,9 @@
 //! Inter-Blockchain Communication (IBC) Pallet for Verdis Chain
 
 #![cfg_attr(not(feature = "std"), no_std)]
+pub mod weights;
+use weights::WeightInfo;
+pub use weights::SubstrateWeight;
 use codec::{Decode, Encode};
 use frame_support::dispatch::DispatchResult;
 use frame_support::traits::Currency;
@@ -130,6 +133,7 @@ pub mod pallet {
 
     #[pallet::config]
     pub trait Config: frame_system::Config {
+		type WeightInfo: WeightInfo;
         type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
         type MaxPortIdLen: Get<u32>;
         type MaxPacketDataLen: Get<u32>;
@@ -236,7 +240,7 @@ pub mod pallet {
     impl<T: Config> Pallet<T> {
         /// Create a new light client
         #[pallet::call_index(0)]
-        #[pallet::weight(Weight::from_parts(10_000, 0))]
+        #[pallet::weight(T::WeightInfo::create_client())]
         pub fn create_client(
             origin: OriginFor<T>,
             chain_id: u32,
@@ -266,7 +270,7 @@ pub mod pallet {
 
         /// Open a connection
         #[pallet::call_index(1)]
-        #[pallet::weight(Weight::from_parts(15_000, 0))]
+        #[pallet::weight(T::WeightInfo::open_connection())]
         pub fn open_connection(
             origin: OriginFor<T>,
             client_id: u32,
@@ -297,7 +301,7 @@ pub mod pallet {
 
         /// Open a channel
         #[pallet::call_index(2)]
-        #[pallet::weight(Weight::from_parts(15_000, 0))]
+        #[pallet::weight(T::WeightInfo::open_channel())]
         pub fn open_channel(
             origin: OriginFor<T>,
             connection_id: u32,
@@ -341,7 +345,7 @@ pub mod pallet {
 
         /// Send a packet
         #[pallet::call_index(3)]
-        #[pallet::weight(Weight::from_parts(20_000, 0))]
+        #[pallet::weight(T::WeightInfo::send_packet())]
         pub fn send_packet(
             origin: OriginFor<T>,
             channel_id: u32,
@@ -393,7 +397,7 @@ pub mod pallet {
 
         /// Receive a packet
         #[pallet::call_index(4)]
-        #[pallet::weight(Weight::from_parts(20_000, 0))]
+        #[pallet::weight(T::WeightInfo::recv_packet())]
         pub fn recv_packet(
             origin: OriginFor<T>,
             channel_id: u32,
@@ -430,7 +434,7 @@ pub mod pallet {
 
         /// Acknowledge a packet
         #[pallet::call_index(5)]
-        #[pallet::weight(Weight::from_parts(15_000, 0))]
+        #[pallet::weight(T::WeightInfo::acknowledge_packet())]
         pub fn acknowledge_packet(
             origin: OriginFor<T>,
             channel_id: u32,
@@ -459,7 +463,7 @@ pub mod pallet {
 
         /// Timeout a packet
         #[pallet::call_index(6)]
-        #[pallet::weight(Weight::from_parts(15_000, 0))]
+        #[pallet::weight(T::WeightInfo::timeout_packet())]
         pub fn timeout_packet(
             origin: OriginFor<T>,
             channel_id: u32,
@@ -536,7 +540,7 @@ pub mod pallet {
 
         /// Cross-chain token transfer
         #[pallet::call_index(7)]
-        #[pallet::weight(Weight::from_parts(25_000, 0))]
+        #[pallet::weight(T::WeightInfo::transfer())]
         pub fn transfer(
             origin: OriginFor<T>,
             channel_id: u32,
@@ -620,7 +624,7 @@ pub mod pallet {
 
         /// Close a channel
         #[pallet::call_index(8)]
-        #[pallet::weight(Weight::from_parts(10_000, 0))]
+        #[pallet::weight(T::WeightInfo::close_channel())]
         pub fn close_channel(origin: OriginFor<T>, channel_id: u32) -> DispatchResult {
             ensure_root(origin)?;
 
@@ -636,7 +640,7 @@ pub mod pallet {
 
         /// Update a light client's latest height
         #[pallet::call_index(9)]
-        #[pallet::weight(Weight::from_parts(10_000, 0))]
+        #[pallet::weight(T::WeightInfo::update_client())]
         pub fn update_client(
             origin: OriginFor<T>,
             client_id: u32,
