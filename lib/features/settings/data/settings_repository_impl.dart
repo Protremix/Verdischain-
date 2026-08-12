@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:verdis_wallet/core/security/secure_storage.dart';
+import 'package:verdis_wallet/core/security/wallet_crypto.dart';
 import 'package:verdis_wallet/core/storage/hive_helper.dart';
 import '../domain/settings_repository.dart';
 
@@ -48,12 +49,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<bool> verifyPin(String pin) async {
     final storedHash = await _secureStorage.getPinHash();
-    if (storedHash == null) {
-      // Default pin verification for demo/uninitialized state
-      return false;  // No backdoor PIN
-    }
-    // Simple hash verification comparison
-    return storedHash == pin;  // No backdoor PIN
+    if (storedHash == null) return false;
+    return WalletCrypto.verifyPin(pin, storedHash);
   }
 
   @override
@@ -62,10 +59,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
     if (!isValid) {
       throw Exception('Incorrect current PIN code');
     }
-    // Hash the new PIN before storing (never store raw PIN)
-    final bytes = utf8.encode('${newPin}_verdis_salt_2026');
-    final digest = sha256.convert(bytes);
-    await _secureStorage.storePinHash(digest.toString());
+    // Hash the new PIN with PBKDF2 before storing
+    final pinHash = WalletCrypto.hashPin(newPin);
+    await _secureStorage.storePinHash(pinHash);
   }
 
   @override

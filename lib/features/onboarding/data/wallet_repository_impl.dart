@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:verdis_wallet/core/security/blake2b.dart';
+import 'package:verdis_wallet/core/security/wallet_crypto.dart';
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:hex/hex.dart';
 import 'package:polkadart_keyring/polkadart_keyring.dart';
@@ -108,13 +109,8 @@ class WalletRepositoryImpl implements WalletRepository {
 
   @override
   Future<String> hashPin(String pin) async {
-    // PBKDF2-like: iterate Blake2b with salt to resist brute-force
-    final salt = utf8.encode('verdis_pin_salt_2026');
-    var input = Uint8List.fromList([...utf8.encode(pin), ...salt]);
-    for (var i = 0; i < 10000; i++) {
-      input = blake2b256(input);
-    }
-    return HEX.encode(input);
+    // Use canonical PBKDF2 from WalletCrypto
+    return WalletCrypto.hashPin(pin);
   }
 
   @override
@@ -126,8 +122,7 @@ class WalletRepositoryImpl implements WalletRepository {
   Future<bool> verifyPin(String pin) async {
     final storedHash = await _secureStorage.getPinHash();
     if (storedHash == null) return false;
-    final currentHash = await hashPin(pin);
-    return storedHash == currentHash;
+    return WalletCrypto.verifyPin(pin, storedHash);
   }
 
   @override
