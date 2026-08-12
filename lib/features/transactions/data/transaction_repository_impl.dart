@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'package:hex/hex.dart';
 import 'package:http/http.dart' as http;
+import 'package:polkadart_scale_codec/polkadart_scale_codec.dart';
 import 'package:polkadart_keyring/polkadart_keyring.dart';
 import 'package:verdis_wallet/core/network/rpc_client.dart';
 import 'package:verdis_wallet/shared/models/wallet_models.dart';
@@ -220,29 +221,20 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
   // === SCALE encoding ===
 
+  /// SCALE compact encoding using audited polkadart_scale_codec library
   List<int> _encodeCompactBigInt(BigInt v) {
-    if (v < BigInt.from(64)) return [(v.toInt() << 2)];
-    if (v < BigInt.from(16384)) {
-      final n = v.toInt();
-      return [(n << 2 | 1) & 0xFF, (n << 2 | 1) >> 8];
-    }
-    if (v < BigInt.from(1073741824)) {
-      final n = v.toInt();
-      return [(n << 2 | 2) & 0xFF, (n << 2 | 2) >> 8 & 0xFF, (n << 2 | 2) >> 16 & 0xFF, (n << 2 | 2) >> 24 & 0xFF];
-    }
-    final bytes = _bigIntToBytes(v);
-    return [(bytes.length - 4) << 2 | 3, ...bytes];
+    final output = ByteOutput();
+    CompactBigIntCodec.codec.encodeTo(v, output);
+    return output.toBytes();
   }
 
   List<int> _encodeCompactInt(int v) => _encodeCompactBigInt(BigInt.from(v));
 
-  List<int> _encodeU32(int v) => [v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF];
-
-  List<int> _bigIntToBytes(BigInt v) {
-    final bytes = <int>[];
-    var n = v;
-    while (n > BigInt.zero) { bytes.add((n & BigInt.from(255)).toInt()); n = n >> 8; }
-    return bytes.reversed.toList();
+  /// SCALE u32 encoding using audited polkadart_scale_codec library
+  List<int> _encodeU32(int v) {
+    final output = ByteOutput();
+    U32Codec.codec.encodeTo(v, output);
+    return output.toBytes();
   }
 
   // === SS58 decoding ===
