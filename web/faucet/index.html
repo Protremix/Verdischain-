@@ -367,12 +367,17 @@ async function requestTokens() {
       } catch(e) {}
       alert('Success! ' + (selectedToken === 'VRDX' ? '100 VRDX' : '50 cVRDX') + ' sent to ' + addr.slice(0, 16) + '...\n\nTx Hash: ' + (data.tx_hash || 'pending').toString().slice(0, 20) + '...');
     } else {
-      throw new Error('API error');
+      let errMsg = 'API error';
+      try {
+        const errData = await res.json();
+        errMsg = errData.error || errData.message || errMsg;
+      } catch(e) {}
+      throw new Error(errMsg);
     }
   } catch (e) {
     btn.textContent = 'Request Failed';
     btn.style.background = '#ef4444';
-    alert('Faucet request failed: ' + (e.message || 'Network error') + '. Please try again.');
+    alert('Faucet request failed: ' + (e.message || 'Network error'));
     setTimeout(() => { btn.disabled = false; btn.style.background = ''; btn.textContent = 'Request ' + (selectedToken === 'VRDX' ? '100 VRDX' : '50 cVRDX'); }, 2000);
     return;
   }
