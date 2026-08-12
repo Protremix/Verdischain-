@@ -275,6 +275,20 @@ body:hover #cursor-glow{opacity:1}
 }
 
 /* Transaction item slide-in stagger */
+
+.tx-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.tx-modal-overlay.active{display:flex}
+.tx-modal{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;max-width:440px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.15)}
+.tx-modal h3{font-size:16px;font-weight:700;color:#0f172a;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.tx-modal-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f1f5f9}
+.tx-modal-row:last-child{border-bottom:none}
+.tx-modal-label{font-size:12px;color:#64748b;font-weight:500;white-space:nowrap}
+.tx-modal-value{font-family:'JetBrains Mono',monospace;font-size:12px;color:#0f172a;text-align:right;word-break:break-all;max-width:260px}
+.tx-modal-close{position:absolute;top:12px;right:16px;cursor:pointer;font-size:20px;color:#94a3b8;background:none;border:none}
+.tx-modal-close:hover{color:#0f172a}
+.tx-modal-link{color:#16a34a;text-decoration:none;font-size:12px;font-weight:600}
+.tx-modal-link:hover{text-decoration:underline}
+
 .tx-item {
   opacity: 0;
   animation: txSlideIn 350ms cubic-bezier(0.16,1,0.3,1) forwards;
@@ -1562,9 +1576,12 @@ async function loadHistory() {
     }
 
     container.replaceChildren();
-    txs.forEach(tx => {
+    txs.forEach((tx, idx) => {
       const div = document.createElement('div');
       div.className = 'tx-item';
+      div.style.cursor = 'pointer';
+      div.onclick = () => showTxDetail(tx);
+
       const iconEl = document.createElement('span');
       iconEl.className = 'tx-icon';
       if (tx.type === 'received') {
@@ -1610,6 +1627,40 @@ async function loadHistory() {
   } catch(e) {
     container.textContent = 'Failed to load: ' + (e.message || 'error');
   }
+}
+
+
+function showTxDetail(tx) {
+  const overlay = document.getElementById('txModalOverlay');
+  const title = document.getElementById('txModalTitle');
+  const body = document.getElementById('txModalBody');
+  if (!overlay || !title || !body) return;
+
+  const isReceived = tx.type === 'received';
+  const icon = isReceived ? '↓ Received' : (tx.type === 'sent' ? '↑ Sent' : '◆ Remark');
+  title.innerHTML = icon;
+
+  const rows = [];
+  rows.push(['Type', tx.method || 'Transfer']);
+  rows.push(['Block', '#' + tx.block]);
+  if (tx.hash) rows.push(['Hash', tx.hash]);
+  if (tx.signer) rows.push(['From', tx.signer]);
+  if (tx.dest) rows.push(['To', tx.dest]);
+  if (tx.value && tx.type !== 'remark') rows.push(['Amount', (tx.type === 'received' ? '+ ' : '- ') + tx.value]);
+
+  let html = '';
+  for (const [label, val] of rows) {
+    html += '<div class="tx-modal-row"><span class="tx-modal-label">' + label + '</span><span class="tx-modal-value">' + val + '</span></div>';
+  }
+  html += '<div class="tx-modal-row"><span class="tx-modal-label">Explorer</span><a class="tx-modal-link" href="/transactions/#' + tx.block + '" target="_blank">View on Verdiscan →</a></div>';
+  body.innerHTML = html;
+
+  overlay.classList.add('active');
+}
+
+function closeTxModal() {
+  const overlay = document.getElementById('txModalOverlay');
+  if (overlay) overlay.classList.remove('active');
 }
 
 async function loadValidators() {
@@ -2175,5 +2226,14 @@ window.addEventListener('load', () => {
 </div>
 <div class="footer-bottom"><span>&copy; 2026 Verdis Chain &middot; Protremix &middot; Open-source under MIT License</span><span><a href="/privacy/" style="color:#64748b;text-decoration:none">GDPR Compliant</a> &middot; <a href="/security/" style="color:#64748b;text-decoration:none">Security</a></span></div>
 </footer>
+<!-- TX Detail Modal -->
+<div class="tx-modal-overlay" id="txModalOverlay" onclick="if(event.target===this)closeTxModal()">
+<div class="tx-modal" style="position:relative">
+<button class="tx-modal-close" onclick="closeTxModal()">&times;</button>
+<h3 id="txModalTitle">Transaction</h3>
+<div id="txModalBody"></div>
+</div>
+</div>
+
 </body>
 </html>
