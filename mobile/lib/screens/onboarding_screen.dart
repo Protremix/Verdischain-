@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../services/wallet_service.dart';
-import '../widgets/verdis_button.dart';
 import 'dashboard_screen.dart';
 import '../services/email_recovery_service.dart';
+import '../services/auth_service.dart';
 
 // ignore_for_file: use_build_context_synchronously
 
@@ -311,10 +311,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
           TextButton(
             onPressed: () {
               Navigator.pop(dialogContext);
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const DashboardScreen()),
-              );
+              _showPinSetup(context);
             },
             child: const Text('I Saved It', style: TextStyle(color: Color(0xFF16a34a))),
           ),
@@ -370,10 +367,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
               Navigator.pop(dialogContext);
               final account = await walletService.importWallet('Imported', controller.text.trim());
               if (account != null && context.mounted) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const DashboardScreen()),
-                );
+                _showPinSetup(context);
               } else if (walletService.errorMessage != null && context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -529,6 +523,175 @@ class _OnboardingScreenState extends State<OnboardingScreen> with SingleTickerPr
               child: const Text('Recover', style: TextStyle(color: Color(0xFF16a34a))),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showPinSetup(BuildContext context) {
+    String pin = '';
+    String confirmPin = '';
+    String? error;
+    bool isConfirmStep = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          backgroundColor: const Color(0xFF0D1410),
+          title: Text(
+            isConfirmStep ? 'Confirm PIN' : 'Set 6-Digit PIN',
+            style: const TextStyle(color: Colors.white, fontSize: 18),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                isConfirmStep
+                    ? 'Re-enter your 6-digit PIN to confirm'
+                    : 'Secure your wallet with a 6-digit PIN',
+                style: const TextStyle(color: Color(0xFF94a3b8), fontSize: 13),
+              ),
+              const SizedBox(height: 20),
+              // PIN dots
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(6, (i) {
+                  final currentPin = isConfirmStep ? confirmPin : pin;
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    width: 16,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: i < currentPin.length
+                          ? const Color(0xFF16a34a)
+                          : Colors.transparent,
+                      border: Border.all(
+                        color: i < currentPin.length
+                            ? const Color(0xFF16a34a)
+                            : const Color(0xFF2E2E34),
+                        width: 2,
+                      ),
+                    ),
+                  );
+                }),
+              ),
+              if (error != null) ...[
+                const SizedBox(height: 16),
+                Text(
+                  error!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Color(0xFFEF4444), fontSize: 13),
+                ),
+              ],
+              const SizedBox(height: 24),
+              // Number pad
+              SizedBox(
+                width: 260,
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    childAspectRatio: 1.5,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                  ),
+                  itemCount: 12,
+                  itemBuilder: (context, index) {
+                    if (index == 9) return const SizedBox();
+                    if (index == 11) {
+                      return IconButton(
+                        onPressed: () {
+                          setState(() {
+                            if (isConfirmStep) {
+                              if (confirmPin.isNotEmpty) {
+                                confirmPin = confirmPin.substring(0, confirmPin.length - 1);
+                              }
+                            } else {
+                              if (pin.isNotEmpty) {
+                                pin = pin.substring(0, pin.length - 1);
+                              }
+                            }
+                            error = null;
+                          });
+                        },
+                        icon: const Icon(Icons.backspace_outlined, color: Color(0xFF94a3b8)),
+                      );
+                    }
+                    final num = index == 10 ? 0 : index + 1;
+                    final currentPin = isConfirmStep ? confirmPin : pin;
+                    return InkWell(
+                      onTap: currentPin.length < 6
+                          ? () {
+                              setState(() {
+                                if (isConfirmStep) {
+                                  confirmPin += num.toString();
+                                } else {
+                                  pin += num.toString();
+                                }
+                                error = null;
+                              });
+
+                              final newPin = isConfirmStep ? confirmPin : pin;
+                              if (newPin.length == 6) {
+                                if (!isConfirmStep) {
+                                  // Move to confirm step
+                                  Future.delayed(const Duration(milliseconds: 200), () {
+                                    setState(() {
+                                      isConfirmStep = true;
+                                    });
+                                  });
+                                } else {
+                                  // Verify match
+                                  if (pin == confirmPin) {
+                                    // Set the PIN
+                                    final walletService = Provider.of<WalletService>(context, listen: false);
+                                    final authService = Provider.of<AuthService>(context, listen: false);
+                                    walletService.setWalletPin(confirmPin);
+                                    authService.setPin(confirmPin).then((_) {
+                                      Navigator.pop(dialogContext);
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                                      );
+                                    });
+                                  } else {
+                                    setState(() {
+                                      error = 'PINs do not match. Please try again.';
+                                      confirmPin = '';
+                                      isConfirmStep = false;
+                                    });
+                                  }
+                                }
+                              }
+                            }
+                          : null,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFF2E2E34)),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '$num',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

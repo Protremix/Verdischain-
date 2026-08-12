@@ -32,6 +32,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/splash',
     routes: [
       GoRoute(path: '/splash', builder: (c, s) => const SplashPage()),
+      GoRoute(
+        path: '/security-notice',
+        name: 'SecurityNotice',
+        builder: (context, state) => const SecurityNoticePage(),
+      ),
       GoRoute(path: '/welcome', builder: (c, s) => const WelcomePage()),
       GoRoute(path: '/create-wallet', builder: (c, s) => const CreateWalletPage()),
       GoRoute(path: '/import-wallet', builder: (c, s) => const ImportWalletPage()),

@@ -182,7 +182,7 @@ class _ImportWalletPageState extends ConsumerState<ImportWalletPage> {
                             .importWallet();
                         if (success && context.mounted) {
                           // Pass imported keys to creation state or proceed to PIN setup
-                          unawaited(context.push(RouteNames.pinSetup));
+                          unawaited(context.push('/security-notice'));
                         }
                       }
                     : null,

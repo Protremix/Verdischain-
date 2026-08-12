@@ -165,10 +165,14 @@ class DatabaseService {
     if (pin.isNotEmpty) {
       try {
         String mnemonic = account.encryptedKey;
-        if (mnemonic.startsWith("eyJ")) {
-          // Old base64 format - decode first
-          mnemonic = utf8.decode(base64.decode(mnemonic));
-        }
+        // Try base64 decode (handles both old 'eyJ' JSON format and
+        // mnemonic base64 which starts with 'Y', 'Z', etc.)
+        try {
+          final decoded = utf8.decode(base64.decode(mnemonic));
+          if (decoded.split(' ').length >= 12) {
+            mnemonic = decoded;
+          }
+        } catch (_) {}
         storedKey = SecureCrypto.encrypt(mnemonic, pin);
       } catch (e) {
         storedKey = account.encryptedKey;
@@ -193,13 +197,17 @@ class DatabaseService {
   Future<String?> getMnemonic(AccountRecord account, String pin) async {
     try {
       final encrypted = account.encryptedKey;
-      // Try SecureCrypto decryption first
+      // Try SecureCrypto decryption first (proper PIN-encrypted)
       final decrypted = SecureCrypto.decrypt(encrypted, pin);
       if (decrypted != null) return decrypted;
-      // Fall back: try base64 decode for legacy accounts
-      if (encrypted.startsWith("eyJ")) {
-        return utf8.decode(base64.decode(encrypted));
-      }
+      // Fall back: try base64 decode for legacy accounts (pre-PIN)
+      // A BIP39 mnemonic base64 starts with letters like 'Y', 'Z', etc.
+      // not necessarily 'eyJ' (which is JSON). Try all valid base64.
+      try {
+        final decoded = utf8.decode(base64.decode(encrypted));
+        // Verify it looks like a mnemonic (words separated by spaces)
+        if (decoded.split(' ').length >= 12) return decoded;
+      } catch (_) {}
       return null;
     } catch (_) {
       return null;
@@ -214,14 +222,18 @@ class DatabaseService {
     bool changed = false;
     for (final a in accounts) {
       final key = a["encrypted_key"] as String? ?? "";
-      // Check if it is old base64 format
-      if (key.isNotEmpty && key.startsWith("eyJ")) {
-        try {
-          final mnemonic = utf8.decode(base64.decode(key));
+      if (key.isEmpty) continue;
+      // Try SecureCrypto decrypt — if it works, already encrypted
+      if (SecureCrypto.decrypt(key, pin) != null) continue;
+      // Try base64 decode (pre-PIN storage)
+      try {
+        final mnemonic = utf8.decode(base64.decode(key));
+        // Verify it looks like a mnemonic (12+ words)
+        if (mnemonic.split(' ').length >= 12) {
           a["encrypted_key"] = SecureCrypto.encrypt(mnemonic, pin);
           changed = true;
-        } catch (_) {}
-      }
+        }
+      } catch (_) {}
     }
     if (changed) await _save();
   }

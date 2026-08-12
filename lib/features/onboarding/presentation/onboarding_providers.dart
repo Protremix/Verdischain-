@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:verdis_wallet/core/security/biometric_auth.dart';
 import 'package:verdis_wallet/core/security/secure_storage.dart';
 import '../data/wallet_repository_impl.dart';
+import 'package:verdis_wallet/core/security/pin_security_service.dart';
 import '../domain/wallet_repository.dart';
 
 // Override default repository provider with concrete implementation
@@ -316,8 +317,61 @@ class PinSetupNotifier extends StateNotifier<PinSetupState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
+      // 1. Check if this address already has a PIN on the server
+      final pinStatus = await PinSecurityService.getPinStatus(address);
+
+      if (pinStatus['has_pin'] == true) {
+        // Wallet already has a PIN — verify the entered PIN matches
+        if (pinStatus['locked'] == true) {
+          final remaining = pinStatus['locked_remaining'] ?? 0;
+          final mins = (remaining as int) ~/ 60;
+          state = state.copyWith(
+            isLoading: false,
+            error: 'Wallet is locked. Try again in $mins minute(s).',
+          );
+          return false;
+        }
+
+        final (success, message, remaining) = await PinSecurityService.verifyPin(
+          address: address,
+          pin: state.pin,
+        );
+
+        if (!success) {
+          if (message == 'locked') {
+            state = state.copyWith(
+              isLoading: false,
+              error: 'Too many failed attempts. Wallet locked for 15 minutes.',
+            );
+          } else {
+            state = state.copyWith(
+              isLoading: false,
+              error: 'Wrong PIN. $remaining attempts remaining.',
+            );
+          }
+          return false;
+        }
+        // PIN verified — proceed
+      } else {
+        // New wallet — register PIN on server
+        final (regSuccess, regMessage) = await PinSecurityService.registerPin(
+          address: address,
+          pin: state.pin,
+        );
+        if (!regSuccess) {
+          state = state.copyWith(
+            isLoading: false,
+            error: 'PIN registration failed: $regMessage',
+          );
+          return false;
+        }
+      }
+
+      // 2. Save PIN hash locally
       final pinHash = await _repository.hashPin(state.pin);
       await _repository.savePinHash(pinHash);
+
+      // 3. Store wallet in secure storage
       await _repository.storeWallet(
         mnemonic: mnemonic,
         privateKey: privateKey,

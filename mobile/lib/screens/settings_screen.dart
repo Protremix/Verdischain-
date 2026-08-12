@@ -43,6 +43,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _pinConfirmController.clear();
     _newPinController.clear();
 
+    final auth = Provider.of<AuthService>(context, listen: false);
+    final isFirstTimePin = !auth.hasPinSet;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -62,27 +65,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Change 6-Digit PIN',
-                style: TextStyle(color: Color(0xFFFFFFFF), fontSize: 16, fontWeight: FontWeight.bold),
+              Text(
+                isFirstTimePin ? 'Set 6-Digit PIN' : 'Change 6-Digit PIN',
+                style: const TextStyle(color: Color(0xFFFFFFFF), fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              TextField(
-                controller: _pinConfirmController,
-                obscureText: true,
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                style: const TextStyle(color: Color(0xFFFFFFFF)),
-                decoration: const InputDecoration(
-                  labelText: 'Current PIN',
-                  labelStyle: TextStyle(color: Color(0xFF94a3b8)),
-                  filled: true,
-                  fillColor: Color(0xFF040806),
-                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF2E2E34))),
-                  focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF16a34a))),
+              if (!isFirstTimePin) ...[
+                TextField(
+                  controller: _pinConfirmController,
+                  obscureText: true,
+                  keyboardType: TextInputType.number,
+                  maxLength: 6,
+                  style: const TextStyle(color: Color(0xFFFFFFFF)),
+                  decoration: const InputDecoration(
+                    labelText: 'Current PIN',
+                    labelStyle: TextStyle(color: Color(0xFF94a3b8)),
+                    filled: true,
+                    fillColor: Color(0xFF040806),
+                    enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF2E2E34))),
+                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF16a34a))),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
+                const SizedBox(height: 12),
+              ],
               TextField(
                 controller: _newPinController,
                 obscureText: true,
@@ -100,30 +105,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 20),
               VerdisButton(
-                label: 'Update PIN',
+                label: isFirstTimePin ? 'Set PIN' : 'Update PIN',
                 onPressed: () async {
-                  final auth = Provider.of<AuthService>(context, listen: false);
-                  final valid = await auth.verifyPin(_pinConfirmController.text.trim());
-                  if (valid) {
-                    final newPin = _newPinController.text.trim();
-                    if (newPin.length == 6) {
-                      await auth.setPin(newPin);
-                      final walletSvc = Provider.of<WalletService>(context, listen: false);
-                      walletSvc.setWalletPin(newPin);
-                      if (ctx.mounted) Navigator.pop(ctx);
+                  final newPin = _newPinController.text.trim();
+
+                  // If not first time, verify current PIN first
+                  if (!isFirstTimePin) {
+                    final valid = await auth.verifyPin(_pinConfirmController.text.trim());
+                    if (!valid) {
                       if (!context.mounted) return;
-                      // ignore: use_build_context_synchronously
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('PIN updated successfully')),
+                        const SnackBar(content: Text('Incorrect current PIN')),
                       );
+                      return;
                     }
-                  } else {
-                    if (!context.mounted) return;
-                    // ignore: use_build_context_synchronously
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Incorrect current PIN')),
-                    );
                   }
+
+                  if (newPin.length != 6) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('PIN must be 6 digits')),
+                    );
+                    return;
+                  }
+
+                  await auth.setPin(newPin);
+                  final walletSvc = Provider.of<WalletService>(context, listen: false);
+                  walletSvc.setWalletPin(newPin);
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(isFirstTimePin ? 'PIN set successfully' : 'PIN updated successfully')),
+                  );
                 },
               ),
             ],
