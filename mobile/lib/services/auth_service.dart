@@ -4,6 +4,7 @@ import "dart:io";
 import "package:flutter/foundation.dart";
 import "package:path_provider/path_provider.dart";
 import "secure_crypto.dart";
+import "package:local_auth/local_auth.dart";
 
 class AuthService extends ChangeNotifier {
   static const String _pinKey = "verdis_wallet_pin_hash_v2";
@@ -11,6 +12,7 @@ class AuthService extends ChangeNotifier {
   static const int _inactivityTimeoutSeconds = 60;
   static const int _maxPinAttempts = 5;
 
+  final LocalAuthentication _localAuth = LocalAuthentication();
   bool _isLocked = true;
   bool _hasPinSet = false;
   bool _biometricEnabled = false;
@@ -119,9 +121,43 @@ class AuthService extends ChangeNotifier {
   }
 
   Future<bool> authenticateBiometrics() async {
-    // Biometric auth requires flutter_local_auth package
-    // TODO: Add local_auth plugin for production
-    return false;
+    try {
+      final isAvailable = await _localAuth.canCheckBiometrics;
+      final isDeviceSupported = await _localAuth.isDeviceSupported();
+      if (!isAvailable || !isDeviceSupported) {
+        debugPrint("Biometric auth not available on this device");
+        return false;
+      }
+
+      final didAuthenticate = await _localAuth.authenticate(
+        localizedReason: "Verify your identity to unlock Verdis Wallet",
+        options: const AuthenticationOptions(
+          biometricOnly: false,
+          stickyAuth: true,
+        ),
+      );
+
+      if (didAuthenticate) {
+        _isLocked = false;
+        _pinAttempts = 0;
+        resetInactivityTimer();
+        notifyListeners();
+      }
+      return didAuthenticate;
+    } catch (e) {
+      debugPrint("Biometric auth error: $e");
+      return false;
+    }
+  }
+
+  Future<bool> isBiometricAvailable() async {
+    try {
+      final isAvailable = await _localAuth.canCheckBiometrics;
+      final isDeviceSupported = await _localAuth.isDeviceSupported();
+      return isAvailable && isDeviceSupported;
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<void> setBiometricEnabled(bool enabled) async {

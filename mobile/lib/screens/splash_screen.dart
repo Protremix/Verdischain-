@@ -64,7 +64,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       );
     } else {
       if (authService.hasPinSet && authService.isLocked) {
-        // Show PIN entry
+        // Try biometric first if enabled
+        if (authService.biometricEnabled) {
+          final bioSuccess = await authService.authenticateBiometrics();
+          if (bioSuccess && mounted) {
+            walletService.setWalletPin("");  // biometric unlocks the app, PIN not needed
+            _navigateToDashboard();
+            return;
+          }
+        }
+        // Show PIN entry if biometric not enabled or failed
         setState(() {
           _showPinEntry = true;
         });
@@ -80,6 +89,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       context,
       MaterialPageRoute(builder: (_) => const DashboardScreen()),
     );
+  }
+
+  Future<void> _tryBiometric() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final walletService = Provider.of<WalletService>(context, listen: false);
+    final success = await authService.authenticateBiometrics();
+    if (success && mounted) {
+      walletService.setWalletPin("");
+      _navigateToDashboard();
+    }
   }
 
   Future<void> _verifyPin() async {
@@ -248,7 +267,22 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             );
           }),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 16),
+        // Biometric unlock button (only shows if enabled)
+        Consumer<AuthService>(
+          builder: (context, auth, _) {
+            if (!auth.biometricEnabled) return const SizedBox.shrink();
+            return TextButton.icon(
+              onPressed: _tryBiometric,
+              icon: Icon(Icons.fingerprint, color: Color(0xFF16a34a), size: 28),
+              label: Text(
+                'Use Biometric',
+                style: TextStyle(color: Color(0xFF16a34a), fontSize: 13),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 16),
         // Number pad
         Container(
           width: 260,
@@ -265,14 +299,19 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             itemBuilder: (context, index) {
               if (index == 9) return SizedBox();
               if (index == 11) {
-                return IconButton(
-                  onPressed: _pinInput.isNotEmpty
-                      ? () => setState(() {
-                            _pinInput = _pinInput.substring(0, _pinInput.length - 1);
-                            _pinError = null;
-                          })
-                      : null,
-                  icon: Icon(Icons.backspace_outlined, color: Color(0xFF94a3b8)),
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: _pinInput.isNotEmpty
+                          ? () => setState(() {
+                                _pinInput = _pinInput.substring(0, _pinInput.length - 1);
+                                _pinError = null;
+                              })
+                          : null,
+                      icon: Icon(Icons.backspace_outlined, color: Color(0xFF94a3b8)),
+                    ),
+                  ],
                 );
               }
               final num = index == 10 ? 0 : index + 1;
