@@ -36,7 +36,7 @@ class Blake2b {
   int _bufferLen = 0;
 
   Blake2b._internal(this._outputLength)
-      : _h0 = _iv[0] ^ (0x01010000 | _outputLength), // digest_length | key_length | fanout | depth
+      : _h0 = _iv[0] ^ 0x01010000, // digest_length | key_length | fanout | depth
         _h1 = _iv[1],
         _h2 = _iv[2],
         _h3 = _iv[3],
@@ -50,7 +50,6 @@ class Blake2b {
   }
 
   static Blake2b newDigest() => Blake2b._internal(32);
-  static Blake2b newDigest512() => Blake2b._internal(64);
 
   void update(Uint8List data) {
     for (int i = 0; i < data.length; i++) {
@@ -80,10 +79,6 @@ class Blake2b {
     if (_outputLength > 8) _writeU64(result, 8, _h1);
     if (_outputLength > 16) _writeU64(result, 16, _h2);
     if (_outputLength > 24) _writeU64(result, 24, _h3);
-    if (_outputLength > 32) _writeU64(result, 32, _h4);
-    if (_outputLength > 40) _writeU64(result, 40, _h5);
-    if (_outputLength > 48) _writeU64(result, 48, _h6);
-    if (_outputLength > 56) _writeU64(result, 56, _h7);
     return result;
   }
 
@@ -176,13 +171,6 @@ class Blake2b {
 // Convenience function: Blake2b-256 hash of input bytes
 Uint8List blake2b256(Uint8List input) {
   final b = Blake2b.newDigest();
-  b.update(input);
-  return b.digest();
-}
-
-// Convenience function: Blake2b-512 hash of input bytes (for SS58 checksums)
-Uint8List blake2b512(Uint8List input) {
-  final b = Blake2b.newDigest512();
   b.update(input);
   return b.digest();
 }
