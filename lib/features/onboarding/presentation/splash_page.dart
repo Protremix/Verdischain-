@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:verdis_wallet/core/router/route_names.dart';
-import 'package:verdis_wallet/shared/widgets/verdis_logo.dart';
 import '../domain/wallet_repository.dart';
 import 'package:verdis_wallet/core/config/network_config.dart';
 import 'package:verdis_wallet/features/home/presentation/home_providers.dart';
@@ -59,10 +58,12 @@ class _SplashPageState extends ConsumerState<SplashPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Animated V Logo
-            const VerdisLogo(
-              size: 130,
-              color: Color(0xFF00FF88),
+            // Verdis Chain logo
+            Image.asset(
+              'assets/images/verdis-logo-white.png',
+              width: 130,
+              height: 130,
+              fit: BoxFit.contain,
             ),
             const SizedBox(height: 32),
 

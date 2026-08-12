@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:verdis_wallet/shared/widgets/verdis_widgets.dart';
 import 'home_providers.dart';
+import 'package:verdis_wallet/features/settings/presentation/settings_page.dart';
 import 'portfolio_view.dart';
 
 /// Main Dashboard Page with custom AppBar (Wallet Address + Network Status) and Bottom Navigation Bar.
@@ -79,13 +80,8 @@ class HomePage extends ConsumerWidget {
             subtitle: 'Stake VRDX with green validator nodes to earn rewards.',
           ),
 
-          // Tab 4: Settings View
-          _buildPlaceholderTab(
-            context,
-            icon: Icons.settings,
-            title: 'Wallet Settings',
-            subtitle: 'Manage security, seed phrase backup, and RPC nodes.',
-          ),
+          // Tab 4: Settings
+          const SettingsPage(),
         ],
       ),
       bottomNavigationBar: Container(

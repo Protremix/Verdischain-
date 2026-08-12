@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'onboarding_providers.dart';
+import 'package:verdis_wallet/features/home/presentation/home_providers.dart';
 
 /// 6-Digit PIN Setup and Confirmation screen
 class PinSetupPage extends ConsumerStatefulWidget {
@@ -50,6 +51,8 @@ class _PinSetupPageState extends ConsumerState<PinSetupPage> {
         );
 
     if (success && mounted) {
+      // Update the selectedAddressProvider with the real wallet address
+      ref.read(selectedAddressProvider.notifier).state = address;
       // Clear navigation history and go to Home
       context.go(RouteNames.home);
     }

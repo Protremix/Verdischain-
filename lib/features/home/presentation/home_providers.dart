@@ -6,7 +6,7 @@ import '../domain/home_repository.dart';
 
 /// Active wallet address provider
 final selectedAddressProvider = StateProvider<String>((ref) {
-  return '0x71C7656EC7ab88b098defB751B7401B5f6d8976F';
+  return '';
 });
 
 /// Home Repository Provider
