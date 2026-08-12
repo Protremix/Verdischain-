@@ -30,7 +30,7 @@ except ImportError:
     sys.exit(1)
 
 # ===== Configuration =====
-NODE_URL = os.environ.get("VERDIS_NODE_URL", "http://127.0.0.1:9950")
+NODE_URL = os.environ.get("VERDIS_NODE_URL", "http://127.0.0.1:9933")
 PORT = int(os.environ.get("VERDIS_RELAY_PORT", "5001"))
 SS58_FORMAT = 909
 TOKEN_DECIMALS = 9
