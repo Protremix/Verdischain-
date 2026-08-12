@@ -1,6 +1,5 @@
 import 'package:verdis_wallet/core/router/route_names.dart';
 import 'package:flutter/material.dart';
-import 'package:verdis_wallet/shared/widgets/verdis_logo.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:verdis_wallet/shared/widgets/verdis_widgets.dart';

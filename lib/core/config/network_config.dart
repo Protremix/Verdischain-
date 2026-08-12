@@ -3,11 +3,11 @@ class NetworkConfig {
   NetworkConfig._();
 
   // RPC Endpoints
-  static const String rpcUrl = 'https://rpc.verdischain.com';
-  static const String wsUrl = 'wss://rpc.verdischain.com';
-  static const String apiUrl = 'https://api.verdischain.com';
-  static const String explorerUrl = 'https://explorer.verdischain.com';
-  static const String faucetUrl = 'https://faucet.verdischain.com';
+  static const String rpcUrl = 'https://verdischain.com/rpc';
+  static const String wsUrl = 'wss://verdischain.com/rpc';
+  static const String apiUrl = 'https://verdischain.com/api/v1';
+  static const String explorerUrl = 'https://verdischain.com/explorer';
+  static const String faucetUrl = 'https://verdischain.com/faucet';
 
   // Chain Info
   static const String chainName = 'Verdis';
@@ -16,7 +16,7 @@ class NetworkConfig {
   static const String tokenSymbol = 'VRDX';
   static const String tokenName = 'Verdis';
   static const int decimals = 9; // Verdis uses 9 decimals
-  static const String genesisHash = '0x...';
+  static const String genesisHash = ''; // Set after chain spec freeze
   static const int specVersion = 10;
   static const String runtimeVersion = '3.0.0';
 

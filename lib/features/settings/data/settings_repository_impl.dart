@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:verdis_wallet/core/security/secure_storage.dart';
 import 'package:verdis_wallet/core/security/wallet_crypto.dart';

@@ -1,5 +1,4 @@
 import 'package:bs58/bs58.dart';
-import 'package:crypto/crypto.dart';
 import 'package:verdis_wallet/core/security/blake2b.dart';
 import 'dart:typed_data';
 
