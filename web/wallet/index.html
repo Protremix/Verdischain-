@@ -595,6 +595,7 @@ window.copyToClipboard = function(text) {
 async function generateMnemonic() {
   // Use Polkadot's built-in BIP39 mnemonic generator (guaranteed compatible with Keyring)
   if (window.PolkadotCrypto && PolkadotCrypto.mnemonicGenerate) {
+    await PolkadotCrypto.cryptoWaitReady();
     return PolkadotCrypto.mnemonicGenerate();
   }
   // Fallback: custom BIP39 (should not normally be reached)
@@ -668,7 +669,7 @@ window.importWallet = async function() {
     const { address, publicKey } = await deriveAddressFromMnemonic(input);
 
     saveWallet(input, publicKey, address);
-    _sessionKeypair = kp;
+    await unlockWallet(input); // derives keypair again and sets _sessionMnemonic/_sessionKeypair correctly
     toast('Wallet imported successfully!', 'success');
     setTimeout(loadDashboard, 500);
   } catch (e) {
