@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:verdis_wallet/shared/widgets/verdis_logo.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -47,21 +46,15 @@ class _AboutPageState extends ConsumerState<AboutPage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Brand logo
-            const VerdisLogo(size: 64, animate: false),
-            const SizedBox(height: 16),
-            // Version
+          // Brand logo — same asset used on the splash screen, for consistent branding
           Center(
             child: Column(
               children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(Icons.eco, size: 48, color: Color(0xFF00FF88)),
+                Image.asset(
+                  'assets/images/verdis-logo-white.png',
+                  width: 96,
+                  height: 96,
+                  fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 16),
                 Text('Verdis Wallet', style: Theme.of(context).textTheme.headlineSmall),
@@ -102,7 +95,7 @@ class _AboutPageState extends ConsumerState<AboutPage> {
                   leading: const Icon(Icons.code),
                   title: const Text('GitHub'),
                   trailing: const Icon(Icons.open_in_new, size: 18),
-                  onTap: () => _launchUrl('https://github.com/verdischain'),
+                  onTap: () => _launchUrl('https://github.com/Protremix/Verdischain-'),
                 ),
                 const Divider(),
                 ListTile(
@@ -126,13 +119,6 @@ class _AboutPageState extends ConsumerState<AboutPage> {
                   title: const Text('Privacy Policy'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _launchUrl('https://verdischain.com/privacy'),
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.gavel),
-                  title: const Text('License'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _launchUrl('https://verdischain.com/license'),
                 ),
                 const Divider(),
                 ListTile(
