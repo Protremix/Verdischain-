@@ -110,9 +110,11 @@ class WalletCrypto {
     if (id < 64) {
       return Uint8List.fromList([id]);
     } else {
-      // Correct SS58 multi-byte encoding for prefix >= 64
-      final first = 0x40 | ((id >> 8) & 0x3F);
-      final second = id & 0xFF;
+      // Python scalecodec SS58 encoding (matches on-chain addresses)
+      // first = ((prefix >> 2) & 0x3F) | 0x40
+      // second = (prefix >> 8) | ((prefix & 0x03) << 6)
+      final first = ((id >> 2) & 0x3F) | 0x40;
+      final second = (id >> 8) | ((id & 0x03) << 6);
       return Uint8List.fromList([first, second]);
     }
   }
