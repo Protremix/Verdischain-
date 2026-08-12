@@ -127,6 +127,11 @@ class RelayHandler(BaseHTTPRequestHandler):
                         stake = int(stake_result.get("result", 0))
                         name_result = substrate.rpc_request("dpos_validatorName", [v_addr])
                         name = name_result.get("result", v_addr[:12] + "...")
+                        # Convert byte array to string if needed
+                        if isinstance(name, list):
+                            name = "".join(chr(b) for b in name if isinstance(b, int) and 0 <= b < 256)
+                        elif isinstance(name, bytes):
+                            name = name.decode("utf-8", errors="replace")
                         green_result = substrate.rpc_request("eco_getGreenScore", [v_addr])
                         green_score = green_result.get("result", 0)
                         validator_list.append({

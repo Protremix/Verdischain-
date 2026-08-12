@@ -17,14 +17,14 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 pub mod weights;
-use weights::WeightInfo;
-pub use weights::SubstrateWeight;
 use codec::{Decode, Encode};
 use frame_support::dispatch::DispatchResult;
 use frame_support::traits::Currency;
 use scale_info::TypeInfo;
 use sp_runtime::traits::AccountIdConversion;
 use sp_std::vec::Vec;
+pub use weights::SubstrateWeight;
+use weights::WeightInfo;
 
 pub use pallet::*;
 
@@ -133,7 +133,7 @@ pub mod pallet {
 
     #[pallet::config]
     pub trait Config: frame_system::Config {
-		type WeightInfo: WeightInfo;
+        type WeightInfo: WeightInfo;
         type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
         type MaxPortIdLen: Get<u32>;
         type MaxPacketDataLen: Get<u32>;

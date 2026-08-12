@@ -62,52 +62,19 @@ def save_stats(stats):
             }, f, indent=2)
     except: pass
 
-def reconnect():
-    global substrate
-    try:
-        substrate = SubstrateInterface(url=NODE_URL, ss58_format=SS58_FORMAT, auto_discover=True, type_registry_preset=None)
-        print(f'[{time.strftime("%H:%M:%S")}] Reconnected to node')
-        return True
-    except Exception as e:
-        print(f'[{time.strftime("%H:%M:%S")}] Reconnect failed: {e}')
-        return False
-
-def _attempt_drip(dest_address):
-    call = substrate.compose_call(
-        call_module='Balances',
-        call_function='transfer_allow_death',
-        call_params={'dest': dest_address, 'value': AMOUNT_PLANCK}
-    )
-    extrinsic = substrate.create_signed_extrinsic(call=call, keypair=faucet_kp)
-    tx_hash = substrate.submit_extrinsic(extrinsic, wait_for_inclusion=False)
-    # Ensure tx_hash is always a proper hex string
-    if not isinstance(tx_hash, str):
-        try:
-            tx_hash = '0x' + tx_hash.extrinsic_hash.hex()
-        except Exception:
-            try:
-                tx_hash = '0x' + tx_hash.data.hex()
-            except Exception:
-                tx_hash = str(tx_hash)
-    return "0x" + extrinsic.extrinsic_hash.hex()
-
 def send_drip(dest_address):
     with lock:
         try:
-            tx_hash = _attempt_drip(dest_address)
-            return True, tx_hash
+            call = substrate.compose_call(
+                call_module='Balances',
+                call_function='transfer_allow_death',
+                call_params={'dest': dest_address, 'value': AMOUNT_PLANCK}
+            )
+            extrinsic = substrate.create_signed_extrinsic(call=call, keypair=faucet_kp)
+            tx_hash = substrate.submit_extrinsic(extrinsic, wait_for_inclusion=False)
+            return True, "0x" + extrinsic.extrinsic_hash.hex()
         except Exception as e:
-            err = str(e)
-            reconnect_triggers = ('broken pipe', 'connection', 'websocket', 'closed', 'timeout')
-            if any(t in err.lower() for t in reconnect_triggers):
-                print(f'[{time.strftime("%H:%M:%S")}] Connection error ({err}), reconnecting...')
-                if reconnect():
-                    try:
-                        tx_hash = _attempt_drip(dest_address)
-                        return True, tx_hash
-                    except Exception as e2:
-                        return False, str(e2)
-            return False, err
+            return False, str(e)
 
 class FaucetHandler(BaseHTTPRequestHandler):
     def _cors(self):

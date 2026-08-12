@@ -19,13 +19,13 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 pub mod weights;
-use weights::WeightInfo;
-pub use weights::SubstrateWeight;
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
 use sp_runtime::traits::Saturating;
+pub use weights::SubstrateWeight;
+use weights::WeightInfo;
 
 use sp_std::prelude::*;
 
@@ -58,7 +58,8 @@ pub mod pallet {
 
     #[pallet::config]
     pub trait Config: frame_system::Config {
-		type WeightInfo: WeightInfo;}
+        type WeightInfo: WeightInfo;
+    }
 
     /// Map of block_number -> PoH hash
     #[pallet::storage]
