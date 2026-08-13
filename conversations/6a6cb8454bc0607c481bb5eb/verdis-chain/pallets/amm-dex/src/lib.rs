@@ -715,7 +715,7 @@ pub mod pallet {
                 / 10_000u32.into();
 
             // LP fee = total_fee - protocol_fee (the portion that stays in the pool)
-            let lp_fee = total_fee
+            let _lp_fee = total_fee
                 .checked_sub(&protocol_fee)
                 .unwrap_or(BalanceOf::<T>::zero());
 
@@ -1121,7 +1121,7 @@ pub mod pallet {
                 / 10_000u32.into();
 
             // LP fee = total_fee - protocol_fee (the portion that stays in the pool)
-            let lp_fee = total_fee
+            let _lp_fee = total_fee
                 .checked_sub(&protocol_fee)
                 .unwrap_or(BalanceOf::<T>::zero());
 
@@ -1188,6 +1188,8 @@ pub mod pallet {
             TotalVolume::<T>::mutate(|v| *v = v.saturating_add(amount_in));
             TotalSwaps::<T>::mutate(|s| *s = s.saturating_add(1));
 
+            // For fungible token swaps, protocol fee stays in pool (benefits LPs)
+            // Native VRDX protocol fees are collected in the swap() function above
             Self::deposit_event(Event::TokenSwapExecuted {
                 pool_id,
                 trader: who,
@@ -1195,7 +1197,7 @@ pub mod pallet {
                 asset_out,
                 amount_in,
                 amount_out,
-                fee,
+                fee: total_fee,
             });
             Ok(())
         }
