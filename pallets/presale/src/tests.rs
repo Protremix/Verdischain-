@@ -57,7 +57,7 @@ impl crate::Config for Test {
     type PalletId = PresalePalletId;
     type AdminOrigin = frame_system::EnsureRoot<u64>;
     type Vesting = ();
-    type WeightInfo = crate::SubstrateWeight<Test>;
+    type WeightInfo = ();
 }
 
 pub fn new_test_ext() -> TestExternalities {

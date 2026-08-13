@@ -1190,7 +1190,7 @@ mod tests {
         type UnbondingPeriod = UnbondingPeriod;
         type PalletId = DposPalletId;
         type MaxStakePerValidator = MaxStakePerValidator;
-        type RegistrationDeposit = ConstU128<10_000_000_000_000>;
+        type RegistrationDeposit = ConstU128<0>;
         type ReactivationCooldown = ReactivationCooldown;
         type MaxCommission = MaxCommission;
         type WeightInfo = SubstrateWeight<Test>;
