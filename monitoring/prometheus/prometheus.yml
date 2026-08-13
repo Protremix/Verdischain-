@@ -1,0 +1,124 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+  scrape_timeout: 8s
+
+rule_files:
+  - "alert-rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+scrape_configs:
+  # Bootnodes
+  - job_name: 'verdis-boot-1'
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:9611']
+        labels:
+          chain: 'verdis'
+          node_role: 'bootnode'
+          instance: 'boot-1'
+
+  - job_name: 'verdis-boot-2'
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:9612']
+        labels:
+          chain: 'verdis'
+          node_role: 'bootnode'
+          instance: 'boot-2'
+
+  # Validators
+  - job_name: 'verdis-val-1'
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:9613']
+        labels:
+          chain: 'verdis'
+          node_role: 'validator'
+          instance: 'val-1'
+
+  - job_name: 'verdis-val-2'
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:9614']
+        labels:
+          chain: 'verdis'
+          node_role: 'validator'
+          instance: 'val-2'
+
+  - job_name: 'verdis-val-3'
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:9615']
+        labels:
+          chain: 'verdis'
+          node_role: 'validator'
+          instance: 'val-3'
+
+  - job_name: 'verdis-val-4'
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:9616']
+        labels:
+          chain: 'verdis'
+          node_role: 'validator'
+          instance: 'val-4'
+
+  - job_name: 'verdis-val-5'
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:9617']
+        labels:
+          chain: 'verdis'
+          node_role: 'validator'
+          instance: 'val-5'
+
+  # RPC nodes
+  - job_name: 'verdis-rpc-1'
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:9618']
+        labels:
+          chain: 'verdis'
+          node_role: 'rpc'
+          instance: 'rpc-1'
+
+  - job_name: 'verdis-rpc-2'
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:9619']
+        labels:
+          chain: 'verdis'
+          node_role: 'rpc'
+          instance: 'rpc-2'
+
+  # Infrastructure
+  - job_name: 'node-exporter'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['node-exporter:9100']
+        labels:
+          environment: 'testnet'
+
+  - job_name: 'prometheus'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['host.docker.internal:9090']
+
+  - job_name: 'alertmanager'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['alertmanager:9093']

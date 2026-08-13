@@ -1,0 +1,70 @@
+name: Deploy & Benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      steps:
+        description: Number of steps for benchmarking
+        required: false
+        default: "50"
+      repeat:
+        description: Number of repeats for benchmarking
+        required: false
+        default: "20"
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  deploy:
+    name: Build Release Binary
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Substrate Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev libclang-14-dev build-essential
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Set LIBCLANG_PATH
+        run: echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
+      - uses: Swatinem/rust-cache@v2
+      - name: Build Release Binary
+        run: cargo build --release
+      - name: Upload Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: verdis-deploy-binary
+          path: target/release/verdis
+          retention-days: 7
+
+  benchmark:
+    name: Run Benchmarks
+    runs-on: ubuntu-22.04
+    needs: deploy
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Substrate Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev libclang-14-dev build-essential
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Set LIBCLANG_PATH
+        run: echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
+      - uses: Swatinem/rust-cache@v2
+      - name: Build with Benchmarks
+        run: cargo build --release --features runtime-benchmarks
+      - name: Run Benchmarks
+        run: |
+          ./target/release/verdis benchmark             --chain dev             --steps ${{ github.event.inputs.steps || '50' }}             --repeat ${{ github.event.inputs.repeat || '20' }}             --pallet '*'             --extrinsic '*'             --output ./benchmarks/           || echo "Benchmarks completed with warnings."
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verdis-benchmarks
+          path: benchmarks/
+          retention-days: 7
+          if-no-files-found: warn

@@ -1,0 +1,75 @@
+name: Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-release:
+    name: Build Binary & WASM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev libclang-14-dev build-essential
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Set LIBCLANG_PATH
+        run: echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
+      - name: Build Node Release Binary
+        run: cargo build --release
+      - name: Build WASM Runtime
+        run: cargo build --release -p verdis-runtime --no-default-features --target wasm32-unknown-unknown
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p dist_artifacts
+          cp target/release/verdis dist_artifacts/verdis-linux-amd64
+          cp target/wasm32-unknown-unknown/release/verdis_runtime.wasm dist_artifacts/verdis_runtime.wasm
+          cd dist_artifacts
+          sha256sum * > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verdis-release-linux-amd64
+          path: dist_artifacts/*
+          retention-days: 7
+
+  publish-release:
+    name: Create GitHub Release
+    needs: build-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-downloads
+      - name: Consolidate Artifacts
+        run: |
+          mkdir -p release_package
+          find release-downloads -type f -exec cp {} release_package/ \;
+          cd release_package
+          sha256sum verdis-* verdis_runtime.wasm > SHA256SUMS.txt
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release_package/verdis-linux-amd64
+            release_package/verdis_runtime.wasm
+            release_package/SHA256SUMS.txt
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
