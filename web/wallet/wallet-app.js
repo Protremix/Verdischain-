@@ -39,7 +39,7 @@
 
 
     // --- Account Info via state_getStorage (system_account RPC not available) ---
-    const SYSTEM_ACCOUNT_PREFIX = 'REDACTED_KEY';
+    const SYSTEM_ACCOUNT_PREFIX = '0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9';
     async function getAccountInfo(accountIdHex) {
       try {
         var acctHex = accountIdHex.startsWith('0x') ? accountIdHex.slice(2) : accountIdHex;
