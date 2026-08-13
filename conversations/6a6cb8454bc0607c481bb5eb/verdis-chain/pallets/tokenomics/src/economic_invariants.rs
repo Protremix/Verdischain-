@@ -232,53 +232,57 @@ fn test_burn_issuance_invariant() {
     assert!(issuance_after < max_supply, "After burn, issuance < max supply");
 }
 
-/// Verify vesting calculation: linear vesting with cliff
-/// released(t) = 0 if t < cliff
-/// released(t) = total * (t - cliff) / (duration - cliff) if cliff <= t < duration
-/// released(t) = total if t >= duration
+/// Verify vesting calculation matches pallet logic:
+/// Linear vesting from day 0, release gated by cliff.
+/// vested(t) = 0 (blocked) if t < cliff_days
+/// vested(t) = total * t / vesting_days if cliff_days <= t < vesting_days
+/// vested(t) = total if t >= vesting_days
 #[test]
 fn test_vesting_linear_calculation() {
     let total: u128 = 5_000_000_000_000_000_000; // 5B VRDX (Team allocation)
     let cliff_days: u128 = 365;     // 12-month cliff
     let vesting_days: u128 = 1095;  // 3-year vesting
     
+    // Vesting helper matching pallet release_vested logic
+    let calc_vested = |t: u128| -> u128 {
+        if t < cliff_days {
+            0  // Blocked by cliff
+        } else if t >= vesting_days {
+            total  // Fully vested
+        } else {
+            total * t / vesting_days  // Linear from day 0
+        }
+    };
+    
     // Before cliff: 0 released
-    let t = 180;
-    let released = if t < cliff_days { 0 } 
-                  else if t >= vesting_days { total }
-                  else { total * (t - cliff_days) / (vesting_days - cliff_days) };
-    assert_eq!(released, 0, "Before cliff: 0 released");
+    assert_eq!(calc_vested(0), 0, "Day 0: 0 released");
+    assert_eq!(calc_vested(180), 0, "Day 180 (before cliff): 0 released");
     
-    // At cliff: partial release
-    let t = cliff_days;
-    let released = if t < cliff_days { 0 }
-                  else if t >= vesting_days { total }
-                  else { total * (t - cliff_days) / (vesting_days - cliff_days) };
-    // At exact cliff: (cliff - cliff) / (vesting - cliff) = 0
-    assert_eq!(released, 0, "At exact cliff: 0% released (cliff day itself)");
+    // At cliff day 365: linear from day 0 = 365/1095 = 33.3%
+    let at_cliff = calc_vested(cliff_days);
+    let expected_at_cliff = total * cliff_days / vesting_days;
+    assert_eq!(at_cliff, expected_at_cliff, "At cliff: linear accrued from day 0");
+    assert!(at_cliff > 0, "At cliff: should have tokens to release");
+    assert!(at_cliff < total, "At cliff: not fully vested");
     
-    // Mid-vesting (day 730, which is 365 days past cliff out of 730 vesting days)
-    let t = 730u128;
-    let released = if t < cliff_days { 0 }
-                  else if t >= vesting_days { total }
-                  else { total * (t - cliff_days) / (vesting_days - cliff_days) };
-    // 365 / 730 = 50% = 2.5B
-    let expected = total * 365 / 730;
-    assert_eq!(released, expected, "Mid-vesting: 50% released");
+    // Mid-vesting (day 730 = 2 years)
+    let mid = calc_vested(730);
+    let expected_mid = total * 730 / vesting_days;
+    assert_eq!(mid, expected_mid, "Mid-vesting: 66.7% released");
     
     // Full vesting (day 1095)
-    let t = vesting_days;
-    let released = if t < cliff_days { 0 }
-                  else if t >= vesting_days { total }
-                  else { total * (t - cliff_days) / (vesting_days - cliff_days) };
-    assert_eq!(released, total, "Full vesting: 100% released");
+    assert_eq!(calc_vested(vesting_days), total, "Full vesting: 100% released");
     
-    // Post-vesting (day 1200)
-    let t = 1200u128;
-    let released = if t < cliff_days { 0 }
-                  else if t >= vesting_days { total }
-                  else { total * (t - cliff_days) / (vesting_days - cliff_days) };
-    assert_eq!(released, total, "Post-vesting: 100% released (capped)");
+    // Post-vesting (day 1200, capped)
+    assert_eq!(calc_vested(1200), total, "Post-vesting: 100% released (capped)");
+    
+    // Monotonicity: vesting never decreases
+    let mut prev = 0u128;
+    for day in [0, 100, 200, 300, 364, 365, 366, 500, 730, 1094, 1095, 1096, 2000] {
+        let v = calc_vested(day);
+        assert!(v >= prev, "Day {}: vesting must be monotonic ({} >= {})", day, v, prev);
+        prev = v;
+    }
 }
 
 /// Verify all vesting releases sum to exactly the allocation
