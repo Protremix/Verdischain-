@@ -627,3 +627,634 @@ fn test_close_channel_non_root_rejected() {
         );
     });
 }
+
+// ===========================================================================
+// IBC HAPPY-PATH TESTS — Full lifecycle coverage
+// ===========================================================================
+
+/// Test: Full IBC client creation succeeds and increments counter
+#[test]
+fn test_create_client_success() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        assert_ok!(Pallet::<Test>::create_client(
+            RawOrigin::Root.into(),
+            1,    // chain_id
+            100,  // latest_height
+            86400 // trusting_period
+        ));
+        
+        // Verify client was created
+        let client = IbcClients::<Test>::get(0);
+        assert!(client.is_some(), "Client 0 should exist");
+        let client = client.unwrap();
+        assert_eq!(client.chain_id, 1);
+        assert_eq!(client.latest_height, 100);
+        assert_eq!(client.trusting_period, 86400);
+        assert!(!client.frozen, "Client should not be frozen");
+        
+        // Verify counter incremented
+        assert_eq!(IbcClientCounter::<Test>::get(), 1);
+    });
+}
+
+/// Test: Full IBC connection opening succeeds
+#[test]
+fn test_open_connection_success() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        
+        // Create client first
+        assert_ok!(Pallet::<Test>::create_client(
+            RawOrigin::Root.into(),
+            1, 100, 86400
+        ));
+        
+        // Open connection
+        assert_ok!(Pallet::<Test>::open_connection(
+            RawOrigin::Root.into(),
+            0, // client_id
+            1  // counterparty_client_id
+        ));
+        
+        // Verify connection created
+        let conn = IbcConnections::<Test>::get(0);
+        assert!(conn.is_some(), "Connection 0 should exist");
+        let conn = conn.unwrap();
+        assert_eq!(conn.client_id, 0);
+        assert_eq!(conn.counterparty_client_id, 1);
+        assert_eq!(conn.state, 3, "Connection should be in Open state");
+        
+        // Verify counter
+        assert_eq!(IbcConnectionCounter::<Test>::get(), 1);
+    });
+}
+
+/// Test: Full IBC channel opening succeeds
+#[test]
+fn test_open_channel_success() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        
+        // Setup: create client + connection
+        assert_ok!(Pallet::<Test>::create_client(
+            RawOrigin::Root.into(),
+            1, 100, 86400
+        ));
+        assert_ok!(Pallet::<Test>::open_connection(
+            RawOrigin::Root.into(),
+            0, 1
+        ));
+        
+        // Open channel
+        assert_ok!(Pallet::<Test>::open_channel(
+            RawOrigin::Root.into(),
+            0, // connection_id
+            0, // counterparty_channel_id
+            b"transfer".to_vec()
+        ));
+        
+        // Verify channel created
+        let ch = IbcChannels::<Test>::get(0);
+        assert!(ch.is_some(), "Channel 0 should exist");
+        let ch = ch.unwrap();
+        assert_eq!(ch.connection_id, 0);
+        assert_eq!(ch.state, 3, "Channel should be in Open state");
+        assert_eq!(ch.port_id, b"transfer".to_vec());
+        assert_eq!(ch.counterparty_channel_id, Some(0));
+        
+        // Verify counter
+        assert_eq!(IbcChannelCounter::<Test>::get(), 1);
+    });
+}
+
+/// Test: is_channel_open returns true for open channel, false for closed
+#[test]
+fn test_is_channel_open() {
+    new_test_ext().execute_with(|| {
+        setup_chain();
+        
+        assert!(Pallet::<Test>::is_channel_open(0), "Channel 0 should be open");
+        assert!(!Pallet::<Test>::is_channel_open(999), "Channel 999 should not exist");
+    });
+}
+
+/// Test: Send packet succeeds on open channel
+#[test]
+fn test_send_packet_success() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        let acct = sp_core::crypto::AccountId32::from([0xaa; 32]);
+        
+        setup_chain();
+        
+        assert_ok!(Pallet::<Test>::send_packet(
+            RawOrigin::Signed(acct).into(),
+            0, // channel_id
+            b"transfer".to_vec(),
+            b"transfer".to_vec(),
+            b"test_packet_data".to_vec(),
+            1_000_000, // timeout_height (far future)
+            0, // no timestamp timeout
+        ));
+        
+        // Verify packet stored
+        let packet = IbcPackets::<Test>::get((0, 1));
+        assert!(packet.is_some(), "Packet (0, 1) should exist");
+        let packet = packet.unwrap();
+        assert_eq!(packet.sequence, 1);
+        assert_eq!(packet.source_channel, 0);
+        assert_eq!(packet.data, b"test_packet_data".to_vec());
+        
+        // Verify next sequence incremented
+        assert_eq!(IbcNextSequenceSend::<Test>::get(0), 2);
+    });
+}
+
+/// Test: Full packet lifecycle — send → receive → acknowledge
+#[test]
+fn test_full_packet_lifecycle() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        let acct = sp_core::crypto::AccountId32::from([0xaa; 32]);
+        
+        setup_chain();
+        
+        // Step 1: Send packet
+        assert_ok!(Pallet::<Test>::send_packet(
+            RawOrigin::Signed(acct.clone()).into(),
+            0,
+            b"transfer".to_vec(),
+            b"transfer".to_vec(),
+            b"lifecycle_data".to_vec(),
+            1_000_000,
+            0,
+        ));
+        
+        // Step 2: Receive packet
+        assert_ok!(Pallet::<Test>::recv_packet(
+            RawOrigin::Signed(acct.clone()).into(),
+            0, // channel_id
+            1, // sequence
+        ));
+        
+        // Verify recv sequence incremented
+        assert_eq!(IbcNextSequenceRecv::<Test>::get(0), 2);
+        
+        // Step 3: Acknowledge packet
+        assert_ok!(Pallet::<Test>::acknowledge_packet(
+            RawOrigin::Signed(acct).into(),
+            0, // channel_id
+            1, // sequence
+        ));
+        
+        // Verify ack sequence incremented
+        assert_eq!(IbcNextSequenceAck::<Test>::get(0), 2);
+    });
+}
+
+/// Test: Multiple packets sent in sequence
+#[test]
+fn test_multiple_packets_sequential() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        let acct = sp_core::crypto::AccountId32::from([0xbb; 32]);
+        
+        setup_chain();
+        
+        // Send 3 packets
+        for i in 1..=3 {
+            assert_ok!(Pallet::<Test>::send_packet(
+                RawOrigin::Signed(acct.clone()).into(),
+                0,
+                b"transfer".to_vec(),
+                b"transfer".to_vec(),
+                format!("packet_{}", i).as_bytes().to_vec(),
+                1_000_000,
+                0,
+            ));
+        }
+        
+        // Verify all packets stored
+        for i in 1..=3 {
+            let packet = IbcPackets::<Test>::get((0, i));
+            assert!(packet.is_some(), "Packet {} should exist", i);
+            assert_eq!(
+                packet.unwrap().data,
+                format!("packet_{}", i).as_bytes().to_vec()
+            );
+        }
+        
+        // Verify send sequence = 4 (next)
+        assert_eq!(IbcNextSequenceSend::<Test>::get(0), 4);
+    });
+}
+
+/// Test: IBC token transfer succeeds on open channel
+#[test]
+fn test_ibc_transfer_success() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        
+        // Fund an account for the transfer
+        let sender = sp_core::crypto::AccountId32::from([0xcc; 32]);
+        let _ = pallet_balances::Pallet::<Test>::deposit_creating(&sender, 1_000_000_000);
+        
+        setup_chain();
+        
+        assert_ok!(Pallet::<Test>::transfer(
+            RawOrigin::Signed(sender).into(),
+            0, // channel_id
+            b"uvrdx".to_vec(), // denom
+            1_000_000, // amount
+            b"recipient_address_hex".to_vec(),
+        ));
+        
+        // Verify stats updated
+        let (clients, conns, channels, transfers, volume) = Pallet::<Test>::get_stats();
+        assert_eq!(transfers, 1, "Total transfers should be 1");
+        assert_eq!(volume, 1_000_000, "Total volume should be 1_000_000");
+    });
+}
+
+/// Test: IBC stats reflect correct counts after operations
+#[test]
+fn test_ibc_stats_after_operations() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        
+        // Initial stats
+        let (c, conn, ch, t, v) = Pallet::<Test>::get_stats();
+        assert_eq!(c, 0);
+        assert_eq!(conn, 0);
+        assert_eq!(ch, 0);
+        assert_eq!(t, 0);
+        assert_eq!(v, 0);
+        
+        setup_chain();
+        
+        // After setup: 1 client, 1 connection, 1 channel
+        let (c, conn, ch, t, v) = Pallet::<Test>::get_stats();
+        assert_eq!(c, 1, "Should have 1 client");
+        assert_eq!(conn, 1, "Should have 1 connection");
+        assert_eq!(ch, 1, "Should have 1 channel");
+        assert_eq!(t, 0, "Should have 0 transfers");
+        assert_eq!(v, 0, "Should have 0 volume");
+    });
+}
+
+/// Test: Channel close succeeds when called by root
+#[test]
+fn test_close_channel_success() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        
+        setup_chain();
+        
+        // Verify channel is open
+        assert!(Pallet::<Test>::is_channel_open(0));
+        
+        // Close channel (root only)
+        assert_ok!(Pallet::<Test>::close_channel(
+            RawOrigin::Root.into(),
+            0
+        ));
+        
+        // Verify channel is now closed (state = 4)
+        let ch = IbcChannels::<Test>::get(0).unwrap();
+        assert_eq!(ch.state, 4, "Channel should be in Closed state");
+        assert!(!Pallet::<Test>::is_channel_open(0), "Channel should not be open");
+    });
+}
+
+/// Test: Cannot send packet on closed channel
+#[test]
+fn test_send_packet_closed_channel_rejected() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        let acct = sp_core::crypto::AccountId32::from([0xdd; 32]);
+        
+        setup_chain();
+        
+        // Close channel first
+        assert_ok!(Pallet::<Test>::close_channel(
+            RawOrigin::Root.into(),
+            0
+        ));
+        
+        // Try to send packet on closed channel
+        assert_noop!(
+            Pallet::<Test>::send_packet(
+                RawOrigin::Signed(acct).into(),
+                0,
+                b"transfer".to_vec(),
+                b"transfer".to_vec(),
+                b"data".to_vec(),
+                1_000_000,
+                0,
+            ),
+            Error::<Test>::ChannelClosed
+        );
+    });
+}
+
+/// Test: Client update succeeds
+#[test]
+fn test_update_client_success() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        
+        setup_chain();
+        
+        // Update client to new height
+        assert_ok!(Pallet::<Test>::update_client(
+            RawOrigin::Root.into(),
+            0, // client_id
+            200, // new height
+        ));
+        
+        // Verify client updated
+        let client = IbcClients::<Test>::get(0).unwrap();
+        assert_eq!(client.latest_height, 200, "Client height should be 200");
+    });
+}
+
+/// Test: Freeze client succeeds
+#[test]
+fn test_freeze_client_success() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        
+        setup_chain();
+        
+        // Freeze client
+        assert_ok!(Pallet::<Test>::freeze_client(
+            RawOrigin::Root.into(),
+            0
+        ));
+        
+        // Verify client is frozen
+        let client = IbcClients::<Test>::get(0).unwrap();
+        assert!(client.frozen, "Client should be frozen");
+    });
+}
+
+/// Test: Multiple clients, connections, and channels
+#[test]
+fn test_multiple_clients_and_channels() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        
+        // Create 3 clients
+        for i in 0..3 {
+            assert_ok!(Pallet::<Test>::create_client(
+                RawOrigin::Root.into(),
+                i + 1,
+                100 * (i as u64 + 1),
+                86400
+            ));
+        }
+        assert_eq!(IbcClientCounter::<Test>::get(), 3);
+        
+        // Create 3 connections (each on different client)
+        for i in 0..3 {
+            assert_ok!(Pallet::<Test>::open_connection(
+                RawOrigin::Root.into(),
+                i, // client_id
+                10 + i
+            ));
+        }
+        assert_eq!(IbcConnectionCounter::<Test>::get(), 3);
+        
+        // Create 3 channels (each on different connection)
+        for i in 0..3 {
+            assert_ok!(Pallet::<Test>::open_channel(
+                RawOrigin::Root.into(),
+                i, // connection_id
+                10 + i, // counterparty_channel_id
+                b"transfer".to_vec()
+            ));
+        }
+        assert_eq!(IbcChannelCounter::<Test>::get(), 3);
+        
+        // All channels should be open
+        for i in 0..3 {
+            assert!(Pallet::<Test>::is_channel_open(i), "Channel {} should be open", i);
+        }
+    });
+}
+
+/// Test: Full IBC workflow — client → connection → channel → transfer → close
+#[test]
+fn test_full_ibc_workflow() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        let acct = sp_core::crypto::AccountId32::from([0xee; 32]);
+        
+        // Step 1: Create client
+        assert_ok!(Pallet::<Test>::create_client(
+            RawOrigin::Root.into(),
+            42, 1, 86400
+        ));
+        
+        // Step 2: Open connection
+        assert_ok!(Pallet::<Test>::open_connection(
+            RawOrigin::Root.into(),
+            0, 42
+        ));
+        
+        // Step 3: Open channel
+        assert_ok!(Pallet::<Test>::open_channel(
+            RawOrigin::Root.into(),
+            0, 0,
+            b"transfer".to_vec()
+        ));
+        
+        assert!(Pallet::<Test>::is_channel_open(0));
+        
+        // Step 4: Fund and transfer tokens
+        let _ = pallet_balances::Pallet::<Test>::deposit_creating(&acct, 500_000_000);
+        
+        assert_ok!(Pallet::<Test>::transfer(
+            RawOrigin::Signed(acct.clone()).into(),
+            0,
+            b"uvrdx".to_vec(),
+            500_000,
+            b"destination_hex".to_vec(),
+        ));
+        
+        // Step 5: Verify stats
+        let (c, conn, ch, t, v) = Pallet::<Test>::get_stats();
+        assert_eq!(c, 1);
+        assert_eq!(conn, 1);
+        assert_eq!(ch, 1);
+        assert_eq!(t, 1);
+        assert_eq!(v, 500_000);
+        
+        // Step 6: Close channel
+        assert_ok!(Pallet::<Test>::close_channel(
+            RawOrigin::Root.into(),
+            0
+        ));
+        
+        assert!(!Pallet::<Test>::is_channel_open(0));
+        
+        // Step 7: Cannot transfer on closed channel
+        assert_noop!(
+            Pallet::<Test>::transfer(
+                RawOrigin::Signed(acct).into(),
+                0,
+                b"uvrdx".to_vec(),
+                100_000,
+                b"dest".to_vec(),
+            ),
+            Error::<Test>::ChannelClosed
+        );
+    });
+}
+
+/// Test: Packet timeout succeeds for expired packet
+#[test]
+fn test_timeout_packet_success() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        let acct = sp_core::crypto::AccountId32::from([0xff; 32]);
+        
+        setup_chain();
+        
+        // Send packet with timeout at block 5
+        assert_ok!(Pallet::<Test>::send_packet(
+            RawOrigin::Signed(acct.clone()).into(),
+            0,
+            b"transfer".to_vec(),
+            b"transfer".to_vec(),
+            b"timeout_test_data".to_vec(),
+            5, // timeout at block 5
+            0,
+        ));
+        
+        // Advance past timeout
+        System::set_block_number(10);
+        
+        // Timeout the packet
+        assert_ok!(Pallet::<Test>::timeout_packet(
+            RawOrigin::Signed(acct).into(),
+            0, // channel_id
+            1, // sequence
+        ));
+    });
+}
+
+/// Test: IBC pallet account ID is deterministic
+#[test]
+fn test_ibc_account_id_deterministic() {
+    new_test_ext().execute_with(|| {
+        let acct1 = Pallet::<Test>::account_id();
+        let acct2 = Pallet::<Test>::account_id();
+        assert_eq!(acct1, acct2, "IBC account ID should be deterministic");
+    });
+}
+
+/// Test: Cannot open connection on frozen client
+#[test]
+fn test_open_connection_frozen_client_rejected_already() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        
+        // Create client
+        assert_ok!(Pallet::<Test>::create_client(
+            RawOrigin::Root.into(),
+            1, 100, 86400
+        ));
+        
+        // Freeze client
+        assert_ok!(Pallet::<Test>::freeze_client(
+            RawOrigin::Root.into(),
+            0
+        ));
+        
+        // Cannot open connection on frozen client
+        assert_noop!(
+            Pallet::<Test>::open_connection(
+                RawOrigin::Root.into(),
+                0, 1
+            ),
+            Error::<Test>::ClientFrozen
+        );
+    });
+}
+
+/// Test: Cannot update frozen client
+#[test]
+fn test_update_frozen_client_rejected() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        
+        setup_chain();
+        
+        // Freeze client
+        assert_ok!(Pallet::<Test>::freeze_client(
+            RawOrigin::Root.into(),
+            0
+        ));
+        
+        // Cannot update frozen client
+        assert_noop!(
+            Pallet::<Test>::update_client(
+                RawOrigin::Root.into(),
+                0,
+                200
+            ),
+            Error::<Test>::ClientFrozen
+        );
+    });
+}
+
+/// Test: Update nonexistent client fails
+#[test]
+fn test_update_nonexistent_client_rejected() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        
+        assert_noop!(
+            Pallet::<Test>::update_client(
+                RawOrigin::Root.into(),
+                999,
+                200
+            ),
+            Error::<Test>::ClientNotFound
+        );
+    });
+}
+
+/// Test: Freeze nonexistent client fails
+#[test]
+fn test_freeze_nonexistent_client_rejected() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        
+        assert_noop!(
+            Pallet::<Test>::freeze_client(
+                RawOrigin::Root.into(),
+                999
+            ),
+            Error::<Test>::ClientNotFound
+        );
+    });
+}
+
+/// Test: Close nonexistent channel fails (root)
+#[test]
+fn test_close_nonexistent_channel_rejected() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        
+        assert_noop!(
+            Pallet::<Test>::close_channel(
+                RawOrigin::Root.into(),
+                999
+            ),
+            Error::<Test>::ChannelNotFound
+        );
+    });
+}
