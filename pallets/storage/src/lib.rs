@@ -110,7 +110,7 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn pin_requests)]
     pub type PinRequests<T: Config> =
-        StorageMap<_, Blake2_128Concat, BoundedVec<u8, ConstU32<64>>, bool, ValueQuery>;
+        StorageMap<_, Blake2_128Concat, BoundedVec<u8, ConstU32<64>>, T::AccountId, OptionQuery>;
 
     // === Cloudbreak: Horizontal Account Scaling ===
     #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Default)]
@@ -197,6 +197,7 @@ pub mod pallet {
         RecordAlreadyExists,
         NotOwner,
         NotRecordOwner,
+        NotPinOwner,
         ProviderNotFound,
         ProviderAlreadyRegistered,
         ProviderInactive,
@@ -313,7 +314,7 @@ pub mod pallet {
         #[pallet::weight(Weight::from_parts(30_000_000, 0))]
         pub fn verify_storage(origin: OriginFor<T>, id: Vec<u8>, hash: [u8; 32]) -> DispatchResult {
             // SECURITY: Track who verified the storage
-            let _who = ensure_signed(origin)?;
+            let who = ensure_signed(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
                 id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
@@ -371,7 +372,7 @@ pub mod pallet {
         #[pallet::call_index(3)]
         #[pallet::weight(Weight::from_parts(20_000_000, 0))]
         pub fn request_pin(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
-            let _who = ensure_signed(origin)?;
+            let who = ensure_signed(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
                 id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
@@ -381,7 +382,7 @@ pub mod pallet {
                 Error::<T>::RecordNotFound
             );
 
-            PinRequests::<T>::insert(&id_bv, true);
+            PinRequests::<T>::insert(&id_bv, who.clone());
 
             Self::deposit_event(Event::PinRequested { id });
             Ok(())
@@ -391,15 +392,13 @@ pub mod pallet {
         #[pallet::call_index(4)]
         #[pallet::weight(Weight::from_parts(20_000_000, 0))]
         pub fn remove_pin(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
-            let _who = ensure_signed(origin)?;
+            let who = ensure_signed(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
                 id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
 
-            ensure!(
-                PinRequests::<T>::contains_key(&id_bv),
-                Error::<T>::RecordNotFound
-            );
+            let requester = PinRequests::<T>::get(&id_bv).ok_or(Error::<T>::RecordNotFound)?;
+            ensure!(requester == who, Error::<T>::NotPinOwner);
 
             PinRequests::<T>::remove(&id_bv);
 
