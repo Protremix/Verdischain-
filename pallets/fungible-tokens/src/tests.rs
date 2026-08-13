@@ -727,3 +727,69 @@ fn set_max_supply_non_owner_fails() {
         );
     });
 }
+
+#[test]
+fn mint_at_max_supply_succeeds() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(FungibleTokens::create(
+            RuntimeOrigin::signed(alice()),
+            b"MaxTest".to_vec(),
+            b"MAXT".to_vec(),
+            6,
+        ));
+        // Set max_supply to 1000
+        assert_ok!(FungibleTokens::set_max_supply(
+            RuntimeOrigin::signed(alice()),
+            0,
+            1000,
+        ));
+        // Mint exactly to max_supply — should succeed
+        assert_ok!(FungibleTokens::mint(
+            RuntimeOrigin::signed(alice()),
+            0,
+            alice(),
+            1000,
+        ));
+        let token = FungibleTokens::token_info(0).unwrap();
+        assert_eq!(token.total_supply, 1000);
+        assert_eq!(token.max_supply, 1000);
+    });
+}
+
+#[test]
+fn mint_above_max_supply_fails() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(FungibleTokens::create(
+            RuntimeOrigin::signed(alice()),
+            b"MaxTest2".to_vec(),
+            b"MAX2".to_vec(),
+            6,
+        ));
+        // Set max_supply to 1000
+        assert_ok!(FungibleTokens::set_max_supply(
+            RuntimeOrigin::signed(alice()),
+            0,
+            1000,
+        ));
+        // Mint 1000 — succeeds
+        assert_ok!(FungibleTokens::mint(
+            RuntimeOrigin::signed(alice()),
+            0,
+            alice(),
+            1000,
+        ));
+        // Try to mint 1 more above max_supply — should fail
+        assert_noop!(
+            FungibleTokens::mint(
+                RuntimeOrigin::signed(alice()),
+                0,
+                alice(),
+                1,
+            ),
+            Error::<Test>::MaxBalanceExceeded
+        );
+        // Verify supply didn't change
+        let token = FungibleTokens::token_info(0).unwrap();
+        assert_eq!(token.total_supply, 1000);
+    });
+}

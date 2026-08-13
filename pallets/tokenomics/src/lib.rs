@@ -12,10 +12,9 @@
 )]
 //! # Verdis Tokenomics Pallet
 //!
-//! Enforces the 100B token supply and 8-category distribution:
-//! - Community (35%), Treasury (20%), Team (15%), Investors (10%)
-//! - Staking (10%), Liquidity (5%), Advisors (3%), Airdrop (2%)
-//! - 12B total investor allocation enforcement
+//! Enforces the 100B token supply and 9-category distribution:
+//! - Ecosystem (25%), Staking (20%), Treasury (20%), Development (10%)
+//! - Liquidity (10%), Community (5%), Seed (3%), Presale (2%), Team (5%)
 //! - IDO disclosure consent gating
 //! - Presale price tracking ($0.0005/VRDX)
 
