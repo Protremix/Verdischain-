@@ -176,7 +176,7 @@ def phase3_economic():
     results = {"phase": "Economic Invariants", "checks": [], "passed": 0, "failed": 0, "warnings": 0}
     
     # Total supply check
-    TOTAL_ISSUANCE_KEY = "REDACTED_KEY"
+    TOTAL_ISSUANCE_KEY = "0xc2261276cc9d1f8598ea4b6a74b15c2f57b7281d0a6e8a43eb6c0b3b5024c0b3"
     val, err = rpc('state_getStorage', [TOTAL_ISSUANCE_KEY])
     if val and val != '0x':
         # Decode u128 LE from hex
