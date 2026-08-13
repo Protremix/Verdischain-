@@ -144,7 +144,7 @@ GitHub Actions workflows:
 
 | Item | Status | Evidence |
 |---|---|---|
-| Legal entity | NOT DOCUMENTED | Requires Rojs |
+| Legal entity | REGISTRATION IN PROCESS | Rojs confirmed, in progress |
 | MiCA compliance | NOT REVIEWED | Website updated to "Not Reviewed" |
 | Legal counsel | NOT ENGAGED | Requires Rojs |
 | Token classification | NOT DETERMINED | Requires legal counsel |
@@ -256,7 +256,7 @@ All pages verified HTTP 200 on Aug 14, 2026.
 
 ## 10. ITEMS REQUIRING ROJS GORDONS
 
-1. **Legal entity** — Document the registered entity name, jurisdiction, and registration number
+1. **Legal entity** — REGISTRATION IN PROCESS (Rojs confirmed Aug 14 2026)
 2. **External auditor** — Engage a reputable blockchain security firm
 3. **Legal counsel** — Engage for MiCA compliance and token classification
 4. **Team verification** — Provide credentials for team members (beyond founder)
