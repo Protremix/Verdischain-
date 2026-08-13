@@ -486,7 +486,8 @@ impl pallet_scheduler::Config for Runtime {
     type OriginPrivilegeCmp = frame_support::traits::EqualPrivilegeOnly;
     type Preimages = Preimage;
     type MaximumWeight = MaximumSchedulerWeight;
-    type ScheduleOrigin = EnsureRoot<AccountId>;
+    // Post-sudo: Tech Committee (1/3) can schedule
+    type ScheduleOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance2, 1, 3>;
     type BlockNumberProvider = System;
 }
 
@@ -495,7 +496,8 @@ impl pallet_preimage::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type WeightInfo = ();
     type Currency = Balances;
-    type ManagerOrigin = EnsureRoot<AccountId>;
+    // Post-sudo: Council (2/3) manages scheduler
+    type ManagerOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type Consideration = ();
 }
 
@@ -767,7 +769,8 @@ impl pallet_presale::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type PalletId = PresalePalletId;
-    type AdminOrigin = frame_system::EnsureRoot<AccountId>;
+    // Post-sudo: Council (2/3) administers presale
+    type AdminOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type Vesting = PresaleVestingHandler;
     type WeightInfo = pallet_presale::SubstrateWeight<Runtime>;
 }
@@ -1052,6 +1055,7 @@ impl pallet_treasury::Config for Runtime {
     type WeightInfo = ();
     type SpendFunds = ();
     type MaxApprovals = TreasuryMaxApprovals;
+    // Post-sudo: Treasury spending through governance proposals (not direct dispatchable)
     type SpendOrigin = frame_system::EnsureRootWithSuccess<AccountId, TreasuryMaxSpend>;
     type AssetKind = ();
     type Beneficiary = AccountId;
@@ -1082,8 +1086,11 @@ impl pallet_collective::Config<pallet_collective::Instance1> for Runtime {
     type SetMembersOrigin =
         pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type MaxProposalWeight = MaximumSchedulerWeight;
-    type DisapproveOrigin = EnsureRoot<AccountId>;
-    type KillOrigin = EnsureRoot<AccountId>;
+    // Post-sudo: Council self-governs — simple majority disapprove, 2/3 kill
+    type DisapproveOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 1, 2>;
+    type KillOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type Consideration = ();
 }
 
@@ -1103,10 +1110,15 @@ impl pallet_collective::Config<pallet_collective::Instance2> for Runtime {
     type MaxMembers = TechnicalCommitteeMaxMembers;
     type DefaultVote = pallet_collective::PrimeDefaultVote;
     type WeightInfo = ();
-    type SetMembersOrigin = EnsureRoot<AccountId>;
+    // Post-sudo: Council (2/3) controls tech committee composition
+    type SetMembersOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type MaxProposalWeight = MaximumSchedulerWeight;
-    type DisapproveOrigin = EnsureRoot<AccountId>;
-    type KillOrigin = EnsureRoot<AccountId>;
+    // Council (1/3) can disapprove, Council (2/3) can kill
+    type DisapproveOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 1, 3>;
+    type KillOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type Consideration = ();
 }
 
@@ -1156,8 +1168,10 @@ impl pallet_democracy::Config for Runtime {
         pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 1, 1>;
     type CancellationOrigin =
         pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
-    type BlacklistOrigin = EnsureRoot<AccountId>;
-    type CancelProposalOrigin = EnsureRoot<AccountId>;
+    // Post-sudo: Council (2/3) can blacklist proposals
+    type BlacklistOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
+    // Post-sudo: Council (2/3) can cancel proposals
+    type CancelProposalOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type VetoOrigin = frame_system::EnsureSigned<AccountId>;
     type PalletsOrigin = OriginCaller;
     type Slash = ();
