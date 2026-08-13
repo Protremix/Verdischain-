@@ -63,6 +63,7 @@ pub mod pallet {
         pub rewards_earned: Balance,
         pub active: bool,
         pub slashed: bool,
+    pub registration_deposit: Balance,
         pub green_score: u8,
         pub energy_source: BoundedVec<u8, ConstU32<64>>,
         pub commission: u8,
@@ -237,6 +238,7 @@ pub mod pallet {
         RewardRefillFailed,
         Overflow,
         PendingSlashing,
+    RegistrationDepositRequired,
     }
 
     // === Config ===
@@ -260,6 +262,7 @@ pub mod pallet {
         type PalletId: Get<PalletId>;
         #[pallet::constant]
         type MaxStakePerValidator: Get<BalanceOf<Self>>;
+    type RegistrationDeposit: Get<BalanceOf<Self>>;
         type MaxCommission: Get<u8>;
         #[pallet::constant]
         type ReactivationCooldown: Get<u32>;
@@ -291,6 +294,7 @@ pub mod pallet {
                     rewards_earned: BalanceOf::<T>::zero(),
                     active: *active,
                     slashed: false,
+                    registration_deposit: BalanceOf::<T>::zero(),
                     green_score: 0,
                     energy_source: b"Unknown".to_vec().try_into().unwrap_or_default(),
                     commission: 10,
@@ -354,8 +358,10 @@ pub mod pallet {
             );
 
             let stake = T::MinStake::get();
+            let deposit = T::RegistrationDeposit::get();
+            let total_needed = stake.checked_add(&deposit).ok_or(Error::<T>::Overflow)?;
             ensure!(
-                T::Currency::can_reserve(&who, stake),
+                T::Currency::can_reserve(&who, total_needed),
                 Error::<T>::InsufficientFunds
             );
 
@@ -371,6 +377,7 @@ pub mod pallet {
             );
 
             T::Currency::reserve(&who, stake)?;
+            T::Currency::reserve(&who, deposit)?;
 
             let validator = Validator {
                 address: who.clone(),
@@ -380,6 +387,7 @@ pub mod pallet {
                 rewards_earned: BalanceOf::<T>::zero(),
                 active: true,
                 slashed: false,
+                registration_deposit: deposit,
                 green_score,
                 energy_source: energy_source.clone().try_into().unwrap_or_default(),
                 commission: 10,
@@ -1182,6 +1190,7 @@ mod tests {
         type UnbondingPeriod = UnbondingPeriod;
         type PalletId = DposPalletId;
         type MaxStakePerValidator = MaxStakePerValidator;
+        type RegistrationDeposit = ConstU128<10_000_000_000_000>;
         type ReactivationCooldown = ReactivationCooldown;
         type MaxCommission = MaxCommission;
         type WeightInfo = SubstrateWeight<Test>;

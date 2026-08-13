@@ -251,6 +251,7 @@ pub mod pallet {
         EmptySymbol,
         TooManyTokensPerAccount,
         MaxBalanceExceeded,
+    MaxSupplyCannotIncrease,
         NotApproved,
         TokenStillHasSupply,
         ZeroAmount,
@@ -684,6 +685,12 @@ pub mod pallet {
             let who = ensure_signed(origin)?;
             let mut token = Tokens::<T>::get(token_id).ok_or(Error::<T>::TokenNotFound)?;
             ensure!(token.owner == who, Error::<T>::NotTokenOwner);
+            // One-way ratchet: can only decrease max_supply, never increase.
+            // This protects token holders from dilution via cap inflation.
+            ensure!(
+                max_supply <= token.max_supply,
+                Error::<T>::MaxSupplyCannotIncrease
+            );
             ensure!(
                 max_supply >= token.total_supply,
                 Error::<T>::MaxBalanceExceeded

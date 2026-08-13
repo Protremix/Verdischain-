@@ -613,3 +613,117 @@ fn transfer_ownership_non_owner_fails() {
         );
     });
 }
+
+#[test]
+fn set_max_supply_decrease_succeeds() {
+    new_test_ext().execute_with(|| {
+        // Create token with max_supply via mint
+        assert_ok!(FungibleTokens::create(
+            RuntimeOrigin::signed(alice()),
+            b"TestToken".to_vec(),
+            b"TST".to_vec(),
+            6,
+        ));
+        // Check what max_supply was set
+        let token = FungibleTokens::token_info(0).unwrap();
+        let original_max = token.max_supply;
+        // Mint some tokens
+        assert_ok!(FungibleTokens::mint(
+            RuntimeOrigin::signed(alice()),
+            0,
+            alice(),
+            100,
+        ));
+        // Decrease max_supply to a value >= total_supply but < original
+        let new_max = 200u128.min(original_max);
+        if original_max > 200 {
+            assert_ok!(FungibleTokens::set_max_supply(
+                RuntimeOrigin::signed(alice()),
+                0,
+                new_max,
+            ));
+            let updated = FungibleTokens::token_info(0).unwrap();
+            assert_eq!(updated.max_supply, new_max);
+        }
+    });
+}
+
+#[test]
+fn set_max_supply_increase_fails() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(FungibleTokens::create(
+            RuntimeOrigin::signed(alice()),
+            b"FixedSupply".to_vec(),
+            b"FIX".to_vec(),
+            6,
+        ));
+        // Default max is u128::MAX. First decrease to 1000.
+        assert_ok!(FungibleTokens::set_max_supply(
+            RuntimeOrigin::signed(alice()),
+            0,
+            1000,
+        ));
+        // Now try to increase back to 2000 - should fail
+        assert_noop!(
+            FungibleTokens::set_max_supply(
+                RuntimeOrigin::signed(alice()),
+                0,
+                2000,
+            ),
+            Error::<Test>::MaxSupplyCannotIncrease
+        );
+        // Verify it stayed at 1000
+        let token = FungibleTokens::token_info(0).unwrap();
+        assert_eq!(token.max_supply, 1000);
+    });
+}
+
+#[test]
+fn set_max_supply_below_total_supply_fails() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(FungibleTokens::create(
+            RuntimeOrigin::signed(alice()),
+            b"TestToken2".to_vec(),
+            b"TST2".to_vec(),
+            6,
+        ));
+        // Mint some tokens
+        assert_ok!(FungibleTokens::mint(
+            RuntimeOrigin::signed(alice()),
+            0,
+            alice(),
+            500,
+        ));
+        // Try to set max_supply below total_supply - should fail
+        assert_noop!(
+            FungibleTokens::set_max_supply(
+                RuntimeOrigin::signed(alice()),
+                0,
+                499,
+            ),
+            Error::<Test>::MaxBalanceExceeded
+        );
+    });
+}
+
+#[test]
+fn set_max_supply_non_owner_fails() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(FungibleTokens::create(
+            RuntimeOrigin::signed(alice()),
+            b"TestToken3".to_vec(),
+            b"TST3".to_vec(),
+            6,
+        ));
+        let token = FungibleTokens::token_info(0).unwrap();
+        let target = token.max_supply / 2;
+        assert_noop!(
+            FungibleTokens::set_max_supply(
+                RuntimeOrigin::signed(bob()),
+                0,
+                target,
+            ),
+            Error::<Test>::NotTokenOwner
+        );
+    });
+}

@@ -574,6 +574,7 @@ impl pallet_contracts::Config for Runtime {
 parameter_types! {
     pub const DposPalletId: PalletId = PalletId(*b"verdisdp");
     pub const MaxStakePerValidator: Balance = 1_000_000_000 * UNITS;
+    pub const RegistrationDeposit: Balance = 10_000 * UNITS; // 10k VRDX Sybil resistance deposit
     pub const MaxCommission: u8 = 20; // Maximum 20% commission // 1B VRDX (1% of total supply)
     pub const ReactivationCooldown: u32 = 432_000; // ~30 days at 6s blocks (7200 blocks/day)
     pub const MinValidatorStake: Balance = 100_000_000 * UNITS; // 100M VRDX minimum (0.1% supply) for sybil resistance
@@ -596,6 +597,7 @@ impl pallet_dpos::Config for Runtime {
     type UnbondingPeriod = UnbondingPeriod;
     type PalletId = DposPalletId;
     type MaxStakePerValidator = MaxStakePerValidator;
+    type RegistrationDeposit = RegistrationDeposit;
     type MaxCommission = MaxCommission;
     type ReactivationCooldown = ReactivationCooldown;
     type WeightInfo = pallet_dpos::SubstrateWeight<Runtime>;
