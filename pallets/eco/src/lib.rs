@@ -98,6 +98,14 @@ pub mod pallet {
         StorageMap<_, Blake2_128Concat, T::AccountId, GreenValidator<T::AccountId>>;
 
     #[pallet::storage]
+    #[pallet::getter(fn last_mint_block)]
+    pub type LastMintBlock<T: Config> = StorageValue<_, u32, ValueQuery>;
+
+    #[pallet::storage]
+    #[pallet::getter(fn credits_minted_this_block)]
+    pub type CreditsMintedThisBlock<T: Config> = StorageValue<_, u32, ValueQuery>;
+
+    #[pallet::storage]
     #[pallet::getter(fn total_co2_offset)]
     pub type TotalCO2Offset<T: Config> = StorageValue<_, u64, ValueQuery>;
 
@@ -176,6 +184,7 @@ pub mod pallet {
         IdTooLong,
         NameTooLong,
         LocationTooLong,
+        PerBlockMintLimitReached,
     }
 
     // === Config ===
@@ -295,6 +304,21 @@ pub mod pallet {
                 (CarbonCredits::<T>::iter().count() as u32) < T::MaxCarbonCredits::get(),
                 Error::<T>::MaxCarbonCreditsReached
             );
+
+            // Per-block mint ceiling: max 5 credits per block to prevent governance abuse
+            let current_block: u32 = frame_system::Pallet::<T>::block_number().try_into().unwrap_or(0);
+            let last_mint_block = LastMintBlock::<T>::get();
+            let credits_this_block = CreditsMintedThisBlock::<T>::get();
+            ensure!(
+                current_block != last_mint_block || credits_this_block < 5,
+                Error::<T>::PerBlockMintLimitReached
+            );
+            if current_block != last_mint_block {
+                CreditsMintedThisBlock::<T>::put(1u32);
+                LastMintBlock::<T>::put(current_block);
+            } else {
+                CreditsMintedThisBlock::<T>::put(credits_this_block + 1);
+            }
 
             let credit = CarbonCredit {
                 id: id_bv.clone(),
