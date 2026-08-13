@@ -132,7 +132,7 @@ GitHub Actions workflows:
 | Item | Status | Evidence |
 |---|---|---|
 | Internal AI audit | Completed (72→100/100) | docs/AUDIT_STATUS.md |
-| Independent third-party audit | NOT PERFORMED | Not engaged |
+| Independent third-party audit | IN PROCESS | Rojs confirmed Aug 14 2026 |
 | Penetration testing | NOT PERFORMED | Not performed |
 | Formal verification | NOT PERFORMED | Not performed |
 
@@ -257,8 +257,8 @@ All pages verified HTTP 200 on Aug 14, 2026.
 ## 10. ITEMS REQUIRING ROJS GORDONS
 
 1. **Legal entity** — REGISTRATION IN PROCESS (Rojs confirmed Aug 14 2026)
-2. **External auditor** — Engage a reputable blockchain security firm
-3. **Legal counsel** — Engage for MiCA compliance and token classification
+2. **External auditor** — IN PROCESS (Rojs confirmed Aug 14 2026)
+3. **Legal counsel** — TEAM INCLUDES 2 LEGAL PROFESSIONALS (Márquez de Prado, Martínez-Arrieta)
 4. **Team verification** — Provide credentials for team members (beyond founder)
-5. **Air-gapped ceremony** — Physically execute the key ceremony script
+5. **Air-gapped ceremony** — Script ready, needs physical execution
 6. **Referral program** — Decide: keep (needs legal review) or remove
