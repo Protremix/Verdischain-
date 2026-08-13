@@ -664,6 +664,7 @@ impl pallet_amm_dex::TokenHandler<AccountId, u128> for Runtime {
                         symbol: BoundedVec::try_from(b"BCH".to_vec()).unwrap(),
                         decimals: 9,
                         total_supply: amount,
+                        max_supply: u128::MAX,
                         is_frozen: false,
                         created_block: 0,
                     };
@@ -1057,18 +1058,24 @@ impl frame_support::traits::EnsureOrigin<RuntimeOrigin> for EnsureCouncilSpend {
             .map(|_| TreasuryMaxSpend::get())
     }
     #[cfg(feature = "runtime-benchmarks")]
-    fn try_origin_or_root(o: RuntimeOrigin) -> Result<Self::Success, RuntimeOrigin> {
+    fn try_origin_or_root(o: RuntimeOrigin) -> Result<Option<Self::Success>, RuntimeOrigin> {
         match Self::try_origin(o.clone()) {
-            Ok(s) => Ok(s),
+            Ok(s) => Ok(Some(s)),
             Err(_) => {
                 use frame_support::traits::OriginTrait;
-                if o.clone().into().is_root_origin() {
-                    Ok(TreasuryMaxSpend::get())
+                if frame_system::ensure_root(o.clone()).is_ok() {
+                    Ok(Some(TreasuryMaxSpend::get()))
                 } else {
                     Err(o)
                 }
             }
         }
+    }
+
+    fn try_successful_origin() -> Result<RuntimeOrigin, ()> {
+        // Council majority origin
+        use frame_system::RawOrigin;
+        Ok(RawOrigin::Root.into())
     }
 }
 
