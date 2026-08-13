@@ -226,7 +226,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
 
     // Dev balances: same 9-category tokenomics but fewer validator stakes
     let mut balances = vec![
-        (eco_pool, 30 * bn),
+        (eco_pool, 25 * bn),
         (staking_pool, 20 * bn),
         (treasury_account, 20 * bn),
         (dev_pool, 10 * bn),
@@ -483,7 +483,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
 
     // Balances: 9-category tokenomics (100B VRDX total)
     let mut balances = vec![
-        (eco_pool, 30 * bn),
+        (eco_pool, 25 * bn),
         (staking_pool, 20 * bn),
         (treasury_account, 20 * bn),
         (dev_pool, 10 * bn),
@@ -831,7 +831,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
 
     // Balances: 9-category tokenomics (100B VRDX total)
     let mut balances = vec![
-        (eco_pool, 30 * bn),
+        (eco_pool, 25 * bn),
         (staking_pool, 20 * bn),
         (treasury_account, 20 * bn),
         (dev_pool, 10 * bn),
