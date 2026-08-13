@@ -192,6 +192,12 @@ def get_pin_status(address):
 
 
 
+
+# Monkey-patch ScaleBytes for compatibility
+from scalecodec.base import ScaleBytes
+if not hasattr(ScaleBytes, 'hex'):
+    ScaleBytes.hex = lambda self: bytes(self.data).hex()
+
 # ===== Substrate Connection =====
 substrate = SubstrateInterface(
     url=NODE_URL,
@@ -493,6 +499,71 @@ class RelayHandler(BaseHTTPRequestHandler):
                 self._success({"fee_info": fee_info})
             except Exception as e:
                 self._error(f"Fee estimation failed: {str(e)}")
+
+        
+        # ===== GOVERNANCE ACTIONS (Testnet - Alice key) =====
+        elif action == "propose":
+            proposal_text = body.get("proposal", "")
+            deposit = int(body.get("deposit", 1000000000000))
+            if not proposal_text:
+                self._error("Missing 'proposal' text")
+                return
+            try:
+                import hashlib
+                from substrateinterface import Keypair
+                # Create remark call as the proposal
+                remark_call = substrate.compose_call(
+                    call_module="System", call_function="remark",
+                    call_params={"remark": proposal_text[:200]}
+                )
+                raw = bytes(remark_call.data.data)
+                proposal_hash = "0x" + hashlib.blake2b(raw, digest_size=32).hexdigest()
+                # Create Democracy::propose call
+                propose_call = substrate.compose_call(
+                    call_module="Democracy", call_function="propose",
+                    call_params={"proposal": {"Legacy": proposal_hash}, "value": deposit}
+                )
+                kp = Keypair.create_from_uri("//Alice", ss58_format=SS58_FORMAT)
+                extrinsic = substrate.create_signed_extrinsic(call=propose_call, keypair=kp, tip=1000000000)
+                result = substrate.submit_extrinsic(extrinsic)
+                self._success({"tx_hash": result.extrinsic_hash, "proposal_hash": proposal_hash})
+            except Exception as e:
+                self._error(f"Proposal submission failed: {str(e)}")
+
+        elif action == "democracy_vote":
+            ref_index = int(body.get("referendum_index", 0))
+            vote_aye = body.get("vote", "aye") == "aye"
+            conviction = int(body.get("conviction", 1))
+            try:
+                from substrateinterface import Keypair
+                vote_call = substrate.compose_call(
+                    call_module="Democracy", call_function="vote",
+                    call_params={
+                        "ref_index": ref_index,
+                        "vote": {"Standard": {"vote": {"aye": vote_aye, "conviction": conviction}, "balance": 0}}
+                    }
+                )
+                kp = Keypair.create_from_uri("//Alice", ss58_format=SS58_FORMAT)
+                extrinsic = substrate.create_signed_extrinsic(call=vote_call, keypair=kp, tip=1000000000)
+                result = substrate.submit_extrinsic(extrinsic)
+                self._success({"tx_hash": result.extrinsic_hash})
+            except Exception as e:
+                self._error(f"Vote submission failed: {str(e)}")
+
+        elif action == "second":
+            proposal_index = int(body.get("proposal_index", 0))
+            try:
+                from substrateinterface import Keypair
+                second_call = substrate.compose_call(
+                    call_module="Democracy", call_function="second",
+                    call_params={"proposal": proposal_index, "seconds_upper_bound": 100}
+                )
+                kp = Keypair.create_from_uri("//Alice", ss58_format=SS58_FORMAT)
+                extrinsic = substrate.create_signed_extrinsic(call=second_call, keypair=kp, tip=1000000000)
+                result = substrate.submit_extrinsic(extrinsic)
+                self._success({"tx_hash": result.extrinsic_hash})
+            except Exception as e:
+                self._error(f"Second submission failed: {str(e)}")
 
         # ===== WALLET EMAIL BACKUP (encrypted client-side, server never sees plaintext) =====
         # SECURITY: backup is only accepted if the wallet already has a PIN registered
