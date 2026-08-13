@@ -413,3 +413,82 @@ fn test_slash_does_not_affect_other_validators() {
         );
     });
 }
+
+/// Slashing a validator who has unvoted should fail.
+#[test]
+fn test_slash_unvoted_validator_fails() {
+    new_test_ext().execute_with(|| {
+        let validator = Sr25519Keyring::Alice.to_account_id();
+
+        // Unvote (starts unbonding)
+        assert_ok!(Dpos::unvote(
+            RuntimeOrigin::signed(validator.clone()),
+            validator.clone(),
+        ));
+
+        // Try to slash — validator is no longer active
+        assert_noop!(
+            Dpos::slash_validator(
+                RuntimeOrigin::root(),
+                validator,
+                50,
+                b"test".to_vec(),
+            ),
+            Error::<Test>::ValidatorNotFound
+        );
+    });
+}
+
+/// Slashing should not overflow with maximum amount.
+#[test]
+fn test_slash_max_amount_no_overflow() {
+    new_test_ext().execute_with(|| {
+        let validator = Sr25519Keyring::Alice.to_account_id();
+
+        // Slash with maximum u128 amount — should saturate, not overflow
+        assert_ok!(Dpos::slash_validator(
+            RuntimeOrigin::root(),
+            validator.clone(),
+            u128::MAX,
+            b"max_slash".to_vec(),
+        ));
+
+        // Validator should be slashed and inactive
+        let v = Validators::<Test>::get(&validator).unwrap();
+        assert!(!v.is_active, "Validator should be inactive after max slash");
+    });
+}
+
+/// Slashing should not affect other validators' unbonding queues.
+#[test]
+fn test_slash_does_not_touch_other_unbonding() {
+    new_test_ext().execute_with(|| {
+        let alice = Sr25519Keyring::Alice.to_account_id();
+        let bob = Sr25519Keyring::Bob.to_account_id();
+
+        // Bob unvotes (starts unbonding)
+        assert_ok!(Dpos::unvote(
+            RuntimeOrigin::signed(bob.clone()),
+            bob.clone(),
+        ));
+
+        let bob_queue_before = UnbondingQueue::<Test>::get(&bob);
+        assert!(!bob_queue_before.is_empty(), "Bob should have unbonding entries");
+
+        // Slash Alice
+        assert_ok!(Dpos::slash_validator(
+            RuntimeOrigin::root(),
+            alice.clone(),
+            200u128,
+            b"test".to_vec(),
+        ));
+
+        // Bob's unbonding queue should be unchanged
+        let bob_queue_after = UnbondingQueue::<Test>::get(&bob);
+        assert_eq!(
+            bob_queue_after.len(),
+            bob_queue_before.len(),
+            "Bob's unbonding queue should not be affected by Alice's slash"
+        );
+    });
+}
