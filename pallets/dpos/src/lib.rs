@@ -40,7 +40,7 @@ use serde::{Deserialize, Serialize};
 
 pub use pallet::*;
 pub mod weights;
-pub use weights::SubstrateWeight;
+pub use weights::WeightInfo as SubstrateWeight;
 
 #[frame_support::pallet]
 pub mod pallet {

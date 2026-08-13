@@ -32,7 +32,7 @@ use sp_std::prelude::*;
 
 pub use pallet::*;
 pub mod weights;
-pub use weights::SubstrateWeight;
+pub use weights::WeightInfo as SubstrateWeight;
 
 pub const MAX_TOKEN_NAME: u32 = 32;
 pub const MAX_TOKEN_SYMBOL: u32 = 12;

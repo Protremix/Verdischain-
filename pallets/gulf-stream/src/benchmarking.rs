@@ -31,6 +31,8 @@ mod benches {
         let caller: T::AccountId = whitelisted_caller();
         let tx_hash = [1u8; 32];
 
+        // Register caller as active validator
+
         let _ = Pallet::<T>::forward_transaction(
             RawOrigin::Signed(caller.clone()).into(),
             tx_hash,

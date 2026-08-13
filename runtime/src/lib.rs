@@ -703,8 +703,7 @@ parameter_types! {
 }
 
 impl pallet_eco::Config for Runtime {
-    type AdminOrigin =
-        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
+    type AdminOrigin = frame_system::EnsureRoot<AccountId>;
     type RuntimeEvent = RuntimeEvent;
     type PalletId = EcoPalletId;
     type MaxCarbonCredits = MaxCarbonCredits;
@@ -742,8 +741,7 @@ parameter_types! {
 }
 
 impl pallet_tokenomics::Config for Runtime {
-    type AdminOrigin =
-        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
+    type AdminOrigin = frame_system::EnsureRoot<AccountId>;
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type TotalSupply = TotalSupplyConst;
@@ -778,9 +776,7 @@ impl pallet_presale::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type PalletId = PresalePalletId;
-    // Post-sudo: Council (2/3) administers presale
-    type AdminOrigin =
-        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
+    type AdminOrigin = frame_system::EnsureRoot<AccountId>;
     type Vesting = PresaleVestingHandler;
     type WeightInfo = pallet_presale::SubstrateWeight<Runtime>;
 }

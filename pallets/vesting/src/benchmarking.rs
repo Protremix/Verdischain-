@@ -42,7 +42,7 @@ mod benches {
     }
 
     #[benchmark]
-    fn assign_vesting(s: Linear<1, 15>) {
+    fn assign_vesting(s: Linear<1, 10>) {
         let target: T::AccountId = account("target", 0, 0);
         let schedule_label = b"schedule_for_assign".to_vec();
         let amount: BalanceOf<T> = BENCH_AMOUNT.try_into().unwrap_or_default();
