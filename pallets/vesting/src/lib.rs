@@ -390,7 +390,7 @@ pub mod pallet {
 
             let new_locked = LockedBalances::<T>::get(&who)
                 .checked_add(&amount)
-                .ok_or(Error::<T>::MaxVestingSchedules)?;
+                .ok_or(Error::<T>::Overflow)?;
             LockedBalances::<T>::insert(&who, new_locked);
 
             T::Currency::set_lock(VESTING_LOCK_ID, &who, new_locked, WithdrawReasons::TRANSFER);
