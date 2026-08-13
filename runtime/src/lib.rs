@@ -135,7 +135,7 @@ pub fn native_version() -> NativeVersion {
 // === Constants ===
 pub const UNITS: Balance = 1_000_000_000;
 pub const TOTAL_SUPPLY: Balance = 100_000_000_000 * UNITS;
-pub const CIRCULATING_SUPPLY: Balance = 17_000_000_000 * UNITS;
+pub const CIRCULATING_SUPPLY: Balance = 8_000_000_000 * UNITS; // 8B VRDX (8%) at TGE
 pub const BLOCK_TIME: u64 = 6000;
 
 const MAX_BLOCK_WEIGHT: Weight =
