@@ -98,7 +98,7 @@ fi
 echo ""
 echo "[6/10] Token Supply..."
 # Query TotalIssuance storage key
-ISSUANCE_KEY="REDACTED_KEY6e6365"
+ISSUANCE_KEY="0x3a617574686f726974966f725f6465706f7369745f746f74616c5f69737375616e6365"
 ISSUANCE=$(rpc_call "state_getStorage" "[\"$ISSUANCE_KEY\"]" | jq -r '.result // "null"' 2>/dev/null)
 if [ "$ISSUANCE" != "null" ] && [ -n "$ISSUANCE" ]; then
     test_pass "TotalIssuance storage accessible"
