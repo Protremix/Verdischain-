@@ -236,6 +236,7 @@ pub mod pallet {
         ValidatorNotSlashed,
         RewardRefillFailed,
         Overflow,
+        PendingSlashing,
     }
 
     // === Config ===
@@ -411,7 +412,26 @@ pub mod pallet {
                 Error::<T>::ActiveDelegations
             );
 
-            T::Currency::unreserve(&who, validator.stake);
+            // Check for pending slashing events — cannot unregister while slashable
+            let slash_count = SlashingEvents::<T>::get(&who);
+            ensure!(slash_count == 0, Error::<T>::PendingSlashing);
+
+            // Queue for unbonding instead of immediate release
+            let current_block: u32 = frame_system::Pallet::<T>::block_number().try_into().unwrap_or(0);
+            let unbonding_period = T::UnbondingPeriod::get();
+            let unlock_block = current_block.saturating_add(unbonding_period);
+
+            UnbondingQueue::<T>::try_mutate(&who, |maybe_queue| {
+                let queue = maybe_queue.get_or_insert_with(BoundedVec::default);
+                queue.try_push(UnbondingRequest {
+                    who: who.clone(),
+                    validator: who.clone(),
+                    amount: validator.stake,
+                    unlock_block,
+                }).map_err(|_| Error::<T>::UnbondingQueueFull)
+            })?;
+
+            // Remove from active validator sets
             Validators::<T>::remove(&who);
             ValidatorList::<T>::mutate(|v| v.retain(|a| a != &who));
             ActiveValidators::<T>::mutate(|v| v.retain(|a| a != &who));

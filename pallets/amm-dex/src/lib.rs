@@ -597,20 +597,7 @@ pub mod pallet {
                 .ok_or(Error::<T>::ArithmeticOverflow)?
                 / pool.total_lp;
 
-            let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
-            T::Currency::transfer(
-                &dex_account,
-                &who,
-                amount_a,
-                ExistenceRequirement::KeepAlive,
-            )?;
-            T::Currency::transfer(
-                &dex_account,
-                &who,
-                amount_b,
-                ExistenceRequirement::KeepAlive,
-            )?;
-
+            // CEI: Update state FIRST, then transfer (prevents reentrancy)
             pool.reserve_a = pool
                 .reserve_a
                 .checked_sub(&amount_a)
@@ -634,6 +621,21 @@ pub mod pallet {
                 );
                 Ok::<(), Error<T>>(())
             })?;
+
+            // Interactions: transfer after state is committed
+            let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
+            T::Currency::transfer(
+                &dex_account,
+                &who,
+                amount_a,
+                ExistenceRequirement::KeepAlive,
+            )?;
+            T::Currency::transfer(
+                &dex_account,
+                &who,
+                amount_b,
+                ExistenceRequirement::KeepAlive,
+            )?;
 
             Self::deposit_event(Event::LiquidityRemoved {
                 pool_id,
@@ -716,7 +718,17 @@ pub mod pallet {
                 Error::<T>::InsufficientLiquidity
             );
 
-            // Transfers FIRST (before state update for atomicity)
+            // CEI: Update state FIRST, then transfer (prevents reentrancy)
+            if is_a_to_b {
+                pool.reserve_a = pool.reserve_a.checked_add(&amount_in).ok_or(Error::<T>::ArithmeticOverflow)?;
+                pool.reserve_b = pool.reserve_b.checked_sub(&amount_out).ok_or(Error::<T>::ArithmeticUnderflow)?;
+            } else {
+                pool.reserve_b = pool.reserve_b.checked_add(&amount_in).ok_or(Error::<T>::ArithmeticOverflow)?;
+                pool.reserve_a = pool.reserve_a.checked_sub(&amount_out).ok_or(Error::<T>::ArithmeticUnderflow)?;
+            }
+            Pools::<T>::insert(pool_id, pool.clone());
+
+            // Interactions: transfer after state committed
             let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
             T::Currency::transfer(
                 &who,
@@ -731,28 +743,6 @@ pub mod pallet {
                 ExistenceRequirement::KeepAlive,
             )?;
 
-            // THEN update pool reserves
-            if is_a_to_b {
-                pool.reserve_a = pool
-                    .reserve_a
-                    .checked_add(&amount_in)
-                    .ok_or(Error::<T>::ArithmeticOverflow)?;
-                pool.reserve_b = pool
-                    .reserve_b
-                    .checked_sub(&amount_out)
-                    .ok_or(Error::<T>::ArithmeticUnderflow)?;
-            } else {
-                pool.reserve_b = pool
-                    .reserve_b
-                    .checked_add(&amount_in)
-                    .ok_or(Error::<T>::ArithmeticOverflow)?;
-                pool.reserve_a = pool
-                    .reserve_a
-                    .checked_sub(&amount_out)
-                    .ok_or(Error::<T>::ArithmeticUnderflow)?;
-            }
-
-            // SECURITY: Verify constant product invariant k = reserve_in * reserve_out is non-decreasing
             let k_before = reserve_in
                 .checked_mul(&reserve_out)
                 .ok_or(Error::<T>::ArithmeticOverflow)?;

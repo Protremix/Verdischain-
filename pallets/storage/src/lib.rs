@@ -211,6 +211,7 @@ pub mod pallet {
         NotExpired,
         /// Deposit computation overflowed
         DepositOverflow,
+        TooManyIds,
     }
 
     // === Config ===
@@ -444,6 +445,9 @@ pub mod pallet {
         #[pallet::weight(Weight::from_parts(100_000_000, 0))]
         pub fn cleanup_expired(origin: OriginFor<T>, ids: Vec<Vec<u8>>) -> DispatchResult {
             let _caller = ensure_signed(origin)?;
+
+            // Cap iterations to prevent block weight exhaustion
+            ensure!(ids.len() <= 50, Error::<T>::TooManyIds);
 
             let current_block = frame_system::Pallet::<T>::block_number();
             let mut cleaned: u32 = 0;
