@@ -182,3 +182,55 @@ The following claims from prior docs are **OBSOLETE** and no longer describe the
 - [ ] Website security headers (CSP/SRI)
 
 **Verdict: NOT READY for mainnet launch.** 11 of 18 criteria met. Critical blockers remain: air-gapped keys and Sudo removal.
+
+---
+
+## Sudo Removal — COMPLETE
+
+**Date:** August 13, 2026  
+**Commit:** 1248825f
+
+| Check | Status |
+|-------|--------|
+| pallet-sudo in construct_runtime! | ❌ Removed (not present) |
+| pallet-sudo in Cargo.toml (runtime) | ❌ Removed |
+| pallet-sudo in Cargo.toml (workspace) | ❌ Removed |
+| SudoConfig in chain_spec.rs | ❌ Not present |
+| Sudo key in mainnet-raw.json | ❌ Not present |
+| Post-sudo governance: Council (2/3) | ✅ EnsureCouncilSpend implemented |
+| Post-sudo governance: Tech Committee (1/3) | ✅ Schedule via democracy |
+| cargo check --workspace | ✅ PASS |
+| cargo check --features runtime-benchmarks | ✅ PASS |
+
+**Conclusion:** Sudo is fully removed. Governance is handled by Council (2/3 majority) and Tech Committee (1/3). No root key exists in mainnet spec.
+
+---
+
+## Chain Spec Determinism — VERIFIED
+
+**Date:** August 13, 2026
+
+| Check | Result |
+|-------|--------|
+| Genesis hash (run 1) | 81b5b63651d4d0ded6e99253509dcc850152b8b99329c1d40f487a063e905466 |
+| Genesis hash (run 2) | 81b5b63651d4d0ded6e99253509dcc850152b8b99329c1d40f487a063e905466 |
+| Genesis entries | 125 (both runs) |
+| WASM runtime in genesis | ✅ Present at :code key (~1.2MB) |
+| Dev keys in mainnet spec | ❌ None found |
+| Sudo key in mainnet spec | ❌ None found |
+| Non-deterministic elements | ❌ None (no timestamps, random, or dynamic values) |
+
+**Conclusion:** Mainnet chain spec is fully deterministic. Same binary produces identical genesis hash across runs.
+
+---
+
+## Security Fixes Applied (August 13, 2026)
+
+| Fix | Pallet | Commit | Description |
+|-----|--------|--------|-------------|
+| DEX deadline parameter | pallet-amm-dex | 4c892d2d | Anti-sandwich attack: swap/add_liq/remove_liq require deadline param |
+| DPoS RegistrationDeposit | pallet-dpos | 4c892d2d | Sybil resistance: validators must deposit 10,000 VRDX to register |
+| Max supply ratchet | pallet-fungible-tokens | 4c892d2d | One-way ratchet: max_supply can only decrease, never increase |
+| Benchmark deadline fix | pallet-amm-dex | 4ef5e3ae | Benchmarking code updated for new deadline parameter |
+| Runtime benchmark fix | runtime | f25f23a1 | TokenInfo max_supply + EnsureCouncilSpend trait compliance |
+| Sudo dependency cleanup | runtime + workspace | 1248825f | Dead pallet-sudo dependency removed |
