@@ -698,8 +698,8 @@ parameter_types! {
     pub const MaxCarbonCredits: u32 = 1_000;
     pub const MaxReforestProjects: u32 = 500;
     pub const MaxGreenValidators: u32 = 101;
-    pub const MinGreenScore: u8 = 0;
-    pub const MaxGreenScore: u8 = 100;
+    pub const MinGreenScore: u8 = 1;
+    pub const MaxGreenScore: u8 = 5;
 }
 
 impl pallet_eco::Config for Runtime {

@@ -635,8 +635,8 @@ pub mod tests {
         pub const MaxCarbonCredits: u32 = 100;
         pub const MaxReforestProjects: u32 = 50;
         pub const MaxGreenValidators: u32 = 101;
-        pub const MinGreenScore: u8 = 0;
-        pub const MaxGreenScore: u8 = 100;
+        pub const MinGreenScore: u8 = 1;
+        pub const MaxGreenScore: u8 = 5;
     }
 
     impl Config for Test {
@@ -764,7 +764,7 @@ pub mod tests {
                 b"Solar".to_vec(),
                 500,
                 100,
-                90,
+                4,
             ));
             assert_eq!(GreenValidators::<Test>::get(&alice).unwrap().score, 90);
         });
@@ -779,15 +779,15 @@ pub mod tests {
                 b"Solar".to_vec(),
                 500,
                 100,
-                90,
+                4,
             )
             .unwrap();
             assert_ok!(Eco::update_green_score(
                 RuntimeOrigin::root(),
                 alice.clone(),
-                95
+                5
             ));
-            assert_eq!(GreenValidators::<Test>::get(&alice).unwrap().score, 95);
+            assert_eq!(GreenValidators::<Test>::get(&alice).unwrap().score, 5);
         });
     }
 
@@ -970,7 +970,7 @@ pub mod tests {
                 b"Solar".to_vec(),
                 500,
                 100,
-                90,
+                4,
             )
             .unwrap();
             assert_noop!(
@@ -979,7 +979,7 @@ pub mod tests {
                     b"Wind".to_vec(),
                     300,
                     50,
-                    80,
+                    4,
                 ),
                 Error::<Test>::ValidatorAlreadyRegistered
             );
@@ -996,10 +996,72 @@ pub mod tests {
                     b"Solar".to_vec(),
                     500,
                     100,
-                    101,
+                    6,
                 ),
                 Error::<Test>::InvalidScore
             );
+        });
+    }
+
+
+    #[test]
+    fn test_register_green_validator_score_zero_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_noop!(
+                Eco::register_green_validator(
+                    RuntimeOrigin::signed(alice),
+                    b"Solar".to_vec(),
+                    500,
+                    100,
+                    0,
+                ),
+                Error::<Test>::InvalidScore
+            );
+        });
+    }
+
+    #[test]
+    fn test_register_green_validator_score_six_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_noop!(
+                Eco::register_green_validator(
+                    RuntimeOrigin::signed(alice),
+                    b"Solar".to_vec(),
+                    500,
+                    100,
+                    6,
+                ),
+                Error::<Test>::InvalidScore
+            );
+        });
+    }
+
+    #[test]
+    fn test_update_green_score_boundary_values_pass() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            Eco::register_green_validator(
+                RuntimeOrigin::signed(alice.clone()),
+                b"Solar".to_vec(),
+                500,
+                100,
+                3,
+            )
+            .unwrap();
+            assert_ok!(Eco::update_green_score(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                1,
+            ));
+            assert_eq!(GreenValidators::<Test>::get(&alice).unwrap().score, 1);
+            assert_ok!(Eco::update_green_score(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                5,
+            ));
+            assert_eq!(GreenValidators::<Test>::get(&alice).unwrap().score, 5);
         });
     }
 
