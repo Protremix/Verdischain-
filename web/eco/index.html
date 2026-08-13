@@ -1048,28 +1048,28 @@
               <div class="q-icon">⚡</div>
               <div>
                 <span class="q-lbl">CO2 Offset</span>
-                <span class="q-val mono green">12,847t</span>
+                <span class="q-val mono green" id="eco-co2">12,847t</span>
               </div>
             </div>
             <div class="q-card">
               <div class="q-icon">🌲</div>
               <div>
                 <span class="q-lbl">Trees Planted</span>
-                <span class="q-val mono">47,392</span>
+                <span class="q-val mono" id="eco-trees">47,392</span>
               </div>
             </div>
             <div class="q-card">
               <div class="q-icon">🪙</div>
               <div>
                 <span class="q-lbl">Carbon Credits</span>
-                <span class="q-val mono green">8,421 cVRDX</span>
+                <span class="q-val mono green" id="eco-credits">8,421 cVRDX</span>
               </div>
             </div>
             <div class="q-card">
               <div class="q-icon">🏆</div>
               <div>
                 <span class="q-lbl">Green Score</span>
-                <span class="q-val mono green">87 / 100</span>
+                <span class="q-val mono green" id="eco-score">87 / 100</span>
               </div>
             </div>
           </div>
@@ -1985,5 +1985,27 @@
       closeModal();
     }
   </script>
+
+<script>
+async function fetchEcoMetrics() {
+    try {
+        const resp = await fetch('/api/v1/eco/metrics');
+        const data = await resp.json();
+        if (data.success && data.data) {
+            const d = data.data;
+            const co2El = document.getElementById('eco-co2');
+            if (co2El) co2El.textContent = (d.co2_offset_tons || 0).toLocaleString() + 't';
+            const treesEl = document.getElementById('eco-trees');
+            if (treesEl) treesEl.textContent = (d.trees_planted || 0).toLocaleString();
+            const creditsEl = document.getElementById('eco-credits');
+            if (creditsEl) creditsEl.textContent = (d.carbon_credits_minted || 0) + ' cVRDX';
+            const scoreEl = document.getElementById('eco-score');
+            if (scoreEl) scoreEl.textContent = (d.avg_green_score || 0).toFixed(1) + ' / 100';
+        }
+    } catch(e) { /* keep existing values on error */ }
+}
+fetchEcoMetrics();
+setInterval(fetchEcoMetrics, 30000);
+</script>
 </body>
 </html>

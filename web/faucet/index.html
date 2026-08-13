@@ -360,7 +360,7 @@ async function fetchLiveFaucetStats() {
         // Try to fetch faucet stats from backend
         let faucetStats = {totalDispensed: 0, uniqueRecipients: 0, todayRequests: 0, distributions: []};
         try {
-            const fResp = await fetch('/faucet/stats.json');
+            const fResp = await fetch('/faucet/api/stats');
             if (fResp.ok) faucetStats = await fResp.json();
         } catch(e) { /* use defaults */ }
         
@@ -417,6 +417,12 @@ async function fetchFaucetStats() {
     });
     document.querySelectorAll('#faucet-total, #faucet-total2').forEach(el => {
       el.textContent = (data.totalDispensed || 0).toLocaleString() + ' VRDX';
+    });
+    document.querySelectorAll('#faucet-dispensed').forEach(el => {
+      el.textContent = (data.totalDispensed || 0).toLocaleString() + ' VRDX';
+    });
+    document.querySelectorAll('#faucet-dispensed2').forEach(el => {
+      el.textContent = (data.totalDispensed || 0).toLocaleString();
     });
     document.querySelectorAll('#faucet-today, #faucet-today2').forEach(el => {
       el.textContent = (data.todayRequests || 0).toLocaleString();
