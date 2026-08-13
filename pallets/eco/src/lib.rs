@@ -205,6 +205,8 @@ pub mod pallet {
         #[pallet::constant]
         type MaxGreenScore: Get<u8>;
         type WeightInfo: WeightInfo;
+        /// Post-sudo: Council (2/3) administers eco operations
+        type AdminOrigin: EnsureOrigin<Self::RuntimeOrigin>;
     }
 
     // === Genesis ===
@@ -286,7 +288,7 @@ pub mod pallet {
             project_name: Vec<u8>,
             tons_co2: u64,
         ) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
             let who = owner;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
@@ -345,7 +347,7 @@ pub mod pallet {
         #[pallet::call_index(1)]
         #[pallet::weight(T::WeightInfo::verify_carbon_credit())]
         pub fn verify_carbon_credit(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
                 id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
@@ -423,7 +425,7 @@ pub mod pallet {
             trees_planted: u32,
             location: Vec<u8>,
         ) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
                 id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
@@ -466,7 +468,7 @@ pub mod pallet {
             trees_planted: u32,
             survival_rate: u8,
         ) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
                 id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
@@ -490,7 +492,7 @@ pub mod pallet {
         #[pallet::call_index(6)]
         #[pallet::weight(T::WeightInfo::verify_reforest_project())]
         pub fn verify_reforest_project(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
 
             let id_bv: BoundedVec<u8, ConstU32<64>> =
                 id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
@@ -562,7 +564,7 @@ pub mod pallet {
             validator: T::AccountId,
             score: u8,
         ) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
             let who = validator;
 
             ensure!(
@@ -644,6 +646,7 @@ pub mod tests {
         type MinGreenScore = MinGreenScore;
         type MaxGreenScore = MaxGreenScore;
         type WeightInfo = SubstrateWeight<Test>;
+        type AdminOrigin = frame_system::EnsureRoot<Self::AccountId>;
     }
 
     pub fn new_test_ext() -> TestExternalities {

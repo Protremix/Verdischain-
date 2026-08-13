@@ -252,6 +252,8 @@ pub mod pallet {
         #[pallet::constant]
         type PalletId: Get<PalletId>;
         type WeightInfo: WeightInfo;
+        /// Post-sudo: Council (2/3) administers tokenomics
+        type AdminOrigin: EnsureOrigin<Self::RuntimeOrigin>;
     }
 
     // === Genesis ===
@@ -298,7 +300,7 @@ pub mod pallet {
         #[pallet::call_index(5)]
         #[pallet::weight(T::WeightInfo::give_consent())]
         pub fn set_inflation_rate(origin: OriginFor<T>, rate_bps: u32) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
             ensure!(rate_bps <= 1000, Error::<T>::InflationRateTooHigh);
             AnnualInflationRate::<T>::put(rate_bps);
             Ok(())
@@ -387,7 +389,7 @@ pub mod pallet {
         #[pallet::call_index(2)]
         #[pallet::weight(T::WeightInfo::update_presale_price())]
         pub fn update_presale_price(origin: OriginFor<T>, price_bps: u32) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
 
             PresalePrice::<T>::put(price_bps);
             Self::deposit_event(Event::PresalePriceUpdated { price: price_bps });
@@ -402,7 +404,7 @@ pub mod pallet {
             category: Vec<u8>,
             amount: BalanceOf<T>,
         ) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
 
             let cat_bv: BoundedVec<u8, ConstU32<32>> = category
                 .clone()
@@ -511,6 +513,7 @@ mod tests {
         type InvestorAllocation = InvestorAllocation;
         type PalletId = TokPalletId;
         type WeightInfo = SubstrateWeight<Test>;
+        type AdminOrigin = frame_system::EnsureRoot<Self::AccountId>;
     }
 
     pub fn new_test_ext() -> TestExternalities {

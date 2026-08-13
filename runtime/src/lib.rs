@@ -698,6 +698,7 @@ parameter_types! {
 }
 
 impl pallet_eco::Config for Runtime {
+    type AdminOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type RuntimeEvent = RuntimeEvent;
     type PalletId = EcoPalletId;
     type MaxCarbonCredits = MaxCarbonCredits;
@@ -735,6 +736,7 @@ parameter_types! {
 }
 
 impl pallet_tokenomics::Config for Runtime {
+    type AdminOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type TotalSupply = TotalSupplyConst;
@@ -841,11 +843,13 @@ impl pallet_identity::Config for Runtime {
     type IdentityInformation = frame_support::identity::IdentityInfo<MaxAdditionalFields>;
     type MaxRegistrars = MaxRegistrars;
     type Slashed = ();
-    type ForceOrigin = EnsureRoot<AccountId>;
-    type RegistrarOrigin = EnsureRoot<AccountId>;
+    // Post-sudo: Council (2/3) controls identity
+    type ForceOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
+    type RegistrarOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type OffchainSignature = MultiSignature;
     type SigningPublicKey = AccountId;
-    type UsernameAuthorityOrigin = EnsureRoot<AccountId>;
+    // Post-sudo: Council (2/3) controls usernames
+    type UsernameAuthorityOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type PendingUsernameExpiration = PendingUsernameExpiration;
     type UsernameGracePeriod = UsernameGracePeriod;
     type MaxSuffixLength = MaxSuffixLength;
@@ -966,8 +970,9 @@ impl pallet_assets::Config for Runtime {
     type ReserveData = ();
     type RemoveItemsLimit = ConstU32<1000>;
     type Currency = Balances;
-    type CreateOrigin = frame_system::EnsureRoot<AccountId>;
-    type ForceOrigin = EnsureRoot<AccountId>;
+    // Post-sudo: Anyone can create NFT collections, Council (2/3) can force
+    type CreateOrigin = frame_system::EnsureSigned<AccountId>;
+    type ForceOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type AssetDeposit = AssetDeposit;
     type AssetAccountDeposit = AssetAccountDeposit;
     type MetadataDepositBase = MetadataDeposit;
@@ -1008,7 +1013,8 @@ impl pallet_nfts::Config for Runtime {
     type CollectionId = u32;
     type ItemId = u32;
     type Currency = Balances;
-    type ForceOrigin = EnsureRoot<AccountId>;
+    // Post-sudo: Council (2/3) can force NFT actions
+    type ForceOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type CreateOrigin = frame_system::EnsureSigned<AccountId>;
     type Locker = ();
     type CollectionDeposit = NftCollectionDeposit;
@@ -1033,6 +1039,31 @@ impl pallet_nfts::Config for Runtime {
 
 // === Treasury ===
 
+// Post-sudo: Council (2/3) spend origin for Treasury with success type
+pub struct EnsureCouncilSpend;
+impl frame_support::traits::EnsureOrigin<RuntimeOrigin> for EnsureCouncilSpend {
+    type Success = u128;
+    fn try_origin(o: RuntimeOrigin) -> Result<Self::Success, RuntimeOrigin> {
+        pallet_collective::EnsureProportionAtLeast::<AccountId, pallet_collective::Instance1, 2, 3>
+            ::try_origin(o)
+            .map(|_| TreasuryMaxSpend::get())
+    }
+    #[cfg(feature = "runtime-benchmarks")]
+    fn try_origin_or_root(o: RuntimeOrigin) -> Result<Self::Success, RuntimeOrigin> {
+        match Self::try_origin(o.clone()) {
+            Ok(s) => Ok(s),
+            Err(_) => {
+                use frame_support::traits::OriginTrait;
+                if o.clone().into().is_root_origin() {
+                    Ok(TreasuryMaxSpend::get())
+                } else {
+                    Err(o)
+                }
+            }
+        }
+    }
+}
+
 parameter_types! {
     pub const TreasuryPalletId: PalletId = PalletId(*b"verdist0");
     pub const TreasurySpendPeriod: BlockNumber = 600;
@@ -1056,7 +1087,7 @@ impl pallet_treasury::Config for Runtime {
     type SpendFunds = ();
     type MaxApprovals = TreasuryMaxApprovals;
     // Post-sudo: Treasury spending through governance proposals (not direct dispatchable)
-    type SpendOrigin = frame_system::EnsureRootWithSuccess<AccountId, TreasuryMaxSpend>;
+    type SpendOrigin = EnsureCouncilSpend;
     type AssetKind = ();
     type Beneficiary = AccountId;
     type BeneficiaryLookup = AccountIdLookup<AccountId, ()>;
