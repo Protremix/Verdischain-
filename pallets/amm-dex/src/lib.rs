@@ -285,6 +285,7 @@ pub mod pallet {
     #[pallet::error]
     pub enum Error<T> {
         PoolNotFound,
+    Expired,
         PoolAlreadyExists,
         MaxPoolsReached,
         InsufficientLiquidity,
@@ -468,8 +469,10 @@ pub mod pallet {
             pool_id: u32,
             amount_a: BalanceOf<T>,
             amount_b: BalanceOf<T>,
+            deadline: BlockNumberFor<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
+            ensure!(frame_system::Pallet::<T>::block_number() <= deadline, Error::<T>::Expired);
 
             let mut pool = Pools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
 
@@ -572,8 +575,10 @@ pub mod pallet {
             origin: OriginFor<T>,
             pool_id: u32,
             lp_amount: BalanceOf<T>,
+            deadline: BlockNumberFor<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
+            ensure!(frame_system::Pallet::<T>::block_number() <= deadline, Error::<T>::Expired);
 
             let mut pool = Pools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
 
@@ -656,8 +661,10 @@ pub mod pallet {
             token_in: Vec<u8>,
             amount_in: BalanceOf<T>,
             min_amount_out: BalanceOf<T>,
+            deadline: BlockNumberFor<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
+            ensure!(frame_system::Pallet::<T>::block_number() <= deadline, Error::<T>::Expired);
 
             let mut pool = Pools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
 
@@ -1031,8 +1038,10 @@ pub mod pallet {
             asset_in: AssetId,
             amount_in: BalanceOf<T>,
             min_amount_out: BalanceOf<T>,
+            deadline: BlockNumberFor<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
+            ensure!(frame_system::Pallet::<T>::block_number() <= deadline, Error::<T>::Expired);
             let mut pool = TokenPools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
             ensure!(amount_in > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 
