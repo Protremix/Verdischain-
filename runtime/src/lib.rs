@@ -1072,6 +1072,7 @@ impl frame_support::traits::EnsureOrigin<RuntimeOrigin> for EnsureCouncilSpend {
         }
     }
 
+    #[cfg(feature = "runtime-benchmarks")]
     fn try_successful_origin() -> Result<RuntimeOrigin, ()> {
         // Council majority origin
         use frame_system::RawOrigin;
