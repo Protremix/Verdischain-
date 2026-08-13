@@ -247,7 +247,7 @@ pub mod pallet {
 
             let vesting = UserVestings::<T>::get(&who).ok_or(Error::<T>::NoVestingForAccount)?;
             let current_block = frame_system::Pallet::<T>::block_number();
-            let block_time_ms = 6000u64; // 6 second blocks (Substrate default)
+            let block_time_ms = 5000u64; // 5 second blocks (chain target)
             let blocks_per_day = (86_400_000 / block_time_ms) as u32;
 
             let mut total_releasable = BalanceOf::<T>::zero();
