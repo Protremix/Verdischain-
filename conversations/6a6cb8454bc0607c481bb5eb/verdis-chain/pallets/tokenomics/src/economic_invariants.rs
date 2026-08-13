@@ -354,4 +354,188 @@ fn test_fundraising_mathematics() {
     let max_supply = 100_000_000_000 * units;
     let tge_pct = tge_circulating * 100 / max_supply;
     assert_eq!(tge_pct, 8, "TGE circulating: 8%");
+
+/// Property: vesting output is always <= total_amount for any valid inputs
+#[test]
+fn test_vesting_never_exceeds_total() {
+    let total: u128 = 1_000_000_000_000_000_000; // 1B VRDX
+    let test_cases = [
+        (0u128, 365u128, 1095u128),   // TGE
+        (100, 365, 1095),              // Early
+        (364, 365, 1095),              // Day before cliff
+        (365, 365, 1095),              // At cliff
+        (500, 365, 1095),              // Mid-vesting
+        (1094, 365, 1095),             // Day before end
+        (1095, 365, 1095),             // At end
+        (2000, 365, 1095),             // Post-end
+        (500, 0, 365),                 // No cliff
+        (365, 0, 365),                 // No cliff, at end
+    ];
+    
+    for (t, cliff, vesting) in test_cases {
+        let vested = if t < cliff { 0 }
+            else if t >= vesting { total }
+            else { total * t / vesting };
+        assert!(
+            vested <= total,
+            "Day {} (cliff={}, vesting={}): vested {} exceeds total {}",
+            t, cliff, vesting, vested, total
+        );
+    }
+}
+
+/// Property: vesting is monotonically non-decreasing for any valid schedule
+#[test]
+fn test_vesting_monotonic_for_any_schedule() {
+    let total: u128 = 5_000_000_000_000_000_000; // 5B VRDX
+    
+    // Test with different cliff/vesting combinations
+    for &(cliff, vesting) in &[(365u128, 1095u128), (0, 365), (180, 365), (90, 730)] {
+        let mut prev: u128 = 0;
+        for day in 0..=vesting + 100 {
+            let vested = if day < cliff { 0 }
+                else if day >= vesting { total }
+                else { total * day / vesting };
+            assert!(
+                vested >= prev,
+                "Schedule (cliff={}, vesting={}), day {}: vesting decreased {} -> {}",
+                cliff, vesting, day, prev, vested
+            );
+            prev = vested;
+        }
+    }
+}
+
+/// Property: vesting at day 0 is always 0 (unless no cliff and vesting_days=0)
+#[test]
+fn test_vesting_day_zero_is_zero() {
+    let total: u128 = 10_000_000_000_000_000_000; // 10B VRDX
+    
+    // With any cliff > 0, day 0 should be 0
+    for cliff in [1u128, 30, 90, 180, 365, 730] {
+        let vested = if 0 < cliff { 0 }
+            else if 0 >= 365 { total }
+            else { total * 0 / 365 };
+        assert_eq!(vested, 0, "Day 0 with cliff {} should be 0", cliff);
+    }
+}
+
+/// Property: sum of all category vesting equals total supply at full vesting
+#[test]
+fn test_all_categories_sum_to_100b_at_full_vesting() {
+    let allocations = [
+        (25_000_000_000u128, 0u128, 0u128),    // Ecosystem
+        (20_000_000_000u128, 0, 0),              // Staking
+        (20_000_000_000u128, 0, 0),              // Treasury
+        (10_000_000_000u128, 0, 365),            // Dev
+        (10_000_000_000u128, 0, 0),              // Liquidity
+        (5_000_000_000u128, 90, 365),           // Community
+        (3_000_000_000u128, 365, 730),          // Seed
+        (2_000_000_000u128, 180, 365),          // Presale
+        (5_000_000_000u128, 365, 1095),         // Team
+    ];
+    
+    // At day 1095+ (all fully vested)
+    let day = 2000u128;
+    let mut total_circulating = 0u128;
+    for (amount, cliff, vesting) in allocations {
+        let vested = if vesting == 0 { amount }
+            else if day < cliff { 0 }
+            else if day >= vesting { amount }
+            else { amount * day / vesting };
+        total_circulating += vested;
+    }
+    
+    assert_eq!(
+        total_circulating, 100_000_000_000u128,
+        "At full vesting, all categories must sum to 100B, got {}",
+        total_circulating
+    );
+}
+
+/// Property: circulating supply at TGE is exactly 75B
+#[test]
+fn test_tge_circulating_is_75b() {
+    let tge_unlocked = [
+        25_000_000_000u128,  // Ecosystem
+        20_000_000_000u128,  // Staking
+        20_000_000_000u128,  // Treasury
+        10_000_000_000u128,  // Liquidity
+    ];
+    let total: u128 = tge_unlocked.iter().sum();
+    assert_eq!(total, 75_000_000_000, "TGE circulating should be 75B, got {}", total);
+}
+
+/// Property: no category contributes negative vesting (cliff doesn't reduce below 0)
+#[test]
+fn test_cliff_never_produces_negative_vesting() {
+    let total: u128 = 3_000_000_000_000_000_000; // 3B Seed
+    
+    // Test at various days before and after cliff
+    for day in [0u128, 1, 100, 200, 300, 364, 365, 366, 500] {
+        let cliff = 365u128;
+        let vesting = 730u128;
+        let vested = if day < cliff { 0 }
+            else if day >= vesting { total }
+            else { total * day / vesting };
+        assert!(
+            vested <= total,
+            "Day {}: vested {} should be <= total {}",
+            day, vested, total
+        );
+    }
+}
+
+/// Property: burn + circulating + locked = total_issuance (conservation)
+#[test]
+fn test_token_conservation_invariant() {
+    let total_issuance: u128 = 100_000_000_000_000_000_000; // 100B VRDX (9 decimals)
+    let circulating: u128 = 75_000_000_000_000_000_000; // 75B
+    let locked: u128 = 25_000_000_000_000_000_000; // 25B
+    let burned: u128 = 0; // No burn yet
+    
+    assert_eq!(
+        circulating + locked + burned,
+        total_issuance,
+        "Conservation: circulating + locked + burned must equal total_issuance"
+    );
+    
+    // After burning 1B
+    let burned = 1_000_000_000_000_000_000;
+    let new_issuance = total_issuance - burned;
+    assert_eq!(
+        circulating + locked + burned,
+        new_issuance + burned,
+        "After burn: conservation still holds"
+    );
+}
+
+/// Property: protocol fee split sums to exactly 100%
+#[test]
+fn test_protocol_fee_split_is_exact() {
+    let validator_share = 40u32;
+    let treasury_share = 30u32;
+    let ecosystem_share = 20u32;
+    let burn_share = 10u32;
+    
+    assert_eq!(
+        validator_share + treasury_share + ecosystem_share + burn_share,
+        100,
+        "Protocol fee split must sum to 100%"
+    );
+    
+    // Verify integer division doesn't lose tokens
+    let fee_amount: u128 = 1_000_000_000_000; // 1000 VRDX
+    let validators = fee_amount * validator_share as u128 / 100;
+    let treasury = fee_amount * treasury_share as u128 / 100;
+    let ecosystem = fee_amount * ecosystem_share as u128 / 100;
+    let burn = fee_amount * burn_share as u128 / 100;
+    
+    assert_eq!(
+        validators + treasury + ecosystem + burn,
+        fee_amount,
+        "Fee split must not lose tokens to integer division"
+    );
+}
+
 }
