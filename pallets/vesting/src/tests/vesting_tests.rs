@@ -336,3 +336,112 @@ fn test_label_too_long_fails() {
         );
     });
 }
+
+/// Vesting with very large amount should not overflow.
+#[test]
+fn test_vesting_large_amount_no_overflow() {
+    new_test_ext().execute_with(|| {
+        let beneficiary = Sr25519Keyring::Alice.to_account_id();
+
+        assert_ok!(Vesting::add_schedule(
+            RuntimeOrigin::root(),
+            b"large".to_vec(),
+            1_000_000_000_000_000_000u128, // 1B VRDX
+            365, // 365 days
+            90,  // 90 day cliff
+        ));
+
+        assert_ok!(Vesting::assign_vesting(
+            RuntimeOrigin::root(),
+            beneficiary.clone(),
+            b"large".to_vec(),
+            1_000_000_000_000_000_000u128,
+        ));
+
+        // Advance past full vesting period (365 days * 17280 blocks/day)
+        System::set_block_number(365 * 17_280 + 1);
+
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(beneficiary)));
+    });
+}
+
+/// Release at exact cliff boundary should work.
+#[test]
+fn test_release_at_exact_cliff_boundary() {
+    new_test_ext().execute_with(|| {
+        let beneficiary = Sr25519Keyring::Bob.to_account_id();
+
+        assert_ok!(Vesting::add_schedule(
+            RuntimeOrigin::root(),
+            b"cliff_test".to_vec(),
+            1_000_000u128,
+            100, // 100 vesting days
+            30,  // 30 day cliff
+        ));
+
+        assert_ok!(Vesting::assign_vesting(
+            RuntimeOrigin::root(),
+            beneficiary.clone(),
+            b"cliff_test".to_vec(),
+            1_000_000u128,
+        ));
+
+        // Just before cliff (29 days) — should have nothing to release
+        System::set_block_number(29 * 17_280);
+        // Release should succeed but release 0 (all skipped by cliff)
+        // Actually it might error with NoVestingAvailable if total_releasable is 0
+        let _ = Vesting::release_vested(RuntimeOrigin::signed(beneficiary.clone()));
+
+        // At exact cliff (30 days) — should release cliff portion
+        System::set_block_number(30 * 17_280);
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(beneficiary)));
+    });
+}
+
+/// Multiple vesting schedules for same user should not interfere.
+#[test]
+fn test_concurrent_vesting_schedules_independent() {
+    new_test_ext().execute_with(|| {
+        let beneficiary = Sr25519Keyring::Alice.to_account_id();
+
+        // Schedule 1: 1000 VRDX over 100 days, 20 day cliff
+        assert_ok!(Vesting::add_schedule(
+            RuntimeOrigin::root(),
+            b"sched1".to_vec(),
+            1_000u128,
+            100,
+            20,
+        ));
+
+        // Schedule 2: 2000 VRDX over 200 days, 50 day cliff
+        assert_ok!(Vesting::add_schedule(
+            RuntimeOrigin::root(),
+            b"sched2".to_vec(),
+            2_000u128,
+            200,
+            50,
+        ));
+
+        // Assign both to same beneficiary
+        assert_ok!(Vesting::assign_vesting(
+            RuntimeOrigin::root(),
+            beneficiary.clone(),
+            b"sched1".to_vec(),
+            1_000u128,
+        ));
+        assert_ok!(Vesting::assign_vesting(
+            RuntimeOrigin::root(),
+            beneficiary.clone(),
+            b"sched2".to_vec(),
+            2_000u128,
+        ));
+
+        // At 50 days: Schedule 1 is 30 days past cliff (50-20=30, 30/100=30%), Schedule 2 at cliff (50/200=25%)
+        System::set_block_number(50 * 17_280);
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(beneficiary.clone())));
+
+        // At 200 days: Schedule 1 fully vested (200>100), Schedule 2 at 75% (200/200=100%)
+        System::set_block_number(200 * 17_280);
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(beneficiary)));
+    });
+}

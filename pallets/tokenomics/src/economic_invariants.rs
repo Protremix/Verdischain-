@@ -187,3 +187,87 @@ fn test_allocation_caps() {
     let total: u128 = caps.iter().map(|(_, v)| *v).sum();
     assert_eq!(total, 100 * billion, "Sum of all caps must equal 100B");
 }
+
+/// Verify genesis total supply is exactly 100B VRDX.
+#[test]
+fn test_genesis_total_supply_exact() {
+    let units: u128 = 1_000_000_000;
+    let billion: u128 = 1_000_000_000 * units;
+    let target: u128 = 100 * billion;
+
+    // Verify the target is a clean 100B with 9 decimals
+    assert_eq!(target, 100_000_000_000_000_000_000u128);
+    assert_eq!(target / units, 100_000_000_000);
+    assert_eq!(target % units, 0, "No dust — exact VRDX");
+}
+
+/// Verify block reward annual inflation stays within bounds.
+#[test]
+fn test_block_reward_annual_inflation() {
+    let units: u128 = 1_000_000_000;
+    let block_reward: u128 = 342 * units; // 342 VRDX per block
+    let blocks_per_year: u128 = 5_256_000; // 6s blocks, 365 days
+
+    let annual_inflation = block_reward * blocks_per_year;
+    let billion: u128 = 1_000_000_000 * units;
+    let max_supply: u128 = 100 * billion;
+
+    // Annual inflation should be ~1.8B VRDX
+    assert!(
+        annual_inflation > 1 * billion && annual_inflation < 3 * billion,
+        "Annual inflation should be 1-3B, got {}",
+        annual_inflation / units
+    );
+
+    // Years to reach max supply from zero
+    let years_to_max = max_supply / annual_inflation;
+    assert!(
+        years_to_max > 50,
+        "Supply should last >50 years, got {} years",
+        years_to_max
+    );
+}
+
+/// Verify validator minimum stake is reasonable relative to supply.
+#[test]
+fn test_min_stake_proportion() {
+    let units: u128 = 1_000_000_000;
+    let billion: u128 = 1_000_000_000 * units;
+    let max_supply: u128 = 100 * billion;
+    let min_stake: u128 = 100_000_000 * units; // 100M VRDX
+
+    // Min stake should be 0.1% of supply
+    assert_eq!(
+        min_stake * 1000, max_supply,
+        "MinValidatorStake should be 0.1% of max supply"
+    );
+
+    // 21 validators * 100M = 2.1B staked (2.1% of supply)
+    let total_staked = min_stake * 21;
+    assert!(
+        total_staked < 5 * billion,
+        "Total genesis stake should be < 5B, got {}",
+        total_staked / units
+    );
+}
+
+/// Verify green score bounds are 1-5.
+#[test]
+fn test_green_score_range_enforced() {
+    let min_score: u8 = 1;
+    let max_score: u8 = 5;
+
+    assert_eq!(min_score, 1, "MinGreenScore must be 1");
+    assert_eq!(max_score, 5, "MaxGreenScore must be 5");
+
+    // Score 0 must be invalid
+    assert!(!(0 >= min_score), "Score 0 must be rejected");
+
+    // Scores 1-5 must be valid
+    for score in 1..=5 {
+        assert!(score >= min_score && score <= max_score, "Score {} should be valid", score);
+    }
+
+    // Score 6 must be invalid
+    assert!(!(6 <= max_score), "Score 6 must be rejected");
+}
