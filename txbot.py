@@ -1,7 +1,7 @@
 import random, time
 from substrateinterface import SubstrateInterface, Keypair
 
-substrate = SubstrateInterface(url='ws://127.0.0.1:9934', ss58_format=909, auto_discover=True, type_registry_preset=None)
+substrate = SubstrateInterface(url='ws://127.0.0.1:9933', ss58_format=909, auto_discover=True, type_registry_preset=None)
 keypair = Keypair.create_from_uri('//Alice')
 print('Connected. Alice:', keypair.ss58_address)
 
