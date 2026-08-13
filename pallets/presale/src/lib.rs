@@ -731,11 +731,30 @@ pub mod pallet {
 
             let refund_amount = contribution.total_paid;
 
+            // Return purchased tokens from user to escrow (prevents double-dip exploit)
+            let escrow = T::PalletId::get().into_account_truncating();
+            let tokens_to_return = contribution.total_purchased;
+            if tokens_to_return > BalanceOf::<T>::zero() {
+                T::Currency::transfer(
+                    &who,
+                    &escrow,
+                    tokens_to_return,
+                    ExistenceRequirement::KeepAlive,
+                ).map_err(|_| Error::<T>::InsufficientPayment)?;
+            }
+
             // Clear contribution record
             Contributions::<T>::remove(round_id, &who);
 
+            // Decrement RoundRaised and TotalRaised to prevent escrow accounting mismatch
+            RoundRaised::<T>::mutate(round_id, |raised| {
+                *raised = raised.checked_sub(&refund_amount).unwrap_or(0u32.into());
+            });
+            TotalRaised::<T>::mutate(|total| {
+                *total = total.checked_sub(&refund_amount).unwrap_or(0u32.into());
+            });
+
             // Transfer refund from escrow to user
-            let escrow = T::PalletId::get().into_account_truncating();
             T::Currency::transfer(
                 &escrow,
                 &who,

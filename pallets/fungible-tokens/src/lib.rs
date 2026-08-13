@@ -178,7 +178,12 @@ pub mod pallet {
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
-        TokenCreated {
+        OwnershipTransferred {
+        token_id: u32,
+        old_owner: T::AccountId,
+        new_owner: T::AccountId,
+    },
+    TokenCreated {
             token_id: u64,
             owner: T::AccountId,
             name: Vec<u8>,
