@@ -179,7 +179,7 @@ pub mod pallet {
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         OwnershipTransferred {
-        token_id: u32,
+        token_id: u64,
         old_owner: T::AccountId,
         new_owner: T::AccountId,
     },
@@ -653,12 +653,15 @@ pub mod pallet {
             token.owner = new_owner.clone();
             Tokens::<T>::insert(token_id, token);
 
-            Self::deposit_event(Event::TokenCreated {
+            // Transfer the native deposit reserve from old owner to new owner
+            let deposit = T::CreateTokenDeposit::get();
+            T::Currency::unreserve(&who, deposit);
+            T::Currency::reserve(&new_owner, deposit).map_err(|_| Error::<T>::InsufficientBalance)?;
+
+            Self::deposit_event(Event::OwnershipTransferred {
                 token_id,
-                owner: new_owner,
-                name: Vec::new(),
-                symbol: Vec::new(),
-                decimals: 0,
+                old_owner: who,
+                new_owner,
             });
             Ok(())
         }
