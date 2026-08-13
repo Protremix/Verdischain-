@@ -487,7 +487,8 @@ impl pallet_scheduler::Config for Runtime {
     type Preimages = Preimage;
     type MaximumWeight = MaximumSchedulerWeight;
     // Post-sudo: Tech Committee (1/3) can schedule
-    type ScheduleOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance2, 1, 3>;
+    type ScheduleOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance2, 1, 3>;
     type BlockNumberProvider = System;
 }
 
@@ -497,7 +498,8 @@ impl pallet_preimage::Config for Runtime {
     type WeightInfo = ();
     type Currency = Balances;
     // Post-sudo: Council (2/3) manages scheduler
-    type ManagerOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
+    type ManagerOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type Consideration = ();
 }
 
@@ -698,7 +700,8 @@ parameter_types! {
 }
 
 impl pallet_eco::Config for Runtime {
-    type AdminOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
+    type AdminOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type RuntimeEvent = RuntimeEvent;
     type PalletId = EcoPalletId;
     type MaxCarbonCredits = MaxCarbonCredits;
@@ -736,7 +739,8 @@ parameter_types! {
 }
 
 impl pallet_tokenomics::Config for Runtime {
-    type AdminOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
+    type AdminOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type TotalSupply = TotalSupplyConst;
@@ -772,7 +776,8 @@ impl pallet_presale::Config for Runtime {
     type Currency = Balances;
     type PalletId = PresalePalletId;
     // Post-sudo: Council (2/3) administers presale
-    type AdminOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
+    type AdminOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type Vesting = PresaleVestingHandler;
     type WeightInfo = pallet_presale::SubstrateWeight<Runtime>;
 }
@@ -1014,7 +1019,8 @@ impl pallet_nfts::Config for Runtime {
     type ItemId = u32;
     type Currency = Balances;
     // Post-sudo: Council (2/3) can force NFT actions
-    type ForceOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
+    type ForceOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type CreateOrigin = frame_system::EnsureSigned<AccountId>;
     type Locker = ();
     type CollectionDeposit = NftCollectionDeposit;
@@ -1200,9 +1206,11 @@ impl pallet_democracy::Config for Runtime {
     type CancellationOrigin =
         pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     // Post-sudo: Council (2/3) can blacklist proposals
-    type BlacklistOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
+    type BlacklistOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     // Post-sudo: Council (2/3) can cancel proposals
-    type CancelProposalOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
+    type CancelProposalOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type VetoOrigin = frame_system::EnsureSigned<AccountId>;
     type PalletsOrigin = OriginCaller;
     type Slash = ();
