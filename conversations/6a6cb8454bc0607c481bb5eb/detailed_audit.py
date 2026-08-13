@@ -1,106 +1,82 @@
-import asyncio
-from playwright.async_api import async_playwright
+import os
+import re
+import json
+import urllib.request
+import urllib.error
+import ssl
+from bs4 import BeautifulSoup
 
-async def audit():
-    async with async_playwright() as p:
-        browser = await p.chromium.launch()
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
+
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+
+pages = [
+    "/", "/explorer/", "/dex/", "/whitepaper/", "/wallet/", "/sale/", "/tokenomics/",
+    "/faucet/", "/validators/", "/eco/", "/docs/", "/transactions/", "/analytics/",
+    "/monitoring/", "/governance/", "/blog/", "/developers/", "/download/", "/referral/",
+    "/incentives/", "/contact/", "/privacy/", "/terms/", "/cookies/", "/security/",
+    "/disclaimer/", "/status/", "/api/"
+]
+
+def analyze_page(path):
+    fname = path.strip("/").replace("/", "_")
+    if not fname:
+        fname = "home"
+    fpath = f"audit_data/{filename_map(path)}.html"
+    
+    if not os.path.exists(fpath):
+        return None
+    
+    with open(fpath, "r", encoding="utf-8") as f:
+        html = f.read()
         
-        # ---------------- DESKTOP ----------------
-        page = await browser.new_page(viewport={'width': 1440, 'height': 900})
-        await page.goto('https://verdischain.com/whitepaper/', wait_until='networkidle')
+    soup = BeautifulSoup(html, "html.parser")
+    
+    # Inline scripts
+    scripts = [s.string for s in soup.find_all("script") if s.string]
+    full_script = "\n".join(scripts)
+    
+    # Fetch calls
+    # Match patterns like fetch('...'), fetch("..."), fetch(`...`), fetch(URL, ...)
+    fetch_calls = []
+    # Find exact string parameters to fetch
+    fetch_str_matches = re.findall(r'fetch\s*\(\s*[`\'"]([^`\'"]+)[`\'"]', full_script)
+    fetch_var_matches = re.findall(r'fetch\s*\(\s*([a-zA-Z0-9_\.\$\{\}\/`\'"-]+)', full_script)
+    
+    # XHR calls
+    xhr_calls = re.findall(r'new\s+XMLHttpRequest|\.open\s*\(\s*[`\'"](GET|POST|PUT|DELETE)[`\'"]\s*,\s*[`\'"]([^`\'"]+)[`\'"]|\$\.ajax\s*\(\s*\{[^}]*url\s*:\s*[`\'"]([^`\'"]+)[`\'"]', full_script)
+    
+    # WebSockets
+    ws_calls = re.findall(r'new\s+WebSocket\s*\(\s*[`\'"]([^`\'"]+)[`\'"]|new\s+WebSocket\s*\(\s*([a-zA-Z0-9_\.]+)\)|(wss?://[^\s`\'"]+)', full_script)
+    
+    # API URLs / endpoints referenced in strings
+    api_endpoints = re.findall(r'[`\'"](/api/[^`\'"]*|https?://[^\s`\'"]+|wss?://[^\s`\'"]+)[\'"]', html)
+    
+    # Look for API definitions, variables
+    api_vars = re.findall(r'(const|let|var)\s+([A-Za-z0-9_]*API[A-Za-z0-9_]*|RPC[A-Za-z0-9_]*|WS[A-Za-z0-9_]*)\s*=\s*[`\'"]([^`\'"]+)[`\'"]', full_script)
 
-        print("=== 1. ALLOCATION TABLE / CARDS ANALYSIS ===")
-        alloc_data = await page.evaluate("""
-            () => {
-                const items = document.querySelectorAll('.alloc-card, .distribution-card, .token-card, .distribution-item, [class*="alloc"], [class*="distribut"]');
-                return Array.from(items).map(el => ({
-                    text: el.innerText.replace(/\\n+/g, ' | '),
-                    className: el.className
-                }));
-            }
-        """)
-        for d in alloc_data:
-            print(d)
+    return {
+        'path': path,
+        'title': soup.title.string.strip() if soup.title else "No Title",
+        'script_count': len(soup.find_all("script")),
+        'fetch_str': list(set(fetch_str_matches)),
+        'fetch_var': list(set(fetch_var_matches)),
+        'xhr_calls': xhr_calls,
+        'ws_calls': ws_calls,
+        'api_vars': api_vars,
+        'api_endpoints': list(set(api_endpoints)),
+        'full_script': full_script,
+        'html': html
+    }
 
-        print("\n=== 2. PIE CHART DETAILED ANALYSIS ===")
-        pie_data = await page.evaluate("""
-            () => {
-                const svg = document.querySelector('.pie-svg');
-                if (!svg) return 'No .pie-svg found';
-                const segs = svg.querySelectorAll('.pie-seg');
-                const segData = Array.from(segs).map(s => ({
-                    stroke: s.getAttribute('stroke'),
-                    dasharray: s.getAttribute('stroke-dasharray'),
-                    dashoffset: s.getAttribute('stroke-dashoffset')
-                }));
-                const legend = Array.from(document.querySelectorAll('.pie-legend, .chart-legend, [class*="legend"]')).map(l => l.innerText);
-                return { segData, legend, outerText: svg.parentElement.innerText };
-            }
-        """)
-        print("Pie Chart Data:", pie_data)
+def filename_map(path):
+    fname = path.strip("/").replace("/", "_")
+    return fname if fname else "home"
 
-        print("\n=== 3. ROADMAP DETAILED ANALYSIS ===")
-        roadmap_data = await page.evaluate("""
-            () => {
-                const phases = document.querySelectorAll('.roadmap-card, .roadmap-phase, .timeline-phase, [class*="roadmap"]');
-                return Array.from(phases).map(p => p.innerText.replace(/\\n+/g, ' | '));
-            }
-        """)
-        for r in roadmap_data:
-            print("ROADMAP ITEM:", r)
+all_data = {}
+for p in pages:
+    all_data[p] = analyze_page(p)
 
-        print("\n=== 4. VESTING CARD DETAILED ANALYSIS ===")
-        vesting_data = await page.evaluate("""
-            () => {
-                const cards = document.querySelectorAll('.vesting-card, [class*="vesting"]');
-                return Array.from(cards).map(c => c.innerText.replace(/\\n+/g, ' | '));
-            }
-        """)
-        for v in vesting_data:
-            print("VESTING ITEM:", v)
-
-        print("\n=== 5 & 6. STORY TIMELINE ANALYSIS ===")
-        story_timeline = await page.evaluate("""
-            () => {
-                const items = document.querySelectorAll('.story-timeline .timeline-item, .history-item, .story-item, [class*="story"] .timeline-item, .timeline-node');
-                if (items.length === 0) {
-                    // find timeline nodes in general
-                    const allTimeline = document.querySelectorAll('.timeline-item, .timeline-card, .timeline-step');
-                    return Array.from(allTimeline).map(t => ({
-                        text: t.innerText.replace(/\\n+/g, ' | '),
-                        className: t.className,
-                        classList: Array.from(t.classList),
-                        innerHTML: t.innerHTML
-                    }));
-                }
-                return Array.from(items).map(t => ({
-                    text: t.innerText.replace(/\\n+/g, ' | '),
-                    className: t.className,
-                    classList: Array.from(t.classList),
-                    innerHTML: t.innerHTML
-                }));
-            }
-        """)
-        print(f"Found {len(story_timeline)} timeline items:")
-        for st in story_timeline:
-            print("STORY TIMELINE ITEM:", st['text'])
-            print("  Classes:", st['className'])
-            print("  HTML snippet:", st['innerHTML'][:150])
-
-        # Let's inspect specifically all timeline entries in the page
-        all_timelines = await page.evaluate("""
-            () => {
-                const nodes = document.querySelectorAll('[class*="timeline"]');
-                return Array.from(nodes).map(n => ({
-                    class: n.className,
-                    text: n.innerText.replace(/\\n+/g, ' | ')
-                }));
-            }
-        """)
-        print("\nALL TIMELINE ELEMENTS:")
-        for t in all_timelines:
-            print(t['class'], "-->", t['text'][:100])
-
-        await browser.close()
-
-asyncio.run(audit())
+print("Analyzed pages count:", len(all_data))

@@ -1,0 +1,476 @@
+﻿2026-08-13T05:48:09.0566292Z ##[group]Run cargo fmt --all -- --check
+2026-08-13T05:48:09.0566702Z [36;1mcargo fmt --all -- --check[0m
+2026-08-13T05:48:09.0614704Z shell: /usr/bin/bash -e {0}
+2026-08-13T05:48:09.0615004Z env:
+2026-08-13T05:48:09.0615235Z   CARGO_TERM_COLOR: always
+2026-08-13T05:48:09.0615524Z   CARGO_HOME: /home/runner/.cargo
+2026-08-13T05:48:09.0615814Z   CARGO_INCREMENTAL: 0
+2026-08-13T05:48:09.0616068Z ##[endgroup]
+2026-08-13T05:48:11.8845075Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:11.8846324Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:11.8847347Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:11.8848266Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:11.8849198Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:11.8943584Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:11.8945285Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:11.8946864Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:11.8948125Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:11.8949056Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:12.4473841Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:12.4475503Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:12.4476698Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:12.4477709Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:12.4478895Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:12.4479975Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:12.4481349Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:12.4482543Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:12.4483672Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:12.4484800Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.0287508Z Diff in /home/runner/work/Verdischain-/Verdischain-/node/src/chain_spec.rs:467:
+2026-08-13T05:48:13.0288678Z  
+2026-08-13T05:48:13.0297935Z      // 21 validators for testnet
+2026-08-13T05:48:13.0298487Z      let uris = testnet_validator_uris();
+2026-08-13T05:48:13.0302567Z -    let session_keys = build_session_keys(&uris).into_iter().take(3).collect::<Vec<_>>();
+2026-08-13T05:48:13.0303160Z +    let session_keys = build_session_keys(&uris)
+2026-08-13T05:48:13.0303517Z +        .into_iter()
+2026-08-13T05:48:13.0303760Z +        .take(3)
+2026-08-13T05:48:13.0304050Z +        .collect::<Vec<_>>();
+2026-08-13T05:48:13.0304342Z  
+2026-08-13T05:48:13.0304637Z      let babe_authorities: Vec<(BabeId, u64)> = session_keys
+2026-08-13T05:48:13.0305005Z          .iter()
+2026-08-13T05:48:13.0654420Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.0655504Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.0656850Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.0657737Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.0658609Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.0659503Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.0660798Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.0661853Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.0662774Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.0663700Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.0928570Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/address-lookup-tables/src/lib.rs:18:
+2026-08-13T05:48:13.0929418Z  use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
+2026-08-13T05:48:13.0929885Z  use frame_system::pallet_prelude::*;
+2026-08-13T05:48:13.0930196Z  pub mod weights;
+2026-08-13T05:48:13.0930768Z -pub use weights::WeightInfo;
+2026-08-13T05:48:13.0931112Z -pub use weights::SubstrateWeight;
+2026-08-13T05:48:13.0931732Z  pub use pallet::*;
+2026-08-13T05:48:13.0931987Z  use sp_std::prelude::*;
+2026-08-13T05:48:13.0932286Z +pub use weights::SubstrateWeight;
+2026-08-13T05:48:13.0932725Z +pub use weights::WeightInfo;
+2026-08-13T05:48:13.0933090Z  
+2026-08-13T05:48:13.0933335Z  #[frame_support::pallet]
+2026-08-13T05:48:13.0933595Z  pub mod pallet {
+2026-08-13T05:48:13.5021716Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/address-lookup-tables/src/weights.rs:27:
+2026-08-13T05:48:13.5022491Z              .saturating_add(T::DbWeight::get().writes(1))
+2026-08-13T05:48:13.5023030Z      }
+2026-08-13T05:48:13.5023382Z      fn lookup_address() -> Weight {
+2026-08-13T05:48:13.5023682Z -        Weight::from_parts(5_000, 0)
+2026-08-13T05:48:13.5024232Z -            .saturating_add(T::DbWeight::get().reads(1))
+2026-08-13T05:48:13.5024868Z +        Weight::from_parts(5_000, 0).saturating_add(T::DbWeight::get().reads(1))
+2026-08-13T05:48:13.5025488Z      }
+2026-08-13T05:48:13.5025776Z  }
+2026-08-13T05:48:13.5026104Z  
+2026-08-13T05:48:13.5026805Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/address-lookup-tables/src/weights.rs:35:
+2026-08-13T05:48:13.5027768Z  impl WeightInfo for () {
+2026-08-13T05:48:13.5028363Z -    fn create_table() -> Weight { Weight::from_parts(15_000, 0) }
+2026-08-13T05:48:13.5029071Z -    fn add_address() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.5029820Z -    fn deactivate_table() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.5030836Z -    fn lookup_address() -> Weight { Weight::from_parts(5_000, 0) }
+2026-08-13T05:48:13.5031436Z +    fn create_table() -> Weight {
+2026-08-13T05:48:13.5031908Z +        Weight::from_parts(15_000, 0)
+2026-08-13T05:48:13.5032336Z +    }
+2026-08-13T05:48:13.5032671Z +    fn add_address() -> Weight {
+2026-08-13T05:48:13.5033122Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.5033562Z +    }
+2026-08-13T05:48:13.5033908Z +    fn deactivate_table() -> Weight {
+2026-08-13T05:48:13.5034408Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.5034840Z +    }
+2026-08-13T05:48:13.5035156Z +    fn lookup_address() -> Weight {
+2026-08-13T05:48:13.5035596Z +        Weight::from_parts(5_000, 0)
+2026-08-13T05:48:13.5036024Z +    }
+2026-08-13T05:48:13.5036321Z  }
+2026-08-13T05:48:13.5036610Z  
+2026-08-13T05:48:13.5037219Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5038229Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5038893Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5039498Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5040120Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5040986Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5041684Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5042382Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5043066Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5043738Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5499920Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5501450Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5502669Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5504100Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5505293Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5506512Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5507851Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5509180Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5510739Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5512049Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5534732Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5535890Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5538844Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5539746Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5541319Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5542184Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5543503Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5544904Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5546231Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5547318Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5813972Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5815755Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5816967Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5818095Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5819244Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5820743Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5822054Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5823344Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5824604Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5825878Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5925557Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5927024Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5928318Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5929837Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5931350Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5932583Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5933897Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5935224Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5936521Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.5937813Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6043663Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6045025Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6046235Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6047348Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6048527Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6049720Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6051257Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6052557Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6053855Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6055109Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6109080Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6110892Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6112102Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6113229Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6114383Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6115581Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6116892Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6118216Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6119506Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6121070Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6210111Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/ibc/src/weights.rs:72:
+2026-08-13T05:48:13.6211084Z  }
+2026-08-13T05:48:13.6211365Z  
+2026-08-13T05:48:13.6211677Z  impl WeightInfo for () {
+2026-08-13T05:48:13.6212247Z -    fn create_client() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.6212981Z -    fn open_connection() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.6214055Z -    fn open_channel() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.6214726Z -    fn send_packet() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.6215399Z -    fn recv_packet() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.6216146Z -    fn acknowledge_packet() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.6217052Z -    fn timeout_packet() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.6217762Z -    fn transfer() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.6218474Z -    fn close_channel() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.6219213Z -    fn update_client() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.6219823Z +    fn create_client() -> Weight {
+2026-08-13T05:48:13.6220275Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.6221011Z +    }
+2026-08-13T05:48:13.6221345Z +    fn open_connection() -> Weight {
+2026-08-13T05:48:13.6221829Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.6222243Z +    }
+2026-08-13T05:48:13.6222567Z +    fn open_channel() -> Weight {
+2026-08-13T05:48:13.6223021Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.6223451Z +    }
+2026-08-13T05:48:13.6223762Z +    fn send_packet() -> Weight {
+2026-08-13T05:48:13.6224203Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.6224624Z +    }
+2026-08-13T05:48:13.6224936Z +    fn recv_packet() -> Weight {
+2026-08-13T05:48:13.6225384Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.6225797Z +    }
+2026-08-13T05:48:13.6226144Z +    fn acknowledge_packet() -> Weight {
+2026-08-13T05:48:13.6226639Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.6227067Z +    }
+2026-08-13T05:48:13.6227402Z +    fn timeout_packet() -> Weight {
+2026-08-13T05:48:13.6227869Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.6228292Z +    }
+2026-08-13T05:48:13.6228603Z +    fn transfer() -> Weight {
+2026-08-13T05:48:13.6229230Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.6229700Z +    }
+2026-08-13T05:48:13.6230025Z +    fn close_channel() -> Weight {
+2026-08-13T05:48:13.6230743Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.6231183Z +    }
+2026-08-13T05:48:13.6231509Z +    fn update_client() -> Weight {
+2026-08-13T05:48:13.6231971Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.6232678Z +    }
+2026-08-13T05:48:13.6232971Z  }
+2026-08-13T05:48:13.6233247Z  
+2026-08-13T05:48:13.6233915Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6235166Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6236389Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6237517Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6238657Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6239842Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6241452Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6242813Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6244118Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6245424Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6261532Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6281643Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6291849Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6293016Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6294210Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6295473Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6296789Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6298103Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6299382Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6300904Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6381195Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/presale/src/presale_tests.rs:139:
+2026-08-13T05:48:13.6382271Z          .unwrap();
+2026-08-13T05:48:13.6382604Z  
+2026-08-13T05:48:13.6383368Z          assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
+2026-08-13T05:48:13.6384152Z -    frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6384817Z +        frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6385358Z  
+2026-08-13T05:48:13.6385737Z          let round = Rounds::<Test>::get(0).unwrap();
+2026-08-13T05:48:13.6386442Z          assert!(round.is_active, "Round should be active after activation");
+2026-08-13T05:48:13.6387460Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/presale/src/presale_tests.rs:254:
+2026-08-13T05:48:13.6388292Z              b"seed".to_vec(),
+2026-08-13T05:48:13.6388702Z          ));
+2026-08-13T05:48:13.6389205Z          assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
+2026-08-13T05:48:13.6389913Z -    frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6390784Z +        frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6391319Z  
+2026-08-13T05:48:13.6392190Z          // Buy at cap — should succeed
+2026-08-13T05:48:13.6392893Z          assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100_000u64,));
+2026-08-13T05:48:13.6394056Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/presale/src/presale_tests.rs:285:
+2026-08-13T05:48:13.6394878Z              b"seed".to_vec(),
+2026-08-13T05:48:13.6395268Z          ));
+2026-08-13T05:48:13.6395752Z          assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
+2026-08-13T05:48:13.6396460Z -    frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6397095Z +        frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6397626Z  
+2026-08-13T05:48:13.6397936Z          // Buy full allocation
+2026-08-13T05:48:13.6398571Z          assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 500_000u64,));
+2026-08-13T05:48:13.6399602Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/presale/src/presale_tests.rs:353:
+2026-08-13T05:48:13.6400602Z              b"seed".to_vec(),
+2026-08-13T05:48:13.6401026Z          ));
+2026-08-13T05:48:13.6401512Z          assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
+2026-08-13T05:48:13.6402217Z -    frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6402850Z +        frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6403367Z  
+2026-08-13T05:48:13.6403693Z          // At block 0, before start_block
+2026-08-13T05:48:13.6404147Z          assert_noop!(
+2026-08-13T05:48:13.6404848Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/presale/src/presale_tests.rs:378:
+2026-08-13T05:48:13.6405656Z              b"seed".to_vec(),
+2026-08-13T05:48:13.6406398Z          ));
+2026-08-13T05:48:13.6406889Z          assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
+2026-08-13T05:48:13.6407597Z -    frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6408221Z +        frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6408759Z  
+2026-08-13T05:48:13.6409077Z          // Advance past end block
+2026-08-13T05:48:13.6409535Z          System::set_block_number(51);
+2026-08-13T05:48:13.6410325Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/presale/src/presale_tests.rs:407:
+2026-08-13T05:48:13.6411359Z              b"seed".to_vec(),
+2026-08-13T05:48:13.6411755Z          ));
+2026-08-13T05:48:13.6412234Z          assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
+2026-08-13T05:48:13.6412935Z -    frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6413562Z +        frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6414083Z  
+2026-08-13T05:48:13.6414372Z          // Contribute
+2026-08-13T05:48:13.6414935Z          assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10_000u64,));
+2026-08-13T05:48:13.6415954Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/presale/src/presale_tests.rs:458:
+2026-08-13T05:48:13.6416759Z              b"seed".to_vec(),
+2026-08-13T05:48:13.6417155Z          ));
+2026-08-13T05:48:13.6417637Z          assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
+2026-08-13T05:48:13.6418344Z -    frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6418957Z +        frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6419654Z          assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
+2026-08-13T05:48:13.6420306Z          System::set_block_number(51);
+2026-08-13T05:48:13.6420982Z  
+2026-08-13T05:48:13.6421638Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/presale/src/presale_tests.rs:524:
+2026-08-13T05:48:13.6422472Z              b"seed".to_vec(),
+2026-08-13T05:48:13.6422854Z          ));
+2026-08-13T05:48:13.6423341Z          assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
+2026-08-13T05:48:13.6424145Z -    frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6424773Z +        frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6425657Z  
+2026-08-13T05:48:13.6425994Z          assert_ok!(Presale::create_round(
+2026-08-13T05:48:13.6426475Z              RuntimeOrigin::root(),
+2026-08-13T05:48:13.6427253Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/presale/src/presale_tests.rs:537:
+2026-08-13T05:48:13.6428066Z              b"seed".to_vec(),
+2026-08-13T05:48:13.6428446Z          ));
+2026-08-13T05:48:13.6428930Z          assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 1));
+2026-08-13T05:48:13.6429637Z -    frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6430256Z +        frame_system::Pallet::<Test>::set_block_number(1);
+2026-08-13T05:48:13.6431005Z  
+2026-08-13T05:48:13.6431330Z          // Contribute to both rounds
+2026-08-13T05:48:13.6431986Z          assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10_000u64));
+2026-08-13T05:48:13.6498175Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6499435Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6500886Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6502028Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6503191Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6504386Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6505909Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6507203Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6508512Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6509819Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6532827Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/sealevel/src/weights.rs:33:
+2026-08-13T05:48:13.6533641Z  }
+2026-08-13T05:48:13.6533936Z  
+2026-08-13T05:48:13.6534244Z  impl WeightInfo for () {
+2026-08-13T05:48:13.6534778Z -    fn create_batch() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.6535481Z -    fn report_execution() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.6536222Z -    fn report_conflict() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.6536854Z +    fn create_batch() -> Weight {
+2026-08-13T05:48:13.6537304Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.6537725Z +    }
+2026-08-13T05:48:13.6538049Z +    fn report_execution() -> Weight {
+2026-08-13T05:48:13.6538512Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.6538933Z +    }
+2026-08-13T05:48:13.6539253Z +    fn report_conflict() -> Weight {
+2026-08-13T05:48:13.6539708Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.6540118Z +    }
+2026-08-13T05:48:13.6540627Z  }
+2026-08-13T05:48:13.6540911Z  
+2026-08-13T05:48:13.6541561Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6542793Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6544026Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6545183Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6546365Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6547595Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6549130Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6550652Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6551974Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6553251Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6605551Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6606799Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6607996Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6609124Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6610282Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6611739Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6613040Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6614366Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6615920Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.6617193Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7060687Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7062250Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7063480Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7064622Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7065777Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7067003Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7068307Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7069666Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7071287Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7072589Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7091060Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/turbine/src/weights.rs:34:
+2026-08-13T05:48:13.7092045Z  }
+2026-08-13T05:48:13.7092346Z  
+2026-08-13T05:48:13.7092646Z  impl WeightInfo for () {
+2026-08-13T05:48:13.7093219Z -    fn register_shard() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.7093941Z -    fn rebuild_tree(_v: u32) -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.7094745Z -    fn mark_block_propagated() -> Weight { Weight::from_parts(10_000, 0) }
+2026-08-13T05:48:13.7095405Z +    fn register_shard() -> Weight {
+2026-08-13T05:48:13.7095869Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.7096295Z +    }
+2026-08-13T05:48:13.7096623Z +    fn rebuild_tree(_v: u32) -> Weight {
+2026-08-13T05:48:13.7097360Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.7097775Z +    }
+2026-08-13T05:48:13.7098432Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7099653Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7101106Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7102228Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7103486Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7104727Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7106010Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7107350Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7108672Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7109948Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7111114Z +    fn mark_block_propagated() -> Weight {
+2026-08-13T05:48:13.7111616Z +        Weight::from_parts(10_000, 0)
+2026-08-13T05:48:13.7112036Z +    }
+2026-08-13T05:48:13.7112552Z  }
+2026-08-13T05:48:13.7112824Z  
+2026-08-13T05:48:13.7222182Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/vesting/src/tests/vesting_tests.rs:214:
+2026-08-13T05:48:13.7223280Z          assert_eq!(locked, amount, "All tokens should be locked before cliff");
+2026-08-13T05:48:13.7223927Z  
+2026-08-13T05:48:13.7224382Z          let unlocked = Vesting::get_unlocked_balance(&beneficiary);
+2026-08-13T05:48:13.7225351Z -        assert_eq!(unlocked, 1_000_000_000 - amount, "Only genesis balance minus vesting should be unlocked");
+2026-08-13T05:48:13.7226449Z +        assert_eq!(
+2026-08-13T05:48:13.7227035Z +            unlocked,
+2026-08-13T05:48:13.7227555Z +            1_000_000_000 - amount,
+2026-08-13T05:48:13.7228363Z +            "Only genesis balance minus vesting should be unlocked"
+2026-08-13T05:48:13.7229088Z +        );
+2026-08-13T05:48:13.7229514Z      });
+2026-08-13T05:48:13.7230104Z  }
+2026-08-13T05:48:13.7244038Z  
+2026-08-13T05:48:13.7244792Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7246038Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7247253Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7248397Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7249599Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7251098Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7252403Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7253716Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7255006Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7256288Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7257522Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/zk-compression/src/lib.rs:16:
+2026-08-13T05:48:13.7258580Z  pub use pallet::*;
+2026-08-13T05:48:13.7258962Z  use sp_std::prelude::*;
+2026-08-13T05:48:13.7259346Z  pub mod weights;
+2026-08-13T05:48:13.7259723Z -pub use weights::WeightInfo;
+2026-08-13T05:48:13.7260181Z  pub use weights::SubstrateWeight;
+2026-08-13T05:48:13.7260913Z +pub use weights::WeightInfo;
+2026-08-13T05:48:13.7261314Z  
+2026-08-13T05:48:13.7261629Z  #[frame_support::pallet]
+2026-08-13T05:48:13.7262022Z  pub mod pallet {
+2026-08-13T05:48:13.7267687Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/zk-compression/src/weights.rs:21:
+2026-08-13T05:48:13.7268678Z              .saturating_add(T::DbWeight::get().writes(2))
+2026-08-13T05:48:13.7269191Z      }
+2026-08-13T05:48:13.7269523Z      fn verify_proof() -> Weight {
+2026-08-13T05:48:13.7270012Z -        Weight::from_parts(100_000, 0)
+2026-08-13T05:48:13.7270850Z -            .saturating_add(T::DbWeight::get().reads(2))
+2026-08-13T05:48:13.7271594Z +        Weight::from_parts(100_000, 0).saturating_add(T::DbWeight::get().reads(2))
+2026-08-13T05:48:13.7272266Z      }
+2026-08-13T05:48:13.7272546Z  }
+2026-08-13T05:48:13.7272824Z  
+2026-08-13T05:48:13.7273439Z Diff in /home/runner/work/Verdischain-/Verdischain-/pallets/zk-compression/src/weights.rs:29:
+2026-08-13T05:48:13.7274175Z  impl WeightInfo for () {
+2026-08-13T05:48:13.7274649Z -    fn create_tree() -> Weight { Weight::from_parts(50_000, 0) }
+2026-08-13T05:48:13.7275383Z -    fn compress_account() -> Weight { Weight::from_parts(30_000, 0) }
+2026-08-13T05:48:13.7276127Z -    fn verify_proof() -> Weight { Weight::from_parts(100_000, 0) }
+2026-08-13T05:48:13.7276730Z +    fn create_tree() -> Weight {
+2026-08-13T05:48:13.7277387Z +        Weight::from_parts(50_000, 0)
+2026-08-13T05:48:13.7277807Z +    }
+2026-08-13T05:48:13.7278130Z +    fn compress_account() -> Weight {
+2026-08-13T05:48:13.7278591Z +        Weight::from_parts(30_000, 0)
+2026-08-13T05:48:13.7278999Z +    }
+2026-08-13T05:48:13.7279312Z +    fn verify_proof() -> Weight {
+2026-08-13T05:48:13.7279761Z +        Weight::from_parts(100_000, 0)
+2026-08-13T05:48:13.7280185Z +    }
+2026-08-13T05:48:13.7280661Z  }
+2026-08-13T05:48:13.7280939Z  
+2026-08-13T05:48:13.7281584Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7282781Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7283950Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7285053Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7286218Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7287422Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7288696Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7289977Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7290960Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7291694Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7292338Z Warning: can't set `wrap_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7293016Z Warning: can't set `format_code_in_doc_comments = true`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7294138Z Warning: can't set `comment_width = 100`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7294849Z Warning: can't set `fn_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7295682Z Warning: can't set `where_single_line = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7296345Z Warning: can't set `imports_granularity = Crate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7297046Z Warning: can't set `group_imports = StdExternalCrate`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7297766Z Warning: can't set `struct_field_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7298454Z Warning: can't set `enum_discrim_align_threshold = 0`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.7299133Z Warning: can't set `error_on_line_overflow = false`, unstable features are only available in nightly channel.
+2026-08-13T05:48:13.9343787Z ##[error]Process completed with exit code 1.

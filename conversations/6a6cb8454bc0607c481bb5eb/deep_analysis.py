@@ -1,68 +1,68 @@
+import os
+import re
 from bs4 import BeautifulSoup
-import json
 
-with open('page.html', 'r', encoding='utf-8') as f:
-    soup = BeautifulSoup(f.read(), 'html.parser')
+# List of all 28 pages
+pages_info = [
+    ("/", "home.html"),
+    ("/explorer/", "explorer.html"),
+    ("/dex/", "dex.html"),
+    ("/whitepaper/", "whitepaper.html"),
+    ("/wallet/", "wallet.html"),
+    ("/sale/", "sale.html"),
+    ("/tokenomics/", "tokenomics.html"),
+    ("/faucet/", "faucet.html"),
+    ("/validators/", "validators.html"),
+    ("/eco/", "eco.html"),
+    ("/docs/", "docs.html"),
+    ("/transactions/", "transactions.html"),
+    ("/analytics/", "analytics.html"),
+    ("/monitoring/", "monitoring.html"),
+    ("/governance/", "governance.html"),
+    ("/blog/", "blog.html"),
+    ("/developers/", "developers.html"),
+    ("/download/", "download.html"),
+    ("/referral/", "referral.html"),
+    ("/incentives/", "incentives.html"),
+    ("/contact/", "contact.html"),
+    ("/privacy/", "privacy.html"),
+    ("/terms/", "terms.html"),
+    ("/cookies/", "cookies.html"),
+    ("/security/", "security.html"),
+    ("/disclaimer/", "disclaimer.html"),
+    ("/status/", "status.html"),
+    ("/api/", "api.html")
+]
 
-print("=================== 1. ALLOCATION TABLE ===================")
-# Find allocation table or allocation section
-alloc_section = soup.find(id=lambda x: x and 'alloc' in x) or soup.find(class_=lambda x: x and 'alloc' in x)
-if not alloc_section:
-    # search for section headers with "Token Distribution" or "Allocation"
-    for h in soup.find_all(['h2', 'h3', 'h4']):
-        if 'alloc' in h.get_text().lower() or 'distribution' in h.get_text().lower() or 'tokenomics' in h.get_text().lower():
-            print("HEADER:", h.get_text())
-            parent = h.find_parent('section') or h.find_parent('div')
-            print(parent.get_text(separator='\n', strip=True))
-            print("-" * 50)
+# Load external scripts
+external_js = {}
+js_dir = "audit_data/js"
+if os.path.exists(js_dir):
+    for f in os.listdir(js_dir):
+        with open(os.path.join(js_dir, f), "r", encoding="utf-8") as file:
+            external_js[f] = file.read()
 
-print("\n=================== 2. PIE CHART SVG / DATA ===================")
-pie_svg = soup.find('svg', class_='pie-svg') or soup.find(lambda tag: tag.name == 'svg' and 'pie' in tag.get('class', []))
-if pie_svg:
-    print("PIE SVG HTML:")
-    print(pie_svg.prettify())
-else:
-    print("Searching all SVGs for pie-seg or circles:")
-    for svg in soup.find_all('svg'):
-        if svg.find_all('circle'):
-            print(svg.prettify())
+# Let's inspect verdis.js specifically first
+print("=== VERDIS.JS CONTENT SUMMARY ===")
+verdis_js = external_js.get("verdis.js", "")
+print("verdis.js length:", len(verdis_js))
 
-# Check pie chart legend / labels
-pie_container = soup.find(class_=lambda x: x and 'pie' in x) if soup.find(class_=lambda x: x and 'pie' in x) else None
-if pie_container:
-    print("PIE CONTAINER TEXT:")
-    print(pie_container.get_text(separator='\n', strip=True))
+# Regexes for fetch, XHR, WebSocket, API endpoints
+fetch_pattern = re.compile(r'fetch\s*\(\s*[`\'"]([^`\'"]+)[`\'"]|\bfetch\s*\(\s*([^)]+)\)', re.IGNORECASE)
+xhr_pattern = re.compile(r'XMLHttpRequest|\.open\s*\(\s*[`\'"](GET|POST|PUT|DELETE)[`\'"]\s*,\s*[`\'"]([^`\'"]+)[`\'"]', re.IGNORECASE)
+ws_pattern = re.compile(r'new\s+WebSocket\s*\(\s*[`\'"]([^`\'"]+)[`\'"]|ws[s]?://[^\s`\'"]+', re.IGNORECASE)
+api_endpoint_pattern = re.compile(r'[`\'"](/api/[^`\'"]*|https?://[^\s`\'"]+)[\'"]', re.IGNORECASE)
 
-print("\n=================== 3. ROADMAP SECTION ===================")
-roadmap_sec = soup.find(id=lambda x: x and 'roadmap' in x)
-if not roadmap_sec:
-    for h in soup.find_all(['h1', 'h2', 'h3']):
-        if 'roadmap' in h.get_text().lower():
-            roadmap_sec = h.find_parent('section') or h.find_parent('div')
-            break
-if roadmap_sec:
-    print(roadmap_sec.get_text(separator='\n', strip=True))
-else:
-    print("Roadmap section not found by ID/Header")
+print("\n=== SEARCHING VERDIS.JS ===")
+print("Fetches in verdis.js:")
+for m in fetch_pattern.finditer(verdis_js):
+    print("  ", m.group(0))
 
-print("\n=================== 4. VESTING CARD ===================")
-vesting_sec = soup.find(id=lambda x: x and 'vesting' in x)
-if not vesting_sec:
-    for h in soup.find_all(['h1', 'h2', 'h3']):
-        if 'vesting' in h.get_text().lower():
-            vesting_sec = h.find_parent('section') or h.find_parent('div')
-            break
-if vesting_sec:
-    print(vesting_sec.get_text(separator='\n', strip=True))
+print("WS in verdis.js:")
+for m in ws_pattern.finditer(verdis_js):
+    print("  ", m.group(0))
 
-print("\n=================== 5 & 6. STORY TIMELINE ===================")
-story_sec = None
-for h in soup.find_all(['h1', 'h2', 'h3', 'h4', 'div', 'p']):
-    txt = h.get_text().lower()
-    if 'story' in txt or 'our journey' in txt or 'timeline' in txt or 'history' in txt:
-        p = h.find_parent('section') or h.find_parent('div')
-        if p and len(p.get_text()) > 200:
-            print(f"FOUND STORY/TIMELINE HEADER ({h.get_text().strip()}):")
-            print(p.get_text(separator='\n', strip=True))
-            print("="*40)
+print("API strings in verdis.js:")
+for m in set(re.findall(r'[\'"](/api/[^\'"]*|https?://[^\'"]+)[\'"]', verdis_js)):
+    print("  ", m)
 

@@ -1,0 +1,539 @@
+[
+  {
+    "path": "/",
+    "title": "Verdis Chain \u2014 The World's First Green Blockchain",
+    "external_scripts": [],
+    "fetches": [
+      "RPC",
+      "'/rpc'"
+    ],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [
+      [
+        "const",
+        "RPC",
+        "/rpc"
+      ],
+      [
+        "const",
+        "RPC",
+        "/rpc"
+      ]
+    ],
+    "urls_in_script": [
+      "/rpc"
+    ],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/explorer/",
+    "title": "Verdiscan \u2014 Verdis Chain Explorer",
+    "external_scripts": [
+      "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+    ],
+    "fetches": [
+      "'/api/v1/token/holders'",
+      "API",
+      "RPC",
+      "\"/rpc\"",
+      "\"/price-history.json?_=\""
+    ],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [
+      [
+        "const",
+        "RPC",
+        "/rpc"
+      ],
+      [
+        "const",
+        "API",
+        "https://verdischain.com/api"
+      ]
+    ],
+    "urls_in_script": [
+      "https://esm.sh/@scure/base@1.1.5",
+      "https://verdischain.com/api",
+      "/rpc",
+      "/api/v1/token/holders",
+      "https://esm.sh/@noble/hashes@1.5.0/blake2b"
+    ],
+    "hardcoded_notes": [
+      "Hardcoded blocks/transactions mock data array in JS",
+      "Dummy/sample addresses or mock hashes hardcoded"
+    ],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/dex/",
+    "title": "Verdis DEX \u2014 Protocol-Level AMM Exchange",
+    "external_scripts": [],
+    "fetches": [
+      "/api/tx-relay",
+      "RPC_URL"
+    ],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [
+      [
+        "const",
+        "RPC_URL",
+        "https://verdischain.com/rpc/"
+      ]
+    ],
+    "urls_in_script": [
+      "https://verdischain.com/rpc/",
+      "https://verdischain.com/explorer/tx/${sw.hash}"
+    ],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/whitepaper/",
+    "title": "Whitepaper \u2014 Verdis Chain",
+    "external_scripts": [],
+    "fetches": [
+      "RPC_URL"
+    ],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [
+      [
+        "const",
+        "RPC_URL",
+        "/rpc"
+      ]
+    ],
+    "urls_in_script": [
+      "/rpc"
+    ],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/wallet/",
+    "title": "Verdis Chain \u2014 Web3 Wallet | Non-Custodial",
+    "external_scripts": [
+      "/polkadot-crypto-bundle.js?v=1786514458"
+    ],
+    "fetches": [
+      "`/api/v1/account/${address}`",
+      "RPC_URL",
+      "RELAY_URL",
+      "'/api/v1/account/'",
+      "API_URL",
+      "'/api/tx-relay'"
+    ],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [
+      [
+        "const",
+        "RPC_URL",
+        "https://verdischain.com/rpc"
+      ],
+      [
+        "const",
+        "API_URL",
+        "https://verdischain.com/api/v1"
+      ]
+    ],
+    "urls_in_script": [
+      "https://verdischain.com/rpc",
+      "/api/tx-relay",
+      "https://verdischain.com/api/v1",
+      "/api/v1/account/"
+    ],
+    "hardcoded_notes": [
+      "Dummy/sample addresses or mock hashes hardcoded"
+    ],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/sale/",
+    "title": "VRDX Token Sale \u2014 Verdis Chain",
+    "external_scripts": [],
+    "fetches": [
+      "'/rpc'"
+    ],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [
+      "/rpc"
+    ],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/tokenomics/",
+    "title": "VRDX Tokenomics \u2014 Verdis Chain",
+    "external_scripts": [
+      "https://cdn.jsdelivr.net/npm/chart.js"
+    ],
+    "fetches": [],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [],
+    "hardcoded_notes": [
+      "Chart rendering uses static hardcoded data points"
+    ],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/faucet/",
+    "title": "Verdis Faucet \u2014 Free Testnet VRDX Tokens",
+    "external_scripts": [],
+    "fetches": [
+      "'/faucet/api/stats'",
+      "FAUCET_API",
+      "'/rpc'",
+      "'/faucet/stats.json'"
+    ],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [
+      [
+        "const",
+        "FAUCET_API",
+        "https://verdischain.com/faucet/api"
+      ]
+    ],
+    "urls_in_script": [
+      "/rpc",
+      "https://verdischain.com/faucet/api"
+    ],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/validators/",
+    "title": "Verdis Chain Validators \u2014 DPoS Consensus",
+    "external_scripts": [],
+    "fetches": [
+      "'/rpc'"
+    ],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [
+      "/rpc"
+    ],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/eco/",
+    "title": "Verdis Chain \u2014 Eco Metrics & On-Chain Carbon Protocol",
+    "external_scripts": [],
+    "fetches": [],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [],
+    "hardcoded_notes": [
+      "Dummy/sample addresses or mock hashes hardcoded"
+    ],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/docs/",
+    "title": "Verdis Chain \u2014 Comprehensive Developer Documentation",
+    "external_scripts": [],
+    "fetches": [
+      "'https://verdischain.com/rpc'"
+    ],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [
+      "https://verdischain.com/rpc"
+    ],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/transactions/",
+    "title": "Transactions \u2014 Verdis Chain",
+    "external_scripts": [],
+    "fetches": [
+      "RPC"
+    ],
+    "xhrs": [],
+    "wss": [
+      "wss://verdischain.com/substrate-ws",
+      "new WebSocket(WS_URL)"
+    ],
+    "api_vars": [
+      [
+        "var",
+        "RPC",
+        "/rpc"
+      ],
+      [
+        "var",
+        "WS_URL",
+        "wss://verdischain.com/substrate-ws"
+      ]
+    ],
+    "urls_in_script": [
+      "wss://verdischain.com/substrate-ws",
+      "/rpc",
+      "https://github.com/Protremix/Verdischain-"
+    ],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/analytics/",
+    "title": "Verdis Analytics \u2014 Real-time Blockchain Analytics | Verdis Chain",
+    "external_scripts": [
+      "https://cdn.jsdelivr.net/npm/chart.js"
+    ],
+    "fetches": [
+      "url"
+    ],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [
+      "http://localhost:9933",
+      "/rpc"
+    ],
+    "hardcoded_notes": [
+      "Chart rendering uses static hardcoded data points"
+    ],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/monitoring/",
+    "title": "Validator Monitor \u2014 Verdis Chain DPoS Health",
+    "external_scripts": [
+      "https://cdn.jsdelivr.net/npm/chart.js"
+    ],
+    "fetches": [
+      "\"http://localhost:9933\"",
+      "\"/rpc\""
+    ],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [
+      "http://localhost:9933",
+      "/rpc"
+    ],
+    "hardcoded_notes": [
+      "Dummy/sample addresses or mock hashes hardcoded",
+      "Chart rendering uses static hardcoded data points"
+    ],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/governance/",
+    "title": "Governance \u2014 Verdis Chain",
+    "external_scripts": [],
+    "fetches": [
+      "TX_RELAY_URL",
+      "RPC_URL",
+      "'/api/governance'"
+    ],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [
+      [
+        "const",
+        "RPC_URL",
+        "/rpc"
+      ]
+    ],
+    "urls_in_script": [
+      "/api/governance",
+      "/api/tx-relay",
+      "/rpc"
+    ],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/blog/",
+    "title": "Verdis Chain Blog \u2014 Updates & Announcements",
+    "external_scripts": [
+      "/js/verdis.js?v=3"
+    ],
+    "fetches": [],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [],
+    "hardcoded_notes": [],
+    "has_verdis_js": true
+  },
+  {
+    "path": "/developers/",
+    "title": "Verdis Chain \u2014 Developer Portal",
+    "external_scripts": [
+      "/js/verdis.js?v=3"
+    ],
+    "fetches": [
+      "endpoint"
+    ],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [],
+    "hardcoded_notes": [],
+    "has_verdis_js": true
+  },
+  {
+    "path": "/download/",
+    "title": "Download Verdis Chain \u2014 Node & Wallet",
+    "external_scripts": [
+      "/js/verdis.js?v=3"
+    ],
+    "fetches": [],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [],
+    "hardcoded_notes": [],
+    "has_verdis_js": true
+  },
+  {
+    "path": "/referral/",
+    "title": "Verdis Chain Referral Program \u2014 Earn VRDX",
+    "external_scripts": [],
+    "fetches": [
+      "'/rpc'"
+    ],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [
+      "https://t.me/share/url?url=${encodeURIComponent(document.getElementById(",
+      "https://wa.me/?text=${encodeURIComponent(",
+      "/rpc"
+    ],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/incentives/",
+    "title": "Validator Incentives \u2014 Verdis Chain DPoS Rewards",
+    "external_scripts": [],
+    "fetches": [
+      "'/rpc'"
+    ],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [
+      "/rpc"
+    ],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/contact/",
+    "title": "Contact \u2014 Verdis Chain",
+    "external_scripts": [],
+    "fetches": [],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/privacy/",
+    "title": "Privacy Policy \u2014 Verdis Chain",
+    "external_scripts": [],
+    "fetches": [],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/terms/",
+    "title": "Terms of Service \u2014 Verdis Chain",
+    "external_scripts": [],
+    "fetches": [],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/cookies/",
+    "title": "Cookie Policy \u2014 Verdis Chain",
+    "external_scripts": [],
+    "fetches": [],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/security/",
+    "title": "Security \u2014 Verdis Chain",
+    "external_scripts": [],
+    "fetches": [],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/disclaimer/",
+    "title": "Disclaimer \u2014 Verdis Chain",
+    "external_scripts": [],
+    "fetches": [],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/status/",
+    "title": "Verdis Chain Network Status",
+    "external_scripts": [],
+    "fetches": [
+      "'/rpc'"
+    ],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [
+      "/rpc"
+    ],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  },
+  {
+    "path": "/api/",
+    "title": "Verdiscan API v1.0 \u2014 Verdis Chain Developer Documentation",
+    "external_scripts": [],
+    "fetches": [],
+    "xhrs": [],
+    "wss": [],
+    "api_vars": [],
+    "urls_in_script": [],
+    "hardcoded_notes": [],
+    "has_verdis_js": false
+  }
+]
