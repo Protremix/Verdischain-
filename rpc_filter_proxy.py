@@ -17,7 +17,7 @@ import time
 import os
 
 LISTEN_PORT = 9950
-BACKEND_PORT = 9934
+BACKEND_PORT = 9933
 BACKEND_URL = f"http://127.0.0.1:{BACKEND_PORT}"
 
 # Methods that must never be exposed externally

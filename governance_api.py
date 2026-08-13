@@ -31,7 +31,7 @@ def convert_ss58(address, target_format=42):
         return address
 
 substrate = SubstrateInterface(
-    url="http://127.0.0.1:9934",
+    url="http://127.0.0.1:9933",
     ss58_format=42,
     auto_discover=True,
     type_registry_preset=None
