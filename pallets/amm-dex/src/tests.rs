@@ -270,7 +270,7 @@ fn test_swap() {
             b"VRS".to_vec(),
             10_000,
             0,
-        1000,
+            1000,
         ));
     });
 }
@@ -375,7 +375,7 @@ fn test_token_swap_native_to_custom() {
             aid_native(),
             10_000,
             0,
-        1000,
+            1000,
         ));
         let bob_after = FungibleTokens::balance_of(0, &bob());
         assert!(
@@ -413,7 +413,7 @@ fn test_token_swap_custom_to_native() {
             aid_custom(0),
             10_000,
             0,
-        1000,
+            1000,
         ));
         let bob_native_after = Balances::free_balance(&bob());
         assert!(
@@ -507,7 +507,14 @@ fn test_token_swap_insufficient_balance() {
         )
         .unwrap();
         assert_noop!(
-            AmmDex::swap_token(RuntimeOrigin::signed(bob()), 0, aid_custom(0), 5_000, 0, 1000),
+            AmmDex::swap_token(
+                RuntimeOrigin::signed(bob()),
+                0,
+                aid_custom(0),
+                5_000,
+                0,
+                1000
+            ),
             Error::<Test>::InsufficientLiquidityBalance
         );
     });
@@ -560,7 +567,7 @@ fn prop_constant_product_never_decreases_after_swap() {
             token_a.clone(),
             10_000,
             0,
-        1000,
+            1000,
         ));
 
         let pool = Pools::<Test>::get(0).unwrap();
@@ -579,7 +586,7 @@ fn prop_constant_product_never_decreases_after_swap() {
             token_b.clone(),
             5_000,
             0,
-        1000,
+            1000,
         ));
 
         let pool = Pools::<Test>::get(0).unwrap();
@@ -660,7 +667,7 @@ fn prop_circuit_breaker_blocks_large_swaps() {
             token_a.clone(),
             50_000, // 5% of reserves
             0,
-        1000,
+            1000,
         ));
 
         // Reset pool for large swap test
@@ -680,7 +687,7 @@ fn prop_circuit_breaker_blocks_large_swaps() {
                 b"VRDX2".to_vec(),
                 200_000, // 20% of reserves - exceeds 10% cap
                 0,
-            1000,
+                1000,
             ),
             Error::<Test>::PriceImpactTooHigh
         );
@@ -714,7 +721,7 @@ fn prop_remove_liquidity_preserves_ratio() {
             RuntimeOrigin::signed(alice()),
             0,
             half_lp,
-        1000,
+            1000,
         ));
 
         let pool_after = Pools::<Test>::get(0).unwrap();
@@ -774,7 +781,7 @@ fn prop_swap_output_matches_formula() {
             token_a.clone(),
             amount_in,
             0,
-        1000,
+            1000,
         ));
 
         // Verify reserve_b decreased by exactly expected_out
@@ -833,7 +840,7 @@ fn prop_slippage_protection_works() {
                 token_a.clone(),
                 10_000,
                 999_999_999, // impossibly high
-            1000,
+                1000,
             ),
             Error::<Test>::SlippageExceeded
         );
@@ -864,7 +871,7 @@ fn test_k_invariant_after_swap() {
             b"VRS".to_vec(),
             10_000,
             0,
-        1000,
+            1000,
         ));
 
         let pool = Pools::<Test>::get(0).unwrap();
@@ -905,7 +912,7 @@ fn test_k_invariant_after_multiple_swaps() {
                 token_in,
                 10_000,
                 0,
-            1000,
+                1000,
             ));
         }
 
@@ -960,7 +967,7 @@ fn test_slippage_protection_enforced() {
                 b"VRS".to_vec(),
                 10_000,
                 99_999,
-            1000,
+                1000,
             ),
             Error::<Test>::SlippageExceeded
         );
@@ -982,7 +989,14 @@ fn test_price_impact_circuit_breaker() {
         // MaxPriceImpact is 10%, so max swap = 100,000 * 10% = 10,000
         // Try to swap 50,000 (50% of pool) — should be rejected
         assert_noop!(
-            AmmDex::swap(RuntimeOrigin::signed(bob()), 0, b"VRS".to_vec(), 50_000, 0, 1000),
+            AmmDex::swap(
+                RuntimeOrigin::signed(bob()),
+                0,
+                b"VRS".to_vec(),
+                50_000,
+                0,
+                1000
+            ),
             Error::<Test>::PriceImpactTooHigh
         );
     });
@@ -1098,7 +1112,7 @@ fn test_swap_nonexistent_pool() {
                 b"VRS".to_vec(),
                 10_000,
                 0,
-            1000,
+                1000,
             ),
             Error::<Test>::PoolNotFound
         );
@@ -1124,7 +1138,7 @@ fn test_swap_invalid_token_rejected() {
                 b"UNKNOWN".to_vec(),
                 10_000,
                 0,
-            1000,
+                1000,
             ),
             Error::<Test>::PoolNotFound
         );

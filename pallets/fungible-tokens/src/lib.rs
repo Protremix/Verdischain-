@@ -251,7 +251,7 @@ pub mod pallet {
         EmptySymbol,
         TooManyTokensPerAccount,
         MaxBalanceExceeded,
-    MaxSupplyCannotIncrease,
+        MaxSupplyCannotIncrease,
         NotApproved,
         TokenStillHasSupply,
         ZeroAmount,

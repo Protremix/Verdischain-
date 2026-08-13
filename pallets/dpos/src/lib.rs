@@ -63,7 +63,7 @@ pub mod pallet {
         pub rewards_earned: Balance,
         pub active: bool,
         pub slashed: bool,
-    pub registration_deposit: Balance,
+        pub registration_deposit: Balance,
         pub green_score: u8,
         pub energy_source: BoundedVec<u8, ConstU32<64>>,
         pub commission: u8,
@@ -238,7 +238,7 @@ pub mod pallet {
         RewardRefillFailed,
         Overflow,
         PendingSlashing,
-    RegistrationDepositRequired,
+        RegistrationDepositRequired,
     }
 
     // === Config ===
@@ -262,7 +262,7 @@ pub mod pallet {
         type PalletId: Get<PalletId>;
         #[pallet::constant]
         type MaxStakePerValidator: Get<BalanceOf<Self>>;
-    type RegistrationDeposit: Get<BalanceOf<Self>>;
+        type RegistrationDeposit: Get<BalanceOf<Self>>;
         type MaxCommission: Get<u8>;
         #[pallet::constant]
         type ReactivationCooldown: Get<u32>;
