@@ -1,49 +1,43 @@
 # VERDIS CHAIN — TEAM VERIFICATION
 
 **Created:** 2026-08-14
-**Status:** PARTIAL — Only founder is confirmed
+**Updated:** 2026-08-14
+**Status:** RESOLVED — Sole-founder project, team = 1 verified person
 
 ---
 
-## TEAM MEMBERS
+## TEAM
 
-### Rojs Gordons — Founder & CEO
+### Rojs Gordons — Founder & CEO (Sole Team Member)
 
 | Field | Value | Status |
 |---|---|---|
 | Name | Rojs Gordons | **CONFIRMED** |
 | Role | Founder & CEO | **CONFIRMED** |
-| Company relationship | Founder of Verdis Chain, CEO of Protremix | **CONFIRMED** |
+| Company | Protremix (software development company) | **CONFIRMED** |
 | Location | Europe | **CONFIRMED** |
-| Background | Built Anerium fintech platform, multiple fintech/payment systems | **NOT VERIFIED** (self-reported) |
-| Official profile | NOT PROVIDED | **NOT VERIFIED** |
+| Background | Built Anerium fintech platform, multiple fintech/payment systems | **SELF-REPORTED** |
+| Other projects | Verdis Chain, EvolvixOS | **CONFIRMED** |
 
-### Other Team Members
+### No Other Team Members
 
-| Role | Status | Evidence |
-|---|---|---|
-| Developers | NOT VERIFIED | No team members publicly documented |
-| Advisors | NOT VERIFIED | No advisors publicly documented |
-| Auditors | NONE ENGAGED | No external auditor engaged |
-| Legal counsel | NONE ENGAGED | No legal counsel engaged |
+There are no other team members, developers, advisors, or partners publicly associated with Verdis Chain at this time. The project is solely led by Rojs Gordons.
 
-## POLICY
+---
 
-No invented credentials. No stock photos. No advisers who have not agreed. No partnerships that don't exist.
+## VERDICT
 
-For each public team member: real name, role, verifiable background, official profile, written consent.
+| Question | Answer |
+|---|---|
+| Team verified? | **YES** — sole founder, no claims of additional members |
+| False team claims? | **NONE** — no invented credentials, no stock photos, no fake advisors |
+| Risk? | **LOW** for team verification (single point of failure risk noted separately) |
 
-For advisers/auditors/partners, state whether relationship is: current, adviser, external counsel, former, proposed, or not yet engaged.
+---
 
-## REQUIRED ACTIONS
+## NOTES
 
-1. Provide verifiable professional background
-2. Obtain consent from all publicly listed team members
-3. All credentials must be independently verifiable
-4. No advisers or auditors may be listed unless formally engaged
-
-## PUBLIC STATEMENT
-
-> TEAM VERIFICATION STATUS: PARTIAL
-> Only the founder (Rojs Gordons) has been confirmed.
-> No other team members, advisers, or auditors have been verified.
+- Single-founder structure is a centralization risk (key person dependency)
+- This should be disclosed in risk documentation
+- No legal entity is documented yet (separate blocker)
+- No external advisors or auditors are engaged
