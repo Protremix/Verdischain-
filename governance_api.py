@@ -11,22 +11,17 @@ import base58
 import hashlib
 
 def convert_ss58(address, target_format=42):
-    """Convert any SS58 address to the target format."""
+    """Convert any SS58 address to the target format using scalecodec library.
+    
+    Uses scalecodec's ss58_decode/ss58_encode for correct prefix encoding
+    and checksum validation. Falls back to original address on error.
+    """
     try:
-        raw = base58.b58decode(address)
-        # Determine prefix length: 2-byte if bit 6 of first byte is set
-        if raw[0] & 0x40:
-            payload = raw[2:-2]  # 2-byte prefix, last 2 bytes are checksum
-        else:
-            payload = raw[1:-2]  # 1-byte prefix, last 2 bytes are checksum
-        # Re-encode with target prefix
-        if target_format < 64:
-            new_prefix = bytes([target_format])
-        else:
-            new_prefix = bytes([0x40 | (target_format >> 8), target_format & 0xFF])
-        new_data = new_prefix + payload
-        checksum = hashlib.blake2b(new_data, digest_size=64).digest()[:2]
-        return base58.b58encode(new_data + checksum).decode()
+        from scalecodec.utils.ss58 import ss58_decode, ss58_encode
+        # Decode (validates checksum, extracts public key)
+        public_key = ss58_decode(address)
+        # Re-encode with target SS58 format
+        return ss58_encode(public_key, ss58_format=target_format)
     except Exception:
         return address
 
