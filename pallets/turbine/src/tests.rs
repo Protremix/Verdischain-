@@ -26,7 +26,7 @@ parameter_types! {
 }
 
 impl Config for Test {
-    type WeightInfo = ();
+    type WeightInfo = crate::SubstrateWeight<Test>;
     type MaxShards = MaxShards;
     type RedundancyFactor = RedundancyFactor;
     type MaxValidatorsPerNode = MaxValidatorsPerNode;

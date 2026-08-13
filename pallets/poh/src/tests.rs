@@ -22,7 +22,7 @@ impl frame_system::Config for Test {
 }
 
 impl Config for Test {
-    type WeightInfo = ();
+    type WeightInfo = crate::SubstrateWeight<Test>;
 }
 
 pub fn new_test_ext() -> TestExternalities {

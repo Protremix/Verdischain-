@@ -25,7 +25,7 @@ parameter_types! {
 }
 
 impl Config for Test {
-    type WeightInfo = ();
+    type WeightInfo = crate::SubstrateWeight<Test>;
     type MaxComputeUnits = MaxComputeUnits;
     type MaxParallelBatches = MaxParallelBatches;
 }
