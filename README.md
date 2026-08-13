@@ -1,10 +1,34 @@
-# Verdis Chain
+<p align="center">
+  <img src="web/assets/verdis-logo-full.png" alt="Verdis Chain" width="200">
+</p>
 
-**The carbon-negative DPoS blockchain powering the Evolvix ecosystem.**
+<h1 align="center">Verdis Chain</h1>
 
-Verdis Chain is a Substrate-based blockchain implementing Delegated Proof of Stake (DPoS) consensus with BABE/GRANDPA finality, a native AMM decentralized exchange (DEX), eco-friendly carbon credit tracking, and AI-native tooling.
+<p align="center">
+  <strong>The carbon-negative DPoS blockchain powering the Evolvix ecosystem.</strong>
+</p>
+
+<p align="center">
+  <a href="https://verdischain.com">Website</a> ·
+  <a href="https://verdischain.com/explorer/">Explorer</a> ·
+  <a href="https://verdischain.com/dex/">DEX</a> ·
+  <a href="https://verdischain.com/wallet/">Wallet</a> ·
+  <a href="https://verdischain.com/docs/">Docs</a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/node-2.0.0-16a34a" alt="Node Version">
+  <img src="https://img.shields.io/badge/token-VRDX-16a34a" alt="Token">
+  <img src="https://img.shields.io/badge/consensus-DPoS%20%2B%20BABE%2FGRANDPA-16a34a" alt="Consensus">
+  <img src="https://img.shields.io/badge/SS58-909-16a34a" alt="SS58">
+  <img src="https://img.shields.io/badge/tests-444%20passing-22c55e" alt="Tests">
+  <img src="https://img.shields.io/badge/pages-28%20live-22c55e" alt="Pages">
+  <img src="https://img.shields.io/badge/license-Proprietary-red" alt="License">
+</p>
 
 ---
+
+Verdis Chain is a Substrate-based blockchain implementing Delegated Proof of Stake (DPoS) consensus with BABE/GRANDPA finality, a native AMM decentralized exchange (DEX), eco-friendly carbon credit tracking, and AI-native tooling.
 
 ## Key Facts
 
@@ -20,8 +44,6 @@ Verdis Chain is a Substrate-based blockchain implementing Delegated Proof of Sta
 | Chain Specs | dev, testnet, mainnet |
 | Domain | [verdischain.com](https://verdischain.com) |
 
----
-
 ## Tokenomics
 
 | Allocation | Amount | % |
@@ -36,8 +58,6 @@ Verdis Chain is a Substrate-based blockchain implementing Delegated Proof of Sta
 | Public Presale | 2B | 2% |
 | Team & Advisors | 5B | 5% |
 | **Total** | **100B** | **100%** |
-
----
 
 ## Architecture
 
@@ -74,8 +94,6 @@ Verdis Chain is a Substrate-based blockchain implementing Delegated Proof of Sta
 - **444 test functions** across all pallets
 - **2 dedicated test files** in `tests/`
 - Tests cover: staking, delegation, slashing, DEX swap/liquidity, vesting, presale, eco credits, PoH, IBC, and more
-
----
 
 ## Web Components
 
@@ -118,8 +136,6 @@ Verdis Chain is a Substrate-based blockchain implementing Delegated Proof of Sta
 - **Web Wallet**: Non-custodial, @noble/secp256k1 + @noble/hashes, SS58 prefix 909
 - **Android APK**: Flutter-based, BIP39 mnemonics, server-derived sr25519 addresses
 
----
-
 ## Infrastructure
 
 ### Services (20+ systemd units)
@@ -151,8 +167,6 @@ nginx            — Reverse proxy + TLS
 - **Docker Compose**: Single-node and multi-node configurations
 - **Nginx**: TLS, HSTS, CSP, X-XSS-Protection headers
 - **Server**: Hetzner Cloud, 32GB RAM, 228GB disk
-
----
 
 ## Directory Structure
 
@@ -201,8 +215,6 @@ verdis-chain-rust/
 └── Cargo.toml          # Workspace configuration
 ```
 
----
-
 ## Quick Start
 
 ### Build
@@ -247,8 +259,6 @@ curl -X POST http://localhost:9933 \
   -d '{"jsonrpc":"2.0","method":"chain_getHeader","params":[],"id":1}'
 ```
 
----
-
 ## Documentation
 
 Full documentation is in the `docs/` directory:
@@ -262,8 +272,6 @@ Full documentation is in the `docs/` directory:
 - [GENESIS_CEREMONY.md](docs/GENESIS_CEREMONY.md) — Genesis ceremony plan
 - [MONITORING_GUIDE.md](docs/MONITORING_GUIDE.md) — Monitoring setup
 
----
-
 ## Security
 
 - All extrinsic parameters bounded with length checks
@@ -275,7 +283,11 @@ Full documentation is in the `docs/` directory:
 - Nginx HSTS, CSP, X-XSS-Protection headers
 - No hardcoded private keys, mnemonics, or backdoors
 
----
+See [SECURITY.md](SECURITY.md) for the full security policy.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines and standards.
 
 ## Ecosystem
 
@@ -286,8 +298,6 @@ Verdis Chain is the blockchain layer of the **Evolvix ecosystem**:
 - **Smart Contract Platform** — Create, test, deploy, manage
 - **Developer Ecosystem** — SDKs, APIs, tools, documentation
 
----
-
 ## Links
 
 - **Website**: [verdischain.com](https://verdischain.com)
@@ -296,11 +306,9 @@ Verdis Chain is the blockchain layer of the **Evolvix ecosystem**:
 - **DEX**: [verdischain.com/dex](https://verdischain.com/dex/)
 - **Wallet**: [verdischain.com/wallet](https://verdischain.com/wallet/)
 
----
-
 ## License
 
-Proprietary — © Verdis Chain / Protremix. All rights reserved.
+Proprietary — © Verdis Chain / Protremix. All rights reserved. See [LICENSE](LICENSE).
 
 ---
 
