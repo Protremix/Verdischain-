@@ -228,7 +228,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     let mut balances = vec![
         (eco_pool, 30 * bn),
         (staking_pool, 20 * bn),
-        (treasury_account, 15 * bn),
+        (treasury_account, 20 * bn),
         (dev_pool, 10 * bn),
         (dex_pool, 10 * bn),
         (community_pool, 5 * bn),
@@ -485,7 +485,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     let mut balances = vec![
         (eco_pool, 30 * bn),
         (staking_pool, 20 * bn),
-        (treasury_account, 15 * bn),
+        (treasury_account, 20 * bn),
         (dev_pool, 10 * bn),
         (dex_pool, 10 * bn),
         (community_pool, 5 * bn),
@@ -833,7 +833,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     let mut balances = vec![
         (eco_pool, 30 * bn),
         (staking_pool, 20 * bn),
-        (treasury_account, 15 * bn),
+        (treasury_account, 20 * bn),
         (dev_pool, 10 * bn),
         (dex_pool, 10 * bn),
         (community_pool, 5 * bn),
