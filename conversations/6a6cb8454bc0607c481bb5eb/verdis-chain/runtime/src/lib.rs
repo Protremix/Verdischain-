@@ -613,6 +613,8 @@ parameter_types! {
     pub const FeeDenominator: u32 = 1000;
     pub const MinLiquidity: Balance = 1_000 * UNITS;
     pub const MaxPools: u32 = 50;
+    pub const ProtocolFeeBps: u32 = 5; // 0.05% of swap volume goes to protocol
+    pub const ProtocolFeeRecipient: AccountId = PalletId(*b"verdistk").into_account_truncating();
 }
 
 // === TokenHandler implementation for AmmDex <-> FungibleTokens integration ===
@@ -689,6 +691,8 @@ impl pallet_amm_dex::Config for Runtime {
     type MaxPools = MaxPools;
     type WeightInfo = pallet_amm_dex::SubstrateWeight<Runtime>;
     type TokenHandler = Runtime;
+    type ProtocolFeeBps = ProtocolFeeBps;
+    type ProtocolFeeRecipient = ProtocolFeeRecipient;
 }
 
 // === Verdis Eco ===

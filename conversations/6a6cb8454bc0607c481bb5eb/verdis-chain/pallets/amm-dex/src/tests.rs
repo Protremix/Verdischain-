@@ -7,7 +7,7 @@ use frame_support::{
 };
 use sp_io::TestExternalities;
 use sp_keyring::Sr25519Keyring;
-use sp_runtime::{traits::IdentityLookup, BuildStorage};
+use sp_runtime::{traits::{IdentityLookup, AccountIdConversion}, BuildStorage};
 
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -70,6 +70,8 @@ parameter_types! {
     pub const AmmMinimumLiquidity: u128 = 1_000;
     pub const MinLiquidity: u128 = 100;
     pub const MaxPools: u32 = 50;
+    pub const TestProtocolFeeRecipient: sp_core::crypto::AccountId32 =
+        frame_support::PalletId(*b"verdistk").into_account_truncating();
 }
 
 impl crate::pallet::TokenHandler<sp_core::crypto::AccountId32, u128> for Test {
@@ -160,6 +162,8 @@ impl crate::pallet::Config for Test {
     type MaxPriceImpact = MaxPriceImpact;
     type WeightInfo = ();
     type TokenHandler = Test;
+    type ProtocolFeeBps = ConstU32<5>;
+    type ProtocolFeeRecipient = TestProtocolFeeRecipient;
 }
 
 pub fn new_test_ext() -> TestExternalities {

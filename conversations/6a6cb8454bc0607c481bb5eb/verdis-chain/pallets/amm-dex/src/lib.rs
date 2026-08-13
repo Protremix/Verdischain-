@@ -31,7 +31,7 @@ use frame_support::{
 use frame_system::pallet_prelude::*;
 use scale_info::TypeInfo;
 use sp_arithmetic::traits::IntegerSquareRoot;
-use sp_runtime::traits::{AccountIdConversion, CheckedMul, Saturating};
+use sp_runtime::traits::{AccountIdConversion, CheckedMul, Saturating, SaturatedConversion};
 use sp_std::prelude::*;
 
 pub use pallet::*;
@@ -220,6 +220,12 @@ pub mod pallet {
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
+        /// Protocol fee collected from a swap
+        ProtocolFeeCollected {
+            pool_id: u32,
+            fee_amount: u128,
+            cumulative: u128,
+        },
         PoolCreated {
             pool_id: u32,
             token_a: Vec<u8>,
@@ -330,6 +336,12 @@ pub mod pallet {
         type MinimumLiquidity: Get<BalanceOf<Self>>;
         type WeightInfo: WeightInfo;
         type TokenHandler: TokenHandler<Self::AccountId, BalanceOf<Self>>;
+        #[pallet::constant]
+        /// Protocol fee in basis points (e.g., 5 = 0.05% of swap volume goes to protocol)
+        type ProtocolFeeBps: Get<u32>;
+        #[pallet::constant]
+        /// Account that receives protocol fees (tokenomics pallet account)
+        type ProtocolFeeRecipient: Get<Self::AccountId>;
     }
 
     // === Genesis ===
@@ -690,12 +702,26 @@ pub mod pallet {
             };
 
             let fee_num: BalanceOf<T> = T::FeeNumerator::get().into();
-            let fee = amount_in
+            let total_fee = amount_in
                 .checked_mul(&fee_num)
                 .ok_or(Error::<T>::ArithmeticOverflow)?
                 / T::FeeDenominator::get().into();
+
+            // Split fee: protocol portion goes to tokenomics, remainder stays in pool (LP benefit)
+            let protocol_fee_bps: u128 = T::ProtocolFeeBps::get().into();
+            let protocol_fee: BalanceOf<T> = amount_in
+                .checked_mul(&protocol_fee_bps)
+                .ok_or(Error::<T>::ArithmeticOverflow)?
+                / 10_000u32.into();
+
+            // LP fee = total_fee - protocol_fee (the portion that stays in the pool)
+            let lp_fee = total_fee
+                .checked_sub(&protocol_fee)
+                .unwrap_or(BalanceOf::<T>::zero());
+
+            // amount_in_after_fee = amount_in - protocol_fee (LP fee stays in pool via reserves)
             let amount_in_after_fee = amount_in
-                .checked_sub(&fee)
+                .checked_sub(&protocol_fee)
                 .ok_or(Error::<T>::ArithmeticUnderflow)?;
 
             let numerator = reserve_out
@@ -776,6 +802,28 @@ pub mod pallet {
             TotalVolume::<T>::mutate(|v| *v = v.saturating_add(amount_in));
             TotalSwaps::<T>::mutate(|s| *s = s.saturating_add(1));
 
+            // Collect protocol fee (transfer to tokenomics recipient)
+            if protocol_fee > BalanceOf::<T>::zero() {
+                let protocol_recipient = T::ProtocolFeeRecipient::get();
+                T::Currency::transfer(
+                    &dex_account,
+                    &protocol_recipient,
+                    protocol_fee,
+                    ExistenceRequirement::KeepAlive,
+                )?;
+
+                let protocol_fee_u128: u128 = protocol_fee.saturated_into();
+                CumulativeProtocolFees::<T>::mutate(|c| *c = c.saturating_add(protocol_fee_u128));
+                PoolProtocolFees::<T>::mutate(pool_id, |c| *c = c.saturating_add(protocol_fee_u128));
+
+                let cumulative = CumulativeProtocolFees::<T>::get();
+                Self::deposit_event(Event::ProtocolFeeCollected {
+                    pool_id,
+                    fee_amount: protocol_fee_u128,
+                    cumulative,
+                });
+            }
+
             Self::deposit_event(Event::SwapExecuted {
                 pool_id,
                 trader: who,
@@ -783,7 +831,7 @@ pub mod pallet {
                 token_out: token_out.to_vec(),
                 amount_in,
                 amount_out,
-                fee,
+                fee: total_fee,
             });
             Ok(())
         }
@@ -1060,12 +1108,26 @@ pub mod pallet {
             };
 
             let fee_num: BalanceOf<T> = T::FeeNumerator::get().into();
-            let fee = amount_in
+            let total_fee = amount_in
                 .checked_mul(&fee_num)
                 .ok_or(Error::<T>::ArithmeticOverflow)?
                 / T::FeeDenominator::get().into();
+
+            // Split fee: protocol portion goes to tokenomics, remainder stays in pool (LP benefit)
+            let protocol_fee_bps: u128 = T::ProtocolFeeBps::get().into();
+            let protocol_fee: BalanceOf<T> = amount_in
+                .checked_mul(&protocol_fee_bps)
+                .ok_or(Error::<T>::ArithmeticOverflow)?
+                / 10_000u32.into();
+
+            // LP fee = total_fee - protocol_fee (the portion that stays in the pool)
+            let lp_fee = total_fee
+                .checked_sub(&protocol_fee)
+                .unwrap_or(BalanceOf::<T>::zero());
+
+            // amount_in_after_fee = amount_in - protocol_fee (LP fee stays in pool via reserves)
             let amount_in_after_fee = amount_in
-                .checked_sub(&fee)
+                .checked_sub(&protocol_fee)
                 .ok_or(Error::<T>::ArithmeticUnderflow)?;
             let numerator = reserve_out
                 .checked_mul(&amount_in_after_fee)
