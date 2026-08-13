@@ -1184,3 +1184,178 @@ fn test_token_name_too_long_rejected() {
         );
     });
 }
+
+// === Protocol Fee Collection Tests ===
+
+#[test]
+fn test_protocol_fee_collected_on_swap() {
+    new_test_ext().execute_with(|| {
+        // Create a pool
+        assert_ok!(AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            b"VRS".to_vec(),
+            b"ECO".to_vec(),
+            100_000,
+            100_000,
+        ));
+
+        // Fund the DEX account by adding liquidity
+        assert_ok!(AmmDex::add_liquidity(
+            RuntimeOrigin::signed(alice()),
+            0,
+            50_000,
+            50_000,
+            1000,
+        ));
+
+        let fees_before = AmmDex::cumulative_protocol_fees();
+        assert_eq!(fees_before, 0, "No fees collected yet");
+
+        // Swap 100_000 VRS for ECO
+        assert_ok!(AmmDex::swap(
+            RuntimeOrigin::signed(alice()),
+            0,
+            b"VRS".to_vec(),
+            100_000,
+            0,
+            1000,
+        ));
+
+        // Protocol fee = 100_000 * 5 / 10000 = 50
+        let fees_after = AmmDex::cumulative_protocol_fees();
+        assert_eq!(fees_after, 50, "Protocol fee should be 50 (0.05% of 100_000)");
+
+        // Pool fees should also be tracked
+        let pool_fees = AmmDex::pool_protocol_fees(0);
+        assert_eq!(pool_fees, 50, "Pool 0 protocol fees should be 50");
+    });
+}
+
+#[test]
+fn test_protocol_fee_zero_on_zero_amount() {
+    new_test_ext().execute_with(|| {
+        AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            b"VRS".to_vec(),
+            b"ECO".to_vec(),
+            100_000,
+            100_000,
+        ).unwrap();
+
+        assert_ok!(AmmDex::add_liquidity(
+            RuntimeOrigin::signed(alice()),
+            0,
+            50_000,
+            50_000,
+            1000,
+        ));
+
+        // Zero amount swap should fail before fee calculation
+        assert_noop!(
+            AmmDex::swap(
+                RuntimeOrigin::signed(alice()),
+                0,
+                b"VRS".to_vec(),
+                0,
+                0,
+                1000,
+            ),
+            Error::<Test>::ZeroAmount
+        );
+
+        // No fees should be collected
+        assert_eq!(AmmDex::cumulative_protocol_fees(), 0);
+    });
+}
+
+#[test]
+fn test_protocol_fee_accumulates_across_swaps() {
+    new_test_ext().execute_with(|| {
+        AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            b"VRS".to_vec(),
+            b"ECO".to_vec(),
+            1_000_000,
+            1_000_000,
+        ).unwrap();
+
+        assert_ok!(AmmDex::add_liquidity(
+            RuntimeOrigin::signed(alice()),
+            0,
+            500_000,
+            500_000,
+            1000,
+        ));
+
+        // First swap: 100_000
+        assert_ok!(AmmDex::swap(
+            RuntimeOrigin::signed(alice()),
+            0,
+            b"VRS".to_vec(),
+            100_000,
+            0,
+            1000,
+        ));
+        // Fee = 100_000 * 5 / 10000 = 50
+        assert_eq!(AmmDex::cumulative_protocol_fees(), 50);
+
+        // Second swap: 200_000
+        assert_ok!(AmmDex::swap(
+            RuntimeOrigin::signed(alice()),
+            0,
+            b"VRS".to_vec(),
+            200_000,
+            0,
+            1000,
+        ));
+        // Fee = 200_000 * 5 / 10000 = 100, cumulative = 150
+        assert_eq!(AmmDex::cumulative_protocol_fees(), 150);
+        assert_eq!(AmmDex::pool_protocol_fees(0), 150);
+    });
+}
+
+#[test]
+fn test_protocol_fee_recipient_receives_funds() {
+    new_test_ext().execute_with(|| {
+        AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            b"VRS".to_vec(),
+            b"ECO".to_vec(),
+            1_000_000,
+            1_000_000,
+        ).unwrap();
+
+        assert_ok!(AmmDex::add_liquidity(
+            RuntimeOrigin::signed(alice()),
+            0,
+            500_000,
+            500_000,
+            1000,
+        ));
+
+        let recipient = TestProtocolFeeRecipient::get();
+        let balance_before = <pallet_balances::Pallet<Test> as frame_support::traits::Currency<
+            sp_core::crypto::AccountId32,
+        >>::free_balance(&recipient);
+
+        assert_ok!(AmmDex::swap(
+            RuntimeOrigin::signed(alice()),
+            0,
+            b"VRS".to_vec(),
+            100_000,
+            0,
+            1000,
+        ));
+
+        let balance_after = <pallet_balances::Pallet<Test> as frame_support::traits::Currency<
+            sp_core::crypto::AccountId32,
+        >>::free_balance(&recipient);
+
+        // Protocol fee = 50 should be transferred to recipient
+        assert_eq!(
+            balance_after - balance_before,
+            50,
+            "Recipient should receive 50 VRDX protocol fee"
+        );
+    });
+}
