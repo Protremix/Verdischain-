@@ -648,7 +648,7 @@
     // RPC Communication with Fallback
     async function rpcCall(method, params = []) {
       const payload = { jsonrpc: '2.0', id: Date.now(), method, params };
-      const endpoints = ['/rpc', 'http://localhost:9933'];
+      const endpoints = ['/rpc', '/rpc'];
 
       for (const url of endpoints) {
         try {
