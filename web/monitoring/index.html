@@ -940,7 +940,7 @@
       <nav class="nav-links" id="navLinks">
         <a href="/explorer/">Verdiscan</a>
         <a href="/dex/">DEX</a>
-        <a href="/whitepaper/">Whitepaper</a>
+        <a href="/whitepaper/">Whitepaper</a><a href="/lightpaper/">Light Paper</a>
         <a href="/wallet/">Wallet</a>
         <a href="/sale/">Sale</a>
         <a href="/tokenomics/">Tokenomics</a>
@@ -1313,7 +1313,7 @@
             <li><a href="/tokenomics/">Tokenomics Specification</a></li>
             <li><a href="/sale/">Token Sale Portal</a></li>
             <li><a href="/monitoring/">Validator Monitor</a></li>
-            <li><a href="/whitepaper/">Whitepaper</a></li>
+            <li><a href="/whitepaper/">Whitepaper</a><a href="/lightpaper/">Light Paper</a></li>
           </ul>
         </div>
 
@@ -1399,7 +1399,7 @@
         }
       } catch (err) {
         try {
-          const directRes = await fetch("/rpc", {
+          const directRes = await fetch("http://localhost:9933", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
