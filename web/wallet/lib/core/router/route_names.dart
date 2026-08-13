@@ -1,0 +1,29 @@
+class RouteNames {
+  static const String splash = '/splash';
+  static const String welcome = '/welcome';
+  static const String createWallet = '/create-wallet';
+  static const String importWallet = '/import-wallet';
+  static const String backupPhrase = '/backup-phrase';
+  static const String verifyPhrase = '/verify-phrase';
+  static const String biometricSetup = '/biometric-setup';
+  static const String pinSetup = '/pin-setup';
+  static const String home = '/home';
+  static const String send = '/send';
+  static const String receive = '/receive';
+  static const String tokens = '/tokens';
+  static const String importToken = '/tokens/import';
+  static const String nft = '/nft';
+  static const String transactions = '/transactions';
+  static const String staking = '/staking';
+  static const String stakingInfo = '/staking/info';
+  static const String dex = '/dex';
+  static const String dexSwap = '/dex/swap';
+  static const String dexLiquidity = '/dex/liquidity';
+  static const String dexPools = '/dex/pools';
+  static const String explorer = '/explorer';
+  static const String settings = '/settings';
+  static const String accountSettings = '/settings/account';
+  static const String securitySettings = '/settings/security';
+  static const String networkSettings = '/settings/network';
+  static const String about = '/settings/about';
+}
