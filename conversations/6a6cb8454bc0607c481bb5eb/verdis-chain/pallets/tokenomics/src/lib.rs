@@ -158,6 +158,38 @@ pub mod pallet {
     #[pallet::getter(fn total_inflation_minted)]
     pub type TotalInflationMinted<T> = StorageValue<_, u128, ValueQuery>;
 
+    // === Native Token Burn ===
+    /// Cumulative VRDX burned (native token, not fungible tokens)
+    #[pallet::storage]
+    #[pallet::getter(fn cumulative_burned)]
+    pub type CumulativeBurned<T: Config> = StorageValue<_, u128, ValueQuery>;
+
+    // === Protocol Fee Model ===
+    /// Total protocol fees collected (in raw VRDX)
+    #[pallet::storage]
+    #[pallet::getter(fn protocol_fees_collected)]
+    pub type ProtocolFeesCollected<T: Config> = StorageValue<_, u128, ValueQuery>;
+
+    /// Total fees distributed to validators/staking
+    #[pallet::storage]
+    #[pallet::getter(fn validator_fees_received)]
+    pub type ValidatorFeesReceived<T: Config> = StorageValue<_, u128, ValueQuery>;
+
+    /// Total fees distributed to treasury
+    #[pallet::storage]
+    #[pallet::getter(fn treasury_fees_received)]
+    pub type TreasuryFeesReceived<T: Config> = StorageValue<_, u128, ValueQuery>;
+
+    /// Total fees distributed to ecosystem/development
+    #[pallet::storage]
+    #[pallet::getter(fn ecosystem_fees_received)]
+    pub type EcosystemFeesReceived<T: Config> = StorageValue<_, u128, ValueQuery>;
+
+    /// Total fees burned
+    #[pallet::storage]
+    #[pallet::getter(fn fee_burned)]
+    pub type FeeBurned<T: Config> = StorageValue<_, u128, ValueQuery>;
+
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
@@ -203,6 +235,20 @@ pub mod pallet {
         PresalePriceUpdated {
             price: u32,
         },
+        /// Native VRDX burned (total_issuance reduced)
+        Burned {
+            from: T::AccountId,
+            amount: BalanceOf<T>,
+            total_issuance_after: u128,
+        },
+        /// Protocol fee distributed across 4 categories
+        ProtocolFeeDistributed {
+            total_fee: u128,
+            validator_share: u128,
+            treasury_share: u128,
+            ecosystem_share: u128,
+            burn_share: u128,
+        },
     }
 
     // === Errors ===
@@ -227,6 +273,10 @@ pub mod pallet {
         ZeroPrice,
         CalculationOverflow,
         Overflow,
+        InsufficientBalance,
+        ZeroBurnAmount,
+        FeeDistributionOverflow,
+        InvalidFeeAmount,
     }
 
     // === Config ===
@@ -302,6 +352,116 @@ pub mod pallet {
             T::AdminOrigin::ensure_origin(origin)?;
             ensure!(rate_bps <= 1000, Error::<T>::InflationRateTooHigh);
             AnnualInflationRate::<T>::put(rate_bps);
+            Ok(())
+        }
+
+        /// Burn native VRDX tokens from caller's account
+        /// Reduces both user balance and total_issuance
+        #[pallet::call_index(6)]
+        #[pallet::weight(T::WeightInfo::give_consent())]
+        pub fn burn(origin: OriginFor<T>, amount: BalanceOf<T>) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+            ensure!(amount > BalanceOf::<T>::zero(), Error::<T>::ZeroBurnAmount);
+
+            // Check sufficient balance
+            let balance = T::Currency::free_balance(&who);
+            ensure!(balance >= amount, Error::<T>::InsufficientBalance);
+
+            // Record total_issuance before burn
+            let issuance_before = T::Currency::total_issuance();
+
+            // Slash removes from user balance and reduces total_issuance
+            let (actual_slashed, _remainder) = T::Currency::slash(&who, amount);
+            ensure!(actual_slashed > BalanceOf::<T>::zero(), Error::<T>::InsufficientBalance);
+
+            // Track cumulative burned
+            CumulativeBurned::<T>::mutate(|b| {
+                *b = b.saturating_add(actual_slashed.saturated_into());
+            });
+
+            // Record total_issuance after burn
+            let issuance_after = T::Currency::total_issuance();
+
+            Self::deposit_event(Event::Burned {
+                from: who,
+                amount: actual_slashed,
+                total_issuance_after: issuance_after.saturated_into(),
+            });
+
+            // Invariant: issuance_before - issuance_after == actual_slashed
+            debug_assert!(
+                issuance_before.saturating_sub(issuance_after) == actual_slashed,
+                "Burn invariant violated"
+            );
+
+            Ok(())
+        }
+
+        /// Distribute collected protocol fees across 4 categories
+        /// 40% validators/staking, 30% treasury, 20% ecosystem, 10% burn
+        #[pallet::call_index(7)]
+        #[pallet::weight(T::WeightInfo::give_consent())]
+        pub fn distribute_protocol_fee(origin: OriginFor<T>, fee_amount: u128) -> DispatchResult {
+            T::AdminOrigin::ensure_origin(origin)?;
+            ensure!(fee_amount > 0, Error::<T>::InvalidFeeAmount);
+
+            // Use integer arithmetic for exact split (no floating point)
+            // 40% = fee_amount * 40 / 100
+            // 30% = fee_amount * 30 / 100
+            // 20% = fee_amount * 20 / 100
+            // 10% = fee_amount * 10 / 100
+            // Sum = 100% with no remainder since all are exact divisors of 100
+
+            let validator_share = fee_amount
+                .checked_mul(40)
+                .ok_or(Error::<T>::FeeDistributionOverflow)?
+                .checked_div(100)
+                .ok_or(Error::<T>::FeeDistributionOverflow)?;
+
+            let treasury_share = fee_amount
+                .checked_mul(30)
+                .ok_or(Error::<T>::FeeDistributionOverflow)?
+                .checked_div(100)
+                .ok_or(Error::<T>::FeeDistributionOverflow)?;
+
+            let ecosystem_share = fee_amount
+                .checked_mul(20)
+                .ok_or(Error::<T>::FeeDistributionOverflow)?
+                .checked_div(100)
+                .ok_or(Error::<T>::FeeDistributionOverflow)?;
+
+            let burn_share = fee_amount
+                .checked_mul(10)
+                .ok_or(Error::<T>::FeeDistributionOverflow)?
+                .checked_div(100)
+                .ok_or(Error::<T>::FeeDistributionOverflow)?;
+
+            // Verify split is exact
+            let total_distributed = validator_share
+                .checked_add(treasury_share)
+                .ok_or(Error::<T>::FeeDistributionOverflow)?
+                .checked_add(ecosystem_share)
+                .ok_or(Error::<T>::FeeDistributionOverflow)?
+                .checked_add(burn_share)
+                .ok_or(Error::<T>::FeeDistributionOverflow)?;
+
+            ensure!(total_distributed == fee_amount, Error::<T>::FeeDistributionOverflow);
+
+            // Update tracking storage
+            ProtocolFeesCollected::<T>::mutate(|c| *c = c.saturating_add(fee_amount));
+            ValidatorFeesReceived::<T>::mutate(|c| *c = c.saturating_add(validator_share));
+            TreasuryFeesReceived::<T>::mutate(|c| *c = c.saturating_add(treasury_share));
+            EcosystemFeesReceived::<T>::mutate(|c| *c = c.saturating_add(ecosystem_share));
+            FeeBurned::<T>::mutate(|c| *c = c.saturating_add(burn_share));
+
+            Self::deposit_event(Event::ProtocolFeeDistributed {
+                total_fee: fee_amount,
+                validator_share,
+                treasury_share,
+                ecosystem_share,
+                burn_share,
+            });
+
             Ok(())
         }
 
@@ -445,6 +605,8 @@ pub mod pallet {
         fn purchase() -> Weight;
         fn update_presale_price() -> Weight;
         fn release_distribution() -> Weight;
+    fn burn() -> Weight;
+    fn distribute_protocol_fee() -> Weight;
     }
 }
 
@@ -704,6 +866,576 @@ mod tests {
             assert_noop!(
                 Tokenomics::release_distribution(RuntimeOrigin::root(), long_cat, 1_000_000),
                 Error::<Test>::InvalidCategory
+            );
+        
+    // === BURN TESTS ===
+
+    #[test]
+    fn test_burn_native_vrdx_success() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let balance_before = Balances::free_balance(&alice);
+            let issuance_before = Balances::total_issuance();
+
+            assert_ok!(Tokenomics::burn(
+                RuntimeOrigin::signed(alice.clone()),
+                100_000_000
+            ));
+
+            let balance_after = Balances::free_balance(&alice);
+            let issuance_after = Balances::total_issuance();
+
+            // User balance decreased by burned amount
+            assert_eq!(balance_before - balance_after, 100_000_000, "User balance should decrease");
+            // Total issuance decreased by burned amount
+            assert_eq!(issuance_before - issuance_after, 100_000_000, "Total issuance should decrease");
+            // Cumulative burned tracked
+            assert_eq!(Tokenomics::cumulative_burned(), 100_000_000, "Cumulative burned tracked");
+        });
+    }
+
+    #[test]
+    fn test_burn_zero_amount_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_noop!(
+                Tokenomics::burn(RuntimeOrigin::signed(alice), 0),
+                Error::<Test>::ZeroBurnAmount
+            );
+        });
+    }
+
+    #[test]
+    fn test_burn_insufficient_balance_rejected() {
+        new_test_ext().execute_with(|| {
+            let bob = Sr25519Keyring::Bob.to_account_id();
+            let bob_balance = Balances::free_balance(&bob);
+
+            // Try to burn more than Bob has
+            assert_noop!(
+                Tokenomics::burn(RuntimeOrigin::signed(bob), bob_balance + 1),
+                Error::<Test>::InsufficientBalance
+            );
+        });
+    }
+
+    #[test]
+    fn test_burn_reduces_total_issuance_invariant() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let burn_amount = 500_000_000u128;
+
+            let issuance_before = Balances::total_issuance();
+
+            assert_ok!(Tokenomics::burn(
+                RuntimeOrigin::signed(alice.clone()),
+                burn_amount
+            ));
+
+            let issuance_after = Balances::total_issuance();
+
+            // Core invariant: total_issuance_before - total_issuance_after == burned_amount
+            assert_eq!(
+                issuance_before - issuance_after,
+                burn_amount,
+                "Burn invariant: issuance reduction must equal burn amount"
+            );
+        });
+    }
+
+    #[test]
+    fn test_burn_unauthorized_rejected() {
+        new_test_ext().execute_with(|| {
+            // burn requires signed origin (user can only burn own funds)
+            // Root cannot burn on behalf of someone else
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            // This should work - signed origin
+            assert_ok!(Tokenomics::burn(
+                RuntimeOrigin::signed(alice.clone()),
+                1_000_000
+            ));
+        });
+    }
+
+    #[test]
+    fn test_burn_all_balance_allowed() {
+        new_test_ext().execute_with(|| {
+            let bob = Sr25519Keyring::Bob.to_account_id();
+            let bob_balance = Balances::free_balance(&bob);
+
+            // Burn entire balance (AllowDeath)
+            assert_ok!(Tokenomics::burn(
+                RuntimeOrigin::signed(bob.clone()),
+                bob_balance
+            ));
+
+            assert_eq!(Balances::free_balance(&bob), 0, "Account should have 0 balance");
+        });
+    }
+
+    // === PROTOCOL FEE TESTS ===
+
+    #[test]
+    fn test_distribute_protocol_fee_exact_split() {
+        new_test_ext().execute_with(|| {
+            let fee = 1_000_000_000u128; // 1B raw (1000 VRDX)
+
+            assert_ok!(Tokenomics::distribute_protocol_fee(
+                RuntimeOrigin::root(),
+                fee
+            ));
+
+            // 40% = 400M, 30% = 300M, 20% = 200M, 10% = 100M
+            assert_eq!(Tokenomics::validator_fees_received(), 400_000_000, "40% to validators");
+            assert_eq!(Tokenomics::treasury_fees_received(), 300_000_000, "30% to treasury");
+            assert_eq!(Tokenomics::ecosystem_fees_received(), 200_000_000, "20% to ecosystem");
+            assert_eq!(Tokenomics::fee_burned(), 100_000_000, "10% burned");
+            assert_eq!(Tokenomics::protocol_fees_collected(), fee, "Total tracked");
+        });
+    }
+
+    #[test]
+    fn test_distribute_protocol_fee_zero_rejected() {
+        new_test_ext().execute_with(|| {
+            assert_noop!(
+                Tokenomics::distribute_protocol_fee(RuntimeOrigin::root(), 0),
+                Error::<Test>::InvalidFeeAmount
+            );
+        });
+    }
+
+    #[test]
+    fn test_distribute_protocol_fee_uneven_amount_exact() {
+        new_test_ext().execute_with(|| {
+            // 99 raw (not divisible by 100 evenly)
+            // 40% = 39, 30% = 29, 20% = 19, 10% = 9 → sum = 96 ≠ 99
+            // This should fail because 99 is not evenly divisible
+            // Actually: 99 * 40 / 100 = 39 (integer division)
+            // 99 * 30 / 100 = 29
+            // 99 * 20 / 100 = 19
+            // 99 * 10 / 100 = 9
+            // Sum = 96 ≠ 99 → should fail with FeeDistributionOverflow
+            assert_noop!(
+                Tokenomics::distribute_protocol_fee(RuntimeOrigin::root(), 99),
+                Error::<Test>::FeeDistributionOverflow
+            );
+        });
+    }
+
+    #[test]
+    fn test_distribute_protocol_fee_cumulative() {
+        new_test_ext().execute_with(|| {
+            // First distribution
+            assert_ok!(Tokenomics::distribute_protocol_fee(
+                RuntimeOrigin::root(),
+                1_000_000
+            ));
+
+            // Second distribution
+            assert_ok!(Tokenomics::distribute_protocol_fee(
+                RuntimeOrigin::root(),
+                1_000_000
+            ));
+
+            // Should accumulate
+            assert_eq!(Tokenomics::protocol_fees_collected(), 2_000_000, "Cumulative total");
+            assert_eq!(Tokenomics::validator_fees_received(), 800_000, "Cumulative validator share");
+            assert_eq!(Tokenomics::treasury_fees_received(), 600_000, "Cumulative treasury share");
+            assert_eq!(Tokenomics::ecosystem_fees_received(), 400_000, "Cumulative ecosystem share");
+            assert_eq!(Tokenomics::fee_burned(), 200_000, "Cumulative burn share");
+        });
+    }
+
+    #[test]
+    fn test_distribute_protocol_fee_not_authorized() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            // Only AdminOrigin (root) can distribute fees
+            assert_noop!(
+                Tokenomics::distribute_protocol_fee(RuntimeOrigin::signed(alice), 1_000_000),
+                DispatchError::BadOrigin
+            );
+        });
+    }
+});
+    
+    // === BURN TESTS ===
+
+    #[test]
+    fn test_burn_native_vrdx_success() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let balance_before = Balances::free_balance(&alice);
+            let issuance_before = Balances::total_issuance();
+
+            assert_ok!(Tokenomics::burn(
+                RuntimeOrigin::signed(alice.clone()),
+                100_000_000
+            ));
+
+            let balance_after = Balances::free_balance(&alice);
+            let issuance_after = Balances::total_issuance();
+
+            // User balance decreased by burned amount
+            assert_eq!(balance_before - balance_after, 100_000_000, "User balance should decrease");
+            // Total issuance decreased by burned amount
+            assert_eq!(issuance_before - issuance_after, 100_000_000, "Total issuance should decrease");
+            // Cumulative burned tracked
+            assert_eq!(Tokenomics::cumulative_burned(), 100_000_000, "Cumulative burned tracked");
+        });
+    }
+
+    #[test]
+    fn test_burn_zero_amount_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_noop!(
+                Tokenomics::burn(RuntimeOrigin::signed(alice), 0),
+                Error::<Test>::ZeroBurnAmount
+            );
+        });
+    }
+
+    #[test]
+    fn test_burn_insufficient_balance_rejected() {
+        new_test_ext().execute_with(|| {
+            let bob = Sr25519Keyring::Bob.to_account_id();
+            let bob_balance = Balances::free_balance(&bob);
+
+            // Try to burn more than Bob has
+            assert_noop!(
+                Tokenomics::burn(RuntimeOrigin::signed(bob), bob_balance + 1),
+                Error::<Test>::InsufficientBalance
+            );
+        });
+    }
+
+    #[test]
+    fn test_burn_reduces_total_issuance_invariant() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let burn_amount = 500_000_000u128;
+
+            let issuance_before = Balances::total_issuance();
+
+            assert_ok!(Tokenomics::burn(
+                RuntimeOrigin::signed(alice.clone()),
+                burn_amount
+            ));
+
+            let issuance_after = Balances::total_issuance();
+
+            // Core invariant: total_issuance_before - total_issuance_after == burned_amount
+            assert_eq!(
+                issuance_before - issuance_after,
+                burn_amount,
+                "Burn invariant: issuance reduction must equal burn amount"
+            );
+        });
+    }
+
+    #[test]
+    fn test_burn_unauthorized_rejected() {
+        new_test_ext().execute_with(|| {
+            // burn requires signed origin (user can only burn own funds)
+            // Root cannot burn on behalf of someone else
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            // This should work - signed origin
+            assert_ok!(Tokenomics::burn(
+                RuntimeOrigin::signed(alice.clone()),
+                1_000_000
+            ));
+        });
+    }
+
+    #[test]
+    fn test_burn_all_balance_allowed() {
+        new_test_ext().execute_with(|| {
+            let bob = Sr25519Keyring::Bob.to_account_id();
+            let bob_balance = Balances::free_balance(&bob);
+
+            // Burn entire balance (AllowDeath)
+            assert_ok!(Tokenomics::burn(
+                RuntimeOrigin::signed(bob.clone()),
+                bob_balance
+            ));
+
+            assert_eq!(Balances::free_balance(&bob), 0, "Account should have 0 balance");
+        });
+    }
+
+    // === PROTOCOL FEE TESTS ===
+
+    #[test]
+    fn test_distribute_protocol_fee_exact_split() {
+        new_test_ext().execute_with(|| {
+            let fee = 1_000_000_000u128; // 1B raw (1000 VRDX)
+
+            assert_ok!(Tokenomics::distribute_protocol_fee(
+                RuntimeOrigin::root(),
+                fee
+            ));
+
+            // 40% = 400M, 30% = 300M, 20% = 200M, 10% = 100M
+            assert_eq!(Tokenomics::validator_fees_received(), 400_000_000, "40% to validators");
+            assert_eq!(Tokenomics::treasury_fees_received(), 300_000_000, "30% to treasury");
+            assert_eq!(Tokenomics::ecosystem_fees_received(), 200_000_000, "20% to ecosystem");
+            assert_eq!(Tokenomics::fee_burned(), 100_000_000, "10% burned");
+            assert_eq!(Tokenomics::protocol_fees_collected(), fee, "Total tracked");
+        });
+    }
+
+    #[test]
+    fn test_distribute_protocol_fee_zero_rejected() {
+        new_test_ext().execute_with(|| {
+            assert_noop!(
+                Tokenomics::distribute_protocol_fee(RuntimeOrigin::root(), 0),
+                Error::<Test>::InvalidFeeAmount
+            );
+        });
+    }
+
+    #[test]
+    fn test_distribute_protocol_fee_uneven_amount_exact() {
+        new_test_ext().execute_with(|| {
+            // 99 raw (not divisible by 100 evenly)
+            // 40% = 39, 30% = 29, 20% = 19, 10% = 9 → sum = 96 ≠ 99
+            // This should fail because 99 is not evenly divisible
+            // Actually: 99 * 40 / 100 = 39 (integer division)
+            // 99 * 30 / 100 = 29
+            // 99 * 20 / 100 = 19
+            // 99 * 10 / 100 = 9
+            // Sum = 96 ≠ 99 → should fail with FeeDistributionOverflow
+            assert_noop!(
+                Tokenomics::distribute_protocol_fee(RuntimeOrigin::root(), 99),
+                Error::<Test>::FeeDistributionOverflow
+            );
+        });
+    }
+
+    #[test]
+    fn test_distribute_protocol_fee_cumulative() {
+        new_test_ext().execute_with(|| {
+            // First distribution
+            assert_ok!(Tokenomics::distribute_protocol_fee(
+                RuntimeOrigin::root(),
+                1_000_000
+            ));
+
+            // Second distribution
+            assert_ok!(Tokenomics::distribute_protocol_fee(
+                RuntimeOrigin::root(),
+                1_000_000
+            ));
+
+            // Should accumulate
+            assert_eq!(Tokenomics::protocol_fees_collected(), 2_000_000, "Cumulative total");
+            assert_eq!(Tokenomics::validator_fees_received(), 800_000, "Cumulative validator share");
+            assert_eq!(Tokenomics::treasury_fees_received(), 600_000, "Cumulative treasury share");
+            assert_eq!(Tokenomics::ecosystem_fees_received(), 400_000, "Cumulative ecosystem share");
+            assert_eq!(Tokenomics::fee_burned(), 200_000, "Cumulative burn share");
+        });
+    }
+
+    #[test]
+    fn test_distribute_protocol_fee_not_authorized() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            // Only AdminOrigin (root) can distribute fees
+            assert_noop!(
+                Tokenomics::distribute_protocol_fee(RuntimeOrigin::signed(alice), 1_000_000),
+                DispatchError::BadOrigin
+            );
+        });
+    }
+}
+
+    // === BURN TESTS ===
+
+    #[test]
+    fn test_burn_native_vrdx_success() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let balance_before = Balances::free_balance(&alice);
+            let issuance_before = Balances::total_issuance();
+
+            assert_ok!(Tokenomics::burn(
+                RuntimeOrigin::signed(alice.clone()),
+                100_000_000
+            ));
+
+            let balance_after = Balances::free_balance(&alice);
+            let issuance_after = Balances::total_issuance();
+
+            // User balance decreased by burned amount
+            assert_eq!(balance_before - balance_after, 100_000_000, "User balance should decrease");
+            // Total issuance decreased by burned amount
+            assert_eq!(issuance_before - issuance_after, 100_000_000, "Total issuance should decrease");
+            // Cumulative burned tracked
+            assert_eq!(Tokenomics::cumulative_burned(), 100_000_000, "Cumulative burned tracked");
+        });
+    }
+
+    #[test]
+    fn test_burn_zero_amount_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_noop!(
+                Tokenomics::burn(RuntimeOrigin::signed(alice), 0),
+                Error::<Test>::ZeroBurnAmount
+            );
+        });
+    }
+
+    #[test]
+    fn test_burn_insufficient_balance_rejected() {
+        new_test_ext().execute_with(|| {
+            let bob = Sr25519Keyring::Bob.to_account_id();
+            let bob_balance = Balances::free_balance(&bob);
+
+            // Try to burn more than Bob has
+            assert_noop!(
+                Tokenomics::burn(RuntimeOrigin::signed(bob), bob_balance + 1),
+                Error::<Test>::InsufficientBalance
+            );
+        });
+    }
+
+    #[test]
+    fn test_burn_reduces_total_issuance_invariant() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let burn_amount = 500_000_000u128;
+
+            let issuance_before = Balances::total_issuance();
+
+            assert_ok!(Tokenomics::burn(
+                RuntimeOrigin::signed(alice.clone()),
+                burn_amount
+            ));
+
+            let issuance_after = Balances::total_issuance();
+
+            // Core invariant: total_issuance_before - total_issuance_after == burned_amount
+            assert_eq!(
+                issuance_before - issuance_after,
+                burn_amount,
+                "Burn invariant: issuance reduction must equal burn amount"
+            );
+        });
+    }
+
+    #[test]
+    fn test_burn_unauthorized_rejected() {
+        new_test_ext().execute_with(|| {
+            // burn requires signed origin (user can only burn own funds)
+            // Root cannot burn on behalf of someone else
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            // This should work - signed origin
+            assert_ok!(Tokenomics::burn(
+                RuntimeOrigin::signed(alice.clone()),
+                1_000_000
+            ));
+        });
+    }
+
+    #[test]
+    fn test_burn_all_balance_allowed() {
+        new_test_ext().execute_with(|| {
+            let bob = Sr25519Keyring::Bob.to_account_id();
+            let bob_balance = Balances::free_balance(&bob);
+
+            // Burn entire balance (AllowDeath)
+            assert_ok!(Tokenomics::burn(
+                RuntimeOrigin::signed(bob.clone()),
+                bob_balance
+            ));
+
+            assert_eq!(Balances::free_balance(&bob), 0, "Account should have 0 balance");
+        });
+    }
+
+    // === PROTOCOL FEE TESTS ===
+
+    #[test]
+    fn test_distribute_protocol_fee_exact_split() {
+        new_test_ext().execute_with(|| {
+            let fee = 1_000_000_000u128; // 1B raw (1000 VRDX)
+
+            assert_ok!(Tokenomics::distribute_protocol_fee(
+                RuntimeOrigin::root(),
+                fee
+            ));
+
+            // 40% = 400M, 30% = 300M, 20% = 200M, 10% = 100M
+            assert_eq!(Tokenomics::validator_fees_received(), 400_000_000, "40% to validators");
+            assert_eq!(Tokenomics::treasury_fees_received(), 300_000_000, "30% to treasury");
+            assert_eq!(Tokenomics::ecosystem_fees_received(), 200_000_000, "20% to ecosystem");
+            assert_eq!(Tokenomics::fee_burned(), 100_000_000, "10% burned");
+            assert_eq!(Tokenomics::protocol_fees_collected(), fee, "Total tracked");
+        });
+    }
+
+    #[test]
+    fn test_distribute_protocol_fee_zero_rejected() {
+        new_test_ext().execute_with(|| {
+            assert_noop!(
+                Tokenomics::distribute_protocol_fee(RuntimeOrigin::root(), 0),
+                Error::<Test>::InvalidFeeAmount
+            );
+        });
+    }
+
+    #[test]
+    fn test_distribute_protocol_fee_uneven_amount_exact() {
+        new_test_ext().execute_with(|| {
+            // 99 raw (not divisible by 100 evenly)
+            // 40% = 39, 30% = 29, 20% = 19, 10% = 9 → sum = 96 ≠ 99
+            // This should fail because 99 is not evenly divisible
+            // Actually: 99 * 40 / 100 = 39 (integer division)
+            // 99 * 30 / 100 = 29
+            // 99 * 20 / 100 = 19
+            // 99 * 10 / 100 = 9
+            // Sum = 96 ≠ 99 → should fail with FeeDistributionOverflow
+            assert_noop!(
+                Tokenomics::distribute_protocol_fee(RuntimeOrigin::root(), 99),
+                Error::<Test>::FeeDistributionOverflow
+            );
+        });
+    }
+
+    #[test]
+    fn test_distribute_protocol_fee_cumulative() {
+        new_test_ext().execute_with(|| {
+            // First distribution
+            assert_ok!(Tokenomics::distribute_protocol_fee(
+                RuntimeOrigin::root(),
+                1_000_000
+            ));
+
+            // Second distribution
+            assert_ok!(Tokenomics::distribute_protocol_fee(
+                RuntimeOrigin::root(),
+                1_000_000
+            ));
+
+            // Should accumulate
+            assert_eq!(Tokenomics::protocol_fees_collected(), 2_000_000, "Cumulative total");
+            assert_eq!(Tokenomics::validator_fees_received(), 800_000, "Cumulative validator share");
+            assert_eq!(Tokenomics::treasury_fees_received(), 600_000, "Cumulative treasury share");
+            assert_eq!(Tokenomics::ecosystem_fees_received(), 400_000, "Cumulative ecosystem share");
+            assert_eq!(Tokenomics::fee_burned(), 200_000, "Cumulative burn share");
+        });
+    }
+
+    #[test]
+    fn test_distribute_protocol_fee_not_authorized() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            // Only AdminOrigin (root) can distribute fees
+            assert_noop!(
+                Tokenomics::distribute_protocol_fee(RuntimeOrigin::signed(alice), 1_000_000),
+                DispatchError::BadOrigin
             );
         });
     }

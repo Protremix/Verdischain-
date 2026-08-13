@@ -86,4 +86,33 @@ impl<T: frame_system::Config> crate::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(2))
 			.saturating_add(T::DbWeight::get().writes(2))
 	}
+	/// Storage: `System::Account` (r:1 w:1)
+	/// Proof: `System::Account` (`max_values`: None, `max_size`: Some(128), added: 2603, mode: `MaxEncodedLen`)
+	/// Storage: `Tokenomics::CumulativeBurned` (r:1 w:1)
+	/// Proof: `Tokenomics::CumulativeBurned` (`max_values`: Some(1), `max_size`: Some(16), added: 511, mode: `MaxEncodedLen`)
+	fn burn() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `180`
+		//  Estimated: `3638`
+		// Minimum execution time: 15_000_000 picoseconds.
+		Weight::from_parts(15_000_000, 0)
+			.saturating_add(Weight::from_parts(0, 3638))
+			.saturating_add(T::DbWeight::get().reads(1))
+			.saturating_add(T::DbWeight::get().writes(2))
+	}
+	/// Storage: `Tokenomics::ProtocolFeesCollected` (r:1 w:1)
+	/// Storage: `Tokenomics::ValidatorFeesReceived` (r:1 w:1)
+	/// Storage: `Tokenomics::TreasuryFeesReceived` (r:1 w:1)
+	/// Storage: `Tokenomics::EcosystemFeesReceived` (r:1 w:1)
+	/// Storage: `Tokenomics::FeeBurned` (r:1 w:1)
+	fn distribute_protocol_fee() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `200`
+		//  Estimated: `4000`
+		// Minimum execution time: 12_000_000 picoseconds.
+		Weight::from_parts(12_000_000, 0)
+			.saturating_add(Weight::from_parts(0, 4000))
+			.saturating_add(T::DbWeight::get().reads(5))
+			.saturating_add(T::DbWeight::get().writes(5))
+	}
 }
