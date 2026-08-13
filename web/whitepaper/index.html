@@ -129,6 +129,56 @@ footer{padding:32px 24px;text-align:center;color:var(--text-2);font-size:13px;bo
 
 
 @media print{nav,.hero-right,.hero-visual,.wp-doc,.wp-card,.wp-team,.wp-roadmap,.wp-carbon,.float-tag,.hero-lime-circle,#hero-canvas,#cursor-glow,#scroll-bar,.cta-card .hero-actions,.footer-social{display:none!important}nav.std-nav{display:none}.hero-section{padding:0}.hero-container{background:#fff!important;border:none;border-radius:0}.hero-left{padding:20px 0}.hero-title{color:#000}.hero-desc{color:#333}.hero-badge{border:1px solid #16a34a}.btn-primary,.btn-secondary{display:none}.hero-actions{display:none}body{background:#fff;color:#000}.section-block{page-break-inside:avoid;margin-bottom:16px}.card-panel{border:1px solid #ccc}.specs-table{border:1px solid #ccc}.rm-content{border:1px solid #ccc;box-shadow:none}.improve-item{page-break-inside:avoid}.footer{background:#000!important}.reveal{opacity:1!important;transform:none!important}}
+
+/* TGE VESTING ROADMAP */
+.tge-timeline{position:relative;padding:40px 0 20px;margin:24px 0}
+.tge-axis{position:relative;height:4px;background:linear-gradient(90deg,#16a34a,#15803d,#22c55e,#4ade80,#86efac);border-radius:2px;margin:0 40px}
+.tge-axis::before{content:'TGE DAY';position:absolute;left:-36px;top:-6px;font-size:10px;font-weight:700;color:#16a34a;font-family:'JetBrains Mono';white-space:nowrap}
+.tge-axis::after{content:'YEAR 10';position:absolute;right:-40px;top:-6px;font-size:10px;font-weight:700;color:#15803d;font-family:'JetBrains Mono';white-space:nowrap}
+.tge-marker{position:absolute;top:-30px;width:2px;height:64px;background:#16a34a;transform:translateX(-50%)}
+.tge-marker-dot{position:absolute;top:-4px;left:-5px;width:12px;height:12px;border-radius:50%;background:#fff;border:2px solid #16a34a;z-index:2}
+.tge-marker-label{position:absolute;top:-56px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:#0f172a;white-space:nowrap;font-family:'Space Grotesk'}
+.tge-marker-sub{position:absolute;top:36px;left:50%;transform:translateX(-50%);font-size:9px;color:#64748b;white-space:nowrap;text-align:center;line-height:1.3;width:120px}
+.tge-marker.danger .tge-marker-dot{border-color:#ef4444}
+.tge-marker.danger .tge-marker-label{color:#ef4444}
+.tge-marker.warning .tge-marker-dot{border-color:#f59e0b}
+.tge-marker.warning .tge-marker-label{color:#d97706}
+.tge-events{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:48px}
+.tge-event{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;position:relative;overflow:hidden}
+.tge-event::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--accent)}
+.tge-event.warning::before{background:#f59e0b}
+.tge-event.danger::before{background:#ef4444}
+.tge-event.success::before{background:#4ade80}
+.tge-event-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.tge-event-when{font-family:'JetBrains Mono';font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-glow);padding:3px 10px;border-radius:6px}
+.tge-event.warning .tge-event-when{color:#d97706;background:rgba(245,158,11,0.1)}
+.tge-event.danger .tge-event-when{color:#ef4444;background:rgba(239,68,68,0.08)}
+.tge-event.success .tge-event-when{color:#16a34a;background:rgba(74,222,128,0.1)}
+.tge-event-title{font-size:13px;font-weight:700;color:#0f172a;margin-bottom:4px}
+.tge-event-desc{font-size:12px;color:var(--text-2);line-height:1.5}
+.tge-event-amt{font-family:'JetBrains Mono';font-size:11px;color:var(--accent);font-weight:600;margin-top:6px;display:block}
+
+/* VESTING TABLE */
+.tge-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:12px}
+.tge-table th{text-align:left;padding:10px 14px;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);background:var(--bg-1);border-bottom:2px solid var(--accent);font-weight:600}
+.tge-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-2)}
+.tge-table tr:last-child td{border-bottom:none}
+.tge-table .mono{font-family:'JetBrains Mono';font-size:11px}
+.tge-table .unlocked{color:#16a34a;font-weight:600}
+.tge-table .locked{color:#ef4444;font-weight:600}
+.tge-table .partial{color:#f59e0b;font-weight:600}
+
+/* SUPPLY CURVE */
+.supply-chart{display:grid;grid-template-columns:1fr;gap:8px;margin:16px 0}
+.supply-row{display:flex;align-items:center;gap:12px;font-size:12px}
+.supply-row .sr-when{width:80px;font-weight:600;color:var(--text-2);font-size:11px}
+.supply-row .sr-bar{flex:1;height:24px;background:var(--bg-1);border-radius:6px;overflow:hidden;position:relative;border:1px solid var(--border)}
+.supply-row .sr-fill{height:100%;background:linear-gradient(90deg,#16a34a,#22c55e);border-radius:6px;transition:width .6s}
+.supply-row .sr-val{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-family:'JetBrains Mono';font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+.supply-row .sr-pct{width:48px;text-align:right;font-family:'JetBrains Mono';font-size:11px;font-weight:600;color:var(--accent)}
+
+@media(max-width:768px){.tge-axis{margin:0 20px}.tge-marker-sub{display:none}.tge-events{grid-template-columns:1fr}.supply-row .sr-when{width:64px;font-size:10px}}
+
 </style>
 <link rel="icon" type="image/png" href="/assets/favicon.png" />
 </head>
@@ -542,6 +592,119 @@ footer{padding:32px 24px;text-align:center;color:var(--text-2);font-size:13px;bo
 <div class="vest-card"><div class="vest-header"><span class="vest-title">Community + Presale (3B)</span><span class="vest-badge">$11M raised</span></div><div class="vest-cliff">Phased Cliff (10-25% TGE)</div><div class="vest-details">Community: $0.003/VRDX, 20% TGE, 3mo cliff, 15mo linear. Presale: $0.004/VRDX, 25% TGE, 6mo linear. Min $100, max $25,000. KYC + whitelist.</div><div class="vest-bar"><div class="vest-fill" style="width:15%"></div></div><span class="mono" style="font-size:11px;color:var(--text-3)">Cliff status: Upcoming</span></div>
 <div class="vest-card"><div class="vest-header"><span class="vest-title">Team &amp; Advisors (5B)</span><span class="vest-badge">0% TGE</span></div><div class="vest-cliff">12-Month Cliff (0% unlocked)</div><div class="vest-details">100% locked for first 12 months. After month 12, linear release of <span class="mono">138.9M VRDX / month</span> over 36 months (4 years total).</div><div class="vest-bar"><div class="vest-fill" style="width:25%"></div></div><span class="mono" style="font-size:11px;color:var(--text-3)">Cliff status: Locked</span></div>
 <div class="vest-card"><div class="vest-header"><span class="vest-title">Ecosystem + Staking (45B)</span><span class="vest-badge">10-year release</span></div><div class="vest-cliff" style="background:rgba(74,222,128,0.1);color:var(--success);border-color:rgba(74,222,128,0.2)">Linear Release</div><div class="vest-details">Ecosystem Grants (25B): 4% TGE + 10yr linear. PoS Staking (20B): 2.5% TGE + 2B/yr emission for 10 years. Governance-controlled.</div><div class="vest-bar"><div class="vest-fill" style="width:30%"></div></div><span class="mono" style="font-size:11px;color:var(--text-3)">Distribution: Grants + staking rewards</span></div>
+</div>
+</section>
+
+
+<section id="tge-vesting" class="section-block reveal">
+<div class="section-header">
+<span class="section-tag">From TGE Day</span>
+<h2 class="section-title">3.1. Vesting &amp; Cliff Roadmap (From Token Sale Day)</h2>
+<p class="section-desc">Every unlock event measured from Day 0 (TGE &mdash; Token Generation Event). This is the day tokens are sold and released to the market. All cliffs, vesting periods, and circulating supply milestones are calculated from this date.</p>
+</div>
+
+<!-- TGE TIMELINE -->
+<div class="tge-timeline">
+<div class="tge-axis">
+<!-- Day 0 -->
+<div class="tge-marker" style="left:0%"><div class="tge-marker-dot"></div><span class="tge-marker-label">Day 0</span><div class="tge-marker-sub">TGE<br>8B circulating<br>(8%)</div></div>
+<!-- Month 3 -->
+<div class="tge-marker warning" style="left:8%"><div class="tge-marker-dot"></div><span class="tge-marker-label">Month 3</span><div class="tge-marker-sub">Community<br>cliff ends</div></div>
+<!-- Month 6 -->
+<div class="tge-marker warning" style="left:15%"><div class="tge-marker-dot"></div><span class="tge-marker-label">Month 6</span><div class="tge-marker-sub">Presale<br>cliff ends</div></div>
+<!-- Month 12 -->
+<div class="tge-marker" style="left:25%"><div class="tge-marker-dot"></div><span class="tge-marker-label">Month 12</span><div class="tge-marker-sub">Seed + Team<br>cliff ends</div></div>
+<!-- Month 24 -->
+<div class="tge-marker success" style="left:45%"><div class="tge-marker-dot"></div><span class="tge-marker-label">Month 24</span><div class="tge-marker-sub">Seed fully<br>vested</div></div>
+<!-- Month 36 -->
+<div class="tge-marker success" style="left:65%"><div class="tge-marker-dot"></div><span class="tge-marker-label">Month 36</span><div class="tge-marker-sub">Presale fully<br>vested</div></div>
+<!-- Month 48 -->
+<div class="tge-marker success" style="left:80%"><div class="tge-marker-dot"></div><span class="tge-marker-label">Month 48</span><div class="tge-marker-sub">Team fully<br>vested</div></div>
+<!-- Year 10 -->
+<div class="tge-marker success" style="left:100%"><div class="tge-marker-dot"></div><span class="tge-marker-label">Year 10</span><div class="tge-marker-sub">Full unlock<br>95B+ circulating</div></div>
+</div>
+</div>
+
+<!-- EVENT CARDS -->
+<div class="tge-events">
+<div class="tge-event">
+<div class="tge-event-head"><span class="tge-event-title">TGE &mdash; Token Generation Event</span><span class="tge-event-when">Day 0</span></div>
+<div class="tge-event-desc">Initial circulating supply: <strong>8B VRDX (8%)</strong>. Liquidity pools seeded. DEX active. Staking rewards begin. All investor tokens are <strong>locked</strong> &mdash; 0% unlocked.</div>
+<span class="tge-event-amt">Circulating: 8,000,000,000 VRDX</span>
+</div>
+<div class="tge-event warning">
+<div class="tge-event-head"><span class="tge-event-title">Community Round Cliff Ends</span><span class="tge-event-when">Month 3</span></div>
+<div class="tge-event-desc">Community round (1B at $0.003) 3-month cliff completes. <strong>20% TGE release</strong> already unlocked. Linear vesting of remaining 800M begins at <span class="mono">53.3M/month</span> over 15 months.</div>
+<span class="tge-event-amt">+200M unlocked &middot; 53.3M/month ongoing</span>
+</div>
+<div class="tge-event warning">
+<div class="tge-event-head"><span class="tge-event-title">Presale Cliff Ends</span><span class="tge-event-when">Month 6</span></div>
+<div class="tge-event-desc">Presale round (2B at $0.004) 6-month cliff completes. <strong>25% TGE release</strong> already unlocked. Linear vesting of remaining 1.5B begins at <span class="mono">250M/month</span> over 6 months.</div>
+<span class="tge-event-amt">+500M unlocked &middot; 250M/month ongoing</span>
+</div>
+<div class="tge-event">
+<div class="tge-event-head"><span class="tge-event-title">Seed &amp; Team Cliff Ends</span><span class="tge-event-when">Month 12</span></div>
+<div class="tge-event-desc">Seed/Private (3B) and Team (5B) 12-month cliffs complete. <strong>0% was unlocked at TGE</strong>. Linear vesting begins: Seed at <span class="mono">125M/month</span> over 24 months. Team at <span class="mono">138.9M/month</span> over 36 months.</div>
+<span class="tge-event-amt">Seed: 125M/month &middot; Team: 138.9M/month</span>
+</div>
+<div class="tge-event success">
+<div class="tge-event-head"><span class="tge-event-title">Seed/Private Fully Vested</span><span class="tge-event-when">Month 36</span></div>
+<div class="tge-event-desc">All 3B Seed/Private tokens fully unlocked. 24 months of linear vesting complete. No more investor tokens locked from this allocation.</div>
+<span class="tge-event-amt">3,000,000,000 fully unlocked</span>
+</div>
+<div class="tge-event success">
+<div class="tge-event-head"><span class="tge-event-title">Team Fully Vested</span><span class="tge-event-when">Month 48</span></div>
+<div class="tge-event-desc">All 5B Team &amp; Advisor tokens fully unlocked. 36 months of linear vesting complete. All investor and team tokens now circulating.</div>
+<span class="tge-event-amt">5,000,000,000 fully unlocked</span>
+</div>
+<div class="tge-event success">
+<div class="tge-event-head"><span class="tge-event-title">Full Ecosystem Unlock</span><span class="tge-event-when">Year 10</span></div>
+<div class="tge-event-desc">Ecosystem (25B) and Staking (20B) fully released. 10-year emission schedule complete. <strong>95B+ VRDX circulating</strong> (95%+ of total supply). Remaining in DAO treasury for perpetual governance.</div>
+<span class="tge-event-amt">95,000,000,000+ circulating</span>
+</div>
+</div>
+
+<!-- VESTING TABLE -->
+<h3 style="font-family:'Space Grotesk';font-size:14px;font-weight:700;color:var(--text);margin:24px 0 8px">Unlock Schedule (From TGE Day)</h3>
+<table class="tge-table">
+<thead><tr><th>Time from TGE</th><th>Event</th><th>Unlocked</th><th>Circulating Supply</th><th>% of 100B</th></tr></thead>
+<tbody>
+<tr><td><strong>Day 0</strong></td><td>TGE &mdash; tokens sold, market release</td><td class="mono unlocked">8B</td><td class="mono">8,000,000,000</td><td class="mono">8.0%</td></tr>
+<tr><td>Month 1-3</td><td>Community 20% TGE release active</td><td class="mono partial">+200M</td><td class="mono">8,200,000,000</td><td class="mono">8.2%</td></tr>
+<tr><td><strong>Month 3</strong></td><td>Community cliff ends &mdash; linear vesting begins</td><td class="mono partial">+53.3M/mo</td><td class="mono">~8,360,000,000</td><td class="mono">~8.4%</td></tr>
+<tr><td><strong>Month 6</strong></td><td>Presale cliff ends &mdash; linear vesting begins</td><td class="mono partial">+250M/mo</td><td class="mono">~9,500,000,000</td><td class="mono">~9.5%</td></tr>
+<tr><td>Month 6-12</td><td>Community + Presale vesting ongoing</td><td class="mono partial">+303M/mo</td><td class="mono">~11,300,000,000</td><td class="mono">~11.3%</td></tr>
+<tr><td><strong>Month 12</strong></td><td>Seed + Team cliff ends &mdash; all vesting active</td><td class="mono partial">+263.9M/mo</td><td class="mono">~11,500,000,000</td><td class="mono">~11.5%</td></tr>
+<tr><td>Month 12-24</td><td>All categories vesting simultaneously</td><td class="mono partial">~570M/mo</td><td class="mono">~18,300,000,000</td><td class="mono">~18.3%</td></tr>
+<tr><td><strong>Month 24</strong></td><td>Community + Presale fully vested</td><td class="mono partial">~263.9M/mo</td><td class="mono">~24,300,000,000</td><td class="mono">~24.3%</td></tr>
+<tr><td>Month 24-36</td><td>Seed + Team + Ecosystem vesting</td><td class="mono partial">~400M/mo</td><td class="mono">~36,300,000,000</td><td class="mono">~36.3%</td></tr>
+<tr><td><strong>Month 36</strong></td><td>Seed/Private fully vested</td><td class="mono partial">~138.9M/mo</td><td class="mono">~39,300,000,000</td><td class="mono">~39.3%</td></tr>
+<tr><td>Month 36-48</td><td>Team + Ecosystem vesting</td><td class="mono partial">~280M/mo</td><td class="mono">~52,900,000,000</td><td class="mono">~52.9%</td></tr>
+<tr><td><strong>Month 48</strong></td><td>Team fully vested &mdash; all investors unlocked</td><td class="mono partial">~140M/mo</td><td class="mono">~56,900,000,000</td><td class="mono">~56.9%</td></tr>
+<tr><td>Year 5-10</td><td>Ecosystem + Staking emission</td><td class="mono partial">~2B/yr</td><td class="mono">~75,000,000,000</td><td class="mono">~75.0%</td></tr>
+<tr><td><strong>Year 10</strong></td><td>Full unlock complete</td><td class="mono unlocked">95B+</td><td class="mono">~95,000,000,000</td><td class="mono">~95.0%</td></tr>
+</tbody>
+</table>
+
+<!-- CIRCULATING SUPPLY CURVE -->
+<h3 style="font-family:'Space Grotesk';font-size:14px;font-weight:700;color:var(--text);margin:24px 0 8px">Circulating Supply Growth (From TGE Day)</h3>
+<div class="supply-chart">
+<div class="supply-row"><span class="sr-when">Day 0</span><div class="sr-bar"><div class="sr-fill" style="width:8%"><span class="sr-val">8B</span></div></div><span class="sr-pct">8%</span></div>
+<div class="supply-row"><span class="sr-when">Month 3</span><div class="sr-bar"><div class="sr-fill" style="width:8.4%"><span class="sr-val">8.4B</span></div></div><span class="sr-pct">8.4%</span></div>
+<div class="supply-row"><span class="sr-when">Month 6</span><div class="sr-bar"><div class="sr-fill" style="width:9.5%"><span class="sr-val">9.5B</span></div></div><span class="sr-pct">9.5%</span></div>
+<div class="supply-row"><span class="sr-when">Month 12</span><div class="sr-bar"><div class="sr-fill" style="width:11.5%"><span class="sr-val">11.5B</span></div></div><span class="sr-pct">11.5%</span></div>
+<div class="supply-row"><span class="sr-when">Month 18</span><div class="sr-bar"><div class="sr-fill" style="width:15%"><span class="sr-val">~15B</span></div></div><span class="sr-pct">15%</span></div>
+<div class="supply-row"><span class="sr-when">Month 24</span><div class="sr-bar"><div class="sr-fill" style="width:24%"><span class="sr-val">~24B</span></div></div><span class="sr-pct">24%</span></div>
+<div class="supply-row"><span class="sr-when">Month 36</span><div class="sr-bar"><div class="sr-fill" style="width:39%"><span class="sr-val">~39B</span></div></div><span class="sr-pct">39%</span></div>
+<div class="supply-row"><span class="sr-when">Month 48</span><div class="sr-bar"><div class="sr-fill" style="width:57%"><span class="sr-val">~57B</span></div></div><span class="sr-pct">57%</span></div>
+<div class="supply-row"><span class="sr-when">Year 5</span><div class="sr-bar"><div class="sr-fill" style="width:65%"><span class="sr-val">~65B</span></div></div><span class="sr-pct">65%</span></div>
+<div class="supply-row"><span class="sr-when">Year 7</span><div class="sr-bar"><div class="sr-fill" style="width:80%"><span class="sr-val">~80B</span></div></div><span class="sr-pct">80%</span></div>
+<div class="supply-row"><span class="sr-when">Year 10</span><div class="sr-bar"><div class="sr-fill" style="width:95%"><span class="sr-val">~95B</span></div></div><span class="sr-pct">95%</span></div>
+</div>
+
+<div class="card-panel" style="background:var(--accent-glow);border:1px solid var(--accent);border-radius:var(--radius);padding:16px 20px;margin:16px 0">
+<div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:6px">&#9888; Key Insight</div>
+<div style="font-size:12px;color:var(--text-2);line-height:1.6">From TGE day, <strong>only 8% of tokens are circulating</strong>. Investor tokens are fully locked with 3-12 month cliffs. The first unlock event is at <strong>Month 3</strong> (Community round). The largest unlock wave starts at <strong>Month 12</strong> when Seed + Team cliffs end simultaneously. This design prevents dump pressure and ensures long-term price stability.</div>
 </div>
 </section>
 
