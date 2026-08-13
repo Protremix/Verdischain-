@@ -665,11 +665,7 @@ fn set_max_supply_increase_fails() {
         ));
         // Now try to increase back to 2000 - should fail
         assert_noop!(
-            FungibleTokens::set_max_supply(
-                RuntimeOrigin::signed(alice()),
-                0,
-                2000,
-            ),
+            FungibleTokens::set_max_supply(RuntimeOrigin::signed(alice()), 0, 2000,),
             Error::<Test>::MaxSupplyCannotIncrease
         );
         // Verify it stayed at 1000
@@ -696,11 +692,7 @@ fn set_max_supply_below_total_supply_fails() {
         ));
         // Try to set max_supply below total_supply - should fail
         assert_noop!(
-            FungibleTokens::set_max_supply(
-                RuntimeOrigin::signed(alice()),
-                0,
-                499,
-            ),
+            FungibleTokens::set_max_supply(RuntimeOrigin::signed(alice()), 0, 499,),
             Error::<Test>::MaxBalanceExceeded
         );
     });
@@ -718,11 +710,7 @@ fn set_max_supply_non_owner_fails() {
         let token = FungibleTokens::token_info(0).unwrap();
         let target = token.max_supply / 2;
         assert_noop!(
-            FungibleTokens::set_max_supply(
-                RuntimeOrigin::signed(bob()),
-                0,
-                target,
-            ),
+            FungibleTokens::set_max_supply(RuntimeOrigin::signed(bob()), 0, target,),
             Error::<Test>::NotTokenOwner
         );
     });
@@ -780,12 +768,7 @@ fn mint_above_max_supply_fails() {
         ));
         // Try to mint 1 more above max_supply — should fail
         assert_noop!(
-            FungibleTokens::mint(
-                RuntimeOrigin::signed(alice()),
-                0,
-                alice(),
-                1,
-            ),
+            FungibleTokens::mint(RuntimeOrigin::signed(alice()), 0, alice(), 1,),
             Error::<Test>::MaxBalanceExceeded
         );
         // Verify supply didn't change

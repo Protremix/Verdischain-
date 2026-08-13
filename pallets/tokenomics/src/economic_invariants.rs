@@ -155,7 +155,7 @@ fn test_tge_circulating_supply() {
     let units: u128 = 1_000_000_000;
     let billion: u128 = 1_000_000_000 * units;
 
-    let circulating = 8 * billion;  // 8B VRDX (8%) circulating at TGE
+    let circulating = 8 * billion; // 8B VRDX (8%) circulating at TGE
     assert!(
         circulating >= 5 * billion,
         "TGE circulating should be >= 5B"

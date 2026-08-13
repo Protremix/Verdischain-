@@ -285,7 +285,7 @@ pub mod pallet {
     #[pallet::error]
     pub enum Error<T> {
         PoolNotFound,
-    Expired,
+        Expired,
         PoolAlreadyExists,
         MaxPoolsReached,
         InsufficientLiquidity,
@@ -472,7 +472,10 @@ pub mod pallet {
             deadline: BlockNumberFor<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
-            ensure!(frame_system::Pallet::<T>::block_number() <= deadline, Error::<T>::Expired);
+            ensure!(
+                frame_system::Pallet::<T>::block_number() <= deadline,
+                Error::<T>::Expired
+            );
 
             let mut pool = Pools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
 
@@ -578,7 +581,10 @@ pub mod pallet {
             deadline: BlockNumberFor<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
-            ensure!(frame_system::Pallet::<T>::block_number() <= deadline, Error::<T>::Expired);
+            ensure!(
+                frame_system::Pallet::<T>::block_number() <= deadline,
+                Error::<T>::Expired
+            );
 
             let mut pool = Pools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
 
@@ -664,7 +670,10 @@ pub mod pallet {
             deadline: BlockNumberFor<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
-            ensure!(frame_system::Pallet::<T>::block_number() <= deadline, Error::<T>::Expired);
+            ensure!(
+                frame_system::Pallet::<T>::block_number() <= deadline,
+                Error::<T>::Expired
+            );
 
             let mut pool = Pools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
 
@@ -1041,7 +1050,10 @@ pub mod pallet {
             deadline: BlockNumberFor<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
-            ensure!(frame_system::Pallet::<T>::block_number() <= deadline, Error::<T>::Expired);
+            ensure!(
+                frame_system::Pallet::<T>::block_number() <= deadline,
+                Error::<T>::Expired
+            );
             let mut pool = TokenPools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
             ensure!(amount_in > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
 

@@ -7,10 +7,10 @@ use crate::pallet::{
 };
 use frame_benchmarking::v2::*;
 use frame_support::{traits::ConstU32, BoundedVec};
-use frame_system::RawOrigin;
 use frame_system::pallet_prelude::BlockNumberFor;
-use sp_std::vec;
+use frame_system::RawOrigin;
 use sp_runtime::traits::Bounded;
+use sp_std::vec;
 
 type BalanceOf<T> = <<T as Config>::Currency as frame_support::traits::Currency<
     <T as frame_system::Config>::AccountId,
@@ -86,7 +86,13 @@ mod benches {
         let amount_b: BalanceOf<T> = (5_000_000_000_000 + extra).try_into().unwrap_or_default();
 
         #[extrinsic_call]
-        add_liquidity(RawOrigin::Signed(caller), pool_id, amount_a, amount_b, BlockNumberFor::<T>::max_value());
+        add_liquidity(
+            RawOrigin::Signed(caller),
+            pool_id,
+            amount_a,
+            amount_b,
+            BlockNumberFor::<T>::max_value(),
+        );
 
         let pool = Pools::<T>::get(pool_id).unwrap();
         assert!(pool.total_lp > 0u32.into());
@@ -111,7 +117,12 @@ mod benches {
         let lp_amount: BalanceOf<T> = BENCH_LP_BURN.try_into().unwrap_or_default();
 
         #[extrinsic_call]
-        remove_liquidity(RawOrigin::Signed(caller), pool_id, lp_amount, BlockNumberFor::<T>::max_value());
+        remove_liquidity(
+            RawOrigin::Signed(caller),
+            pool_id,
+            lp_amount,
+            BlockNumberFor::<T>::max_value(),
+        );
 
         assert!(Pools::<T>::get(pool_id).is_some());
     }
