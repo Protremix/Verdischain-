@@ -32,11 +32,11 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev libclang-14-dev
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
-        run: echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
+        run: echo "LIBCLANG_PATH=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)" >> $GITHUB_ENV
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Cargo check
@@ -51,13 +51,13 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev libclang-14-dev
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
-        run: echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
+        run: echo "LIBCLANG_PATH=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)" >> $GITHUB_ENV
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Clippy check
@@ -73,11 +73,11 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev libclang-14-dev
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
-        run: echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
+        run: echo "LIBCLANG_PATH=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)" >> $GITHUB_ENV
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Run tests
@@ -93,11 +93,11 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev libclang-14-dev
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
-        run: echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
+        run: echo "LIBCLANG_PATH=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)" >> $GITHUB_ENV
       - name: Build release binary
         run: cargo build --release
       - name: Upload binary
@@ -117,13 +117,13 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev libclang-14-dev
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Set LIBCLANG_PATH
-        run: echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
+        run: echo "LIBCLANG_PATH=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)" >> $GITHUB_ENV
       - name: Build WASM runtime
         run: cargo build --release -p verdis-runtime --no-default-features --target wasm32-unknown-unknown
       - name: Upload WASM
