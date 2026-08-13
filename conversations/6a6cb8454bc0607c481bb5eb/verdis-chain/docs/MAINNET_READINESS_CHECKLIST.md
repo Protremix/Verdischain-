@@ -106,9 +106,9 @@
 | 6.6 | Treasury policy | ✅ DONE | docs/TREASURY_POLICY.md |
 | 6.7 | Developer documentation page | ✅ DONE | /docs/ on website |
 | 6.8 | Whitepaper | ⚠️ PARTIAL | Live but needs MiCA format update |
-| 6.9 | API documentation | ❌ PENDING | Not created (RPC methods) |
-| 6.10 | Validator setup guide | ❌ PENDING | Not created |
-| 6.11 | Node operator guide | ❌ PENDING | Not created |
+| 6.9 | API documentation                                  | ✅ DONE | docs/RPC_API_REFERENCE.md | Not created (RPC methods) |
+| 6.10 | Validator setup guide                              | ✅ DONE | docs/VALIDATOR_SETUP_GUIDE.md | Not created |
+| 6.11 | Node operator guide                                | ✅ DONE | docs/VALIDATOR_SETUP_GUIDE.md (covers both) | Not created |
 
 ## PHASE 7: TESTNET REHEARSAL & LAUNCH (4 weeks)
 
@@ -135,9 +135,9 @@
 | 3: Testing | 11 | 8 | 3 | 0 | 73% |
 | 4: Benchmarking | 6 | 0 | 6 | 0 | 0% |
 | 5: DevOps | 15 | 14 | 1 | 0 | 93% |
-| 6: Docs | 11 | 7 | 3 | 1 | 64% |
+| 6: Docs | 6: Docs | 11 | 7 | 3 | 1 | 64% Ecosystem | ✅ Near Complete | 91% | |
 | 7: Launch | 8 | 0 | 7 | 1 | 0% |
-| **TOTAL** | **78** | **48** | **28** | **2** | **62%** |
+| **TOTAL** | **78** | **51** | **25** | **2** | **65%** |
 
 ---
 
