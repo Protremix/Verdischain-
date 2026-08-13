@@ -13,13 +13,20 @@
     clippy::needless_borrows_for_generic_args
 )]
 #![cfg_attr(not(feature = "std"), no_std)]
+
+/// Weight functions for pallet-sealevel.
+pub trait WeightInfo {
+    fn create_batch() -> Weight;
+    fn report_execution() -> Weight;
+    fn report_conflict() -> Weight;
+}
+
 pub mod weights;
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
 pub use pallet::*;
 use sp_std::prelude::*;
-pub use weights::SubstrateWeight;
-use weights::WeightInfo;
+pub use weights::WeightInfo as SubstrateWeight;
 
 #[frame_support::pallet]
 pub mod pallet {

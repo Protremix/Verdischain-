@@ -11,13 +11,20 @@
     clippy::unnecessary_cast
 )]
 #![cfg_attr(not(feature = "std"), no_std)]
+
+/// Weight functions for pallet-turbine.
+pub trait WeightInfo {
+    fn rebuild_tree() -> Weight;
+    fn register_shard() -> Weight;
+    fn mark_block_propagated() -> Weight;
+}
+
 pub mod weights;
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
 pub use pallet::*;
 use sp_std::prelude::*;
-pub use weights::SubstrateWeight;
-use weights::WeightInfo;
+pub use weights::WeightInfo as SubstrateWeight;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -77,7 +84,7 @@ pub mod pallet {
             });
             Ok(())
         }
-        #[pallet::weight(T::WeightInfo::rebuild_tree(0))]
+        #[pallet::weight(T::WeightInfo::rebuild_tree())]
         #[pallet::call_index(1)]
         pub fn rebuild_tree(origin: OriginFor<T>, validator_count: u32) -> DispatchResult {
             ensure_root(origin)?;

@@ -14,7 +14,7 @@ mod benches {
     fn create_client() {
         let caller: T::AccountId = whitelisted_caller();
         #[extrinsic_call]
-        create_client(RawOrigin::Signed(caller.clone()), 1, 100, 86400);
+        create_client(RawOrigin::Root, 1, 100, 86400);
 
         assert!(IbcClients::<T>::contains_key(1));
     }

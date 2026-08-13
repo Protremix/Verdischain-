@@ -6,6 +6,7 @@ use frame_benchmarking::v2::*;
 use frame_support::{traits::ConstU32, BoundedVec};
 use frame_system::RawOrigin;
 use sp_std::vec;
+use frame_support::traits::Currency;
 
 #[benchmarks]
 mod benches {
@@ -15,6 +16,7 @@ mod benches {
     #[benchmark]
     fn register_storage() {
         let caller: T::AccountId = whitelisted_caller();
+        let _ = T::Currency::make_free_balance_be(&caller, (1u128 << 60).try_into().unwrap_or_default());
         let id = b"doc-1".to_vec();
         let hash = [1u8; 32];
 

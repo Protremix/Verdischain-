@@ -235,6 +235,7 @@ mod benches {
         let caller: T::AccountId = whitelisted_caller();
         let token_id = setup_token::<T>(&caller);
         let new_owner: T::AccountId = account("new_owner", 0, 0);
+        let _ = T::Currency::make_free_balance_be(&new_owner, (1u128 << 60).try_into().unwrap_or_default());
 
         #[extrinsic_call]
         transfer_ownership(RawOrigin::Signed(caller), token_id, new_owner.clone());

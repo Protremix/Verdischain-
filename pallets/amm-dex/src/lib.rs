@@ -36,7 +36,7 @@ use sp_std::prelude::*;
 
 pub use pallet::*;
 pub mod weights;
-pub use weights::SubstrateWeight;
+pub use weights::WeightInfo as SubstrateWeight;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
