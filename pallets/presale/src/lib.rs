@@ -483,6 +483,9 @@ pub mod pallet {
                 gross_amount // Fallback for zero precision (treats as 1)
             };
 
+            // Prevent zero-token purchases from truncation
+            ensure!(token_amount > BalanceOf::<T>::zero(), Error::<T>::ZeroPayment);
+
             // Per-round per-account cap check
             let contribution = Contributions::<T>::get(round_id, &who).unwrap_or_default();
             let new_total = contribution
