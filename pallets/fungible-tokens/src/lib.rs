@@ -49,6 +49,7 @@ pub struct TokenInfo<AccountId, Balance> {
     pub symbol: BoundedVec<u8, frame_support::traits::ConstU32<MAX_TOKEN_SYMBOL>>,
     pub decimals: u8,
     pub total_supply: Balance,
+    pub max_supply: Balance,
     pub is_frozen: bool,
     pub created_block: u32,
 }
@@ -179,11 +180,11 @@ pub mod pallet {
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         OwnershipTransferred {
-        token_id: u64,
-        old_owner: T::AccountId,
-        new_owner: T::AccountId,
-    },
-    TokenCreated {
+            token_id: u64,
+            old_owner: T::AccountId,
+            new_owner: T::AccountId,
+        },
+        TokenCreated {
             token_id: u64,
             owner: T::AccountId,
             name: Vec<u8>,
@@ -226,6 +227,10 @@ pub mod pallet {
         TokenDestroyed {
             token_id: u64,
             owner: T::AccountId,
+        },
+        MaxSupplySet {
+            token_id: u64,
+            max_supply: u128,
         },
     }
 
@@ -294,6 +299,7 @@ pub mod pallet {
                 symbol: symbol_bounded,
                 decimals,
                 total_supply: 0u128,
+                max_supply: T::MaxBalance::get(),
                 is_frozen: false,
                 created_block: <frame_system::Pallet<T>>::block_number()
                     .try_into()
@@ -337,7 +343,7 @@ pub mod pallet {
                 .checked_add(amount)
                 .ok_or(Error::<T>::Overflow)?;
             ensure!(
-                new_supply <= T::MaxBalance::get(),
+                new_supply <= token.max_supply,
                 Error::<T>::MaxBalanceExceeded
             );
 
@@ -662,6 +668,27 @@ pub mod pallet {
                 token_id,
                 old_owner: who,
                 new_owner,
+            });
+            Ok(())
+        }
+
+        /// Set per-token max supply cap (owner only, cannot be lowered below current supply)
+        #[pallet::call_index(12)]
+        #[pallet::weight(T::WeightInfo::mint())]
+        pub fn set_max_supply(
+            origin: OriginFor<T>,
+            token_id: u64,
+            max_supply: u128,
+        ) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+            let mut token = Tokens::<T>::get(token_id).ok_or(Error::<T>::TokenNotFound)?;
+            ensure!(token.owner == who, Error::<T>::NotTokenOwner);
+            ensure!(max_supply >= token.total_supply, Error::<T>::MaxBalanceExceeded);
+            token.max_supply = max_supply;
+            Tokens::<T>::insert(token_id, token);
+            Self::deposit_event(Event::MaxSupplySet {
+                token_id,
+                max_supply,
             });
             Ok(())
         }
