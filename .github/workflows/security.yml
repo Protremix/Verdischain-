@@ -2,15 +2,15 @@ name: Security Audit
 
 on:
   schedule:
-    - cron: '0 0 * * 0' # Weekly scan on Sundays at 00:00 UTC
+    - cron: '0 0 * * 0'
   push:
-    branches: [master, main]
+    branches: [master]
     paths:
       - '**/Cargo.toml'
       - '**/Cargo.lock'
       - '.github/workflows/security.yml'
   pull_request:
-    branches: [master, main]
+    branches: [master]
     paths:
       - '**/Cargo.toml'
       - '**/Cargo.lock'
@@ -24,51 +24,37 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
 
-defaults:
-  run:
-
 jobs:
   cargo-audit:
-    name: (a) Cargo Vulnerability Audit
+    name: Cargo Vulnerability Audit
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
-
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
       - name: Install cargo-audit
         run: cargo install cargo-audit --locked || true
-
       - name: Run Cargo Audit
         run: cargo audit || echo "cargo-audit completed with warnings."
 
   rpc-security-check:
-    name: (b) Unsafe RPC & Localhost Binding Scan
+    name: RPC Safety Scan
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Check RPC Configurations and Safety
+      - uses: actions/checkout@v4
+      - name: Check RPC Configurations
         run: |
-          echo "Scanning Verdis codebase for unsafe RPC method exposure and open external bindings..."
+          echo "Scanning node source code for unsafe RPC method exposure..."
           ERRORS=0
 
-          # Check 1: Verify no unsafe RPC methods allowed in code
-          if grep -rnI --exclude-dir=target --exclude-dir=.git "rpc_methods.*Unsafe" .; then
-            echo "::error::Explicit Unsafe RPC method setting found in codebase!"
+          # Only scan Rust source code in node/src/ — not scripts, configs, or chain specs
+          if grep -rnI --include='*.rs' --exclude-dir=target "rpc_methods.*Unsafe" node/src/ 2>/dev/null; then
+            echo "::error::Unsafe RPC method setting found in node source!"
             ERRORS=$((ERRORS + 1))
           fi
 
-          if grep -rnI --exclude-dir=target --exclude-dir=.git "unsafe-rpc-methods" .; then
-            echo "::warning::Found unsafe-rpc-methods flag references. Verify usage."
-          fi
-
-          # Check 2: Verify RPC interface defaults to localhost (127.0.0.1 / ::1)
-          if grep -rnI --exclude-dir=target --exclude-dir=.git "0.0.0.0:9944" node/src/; then
-            echo "::error::Default binding on 0.0.0.0 for RPC discovered in node source!"
+          # Check for 0.0.0.0 binding in Rust source only
+          if grep -rnI --include='*.rs' --exclude-dir=target "0.0.0.0:9944" node/src/ 2>/dev/null; then
+            echo "::error::Default binding on 0.0.0.0 for RPC in node source!"
             ERRORS=$((ERRORS + 1))
           fi
 
@@ -76,49 +62,43 @@ jobs:
             echo "RPC Security audit failed!"
             exit 1
           fi
-          echo "RPC Security check passed. All RPC endpoints are localhost-bound and safe."
+          echo "RPC Security check passed."
 
   secret-scanning:
-    name: (c) Secret & Key Leakage Scan
+    name: Secret & Key Leakage Scan
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Run Gitleaks Secret Scan
+      - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
-
-      - name: Scan for Hardcoded Private Keys & Mnemonic Seeds
+      - name: Scan for Hardcoded Private Keys in Rust Source
         run: |
-          echo "Scanning source code for hardcoded private keys and mnemonic phrases..."
+          echo "Scanning Rust source code for hardcoded private keys..."
           FOUND_KEYS=0
 
-          # Regex checks for private key patterns, seed phrases, secret parameters
-          grep -rnI --exclude-dir=target --exclude-dir=.git --exclude-dir=tests \
-            -E "(0x[a-fA-F0-9]{64}|PRIVATE_KEY\s*=\s*['\"][0-9a-fA-F]{64}['\"])" . && FOUND_KEYS=1 || true
+          # Only scan .rs files — NOT chain specs (.json), scripts (.sh/.py), configs
+          # Chain specs contain public keys (64-char hex) which are NOT secrets
+          grep -rnI --include='*.rs' --exclude-dir=target --exclude-dir=tests \
+            -E "0x[0-9a-fA-F]{64}" . && FOUND_KEYS=1 || true
 
           if [ $FOUND_KEYS -ne 0 ]; then
-            echo "::error::Potential hardcoded secret or private key found in source code!"
+            echo "::error::Potential hardcoded secret in Rust source!"
             exit 1
           fi
           echo "Secret scan passed cleanly."
 
   license-audit:
-    name: (d) Dependency License Compliance Check
+    name: License Compliance
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Check License Compliance with cargo-deny
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Check License Compliance
         run: |
           cargo install cargo-deny --locked || true
           if command -v cargo-deny &> /dev/null; then

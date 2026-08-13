@@ -11,130 +11,64 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
-  RUSTFLAGS: "-C link-arg=--allow-undefined"
-  WASM_BUILD_TOOLCHAIN: stable
-
-defaults:
-  run:
 
 jobs:
-  build-release-artifacts:
-    name: Build Binary & WASM Blob (${{ matrix.target }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            artifact_suffix: linux-amd64
-            use_cross: false
-
+  build-release:
+    name: Build Binary & WASM
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev build-essential
-
-      - name: Install Rust Toolchain & Target
-        uses: dtolnay/rust-toolchain@stable
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev libclang-14-dev build-essential
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: wasm32-unknown-unknown, ${{ matrix.target }}
-
-      - name: Cache Cargo Registry & Target
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: verdis-chain
-
-      - name: Build Node Release Binary & WASM Runtime
-        run: cargo build --release --target ${{ matrix.target }}
-
-      - name: Extract & Verify Artifacts
-        id: artifacts
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Set LIBCLANG_PATH
+        run: echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
+      - name: Build Node Release Binary
+        run: cargo build --release
+      - name: Build WASM Runtime
+        run: cargo build --release -p verdis-runtime --no-default-features --target wasm32-unknown-unknown
+      - name: Prepare Artifacts
         run: |
-          mkdir -p ../dist_artifacts
-
-          # Copy Node Binary
-          cp target/${{ matrix.target }}/release/verdis ../dist_artifacts/verdis-${{ matrix.artifact_suffix }}
-
-          # Locate and copy compiled WASM Runtime Blob
-          WASM_FILE=$(find target -name "verdis_runtime.wasm" -o -name "verdis_runtime.compact.compressed.wasm" | head -n 1)
-          if [ -f "$WASM_FILE" ]; then
-            cp "$WASM_FILE" ../dist_artifacts/verdis_runtime.wasm
-          else
-            echo "WASM runtime file not found directly in target, compiling explicit WASM output..."
-            cargo build --release -p verdis-runtime --target wasm32-unknown-unknown
-            cp target/wasm32-unknown-unknown/release/verdis_runtime.wasm ../dist_artifacts/verdis_runtime.wasm
-          fi
-
-          # Generate Checksums
-          cd ../dist_artifacts
+          mkdir -p dist_artifacts
+          cp target/release/verdis dist_artifacts/verdis-linux-amd64
+          cp target/wasm32-unknown-unknown/release/verdis_runtime.wasm dist_artifacts/verdis_runtime.wasm
+          cd dist_artifacts
           sha256sum * > SHA256SUMS
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: verdis-release-${{ matrix.artifact_suffix }}
+          name: verdis-release-linux-amd64
           path: dist_artifacts/*
           retention-days: 7
 
-  publish-github-release:
+  publish-release:
     name: Create GitHub Release
-    needs: build-release-artifacts
+    needs: build-release
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download All Release Artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
         with:
           path: release-downloads
-
-      - name: Consolidate Artifacts & Compute Final Checksums
+      - name: Consolidate Artifacts
         run: |
           mkdir -p release_package
           find release-downloads -type f -exec cp {} release_package/ \;
           cd release_package
           sha256sum verdis-* verdis_runtime.wasm > SHA256SUMS.txt
-          echo "Final release artifacts:"
-          ls -la
-
-      - name: Generate Release Notes
-        id: release_notes
-        run: |
-          TAG_NAME="${{ github.ref_name }}"
-          cat <<EOF > RELEASE_NOTES.md
-          # Verdis Blockchain ${TAG_NAME} Release
-
-          Welcome to Verdis Chain ${TAG_NAME}!
-
-          ### Release Components
-          - **verdis-linux-amd64**: Production node executable compiled for x86_64 Linux.
-          - **verdis_runtime.wasm**: On-chain WASM runtime blob containing core state transition logic and pallets (dpos, amm-dex, eco, tokenomics, vesting, storage).
-          - **SHA256SUMS.txt**: SHA-256 cryptographic hashes for artifact integrity verification.
-
-          ### Installation & Quick Start
-          \`\`\`bash
-          # Download and unpack verdis node
-          chmod +x verdis-linux-amd64
-          ./verdis-linux-amd64 --chain local
-          \`\`\`
-          EOF
-
-      - name: Create Release on GitHub
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             release_package/verdis-linux-amd64
             release_package/verdis_runtime.wasm
             release_package/SHA256SUMS.txt
-          body_path: RELEASE_NOTES.md
           draft: false
           prerelease: false
         env:
