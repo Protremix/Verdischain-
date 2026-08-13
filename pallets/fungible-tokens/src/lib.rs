@@ -108,8 +108,8 @@ impl WeightInfo for () {
     fn destroy() -> Weight {
         Weight::from_parts(5_000, 0)
     }
-    fn batch_transfer(_b: u32) -> Weight {
-        Weight::from_parts(10_000, 0)
+    fn batch_transfer(b: u32) -> Weight {
+        Weight::from_parts(10_000 * (b as u64).max(1), 0)
     }
     fn transfer_ownership() -> Weight {
         Weight::from_parts(3_000, 0)
