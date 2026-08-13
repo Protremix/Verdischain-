@@ -308,7 +308,9 @@ pub mod pallet {
             );
 
             // Per-block mint ceiling: max 5 credits per block to prevent governance abuse
-            let current_block: u32 = frame_system::Pallet::<T>::block_number().try_into().unwrap_or(0);
+            let current_block: u32 = frame_system::Pallet::<T>::block_number()
+                .try_into()
+                .unwrap_or(0);
             let last_mint_block = LastMintBlock::<T>::get();
             let credits_this_block = CreditsMintedThisBlock::<T>::get();
             ensure!(

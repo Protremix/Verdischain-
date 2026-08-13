@@ -720,11 +720,23 @@ pub mod pallet {
 
             // CEI: Update state FIRST, then transfer (prevents reentrancy)
             if is_a_to_b {
-                pool.reserve_a = pool.reserve_a.checked_add(&amount_in).ok_or(Error::<T>::ArithmeticOverflow)?;
-                pool.reserve_b = pool.reserve_b.checked_sub(&amount_out).ok_or(Error::<T>::ArithmeticUnderflow)?;
+                pool.reserve_a = pool
+                    .reserve_a
+                    .checked_add(&amount_in)
+                    .ok_or(Error::<T>::ArithmeticOverflow)?;
+                pool.reserve_b = pool
+                    .reserve_b
+                    .checked_sub(&amount_out)
+                    .ok_or(Error::<T>::ArithmeticUnderflow)?;
             } else {
-                pool.reserve_b = pool.reserve_b.checked_add(&amount_in).ok_or(Error::<T>::ArithmeticOverflow)?;
-                pool.reserve_a = pool.reserve_a.checked_sub(&amount_out).ok_or(Error::<T>::ArithmeticUnderflow)?;
+                pool.reserve_b = pool
+                    .reserve_b
+                    .checked_add(&amount_in)
+                    .ok_or(Error::<T>::ArithmeticOverflow)?;
+                pool.reserve_a = pool
+                    .reserve_a
+                    .checked_sub(&amount_out)
+                    .ok_or(Error::<T>::ArithmeticUnderflow)?;
             }
             Pools::<T>::insert(pool_id, pool.clone());
 

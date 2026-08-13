@@ -662,7 +662,8 @@ pub mod pallet {
             // Transfer the native deposit reserve from old owner to new owner
             let deposit = T::CreateTokenDeposit::get();
             T::Currency::unreserve(&who, deposit);
-            T::Currency::reserve(&new_owner, deposit).map_err(|_| Error::<T>::InsufficientBalance)?;
+            T::Currency::reserve(&new_owner, deposit)
+                .map_err(|_| Error::<T>::InsufficientBalance)?;
 
             Self::deposit_event(Event::OwnershipTransferred {
                 token_id,
@@ -683,7 +684,10 @@ pub mod pallet {
             let who = ensure_signed(origin)?;
             let mut token = Tokens::<T>::get(token_id).ok_or(Error::<T>::TokenNotFound)?;
             ensure!(token.owner == who, Error::<T>::NotTokenOwner);
-            ensure!(max_supply >= token.total_supply, Error::<T>::MaxBalanceExceeded);
+            ensure!(
+                max_supply >= token.total_supply,
+                Error::<T>::MaxBalanceExceeded
+            );
             token.max_supply = max_supply;
             Tokens::<T>::insert(token_id, token);
             Self::deposit_event(Event::MaxSupplySet {
