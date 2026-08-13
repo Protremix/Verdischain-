@@ -214,7 +214,11 @@ fn test_locked_balance_before_cliff() {
         assert_eq!(locked, amount, "All tokens should be locked before cliff");
 
         let unlocked = Vesting::get_unlocked_balance(&beneficiary);
-        assert_eq!(unlocked, 1_000_000_000 - amount, "Only genesis balance minus vesting should be unlocked");
+        assert_eq!(
+            unlocked,
+            1_000_000_000 - amount,
+            "Only genesis balance minus vesting should be unlocked"
+        );
     });
 }
 

@@ -18,10 +18,10 @@
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
 pub mod weights;
-pub use weights::WeightInfo;
-pub use weights::SubstrateWeight;
 pub use pallet::*;
 use sp_std::prelude::*;
+pub use weights::SubstrateWeight;
+pub use weights::WeightInfo;
 
 #[frame_support::pallet]
 pub mod pallet {

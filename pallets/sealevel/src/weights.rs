@@ -33,7 +33,13 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 }
 
 impl WeightInfo for () {
-    fn create_batch() -> Weight { Weight::from_parts(10_000, 0) }
-    fn report_execution() -> Weight { Weight::from_parts(10_000, 0) }
-    fn report_conflict() -> Weight { Weight::from_parts(10_000, 0) }
+    fn create_batch() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn report_execution() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn report_conflict() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
 }

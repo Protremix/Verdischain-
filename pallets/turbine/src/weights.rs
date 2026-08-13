@@ -34,7 +34,13 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 }
 
 impl WeightInfo for () {
-    fn register_shard() -> Weight { Weight::from_parts(10_000, 0) }
-    fn rebuild_tree(_v: u32) -> Weight { Weight::from_parts(10_000, 0) }
-    fn mark_block_propagated() -> Weight { Weight::from_parts(10_000, 0) }
+    fn register_shard() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn rebuild_tree(_v: u32) -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn mark_block_propagated() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
 }
