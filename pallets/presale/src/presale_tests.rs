@@ -139,7 +139,7 @@ fn test_activate_round_succeeds() {
         .unwrap();
 
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
-    frame_system::Pallet::<Test>::set_block_number(1);
+        frame_system::Pallet::<Test>::set_block_number(1);
 
         let round = Rounds::<Test>::get(0).unwrap();
         assert!(round.is_active, "Round should be active after activation");
@@ -254,7 +254,7 @@ fn test_per_account_cap_enforcement() {
             b"seed".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
-    frame_system::Pallet::<Test>::set_block_number(1);
+        frame_system::Pallet::<Test>::set_block_number(1);
 
         // Buy at cap — should succeed
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100_000u64,));
@@ -285,7 +285,7 @@ fn test_round_allocation_cap_enforcement() {
             b"seed".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
-    frame_system::Pallet::<Test>::set_block_number(1);
+        frame_system::Pallet::<Test>::set_block_number(1);
 
         // Buy full allocation
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 500_000u64,));
@@ -353,7 +353,7 @@ fn test_contribute_before_start_block_fails() {
             b"seed".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
-    frame_system::Pallet::<Test>::set_block_number(1);
+        frame_system::Pallet::<Test>::set_block_number(1);
 
         // At block 0, before start_block
         assert_noop!(
@@ -378,7 +378,7 @@ fn test_contribute_after_end_block_fails() {
             b"seed".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
-    frame_system::Pallet::<Test>::set_block_number(1);
+        frame_system::Pallet::<Test>::set_block_number(1);
 
         // Advance past end block
         System::set_block_number(51);
@@ -407,7 +407,7 @@ fn test_claim_refund_after_round_ends() {
             b"seed".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
-    frame_system::Pallet::<Test>::set_block_number(1);
+        frame_system::Pallet::<Test>::set_block_number(1);
 
         // Contribute
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10_000u64,));
@@ -458,7 +458,7 @@ fn test_claim_refund_no_contribution_fails() {
             b"seed".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
-    frame_system::Pallet::<Test>::set_block_number(1);
+        frame_system::Pallet::<Test>::set_block_number(1);
         assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
         System::set_block_number(51);
 
@@ -524,7 +524,7 @@ fn test_multiple_rounds_separate_tracking() {
             b"seed".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
-    frame_system::Pallet::<Test>::set_block_number(1);
+        frame_system::Pallet::<Test>::set_block_number(1);
 
         assert_ok!(Presale::create_round(
             RuntimeOrigin::root(),
@@ -537,7 +537,7 @@ fn test_multiple_rounds_separate_tracking() {
             b"seed".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 1));
-    frame_system::Pallet::<Test>::set_block_number(1);
+        frame_system::Pallet::<Test>::set_block_number(1);
 
         // Contribute to both rounds
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10_000u64));

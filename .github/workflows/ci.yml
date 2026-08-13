@@ -8,6 +8,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
 
 jobs:
   # Step 1: Format check
@@ -28,8 +29,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev libclang-14-dev
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      - name: Set LIBCLANG_PATH
+        run: echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
       - name: Cargo check
         run: cargo check --workspace --all-targets
 
@@ -39,10 +46,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev libclang-14-dev
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
+      - name: Set LIBCLANG_PATH
+        run: echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
       - name: Clippy check
         run: cargo clippy --workspace --all-targets -- -D warnings
 
@@ -53,8 +66,14 @@ jobs:
     needs: [check]
     steps:
       - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev libclang-14-dev
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      - name: Set LIBCLANG_PATH
+        run: echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
       - name: Run tests
         run: cargo test --workspace --verbose
 
@@ -65,8 +84,14 @@ jobs:
     needs: [test]
     steps:
       - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev libclang-14-dev
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
+      - name: Set LIBCLANG_PATH
+        run: echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
       - name: Build release binary
         run: cargo build --release
       - name: Upload binary
@@ -83,17 +108,24 @@ jobs:
     needs: [test]
     steps:
       - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev libclang-14-dev
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Add wasm target
-        run: rustup target add wasm32v1-none
+        run: rustup target add wasm32-unknown-unknown
+      - name: Set LIBCLANG_PATH
+        run: echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
       - name: Build WASM runtime
-        run: cargo build --release -p verdis-runtime --no-default-features --target wasm32v1-none
+        run: cargo build --release -p verdis-runtime --no-default-features --target wasm32-unknown-unknown
       - name: Upload WASM
         uses: actions/upload-artifact@v4
         with:
           name: verdis-runtime-wasm
-          path: target/wasm32v1-none/release/wbuild/verdis-runtime/verdis_runtime.compact.compressed.wasm
+          path: target/wasm32-unknown-unknown/release/*.wasm
+          if-no-files-found: warn
           retention-days: 7
 
   # Step 7: Dependency audit
@@ -108,4 +140,4 @@ jobs:
         run: cargo install cargo-audit
       - name: Run audit
         run: cargo audit
-        continue-on-error: true  # Don't block on transitive dependency warnings
+        continue-on-error: true

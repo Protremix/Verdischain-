@@ -467,7 +467,10 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
 
     // 21 validators for testnet
     let uris = testnet_validator_uris();
-    let session_keys = build_session_keys(&uris).into_iter().take(3).collect::<Vec<_>>();
+    let session_keys = build_session_keys(&uris)
+        .into_iter()
+        .take(3)
+        .collect::<Vec<_>>();
 
     let babe_authorities: Vec<(BabeId, u64)> = session_keys
         .iter()

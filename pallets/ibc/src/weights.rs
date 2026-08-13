@@ -72,14 +72,34 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 }
 
 impl WeightInfo for () {
-    fn create_client() -> Weight { Weight::from_parts(10_000, 0) }
-    fn open_connection() -> Weight { Weight::from_parts(10_000, 0) }
-    fn open_channel() -> Weight { Weight::from_parts(10_000, 0) }
-    fn send_packet() -> Weight { Weight::from_parts(10_000, 0) }
-    fn recv_packet() -> Weight { Weight::from_parts(10_000, 0) }
-    fn acknowledge_packet() -> Weight { Weight::from_parts(10_000, 0) }
-    fn timeout_packet() -> Weight { Weight::from_parts(10_000, 0) }
-    fn transfer() -> Weight { Weight::from_parts(10_000, 0) }
-    fn close_channel() -> Weight { Weight::from_parts(10_000, 0) }
-    fn update_client() -> Weight { Weight::from_parts(10_000, 0) }
+    fn create_client() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn open_connection() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn open_channel() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn send_packet() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn recv_packet() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn acknowledge_packet() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn timeout_packet() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn transfer() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn close_channel() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn update_client() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
 }

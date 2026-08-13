@@ -27,14 +27,21 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
             .saturating_add(T::DbWeight::get().writes(1))
     }
     fn lookup_address() -> Weight {
-        Weight::from_parts(5_000, 0)
-            .saturating_add(T::DbWeight::get().reads(1))
+        Weight::from_parts(5_000, 0).saturating_add(T::DbWeight::get().reads(1))
     }
 }
 
 impl WeightInfo for () {
-    fn create_table() -> Weight { Weight::from_parts(15_000, 0) }
-    fn add_address() -> Weight { Weight::from_parts(10_000, 0) }
-    fn deactivate_table() -> Weight { Weight::from_parts(10_000, 0) }
-    fn lookup_address() -> Weight { Weight::from_parts(5_000, 0) }
+    fn create_table() -> Weight {
+        Weight::from_parts(15_000, 0)
+    }
+    fn add_address() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn deactivate_table() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn lookup_address() -> Weight {
+        Weight::from_parts(5_000, 0)
+    }
 }

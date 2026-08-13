@@ -16,8 +16,8 @@ use frame_system::pallet_prelude::*;
 pub use pallet::*;
 use sp_std::prelude::*;
 pub mod weights;
-pub use weights::WeightInfo;
 pub use weights::SubstrateWeight;
+pub use weights::WeightInfo;
 
 #[frame_support::pallet]
 pub mod pallet {
