@@ -9,7 +9,7 @@ except ImportError:
     print('ERROR: substrate-interface not installed')
     sys.exit(1)
 
-NODE_URL = 'ws://127.0.0.1:9933'
+NODE_URL = 'ws://127.0.0.1:9934'
 SS58_FORMAT = 909
 FAUCET_SEED = '//Alice'
 AMOUNT_VRDX = 100

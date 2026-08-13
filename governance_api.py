@@ -6,10 +6,33 @@ import sys
 import traceback
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from substrateinterface import SubstrateInterface
+from substrateinterface.utils.ss58 import ss58_encode, ss58_decode
+import base58
+import hashlib
+
+def convert_ss58(address, target_format=42):
+    """Convert any SS58 address to the target format."""
+    try:
+        raw = base58.b58decode(address)
+        # Determine prefix length: 2-byte if bit 6 of first byte is set
+        if raw[0] & 0x40:
+            payload = raw[2:-2]  # 2-byte prefix, last 2 bytes are checksum
+        else:
+            payload = raw[1:-2]  # 1-byte prefix, last 2 bytes are checksum
+        # Re-encode with target prefix
+        if target_format < 64:
+            new_prefix = bytes([target_format])
+        else:
+            new_prefix = bytes([0x40 | (target_format >> 8), target_format & 0xFF])
+        new_data = new_prefix + payload
+        checksum = hashlib.blake2b(new_data, digest_size=64).digest()[:2]
+        return base58.b58encode(new_data + checksum).decode()
+    except Exception:
+        return address
 
 substrate = SubstrateInterface(
-    url="http://127.0.0.1:9933",
-    ss58_format=909,
+    url="http://127.0.0.1:9934",
+    ss58_format=42,
     auto_discover=True,
     type_registry_preset=None
 )
@@ -99,7 +122,7 @@ class GovernanceHandler(BaseHTTPRequestHandler):
             try:
                 members = substrate.query("Council", "Members", [])
                 if members and members.value:
-                    data["council"] = [str(m) for m in members.value]
+                    data["council"] = [convert_ss58(str(m)) for m in members.value]
             except Exception as e:
                 print(f"[GOV] Council query error: {e}")
 
