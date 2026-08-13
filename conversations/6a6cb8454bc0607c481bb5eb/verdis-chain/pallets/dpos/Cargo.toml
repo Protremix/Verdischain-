@@ -34,9 +34,10 @@ std = [
     "sp-io/std",
     "sp-core/std",
     "pallet-session/std",
+    "frame-benchmarking?/std",
 ]
 runtime-benchmarks = [
-    "frame-benchmarking",
+    "frame-benchmarking/runtime-benchmarks",
     "frame-support/runtime-benchmarks",
     "frame-system/runtime-benchmarks",
     "pallet-session/runtime-benchmarks",
@@ -46,3 +47,7 @@ try-runtime = [
     "frame-system/try-runtime",
     "pallet-session/try-runtime",
 ]
+
+[dev-dependencies]
+pallet-balances = { workspace = true }
+sp-keyring = { workspace = true }

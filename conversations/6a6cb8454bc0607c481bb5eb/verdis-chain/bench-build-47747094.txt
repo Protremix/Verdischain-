@@ -1,0 +1,63 @@
+⚡ Found 4 strongly connected components which includes at least one cycle each
+cycle(001) ∈ α: DisputeCoordinator ~~{"DisputeDistributionMessage"}~~> DisputeDistribution ~~{"DisputeCoordinatorMessage"}~~>  *
+cycle(002) ∈ β: ApprovalVoting ~~{"ApprovalDistributionMessage"}~~> ApprovalDistribution ~~{"ApprovalVotingMessage"}~~>  *
+cycle(003) ∈ γ: CandidateBacking ~~{"CollatorProtocolMessage"}~~> CollatorProtocol ~~{"CandidateBackingMessage"}~~>  *
+cycle(004) ∈ δ: NetworkBridgeRx ~~{"GossipSupportMessage"}~~> GossipSupport ~~{"NetworkBridgeRxMessage"}~~>  *
+   Compiling verdis-runtime v2.0.0 (/opt/verdis-chain-rust/runtime)
+   Compiling pallet-amm-dex v2.0.0 (/opt/verdis-chain-rust/pallets/amm-dex)
+error: failed to run custom build command for `verdis-runtime v2.0.0 (/opt/verdis-chain-rust/runtime)`
+
+Caused by:
+  process didn't exit successfully: `/opt/verdis-chain-rust/target/release/build/verdis-runtime-6599c232d0cadb0a/build-script-build` (exit status: 1)
+  --- stdout
+  Information that should be included in a bug report.
+  Executing build command: env -u CARGO_ENCODED_RUSTFLAGS -u RUSTC CARGO_MAKEFLAGS="-j --jobserver-fds=3,5 --jobserver-auth=3,5" CARGO_TARGET_DIR="/opt/verdis-chain-rust/target/release/wbuild/verdis-runtime/target" RUSTFLAGS="-C link-arg=--export-table -C link-arg=--allow-undefined -C link-arg=--export=__heap_base --cfg substrate_runtime " SKIP_WASM_BUILD="" "/root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo" "rustc" "--target=wasm32v1-none" "--manifest-path=/opt/verdis-chain-rust/target/release/wbuild/verdis-runtime/Cargo.toml" "--color=always" "--profile" "release"
+  Using rustc version: rustc 1.97.1 (8bab26f4f 2026-07-14)
+
+
+  --- stderr
+     Compiling pallet-amm-dex v2.0.0 (/opt/verdis-chain-rust/pallets/amm-dex)
+     Compiling verdis-runtime v2.0.0 (/opt/verdis-chain-rust/runtime)
+  error[E0053]: method `try_origin_or_root` has an incompatible type for trait
+      --> /opt/verdis-chain-rust/runtime/src/lib.rs:1060:48
+       |
+  1060 |     fn try_origin_or_root(o: RuntimeOrigin) -> Result<Self::Success, RuntimeOrigin> {
+       |                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `core::option::Option<u128>`, found `u128`
+       |
+       = note: expected signature `fn(RuntimeOrigin) -> Result<core::option::Option<u128>, _>`
+                  found signature `fn(RuntimeOrigin) -> Result<u128, _>`
+  help: change the output type to match the trait
+       |
+  1060 -     fn try_origin_or_root(o: RuntimeOrigin) -> Result<Self::Success, RuntimeOrigin> {
+  1060 +     fn try_origin_or_root(o: RuntimeOrigin) -> Result<core::option::Option<u128>, RuntimeOrigin> {
+       |
+
+  error[E0046]: not all trait items implemented, missing: `try_successful_origin`
+      --> /opt/verdis-chain-rust/runtime/src/lib.rs:1052:1
+       |
+  1052 | impl frame_support::traits::EnsureOrigin<RuntimeOrigin> for EnsureCouncilSpend {
+       | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ missing `try_successful_origin` in implementation
+       |
+       = help: implement the missing item: `fn try_successful_origin() -> Result<RuntimeOrigin, ()> { todo!() }`
+
+  error[E0063]: missing field `max_supply` in initializer of `TokenInfo<_, _>`
+     --> /opt/verdis-chain-rust/runtime/src/lib.rs:661:33
+      |
+  661 |                     let token = TokenInfo {
+      |                                 ^^^^^^^^^ missing `max_supply`
+
+  error[E0282]: type annotations needed
+      --> /opt/verdis-chain-rust/runtime/src/lib.rs:1065:30
+       |
+  1065 |                 if o.clone().into().is_root_origin() {
+       |                              ^^^^
+       |
+  help: try using a fully qualified path to specify the expected types
+       |
+  1065 -                 if o.clone().into().is_root_origin() {
+  1065 +                 if <RuntimeOrigin as Into<T>>::into(o.clone()).is_root_origin() {
+       |
+
+  Some errors have detailed explanations: E0046, E0053, E0063, E0282.
+  For more information about an error, try `rustc --explain E0046`.
+  error: could not compile `verdis-runtime` (lib) due to 4 previous errors

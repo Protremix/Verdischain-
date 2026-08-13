@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head><title>Polkadot Crypto Test</title></head>
+<body>
+<h1>Polkadot Crypto Bundle Test</h1>
+<pre id="output">Loading...</pre>
+<script src="/polkadot-crypto-bundle.js"></script>
+<script>
+async function test() {
+  const out = document.getElementById('output');
+  try {
+    out.textContent = 'Step 1: Check PolkadotCrypto...\n';
+    if (!window.PolkadotCrypto) {
+      out.textContent += 'FAIL: PolkadotCrypto not found on window\n';
+      return;
+    }
+    out.textContent += 'OK: PolkadotCrypto found\n';
+    out.textContent += 'Keys: ' + Object.keys(PolkadotCrypto).join(', ') + '\n';
+    
+    out.textContent += '\nStep 2: cryptoWaitReady...\n';
+    await PolkadotCrypto.cryptoWaitReady();
+    out.textContent += 'OK: WASM ready\n';
+    
+    out.textContent += '\nStep 3: mnemonicGenerate...\n';
+    const mnemonic = PolkadotCrypto.mnemonicGenerate();
+    out.textContent += 'OK: ' + mnemonic + '\n';
+    
+    out.textContent += '\nStep 4: Create Keyring...\n';
+    const keyring = new PolkadotCrypto.Keyring({ type: 'sr25519', ss58Format: 909 });
+    out.textContent += 'OK: Keyring created\n';
+    
+    out.textContent += '\nStep 5: addFromMnemonic...\n';
+    const kp = keyring.addFromMnemonic(mnemonic);
+    out.textContent += 'OK: Address = ' + kp.address + '\n';
+    
+    out.textContent += '\nStep 6: Validate mnemonic...\n';
+    const valid = PolkadotCrypto.mnemonicValidate(mnemonic);
+    out.textContent += 'OK: Valid = ' + valid + '\n';
+    
+    out.textContent += '\nALL TESTS PASSED!\n';
+  } catch (e) {
+    out.textContent += '\nERROR: ' + e.message + '\n' + e.stack + '\n';
+  }
+}
+test();
+</script>
+</body>
+</html>

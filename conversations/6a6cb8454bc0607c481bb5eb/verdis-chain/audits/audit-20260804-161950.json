@@ -1,0 +1,136 @@
+{
+  "timestamp": "2026-08-04T16:19:48.648956",
+  "rpc_endpoint": "http://localhost:9949",
+  "phases": {
+    "phase1": {
+      "phase": "Explorer Verification",
+      "checks": [
+        {
+          "test": "RPC connectivity",
+          "status": "PASS",
+          "detail": "Block #312"
+        },
+        {
+          "test": "Block verification (50 random blocks)",
+          "status": "PASS",
+          "detail": "50/50 blocks verified"
+        },
+        {
+          "test": "Balance storage queries",
+          "status": "PASS",
+          "detail": "2 balance entries (checked 20 of 2)"
+        },
+        {
+          "test": "Session validators",
+          "status": "WARN",
+          "detail": "Query failed: {'code': -32601, 'message': 'Method not found'}"
+        },
+        {
+          "test": "AmmDex storage",
+          "status": "PASS",
+          "detail": "2 keys"
+        },
+        {
+          "test": "Eco storage",
+          "status": "PASS",
+          "detail": "3 keys"
+        },
+        {
+          "test": "Tokenomics storage",
+          "status": "PASS",
+          "detail": "4 keys"
+        }
+      ],
+      "passed": 6,
+      "failed": 0,
+      "warnings": 1
+    },
+    "phase2": {
+      "phase": "RPC Validation",
+      "checks": [
+        {
+          "test": "Unsafe RPC methods exposure",
+          "status": "FAIL",
+          "detail": "Exposed: ['author_insertKey', 'author_rotateKeys', 'author_rotateKeysWithOwner', 'system_addReservedPeer', 'system_removeReservedPeer']"
+        },
+        {
+          "test": "Custom RPC methods present",
+          "status": "PASS",
+          "detail": "All 10 custom methods present"
+        },
+        {
+          "test": "RPC method count",
+          "status": "PASS",
+          "detail": "121 methods"
+        }
+      ],
+      "passed": 2,
+      "failed": 1,
+      "warnings": 0
+    },
+    "phase3": {
+      "phase": "Economic Invariants",
+      "checks": [
+        {
+          "test": "Total supply = 100B VRDX",
+          "status": "WARN",
+          "detail": "Cannot read: None"
+        },
+        {
+          "test": "Token properties",
+          "status": "PASS",
+          "detail": "VRDX, SS58=909, decimals=9"
+        }
+      ],
+      "passed": 1,
+      "failed": 0,
+      "warnings": 1
+    },
+    "phase4": {
+      "phase": "Security Audit",
+      "checks": [
+        {
+          "test": "Unsafe RPC methods blocked",
+          "status": "FAIL",
+          "detail": "Exposed: ['author_insertKey', 'author_rotateKeys', 'author_rotateKeysWithOwner', 'system_addReservedPeer', 'system_removeReservedPeer']"
+        },
+        {
+          "test": "Malformed extrinsic rejected",
+          "status": "PASS",
+          "detail": "Rejected: Client error: out of range decoding Compact<u32>"
+        },
+        {
+          "test": "Empty extrinsic rejected",
+          "status": "PASS",
+          "detail": "Rejected: Client error: Not enough data to fill buffer"
+        },
+        {
+          "test": "Invalid signature rejected",
+          "status": "PASS",
+          "detail": "Rejected: Client error: Invalid transaction version"
+        }
+      ],
+      "passed": 3,
+      "failed": 1,
+      "warnings": 0
+    },
+    "phase5": {
+      "phase": "Performance",
+      "checks": [
+        {
+          "test": "RPC latency",
+          "status": "PASS",
+          "detail": "Avg: 12.4ms, p95: 13.7ms"
+        },
+        {
+          "test": "Finality lag",
+          "status": "PASS",
+          "detail": "Best: #312, Finalized: #309, Lag: 3"
+        }
+      ],
+      "passed": 2,
+      "failed": 0,
+      "warnings": 0
+    }
+  }
+}

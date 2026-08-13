@@ -1,3 +1,0 @@
-vec![
-  "/app/conversations/6a6cb8454bc0607c481bb5eb/verdis-chain/target/debug/build/cranelift-assembler-x64-9b08d4b2682a1dbf/out/assembler.rs".into(),
-]

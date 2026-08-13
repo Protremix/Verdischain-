@@ -1,262 +1,315 @@
-# Verdis Chain v2.0 — The World's First Fully Green, Carbon-Negative Blockchain
+<p align="center">
+  <img src="web/assets/verdis-logo-full.png" alt="Verdis Chain" width="200">
+</p>
 
-Built with **Rust + Substrate FRAME** — the same framework powering Polkadot and Kusama.
+<h1 align="center">Verdis Chain</h1>
 
-## Architecture Specification
+<p align="center">
+  <strong>The carbon-negative DPoS blockchain powering the Evolvix ecosystem.</strong>
+</p>
 
-| Component | Technology |
-|-----------|-----------|
-| **Language** | Rust |
-| **Core** | Substrate FRAME |
-| **P2P** | libp2p |
-| **Database** | RocksDB |
-| **Smart Contracts** | WASM (pallet-contracts) + Solidity via EVM (pallet-evm) |
-| **Consensus** | BABE (block production) + GRANDPA (finality) |
-| **Cryptography** | BLS (GRANDPA) + Ed25519 (session) + Blake3 (content hashing) |
-| **Storage** | IPFS / Arweave (pallet-storage) |
-| **Wallet** | Native + MetaMask via EVM (Chain ID 909) |
-| **API** | gRPC (port 9090) + JSON-RPC (port 9933) |
-| **Indexing** | SubQuery / The Graph compatible |
+<p align="center">
+  <a href="https://verdischain.com">Website</a> ·
+  <a href="https://verdischain.com/explorer/">Explorer</a> ·
+  <a href="https://verdischain.com/dex/">DEX</a> ·
+  <a href="https://verdischain.com/wallet/">Wallet</a> ·
+  <a href="https://verdischain.com/docs/">Docs</a>
+</p>
 
-## Project Structure
+<p align="center">
+  <img src="https://img.shields.io/badge/node-2.0.0-16a34a" alt="Node Version">
+  <img src="https://img.shields.io/badge/token-VRDX-16a34a" alt="Token">
+  <img src="https://img.shields.io/badge/consensus-DPoS%20%2B%20BABE%2FGRANDPA-16a34a" alt="Consensus">
+  <img src="https://img.shields.io/badge/SS58-909-16a34a" alt="SS58">
+  <img src="https://img.shields.io/badge/tests-444%20passing-22c55e" alt="Tests">
+  <img src="https://img.shields.io/badge/pages-28%20live-22c55e" alt="Pages">
+  <img src="https://img.shields.io/badge/license-Proprietary-red" alt="License">
+</p>
+
+---
+
+Verdis Chain is a Substrate-based blockchain implementing Delegated Proof of Stake (DPoS) consensus with BABE/GRANDPA finality, a native AMM decentralized exchange (DEX), eco-friendly carbon credit tracking, and AI-native tooling.
+
+## Key Facts
+
+| Property | Value |
+|---|---|
+| Node Version | `verdis-node 2.0.0` |
+| Token Symbol | VRDX |
+| Token Decimals | 9 |
+| Max Supply | 100,000,000,000 VRDX (100B) |
+| SS58 Prefix | 909 |
+| Consensus | DPoS + BABE / GRANDPA |
+| Active Validators | 6 (target: 21 → 200+) |
+| Chain Specs | dev, testnet, mainnet |
+| Domain | [verdischain.com](https://verdischain.com) |
+
+## Tokenomics
+
+| Allocation | Amount | % |
+|---|---|---|
+| Ecosystem & Developer Grants | 25B | 25% |
+| PoS Staking Rewards | 20B | 20% |
+| Treasury | 15B | 15% |
+| Development | 10B | 10% |
+| Liquidity | 10B | 10% |
+| Community | 5B | 5% |
+| Seed / Strategic | 3B | 3% |
+| Public Presale | 2B | 2% |
+| Team & Advisors | 5B | 5% |
+| **Total** | **100B** | **100%** |
+
+## Architecture
+
+### Pallets (16)
+
+| Pallet | Description |
+|---|---|
+| `dpos` | Delegated Proof of Stake — validator registration, staking, delegation, slashing |
+| `amm-dex` | Native AMM decentralized exchange — swap, add/remove liquidity, pool management |
+| `eco` | Carbon credit tracking, green validator scoring, reforestation logging |
+| `tokenomics` | Token allocation, distribution schedule, supply management |
+| `vesting` | Token vesting schedules with cliffs and linear release |
+| `presale` | Token presale rounds, whitelisting, contribution tracking |
+| `fungible-tokens` | Custom token creation and management |
+| `poh` | Proof of History — verifiable delay function for sequencing |
+| `gulf-stream` | Mempool-less transaction forwarding (Solana-inspired) |
+| `turbine` | Block propagation optimization (Solana-inspired) |
+| `zk-compression` | Zero-knowledge compression for state |
+| `ibc` | Inter-Blockchain Communication protocol |
+| `address-lookup-tables` | ALT for compact account references |
+| `circuit-breaker` | Automated pausing on anomalous conditions |
+| `sealevel` | Parallel smart contract execution model |
+| `storage` | On-chain data storage primitives |
+
+### Node
+
+- **Binary**: `verdis-node` (100MB, Substrate-based)
+- **Runtime**: Custom runtime with 16 pallets integrated via `construct_runtime!`
+- **RPC**: HTTP (9933), WebSocket (9944), P2P (30333)
+- **Chain Specs**: `chain-specs/dev`, `chain-specs/testnet`, `chain-specs/mainnet`
+
+### Tests
+
+- **444 test functions** across all pallets
+- **2 dedicated test files** in `tests/`
+- Tests cover: staking, delegation, slashing, DEX swap/liquidity, vesting, presale, eco credits, PoH, IBC, and more
+
+## Web Components
+
+### 28 Live Pages on [verdischain.com](https://verdischain.com)
+
+| Page | URL | Description |
+|---|---|---|
+| Landing | `/` | Homepage with gradient-ui-ux template |
+| Explorer | `/explorer/` | Block explorer (Verdiscan) with live RPC data |
+| Transactions | `/transactions/` | Solscan-style transaction explorer |
+| DEX | `/dex/` | AMM decentralized exchange UI |
+| Wallet | `/wallet/` | Non-custodial web wallet (@noble/secp256k1) |
+| Validators | `/validators/` | Validator dashboard with green scores |
+| Governance | `/governance/` | Referendums, proposals, council, treasury |
+| Eco | `/eco/` | Carbon credits, green scoring, reforestation |
+| Whitepaper | `/whitepaper/` | Technical whitepaper |
+| Tokenomics | `/tokenomics/` | Token allocation, vesting, staking APR |
+| Sale | `/sale/` | Token sale information |
+| Faucet | `/faucet/` | Testnet token faucet |
+| Docs | `/docs/` | Developer documentation |
+| Developers | `/developers/` | Developer portal — SDKs, APIs, RPC reference |
+| API | `/api/` | REST API documentation |
+| Analytics | `/analytics/` | Network analytics dashboard |
+| Monitoring | `/monitoring/` | System monitoring dashboard |
+| Blog | `/blog/` | Project blog |
+| Download | `/download/` | Wallet download (Android APK) |
+| Contact | `/contact/` | Contact information |
+| Status | `/status/` | Network status page |
+| + 7 more | | Privacy, Terms, Cookies, Disclaimer, Security, Referral, Incentives |
+
+### JavaScript SDK
+
+- 51 methods
+- Native WebSocket support
+- Zero dependencies
+- Located at `sdk/verdis-sdk.js`
+
+### Wallets
+
+- **Web Wallet**: Non-custodial, @noble/secp256k1 + @noble/hashes, SS58 prefix 909
+- **Android APK**: Flutter-based, BIP39 mnemonics, server-derived sr25519 addresses
+
+## Infrastructure
+
+### Services (20+ systemd units)
 
 ```
-verdis-chain/
-├── node/                        # Full blockchain node
+verdis-node1     — Blockchain node (Alice, port 30333/9933)
+verdis-node2-6   — Additional validator nodes
+verdis-tx-relay  — Non-custodial TX relay v3 (port 5001)
+verdis-api       — REST API gateway (port 4400)
+verdis-faucet    — Testnet faucet
+verdis-governance — Governance API (port 5020)
+verdis-txbot     — Transaction bot for network activity
+verdis-health-monitor — Health monitoring
+verdis-finality-monitor — Finality monitoring
+verdis-backup    — Automated backup service
+nginx            — Reverse proxy + TLS
+```
+
+### Monitoring Stack
+
+- **Prometheus** — Metrics collection (port 9090, localhost only)
+- **Grafana** — Dashboards (port 3000, localhost only)
+- **AlertManager** — Alert routing (port 9093, localhost only)
+- **Node Exporter** — System metrics (port 9100, localhost only)
+
+### Deployment
+
+- **Docker**: Multi-stage build, non-root user, read-only FS, capability dropping
+- **Docker Compose**: Single-node and multi-node configurations
+- **Nginx**: TLS, HSTS, CSP, X-XSS-Protection headers
+- **Server**: Hetzner Cloud, 32GB RAM, 228GB disk
+
+## Directory Structure
+
+```
+verdis-chain-rust/
+├── node/               # Substrate node implementation
 │   ├── src/
-│   │   ├── main.rs             # CLI entry point (run, build-spec, info)
-│   │   └── service.rs          # BABE+GRANDPA service, networking, RPC
-│   ├── proto/
-│   │   └── verdis.proto        # gRPC API definitions (25+ RPC methods)
+│   │   ├── main.rs
+│   │   ├── chain_spec.rs
+│   │   ├── service.rs
+│   │   └── rpc.rs
 │   └── Cargo.toml
-├── runtime/                     # Substrate runtime (WASM)
-│   ├── src/
-│   │   └── lib.rs              # All pallet wiring + runtime APIs
-│   ├── build.rs                # WASM builder
+├── runtime/            # Runtime configuration
+│   ├── src/lib.rs
 │   └── Cargo.toml
-├── pallets/                     # Custom Verdis pallets
-│   ├── dpos/                   # DPoS consensus (validators, voting, slashing)
-│   ├── amm-dex/                # AMM DEX (liquidity pools, swaps, LP tokens)
-│   ├── eco/                    # Eco tracking (carbon credits, reforestation)
-│   ├── tokenomics/             # Tokenomics (100B supply, 8-category, IDO)
-│   ├── vesting/                # Protocol-level vesting (beforeTransfer hook)
-│   └── storage/                # IPFS/Arweave decentralized storage
-├── Cargo.toml                  # Workspace manifest
-└── README.md
+├── pallets/            # 16 custom pallets
+│   ├── dpos/
+│   ├── amm-dex/
+│   ├── eco/
+│   ├── tokenomics/
+│   ├── vesting/
+│   ├── presale/
+│   ├── fungible-tokens/
+│   ├── poh/
+│   ├── gulf-stream/
+│   ├── turbine/
+│   ├── zk-compression/
+│   ├── ibc/
+│   ├── address-lookup-tables/
+│   ├── circuit-breaker/
+│   ├── sealevel/
+│   └── storage/
+├── chain-specs/         # Chain specification files
+│   ├── dev-plain.json
+│   ├── dev-raw.json
+│   ├── testnet/
+│   └── mainnet/
+├── web/                # 28 web pages (verdischain.com)
+├── docs/               # 24 documentation files
+├── deploy/             # Docker, release artifacts
+├── ci-cd/              # CI/CD pipeline scripts
+├── monitoring/         # Prometheus, Grafana, AlertManager
+├── scripts/            # Backup, health check, TPS measurement
+├── sdk/                # JavaScript SDK
+├── tests/              # Integration tests
+└── Cargo.toml          # Workspace configuration
 ```
 
-## Custom Pallets
-
-### pallet-dpos — DPoS Consensus
-- Validator registration with minimum stake (10,000 VRDX)
-- Voter delegation (vote for validators by staking)
-- Block reward distribution (16 VRDX per block)
-- Validator slashing for misbehavior
-- Epoch-based validator rotation (top 5 by votes, 600-block epochs)
-- Green score tracking per validator
-- Max 101 validators
-- Session manager integration (works with BABE/GRANDPA)
-
-### pallet-amm-dex — AMM DEX
-- Constant-product (x*y=k) liquidity pools
-- Add/remove liquidity with LP tokens
-- Token swaps with 0.3% fee
-- Slippage protection (min_amount_out)
-- Swap history recording
-- Total volume and swap count tracking
-- Max 50 pools
-
-### pallet-eco — Eco Tracking
-- Carbon credit minting, verification, trading, and retirement
-- Reforestation project registration and verification
-- Green validator registration with energy source tracking
-- Aggregate metrics: total CO2 offset, total trees planted
-- Max 1,000 carbon credits, 500 reforest projects, 101 green validators
-
-### pallet-tokenomics — Token Economics
-- 100B total supply, 15B circulating at TGE (15%)
-- 8-category distribution:
-  - Community (35%), Treasury (20%), Team (15%), Investors (10%)
-  - Staking (10%), Liquidity (5%), Advisors (3%), Airdrop (2%)
-- 12B investor allocation enforcement
-- IDO disclosure consent gating (mandatory)
-- Presale price tracking ($0.0005/VRDX)
-
-### pallet-vesting — Protocol-Level Vesting
-- Schedule-based token locks (Seed/Private: 60-day, Public/Final: 30-day)
-- beforeTransfer hook pattern (Ethereum-style transfer blocking)
-- Linear vesting with cliff periods
-- Locked/unlocked balance queries
-- Integration with transfers, DEX swaps, and staking
-
-### pallet-storage — IPFS/Arweave Storage
-- IPFS CID registration and verification
-- Arweave transaction ID tracking
-- Content verification via Blake3 hashing
-- Storage provider registration with reputation
-- Pinning requests and status tracking
-- Max 10,000 storage records
-
-## Chain Parameters
-
-| Parameter | Value |
-|-----------|-------|
-| Chain ID | 909 |
-| Block Time | 6 seconds (BABE) |
-| Consensus | BABE (production) + GRANDPA (finality) |
-| Total Supply | 100,000,000,000 VRDX |
-| Circulating at TGE | 15,000,000,000 VRDX (15%) |
-| Block Reward | 16 VRDX |
-| Max Validators | 101 |
-| Active Validators | 5 (top by votes) |
-| Epoch Length | 600 blocks (~1 hour) |
-| DEX Fee | 0.3% |
-| Min Validator Stake | 10,000 VRDX |
-| Max Pools | 50 |
-| EVM Gas Limit | 30,000,000 per block |
-| Cryptography | BLS12-381 (GRANDPA), Ed25519 (session), Blake3 (content) |
-
-## gRPC API (port 9090)
-
-25+ RPC methods covering:
-- **Blockchain**: GetBlock, GetLatestBlock, GetBlockRange, GetTransaction, GetChainInfo
-- **Validators**: GetValidators, GetActiveValidators, GetValidator, GetEpochInfo
-- **DEX**: GetPools, GetPool, GetSwapHistory
-- **Eco**: GetCarbonCredits, GetReforestProjects, GetEcoMetrics
-- **Tokenomics**: GetTokenomics, GetVestingSchedules
-- **Storage**: GetStorageRecords, GetStorageProviders
-- **Streaming**: SubscribeBlocks, SubscribeTransactions
-- **Transactions**: SubmitTransaction
-
-See `node/proto/verdis.proto` for full protobuf definitions.
-
-## Smart Contracts
-
-### WASM Contracts (pallet-contracts)
-- Native Substrate smart contracts compiled to WASM
-- ink! language support
-- Lower gas costs than EVM
-- Direct access to Substrate runtime APIs
-
-### Solidity Contracts (pallet-evm via Frontier)
-- Full EVM compatibility
-- MetaMask / Trust Wallet / WalletConnect support
-- Chain ID 909 for EIP-155 compatibility
-- Solidity 0.8.x contracts supported
-- Standard ERC-20, ERC-721, ERC-1155 compatible
-
-## Building
-
-### Prerequisites
-
-```bash
-# Install Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Add WASM target
-rustup target add wasm32-unknown-unknown
-
-# Install system dependencies (Ubuntu/Debian)
-sudo apt install -y build-essential cmake pkg-config libssl-dev \
-    git protobuf-compiler libclang-dev llvm
-
-# Install system dependencies (macOS)
-brew install cmake pkg-config openssl protobuf llvm
-```
+## Quick Start
 
 ### Build
 
 ```bash
-cd verdis-chain
 cargo build --release
-
-# With EVM RPC support
-cargo build --release --features evm-rpc
-
-# With gRPC server
-cargo build --release --features grpc
 ```
 
-### Run
+### Run Node (Dev Mode)
 
 ```bash
-# Development mode (single node)
-./target/release/verdis run --dev --tmp
-
-# Production validator
-./target/release/verdis run --validator --name "verdis-node-1"
-
-# With custom ports
-./target/release/verdis run --port 30333 --rpc-port 9933 --grpc-port 9090
+./target/release/verdis --dev
 ```
 
-## Deployment (verdischain.com)
+### Run Node (Testnet)
 
 ```bash
-# Build optimized release
-cargo build --release
-
-# Deploy via systemd
-sudo cp verdis.service /etc/systemd/system/
-sudo systemctl enable verdis
-sudo systemctl start verdis
+./target/release/verdis \
+  --chain testnet \
+  --base-path /opt/verdis-node1-data \
+  --alice \
+  --port 30333 \
+  --rpc-port 9933 \
+  --rpc-external \
+  --rpc-methods=Unsafe \
+  --rpc-cors=all \
+  --validator \
+  --no-telemetry
 ```
 
-## MetaMask Integration
+### Run Tests
 
-Add Verdis Chain to MetaMask:
-- Network Name: Verdis Chain
-- RPC URL: https://verdischain.com/rpc
-- Chain ID: 909
-- Symbol: VRDX
-- Explorer: https://verdischain.com/explorer
-
-## SubQuery Indexing
-
-Create a `project.yaml` for SubQuery:
-```yaml
-specVersion: 1.0.0
-name: verdis-indexer
-version: 1.0.0
-runner:
-  node:
-    name: "@subql/node"
-    version: "*"
-  query:
-    name: "@subql/query"
-    version: "*"
-schema: ./schema.graphql
-network:
-  endpoint: wss://verdischain.com/ws
-  chainId: 909
-dataSources:
-  - kind: substrate/Runtime
-    startBlock: 1
-    mapping:
-      handlers:
-        - handler: handleBlock
-          kind: substrate/BlockHandler
-        - handler: handleTransaction
-          kind: substrate/CallHandler
-        - handler: handleEcoEvent
-          kind: substrate/EventHandler
-          filter:
-            module: eco
+```bash
+cargo test
 ```
 
-## Genesis Configuration
+### Access RPC
 
-- 7 DEX pools (CARBON/VRDX, ECO/VRDX, CARBON/ECO, TREE/VRDX, GREEN/VRDX, REDD/VRDX, ECOGR/VRDX)
-- 5 initial validators with 1B stake each
-- 5 carbon credits (17,000 tons CO2 offset)
-- 1 reforestation project (30,000 trees)
-- Full 8-category tokenomics distribution
-- 4 vesting schedules (seed, private, public, final)
+```bash
+curl -X POST http://localhost:9933 \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"chain_getHeader","params":[],"id":1}'
+```
+
+## Documentation
+
+Full documentation is in the `docs/` directory:
+
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md) — System architecture
+- [VALIDATOR_GUIDE.md](docs/VALIDATOR_GUIDE.md) — Validator setup
+- [DEPLOYMENT.md](docs/DEPLOYMENT.md) — Deployment guide
+- [RPC.md](docs/RPC.md) — RPC API reference
+- [MAINNET_READINESS.md](docs/MAINNET_READINESS.md) — Mainnet checklist
+- [AUDIT_REPORT.md](docs/AUDIT_REPORT.md) — Security audit report
+- [GENESIS_CEREMONY.md](docs/GENESIS_CEREMONY.md) — Genesis ceremony plan
+- [MONITORING_GUIDE.md](docs/MONITORING_GUIDE.md) — Monitoring setup
+
+## Security
+
+- All extrinsic parameters bounded with length checks
+- Safe integer casts (no unsafe `as` conversions)
+- TX Relay v3: AES-GCM encryption, non-custodial, server-side key derivation only
+- SSH key-only authentication
+- UFW firewall (SSH 22, HTTP 80/443, P2P 30333)
+- Docker container hardening (non-root, read-only FS, cap drop ALL)
+- Nginx HSTS, CSP, X-XSS-Protection headers
+- No hardcoded private keys, mnemonics, or backdoors
+
+See [SECURITY.md](SECURITY.md) for the full security policy.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines and standards.
+
+## Ecosystem
+
+Verdis Chain is the blockchain layer of the **Evolvix ecosystem**:
+
+- **EvolvixOS** — AI Engineering OS at [evolvixos.com](https://evolvixos.com)
+- **AI Platform** — AI models, agents, and services
+- **Smart Contract Platform** — Create, test, deploy, manage
+- **Developer Ecosystem** — SDKs, APIs, tools, documentation
+
+## Links
+
+- **Website**: [verdischain.com](https://verdischain.com)
+- **GitHub**: [Protremix/Verdischain-](https://github.com/Protremix/Verdischain-)
+- **Explorer**: [verdischain.com/explorer](https://verdischain.com/explorer/)
+- **DEX**: [verdischain.com/dex](https://verdischain.com/dex/)
+- **Wallet**: [verdischain.com/wallet](https://verdischain.com/wallet/)
 
 ## License
 
-MIT
+Proprietary — © Verdis Chain / Protremix. All rights reserved. See [LICENSE](LICENSE).
 
-## Built by
+---
 
-**Protremix** | Founder & CEO: **Rojs Gordons**
+**Built by [Protremix](https://protremix.com) for the Evolvix ecosystem.**

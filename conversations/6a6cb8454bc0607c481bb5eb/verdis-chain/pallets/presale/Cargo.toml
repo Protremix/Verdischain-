@@ -1,0 +1,42 @@
+[package]
+name = "pallet-presale"
+version = "0.1.0"
+description = "Verdis presale/IDO pallet — on-chain contribution system with vesting integration"
+license = "MIT"
+edition = "2021"
+publish = false
+
+[dependencies]
+codec = { workspace = true, features = ["derive"] }
+scale-info = { workspace = true, features = ["derive"] }
+serde = { workspace = true, optional = true, features = ["derive"] }
+
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+frame-benchmarking = { workspace = true, optional = true }
+sp-runtime = { workspace = true }
+sp-std = { workspace = true }
+sp-io = { workspace = true }
+sp-core = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+    "codec/std",
+    "scale-info/std",
+    "serde",
+    "frame-support/std",
+    "frame-system/std",
+    "frame-benchmarking?/std",
+    "sp-runtime/std",
+    "sp-std/std",
+    "sp-io/std",
+    "sp-core/std",
+]
+runtime-benchmarks = [
+    "frame-benchmarking/runtime-benchmarks",]
+try-runtime = []
+
+[dev-dependencies]
+pallet-balances = { workspace = true, features = ["std"] }
+sp-keyring = { workspace = true }

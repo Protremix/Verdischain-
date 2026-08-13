@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Service — Verdis Chain</title>
+<meta name="description" content="Terms of Service for Verdis Chain, Verdiscan explorer, AMM DEX, Web Wallet, and API. Last updated August 7, 2026.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Terms of Service — Verdis Chain">
+<meta property="og:description" content="Terms of Service for Verdis Chain platform and services.">
+<link rel="canonical" href="https://verdischain.com/terms/">
+<link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f5f9;--card:#fff;--text:#0f172a;--text-dim:#334155;--text-mute:#64748b;--border:#e2e8f0;--border-dim:#f1f5f9;--accent:#16a34a;--accent-dim:#d4f860;--accent-bg:#f0ffe0;--code-bg:#0f172a;--code-text:#e2e8f0;--radius:12px;--radius-sm:8px;--font:'Inter',sans-serif;--font-mono:'JetBrains Mono',monospace;--font-head:'Space Grotesk',sans-serif
+--hero-bg: #1a1a1a;}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.7}a{color:inherit;text-decoration:none}a.link{color:#1e40af;text-decoration:underline}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}.nav-inner{max-width:1280px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}.nav-logo{display:flex;align-items:center;gap:8px;font-family:var(--font-head);font-weight:700;font-size:20px}.nav-logo img{height:32px}.nav-links{display:flex;align-items:center;gap:2px}.nav-links a{padding:8px 10px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;color:var(--text-dim);transition:all .2s}.nav-links a:hover{background:var(--accent-bg);color:var(--text)}.nav-links a.active{color:var(--text);font-weight:600}.nav-status{display:flex;align-items:center;gap:6px;font-size:13px;color:#22c55e;font-weight:500}.nav-status .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e;animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}.hamburger{display:none;background:none;border:none;cursor:pointer;padding:8px}.hamburger span{display:block;width:20px;height:2px;background:var(--text);margin:4px 0}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#0f172a 0%,#1a2e00 50%,#0f172a 100%);padding:64px 24px 48px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(22,163,74,.08) 0%,transparent 50%),radial-gradient(circle at 70% 50%,rgba(22,163,74,.05) 0%,transparent 50%);pointer-events:none}
+.hero h1{font-family:var(--font-head);font-size:42px;font-weight:700;color:#fff;position:relative}
+.hero .updated{font-size:15px;color:#94a3b8;margin-top:8px;position:relative}
+
+/* LAYOUT */
+.toc-layout{display:flex;max-width:1280px;margin:0 auto;padding:40px 24px;gap:32px}
+.toc{width:240px;flex-shrink:0;position:sticky;top:80px;height:fit-content;max-height:calc(100vh - 100px);overflow-y:auto}
+.toc h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-mute);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.toc a{display:block;padding:6px 12px;font-size:13px;color:var(--text-dim);border-radius:var(--radius-sm);transition:.15s;cursor:pointer;line-height:1.4}
+.toc a:hover{background:var(--accent-bg);color:var(--text)}
+.toc a .num{display:inline-block;width:24px;color:var(--text-mute);font-family:var(--font-mono);font-size:11px}
+.toc-mobile{display:none}
+
+.content{flex:1;min-width:0;max-width:860px}
+.content-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:40px 48px;margin-bottom:16px}
+.section{margin-bottom:40px}
+.section:last-child{margin-bottom:0}
+.section h2{font-family:var(--font-head);font-size:22px;font-weight:700;margin-bottom:16px;color:var(--text);display:flex;align-items:baseline;gap:8px}
+.section h2 .snum{font-size:16px;font-weight:700;color:var(--accent);font-family:var(--font-mono);background:var(--accent-bg);padding:2px 8px;border-radius:6px}
+.section p{font-size:15px;color:var(--text-dim);margin-bottom:12px}
+.section p .sub{display:block;margin-left:20px;margin-top:4px}
+.section ul{list-style:none;margin:8px 0 12px 0;padding-left:20px}
+.section ul li{font-size:15px;color:var(--text-dim);margin-bottom:6px;padding-left:16px;position:relative}
+.section ul li::before{content:'•';color:var(--accent);font-weight:700;position:absolute;left:0}
+.section strong{color:var(--text);font-weight:600}
+
+/* FOOTER */
+.footer{background:#0f172a;color:#94a3b8;padding:48px 24px 24px}
+.footer-inner{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
+.footer-brand h3{color:#fff;font-family:var(--font-head);font-size:18px;margin-bottom:12px}
+.footer-brand p{font-size:14px;max-width:300px}
+.footer-col h4{color:#fff;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.footer-col a{display:block;font-size:14px;padding:4px 0;color:#94a3b8;transition:.2s}
+.footer-col a:hover{color:var(--accent)}
+.footer-bottom{max-width:1280px;margin:32px auto 0;padding-top:20px;border-top:1px solid #1e293b;display:flex;justify-content:space-between;font-size:13px}
+.footer-social{display:flex;gap:10px;margin-top:16px}.footer-social a{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;color:var(--text-muted,#94a3b8);transition:all .2s}.footer-social a:hover{color:#fff;background:rgba(255,255,255,0.1)}
+
+@media(max-width:1024px){.toc{display:none}.toc-mobile{display:block;margin-bottom:24px}.toc-mobile select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;background:var(--card)}.content-card{padding:24px}}
+@media(max-width:768px){.nav-links{display:none;position:fixed;top:64px;left:0;right:0;background:#fff;flex-direction:column;padding:16px;border-bottom:1px solid var(--border);z-index:99}.nav-links.open{display:flex}.hamburger{display:block}.hero h1{font-size:28px}.footer-inner{grid-template-columns:1fr;gap:24px}.content-card{padding:20px}}
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="nav-inner"><a href="/" class="nav-logo"><img src="/assets/verdis-logo-black.png" alt="Verdis" height="32"></a><div class="nav-links" id="navLinks"><a href="/">Home</a><a href="/explorer/">Verdiscan</a><a href="/dex/">DEX</a><a href="/validators/">Validators</a><a href="/eco/">Eco</a><a href="/faucet/">Faucet</a>
+      <a href="/governance/">Governance</a><a href="/wallet/">Wallet</a><a href="/sale/">Sale</a><a href="/api/">API</a><a href="/api/docs/">Docs</a></div><div style="display:flex;align-items:center;gap:16px"><div class="nav-status"><span class="dot"></span>Testnet Live</div><button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')"><span></span><span></span><span></span></button></div></div></nav>
+
+<section class="hero">
+<h1>Terms of Service</h1>
+<div class="updated">Last updated: August 7, 2026</div>
+</section>
+
+<div class="toc-layout">
+<aside class="toc">
+<h3>Contents</h3>
+<div id="tocList"></div>
+</aside>
+
+<main class="content">
+<div class="content-card">
+
+<div class="section" id="s1">
+<h2><span class="snum">1</span> Introduction</h2>
+<p>1.1. These Terms of Service ("Terms") is a legal agreement between you (referred to herein as the "user" or "you") and Protremix, a software development company registered in Europe, and its affiliates who own or operate the services provided by Verdis Chain at verdischain.com (hereinafter referred to as the "Site") (referred to herein as the "Company", "we", "us", or "our").</p>
+<p>1.2. By using any of the Services, you accept and agree to be bound by these Terms, our Privacy Policy, all applicable laws and regulations, and agree that you are responsible for compliance with any applicable local laws. Please read the Privacy Policy to find out how we collect, use, disclose, process, and protect your personal data. For the avoidance of doubt, all terms, conditions, licenses, limitations, and obligations contained within and on the Site are incorporated into these Terms by reference. In the event of any inconsistency between these Terms and any other pages or policies on the Site, these Terms shall prevail.</p>
+<p>1.3. The information provided on the Site is not intended for distribution to or use by any person or entity in any jurisdiction or country where such distribution or use would be contrary to law or regulation or which would subject us to any registration requirement within such jurisdiction or country. Accordingly, those persons who choose to access the Site from other locations do so at their own risk and on their own initiative and are solely responsible for compliance with local laws, if and to the extent local laws are applicable.</p>
+<p>1.4. You agree that by using the Services, you have read, understood, and agree to be bound by all of these Terms and Conditions. If you do not agree with all of these Terms and Conditions, then you are advised to discontinue use of the Site immediately.</p>
+<p>1.5. It is your responsibility to periodically review these Terms and Conditions to stay informed of updates. You will be subject to and will be deemed to have been made aware of and to have accepted, the changes in any revised Terms and Conditions by your continued use of the Site after the date such revised Terms and Conditions are posted.</p>
+<p>1.6. Where the Company has published a document that is referred to within these Terms (such as a policy document), that document shall also form part of these Terms and shall be deemed to have been agreed to by you. In the event of any conflict between these Terms and a document referenced within them, these Terms shall prevail over that document.</p>
+</div>
+
+<div class="section" id="s2">
+<h2><span class="snum">2</span> User Representations &amp; Warranties</h2>
+<p>2.1. You may only use the Services if permitted under the laws of your jurisdiction. Please make sure that these Terms are in compliance with all laws, rules, and regulations that apply to you.</p>
+<p>2.2. By using our Services, you represent and warrant to the Company that you meet the eligibility requirements below. We reserve the right to amend our eligibility criteria at our sole discretion. You make the following representations and warranties to us at the time of entering into these Terms and every time you use our Services:</p>
+<ul>
+<li>You are of legal age to form a binding contract;</li>
+<li>You have not been previously suspended or removed from using our Services; and</li>
+<li>You have full power and authority to enter into this agreement and in doing so will not violate any other agreement to which you are party.</li>
+</ul>
+<p>2.3. If you are registering to use the Services on behalf of a legal entity, you further represent and warrant that:</p>
+<ul>
+<li>Such legal entity is duly organized and validly existing under the applicable laws of the jurisdiction of its organization;</li>
+<li>You are duly authorized by such legal entity to act on its behalf;</li>
+<li>You are not breaking any laws or regulations that are applicable to you or any company, trust, or partnership upon whose instructions you are acting; and</li>
+<li>Your use of the Services does not violate any laws or regulations applicable in your country of residence.</li>
+</ul>
+</div>
+
+<div class="section" id="s3">
+<h2><span class="snum">3</span> Intellectual Property Rights</h2>
+<p>3.1. Unless otherwise indicated, all source code, databases, functionality, software, website designs, audio, video, text, photographs, and graphics on the Site (collectively, the "Content") and the trademarks, service marks, and logos contained therein (collectively, the "Marks") are owned or controlled by us, and are protected by copyright and trademark laws and various other intellectual property rights and unfair competition laws of Europe, foreign jurisdictions, and international conventions. Unauthorized use and/or duplication of this material without express and written permission from this Site's author and/or owner is strictly prohibited. Excerpts and links may be used, provided that full and clear credit is given to Verdis Chain with appropriate and specific direction to the original content.</p>
+<p>3.2. The Content and the Marks are provided on the Site "AS IS" for your information and personal use only. Except as expressly provided in these Terms and Conditions, no part of the Site and no Content or Marks may be copied, reproduced, aggregated, republished, uploaded, posted, publicly displayed, encoded, translated, transmitted, distributed, sold, licensed, or otherwise exploited for any commercial purpose whatsoever, without our express prior written permission.</p>
+<p>3.3. By accessing this website, you are granted a limited license to access and use the Site and to download or print a copy of any portion of the Content to which you have properly gained access solely for your personal, non-commercial use. We reserve all rights not expressly granted to you in and to the Site, the Content, and the Marks.</p>
+<p>3.4. The Verdis Chain blockchain source code is open-source and licensed under the MIT License. The Verdis Chain name, logo, and brand assets are NOT open-source and are protected under trademark law. Use of the Verdis Chain brand requires prior written permission from Protremix.</p>
+</div>
+
+<div class="section" id="s4">
+<h2><span class="snum">4</span> Prohibited Activities</h2>
+<p>4.1. As a user of the Services, we grant you a limited, personal, non-commercial, non-exclusive, non-transferable, and revocable license to use our Services.</p>
+<p>4.2. Our performance under these Terms are subject to existing laws and legal processes and nothing contained in these Terms shall limit our rights to comply with law enforcement or other governmental or legal requests relating to your use of our services. You agree that by using our Site that you may not:</p>
+<ul>
+<li>Use the Site or any Services to interfere with or subvert the rights or obligations of the Company or the rights or obligations of any other Site user or any other third party without authorization;</li>
+<li>Distribute any virus or other harmful computer code through our Services;</li>
+<li>Take any action that may impose an unreasonable or disproportionately large load on our or any of our third-party providers' infrastructure;</li>
+<li>Bypass, circumvent, or attempt to bypass or circumvent any measures that we may use to prevent or restrict access to the Services;</li>
+<li>Use our Services in any manner that could interfere with, disrupt, negatively affect or inhibit other users from fully enjoying our Services, or that could damage, disable, overburden or impair the functioning of our Services in any manner;</li>
+<li>Use any robot, spider, crawler, scraper or other automated means or interface not provided by us to access our Services or to extract data, except as permitted through our official API;</li>
+<li>Engage in the reproduction of any content posted or extracted from our APIs, CSV exports or our website without our prior consent or authorization;</li>
+<li>Use or attempt to use another user's account without authorization;</li>
+<li>Attempt to circumvent any content filtering techniques we employ, or attempt to access any service or area of our Services that you are not authorized to access;</li>
+<li>Introduce to the Services any virus, trojan worms, logic bombs or other harmful material;</li>
+<li>Develop any third-party applications that interact with our Services without our prior written consent;</li>
+<li>Provide false, inaccurate, or misleading information; and</li>
+<li>Encourage or induce any third party to engage in any of the activities prohibited under this Section.</li>
+</ul>
+<p>4.3. Additionally, with respect to the Verdis Chain blockchain and VRDX token specifically, you may not:</p>
+<ul>
+<li>Attempt to manipulate the DPoS consensus mechanism through Sybil attacks, vote buying, or other deceptive practices;</li>
+<li>Submit malicious or spam transactions to the network that degrade performance;</li>
+<li>Attempt to exploit vulnerabilities in the AMM DEX pallet, including flash loan attacks or oracle manipulation;</li>
+<li>Use the faucet to obtain excessive testnet tokens beyond the intended rate limit;</li>
+<li>Attempt to double-spend or reorganize the blockchain;</li>
+<li>Mint, transfer, or interact with the VRDX token in any way that violates applicable securities laws.</li>
+</ul>
+</div>
+
+<div class="section" id="s5">
+<h2><span class="snum">5</span> Third-Party Websites &amp; Content</h2>
+<p>5.1. In using our Services, you may view content or utilize services provided by third parties, including links to web pages and services of such parties ("Third-Party Content"). This includes, but is not limited to, third-party wallets, blockchain indexers, and external DEX interfaces that may connect to the Verdis Chain network.</p>
+<p>5.2. We do not control, endorse or adopt any Third-Party Content and will have no responsibility for Third-Party Content, including, without limitation, material that may be misleading, incomplete, erroneous, offensive, indecent or otherwise objectionable in your jurisdiction.</p>
+<p>5.3. Any business dealings or correspondence with such third parties are solely between you and the third parties. We shall not be responsible or liable for any loss or damage of any sort incurred as the result of any such dealings, and you understand that your use of Third-Party Content, and your interactions with third parties, shall be at your own risk.</p>
+<p>5.4. Users are advised to carefully review the terms, policies, privacy, and data collection practices of any third-party websites accessed through links provided on our Site. We expressly disclaim any responsibility for transactions or purchases made through these third-party websites.</p>
+</div>
+
+<div class="section" id="s6">
+<h2><span class="snum">6</span> Blockchain Transactions &amp; Digital Assets</h2>
+<p>6.1. The Verdis Chain blockchain is a decentralized network. Transactions submitted to the blockchain are irreversible. You are solely responsible for verifying all transaction details before submitting them.</p>
+<p>6.2. The VRDX token is a native utility token of the Verdis Chain network. The Company does not guarantee the value, liquidity, or marketability of VRDX tokens. Digital asset prices are volatile and subject to market forces beyond our control.</p>
+<p>6.3. The Web Wallet provided on the Site is a non-custodial wallet. You are solely responsible for safeguarding your private keys, seed phrases, and passwords. The Company does not store, transmit, or have access to your private keys. If you lose your private keys, your funds cannot be recovered.</p>
+<p>6.4. The AMM DEX (Automated Market Maker Decentralized Exchange) is a protocol on the Verdis Chain blockchain. Liquidity provision, token swaps, and all DEX activities are conducted on-chain and are subject to smart contract risk, impermanent loss, and market volatility. The Company is not liable for any losses incurred through DEX usage.</p>
+<p>6.5. Staking and validator operations on the DPoS consensus system carry inherent risks, including but not limited to slashing, loss of stake, and changes to validator rewards. You acknowledge these risks before participating in staking activities.</p>
+<p>6.6. The faucet provides testnet VRDX tokens for development and testing purposes only. These tokens have no monetary value and cannot be exchanged for mainnet tokens or fiat currency.</p>
+</div>
+
+<div class="section" id="s7">
+<h2><span class="snum">7</span> Disclaimer</h2>
+<p>THE SITE IS PROVIDED ON AN AS-IS AND AS-AVAILABLE BASIS. YOU AGREE THAT YOUR USE OF THE SITE AND OUR SERVICES WILL BE AT YOUR SOLE RISK. TO THE FULLEST EXTENT PERMITTED BY LAW, WE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED, IN CONNECTION WITH THE SITE AND YOUR USE THEREOF, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.</p>
+<p>WE MAKE NO WARRANTIES OR REPRESENTATIONS ABOUT THE ACCURACY OR COMPLETENESS OF THE SITE'S CONTENT OR THE CONTENT OF ANY WEBSITES LINKED TO THE SITE AND WE WILL ASSUME NO LIABILITY OR RESPONSIBILITY FOR ANY (1) ERRORS, MISTAKES, OR INACCURACIES OF CONTENT AND MATERIALS, (2) PERSONAL INJURY OR PROPERTY DAMAGE, OF ANY NATURE WHATSOEVER, RESULTING FROM YOUR ACCESS TO AND USE OF THE SITE, (3) ANY UNAUTHORIZED ACCESS TO OR USE OF OUR SECURE SERVERS AND/OR ANY AND ALL PERSONAL INFORMATION AND/OR FINANCIAL INFORMATION STORED THEREIN, (4) ANY INTERRUPTION OR CESSATION OF TRANSMISSION TO OR FROM THE SITE, (5) ANY BUGS, VIRUSES, TROJAN HORSES, OR THE LIKE WHICH MAY BE TRANSMITTED TO OR THROUGH THE SITE BY ANY THIRD PARTY, AND/OR (6) ANY ERRORS OR OMISSIONS IN ANY CONTENT AND MATERIALS OR FOR ANY LOSS OR DAMAGE OF ANY KIND INCURRED AS A RESULT OF THE USE OF ANY CONTENT POSTED, TRANSMITTED, OR OTHERWISE MADE AVAILABLE VIA THE SITE.</p>
+<p>WE DO NOT WARRANT, ENDORSE, GUARANTEE, OR ASSUME RESPONSIBILITY FOR ANY PRODUCT OR SERVICE ADVERTISED OR OFFERED BY A THIRD PARTY THROUGH THE SITE, ANY HYPERLINKED WEBSITE, OR ANY WEBSITE OR MOBILE APPLICATION FEATURED IN ANY BANNER OR OTHER ADVERTISING, AND WE WILL NOT BE A PARTY TO OR IN ANY WAY BE RESPONSIBLE FOR MONITORING ANY TRANSACTION BETWEEN YOU AND ANY THIRD-PARTY PROVIDERS OF PRODUCTS OR SERVICES.</p>
+<p>The Verdis Chain blockchain is provided "as is" without warranty of any kind. The Company does not guarantee uninterrupted operation of the network, finality of transactions, or the accuracy of on-chain data displayed on Verdiscan (the blockchain explorer).</p>
+</div>
+
+<div class="section" id="s8">
+<h2><span class="snum">8</span> API Usage</h2>
+<p>8.1. The Verdis Chain API provides access to blockchain data via JSON-RPC and WebSocket endpoints. During the testnet phase, the API is provided free of charge with no rate limits. Upon mainnet launch, API usage will be subject to the published pricing plans and rate limits.</p>
+<p>8.2. You must not abuse the API by submitting excessive requests, attempting to overload the RPC nodes, or using the API for purposes other than legitimate blockchain interaction and data retrieval.</p>
+<p>8.3. The JavaScript SDK is provided under the MIT License and may be freely used, modified, and distributed in accordance with the license terms.</p>
+<p>8.4. API keys, when implemented, are personal to you and must not be shared, sold, or transferred. You are responsible for all usage of your API key.</p>
+</div>
+
+<div class="section" id="s9">
+<h2><span class="snum">9</span> Cookie Statement</h2>
+<p>9.1. This site uses cookies. Cookies are small text files that are placed on your computer by websites that you visit. They are widely used in order to make websites work, or work more efficiently, as well as to provide information to the owners of the site.</p>
+<p>9.2. Information collected from cookies is used by us to evaluate the effectiveness of our Site, analyze trends, and manage the platform. The information collected from cookies allows us to determine such things as which parts of our Site are most visited and difficulties our visitors may experience in accessing our Site.</p>
+<p>9.3. We also use third party service providers to assist us in better understanding the use of our Site. Our service providers will place cookies on the hard drive of your computer and will receive information that we select that will educate us on such things as how visitors navigate around our site, what pages are browsed and general transaction information.</p>
+<p>9.4. Your continued use of this site, as well as any subsequent usage, will be interpreted as your consent to cookies being stored on your device. You may disable cookies in your browser settings, but some features of the Site may not function properly without them.</p>
+</div>
+
+<div class="section" id="s10">
+<h2><span class="snum">10</span> Indemnity</h2>
+<p>You agree to defend, indemnify, and hold harmless the Company (and each of our officers, directors, members, employees, agents and affiliates) from any claim, demand, action, damage, loss, cost or expense, including without limitation reasonable attorneys' fees, arising out of or relating to:</p>
+<ul>
+<li>Your use of, or conduct in connection with, our Services;</li>
+<li>Any transactions you submit to the Verdis Chain blockchain;</li>
+<li>Your use of the Web Wallet, DEX, faucet, or API;</li>
+<li>Your violation of these Terms; or</li>
+<li>Your violation of any rights of any other person or entity.</li>
+</ul>
+</div>
+
+<div class="section" id="s11">
+<h2><span class="snum">11</span> Force Majeure Event</h2>
+<p>11.1. For the purposes of this clause, "Force Majeure Event" shall mean any circumstance outside the Company's control including but not limited to any interruptions or failures relating to internet service providers, internet signal, connections, electricity providers, configurations of any user's computers, any acts of God, flood, earthquake or other natural disasters, any collapse of buildings, fire, explosion or accident, any acts of terrorism, civil war or commotion, riots or any law or any action taken by a government or public authority, including, without limitation, the failure to grant a necessary license or consent.</p>
+<p>11.2. The Company shall not be in breach of these Terms nor liable for delay in performing or failure to perform any of its obligations under these Terms if such delay or failure results from a Force Majeure Event. This includes, without limitation, blockchain network outages, consensus failures, or attacks on the network that are beyond the Company's control.</p>
+</div>
+
+<div class="section" id="s12">
+<h2><span class="snum">12</span> Term and Termination</h2>
+<p>These Terms and Conditions shall remain in full force and effect while you use the Site. Without limiting any other provision of these Terms and Conditions, we reserve the right to, in our sole discretion and without notice or liability, deny access to and use of the Site (including blocking certain IP addresses), to any user for any reason, including without limitation for breach of any representation, warranty, or covenant contained in these Terms and Conditions or of any applicable law or regulation. We may terminate your use or participation in the Site or delete any content or information that you posted at any time, without warning, at our sole discretion. In addition, we reserve the right to take appropriate legal action, including without limitation pursuing civil, criminal, and injunctive redress.</p>
+</div>
+
+<div class="section" id="s13">
+<h2><span class="snum">13</span> Miscellaneous</h2>
+<p>13.1. These Terms and any dispute arising out of or in connection with their subject matter shall be governed by and construed in accordance with the laws of the European Union and the Netherlands, and the parties agree that the courts of the Netherlands shall have exclusive jurisdiction to settle any dispute or claim arising in connection with these Terms.</p>
+<p>13.2. These Terms and any related policies or operating rules posted by us on the Site constitute the entire agreement and understanding between you and us. Any failure by the Company to exercise or enforce any right or provision of these Terms shall not operate as a waiver of such right or provision.</p>
+<p>13.3. These Terms, and any of the rights, duties, and obligations contained herein, are not assignable by you without the prior written consent of the Company. We may assign any or all our rights and obligations to others at any time without notice or your consent.</p>
+<p>13.4. If any provision or part of a provision of these Terms is determined to be unlawful, void, or unenforceable, that provision or part of the provision is deemed severable from these Terms and does not affect the validity and enforceability of any remaining provisions.</p>
+<p>13.5. You understand that the Services and Site will endeavour to be available 24/7. You further acknowledge that the Company will make reasonable efforts to ensure that the Services and Site are available continuously, but the blockchain network may experience downtime due to maintenance, upgrades, or unforeseen events.</p>
+</div>
+
+<div class="section" id="s14">
+<h2><span class="snum">14</span> Contact Us</h2>
+<p>14.1. The Company is committed to promptly and effectively addressing any complaints, ensuring that issues are resolved as swiftly as is feasibly possible.</p>
+<p>14.2. Please write to us to make clear the details surrounding your complaint. You can send your complaint by e-mail to <a class="link" href="mailto:legal@protremix.com">legal@protremix.com</a> or through our <a class="link" href="/contact/">contact page</a>.</p>
+<p>14.3. For technical support, bug reports, or API-related questions, please contact <a class="link" href="mailto:support@protremix.com">support@protremix.com</a> or visit our <a class="link" href="/api/docs/">API documentation</a>.</p>
+</div>
+
+<div class="section" id="s15">
+<h2><span class="snum">15</span> Changes to Terms of Service</h2>
+<p>15.1. The Company shall be permitted to make amendments to these Terms from time to time. You will be deemed to have accepted such amended Terms by indicating your acceptance on the Site. Any further actions which you make will be subject to the Terms in effect at that time. If you object to any changes, you may cease using the Services. Your continued use of the Services after we publish or otherwise provide notice about our changes to the Terms means that you consent to the updated Terms.</p>
+<p>15.2. We keep these Terms under regular review. These Terms were last updated on August 7, 2026.</p>
+</div>
+
+</div>
+</main>
+</div>
+
+<footer class="footer">
+<div class="footer-inner">
+<div class="footer-brand">
+<h3>VERDIS CHAIN</h3>
+<p>The world's first green blockchain with native DPoS consensus, AMM DEX, and carbon credit tracking. Built on Substrate.</p>
+<div class="footer-social">
+<a href="https://x.com/Verdischain" target="_blank" aria-label="X (Twitter)"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+<a href="https://github.com/Protremix/Verdischain-" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.26.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.5 11.5 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.218.694.825.576C20.565 21.795 24 17.298 24 12 24 5.37 18.627 0 12 0z"/></svg></a>
+<a href="/contact/" aria-label="Contact"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M24 4l-12 7-12-7v-2l12 7 12-7v2zm0 2v14h-24v-14l12 7 12-7z"/></svg></a>
+<a href="/status/" aria-label="Network Status"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></a>
+</div>
+</div>
+<div class="footer-col"><h4>Products</h4><a href="/explorer/">Verdiscan</a><a href="/dex/">DEX</a><a href="/wallet/">Web Wallet</a><a href="/faucet/">Faucet</a>
+      <a href="/governance/">Governance</a><a href="/sale/">Token Sale</a></div>
+<div class="footer-col"><h4>Resources</h4><a href="/docs/">Documentation</a><a href="/whitepaper/">Whitepaper</a><a href="/lightpaper/">Light Paper</a><a href="/tokenomics/">Tokenomics</a><a href="/api/">API Reference</a><a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a></div>
+<div class="footer-col"><h4>Community</h4><a href="/validators/">Validators</a><a href="/eco/">Eco Metrics</a><a href="/governance/">Governance</a><a href="/referral/">Referral Program</a><a href="/incentives/">Validator Incentives</a><a href="/contact/">Contact</a></div>
+<div class="footer-col"><h4>Legal</h4><a href="/terms/">Terms of Service</a><a href="/privacy/">Privacy Policy</a><a href="/cookies/">Cookie Policy</a><a href="/security/">Security</a><a href="/disclaimer/">Disclaimer</a></div>
+</div>
+<div class="footer-bottom"><span>&copy; 2026 Verdis Chain &middot; Protremix &middot; Open-source under MIT License</span><span><a href="/privacy/" style="color:#64748b;text-decoration:none">GDPR Compliant</a> &middot; <a href="/security/" style="color:#64748b;text-decoration:none">Security</a></span></div>
+</footer>
+
+<script>
+var sections=[
+{n:'1. Introduction',id:'s1'},{n:'2. User Representations & Warranties',id:'s2'},{n:'3. Intellectual Property Rights',id:'s3'},{n:'4. Prohibited Activities',id:'s4'},{n:'5. Third-Party Websites & Content',id:'s5'},{n:'6. Blockchain Transactions & Digital Assets',id:'s6'},{n:'7. Disclaimer',id:'s7'},{n:'8. API Usage',id:'s8'},{n:'9. Cookie Statement',id:'s9'},{n:'10. Indemnity',id:'s10'},{n:'11. Force Majeure Event',id:'s11'},{n:'12. Term and Termination',id:'s12'},{n:'13. Miscellaneous',id:'s13'},{n:'14. Contact Us',id:'s14'},{n:'15. Changes to Terms',id:'s15'}
+];
+var html=sections.map(function(s){
+var num=s.n.split('.')[0];
+var title=s.n.replace(/^\d+\.\s/,'');
+return '<a onclick="document.getElementById(\''+s.id+'\').scrollIntoView({behavior:\'smooth\'})"><span class="num">'+num+'.</span>'+title+'</a>';
+}).join('');
+document.getElementById('tocList').innerHTML=html;
+</script>
+</body>
+</html>
