@@ -61,6 +61,13 @@
       --radius-pill: 100px;
       
       --transition: 250ms cubic-bezier(0.16, 1, 0.3, 1);
+      --accent-2: #15803d;
+      --display: 'Poppins', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --radius: 12px;
+      --success: #4ade80;
+      --text-2: #a0b0a0;
+      --hero-bg: #111811;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -144,99 +151,80 @@
       font-size: 20px; cursor: pointer; padding: 6px;
     }
 
-    /* ===== HERO SECTION ===== */
-    .docs-hero {
-      max-width: 1440px; margin: 24px auto 0; padding: 0 24px;
+    /* === GRADIENT-UI-UX HERO === */
+    .hero-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 20px; }
+    .hero {
+      position: relative; background: var(--hero-bg); border-radius: 24px;
+      overflow: hidden; padding: 48px; display: flex; gap: 40px; align-items: center;
+      min-height: 420px;
     }
-    .hero-box {
-      background: linear-gradient(135deg, rgba(0, 255, 136, 0.12) 0%, rgba(10, 14, 10, 0.95) 100%),
-                  radial-gradient(circle at top right, rgba(0, 255, 136, 0.15), transparent 60%);
-      border: 1px solid var(--accent-border);
-      border-radius: var(--radius-lg); padding: 40px 48px;
-      position: relative; overflow: visible; box-shadow: 0 12px 36px rgba(0,0,0,0.5);
-      min-height: 280px;
-      display: grid; grid-template-columns: 1fr 420px; gap: 32px; align-items: center;
-    }
-    .hero-content { }
-    .hero-box::before {
-      content: ''; position: absolute; top: 50%; left: 50%;
-      width: 300px; height: 300px; border-radius: 50%;
-      background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-      opacity: 0.08; filter: blur(20px); transform: translate(-50%, -50%);
-      pointer-events: none;
-    }
-    /* 3D Floating Cards */
-    .hero-3d-cluster {
-      position: relative; width: 100%; height: 320px; perspective: 1000px; pointer-events: none;
-    }
-    .float-3d-card {
-      position: absolute; background: rgba(22, 163, 74, 0.08);
-      backdrop-filter: blur(20px); border: 1px solid rgba(22, 163, 74, 0.2);
-      border-radius: 12px; padding: 10px 14px; pointer-events: auto;
-      transition: all 0.3s ease; min-width: 120px;
-    }
-    .float-3d-card:hover {
-      border-color: rgba(22, 163, 74, 0.4);
-      background: rgba(22, 163, 74, 0.12);
-    }
-    .float-3d-label {
-      font-size: 10px; color: rgba(255,255,255,0.5);
-      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;
-    }
-    .float-3d-value {
-      font-family: 'JetBrains Mono', monospace; font-size: 14px;
-      font-weight: 600; color: var(--accent);
-    }
-    .float-3d-sub { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; }
-    .fc3d-1 { top: 0; right: 0; animation: floatA 6s ease-in-out infinite; }
-    .fc3d-2 { top: 0; left: 0; animation: floatB 7s ease-in-out infinite; }
-    .fc3d-3 { bottom: 0; right: 0; animation: floatC 8s ease-in-out infinite; }
-    .fc3d-4 { bottom: 0; left: 0; animation: floatA 9s ease-in-out infinite; }
-    .float-3d-tag {
-      position: absolute; padding: 4px 10px;
-      background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2);
-      border-radius: 100px; font-size: 10px; color: var(--accent);
-      font-weight: 500; pointer-events: auto;
-      top: 50%; left: 50%; transform: translate(-50%, -50%);
-      animation: floatB 5s ease-in-out infinite;
-    }
-    @keyframes floatA { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-    @keyframes floatB { 0%,100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
-    @keyframes floatC { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-    @media (max-width: 1024px) {
-      .hero-box { grid-template-columns: 1fr; }
-      .hero-3d-cluster { display: none; }
-    }
+    .hero-left { flex: 1; z-index: 2; max-width: 480px; }
     .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px;
-      background: var(--accent-light); border: 1px solid var(--accent-border);
-      border-radius: var(--radius-pill); font-size: 12px; font-weight: 700;
-      color: var(--accent); margin-bottom: 16px;
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+      background: rgba(22,163,74,.1); border: 1px solid rgba(22,163,74,.3);
+      border-radius: 100px; font-size: 12px; color: var(--accent);
+      font-weight: 500; margin-bottom: 16px;
     }
     .hero-title {
-      font-family: 'Poppins', sans-serif; font-size: 32px; font-weight: 800;
-      color: var(--text-white); margin-bottom: 12px; line-height: 1.2;
+      font-family: var(--display); font-size: 14px; font-weight: 700;
+      line-height: 1.3; color: #fff; margin-bottom: 12px; letter-spacing: -.02em;
     }
-    .hero-title .gradient {
-      background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    .hero-title span { color: var(--accent); }
+    .hero-desc { font-size: 13px; color: rgba(255,255,255,.6); line-height: 1.6; margin-bottom: 24px; }
+    .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+    .hero-btn {
+      padding: 10px 20px; border-radius: var(--radius-sm); font-size: 12px;
+      font-weight: 600; transition: all .2s; cursor: pointer; border: none;
     }
-    .hero-subtitle {
-      font-size: 16px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6;
+    .hero-btn-primary { background: var(--accent); color: #1a1a1a; }
+    .hero-btn-primary:hover { background: var(--accent-2); transform: translateY(-1px); }
+    .hero-btn-ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.2); }
+    .hero-btn-ghost:hover { background: rgba(255,255,255,.05); transform: translateY(-1px); }
+    .hero-visual {
+      position: absolute; right: -40px; top: 50%; transform: translateY(-50%);
+      width: 520px; height: 420px; pointer-events: none;
     }
-
-    /* Quick stats grid inside hero */
-    .hero-stats {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 10px; margin-top: 20px;
+    .hero-circle {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 320px; height: 320px; border-radius: 50%;
+      background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+      opacity: .15; filter: blur(20px);
     }
-    .stat-card {
-      background: rgba(18, 24, 18, 0.85); border: 1px solid var(--border);
-      border-radius: var(--radius-md); padding: 16px 20px; transition: var(--transition);
+    .hero-ring {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 280px; height: 280px; border-radius: 50%;
+      border: 1px solid rgba(22,163,74,.2);
     }
-    .stat-card:hover { border-color: var(--accent-border); transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-glow); }
-    .stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
-    .stat-val { font-size: 18px; font-weight: 700; color: var(--text-white); margin-top: 4px; font-family: var(--font-mono); }
-    .stat-val.accent { color: var(--accent); }
+    .hero-ring-2 { width: 380px; height: 380px; border-color: rgba(22,163,74,.08); }
+    .hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .float-card {
+      position: absolute; background: rgba(255,255,255,.06); backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,.1); border-radius: var(--radius);
+      padding: 12px 16px; pointer-events: auto; transition: all .3s;
+    }
+    .float-card:hover { border-color: rgba(22,163,74,.3); background: rgba(22,163,74,.05); }
+    .float-card-label {
+      font-size: 10px; color: rgba(255,255,255,.5);
+      text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px;
+    }
+    .float-card-value { font-family: var(--mono); font-size: 14px; font-weight: 600; color: var(--accent); }
+    .float-card-sub { font-size: 10px; color: rgba(255,255,255,.4); margin-top: 2px; }
+    .fc-1 { top: 20px; right: 40px; animation: float1 6s ease-in-out infinite; }
+    .fc-2 { top: 120px; right: 140px; animation: float2 7s ease-in-out infinite; }
+    .fc-3 { bottom: 60px; right: 60px; animation: float3 8s ease-in-out infinite; }
+    .fc-4 { bottom: 140px; right: 180px; animation: float1 9s ease-in-out infinite; }
+    @keyframes float1 { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    @keyframes float2 { 0%,100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
+    @keyframes float3 { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    .float-tag {
+      position: absolute; padding: 6px 12px;
+      background: rgba(22,163,74,.08); border: 1px solid rgba(22,163,74,.2);
+      border-radius: 100px; font-size: 11px; color: var(--accent);
+      font-weight: 500; pointer-events: auto;
+    }
+    .ft-1 { top: 200px; right: 80px; animation: float2 5s ease-in-out infinite; }
+    .ft-2 { bottom: 20px; right: 280px; animation: float1 6s ease-in-out infinite; }
+    @media (max-width: 768px) { .hero-visual { display: none; } .hero { padding: 32px 24px; min-height: auto; flex-direction: column; } }
 
     /* ===== MAIN LAYOUT: SIDEBAR + CONTENT ===== */
     .docs-container {
@@ -505,105 +493,33 @@
   </nav>
 
   <!-- HERO SECTION -->
-  <header class="docs-hero">
-    <div class="hero-box">
-     <div class="hero-content">
-      <div class="hero-badge">
-        <i class="fa-solid fa-code"></i> Developer Documentation v2.0
-      </div>
-      <h1 class="hero-title">
-        Build on <span class="gradient">Verdis Chain</span> Protocol
-      </h1>
-      <p class="hero-subtitle">
-        Comprehensive guide to the world's first carbon-negative Layer-1 blockchain built in Rust + Substrate. Explore network endpoints, 15 runtime pallets, RPC methods, VRDX tokenomics, validator operations, AMM DEX mechanics, and the 51-method JavaScript SDK.
-      </p>
-
-      <!-- Dynamic Hero Stats -->
-      <div class="hero-stats">
-        <div class="stat-card">
-          <div class="stat-label">Block Target</div>
-          <div class="stat-val accent">3.0s</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Consensus</div>
-          <div class="stat-val">DPoS + PoH</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Total Pallets</div>
-          <div class="stat-val accent">15 Pallets</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">SDK Methods</div>
-          <div class="stat-val accent">51 Methods</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">SS58 Format</div>
-          <div class="stat-val">Prefix 909</div>
+  <div class="hero-wrap">
+    <div class="hero">
+      <div class="hero-left">
+        <div class="hero-badge">● Documentation v2.0 · Developer Guide</div>
+        <h1 class="hero-title">VERDIS CHAIN<br><span>Developer Docs</span></h1>
+        <p class="hero-desc">Complete guide to RPC APIs, 15 runtime pallets, DPoS consensus, AMM DEX, VRDX tokenomics, validator operations, and the 51-method JavaScript SDK. Built in Rust + Substrate.</p>
+        <div class="hero-btns">
+          <button class="hero-btn hero-btn-primary" onclick="document.getElementById('getting-started').scrollIntoView({behavior:'smooth'})">Getting Started ↓</button>
+          <a href="#sdk-reference" class="hero-btn hero-btn-ghost">SDK Reference →</a>
         </div>
       </div>
-     </div>
-
-      <!-- 3D FLOATING UI CLUSTER -->
-      <div class="hero-3d-cluster">
-        <div class="float-3d-card fc3d-1">
-          <div class="float-3d-label">Block Target</div>
-          <div class="float-3d-value">3.0s</div>
-          <div class="float-3d-sub">Substrate</div>
-        </div>
-        <div class="float-3d-card fc3d-2">
-          <div class="float-3d-label">Pallets</div>
-          <div class="float-3d-value">15</div>
-          <div class="float-3d-sub">Runtime</div>
-        </div>
-        <div class="float-3d-card fc3d-3">
-          <div class="float-3d-label">SDK Methods</div>
-          <div class="float-3d-value">51</div>
-          <div class="float-3d-sub">JavaScript</div>
-        </div>
-        <div class="float-3d-card fc3d-4">
-          <div class="float-3d-label">Consensus</div>
-          <div class="float-3d-value">DPoS</div>
-          <div class="float-3d-sub">BABE+GRANDPA</div>
-        </div>
-        <div class="float-3d-tag ft3d-1">Carbon Negative</div>
+      <div class="hero-visual">
+        <div class="hero-circle"></div>
+        <div class="hero-ring"></div>
+        <div class="hero-ring hero-ring-2"></div>
+        <canvas class="hero-canvas" id="heroCanvas"></canvas>
+        <div class="float-card fc-1"><div class="float-card-label">Block Height</div><div class="float-card-value" id="heroBlock">—</div><div class="float-card-sub">Live</div></div>
+        <div class="float-card fc-2"><div class="float-card-label">Total Pallets</div><div class="float-card-value">15</div><div class="float-card-sub">Runtime</div></div>
+        <div class="float-card fc-3"><div class="float-card-label">SDK Methods</div><div class="float-card-value">51</div><div class="float-card-sub">JavaScript</div></div>
+        <div class="float-card fc-4"><div class="float-card-label">SS58 Prefix</div><div class="float-card-value">909</div><div class="float-card-sub">Testnet</div></div>
+        <div class="float-tag ft-1">Carbon Negative</div>
+        <div class="float-tag ft-2">Rust + Substrate</div>
       </div>
     </div>
-  </header>
+  </div>
 
-  <!-- MAIN CONTAINER -->
-  <div class="docs-container">
-
-    <!-- STICKY SIDEBAR NAVIGATION -->
-    <aside class="docs-sidebar">
-      <div class="sidebar-search">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="docsSearchInput" placeholder="Search docs, RPC, SDK..." onkeyup="filterDocsNav()" />
-      </div>
-
-      <div class="sidebar-group">
-        <div class="sidebar-heading"><i class="fa-solid fa-rocket"></i> Overview</div>
-        <ul class="sidebar-links">
-          <li><a href="#getting-started" class="active">Getting Started <span class="badge-count">RPC</span></a></li>
-          <li><a href="#architecture">Blockchain Architecture <span class="badge-count">15</span></a></li>
-          <li><a href="#rpc-api">RPC API Reference <span class="badge-count">JSON</span></a></li>
-          <li><a href="#tokenomics">Token Economics <span class="badge-count">VRDX</span></a></li>
-          <li><a href="#validator-guide">Validator Guide <span class="badge-count">DPoS</span></a></li>
-          <li><a href="#dex-guide">DEX / AMM Guide <span class="badge-count">Swap</span></a></li>
-          <li><a href="#sdk-reference">SDK Reference <span class="badge-count">51</span></a></li>
-        </ul>
-      </div>
-
-      <div class="sidebar-group">
-        <div class="sidebar-heading"><i class="fa-solid fa-plug"></i> Network Endpoints</div>
-        <ul class="sidebar-links">
-          <li><a href="#rpc-api">HTTPS: verdischain.com/rpc</a></li>
-          <li><a href="#rpc-api">WSS: verdischain.com/ws</a></li>
-          <li><a href="#rpc-api">REST: api.verdischain.com</a></li>
-        </ul>
-      </div>
-    </aside>
-
-    <!-- MAIN CONTENT SECTIONS -->
+  <!-- MAIN CONTENT SECTIONS --><!-- MAIN CONTENT SECTIONS -->
     <main class="docs-content">
 
       <!-- SECTION 1: GETTING STARTED -->
@@ -1629,6 +1545,82 @@ main().catch(console.error);</pre>
       }
     }
     checkLiveRPC();
+  </script>
+
+  <!-- Hero Canvas Animation + Live Block -->
+  <script>
+  (function() {
+    // Canvas particle network
+    const canvas = document.getElementById('heroCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let W, H;
+    
+    function resize() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      W = canvas.width = rect.width;
+      H = canvas.height = rect.height;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    
+    // Init particles
+    for (let i = 0; i < 30; i++) {
+      particles.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        r: Math.random() * 2 + 1
+      });
+    }
+    
+    function animate() {
+      ctx.clearRect(0, 0, W, H);
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > W) p.vx *= -1;
+        if (p.y < 0 || p.y > H) p.vy *= -1;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(22,163,74,0.4)';
+        ctx.fill();
+      });
+      // Connection lines
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i+1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if (dist < 100) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = 'rgba(22,163,74,' + (0.15 * (1 - dist/100)) + ')';
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+    animate();
+    
+    // Load live block height
+    fetch('/rpc', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({jsonrpc: '2.0', method: 'chain_getHeader', params: [], id: 1})
+    })
+    .then(r => r.json())
+    .then(data => {
+      const blockNum = parseInt(data.result.number, 16);
+      const el = document.getElementById('heroBlock');
+      if (el) el.textContent = '#' + blockNum;
+    })
+    .catch(() => {});
+  })();
   </script>
 </body>
 </html>
