@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Submit session keys for Alice, Bob, Charlie validators."""
+"""Submit session keys for Alice, Bob, Charlie validators + re-seed DEX pools."""
 import sys
 import json
-import time
 from substrateinterface import SubstrateInterface, Keypair
 
 substrate = SubstrateInterface(
     url="http://127.0.0.1:9933",
     ss58_format=909,
-    type_registry_preset="default",
+    auto_discover=True,
+    type_registry_preset=None,
 )
 
-# Get session keys from each node by calling author_rotateKeys
+# Get session keys from each node
 nodes = [
     ("Alice", 9933, "//Alice"),
     ("Bob", 9944, "//Bob"),
@@ -20,15 +20,14 @@ nodes = [
 
 for name, port, uri in nodes:
     print(f"\n=== {name} (port {port}) ===")
-    
-    # Get session keys from the node
     try:
-        node_substrate = SubstrateInterface(
+        node_sub = SubstrateInterface(
             url=f"http://127.0.0.1:{port}",
             ss58_format=909,
-            type_registry_preset="default",
+            auto_discover=True,
+            type_registry_preset=None,
         )
-        response = node_substrate.rpc_request("author_rotateKeys", [])
+        response = node_sub.rpc_request("author_rotateKeys", [])
         session_keys_hex = response.get("result", "")
         if not session_keys_hex:
             print(f"  ERROR: No session keys returned")
@@ -38,77 +37,44 @@ for name, port, uri in nodes:
         print(f"  ERROR getting keys: {e}")
         continue
     
-    # Create keypair for this validator
     keypair = Keypair.create_from_uri(uri)
     print(f"  Account: {keypair.ss58_address}")
     
     # Check balance
     try:
-        account_info = substrate.query("System", "Account", [keypair.ss58_address])
-        balance = account_info.value.get("data", {}).get("free", 0)
+        account = substrate.query("System", "Account", [keypair.ss58_address])
+        balance = account.value.get("data", {}).get("free", 0)
         print(f"  Balance: {balance / 10**9:,.4f} VRDX")
     except Exception as e:
         print(f"  Balance check error: {e}")
     
-    # Create session.setKeys call
-    # SessionKeys in our runtime = (babe, grandpa) — we need to decode the rotateKeys output
-    # The keys are a SCALE-encoded tuple of (BabeKey, GrandpaKey)
-    # For sr25519, each key is 32 bytes, so total is 64 bytes
+    # Submit session.setKeys
     try:
-        # Convert hex to bytes
-        keys_bytes = bytes.fromhex(session_keys_hex[2:])
-        print(f"  Keys length: {len(keys_bytes)} bytes")
-        
-        # Create the setKeys call
-        # session.setKeys(keys: SessionKeys, proof: Vec<u8>)
-        # We pass the raw bytes as the keys and empty proof
+        # The keys from rotateKeys are a SCALE-encoded bytes object
+        # session.set_keys(keys: Bytes, proof: Bytes)
         call = substrate.compose_call(
             call_module="Session",
             call_function="set_keys",
             call_params={
-                "keys": {"babe": keys_bytes[:32].hex(), "grandpa": keys_bytes[32:64].hex()},
+                "keys": session_keys_hex,
                 "proof": "0x",
             }
         )
-        
-        # Sign and submit
         extrinsic = substrate.create_signed_extrinsic(call=call, keypair=keypair)
         result = substrate.submit_extrinsic(extrinsic, wait_for_inclusion=True)
-        
         if result.is_success:
             print(f"  ✅ Session keys set! Block: {result.block_hash}")
         else:
             print(f"  ❌ Failed: {result.error_message}")
     except Exception as e:
-        print(f"  ERROR submitting setKeys: {e}")
-        # Try with raw bytes approach
-        try:
-            print(f"  Retrying with raw bytes approach...")
-            # Pass the full session keys hex directly
-            call = substrate.compose_call(
-                call_module="Session",
-                call_function="set_keys",
-                call_params={
-                    "keys": session_keys_hex,
-                    "proof": "0x",
-                }
-            )
-            extrinsic = substrate.create_signed_extrinsic(call=call, keypair=keypair)
-            result = substrate.submit_extrinsic(extrinsic, wait_for_inclusion=True)
-            if result.is_success:
-                print(f"  ✅ Session keys set (raw)! Block: {result.block_hash}")
-            else:
-                print(f"  ❌ Failed: {result.error_message}")
-        except Exception as e2:
-            print(f"  ERROR (raw): {e2}")
+        print(f"  ERROR: {e}")
 
 # Re-seed DEX pools
 print("\n=== RE-SEEDING DEX POOLS ===")
 alice_kp = Keypair.create_from_uri("//Alice")
 
 pools = [
-    # (token_a, token_b, amount_a, amount_b)
-    (b"VRDX", b"ECO", 500_000_000_000_000, 500_000_000_000_000),  # 500k VRDX / 500k ECO
+    (b"VRDX", b"ECO", 500_000_000_000_000, 500_000_000_000_000),
     (b"VRDX", b"CARBON", 300_000_000_000_000, 300_000_000_000_000),
     (b"VRDX", b"TREE", 200_000_000_000_000, 200_000_000_000_000),
     (b"VRDX", b"GREEN", 200_000_000_000_000, 200_000_000_000_000),
@@ -142,15 +108,13 @@ print("\n=== VERIFICATION ===")
 try:
     validators = substrate.query("Session", "Validators", [])
     print(f"Session validators: {len(validators.value)}")
-    for v in validators.value:
-        print(f"  {v[:16]}...")
-except:
-    pass
+except Exception as e:
+    print(f"Session validators check error: {e}")
 
 try:
     pools = substrate.query("AmmDex", "NextPoolId", [])
     print(f"DEX pools: {pools.value}")
-except:
-    pass
+except Exception as e:
+    print(f"DEX pools check error: {e}")
 
 print("\nDone!")
