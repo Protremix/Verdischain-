@@ -456,6 +456,7 @@ impl Get<sp_runtime::AccountId32> for TestGreenTreasury {
 }
 #[cfg(test)]
 mod tests {
+    mod property_tests;
     use super::*;
     use frame_support::{
         assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types,
