@@ -1056,7 +1056,7 @@ impl frame_support::traits::EnsureOrigin<RuntimeOrigin> for EnsureCouncilSpend {
             .map(|_| TreasuryMaxSpend::get())
     }
     #[cfg(feature = "runtime-benchmarks")]
-    fn try_origin_or_root(o: RuntimeOrigin) -> Result<Option<Self::Success>, RuntimeOrigin> {
+    fn try_successful_origin(o: RuntimeOrigin) -> Result<Option<Self::Success>, RuntimeOrigin> {
         match Self::try_origin(o.clone()) {
             Ok(s) => Ok(Some(s)),
             Err(_) => {
@@ -1111,7 +1111,6 @@ impl pallet_treasury::Config for Runtime {
     type BlockNumberProvider = System;
 }
 
-
 // === Treasury Multisig (3-of-5 cold storage) ===
 // Placeholder signers: None until air-gapped key ceremony completes
 // After ceremony: set to 5 signer AccountIds via runtime upgrade
@@ -1156,16 +1155,13 @@ impl frame_support::traits::EnsureOrigin<RuntimeOrigin> for EnsureMultisigOrCoun
     }
 
     #[cfg(feature = "runtime-benchmarks")]
-    fn try_origin_or_root(o: RuntimeOrigin) -> Result<Option<Self::Success>, RuntimeOrigin> {
+    fn try_successful_origin(o: RuntimeOrigin) -> Result<Option<Self::Success>, RuntimeOrigin> {
         match Self::try_origin(o.clone()) {
             Ok(s) => Ok(Some(s)),
-            Err(_) => {
-                if frame_system::ensure_root(o).is_ok() {
-                    Ok(Some(TreasuryMaxSpend::get()))
-                } else {
-                    Err(o)
-                }
-            }
+            Err(remaining) => match frame_system::ensure_root(remaining) {
+                Ok(()) => Ok(Some(TreasuryMaxSpend::get())),
+                Err(_) => Err(o),
+            },
         }
     }
 }

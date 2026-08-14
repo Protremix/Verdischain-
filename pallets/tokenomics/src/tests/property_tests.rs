@@ -108,10 +108,7 @@ impl TokenomicsState {
 
     /// Mint tokens: increases total supply if under cap
     pub fn mint(&mut self, amount: u128) -> Result<u128, &'static str> {
-        let new_supply = self
-            .total_supply
-            .checked_add(amount)
-            .ok_or("Overflow")?;
+        let new_supply = self.total_supply.checked_add(amount).ok_or("Overflow")?;
         if new_supply > MAX_SUPPLY {
             return Err("ExceedsMaxSupply");
         }
@@ -303,7 +300,10 @@ fn test_prop_burn_decreases_total_supply_exact() {
         let current = state.total_supply;
         let err = state.burn(current + 1);
         assert!(err.is_err(), "Burn exceeding total supply must fail");
-        assert_eq!(state.total_supply, current, "Supply must remain unchanged on failed burn");
+        assert_eq!(
+            state.total_supply, current,
+            "Supply must remain unchanged on failed burn"
+        );
 
         // Edge case: zero burn
         assert_ok!(state.burn(0));
@@ -364,11 +364,7 @@ fn test_prop_no_allocation_pool_goes_negative() {
             let over_amount = bal + 1;
 
             let res = state.transfer_between_pools(i, (i + 1) % 9, over_amount);
-            assert!(
-                res.is_err(),
-                "Over-withdrawing from pool {} must fail",
-                i
-            );
+            assert!(res.is_err(), "Over-withdrawing from pool {} must fail", i);
 
             // Verify balance is unchanged and >= 0
             let new_bal = state.pools.get_pool(i);

@@ -90,13 +90,18 @@ fn test_edge_case_2_claim_exactly_at_cliff() {
         System::set_block_number(blocks_for_days(365));
 
         // Claim at cliff succeeds
-        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(alice.clone())));
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+            alice.clone()
+        )));
 
         // At day 365 out of 730 total days: vested = 3B * 365 / 730 = 1,500,000,000 (50% cliff portion)
         let expected_released = 1_500_000_000u128;
         let vestings = UserVestings::<Test>::get(&alice).unwrap();
         assert_eq!(vestings[0].released, expected_released);
-        assert_eq!(LockedBalances::<Test>::get(&alice), amount - expected_released);
+        assert_eq!(
+            LockedBalances::<Test>::get(&alice),
+            amount - expected_released
+        );
     });
 }
 
@@ -119,7 +124,9 @@ fn test_edge_case_3_claim_one_block_after_cliff() {
         System::set_block_number(blocks_for_days(365) + 1);
 
         // First claim releases cliff amount (elapsed_days = 365)
-        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(alice.clone())));
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+            alice.clone()
+        )));
         let vestings = UserVestings::<Test>::get(&alice).unwrap();
         assert_eq!(vestings[0].released, 1_500_000_000u128);
 
@@ -127,7 +134,9 @@ fn test_edge_case_3_claim_one_block_after_cliff() {
         System::set_block_number(blocks_for_days(366));
 
         // Claim again: releases additional 1 day of linear vesting
-        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(alice.clone())));
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+            alice.clone()
+        )));
         // Day 366 of 730: vested = 3B * 366 / 730 = 1,504,109,589
         let expected_total_released = 3_000_000_000u128 * 366 / 730;
         let vestings = UserVestings::<Test>::get(&alice).unwrap();
@@ -155,14 +164,19 @@ fn test_edge_case_4_claim_at_cliff_plus_half_duration() {
         // Cliff + half duration = 365 + 182 = 547 days.
         System::set_block_number(blocks_for_days(547));
 
-        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(alice.clone())));
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+            alice.clone()
+        )));
 
         // At day 547 of 730: vested = 3B * 547 / 730 = 2,247,945,205
         // This is cliff (1.5B) + half of linear portion (747,945,205)
         let expected_released = 3_000_000_000u128 * 547 / 730;
         let vestings = UserVestings::<Test>::get(&alice).unwrap();
         assert_eq!(vestings[0].released, expected_released);
-        assert_eq!(LockedBalances::<Test>::get(&alice), amount - expected_released);
+        assert_eq!(
+            LockedBalances::<Test>::get(&alice),
+            amount - expected_released
+        );
     });
 }
 
@@ -184,7 +198,9 @@ fn test_edge_case_5_claim_at_cliff_plus_full_duration() {
         // Seed: cliff 365 + full duration 365 = 730 days
         System::set_block_number(blocks_for_days(730));
 
-        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(alice.clone())));
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+            alice.clone()
+        )));
 
         // 100% unlocked
         assert_eq!(LockedBalances::<Test>::get(&alice), 0);
@@ -211,7 +227,9 @@ fn test_edge_case_6_claim_after_full_duration_no_inflation() {
         // Advance far past full duration: day 2000
         System::set_block_number(blocks_for_days(2000));
 
-        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(alice.clone())));
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+            alice.clone()
+        )));
 
         // Exactly 100% unlocked (3B), locked balance is 0
         assert_eq!(LockedBalances::<Test>::get(&alice), 0);
@@ -250,7 +268,9 @@ fn test_edge_case_7_double_claim_same_block() {
         System::set_block_number(blocks_for_days(400));
 
         // First claim succeeds
-        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(alice.clone())));
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+            alice.clone()
+        )));
         let released_first = UserVestings::<Test>::get(&alice).unwrap()[0].released;
 
         // Second claim at exact same block fails with NothingToRelease
@@ -329,12 +349,17 @@ fn test_edge_case_9_multiple_schedules_tracked_independently() {
         // - Team (cliff 365): 0 vested
         System::set_block_number(blocks_for_days(200));
 
-        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(alice.clone())));
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+            alice.clone()
+        )));
 
         let vestings = UserVestings::<Test>::get(&alice).unwrap();
         assert_eq!(vestings.len(), 3);
         assert_eq!(vestings[0].released, 0, "Seed released should be 0");
-        assert_eq!(vestings[1].released, 1_095_890_410u128, "Presale released should be ~1.09B");
+        assert_eq!(
+            vestings[1].released, 1_095_890_410u128,
+            "Presale released should be ~1.09B"
+        );
         assert_eq!(vestings[2].released, 0, "Team released should be 0");
 
         // Advance to day 400:
@@ -343,7 +368,9 @@ fn test_edge_case_9_multiple_schedules_tracked_independently() {
         // - Team (cliff 365, vesting 1095): 5B * 400 / 1095 = 1,826,484,018
         System::set_block_number(blocks_for_days(400));
 
-        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(alice.clone())));
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+            alice.clone()
+        )));
 
         let vestings = UserVestings::<Test>::get(&alice).unwrap();
         assert_eq!(vestings[0].released, 1_643_835_616u128);
@@ -370,7 +397,11 @@ fn test_edge_case_10_transfer_and_clone_handling() {
 
         // Alice cannot transfer locked balance to Bob
         assert_noop!(
-            Balances::transfer_allow_death(RuntimeOrigin::signed(alice.clone()), bob.clone(), 500_000_000),
+            Balances::transfer_allow_death(
+                RuntimeOrigin::signed(alice.clone()),
+                bob.clone(),
+                500_000_000
+            ),
             DispatchError::Token(sp_runtime::TokenError::Frozen)
         );
 
@@ -461,13 +492,17 @@ fn test_presale_schedule_flow() {
 
         // At cliff (day 180) -> vested = 2B * 180 / 365 = 986,301,369
         System::set_block_number(blocks_for_days(180));
-        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(alice.clone())));
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+            alice.clone()
+        )));
         let vestings = UserVestings::<Test>::get(&alice).unwrap();
         assert_eq!(vestings[0].released, 986_301_369u128);
 
         // At full vesting (day 365) -> 100% (2B)
         System::set_block_number(blocks_for_days(365));
-        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(alice.clone())));
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+            alice.clone()
+        )));
         assert_eq!(LockedBalances::<Test>::get(&alice), 0);
     });
 }
@@ -496,13 +531,17 @@ fn test_team_schedule_flow() {
 
         // At cliff (day 365) -> vested = 5B * 365 / 1095 = 1,666,666,666
         System::set_block_number(blocks_for_days(365));
-        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(alice.clone())));
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+            alice.clone()
+        )));
         let vestings = UserVestings::<Test>::get(&alice).unwrap();
         assert_eq!(vestings[0].released, 1_666_666_666u128);
 
         // At full vesting (day 1095) -> 100% (5B)
         System::set_block_number(blocks_for_days(1095));
-        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(alice.clone())));
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+            alice.clone()
+        )));
         assert_eq!(LockedBalances::<Test>::get(&alice), 0);
     });
 }

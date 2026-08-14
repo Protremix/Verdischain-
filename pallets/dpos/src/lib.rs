@@ -1128,10 +1128,10 @@ mod benchmarking;
 
 #[cfg(test)]
 mod tests {
-    #[path = "slashing_tests.rs"]
-    mod slashing_tests;
     #[path = "integration_tests.rs"]
     mod integration_tests;
+    #[path = "slashing_tests.rs"]
+    mod slashing_tests;
     use super::*;
     use frame_support::{
         assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types,

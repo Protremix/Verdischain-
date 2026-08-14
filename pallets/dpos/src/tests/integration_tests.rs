@@ -100,7 +100,10 @@ fn test_slashing_double_signing_equivocation() {
         assert_eq!(charlie_reserved_after, 1600); // 2000 - 400
 
         // LastSlashedBlock recorded
-        assert_eq!(LastSlashedBlock::<Test>::get(&alice), System::block_number() as u32);
+        assert_eq!(
+            LastSlashedBlock::<Test>::get(&alice),
+            System::block_number() as u32
+        );
         assert_eq!(SlashingEvents::<Test>::get(&alice), 1);
         assert!(!ActiveValidators::<Test>::get().contains(&alice));
     });
@@ -178,7 +181,7 @@ fn test_slashed_validator_removed_from_active_set() {
 fn test_multiple_validators_slashed_simultaneously() {
     new_test_ext().execute_with(|| {
         let alice = Sr25519Keyring::Alice.to_account_id(); // 5000 stake
-        let bob = Sr25519Keyring::Bob.to_account_id();   // 3000 stake
+        let bob = Sr25519Keyring::Bob.to_account_id(); // 3000 stake
 
         let treasury = DposPalletId::get().into_account_truncating();
         let treasury_before = Balances::free_balance(&treasury);
@@ -334,7 +337,9 @@ fn test_delegator_unstakes_after_validator_slashed() {
 
         // Fast-forward to unlock block
         System::set_block_number((1 + UnbondingPeriod::get()).into());
-        assert_ok!(Dpos::withdraw_unbonded(RuntimeOrigin::signed(charlie.clone())));
+        assert_ok!(Dpos::withdraw_unbonded(RuntimeOrigin::signed(
+            charlie.clone()
+        )));
 
         // Unbonding queue cleared & funds unreserved
         assert!(UnbondingQueue::<Test>::get(&charlie).is_none());
@@ -486,7 +491,9 @@ fn test_partial_unstake_remaining_bonded() {
 
         // Fast-forward & withdraw
         System::set_block_number((1 + UnbondingPeriod::get()).into());
-        assert_ok!(Dpos::withdraw_unbonded(RuntimeOrigin::signed(charlie.clone())));
+        assert_ok!(Dpos::withdraw_unbonded(RuntimeOrigin::signed(
+            charlie.clone()
+        )));
 
         // Only Alice's 1500 is unreserved; Bob's 2500 stays reserved!
         assert_eq!(Balances::reserved_balance(&charlie), 2500);
@@ -572,9 +579,15 @@ fn test_dex_pools_unaffected_by_slashing() {
         let _ = Balances::deposit_creating(&dex_pool_account, pool_initial_balance);
         let _ = Balances::deposit_creating(&dex_user_account, user_initial_balance);
 
-        assert_eq!(Balances::free_balance(&dex_pool_account), pool_initial_balance);
+        assert_eq!(
+            Balances::free_balance(&dex_pool_account),
+            pool_initial_balance
+        );
         assert_eq!(Balances::reserved_balance(&dex_pool_account), 0);
-        assert_eq!(Balances::free_balance(&dex_user_account), user_initial_balance);
+        assert_eq!(
+            Balances::free_balance(&dex_user_account),
+            user_initial_balance
+        );
 
         // Perform severe slashing on DPoS validator
         assert_ok!(Dpos::slash_validator(
@@ -585,9 +598,15 @@ fn test_dex_pools_unaffected_by_slashing() {
         ));
 
         // DEX pool and user balances remain completely unaffected
-        assert_eq!(Balances::free_balance(&dex_pool_account), pool_initial_balance);
+        assert_eq!(
+            Balances::free_balance(&dex_pool_account),
+            pool_initial_balance
+        );
         assert_eq!(Balances::reserved_balance(&dex_pool_account), 0);
-        assert_eq!(Balances::free_balance(&dex_user_account), user_initial_balance);
+        assert_eq!(
+            Balances::free_balance(&dex_user_account),
+            user_initial_balance
+        );
         assert_eq!(Balances::reserved_balance(&dex_user_account), 0);
     });
 }
@@ -677,7 +696,9 @@ fn test_total_staked_invariant_through_full_lifecycle() {
 
         // Step 4: Advance time & withdraw
         System::set_block_number((1 + UnbondingPeriod::get()).into());
-        assert_ok!(Dpos::withdraw_unbonded(RuntimeOrigin::signed(charlie.clone())));
+        assert_ok!(Dpos::withdraw_unbonded(RuntimeOrigin::signed(
+            charlie.clone()
+        )));
 
         // TotalStaked remains invariant
         assert_eq!(TotalStaked::<Test>::get(), initial_staked - 1000);
