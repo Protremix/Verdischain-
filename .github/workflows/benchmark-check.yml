@@ -1,0 +1,38 @@
+name: Benchmark Weights Check
+
+on:
+  pull_request:
+    branches: [master, main]
+    paths:
+      - 'pallets/**'
+      - 'runtime/**'
+
+jobs:
+  check-weights:
+    name: Verify pallet weight files exist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check all production pallets have weight files
+        run: |
+          MISSING=0
+          for pallet_dir in pallets/*/; do
+            pallet_name=$(basename "$pallet_dir")
+            if [ ! -f "${pallet_dir}src/weights.rs" ]; then
+              echo "WARNING: No weights.rs found for $pallet_name"
+              MISSING=$((MISSING + 1))
+            fi
+          done
+          if [ $MISSING -gt 0 ]; then
+            echo "$MISSING pallet(s) missing weight files"
+            exit 1
+          fi
+          echo "All pallets have weight files"
+      - name: Check runtime uses real weights (not placeholder)
+        run: |
+          PLACEHOLDER=$(grep -c 'type WeightInfo = ()' runtime/src/lib.rs || true)
+          if [ "$PLACEHOLDER" -gt 6 ]; then
+            echo "FAIL: $PLACEHOLDER pallets still use placeholder weights (max 6 allowed for FRAME pallets)"
+            exit 1
+          fi
+          echo "OK: Weight configuration looks correct ($PLACEHOLDER FRAME placeholders)"
