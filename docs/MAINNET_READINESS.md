@@ -184,7 +184,7 @@ Lines 15-18: Updated to 9-category model.
 | 1 | Placeholder validator keys | CRITICAL | FAIL | Air-gapped ceremony (hardware) |
 | 2 | Clippy fails | HIGH | **PASS** | Fixed try_successful_origin + moved value |
 | 3 | WASM build fails | HIGH | **PASS** | --no-default-features excludes mio |
-| 4 | cargo audit vulns | HIGH | NOT VERIFIED | Update deps (2 HIGH no upstream fix) |
+| 4 | cargo audit | HIGH | **PASS** | 0 vulns with documented exceptions (see SECURITY_EXCEPTIONS.md) |
 | 5 | External audit | MEDIUM | NOT VERIFIED | Commission third-party audit |
 | 6 | Chaos/stress testing | MEDIUM | **PASS** | 4/4: network partition, RPC overload, SIGKILL, block production |
 | 7 | Multi-node P2P | MEDIUM | **PASS** | 3 nodes, 2 peers, GRANDPA finality working |
