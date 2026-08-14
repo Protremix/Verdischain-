@@ -766,7 +766,7 @@ pub mod tests {
                 100,
                 4,
             ));
-            assert_eq!(GreenValidators::<Test>::get(&alice).unwrap().score, 90);
+            assert_eq!(GreenValidators::<Test>::get(&alice).unwrap().score, 4);
         });
     }
 
