@@ -266,6 +266,8 @@ pub mod pallet {
         type RegistrationDeposit: Get<BalanceOf<Self>>;
         type MaxCommission: Get<u8>;
         #[pallet::constant]
+        type MinGreenScore: Get<u8>;
+        #[pallet::constant]
         type MaxGreenScore: Get<u8>;
         #[pallet::constant]
         type ReactivationCooldown: Get<u32>;
@@ -722,6 +724,10 @@ pub mod pallet {
         ) -> DispatchResult {
             ensure_root(origin)?;
 
+            ensure!(
+                score >= T::MinGreenScore::get(),
+                Error::<T>::InvalidGreenScore
+            );
             ensure!(
                 score <= T::MaxGreenScore::get(),
                 Error::<T>::InvalidGreenScore
@@ -1186,6 +1192,7 @@ mod tests {
         pub const DposPalletId: PalletId = PalletId(*b"v/dposps");
         pub const MaxStakePerValidator: u128 = 100_000;
         pub const MaxCommission: u8 = 20;
+        pub const MinGreenScore: u8 = 0;
         pub const MaxGreenScore: u8 = 5;
         pub const ReactivationCooldown: u32 = 10;
     }
@@ -1204,6 +1211,7 @@ mod tests {
         type RegistrationDeposit = ConstU128<0>;
         type ReactivationCooldown = ReactivationCooldown;
         type MaxCommission = MaxCommission;
+        type MinGreenScore = MinGreenScore;
         type MaxGreenScore = MaxGreenScore;
         type WeightInfo = SubstrateWeight<Test>;
     }
