@@ -1901,3 +1901,6 @@ mod try_runtime_tests {
         });
     }
 }
+
+#[cfg(test)]
+mod integration_tests;

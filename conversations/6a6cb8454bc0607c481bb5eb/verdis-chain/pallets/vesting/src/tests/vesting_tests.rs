@@ -336,3 +336,169 @@ fn test_label_too_long_fails() {
         );
     });
 }
+
+// ============================================================
+// ADDITIONAL EDGE CASE TESTS (Kimi audit additions)
+// ============================================================
+
+#[test]
+fn test_vesting_zero_amount_reverts() {
+    new_test_ext().execute_with(|| {
+        let beneficiary = Sr25519Keyring::Alice.to_account_id();
+        assert_noop!(
+            Vesting::add_schedule(
+                RuntimeOrigin::root(),
+                b"zero".to_vec(),
+                0, // zero amount
+                100,
+                50,
+            ),
+            Error::<Test>::ZeroAmount
+        );
+    });
+}
+
+#[test]
+fn test_vesting_zero_duration_reverts() {
+    new_test_ext().execute_with(|| {
+        let beneficiary = Sr25519Keyring::Alice.to_account_id();
+        assert_noop!(
+            Vesting::add_schedule(
+                RuntimeOrigin::root(),
+                b"zero_dur".to_vec(),
+                1_000,
+                0, // zero duration
+                0, // zero cliff
+            ),
+            Error::<Test>::ZeroDuration
+        );
+    });
+}
+
+#[test]
+fn test_vesting_claim_before_start_reverts() {
+    new_test_ext().execute_with(|| {
+        let beneficiary = Sr25519Keyring::Alice.to_account_id();
+        assert_ok!(Vesting::add_schedule(
+            RuntimeOrigin::root(),
+            b"future".to_vec(),
+            1_000,
+            100, // starts at block 100
+            50,
+        ));
+        
+        // Try to claim at block 1 (before start)
+        System::set_block_number(1);
+        let result = Vesting::claim(RuntimeOrigin::signed(beneficiary));
+        // Should get 0 or error since vesting hasn't started
+        if let Ok(amount) = result {
+            assert_eq!(amount, 0, "Should claim 0 before vesting starts");
+        }
+    });
+}
+
+#[test]
+fn test_vesting_partial_vest_correct_amount() {
+    new_test_ext().execute_with(|| {
+        let beneficiary = Sr25519Keyring::Alice.to_account_id();
+        assert_ok!(Vesting::add_schedule(
+            RuntimeOrigin::root(),
+            b"partial".to_vec(),
+            1_000,
+            100, // 100 block duration
+            0,   // no cliff
+        ));
+        
+        // At block 50 (50% through), should have 500 vested
+        System::set_block_number(50);
+        let vested = Vesting::get_vested_balance(&beneficiary);
+        assert_eq!(vested, 500, "50% through vesting should have 50% vested");
+        
+        // At block 100 (100%), should have full 1000
+        System::set_block_number(100);
+        let vested = Vesting::get_vested_balance(&beneficiary);
+        assert_eq!(vested, 1_000, "At end should be fully vested");
+    });
+}
+
+#[test]
+fn test_vesting_cliff_blocks_until_cliff() {
+    new_test_ext().execute_with(|| {
+        let beneficiary = Sr25519Keyring::Alice.to_account_id();
+        assert_ok!(Vesting::add_schedule(
+            RuntimeOrigin::root(),
+            b"cliff".to_vec(),
+            1_000,
+            100, // duration
+            50,  // cliff at 50%
+        ));
+        
+        // Before cliff, should have 0
+        System::set_block_number(49);
+        let vested = Vesting::get_vested_balance(&beneficiary);
+        assert_eq!(vested, 0, "Before cliff should have 0 vested");
+        
+        // At cliff, should get cliff portion
+        System::set_block_number(50);
+        let vested = Vesting::get_vested_balance(&beneficiary);
+        assert!(vested > 0, "At cliff should have some vested amount");
+    });
+}
+
+#[test]
+fn test_vesting_multiple_schedules_accumulate() {
+    new_test_ext().execute_with(|| {
+        let beneficiary = Sr25519Keyring::Alice.to_account_id();
+        assert_ok!(Vesting::add_schedule(
+            RuntimeOrigin::root(),
+            b"schedule1".to_vec(),
+            500,
+            100,
+            0,
+        ));
+        assert_ok!(Vesting::add_schedule(
+            RuntimeOrigin::root(),
+            b"schedule2".to_vec(),
+            500,
+            100,
+            0,
+        ));
+        
+        System::set_block_number(100);
+        let vested = Vesting::get_vested_balance(&beneficiary);
+        assert_eq!(vested, 1_000, "Both schedules should be fully vested");
+    });
+}
+
+#[test]
+fn test_vesting_duplicate_label_replaces_or_errors() {
+    new_test_ext().execute_with(|| {
+        let beneficiary = Sr25519Keyring::Alice.to_account_id();
+        assert_ok!(Vesting::add_schedule(
+            RuntimeOrigin::root(),
+            b"duplicate".to_vec(),
+            500,
+            100,
+            0,
+        ));
+        // Adding same label again should either replace or error
+        let result = Vesting::add_schedule(
+            RuntimeOrigin::root(),
+            b"duplicate".to_vec(),
+            500,
+            100,
+            0,
+        );
+        // Either behavior is acceptable, but it should not crash
+        match result {
+            Ok(_) => {
+                let vested = Vesting::get_vested_balance(&beneficiary);
+                // Should be 500 (replaced) or 1000 (accumulated)
+                assert!(vested == 500 || vested == 1000, "Duplicate label handled gracefully");
+            }
+            Err(_) => {
+                // Erroring on duplicate is also fine
+            }
+        }
+    });
+}

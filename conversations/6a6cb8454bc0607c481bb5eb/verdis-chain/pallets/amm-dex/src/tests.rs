@@ -1359,3 +1359,130 @@ fn test_protocol_fee_recipient_receives_funds() {
         );
     });
 }
+
+// ============================================================
+// EDGE CASE AND SECURITY TESTS (Kimi audit additions)
+// ============================================================
+
+#[test]
+fn test_swap_zero_amount_reverts() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            1_000_000,
+            1_000_000,
+        ));
+        assert_noop!(
+            AmmDex::swap(RuntimeOrigin::signed(alice()), 0, 0, 1, false),
+            Error::<Test>::ZeroAmount
+        );
+    });
+}
+
+#[test]
+fn test_create_pool_zero_amount_reverts() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            AmmDex::create_pool(RuntimeOrigin::signed(alice()), 0, 1_000_000),
+            Error::<Test>::ZeroAmount
+        );
+        assert_noop!(
+            AmmDex::create_pool(RuntimeOrigin::signed(alice()), 1_000_000, 0),
+            Error::<Test>::ZeroAmount
+        );
+    });
+}
+
+#[test]
+fn test_swap_nonexistent_pool_reverts() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            AmmDex::swap(RuntimeOrigin::signed(alice()), 1_000, 999, 1, false),
+            Error::<Test>::PoolNotFound
+        );
+    });
+}
+
+#[test]
+fn test_swap_slippage_protection_reverts() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            1_000_000,
+            1_000_000,
+        ));
+        // Requesting more output than possible should fail
+        assert_noop!(
+            AmmDex::swap(RuntimeOrigin::signed(alice()), 1_000, 0, 999_999_999, false),
+            Error::<Test>::SlippageExceeded
+        );
+    });
+}
+
+#[test]
+fn test_remove_liquidity_zero_lp_reverts() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            1_000_000,
+            1_000_000,
+        ));
+        // Bob has no LP tokens
+        assert_noop!(
+            AmmDex::remove_liquidity(RuntimeOrigin::signed(bob()), 0, 1),
+            Error::<Test>::InsufficientLiquidity
+        );
+    });
+}
+
+#[test]
+fn test_pool_price_changes_after_swap() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            1_000_000,
+            1_000_000,
+        ));
+        let price_before = AmmDex::pool_price(0);
+        assert!(price_before.is_some());
+        assert_ok!(AmmDex::swap(
+            RuntimeOrigin::signed(bob()),
+            100_000,
+            0,
+            1,
+            false,
+        ));
+        let price_after = AmmDex::pool_price(0);
+        assert!(price_after.is_some());
+        assert_ne!(price_before, price_after, "Price should change after swap");
+    });
+}
+
+#[test]
+fn test_pool_id_increments_sequentially() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(AmmDex::create_pool(
+            RuntimeOrigin::signed(alice()),
+            1_000_000,
+            1_000_000,
+        ));
+        assert_ok!(AmmDex::create_pool(
+            RuntimeOrigin::signed(bob()),
+            2_000_000,
+            1_000_000,
+        ));
+        assert!(AmmDex::pool_price(0).is_some());
+        assert!(AmmDex::pool_price(1).is_some());
+        assert!(AmmDex::pool_price(2).is_none());
+    });
+}
+
+#[test]
+fn test_add_liquidity_to_nonexistent_pool_reverts() {
+    new_test_ext().execute_with(|| {
+        assert_noop!(
+            AmmDex::add_liquidity(RuntimeOrigin::signed(alice()), 999, 500_000, 500_000),
+            Error::<Test>::PoolNotFound
+        );
+    });
+}
