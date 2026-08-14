@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Verdis Chain — Comprehensive Developer Documentation</title>
   <link rel="canonical" href="https://verdischain.com/docs/" />
-  <meta name="description" content="Verdis Chain Developer Documentation. Complete guide to RPC APIs, 16 Pallets, DPoS Consensus, AMM DEX, VRDX Tokenomics, Validator Node Setup, and the 51-method JavaScript SDK." />
+  <meta name="description" content="Verdis Chain Developer Documentation. Complete guide to RPC APIs, 15 Pallets, DPoS Consensus, AMM DEX, VRDX Tokenomics, Validator Node Setup, and the 51-method JavaScript SDK." />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Verdis Chain — Comprehensive Developer Documentation" />
-  <meta property="og:description" content="Complete documentation for Verdis Chain: RPC APIs, 16 Pallets, DPoS, AMM DEX, VRDX Tokenomics, Validator Setup, and JavaScript SDK." />
+  <meta property="og:description" content="Complete documentation for Verdis Chain: RPC APIs, 15 Pallets, DPoS, AMM DEX, VRDX Tokenomics, Validator Setup, and JavaScript SDK." />
   <meta property="og:url" content="https://verdischain.com/docs/" />
-  <meta property="og:image" content="https://verdischain.com/assets/verdis-logo-full.png" />
+  <meta property="og:image" content="https://verdischain.com/assets/verdis-logo-black.png" />
   <link rel="icon" type="image/png" href="/assets/favicon-32.png" sizes="32x32" />
 
   <!-- Fonts & Icons -->
@@ -468,7 +468,7 @@
   <!-- TOP NAVIGATION BAR (7 LINKS) -->
   <nav class="std-nav">
     <a href="/" class="nav-brand">
-      <img src="/assets/verdis-logo-full.png" alt="Verdis Chain Logo" class="brand-logo-img" />
+      <img src="/assets/verdis-logo-black.png" alt="Verdis Chain Logo" class="brand-logo-img" />
       <span>VERDIS <span class="brand-text">CHAIN</span></span>
     </a>
 
@@ -499,7 +499,7 @@
       <div class="hero-left">
         <div class="hero-badge">● Documentation v2.0 · Developer Guide</div>
         <h1 class="hero-title">VERDIS CHAIN<br><span>Developer Docs</span></h1>
-        <p class="hero-desc">Complete guide to RPC APIs, 16 runtime pallets, DPoS consensus, AMM DEX, VRDX tokenomics, validator operations, and the 51-method JavaScript SDK. Built in Rust + Substrate.</p>
+        <p class="hero-desc">Complete guide to RPC APIs, 15 runtime pallets, DPoS consensus, AMM DEX, VRDX tokenomics, validator operations, and the 51-method JavaScript SDK. Built in Rust + Substrate.</p>
         <div class="hero-btns">
           <button class="hero-btn hero-btn-primary" onclick="document.getElementById('getting-started').scrollIntoView({behavior:'smooth'})">Getting Started ↓</button>
           <a href="#sdk-reference" class="hero-btn hero-btn-ghost">SDK Reference →</a>
@@ -511,7 +511,7 @@
         <div class="hero-ring hero-ring-2"></div>
         <canvas class="hero-canvas" id="heroCanvas"></canvas>
         <div class="float-card fc-1"><div class="float-card-label">Block Height</div><div class="float-card-value" id="heroBlock">—</div><div class="float-card-sub">Live</div></div>
-        <div class="float-card fc-2"><div class="float-card-label">Total Pallets</div><div class="float-card-value">16</div><div class="float-card-sub">Runtime</div></div>
+        <div class="float-card fc-2"><div class="float-card-label">Total Pallets</div><div class="float-card-value">15</div><div class="float-card-sub">Runtime</div></div>
         <div class="float-card fc-3"><div class="float-card-label">SDK Methods</div><div class="float-card-value">51</div><div class="float-card-sub">JavaScript</div></div>
         <div class="float-card fc-4"><div class="float-card-label">SS58 Prefix</div><div class="float-card-value">909</div><div class="float-card-sub">Testnet</div></div>
         <div class="float-tag ft-1">Energy-Efficient</div>
@@ -625,14 +625,14 @@ curl -X POST https://verdischain.com/rpc \
       <section id="architecture" class="doc-section">
         <div class="section-header">
           <h2 class="section-title"><i class="fa-solid fa-cubes"></i> 2. Blockchain Architecture</h2>
-          <span class="section-tag">16 Runtime Pallets</span>
+          <span class="section-tag">15 Runtime Pallets</span>
         </div>
         <p>
           Verdis Chain combines a Substrate runtime core with specialized high-performance pallets inspired by modern L1 state-of-the-art designs. The network uses Delegated Proof of Stake (DPoS) integrated with Proof of History (PoH) micro-timestamps and dynamic Eco-scoring.
         </p>
 
-        <h3><i class="fa-solid fa-layer-group"></i> Complete Runtime Pallets (16 Pallets)</h3>
-        <p>Below is the detailed technical specification for all 16 native pallets plus 2 platform pallets in the Verdis Chain runtime:</p>
+        <h3><i class="fa-solid fa-layer-group"></i> Complete Runtime Pallets (15 Pallets)</h3>
+        <p>Below is the detailed technical specification for all 15 native pallets implemented in the Verdis Chain runtime:</p>
 
         <div class="cards-grid">
           <!-- Pallet 1 -->
@@ -781,40 +781,7 @@ curl -X POST https://verdischain.com/rpc \
           <!-- Pallet 14 -->
           <div class="card-item">
             <div class="card-header">
-              <span class="card-title"><i class="fa-solid fa-shield-halved" style="color:var(--accent)"></i> 14. presale</span>
-              <span class="card-badge">Token Sale</span>
-            </div>
-            <div class="card-desc">
-              Whitelisted presale contract with per-investor caps, 12B investor allocation enforcement, dynamic pricing rounds, and consent-gated participation.
-            </div>
-          </div>
-
-          <!-- Pallet 15 -->
-          <div class="card-item">
-            <div class="card-header">
-              <span class="card-title"><i class="fa-solid fa-coins" style="color:var(--accent)"></i> 15. fungible-tokens</span>
-              <span class="card-badge">Token Factory</span>
-            </div>
-            <div class="card-desc">
-              Custom token creation pallet with ratchet-down max_supply enforcement, overflow-safe mint/burn, batch transfers, approvals, and freeze/destroy controls.
-            </div>
-          </div>
-
-          <!-- Pallet 16 -->
-          <div class="card-item">
-            <div class="card-header">
-              <span class="card-title"><i class="fa-solid fa-shield" style="color:var(--accent)"></i> 16. circuit-breaker</span>
-              <span class="card-badge">Safety</span>
-            </div>
-            <div class="card-desc">
-              Circuit breaker mechanism that monitors transaction volume, price impact, and anomaly detection. Pauses specific pallets during extreme market conditions.
-            </div>
-          </div>
-
-          <!-- Platform Pallet 17 -->
-          <div class="card-item">
-            <div class="card-header">
-              <span class="card-title"><i class="fa-solid fa-file-code" style="color:var(--accent)"></i> 17. contracts</span>
+              <span class="card-title"><i class="fa-solid fa-file-code" style="color:var(--accent)"></i> 14. contracts</span>
               <span class="card-badge">Smart Contracts</span>
             </div>
             <div class="card-desc">
@@ -825,7 +792,7 @@ curl -X POST https://verdischain.com/rpc \
           <!-- Pallet 15 -->
           <div class="card-item">
             <div class="card-header">
-              <span class="card-title"><i class="fa-solid fa-server" style="color:var(--accent)"></i> 18. balances / system</span>
+              <span class="card-title"><i class="fa-solid fa-server" style="color:var(--accent)"></i> 15. balances / system</span>
               <span class="card-badge">Core System</span>
             </div>
             <div class="card-desc">
@@ -1016,64 +983,40 @@ curl -X POST https://verdischain.com/rpc \
             </thead>
             <tbody>
               <tr>
-                <td><strong>Ecosystem &amp; Developer Grants</strong></td>
-                <td><code class="mono">25,000,000,000 VRDX</code></td>
-                <td><code class="mono">25.0%</code></td>
-                <td>4% TGE unlock + 10-year linear release via governance</td>
+                <td><strong>Public Sale & Presale (IDO)</strong></td>
+                <td><code class="mono">12,000,000,000 VRDX</code></td>
+                <td><code class="mono">12.0%</code></td>
+                <td>15% unlocked TGE, linear monthly unlock over 12 months</td>
               </tr>
               <tr>
-                <td><strong>PoS Staking Rewards</strong></td>
+                <td><strong>Validator Staking & Rewards</strong></td>
+                <td><code class="mono">35,000,000,000 VRDX</code></td>
+                <td><code class="mono">35.0%</code></td>
+                <td>Emitted continuously over 10 years to DPoS validators</td>
+              </tr>
+              <tr>
+                <td><strong>Eco & Carbon Credit Reserve</strong></td>
                 <td><code class="mono">20,000,000,000 VRDX</code></td>
                 <td><code class="mono">20.0%</code></td>
-                <td>2.5% TGE + 2B/year emission over 10 years to DPoS validators</td>
+                <td>Dedicated to carbon credit purchases & green validator grants</td>
               </tr>
               <tr>
-                <td><strong>Treasury</strong></td>
-                <td><code class="mono">20,000,000,000 VRDX</code></td>
-                <td><code class="mono">20.0%</code></td>
-                <td>3-of-5 multisig cold storage. Governance-controlled spending</td>
+                <td><strong>Ecosystem & Treasury</strong></td>
+                <td><code class="mono">18,000,000,000 VRDX</code></td>
+                <td><code class="mono">18.0%</code></td>
+                <td>DAO governed treasury for grants, liquidity, and expansion</td>
               </tr>
               <tr>
-                <td><strong>Development</strong></td>
+                <td><strong>Team & Core Contributors</strong></td>
                 <td><code class="mono">10,000,000,000 VRDX</code></td>
                 <td><code class="mono">10.0%</code></td>
-                <td>Released per development milestones. Governance-controlled</td>
+                <td>12-month linear cliff followed by 36-month linear vesting</td>
               </tr>
               <tr>
-                <td><strong>Liquidity</strong></td>
-                <td><code class="mono">10,000,000,000 VRDX</code></td>
-                <td><code class="mono">10.0%</code></td>
+                <td><strong>Initial AMM DEX Liquidity</strong></td>
+                <td><code class="mono">5,000,000,000 VRDX</code></td>
+                <td><code class="mono">5.0%</code></td>
                 <td>100% locked in protocol AMM DEX pools at testnet launch</td>
-              </tr>
-              <tr>
-                <td><strong>Community</strong></td>
-                <td><code class="mono">5,000,000,000 VRDX</code></td>
-                <td><code class="mono">5.0%</code></td>
-                <td>3-month cliff, linear monthly unlock over 12 months</td>
-              </tr>
-              <tr>
-                <td><strong>Seed / Strategic</strong></td>
-                <td><code class="mono">3,000,000,000 VRDX</code></td>
-                <td><code class="mono">3.0%</code></td>
-                <td>12-month cliff, linear monthly unlock over 36 months</td>
-              </tr>
-              <tr>
-                <td><strong>Public Presale</strong></td>
-                <td><code class="mono">2,000,000,000 VRDX</code></td>
-                <td><code class="mono">2.0%</code></td>
-                <td>12-month cliff, linear monthly unlock over 36 months</td>
-              </tr>
-              <tr>
-                <td><strong>Team &amp; Advisors</strong></td>
-                <td><code class="mono">5,000,000,000 VRDX</code></td>
-                <td><code class="mono">5.0%</code></td>
-                <td>12-month cliff, linear monthly unlock over 36 months</td>
-              </tr>
-              <tr style="border-top: 2px solid var(--accent);">
-                <td><strong>Total Supply</strong></td>
-                <td><code class="mono">100,000,000,000 VRDX</code></td>
-                <td><code class="mono">100.0%</code></td>
-                <td>9 decimals, fixed supply, no inflation beyond staking pool</td>
               </tr>
             </tbody>
           </table>
@@ -1137,7 +1080,7 @@ curl -X POST https://verdischain.com/rpc \
             <button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
           </div>
           <pre class="code-content"><span class="com"># 1. Download & Build Verdis Chain Node</span>
-git clone https://github.com/Protremix/Verdischain-.git
+git clone https://github.com/Protremix/Verdischain.git
 cd Verdischain
 cargo build --release
 
@@ -1483,7 +1426,7 @@ main().catch(console.error);</pre>
         <h4>Community</h4>
         <a href="/validators/">Validators</a>
         <a href="/eco/">Eco Metrics</a><a href="/governance/">Governance</a>
-        <a href="/referral/">Referral (Discontinued)</a>
+        <a href="/referral/">Referral Program</a>
         <a href="/incentives/">Validator Incentives</a>
       </div>
 
@@ -1498,7 +1441,7 @@ main().catch(console.error);</pre>
     </div>
 
     <div class="footer-bottom">
-      <span>&copy; 2026 Verdis Chain &middot; Protremix &middot; MIT License</span>
+      <span>&copy; 2026 Verdis Chain &middot; Protremix &middot; Proprietary — All Rights Reserved</span>
       <span>Native Token: <strong style="color:var(--accent)">VRDX</strong> &middot; SS58 Format: <strong style="color:var(--accent)">909</strong> &middot; Privacy Policy</span>
     </div>
   </footer>
