@@ -64,7 +64,6 @@ nav.std-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);
 .roadmap-timeline{position:relative;padding-left:32px}.roadmap-timeline::before{content:'';position:absolute;left:12px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--accent),var(--accent-2),transparent)}.rm-item{position:relative;margin-bottom:32px}.rm-dot{position:absolute;left:-26px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent-glow-strong)}.rm-content{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;transition:all .3s}.rm-content:hover{border-color:var(--accent);transform:translateX(4px)}.rm-phase{font-size:12px;font-weight:600;color:var(--accent);font-family:'JetBrains Mono';margin-bottom:6px}.rm-title{font-family:'Space Grotesk';font-size:14px;font-weight:700;color:var(--text);margin-bottom:8px}.rm-desc{font-size:13px;color:var(--text-2);line-height:1.6}
 .cta-card{text-align:center;padding:48px 24px;background:linear-gradient(135deg,var(--bg-1),var(--bg-2));border-radius:var(--radius-lg);margin-bottom:32px}.cta-card h2{font-family:'Space Grotesk';font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px}.cta-card p{font-size:14px;color:var(--text-muted);margin-bottom:24px;max-width:500px;margin-left:auto;margin-right:auto}
 
-
 /* Additional whitepaper content styles */
 .wp-abstract{background:linear-gradient(135deg,rgba(22,163,74,0.04),rgba(0,168,107,0.02));border:1px solid var(--accent-border);border-radius:var(--radius-lg);padding:40px;margin-bottom:48px}
 .wp-abstract p{font-size:15px;color:var(--text-2);line-height:1.8;margin-bottom:16px}
@@ -104,7 +103,6 @@ nav.std-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);
 .conclusion-box{background:linear-gradient(135deg,rgba(22,163,74,0.06),rgba(0,168,107,0.03));border:1px solid var(--accent-border);border-radius:var(--radius-lg);padding:40px;text-align:center;margin-bottom:48px}
 .conclusion-box h2{font-family:'Space Grotesk';font-size:18px;font-weight:700;color:var(--text);margin-bottom:16px}
 .conclusion-box p{font-size:14px;color:var(--text-2);line-height:1.8;max-width:720px;margin:0 auto 16px}
-
 
 @media print{nav,.hero-right,.hero-visual,.wp-doc,.wp-card,.wp-team,.wp-roadmap,.wp-carbon,.float-tag,.hero-lime-circle,#hero-canvas,#cursor-glow,#scroll-bar,.cta-card .hero-actions,nav.std-nav{display:none}.hero-section{padding:0}.hero-container{background:#fff!important;border:none;border-radius:0}.hero-left{padding:20px 0}.hero-title{color:#000}.hero-desc{color:#333}.hero-badge{border:1px solid #16a34a}.btn-primary,.btn-secondary{display:none}.hero-actions{display:none}body{background:#fff;color:#000}.section-block{page-break-inside:avoid;margin-bottom:16px}.card-panel{border:1px solid #ccc}.specs-table{border:1px solid #ccc}.rm-content{border:1px solid #ccc;box-shadow:none}.improve-item{page-break-inside:avoid}.reveal{opacity:1!important;transform:none!important}}
 
@@ -157,11 +155,12 @@ nav.std-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);
 
 @media(max-width:768px){.tge-axis{margin:0 20px}.tge-marker-sub{display:none}.tge-events{grid-template-columns:1fr}.supply-row .sr-when{width:64px;font-size:10px}}
 
-
 </style>
 <link rel="icon" type="image/png" href="/assets/favicon.png" />
 <style>.testnet-banner{background:#f59e0b;color:#000;padding:8px 16px;text-align:center;font-size:13px;font-weight:600;font-family:Inter,sans-serif;position:sticky;top:0;z-index:9999}</style>
 <style id="standard-footer">
+
+@media(max-width:768px){}
 .footer{background:#0a0e14;padding:28px 24px 32px;max-width:none;margin:0;border-top:none;margin-top:0}
 .footer-inner{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px}
 .footer-brand h3{font-size:13px;font-weight:800;color:#fff;margin-bottom:12px;font-family:'Inter',sans-serif}
@@ -173,7 +172,10 @@ nav.std-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);
 .footer-col a{display:block;font-size:14px;color:#cbd5e1;margin-bottom:10px;transition:color .2s;text-decoration:none}
 .footer-col a:hover{color:#16a34a}
 .footer-bottom{max-width:1000px;margin:32px auto 0;padding-top:24px;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;font-size:13px;color:#64748b}
-@media(max-width:768px){.footer-inner{grid-template-columns:1fr 1fr;gap:24px}.footer-brand{grid-column:1/-1}.footer-bottom{flex-direction:column;gap:8px;text-align:center}}
+.footer-bottom a:hover{color:#16a34a}
+.footer-inner{grid-template-columns:1fr 1fr;gap:24px}
+.footer-brand{grid-column:1/-1}
+.footer-bottom{flex-direction:column;gap:8px;text-align:center}
 </style>
 </head>
 <body>
@@ -373,7 +375,6 @@ nav.std-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);
 </div></div>
 </section>
 
-
 <!-- Consensus Mechanism -->
 <section class="section-block reveal" id="consensus">
 <div class="section-header"><span class="section-tag">Consensus</span><h2 class="section-title">DPoS Consensus &amp; Block Production</h2><p class="section-desc">Verdis Chain uses Delegated Proof-of-Stake (DPoS) with BABE/GRANDPA finality &mdash; combining fast block production with provable deterministic finality.</p></div>
@@ -473,7 +474,6 @@ nav.std-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);
 <div class="eco-node"><div class="eco-node-icon">🌉</div><div class="eco-node-title">Cross-Chain IBC</div><div class="eco-node-desc">Inter-Blockchain Communication protocol for connecting Verdis Chain to other Substrate and Cosmos networks.</div></div>
 </div>
 </section>
-
 
 <!-- Governance -->
 <section class="section-block reveal" id="governance">
@@ -600,7 +600,6 @@ nav.std-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);
 <div class="vest-card"><div class="vest-header"><span class="vest-title">Ecosystem + Staking (45B)</span><span class="vest-badge">10-year release</span></div><div class="vest-cliff" style="background:rgba(74,222,128,0.1);color:var(--success);border-color:rgba(74,222,128,0.2)">Linear Release</div><div class="vest-details">Ecosystem Grants (25B): 4% TGE + 10yr linear. PoS Staking (20B): 2.5% TGE + 2B/yr emission for 10 years. Governance-controlled.</div><div class="vest-bar"><div class="vest-fill" style="width:30%"></div></div><span class="mono" style="font-size:11px;color:var(--text-3)">Distribution: Grants + staking rewards</span></div>
 </div>
 </section>
-
 
 <section id="tge-vesting" class="section-block reveal">
 <div class="section-header">
@@ -818,7 +817,6 @@ nav.std-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);
 </section>
 
 </main>
-
 
 <!-- Conclusion -->
 <section class="section-block reveal" id="conclusion">
