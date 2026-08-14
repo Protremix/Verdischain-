@@ -387,13 +387,13 @@ fn test_release_at_exact_cliff_boundary() {
         ));
 
         // Just before cliff (29 days) — should have nothing to release
-        System::set_block_number(29 * 17_280);
+        System::set_block_number(1 + 29 * 17_280);
         // Release should succeed but release 0 (all skipped by cliff)
         // Actually it might error with NoVestingAvailable if total_releasable is 0
         let _ = Vesting::release_vested(RuntimeOrigin::signed(beneficiary.clone()));
 
         // At exact cliff (30 days) — should release cliff portion
-        System::set_block_number(30 * 17_280);
+        System::set_block_number(1 + 30 * 17_280);
         assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(beneficiary)));
     });
 }
