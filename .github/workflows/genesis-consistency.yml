@@ -1,0 +1,19 @@
+name: Genesis Consistency Check
+
+on:
+  pull_request:
+    branches: [master, main]
+    paths:
+      - 'node/src/chain_spec.rs'
+      - 'pallets/tokenomics/**'
+      - 'runtime/**'
+      - 'docs/CANONICAL_FACTS.md'
+
+jobs:
+  check:
+    name: Verify tokenomics allocations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run genesis consistency check
+        run: python3 scripts/check_genesis_consistency.py
