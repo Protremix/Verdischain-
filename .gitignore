@@ -1,20 +1,19 @@
-<<<<<<< HEAD
-.agents/.env
-node_modules/
-.npm/
-__pycache__/
-.cache/
-blobs/
-=======
+# Build artifacts
 /target
 **/target
 *.wasm
 *.exe
 .DS_Store
+
+# Dependencies
 node_modules/
-*.lock
-data/
-target/
+.npm/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.cache/
 
 # Backups
 *.bak
@@ -23,45 +22,27 @@ target/
 *.backup
 *.bak.*
 
-# Python cache
-__pycache__/
-*.pyc
-*.pyo
+# Secrets
+.agents/.env
+*.secret
+*.key
 
-# Temp files
-*.tmp
-*.orig
-*.swp
-*.swo
+# Data
+data/
+blobs/
 
-# APK / binaries (use GitHub Releases)
-*.apk
-*.bin
-dist/
-
-# Logs
-*.log
+# Lock files (keep Cargo.lock for binary, not library)
+*.lock
 
 # IDE
 .vscode/
 .idea/
-*.iml
 
-# Sensitive data — NEVER commit
-validator-keys.json
-wallet_pin_store.json
-wallet_backups.json
-*_backup_*.py
-*.bak.*
-tx_relay_v1_backup.py
+# Agent/conversation files (not for repo)
+conversations/
+agent/
 
-# Security: Never commit keys/seeds/mnemonics
+# Misc
+*.log
 validator-keys.json
-multi-node/keys/
-chain-specs/mainnet-key-config.json
-*-key-config.json
-*.node.key
-*.secret
-*.seed
-*.mnemonic
->>>>>>> d326cd1f7073a3e3ee6e2acf5a9a7b4671a695d6
+*.apk
