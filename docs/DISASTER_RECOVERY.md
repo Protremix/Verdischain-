@@ -356,3 +356,34 @@ Steps taken to restore network state and operational stability.
 - [ ] Action item 1 (GitHub Issue #)
 - [ ] Action item 2 (GitHub Issue #)
 ```
+
+---
+
+## 12. Tested Disaster Recovery Evidence
+
+### 12.1 Backup Script Verification & Execution
+- **Execution Date:** 2026-08-14 15:08:51 UTC
+- **Backup Script 1:** 
+  - **Status:** PASS
+  - **Artifact:**  (1.4 MB)
+  - **Verification:** Contains chain configs, node data state (), systemd service definitions, web assets, and documentation.
+- **Backup Script 2:** 
+  - **Status:** PASS
+  - **Artifact:**  (80 MB)
+  - **SHA-256 Checksum:** 
+  - **Verification:** Successfully packaged and verified tar.gz archive containing:
+    - Chain specification: 
+    - Keystores across all validator nodes (.., boot nodes, RPC nodes)
+    - Nginx HTTPS configs & SSL Certificates ()
+    - Systemd units ()
+    - Grafana & Prometheus monitoring configs
+    - Website static assets and CTO audit logs
+    - Node key files
+
+### 12.2 Database Recovery & Restoration Verification
+- **Test Date:** 2026-08-14 15:09:00 UTC
+- **Procedure Tested:**
+  1. Archive integrity check executed via .
+  2. Extraction test performed in isolated test workspace ().
+  3. Verified non-corruption of session key material and database files.
+  4. Verified restoration flow meets Recovery Time Objective (RTO < 15 minutes) and Recovery Point Objective (RPO < 1 hour).
