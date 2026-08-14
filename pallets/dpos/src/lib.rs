@@ -239,6 +239,7 @@ pub mod pallet {
         Overflow,
         PendingSlashing,
         RegistrationDepositRequired,
+        InvalidGreenScore,
     }
 
     // === Config ===
@@ -264,6 +265,8 @@ pub mod pallet {
         type MaxStakePerValidator: Get<BalanceOf<Self>>;
         type RegistrationDeposit: Get<BalanceOf<Self>>;
         type MaxCommission: Get<u8>;
+        #[pallet::constant]
+        type MaxGreenScore: Get<u8>;
         #[pallet::constant]
         type ReactivationCooldown: Get<u32>;
         type WeightInfo: WeightInfo;
@@ -718,6 +721,11 @@ pub mod pallet {
             score: u8,
         ) -> DispatchResult {
             ensure_root(origin)?;
+
+            ensure!(
+                score <= T::MaxGreenScore::get(),
+                Error::<T>::InvalidGreenScore
+            );
 
             ensure!(
                 Validators::<T>::contains_key(&validator),
@@ -1176,6 +1184,7 @@ mod tests {
         pub const DposPalletId: PalletId = PalletId(*b"v/dposps");
         pub const MaxStakePerValidator: u128 = 100_000;
         pub const MaxCommission: u8 = 20;
+        pub const MaxGreenScore: u8 = 5;
         pub const ReactivationCooldown: u32 = 10;
     }
 
@@ -1193,6 +1202,7 @@ mod tests {
         type RegistrationDeposit = ConstU128<0>;
         type ReactivationCooldown = ReactivationCooldown;
         type MaxCommission = MaxCommission;
+        type MaxGreenScore = MaxGreenScore;
         type WeightInfo = SubstrateWeight<Test>;
     }
 
@@ -1501,13 +1511,13 @@ mod tests {
             assert_ok!(Dpos::update_green_score(
                 RuntimeOrigin::root(),
                 alice.clone(),
-                95
+                3
             ));
-            assert_eq!(Validators::<Test>::get(&alice).unwrap().green_score, 95);
+            assert_eq!(Validators::<Test>::get(&alice).unwrap().green_score, 3);
 
             // Non-root origin is rejected
             assert_noop!(
-                Dpos::update_green_score(RuntimeOrigin::signed(charlie), alice.clone(), 95),
+                Dpos::update_green_score(RuntimeOrigin::signed(charlie), alice.clone(), 3),
                 sp_runtime::DispatchError::BadOrigin
             );
         });
@@ -2579,6 +2589,7 @@ mod tests {
             );
         });
     }
+    /// Test: Green score above MaxGreenScore is rejected    #[test]    fn test_green_score_exceeds_max_rejected() {        new_test_ext().execute_with(|| {            let alice = Sr25519Keyring::Alice.to_account_id();            // Score above MaxGreenScore (5) is rejected            assert_noop!(                Dpos::update_green_score(RuntimeOrigin::root(), alice.clone(), 6),                Error::<Test>::InvalidGreenScore            );            // Score at max boundary (5) is accepted            assert_ok!(Dpos::update_green_score(                RuntimeOrigin::root(),                alice.clone(),                5            ));            assert_eq!(Validators::<Test>::get(&alice).unwrap().green_score, 5);            // Score of 0 is accepted (not green)            assert_ok!(Dpos::update_green_score(                RuntimeOrigin::root(),                alice.clone(),                0            ));            assert_eq!(Validators::<Test>::get(&alice).unwrap().green_score, 0);        });    }
 
     /// Test: Vote to unregistered validator is rejected
     #[test]
