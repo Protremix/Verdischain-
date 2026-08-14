@@ -142,8 +142,15 @@ If ANY of the following occur during launch, ABORT and revert to testnet:
 
 | Decision | By | Date | Notes |
 |----------|-----|------|-------|
-| Approve launch gate framework | Rojs | 2026-08-14 | Action Pack received |
-| Sale disabled until legal approval | Rojs | 2026-08-14 | $0 raised confirmed |
+| Approve launch gate framework | Rojs | 2026-08-14 | APPROVED |
+| Approve entity separation (ARCH-001) | Rojs | 2026-08-14 | APPROVED |
+| Authorize UAE/VARA legal (ARCH-002) | Rojs | 2026-08-14 | APPROVED |
+| Authorize EU/MiCA classification (ARCH-003) | Rojs | 2026-08-14 | APPROVED |
+| Approve global jurisdiction policy (ARCH-004) | Rojs | 2026-08-14 | APPROVED |
+| Approve Protremix Independence Test (ARCH-005) | Rojs | 2026-08-14 | APPROVED |
+| Approve token offering compliance (ARCH-007) | Rojs | 2026-08-14 | APPROVED |
+| Approve independent security audit (ARCH-008) | Rojs | 2026-08-14 | APPROVED - budget + firm TBD |
+| Approve mainnet launch gate (ARCH-075) | Rojs | 2026-08-14 | APPROVED |
+| Sale disabled until legal approval | Rojs | 2026-08-14 | bash raised confirmed |
 | Treasury 3-of-5 multisig | Rojs | 2026-08-14 | 5 air-gapped keys |
 | Token symbol VRDX (not VERDIS) | Rojs | 2026-08-08 | Override of hardening task |
-| | | | |
