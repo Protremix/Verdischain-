@@ -1194,3 +1194,4 @@ fn test_token_name_too_long_rejected() {
         );
     });
 }
+mod security_regression_tests;
