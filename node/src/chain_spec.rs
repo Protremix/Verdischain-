@@ -345,7 +345,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         },
         dpos: pallet_dpos::GenesisConfig {
             validators: dpos_validators,
-            validator_count: 6,
+            validator_count: 3,
             block_reward: 16 * u,
             validator_names,
         },
