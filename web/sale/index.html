@@ -485,7 +485,7 @@ thead,tbody{display:table;width:100%}
     <table>
       <thead><tr><th>Round</th><th>TGE Unlock</th><th>Cliff</th><th>Vesting Period</th><th>Monthly Release</th><th>Status</th></tr></thead>
       <tbody>
-        <tr><td><strong>Seed / Strategic</strong></td><td>0%</td><td>12 months</td><td>36 months</td><td class="mono">125M / month</td><td><span class="vesting-badge active">Active</span></td></tr>
+        <tr><td><strong>Seed / Strategic</strong></td><td>0%</td><td>12 months</td><td>24 months</td><td class="mono">125M / month</td><td><span class="vesting-badge active">Active</span></td></tr>
         <tr><td><strong>Community</strong></td><td>20% (1B)</td><td>3 months</td><td>18 months</td><td class="mono">300M / month</td><td><span class="vesting-badge locked">Upcoming</span></td></tr>
         <tr><td><strong>Public Presale</strong></td><td>25% (0.5B)</td><td>None</td><td>6 months</td><td class="mono">250M / month</td><td><span class="vesting-badge locked">Upcoming</span></td></tr>
         <tr><td><strong>TGE / IDO</strong></td><td>100%</td><td>None</td><td>Liquid</td><td class="mono">At TGE</td><td><span class="vesting-badge locked">Upcoming</span></td></tr>
@@ -500,7 +500,7 @@ thead,tbody{display:table;width:100%}
 <div class="whitelist-section">
   <div class="whitelist-card">
     <h2>Join the Whitelist</h2>
-    <p>Whitelist members get priority access, higher allocation caps, and additional bonus tokens.</p>
+    <p>Whitelist members get priority access and higher allocation caps for the Seed round.</p>
     <div class="whitelist-form">
       <input type="email" id="wlEmail" placeholder="your@email.com" />
       <button onclick="joinWhitelist()">Join Whitelist</button>
@@ -565,7 +565,7 @@ const SALE_CONFIG = {
   pricePerToken: 0.0015,
   listingPrice: 0.005,
   bonus: 0.0, // No bonus in new model
-  hardCap: 17500000, // $17.5M total across all 4 phases
+  hardCap: 18000000, // $18M total across all 4 phases
   raised: 0, // $0 - IDO not started
   sold: 0, // 0 VRDX sold
   totalAllocation: 3000000000, // 3B for Seed Sale (Phase 1)
@@ -588,7 +588,7 @@ function calculatePurchase() {
   document.getElementById('baseTokens').textContent = baseTokens.toLocaleString(undefined, {maximumFractionDigits:0}) + ' VRDX';
   document.getElementById('bonusTokens').textContent = '+' + bonusTokens.toLocaleString(undefined, {maximumFractionDigits:0}) + ' VRDX';
   document.getElementById('totalCost').textContent = '$' + usdValue.toLocaleString(undefined, {maximumFractionDigits:2});
-  document.getElementById('outputRate').textContent = `Rate: 1 ${payCurrency} = ${(totalTokens / amount).toFixed(0)} VRDX (with bonus)`;
+  document.getElementById('outputRate').textContent = `Rate: 1 ${payCurrency} = ${(totalTokens / amount).toFixed(0)} VRDX`;
 }
 
 function cycleCurrency() {
@@ -617,13 +617,12 @@ function buyTokens() {
     `Amount: ${amount} ${payCurrency} ($${usdValue.toLocaleString()})\n` +
     `VRDX Tokens: ${totalTokens.toLocaleString(undefined, {maximumFractionDigits:0})}\n` +
     `Price: $${SALE_CONFIG.pricePerToken} per VRDX\n` +
-    `Bonus: +${SALE_CONFIG.bonus * 100}%\n\n` +
     `Wallet: ${addr.slice(0, 16)}...\n\n` +
     `Next steps:\n` +
     `1. You will be redirected to complete payment\n` +
     `2. Tokens will be locked until TGE (September 2026)\n` +
-    `3. 25% unlocks at TGE, rest vests over 12 months\n\n` +
-    `Transaction ID: VRDX-${Date.now().toString(36).toUpperCase()}`
+    `3. 0% TGE unlock, 12-month cliff, then 24-month linear vesting\n\n` +
+    `Confirmation #: VRDX-${Date.now().toString(36).toUpperCase()} (not an on-chain transaction)`
   );
 }
 
@@ -633,13 +632,26 @@ function joinWhitelist() {
   const count = parseInt(document.getElementById('wlCount').textContent.replace(/,/g,'')) + 1;
   document.getElementById('wlCount').textContent = count.toLocaleString();
   document.getElementById('wlEmail').value = '';
-  alert(`✓ You're on the whitelist!\n\nYou'll receive email updates about the VRDX token sale, including priority access notifications before each phase.\n\nWhitelist benefits:\n• Priority access to all sale phases\n• Higher allocation cap ($750,000 vs $500,000)\n• Additional 5% bonus tokens\n• Early access to staking`);
+  alert(`✓ You're on the whitelist!\n\nYou'll receive email updates about the VRDX token sale, including priority access notifications before each phase.\n\nWhitelist benefits:\n• Priority access to all sale phases\n• Higher allocation cap ($750,000 vs $500,000)\n• Guaranteed allocation in Seed round\n• Early access to staking`);
 }
 
 function notifyMe() {
   const email = prompt('Enter your email to be notified when Phase 4 opens:');
   if (email && email.includes('@')) {
-    alert(`✓ We'll notify you at ${email} when Phase 4 opens on September 1, 2026.`);}}// FAQ togglefunction toggleFAQ(el) {el.parentElement.classList.toggle('open');}// Countdown timerfunction updateCountdown() {const now = new Date().getTime();const end = SALE_CONFIG.endDate;const diff = end - now;if (diff <= 0) {document.getElementById('cd-days').textContent = '0';document.getElementById('cd-hours').textContent = '00';document.getElementById('cd-mins').textContent = '00';document.getElementById('cd-secs').textContent = '00';document.getElementById('heroCountdown').textContent = 'Ended';return;}const days = Math.floor(diff / (1000 * 60 * 60 * 24));const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));const secs = Math.floor((diff % (1000 * 60)) / 1000);document.getElementById('cd-days').textContent = days;document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');document.getElementById('cd-mins').textContent = String(mins).padStart(2, '0');document.getElementById('cd-secs').textContent = String(secs).padStart(2, '0');document.getElementById('heroCountdown').textContent = `${days}d ${hours}h ${mins}m`;}setInterval(updateCountdown, 1000);updateCountdown();calculatePurchase();</script>
+    alert(`✓ We'll notify you at ${email} when Phase 4 opens on September 1, 2026.`);
+}
+
+// FAQ toggle
+function toggleFAQ(el) { el.parentElement.classList.toggle('open'); }
+
+// Countdown timer
+function updateCountdown() {const now = new Date().getTime();const end = SALE_CONFIG.endDate;const diff = end - now;if (diff <= 0) {document.getElementById('cd-days').textContent = '0';document.getElementById('cd-hours').textContent = '00';document.getElementById('cd-mins').textContent = '00';document.getElementById('cd-secs').textContent = '00';document.getElementById('heroCountdown').textContent = 'Ended';return;}const days = Math.floor(diff / (1000 * 60 * 60 * 24));const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));const secs = Math.floor((diff % (1000 * 60)) / 1000);document.getElementById('cd-days').textContent = days;document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');document.getElementById('cd-mins').textContent = String(mins).padStart(2, '0');document.getElementById('cd-secs').textContent = String(secs).padStart(2, '0');document.getElementById('heroCountdown').textContent = `${days}d ${hours}h ${mins}m`;
+}
+
+setInterval(updateCountdown, 1000);
+updateCountdown();
+calculatePurchase();
+</script></script>
 
 <script>
 async function loadPageMetrics() {
