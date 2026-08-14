@@ -198,8 +198,8 @@ a{color:inherit;text-decoration:none}
       <div class="hero-title">Community <span>Governance</span> — Propose, Vote, Decide</div>
       <div class="hero-desc">Participate in Verdis Chain's on-chain democracy. Submit proposals, vote on referendums, join the council, and manage treasury funds. Every VRDX holder has a voice.</div>
       <div class="hero-btns">
-        <a class="hero-btn hero-btn-primary" href="#propose">Submit Proposal</a>
-        <a class="hero-btn hero-btn-ghost" href="#referendums">View Referendums</a>
+        <a class="hero-btn hero-btn-primary" href="#tab-proposals" onclick="switchTab('propose', this)">Submit Proposal</a>
+        <a class="hero-btn hero-btn-ghost" href="#tab-referendums" onclick="switchTab('referendums', this)">View Referendums</a>
       </div>
     </div>
     <div class="hero-visual">
@@ -235,13 +235,13 @@ a{color:inherit;text-decoration:none}
 </div>
 
 <div class="content-wrap">
-  <div class="tab-content active" id="tab-referendums">
+  <div class="tab-content active" id="tab-referendums" data-anchor="referendums">
     <div id="referendumsList">
       <div class="empty-state"><div class="empty-state-icon">&#9711;</div><div class="empty-state-text">No active referendums. Proposals that reach quorum will appear here for voting.</div></div>
     </div>
   </div>
 
-  <div class="tab-content" id="tab-proposals">
+  <div class="tab-content" id="tab-proposals" data-anchor="propose">
     <div id="proposalsList">
       <div class="empty-state"><div class="empty-state-icon">&#9711;</div><div class="empty-state-text">No public proposals yet. Submit a proposal to start the democratic process.</div></div>
     </div>
