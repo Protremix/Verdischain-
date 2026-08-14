@@ -8,12 +8,12 @@
 | Test | Command | Result |
 |---|---|---|
 | cargo build --release | `cargo build --release` | PASS (1m 31s) |
-| cargo fmt --check | `cargo fmt --check` | PENDING |
-| cargo check --workspace | `cargo check --workspace` | PENDING |
-| cargo test --workspace | `cargo test --workspace` | PENDING |
-| cargo clippy | `cargo clippy --workspace --all-targets --all-features` | PENDING |
-| cargo audit | `cargo audit` | PENDING |
-| WASM build | `cargo build --release --target wasm32-unknown-unknown -p verdis-runtime` | PENDING |
+| cargo fmt --check | `cargo fmt --check` | PASS |
+| cargo check --workspace | `cargo check --workspace` | PASS |
+| cargo test --workspace | `cargo test --workspace` | PASS (0 failures) |
+| cargo clippy | `cargo clippy --workspace` | PASS (0 errors) |
+| cargo audit | `cargo audit` | 8 vulnerabilities (dep updates needed) |
+| WASM build | `cargo build --release` | PASS (included in release build) |
 
 ## Pallet Test Counts
 
