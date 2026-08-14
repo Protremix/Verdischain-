@@ -354,7 +354,8 @@ fn test_prop_no_allocation_pool_goes_negative() {
         // 1. Check every pool starting balance >= 0
         for i in 0..9 {
             let bal = state.pools.get_pool(i);
-            assert!(bal >= 0, "Pool {} balance cannot be negative", i);
+            // Pool balance is u128, guaranteed non-negative by type system
+            let _ = bal;
         }
 
         // 2. Test over-withdrawing from each pool
@@ -372,7 +373,7 @@ fn test_prop_no_allocation_pool_goes_negative() {
             // Verify balance is unchanged and >= 0
             let new_bal = state.pools.get_pool(i);
             assert_eq!(new_bal, bal);
-            assert!(new_bal >= 0);
+            let _ = new_bal;
         }
 
         // 3. Test exact drain of pool balance

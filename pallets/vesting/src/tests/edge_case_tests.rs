@@ -4,7 +4,6 @@
 
 use super::*;
 use frame_support::{assert_noop, assert_ok};
-use frame_support::traits::Currency;
 use sp_runtime::DispatchError;
 
 const BLOCKS_PER_DAY: u64 = 17_280;
@@ -20,21 +19,21 @@ fn blocks_for_days(days: u64) -> u64 {
 fn setup_chain_spec_schedules() {
     assert_ok!(Vesting::add_schedule(
         RuntimeOrigin::root(),
-        bseed_spec.to_vec(),
+        b"seed_spec".to_vec(),
         3_000_000_000u128,
         730,
         365,
     ));
     assert_ok!(Vesting::add_schedule(
         RuntimeOrigin::root(),
-        bpresale_spec.to_vec(),
+        b"presale_spec".to_vec(),
         2_000_000_000u128,
         365,
         180,
     ));
     assert_ok!(Vesting::add_schedule(
         RuntimeOrigin::root(),
-        bteam_spec.to_vec(),
+        b"team_spec".to_vec(),
         5_000_000_000u128,
         1095,
         365,
@@ -52,7 +51,7 @@ fn test_edge_case_1_claim_before_cliff_unlocks_zero() {
         assert_ok!(Vesting::assign_vesting(
             RuntimeOrigin::root(),
             alice.clone(),
-            bseed_spec.to_vec(),
+            b"seed_spec".to_vec(),
             amount,
         ));
 
@@ -83,7 +82,7 @@ fn test_edge_case_2_claim_exactly_at_cliff() {
         assert_ok!(Vesting::assign_vesting(
             RuntimeOrigin::root(),
             alice.clone(),
-            bseed_spec.to_vec(),
+            b"seed_spec".to_vec(),
             amount,
         ));
 
@@ -112,7 +111,7 @@ fn test_edge_case_3_claim_one_block_after_cliff() {
         assert_ok!(Vesting::assign_vesting(
             RuntimeOrigin::root(),
             alice.clone(),
-            bseed_spec.to_vec(),
+            b"seed_spec".to_vec(),
             amount,
         ));
 
@@ -148,7 +147,7 @@ fn test_edge_case_4_claim_at_cliff_plus_half_duration() {
         assert_ok!(Vesting::assign_vesting(
             RuntimeOrigin::root(),
             alice.clone(),
-            bseed_spec.to_vec(),
+            b"seed_spec".to_vec(),
             amount,
         ));
 
@@ -178,7 +177,7 @@ fn test_edge_case_5_claim_at_cliff_plus_full_duration() {
         assert_ok!(Vesting::assign_vesting(
             RuntimeOrigin::root(),
             alice.clone(),
-            bseed_spec.to_vec(),
+            b"seed_spec".to_vec(),
             amount,
         ));
 
@@ -205,7 +204,7 @@ fn test_edge_case_6_claim_after_full_duration_no_inflation() {
         assert_ok!(Vesting::assign_vesting(
             RuntimeOrigin::root(),
             alice.clone(),
-            bseed_spec.to_vec(),
+            b"seed_spec".to_vec(),
             amount,
         ));
 
@@ -243,7 +242,7 @@ fn test_edge_case_7_double_claim_same_block() {
         assert_ok!(Vesting::assign_vesting(
             RuntimeOrigin::root(),
             alice.clone(),
-            bseed_spec.to_vec(),
+            b"seed_spec".to_vec(),
             amount,
         ));
 
@@ -283,7 +282,7 @@ fn test_edge_case_8_claim_with_no_vested_amount_returns_error() {
         assert_ok!(Vesting::assign_vesting(
             RuntimeOrigin::root(),
             alice.clone(),
-            bseed_spec.to_vec(),
+            b"seed_spec".to_vec(),
             1_000_000u128,
         ));
         System::set_block_number(blocks_for_days(10));
@@ -305,19 +304,19 @@ fn test_edge_case_9_multiple_schedules_tracked_independently() {
         assert_ok!(Vesting::assign_vesting(
             RuntimeOrigin::root(),
             alice.clone(),
-            bseed_spec.to_vec(),
+            b"seed_spec".to_vec(),
             3_000_000_000u128,
         ));
         assert_ok!(Vesting::assign_vesting(
             RuntimeOrigin::root(),
             alice.clone(),
-            bpresale_spec.to_vec(),
+            b"presale_spec".to_vec(),
             2_000_000_000u128,
         ));
         assert_ok!(Vesting::assign_vesting(
             RuntimeOrigin::root(),
             alice.clone(),
-            bteam_spec.to_vec(),
+            b"team_spec".to_vec(),
             5_000_000_000u128,
         ));
 
@@ -334,9 +333,9 @@ fn test_edge_case_9_multiple_schedules_tracked_independently() {
 
         let vestings = UserVestings::<Test>::get(&alice).unwrap();
         assert_eq!(vestings.len(), 3);
-        assert_eq!(vestings[0].released, 0, Seed released should be 0);
-        assert_eq!(vestings[1].released, 1_095_890,410u128, Presale released should be ~1.09B);
-        assert_eq!(vestings[2].released, 0, Team released should be 0);
+        assert_eq!(vestings[0].released, 0, "Seed released should be 0");
+        assert_eq!(vestings[1].released, 1_095_890_410u128, "Presale released should be ~1.09B");
+        assert_eq!(vestings[2].released, 0, "Team released should be 0");
 
         // Advance to day 400:
         // - Seed (cliff 365, vesting 730): 3B * 400 / 730 = 1,643,835,616
@@ -349,7 +348,7 @@ fn test_edge_case_9_multiple_schedules_tracked_independently() {
         let vestings = UserVestings::<Test>::get(&alice).unwrap();
         assert_eq!(vestings[0].released, 1_643_835_616u128);
         assert_eq!(vestings[1].released, 2_000_000_000u128);
-        assert_eq!(vestings[2].released, 1_826,484,018u128);
+        assert_eq!(vestings[2].released, 1_826_484_018u128);
     });
 }
 
@@ -365,14 +364,14 @@ fn test_edge_case_10_transfer_and_clone_handling() {
         assert_ok!(Vesting::assign_vesting(
             RuntimeOrigin::root(),
             alice.clone(),
-            bseed_spec.to_vec(),
+            b"seed_spec".to_vec(),
             1_000_000_000u128,
         ));
 
         // Alice cannot transfer locked balance to Bob
         assert_noop!(
             Balances::transfer_allow_death(RuntimeOrigin::signed(alice.clone()), bob.clone(), 500_000_000),
-            pallet_balances::Error::<Test>::LiquidityRestrictions
+            DispatchError::Token(sp_runtime::TokenError::Frozen)
         );
 
         // Non-root user (Alice) cannot assign/transfer vesting to another account
@@ -380,7 +379,7 @@ fn test_edge_case_10_transfer_and_clone_handling() {
             Vesting::assign_vesting(
                 RuntimeOrigin::signed(alice.clone()),
                 bob.clone(),
-                bseed_spec.to_vec(),
+                b"seed_spec".to_vec(),
                 100_000u128,
             ),
             DispatchError::BadOrigin
@@ -388,7 +387,7 @@ fn test_edge_case_10_transfer_and_clone_handling() {
 
         // Max vesting schedules limit per account enforced
         for i in 0..8 {
-            let label = format!(sched_{}, i).into_bytes();
+            let label = format!("sched_{}", i).into_bytes();
             assert_ok!(Vesting::add_schedule(
                 RuntimeOrigin::root(),
                 label.clone(),
@@ -407,7 +406,7 @@ fn test_edge_case_10_transfer_and_clone_handling() {
         // 1 (seed) + 8 = 9 schedules. Assigning 2 more (total 11 > MaxSchedulesPerAccount=10) fails
         assert_ok!(Vesting::add_schedule(
             RuntimeOrigin::root(),
-            bsched_8.to_vec(),
+            b"sched_8".to_vec(),
             100_000u128,
             365,
             30,
@@ -415,13 +414,13 @@ fn test_edge_case_10_transfer_and_clone_handling() {
         assert_ok!(Vesting::assign_vesting(
             RuntimeOrigin::root(),
             alice.clone(),
-            bsched_8.to_vec(),
+            b"sched_8".to_vec(),
             100_000u128,
         ));
 
         assert_ok!(Vesting::add_schedule(
             RuntimeOrigin::root(),
-            bsched_9.to_vec(),
+            b"sched_9".to_vec(),
             100_000u128,
             365,
             30,
@@ -430,7 +429,7 @@ fn test_edge_case_10_transfer_and_clone_handling() {
             Vesting::assign_vesting(
                 RuntimeOrigin::root(),
                 alice.clone(),
-                bsched_9.to_vec(),
+                b"sched_9".to_vec(),
                 100_000u128,
             ),
             Error::<Test>::MaxVestingSchedules
@@ -449,7 +448,7 @@ fn test_presale_schedule_flow() {
         assert_ok!(Vesting::assign_vesting(
             RuntimeOrigin::root(),
             alice.clone(),
-            bpresale_spec.to_vec(),
+            b"presale_spec".to_vec(),
             amount,
         ));
 
@@ -464,7 +463,7 @@ fn test_presale_schedule_flow() {
         System::set_block_number(blocks_for_days(180));
         assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(alice.clone())));
         let vestings = UserVestings::<Test>::get(&alice).unwrap();
-        assert_eq!(vestings[0].released, 986_301,369u128);
+        assert_eq!(vestings[0].released, 986_301_369u128);
 
         // At full vesting (day 365) -> 100% (2B)
         System::set_block_number(blocks_for_days(365));
@@ -484,7 +483,7 @@ fn test_team_schedule_flow() {
         assert_ok!(Vesting::assign_vesting(
             RuntimeOrigin::root(),
             alice.clone(),
-            bteam_spec.to_vec(),
+            b"team_spec".to_vec(),
             amount,
         ));
 
