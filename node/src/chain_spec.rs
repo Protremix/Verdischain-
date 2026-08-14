@@ -137,6 +137,52 @@ fn build_session_keys(uris: &[&str]) -> Vec<(AccountId, AccountId, SessionKeys)>
 
 // ─── 6-validator key set (dev) ──────────────────────────────────────────────
 
+
+// Build session keys directly from URIs (no hardcoded keyring mapping).
+// Used for mainnet where URIs are NOT Alice/Bob/Charlie but //MAINNET_VALIDATOR_N.
+fn build_session_keys_from_uris(uris: &[String]) -> Vec<(AccountId, AccountId, SessionKeys)> {
+    uris.iter()
+        .map(|uri| {
+            let sr_pair = sr_from(uri);
+            let ed_uri = uri.trim_start_matches("//");
+            let ed_pair = ed_from(&format!("//{}", ed_uri));
+            let controller: AccountId = sr_pair.public().into();
+            (
+                controller.clone(),
+                controller,
+                SessionKeys {
+                    babe: sr_pair.public().into(),
+                    grandpa: ed_pair.public().into(),
+                },
+            )
+        })
+        .collect()
+}
+
+// Load mainnet validator config from JSON file, or fall back to placeholder URIs.
+// JSON format: {"validators": [{"sr25519_uri": "//REAL_KEY_1", "controller": "5Grw..."}, ...]}
+// If the JSON file does not exist, placeholder URIs are used (TESTNET ONLY).
+fn load_mainnet_validator_uris() -> Vec<String> {
+    let config_path = "chain-specs/mainnet-validators.json";
+    if let Ok(content) = std::fs::read_to_string(config_path) {
+        if let Ok(json) = serde_json::from_str::<serde_json::Value>(&content) {
+            if let Some(validators) = json.get("validators").and_then(|v| v.as_array()) {
+                let uris: Vec<String> = validators
+                    .iter()
+                    .filter_map(|v| v.get("sr25519_uri").and_then(|u| u.as_str()).map(String::from))
+                    .collect();
+                if !uris.is_empty() {
+                    eprintln!("Loaded {} validator URIs from {}", uris.len(), config_path);
+                    return uris;
+                }
+            }
+        }
+    }
+    eprintln!("WARNING: {} not found or invalid. Using placeholder URIs.", config_path);
+    eprintln!("WARNING: DO NOT launch mainnet with placeholder keys!");
+    mainnet_validator_uris()
+}
+
 fn dev_validator_uris() -> Vec<&'static str> {
     vec!["Alice", "Bob", "Charlie", "Dave", "Eve", "Ferdie"]
 }
@@ -811,23 +857,14 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     let u = units();
     let bn = billion();
 
-    // 21 validators — placeholder keys (MUST be replaced before mainnet launch)
-    let uris = mainnet_validator_uris();
-    let uri_refs: Vec<&str> = uris.iter().map(|s| s.as_str()).collect();
-    let session_keys = build_session_keys(&uri_refs);
+    // 21 validators — load from JSON config if available, else placeholder URIs
+    // AUDIT-002 FIX: Load real keys from chain-specs/mainnet-validators.json
+    // DO NOT launch mainnet without replacing placeholder keys via key ceremony.
+    let uris = load_mainnet_validator_uris();
+    let session_keys = build_session_keys_from_uris(&uris);
 
-    // Only first 6 validators are initial BABE/GRANDPA authorities
-    // (matching ActiveValidatorCount=6). Others join via epoch rotation.
-    let babe_authorities: Vec<(BabeId, u64)> = session_keys
-        .iter()
-        .take(6)
-        .map(|(_, _, keys)| (keys.babe.clone(), 1))
-        .collect();
-    let grandpa_authorities: Vec<(GrandpaId, u64)> = session_keys
-        .iter()
-        .take(6)
-        .map(|(_, _, keys)| (keys.grandpa.clone(), 1))
-        .collect();
+    // AUDIT-001 FIX: All 21 validators get session keys (was .take(6))
+    // BABE/GRANDPA authorities are determined by the Session pallet from these keys.
 
     // Balances: 9-category tokenomics (100B VRDX total)
     let mut balances = vec![
@@ -900,7 +937,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             _config: Default::default(),
         },
         session: SessionConfig {
-            keys: session_keys.into_iter().take(6).collect(),
+            keys: session_keys,
             non_authority_keys: Vec::new(),
         },
         dpos: pallet_dpos::GenesisConfig {
@@ -909,7 +946,24 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             block_reward: 16 * u,
             validator_names,
         },
-        tokenomics: Default::default(),
+        tokenomics: verdis_runtime::pallet_tokenomics::GenesisConfig {
+            total_supply: 100 * bn,
+            max_supply: 100 * bn,
+            circulating_supply: 8 * bn, // 8B initial circulating (8%)
+            investor_allocation: 12 * bn, // 12B investor allocation (Seed 3B + Presale 2B + Team 5B = 10B, plus 2B buffer)
+            distribution: vec![
+                (b"ecosystem".to_vec(), 25 * bn, 25, 0, 0),
+                (b"staking".to_vec(), 20 * bn, 20, 0, 0),
+                (b"treasury".to_vec(), 20 * bn, 20, 0, 0),
+                (b"development".to_vec(), 10 * bn, 10, 0, 0),
+                (b"liquidity".to_vec(), 10 * bn, 10, 0, 0),
+                (b"community".to_vec(), 5 * bn, 5, 0, 0),
+                (b"seed".to_vec(), 3 * bn, 3, 730, 365),
+                (b"presale".to_vec(), 2 * bn, 2, 365, 180),
+                (b"team".to_vec(), 5 * bn, 5, 1095, 365),
+            ],
+            presale_price: 5_000_000, // bash.005 in microunits
+        },
         presale: Default::default(),
         vesting: pallet_vesting::GenesisConfig {
             vesting_schedules: vec![
