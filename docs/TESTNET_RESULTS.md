@@ -46,11 +46,38 @@
 
 | Test | Result | Notes |
 |---|---|---|
-| Node shutdown | PENDING | — |
-| Node restart | PENDING | — |
-| Peer connection loss | PENDING | — |
-| Multiple validators offline | PENDING | — |
-| Node resynchronization | PENDING | — |
+| Node shutdown | PASS | Chain continued #64->#69, finality maintained |
+| Node restart | PASS | Node3 resynced to #72, peers restored to 2 |
+| Peer connection loss | PASS | Peers dropped 2->1, chain continued |
+| Multiple validators offline | PASS | 2/3 nodes stopped, BABE continued |
+| Node resynchronization | PASS | Both nodes resynced after restart |
+
+## Smart Contract (Sealevel) E2E Verification
+
+| Check | Method | Result |
+|---|---|---|
+| Pallet in runtime | state_getMetadata | PASS (pallet index 56) |
+| create_batch extrinsic | Metadata | PASS |
+| report_execution extrinsic | Metadata | PASS |
+| report_conflict extrinsic | Metadata | PASS |
+| create_batch_parallel_works | Unit test | PASS |
+| create_batch_sequential_works | Unit test | PASS |
+| report_execution_works | Unit test | PASS |
+| report_conflict_works | Unit test | PASS |
+| Unsigned rejection | Unit test | PASS |
+| Max size exceeded | Unit test | PASS |
+| Compute budget exceeded | Unit test | PASS |
+| Total tests | 11/11 | ALL PASS |
+
+## Treasury Multisig
+
+| Check | Method | Result |
+|---|---|---|
+| 3-of-5 multisig origin | Code review | PASS (EnsureMultisigOrCouncilSpend) |
+| Pre-ceremony fallback | Code review | PASS (Council 2/3) |
+| Post-ceremony multisig | Code review | PASS (pallet_multisig integration) |
+| Compilation | cargo build | PASS |
+| Tests | cargo test | PASS (no regressions) |
 
 ## Soak Test
 
