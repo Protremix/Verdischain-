@@ -213,7 +213,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
 
     // 6 validators for dev (fast testing)
     let uris = dev_validator_uris();
-    let session_keys = build_session_keys(&["Alice", "Bob", "Charlie"]);
+    let session_keys = build_session_keys(&["Alice", "Bob", "Charlie", "Dave", "Eve", "Ferdie"]);
 
     let babe_authorities: Vec<(BabeId, u64)> = session_keys
         .iter()
@@ -345,7 +345,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         },
         dpos: pallet_dpos::GenesisConfig {
             validators: dpos_validators,
-            validator_count: 3,
+            validator_count: 6,
             block_reward: 16 * u,
             validator_names,
         },
