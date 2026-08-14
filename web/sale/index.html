@@ -264,7 +264,7 @@ thead,tbody{display:table;width:100%}
 <section class="hero">
   <div class="hero-left">
     <div class="badge"><div class="dot"></div> VRDX Token Sale — Seed Round Planned</div>
-    <h1>Buy <span class="accent">VERDIS</span> at Seed prices</h1>
+    <h1>Buy <span class="accent">VRDX</span> at Seed prices</h1>
     <p>VERDIS powers the Verdis Chain — the eco-friendly Layer-1 blockchain with native DPoS, AMM DEX, and carbon credit tracking. Secure your allocation before TGE listing.</p>
     <div class="hero-stats">
       <div class="hero-stat"><div class="label">Seed Price</div><div class="value">$0.0015</div></div>
@@ -278,7 +278,7 @@ thead,tbody{display:table;width:100%}
       <div class="price-big">$0.0015</div>
       <div class="price-change">70% discount to TGE</div>
       <div class="alloc-bar" style="margin-top:16px"><div class="alloc-fill" style="width:0%"></div></div>
-      <div class="mini-row"><span class="l">Sold: 0 VRDX</span><span class="v">0% of 3B</span></div>
+      <div class="mini-row"><span class="l">Sold: 0 VRDX</span><span class="v">0% of 3B (Not Started)</span></div>
     </div>
     <div class="float-card fc-price">
       <div style="font-size:12px;color:var(--text-3);margin-bottom:6px">Round 1 Ends In</div>
@@ -307,7 +307,7 @@ thead,tbody{display:table;width:100%}
       <div class="phase-price">$0.0015</div>
       <div class="phase-info">Strategic investors with long vesting commitment. 70% discount to TGE. 12-month cliff + 24-month linear vesting. 0% TGE unlock.</div>
       <div class="phase-progress">
-        <div class="prog-label"><span class="l">Sold</span><span class="v">0 / 3B</span></div>
+        <div class="prog-label"><span class="l">Sold</span><span class="v">Not Started</span></div>
         <div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div>
       </div>
       <div class="phase-meta">
@@ -390,7 +390,7 @@ thead,tbody{display:table;width:100%}
 <div class="buy-section" id="buySection">
   <div class="buy-card">
     <h2>Buy VRDX Tokens</h2>
-    <p class="buy-sub">Round 1 Seed — $0.0015 per VERDIS</p>
+    <p class="buy-sub">Round 1 Seed — $0.0015 per VRDX</p>
 
     <div class="countdown" id="countdown">
       <div class="cd-unit"><div class="cd-val" id="cd-days">21</div><div class="cd-label">Days</div></div>
@@ -414,7 +414,7 @@ thead,tbody{display:table;width:100%}
       <div class="buy-input-group">
         <label>Receive</label>
         <div class="input-row">
-          <input type="number" id="receiveAmount" placeholder="0.00" readonly value="666667" style="color:var(--accent)">
+          <input type="text" id="receiveAmount" placeholder="0.00" readonly value="666,667" style="color:var(--accent)">
           <div class="currency-select" style="cursor:default">
             <div class="token-icon vrdx">V</div>
             <span>VRDX</span>
@@ -586,7 +586,7 @@ function calculatePurchase() {
   document.getElementById('receiveAmount').value = totalTokens.toLocaleString(undefined, {maximumFractionDigits:0});
   document.getElementById('totalReceive').textContent = totalTokens.toLocaleString(undefined, {maximumFractionDigits:0}) + ' VRDX';
   document.getElementById('baseTokens').textContent = baseTokens.toLocaleString(undefined, {maximumFractionDigits:0}) + ' VRDX';
-  document.getElementById('bonusTokens').textContent = '+' + bonusTokens.toLocaleString(undefined, {maximumFractionDigits:0}) + ' VRDX';
+  const bonusEl = document.getElementById('bonusTokens'); if (bonusEl) bonusEl.textContent = '+' + bonusTokens.toLocaleString(undefined, {maximumFractionDigits:0}) + ' VRDX';
   document.getElementById('totalCost').textContent = '$' + usdValue.toLocaleString(undefined, {maximumFractionDigits:2});
   document.getElementById('outputRate').textContent = `Rate: 1 ${payCurrency} = ${(totalTokens / amount).toFixed(0)} VRDX`;
 }
@@ -639,6 +639,7 @@ function notifyMe() {
   const email = prompt('Enter your email to be notified when Phase 4 opens:');
   if (email && email.includes('@')) {
     alert(`✓ We'll notify you at ${email} when Phase 4 opens on September 1, 2026.`);
+  }
 }
 
 // FAQ toggle
