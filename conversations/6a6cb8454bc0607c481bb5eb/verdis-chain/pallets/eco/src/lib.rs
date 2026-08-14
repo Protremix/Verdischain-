@@ -1107,4 +1107,181 @@ pub mod tests {
             assert_eq!(credit.owner, bob);
         });
     }
+
+// ============================================================
+// ADDITIONAL EDGE CASE TESTS (Kimi audit additions)
+// ============================================================
+
+    #[test]
+    fn test_mint_carbon_credit_unauthorized_reverts() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            // Non-root user should not be able to mint
+            let result = Eco::mint_carbon_credit(
+                RuntimeOrigin::signed(alice.clone()),
+                alice.clone(),
+                b"c1".to_vec(),
+                b"Amazon".to_vec(),
+                100,
+            );
+            assert!(result.is_err(), "Non-admin should not mint carbon credits");
+        });
+    }
+
+    #[test]
+    fn test_mint_carbon_credit_zero_amount_reverts() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let result = Eco::mint_carbon_credit(
+                RuntimeOrigin::root(),
+                alice,
+                b"c1".to_vec(),
+                b"Amazon".to_vec(),
+                0, // zero amount
+            );
+            assert!(result.is_err(), "Zero carbon credit should fail");
+        });
+    }
+
+    #[test]
+    fn test_mint_duplicate_carbon_credit_reverts() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_ok!(Eco::mint_carbon_credit(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"c1".to_vec(),
+                b"Amazon".to_vec(),
+                100,
+            ));
+            // Minting same ID again should fail
+            let result = Eco::mint_carbon_credit(
+                RuntimeOrigin::root(),
+                alice,
+                b"c1".to_vec(),
+                b"Amazon".to_vec(),
+                200,
+            );
+            assert!(result.is_err(), "Duplicate carbon credit ID should fail");
+        });
+    }
+
+    #[test]
+    fn test_retire_nonexistent_credit_reverts() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let result = Eco::retire_carbon_credit(
+                RuntimeOrigin::signed(alice),
+                b"nonexistent".to_vec(),
+            );
+            assert!(result.is_err(), "Retiring nonexistent credit should fail");
+        });
+    }
+
+    #[test]
+    fn test_verify_carbon_credit_unauthorized_reverts() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_ok!(Eco::mint_carbon_credit(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"c1".to_vec(),
+                b"Amazon".to_vec(),
+                100,
+            ));
+            // Non-admin should not verify
+            let result = Eco::verify_carbon_credit(
+                RuntimeOrigin::signed(alice),
+                b"c1".to_vec(),
+            );
+            assert!(result.is_err(), "Non-admin should not verify credits");
+        });
+    }
+
+    #[test]
+    fn test_transfer_nonexistent_credit_reverts() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let bob = Sr25519Keyring::Bob.to_account_id();
+            let result = Eco::transfer_carbon_credit(
+                RuntimeOrigin::signed(alice),
+                b"nonexistent".to_vec(),
+                bob,
+            );
+            assert!(result.is_err(), "Transferring nonexistent credit should fail");
+        });
+    }
+
+    #[test]
+    fn test_create_reforest_project_unauthorized_reverts() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let result = Eco::create_reforest_project(
+                RuntimeOrigin::signed(alice),
+                b"project1".to_vec(),
+                b"Amazon".to_vec(),
+                1000,
+                10,
+            );
+            assert!(result.is_err(), "Non-admin should not create reforest projects");
+        });
+    }
+
+    #[test]
+    fn test_update_green_score_unauthorized_reverts() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            // Non-admin should not update green score
+            let result = Eco::update_green_score(
+                RuntimeOrigin::signed(alice.clone()),
+                alice,
+                50,
+            );
+            assert!(result.is_err(), "Non-admin should not update green scores");
+        });
+    }
+
+    #[test]
+    fn test_total_co2_increases_on_mint() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let co2_before = TotalCO2Offset::<Test>::get();
+            
+            assert_ok!(Eco::mint_carbon_credit(
+                RuntimeOrigin::root(),
+                alice,
+                b"c1".to_vec(),
+                b"Amazon".to_vec(),
+                500,
+            ));
+            
+            let co2_after = TotalCO2Offset::<Test>::get();
+            assert!(co2_after > co2_before, "Total CO2 should increase after minting");
+            assert_eq!(co2_after - co2_before, 500, "CO2 should increase by exact amount");
+        });
+    }
+
+    #[test]
+    fn test_retire_credit_decreases_supply() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            assert_ok!(Eco::mint_carbon_credit(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                b"c1".to_vec(),
+                b"Amazon".to_vec(),
+                100,
+            ));
+            
+            let co2_before = TotalCO2Offset::<Test>::get();
+            assert_ok!(Eco::retire_carbon_credit(
+                RuntimeOrigin::signed(alice),
+                b"c1".to_vec(),
+            ));
+            
+            let co2_after = TotalCO2Offset::<Test>::get();
+            assert!(co2_after < co2_before, "CO2 should decrease after retirement");
+        });
+    }
+
 }

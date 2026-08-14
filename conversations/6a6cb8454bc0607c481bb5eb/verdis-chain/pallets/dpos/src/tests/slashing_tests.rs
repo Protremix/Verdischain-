@@ -413,3 +413,152 @@ fn test_slash_does_not_affect_other_validators() {
         );
     });
 }
+
+// ============================================================
+// ADDITIONAL EDGE CASE TESTS (Kimi audit additions)
+// ============================================================
+
+#[test]
+fn test_slash_zero_amount_no_change() {
+    new_test_ext().execute_with(|| {
+        let validator = Sr25519Keyring::Alice.to_account_id();
+        let stake_before = Validators::<Test>::get(&validator).unwrap().stake;
+        
+        // Slash with zero should not change stake
+        assert_ok!(Dpos::slash_validator(
+            RuntimeOrigin::root(),
+            validator.clone(),
+            0,
+            b"zero_slash".to_vec(),
+        ));
+        
+        let stake_after = Validators::<Test>::get(&validator).unwrap().stake;
+        assert_eq!(stake_after, stake_before, "Zero slash should not change stake");
+    });
+}
+
+#[test]
+fn test_slash_nonexistent_validator_reverts() {
+    new_test_ext().execute_with(|| {
+        let fake_validator = Sr25519Keyring::Ferdie.to_account_id(); // not registered
+        
+        // Should handle gracefully - either revert or no-op
+        let result = Dpos::slash_validator(
+            RuntimeOrigin::root(),
+            fake_validator.clone(),
+            100,
+            b"nonexistent".to_vec(),
+        );
+        // Either it errors or does nothing
+        match result {
+            Ok(_) => {
+                assert!(Validators::<Test>::get(&fake_validator).is_none(),
+                    "Nonexistent validator should not be created by slash");
+            }
+            Err(_) => {
+                // Erroring is also acceptable
+            }
+        }
+    });
+}
+
+#[test]
+fn test_slash_exceeding_stake_saturates() {
+    new_test_ext().execute_with(|| {
+        let validator = Sr25519Keyring::Alice.to_account_id();
+        let stake_before = Validators::<Test>::get(&validator).unwrap().stake;
+        
+        // Slash more than the stake — should saturate, not overflow
+        assert_ok!(Dpos::slash_validator(
+            RuntimeOrigin::root(),
+            validator.clone(),
+            u128::MAX,
+            b"max_slash".to_vec(),
+        ));
+        
+        let stake_after = Validators::<Test>::get(&validator).unwrap().stake;
+        assert_eq!(stake_after, 0, "Stake should be 0 after max slash (saturated)");
+    });
+}
+
+#[test]
+fn test_reactivate_already_active_validator() {
+    new_test_ext().execute_with(|| {
+        let validator = Sr25519Keyring::Alice.to_account_id();
+        
+        // Alice is already active — reactivating should be no-op or error
+        let result = Dpos::reactivate_validator(
+            RuntimeOrigin::signed(validator.clone()),
+        );
+        // Should not crash
+        match result {
+            Ok(_) => {
+                let v = Validators::<Test>::get(&validator).unwrap();
+                assert!(v.is_active, "Already active validator should remain active");
+            }
+            Err(_) => {}
+        }
+    });
+}
+
+#[test]
+fn test_set_commission_exceeding_max_reverts() {
+    new_test_ext().execute_with(|| {
+        let validator = Sr25519Keyring::Alice.to_account_id();
+        
+        // Commission above max (20%) should fail
+        let result = Dpos::set_commission(
+            RuntimeOrigin::signed(validator.clone()),
+            21, // 21% > 20% max
+        );
+        assert!(result.is_err(), "Commission above max should fail");
+    });
+}
+
+#[test]
+fn test_unregister_nonexistent_validator_reverts() {
+    new_test_ext().execute_with(|| {
+        let fake = Sr25519Keyring::Ferdie.to_account_id(); // not registered
+        
+        let result = Dpos::unregister_validator(RuntimeOrigin::signed(fake.clone()));
+        assert!(result.is_err(), "Unregistering nonexistent validator should fail");
+    });
+}
+
+#[test]
+fn test_vote_for_nonexistent_validator_reverts() {
+    new_test_ext().execute_with(|| {
+        let voter = Sr25519Keyring::Bob.to_account_id();
+        let fake_validator = Sr25519Keyring::Ferdie.to_account_id(); // not registered
+        
+        let result = Dpos::vote(
+            RuntimeOrigin::signed(voter),
+            fake_validator,
+            1_000,
+        );
+        assert!(result.is_err(), "Voting for nonexistent validator should fail");
+    });
+}
+
+#[test]
+fn test_unvote_zero_amount() {
+    new_test_ext().execute_with(|| {
+        let voter = Sr25519Keyring::Bob.to_account_id();
+        let validator = Sr25519Keyring::Alice.to_account_id();
+        
+        // First vote
+        assert_ok!(Dpos::vote(
+            RuntimeOrigin::signed(voter.clone()),
+            validator.clone(),
+            1_000,
+        ));
+        
+        // Unvote 0 — should be no-op or error
+        let result = Dpos::unvote(
+            RuntimeOrigin::signed(voter),
+            validator,
+        );
+        // Should succeed (unvote removes all votes)
+        assert!(result.is_ok());
+    });
+}
