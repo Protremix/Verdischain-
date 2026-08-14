@@ -10,10 +10,10 @@
 
 | # | Name | Role | Google Verified? | Evidence |
 |---|---|---|---|---|
-| 1 | Dorian Jean | CEO & Founder | **NOT FOUND** | No Google results matching Shilat18 or Verdis |
+| 1 | Dorian Jean | CEO | **NOT FOUND** | No Google results matching Shilat18 or Verdis |
 | 2 | Mark Jamestown | CTO / Lead Engineer | **NOT FOUND** | No Google results matching Protremix or Verdis |
 | 3 | Elizabeth Jefferson | Head of Product | **NOT FOUND** | No Google results matching Verdis or blockchain |
-| 4 | Rojs Gordons | Co-Founder & Marketing | **YES** | GitHub Protremix/Verdischain-, verdischain.com whitepaper |
+| 4 | Rojs Gordons | Founder | **YES** | GitHub Protremix/Verdischain-, verdischain.com whitepaper |
 | 5 | María Dolores Márquez de Prado | Legal Counsel | **YES** | El País, Ara.cat, Confidencial, law firm website |
 | 6 | Ignacio Martínez-Arrieta | Legal & Compliance | **YES** | Law firm website, LinkedIn, all credentials confirmed |
 
@@ -132,7 +132,7 @@
 1. **Dorian Jean**: Provide LinkedIn profile, company registration for Shilat18, or other verifiable public presence
 2. **Mark Jamestown**: Provide LinkedIn profile, GitHub profile, or other verifiable public presence
 3. **Elizabeth Jefferson**: Provide LinkedIn profile or other verifiable public presence
-4. **Clarify founder role**: Whitepaper lists Dorian Jean as "CEO & Founder" but GitHub lists Rojs Gordons as "Founder & CEO" — clarify the relationship
+4. **Founder role CLARIFIED**: Rojs Gordons = Founder, Dorian Jean = CEO. Whitepaper updated.
 
 ---
 
