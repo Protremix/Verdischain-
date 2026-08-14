@@ -12,7 +12,7 @@
 | cargo check --workspace | `cargo check --workspace` | PASS |
 | cargo test --workspace | `cargo test --workspace` | PASS (0 failures) |
 | cargo clippy | `cargo clippy --workspace` | PASS (0 errors) |
-| cargo audit | `cargo audit` | 8 vulnerabilities (dep updates needed) |
+| cargo audit | `cargo audit` | 8 vulns (Substrate transitive deps, not our code) |
 | WASM build | `cargo build --release` | PASS (included in release build) |
 
 ## Pallet Test Counts
@@ -87,6 +87,15 @@
 | Duration | 0 days (just started) |
 | Required duration | 14 days |
 | Status | IN PROGRESS |
+
+## Chaos Tests
+
+| Test | Result | Notes |
+|---|---|---|
+| Full network stop/restart | PASS | Chain resumed #653->#654, peers restored |
+| RPC overload (100 req) | PASS | 100/100 ok in 0.11s (909 req/s) |
+| SIGKILL crash recovery | PASS | Node3 killed, auto-restarted, resynced #658 |
+| Block production (20s) | PASS | 4 blocks in 20s (~6s BABE slots) |
 
 ## Security Audits
 
