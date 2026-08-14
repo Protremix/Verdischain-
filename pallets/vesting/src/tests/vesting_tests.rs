@@ -347,8 +347,8 @@ fn test_vesting_large_amount_no_overflow() {
             RuntimeOrigin::root(),
             b"large".to_vec(),
             1_000_000_000_000_000_000u128, // 1B VRDX
-            365, // 365 days
-            90,  // 90 day cliff
+            365,                           // 365 days
+            90,                            // 90 day cliff
         ));
 
         assert_ok!(Vesting::assign_vesting(
@@ -438,7 +438,9 @@ fn test_concurrent_vesting_schedules_independent() {
 
         // At 50 days: Schedule 1 is 30 days past cliff (50-20=30, 30/100=30%), Schedule 2 at cliff (50/200=25%)
         System::set_block_number(50 * 17_280);
-        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(beneficiary.clone())));
+        assert_ok!(Vesting::release_vested(RuntimeOrigin::signed(
+            beneficiary.clone()
+        )));
 
         // At 200 days: Schedule 1 fully vested (200>100), Schedule 2 at 75% (200/200=100%)
         System::set_block_number(200 * 17_280);

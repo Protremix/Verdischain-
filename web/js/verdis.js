@@ -1,3 +1,11 @@
+// === NETWORK ENVIRONMENT CONFIG (single source of truth) ===
+const VERDIS_NETWORK = {
+  environment: "TESTNET",
+  isMainnet: false,
+  label: "Testnet Live",
+  warning: "This is a TESTNET. Tokens have no real-world value."
+};
+
 // ============================================================
 // VERDIS SHARED JS v1.0
 // Navbar, Footer, Particles, Animations, Loading Splash

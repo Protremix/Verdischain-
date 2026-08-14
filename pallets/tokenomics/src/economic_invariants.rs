@@ -238,7 +238,8 @@ fn test_min_stake_proportion() {
 
     // Min stake should be 0.1% of supply
     assert_eq!(
-        min_stake * 1000, max_supply,
+        min_stake * 1000,
+        max_supply,
         "MinValidatorStake should be 0.1% of max supply"
     );
 
@@ -265,7 +266,11 @@ fn test_green_score_range_enforced() {
 
     // Scores 1-5 must be valid
     for score in 1..=5 {
-        assert!(score >= min_score && score <= max_score, "Score {} should be valid", score);
+        assert!(
+            score >= min_score && score <= max_score,
+            "Score {} should be valid",
+            score
+        );
     }
 
     // Score 6 must be invalid

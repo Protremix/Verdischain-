@@ -1,0 +1,24 @@
+name: Repository Hygiene
+
+on:
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  check-artifacts:
+    name: Prevent Build Artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check for forbidden file types
+        run: |
+          FORBIDDEN=./verdis-wallet.apk
+./wallet_files/verdis-wallet.apk
+          if [ -n "$FORBIDDEN" ]; then
+            echo 'ERROR: Forbidden build/temp artifacts found in repository:'
+            echo "$FORBIDDEN"
+            exit 1
+          fi
+          echo 'No forbidden artifacts found.'

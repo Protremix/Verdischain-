@@ -1003,7 +1003,6 @@ pub mod tests {
         });
     }
 
-
     #[test]
     fn test_register_green_validator_score_zero_rejected() {
         new_test_ext().execute_with(|| {
