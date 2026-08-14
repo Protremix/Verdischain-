@@ -32,7 +32,7 @@ def verify_allocations(spec):
     """Check token allocations sum to 100B * 10^9."""
     try:
         genesis = spec.get('genesis', {})
-        runtime = genesis.get('runtime', {})
+        runtime = genesis.get('runtimeGenesis', {})
         balances = runtime.get('balances', {}).get('balances', [])
         total = 0
         for addr, amount in balances:
@@ -47,7 +47,7 @@ def verify_allocations(spec):
 def verify_validators(spec):
     """Check 21 validators in genesis."""
     try:
-        runtime = spec.get('genesis', {}).get('runtime', {})
+        runtime = spec.get('genesis', {}).get('runtimeGenesis', {})
         dpos = runtime.get('dpos', {})
         validators = dpos.get('validators', [])
         count = len(validators)
@@ -65,14 +65,14 @@ def verify_validators(spec):
 
 def verify_no_sudo(spec):
     """Check pallet_sudo is not present."""
-    runtime = spec.get('genesis', {}).get('runtime', {})
+    runtime = spec.get('genesis', {}).get('runtimeGenesis', {})
     has_sudo = 'sudo' in runtime
     check('pallet_sudo removed', not has_sudo)
 
 def verify_active_validator_count(spec):
     """Check ActiveValidatorCount = 21."""
     try:
-        dpos = spec.get('genesis', {}).get('runtime', {}).get('dpos', {})
+        dpos = spec.get('genesis', {}).get('runtimeGenesis', {}).get('dpos', {})
         avc = dpos.get('activeValidatorCount', 0)
         check('ActiveValidatorCount = 21', avc == 21, f'Found: {avc}')
     except Exception as e:
@@ -81,7 +81,7 @@ def verify_active_validator_count(spec):
 def verify_treasury(spec):
     """Check treasury PalletId or multisig."""
     try:
-        runtime = spec.get('genesis', {}).get('runtime', {})
+        runtime = spec.get('genesis', {}).get('runtimeGenesis', {})
         has_treasury = 'treasury' in runtime
         check('Treasury pallet present', has_treasury)
         # Check team multisig placeholder
