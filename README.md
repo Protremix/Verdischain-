@@ -225,7 +225,7 @@ Key documents:
 - [x] 31 web pages with live RPC data
 - [x] 11 CI/CD pipelines
 - [x] Security hardening (6 headers, Docker, audits)
-- [x] 555 test functions across 16 pallets
+- [x] 534 test functions across 16 pallets
 - [x] 6 chain specs (dev, testnet, mainnet)
 - [x] MIT License
 - [ ] 21 active validators (air-gapped key ceremony)
