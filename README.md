@@ -21,7 +21,7 @@
   <img src="https://img.shields.io/badge/token-VRDX-16a34a" alt="Token">
   <img src="https://img.shields.io/badge/consensus-DPoS%20%2B%20BABE%2FGRANDPA-16a34a" alt="Consensus">
   <img src="https://img.shields.io/badge/SS58-909-16a34a" alt="SS58">
-  <img src="https://img.shields.io/badge/tests-555%20functions-22c55e" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-534%20functions-22c55e" alt="Tests">
   <img src="https://img.shields.io/badge/pallets-16-16a34a" alt="Pallets">
   <img src="https://img.shields.io/badge/pages-31%20live-22c55e" alt="Pages">
   <img src="https://img.shields.io/badge/status-TESTNET-f59e0b" alt="Status">
@@ -49,7 +49,7 @@ Verdis Chain is a Substrate-based blockchain implementing Delegated Proof of Sta
 | DEX Fee | 0.3% (3/1000) |
 | Validators | 6 registered (target: 21 -> 200+) |
 | Chain Specs | dev, testnet, mainnet (6 files) |
-| Test Functions | 555 across 16 pallets |
+| Test Functions | 534 across 16 pallets |
 | CI/CD Workflows | 11 GitHub Actions pipelines |
 | Web Pages | 31 live on verdischain.com |
 | Services | 17 systemd services |
@@ -97,7 +97,7 @@ Treasury is controlled by a **3-of-5 multisig** (cold storage, air-gapped key ce
 | turbine | 9 | Block propagation optimization (Solana-inspired) |
 | sealevel | 9 | Parallel smart contract execution model |
 | address-lookup-tables | 4 | ALT for compact account references |
-| **Total** | **555** | |
+| **Total** | **534** | |
 
 ### Chain Specs (6 files)
 
