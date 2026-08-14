@@ -1101,7 +1101,7 @@ impl pallet_treasury::Config for Runtime {
     type SpendFunds = ();
     type MaxApprovals = TreasuryMaxApprovals;
     // Post-sudo: Treasury spending through governance proposals (not direct dispatchable)
-    type SpendOrigin = EnsureCouncilSpend;
+    type SpendOrigin = EnsureMultisigOrCouncilSpend; // 3-of-5 multisig (post-ceremony) or council 2/3 (pre-ceremony)
     type AssetKind = ();
     type Beneficiary = AccountId;
     type BeneficiaryLookup = AccountIdLookup<AccountId, ()>;
@@ -1109,6 +1109,65 @@ impl pallet_treasury::Config for Runtime {
     type BalanceConverter = frame_support::traits::tokens::UnityAssetBalanceConversion;
     type PayoutPeriod = TreasuryPayoutPeriod;
     type BlockNumberProvider = System;
+}
+
+
+// === Treasury Multisig (3-of-5 cold storage) ===
+// Placeholder signers: None until air-gapped key ceremony completes
+// After ceremony: set to 5 signer AccountIds via runtime upgrade
+pub struct TreasuryMultisigSigners;
+impl frame_support::traits::Get<Option<Vec<AccountId>>> for TreasuryMultisigSigners {
+    fn get() -> Option<Vec<AccountId>> {
+        // PRE-CEREMONY: return None, fall back to Council 2/3 spend
+        // POST-CEREMONY: return the 5 cold-storage signer addresses
+        None
+    }
+}
+
+frame_support::parameter_types! {
+    pub const TreasuryMultisigThreshold: u16 = 3;
+}
+
+// Treasury spend origin: 3-of-5 multisig (post-ceremony) or Council 2/3 (pre-ceremony)
+pub struct EnsureMultisigOrCouncilSpend;
+impl frame_support::traits::EnsureOrigin<RuntimeOrigin> for EnsureMultisigOrCouncilSpend {
+    type Success = u128;
+
+    fn try_origin(o: RuntimeOrigin) -> Result<Self::Success, RuntimeOrigin> {
+        // Try multisig first (post-ceremony)
+        if let Some(signers) = TreasuryMultisigSigners::get() {
+            if signers.len() >= 5 {
+                if let Ok(caller) = frame_system::ensure_signed(o.clone()) {
+                    let multisig_account = pallet_multisig::Pallet::<Runtime>::multi_account_id(
+                        &signers,
+                        TreasuryMultisigThreshold::get(),
+                    );
+                    if caller == multisig_account {
+                        return Ok(TreasuryMaxSpend::get());
+                    }
+                }
+            }
+        }
+
+        // Fallback: Council 2/3 (pre-ceremony)
+        pallet_collective::EnsureProportionAtLeast::<AccountId, pallet_collective::Instance1, 2, 3>
+            ::try_origin(o)
+            .map(|_| TreasuryMaxSpend::get())
+    }
+
+    #[cfg(feature = "runtime-benchmarks")]
+    fn try_origin_or_root(o: RuntimeOrigin) -> Result<Option<Self::Success>, RuntimeOrigin> {
+        match Self::try_origin(o.clone()) {
+            Ok(s) => Ok(Some(s)),
+            Err(_) => {
+                if frame_system::ensure_root(o).is_ok() {
+                    Ok(Some(TreasuryMaxSpend::get()))
+                } else {
+                    Err(o)
+                }
+            }
+        }
+    }
 }
 
 // === Council (Collective) ===
