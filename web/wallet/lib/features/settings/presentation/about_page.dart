@@ -162,7 +162,7 @@ class _AboutPageState extends ConsumerState<AboutPage> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Verdis is a carbon-negative blockchain ecosystem featuring on-chain carbon credits, '
+                    'Verdis is a energy-efficient blockchain ecosystem featuring on-chain carbon credits, '
                     'reforestation logging, and green validator scoring. Powered by BABE/GRANDPA consensus '
                     'with native DPoS, AMM DEX, and smart contract support.',
                     style: Theme.of(context).textTheme.bodyMedium,

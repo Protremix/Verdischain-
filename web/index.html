@@ -621,8 +621,10 @@ input:focus{outline:none;border-color: #16a34a;box-shadow:0 0 0 3px rgba(22,163,
 .footer-links a{font-size:12px;color:rgba(255,255,255,0.6);text-decoration:none;transition:color .2s}
 .footer-links a:hover{color:#00ff88}
 .footer-copy{font-size:11px;color:rgba(255,255,255,0.4);text-align:center}
-</style></head>
+</style><style>.testnet-banner{background:#f59e0b;color:#000;padding:8px 16px;text-align:center;font-size:13px;font-weight:600;font-family:Inter,sans-serif;position:sticky;top:0;z-index:9999}</style>
+</head>
 <body>
+<div class="testnet-banner">TESTNET — Verdis Chain is currently in testnet phase. Not mainnet. Not investor-ready. <a href="/status/" style="color:inherit;text-decoration:underline">Status</a></div>
   <div id="cursor-glow"></div>
   <div id="scroll-bar"></div>
 
@@ -651,7 +653,7 @@ input:focus{outline:none;border-color: #16a34a;box-shadow:0 0 0 3px rgba(22,163,
           <span class="gradient">GREEN BLOCKCHAIN</span><br>
           <span style="color:var(--text-white)">Engineered in EvolvixOS</span>
         </h1>
-        <p class="hero-desc">Layer-1 blockchain built with Substrate. Native DPoS consensus, AMM DEX, ink! smart contracts, and on-chain carbon credit tracking — powered by production-grade pallets in Rust.</p>
+        <p class="hero-desc">Layer-1 blockchain built with Substrate. Native DPoS consensus, AMM DEX, ink! smart contracts, and on-chain carbon credit tracking — powered by Substrate pallets in Rust.</p>
         <div class="hero-actions">
           <button class="btn-primary" onclick="window.location.href='/explorer'">Open Explorer →</button>
           <button class="btn-secondary" onclick="document.getElementById('features').scrollIntoView()">View Architecture</button>
@@ -881,7 +883,7 @@ input:focus{outline:none;border-color: #16a34a;box-shadow:0 0 0 3px rgba(22,163,
         <div class="feature-card"><div class="feature-icon">🌱</div><h3>Carbon Credit Tracking</h3><p>On-chain carbon credits, green validator scoring, and reforestation logging. Every transaction contributes to measurable environmental impact.</p><span class="feature-tag">Eco Module</span></div>
         <div class="feature-card"><div class="feature-icon">⚡</div><h3>ink! Smart Contracts</h3><p>Substrate-native smart contracts via pallet_contracts. Deploy ink! contracts compiled to WebAssembly with gas-metered execution and storage rent.</p><span class="feature-tag">ink! · WASM · Chain 909</span></div>
         <div class="feature-card"><div class="feature-icon">🛡️</div><h3>Tokenomics & Vesting</h3><p>100B total supply with 12B investor allocation enforced on-chain. Vesting schedules with cliff periods, transfer restrictions, and mint/burn controls.</p><span class="feature-tag">100B Supply · 12B Vesting</span></div>
-        <div class="feature-card"><div class="feature-icon">🏗️</div><h3>Substrate + Rust Core</h3><p>Built from scratch in Rust using Substrate. WASM runtime, JSON-RPC + gRPC, benchmarked weight files for 30+ pallets. Production-ready.</p><span class="feature-tag">Rust · Substrate · WASM</span></div>
+        <div class="feature-card"><div class="feature-icon">🏗️</div><h3>Substrate + Rust Core</h3><p>Built from scratch in Rust using Substrate. WASM runtime, JSON-RPC + gRPC, benchmarked weight files for 16 pallets. Testnet-ready.</p><span class="feature-tag">Rust · Substrate · WASM</span></div>
       </div>
     </div>
   </section>
@@ -906,7 +908,7 @@ input:focus{outline:none;border-color: #16a34a;box-shadow:0 0 0 3px rgba(22,163,
             <circle class="donut-seg" cx="100" cy="100" r="80" stroke="#16a34a" stroke-dasharray="125.66 376.99" stroke-dashoffset="0"/>
             <!-- Staking 20% -->
             <circle class="donut-seg" cx="100" cy="100" r="80" stroke="#26a17b" stroke-dasharray="100.53 402.12" stroke-dashoffset="-125.66"/>
-            <!-- Treasury 15% -->
+            <!-- Treasury 20% -->
             <circle class="donut-seg" cx="100" cy="100" r="80" stroke="#a855f7" stroke-dasharray="75.40 427.25" stroke-dashoffset="-226.19"/>
             <!-- Development 10% -->
             <circle class="donut-seg" cx="100" cy="100" r="80" stroke="#627eea" stroke-dasharray="50.27 452.38" stroke-dashoffset="-301.59"/>
@@ -930,7 +932,7 @@ input:focus{outline:none;border-color: #16a34a;box-shadow:0 0 0 3px rgba(22,163,
         <div class="tokenomics-legend reveal-stagger">
           <div class="token-item"><div class="token-dot" style="background:#16a34a"></div><div class="token-info"><div class="token-info-name">Ecosystem & Developer Grants</div><div class="token-info-desc">SDKs, APIs, developer tools, grants</div></div><div class="token-amount">25B VRDX</div></div>
           <div class="token-item"><div class="token-dot" style="background:#26a17b"></div><div class="token-info"><div class="token-info-name">PoS Staking Rewards</div><div class="token-info-desc">Validator and delegator rewards</div></div><div class="token-amount">20B VRDX</div></div>
-          <div class="token-item"><div class="token-dot" style="background:#a855f7"></div><div class="token-info"><div class="token-info-name">Treasury</div><div class="token-info-desc">Protocol governance and community grants</div></div><div class="token-amount">15B VRDX</div></div>
+          <div class="token-item"><div class="token-dot" style="background:#a855f7"></div><div class="token-info"><div class="token-info-name">Treasury</div><div class="token-info-desc">Protocol governance and community grants</div></div><div class="token-amount">20B VRDX</div></div>
           <div class="token-item"><div class="token-dot" style="background:#627eea"></div><div class="token-info"><div class="token-info-name">Development</div><div class="token-info-desc">Core protocol engineering</div></div><div class="token-amount">10B VRDX</div></div>
           <div class="token-item"><div class="token-dot" style="background:#fbbf24"></div><div class="token-info"><div class="token-info-name">Liquidity</div><div class="token-info-desc">DEX and market maker pools</div></div><div class="token-amount">10B VRDX</div></div>
           <div class="token-item"><div class="token-dot" style="background:#4ade80"></div><div class="token-info"><div class="token-info-name">Community</div><div class="token-info-desc">Airdrops, events, marketing</div></div><div class="token-amount">5B VRDX</div></div>
@@ -947,7 +949,7 @@ input:focus{outline:none;border-color: #16a34a;box-shadow:0 0 0 3px rgba(22,163,
     <div class="arch-inner">
       <div class="section-header reveal">
         <div class="section-label">Architecture</div>
-        <h2>Seven pallets, one ecosystem</h2>
+        <h2>Sixteen pallets, one ecosystem</h2>
         <p>Each pallet is independently benchmarked with real weight files.</p>
       </div>
       <div class="arch-layers reveal-stagger">
@@ -1017,7 +1019,7 @@ input:focus{outline:none;border-color: #16a34a;box-shadow:0 0 0 3px rgba(22,163,
         <h2>What's built and what's next</h2>
       </div>
       <div class="roadmap-track reveal">
-        <div class="roadmap-milestone done"><div class="roadmap-dot"></div><div class="roadmap-status">✓ Completed</div><h4>Core Blockchain</h4><p>30+ pallets, ink! contracts, benchmarked weights</p></div>
+        <div class="roadmap-milestone done"><div class="roadmap-dot"></div><div class="roadmap-status">✓ Completed</div><h4>Core Blockchain</h4><p>16 pallets, ink! contracts, benchmarked weights</p></div>
         <div class="roadmap-milestone done"><div class="roadmap-dot"></div><div class="roadmap-status">✓ Completed</div><h4>Verdiscan Explorer</h4><p>Real-time block explorer, validator cards, WebSocket feed</p></div>
         <div class="roadmap-milestone active"><div class="roadmap-dot"></div><div class="roadmap-status">● In Progress</div><h4>Premium Launch</h4><p>SaaS interface, security audit done, SDK released, mobile wallet in development</p></div>
         <div class="roadmap-milestone planned"><div class="roadmap-dot"></div><div class="roadmap-status">○ Planned</div><h4>Mainnet</h4><p>Genesis allocation, validator onboarding, public RPC</p></div>

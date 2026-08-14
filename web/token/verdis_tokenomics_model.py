@@ -569,7 +569,7 @@ def run_stress_tests():
             "impact_tokens": 0,
             "impact_pct": 0,
             "sell_pressure": "Fee revenue drops 80%, treasury must cover operations, staking APR decreases",
-            "mitigation": "Treasury reserve (15B), reduced emissions schedule, ecosystem incentives",
+            "mitigation": "Treasury reserve (20B), reduced emissions schedule, ecosystem incentives",
             "severity": "MEDIUM",
         },
     ]

@@ -181,8 +181,10 @@ footer{padding:32px 24px;text-align:center;color:var(--text-2);font-size:13px;bo
 
 </style>
 <link rel="icon" type="image/png" href="/assets/favicon.png" />
+<style>.testnet-banner{background:#f59e0b;color:#000;padding:8px 16px;text-align:center;font-size:13px;font-weight:600;font-family:Inter,sans-serif;position:sticky;top:0;z-index:9999}</style>
 </head>
 <body>
+<div class="testnet-banner">TESTNET — Verdis Chain is currently in testnet phase. Not mainnet. Not investor-ready. <a href="/status/" style="color:inherit;text-decoration:underline">Status</a></div>
 <div id="scroll-bar"></div>
 <div id="cursor-glow"></div>
 <nav class="std-nav">
@@ -373,7 +375,7 @@ footer{padding:32px 24px;text-align:center;color:var(--text-2);font-size:13px;bo
 <div class="arch-layer"><div class="arch-layer-num">05</div><div class="arch-layer-content"><div class="arch-layer-title">DEX & DeFi Layer — AMM Protocol</div><div class="arch-layer-desc">Native AMM DEX with liquidity pools, swap routing, and yield farming. 6 active pools. Token-2022 extensions for transfer fees and metadata.</div><div class="arch-layer-tech"><span class="arch-tech-tag">AmmDex Pallet</span><span class="arch-tech-tag">6 Pools</span><span class="arch-tech-tag">Token-2022</span></div></div></div>
 <div class="arch-layer"><div class="arch-layer-num">04</div><div class="arch-layer-content"><div class="arch-layer-title">Eco Layer — Carbon Credits & Green Scoring</div><div class="arch-layer-desc">Protocol-native carbon credit minting, retirement tracking, green validator scoring, and reforestation logging. 5,260 kg CO2 offset, 242 trees verified.</div><div class="arch-layer-tech"><span class="arch-tech-tag">Eco Pallet</span><span class="arch-tech-tag">pCO2</span><span class="arch-tech-tag">Green Score</span></div></div></div>
 <div class="arch-layer"><div class="arch-layer-num">03</div><div class="arch-layer-content"><div class="arch-layer-title">Consensus Layer — DPoS + BABE + GRANDPA</div><div class="arch-layer-desc">Delegated Proof of Stake with 21 registered validators (3 active), BABE block production, GRANDPA finality. Solana-inspired: PoH, Gulf Stream, Turbine, ZK Compression, Sealevel, ALT, Cloudbreak.</div><div class="arch-layer-tech"><span class="arch-tech-tag">DPoS</span><span class="arch-tech-tag">BABE</span><span class="arch-tech-tag">GRANDPA</span><span class="arch-tech-tag">PoH</span><span class="arch-tech-tag">Gulf Stream</span><span class="arch-tech-tag">IBC</span></div></div></div>
-<div class="arch-layer"><div class="arch-layer-num">02</div><div class="arch-layer-content"><div class="arch-layer-title">Runtime Layer — Substrate Pallets</div><div class="arch-layer-desc">16 custom pallets in Rust: Tokenomics, Vesting, DPoS, AmmDex, Eco, Storage, FungibleTokens, NFTs, Governance, Treasury, Council, Democracy, Multisig, Proxy, and IBC. 238 tests passing.</div><div class="arch-layer-tech"><span class="arch-tech-tag">Rust</span><span class="arch-tech-tag">30+ Pallets</span><span class="arch-tech-tag">238 Tests</span><span class="arch-tech-tag">WASM</span></div></div></div>
+<div class="arch-layer"><div class="arch-layer-num">02</div><div class="arch-layer-content"><div class="arch-layer-title">Runtime Layer — Substrate Pallets</div><div class="arch-layer-desc">16 custom pallets in Rust: Tokenomics, Vesting, DPoS, AmmDex, Eco, Storage, FungibleTokens, NFTs, Governance, Treasury, Council, Democracy, Multisig, Proxy, and IBC. 489 tests passing.</div><div class="arch-layer-tech"><span class="arch-tech-tag">Rust</span><span class="arch-tech-tag">16 Pallets</span><span class="arch-tech-tag">489 Tests</span><span class="arch-tech-tag">WASM</span></div></div></div>
 <div class="arch-layer"><div class="arch-layer-num">01</div><div class="arch-layer-content"><div class="arch-layer-title">Network Layer — P2P + RPC</div><div class="arch-layer-desc">Substrate P2P networking with libp2p, JSON-RPC (HTTP + WebSocket), and real-time block subscriptions. Nginx reverse proxy with TLS 1.3 and HSTS.</div><div class="arch-layer-tech"><span class="arch-tech-tag">libp2p</span><span class="arch-tech-tag">JSON-RPC</span><span class="arch-tech-tag">WebSocket</span><span class="arch-tech-tag">TLS 1.3</span></div></div></div>
 </div></div>
 </section>
@@ -491,7 +493,7 @@ footer{padding:32px 24px;text-align:center;color:var(--text-2);font-size:13px;bo
 <ul class="feature-list"><li>8 council members (expandable)</li><li>Fast-track for urgent protocol fixes</li><li>Removable via no-confidence vote</li></ul>
 </div>
 <div class="feature-card"><div class="feature-icon">&#128176;</div><div class="feature-title">Treasury</div><div class="feature-desc">20B VRDX is allocated to the treasury, controlled by governance. Funds are spent on ecosystem grants, developer bounties, infrastructure, and carbon offset initiatives.</div>
-<ul class="feature-list"><li>15,000,000,000 VRDX allocated</li><li>DAO-governed spending</li><li>Transparent on-chain accounting</li></ul>
+<ul class="feature-list"><li>20,000,000,000 VRDX allocated</li><li>DAO-governed spending</li><li>Transparent on-chain accounting</li></ul>
 </div>
 <div class="feature-card"><div class="feature-icon">&#128274;</div><div class="feature-title">Technical Committee</div><div class="feature-desc">A technical committee of core developers can veto emergency proposals that would harm the protocol. This provides a safety net against malicious governance attacks.</div>
 <ul class="feature-list"><li>Emergency veto power</li><li>Composed of core protocol developers</li><li>Prevents harmful governance captures</li></ul>
@@ -704,7 +706,7 @@ footer{padding:32px 24px;text-align:center;color:var(--text-2);font-size:13px;bo
 <div class="supply-row"><span class="sr-when">Month 3</span><div class="sr-bar"><div class="sr-fill" style="width:8.4%"><span class="sr-val">8.4B</span></div></div><span class="sr-pct">8.4%</span></div>
 <div class="supply-row"><span class="sr-when">Month 6</span><div class="sr-bar"><div class="sr-fill" style="width:9.5%"><span class="sr-val">9.5B</span></div></div><span class="sr-pct">9.5%</span></div>
 <div class="supply-row"><span class="sr-when">Month 12</span><div class="sr-bar"><div class="sr-fill" style="width:11.5%"><span class="sr-val">11.5B</span></div></div><span class="sr-pct">11.5%</span></div>
-<div class="supply-row"><span class="sr-when">Month 18</span><div class="sr-bar"><div class="sr-fill" style="width:15%"><span class="sr-val">~15B</span></div></div><span class="sr-pct">15%</span></div>
+<div class="supply-row"><span class="sr-when">Month 18</span><div class="sr-bar"><div class="sr-fill" style="width:15%"><span class="sr-val">~20B</span></div></div><span class="sr-pct">20%</span></div>
 <div class="supply-row"><span class="sr-when">Month 24</span><div class="sr-bar"><div class="sr-fill" style="width:24%"><span class="sr-val">~24B</span></div></div><span class="sr-pct">24%</span></div>
 <div class="supply-row"><span class="sr-when">Month 36</span><div class="sr-bar"><div class="sr-fill" style="width:39%"><span class="sr-val">~39B</span></div></div><span class="sr-pct">39%</span></div>
 <div class="supply-row"><span class="sr-when">Month 48</span><div class="sr-bar"><div class="sr-fill" style="width:57%"><span class="sr-val">~57B</span></div></div><span class="sr-pct">57%</span></div>

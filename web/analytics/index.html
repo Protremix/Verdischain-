@@ -191,8 +191,10 @@
       .footer-bottom{flex-direction:column;gap:8px;text-align:center}
     }
   </style>
+<style>.testnet-banner{background:#f59e0b;color:#000;padding:8px 16px;text-align:center;font-size:13px;font-weight:600;font-family:Inter,sans-serif;position:sticky;top:0;z-index:9999}</style>
 </head>
 <body>
+<div class="testnet-banner">TESTNET — Verdis Chain is currently in testnet phase. Not mainnet. Not investor-ready. <a href="/status/" style="color:inherit;text-decoration:underline">Status</a></div>
 
   <!-- Sticky Navigation -->
   <header class="nav">
@@ -331,7 +333,7 @@
           <span>Avg Transaction Fee</span>
           <span>💎</span>
         </div>
-        <span class="stat-value" id="stat-fee">0.00015 VRS</span>
+        <span class="stat-value" id="stat-fee">0.00015 VRDX</span>
         <div class="stat-sub">
           <span>~$0.00030 USD average</span>
         </div>
@@ -427,20 +429,20 @@
       <div class="chart-card full-width">
         <div class="chart-header">
           <span class="chart-title">Fee Analysis (Last 50 Blocks)</span>
-          <span class="chart-tag">VRS Tokens</span>
+          <span class="chart-tag">VRDX Tokens</span>
         </div>
         <div class="fee-metrics">
           <div class="fee-box">
             <div class="fee-lbl">Average Fee</div>
-            <div class="fee-val" id="fee-avg">0.00015 VRS</div>
+            <div class="fee-val" id="fee-avg">0.00015 VRDX</div>
           </div>
           <div class="fee-box">
             <div class="fee-lbl">Minimum Fee</div>
-            <div class="fee-val" id="fee-min">0.00010 VRS</div>
+            <div class="fee-val" id="fee-min">0.00010 VRDX</div>
           </div>
           <div class="fee-box">
             <div class="fee-lbl">Maximum Fee</div>
-            <div class="fee-val" id="fee-max">0.00085 VRS</div>
+            <div class="fee-val" id="fee-max">0.00085 VRDX</div>
           </div>
         </div>
         <div class="chart-container">
@@ -724,7 +726,7 @@
       document.getElementById('stat-height').innerText = '#' + state.blockHeight.toLocaleString();
       document.getElementById('stat-txs').innerText = state.totalTxs.toLocaleString();
       document.getElementById('stat-tps').innerText = state.tps.toLocaleString();
-      document.getElementById('stat-fee').innerText = state.avgFee.toFixed(5) + ' VRS';
+      document.getElementById('stat-fee').innerText = state.avgFee.toFixed(5) + ' VRDX';
     }
 
     // Search Handler
@@ -758,14 +760,14 @@
           <div class="result-item"><span>Hash</span><strong class="mono">${input.substring(0, 16)}...</strong></div>
           <div class="result-item"><span>Pallet / Call</span><strong>Balances.transfer_keep_alive</strong></div>
           <div class="result-item"><span>Status</span><strong style="color:var(--success)">Success (System.ExtrinsicSuccess)</strong></div>
-          <div class="result-item"><span>Fee Paid</span><strong>0.00015 VRS</strong></div>
+          <div class="result-item"><span>Fee Paid</span><strong>0.00015 VRDX</strong></div>
         `;
       } else if (input.length >= 20) {
         // Address
         title.innerText = '👤 SS58 Account Result';
         details.innerHTML = `
           <div class="result-item"><span>SS58 Address</span><strong class="mono">${input.substring(0, 12)}...${input.substring(input.length-4)}</strong></div>
-          <div class="result-item"><span>Free Balance</span><strong>148,920.50 VRS</strong></div>
+          <div class="result-item"><span>Free Balance</span><strong>148,920.50 VRDX</strong></div>
           <div class="result-item"><span>Staked Role</span><strong style="color:var(--accent)">DPoS Validator (Active)</strong></div>
           <div class="result-item"><span>Nonce / Extrinsics</span><strong>1,482 txs</strong></div>
         `;
@@ -842,7 +844,7 @@
         data: {
           labels: feeLabels,
           datasets: [{
-            label: 'Avg Fee (VRS)',
+            label: 'Avg Fee (VRDX)',
             data: feeData,
             borderColor: '#16a34a',
             backgroundColor: 'rgba(22, 163, 74, 0.1)',

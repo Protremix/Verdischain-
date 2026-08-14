@@ -78,7 +78,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
             const SizedBox(height: 8),
 
             Text(
-              'Carbon-Negative Blockchain Wallet',
+              'Energy-Efficient Blockchain Wallet',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: const Color(0xFF8B9D8B),
                 letterSpacing: 0.5,

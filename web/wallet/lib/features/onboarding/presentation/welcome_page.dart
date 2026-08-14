@@ -25,7 +25,7 @@ class _WelcomePageState extends State<WelcomePage> {
     ),
     OnboardingSlide(
       icon: Icons.energy_savings_leaf_rounded,
-      title: 'Carbon-Negative Blockchain',
+      title: 'Energy-Efficient Blockchain',
       subtitle: 'Powered by BABE/GRANDPA + DPoS proof-of-green consensus with sub-second finality and zero emissions.',
       accentColor: Color(0xFF00FF88),
     ),
