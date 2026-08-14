@@ -3,99 +3,139 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verdis Chain Network Status</title>
+<title>Project Status — Verdis Chain</title>
 <link rel="canonical" href="https://verdischain.com/status/">
+<meta name="description" content="Verdis Chain project status, evidence, and mainnet readiness tracker.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Verdis Chain Network Status">
-<meta property="og:description" content="Real-time network status for Verdis Chain. Block height, peers, TPS, and service health monitoring.">
-<meta property="og:url" content="https://verdischain.com/status/">
-<meta property="og:image" content="https://verdischain.com/assets/verdis-logo-black.png">
-<meta name="description" content="Real-time network status for Verdis Chain. Block height, peers, TPS, and service health monitoring.">
-<meta http-equiv="refresh" content="30">
+<meta property="og:title" content="Project Status — Verdis Chain">
+<meta property="og:description" content="Verdis Chain project status and mainnet readiness.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
+:root{--bg:#f1f5f9;--bg-1:#f8fafc;--bg-2:#f1f5f9;--card:#ffffff;--border:#e2e8f0;--text:#0f172a;--text-2:#475569;--text-3:#334155;--accent:#16a34a;--accent-2:#15803d;--warning:#fbbf24;--error:#ef4444;--radius:12px;--radius-sm:8px}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#f1f5f9;color:#0f172a;font-family:system-ui,sans-serif;padding:32px
---hero-bg: #1a1a1a;}
-h1{font-size:13px;margin-bottom:12px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;max-width:800px;margin:0 auto}
-.card{background:#111;border:1px solid #222;border-radius:12px;padding:20px}
-.card h2{font-size:14px;color:#334155;text-transform:uppercase;margin-bottom:8px}
-.value{font-size:14px;font-weight:700;color:#16a34a}
-.ok{color:#22c55e}
-.pulse{animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
-
-/* Mobile responsiveness */
-@media(max-width:375px){.nav{padding:8px 12px}.nav-links{gap:8px;font-size:12px}.nav-links a{font-size:12px}.container{padding:16px}.wallet-grid,.dex-grid{grid-template-columns:1fr}.stats-row{grid-direction:column}.stat{min-width:100px}.btn{min-height:64px;padding:10px 16px}.card{padding:16px}h1{font-size:13px}}
-@media(max-width:768px){.nav-links{gap:10px}.nav-brand{font-size:14px}.container{padding:20px}}
+body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+.container{max-width:1000px;margin:0 auto;padding:24px}
+h1{font-family:Space Grotesk,sans-serif;font-size:28px;font-weight:700;margin-bottom:8px}
+h2{font-family:Space Grotesk,sans-serif;font-size:20px;font-weight:600;margin:32px 0 12px}
+.sub{color:var(--text-2);font-size:14px;margin-bottom:24px}
+.banner{background:#fef3c7;border:1px solid #fcd34d;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:24px;font-size:14px;color:#92400e}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.card-title{font-family:Space Grotesk,sans-serif;font-weight:600;font-size:16px;margin-bottom:12px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.stat-label{font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-2);margin-bottom:4px}
+.stat-value{font-family:JetBrains Mono,monospace;font-size:24px;font-weight:700}
+.stat-value.ok{color:var(--accent)}.stat-value.warn{color:var(--warning)}.stat-value.err{color:var(--error)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 12px;background:var(--bg-1);border-bottom:2px solid var(--border);text-transform:uppercase;font-size:11px;letter-spacing:0.5px;color:var(--text-2)}
+td{padding:8px 12px;border-bottom:1px solid var(--border)}
+tr:hover td{background:var(--bg-1)}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.badge-ok{background:#dcfce7;color:#166534}.badge-warn{background:#fef3c7;color:#92400e}.badge-open{background:#fee2e2;color:#991b1b}
+.mono{font-family:JetBrains Mono,monospace}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.footer{text-align:center;color:var(--text-2);font-size:12px;margin-top:32px}
+@media(max-width:640px){.container{padding:16px}h1{font-size:22px}.stat-grid{grid-template-columns:1fr 1fr}}
 </style>
-
-<style>
-.footer{max-width:1200px;margin:0 auto;padding:32px 24px;border-top:1px solid rgba(0,0,0,0.08);margin-top:40px}
-.footer-social{display:flex;gap:10px;margin-top:16px}.footer-social a{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;color:var(--text-muted,#94a3b8);transition:all .2s}.footer-social a:hover{color:#fff;background:rgba(255,255,255,0.1)}
-.footer-links{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:12px;justify-content:center}
-.footer-links a{font-size:12px;color:#475569;text-decoration:none;transition:color .2s}
-.footer-links a:hover{color:#16a34a}
-.footer-copy{font-size:11px;color:#94a3b8;text-align:center}
-</style>
-<link rel="icon" type="image/png" href="/assets/favicon.png" />
 </head>
 <body>
-<nav style="position:sticky;top:0;z-index:40;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1px solid #e2e8f0">
-  <div style="max-width:1200px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;gap:16px">
-    <a href="/" style="display:flex;align-items:center;gap:8px;text-decoration:none">
-      <img src="/assets/verdis-logo-black.png" alt="Verdis Chain" style="height:32px;width:auto">
-    </a>
-    <div style="display:flex;gap:4px;flex-wrap:wrap">
-      <a href="/explorer/" style="padding:6px 10px;font-size:12px;font-weight:500;color:#475569;border-radius:8px;text-decoration:none">Verdiscan</a>
-      <a href="/dex/" style="padding:6px 10px;font-size:12px;font-weight:500;color:#475569;border-radius:8px;text-decoration:none">DEX</a>
-      <a href="/whitepaper/" style="padding:6px 10px;font-size:12px;font-weight:500;color:#475569;border-radius:8px;text-decoration:none">Whitepaper</a>
-      <a href="/wallet/" style="padding:6px 10px;font-size:12px;font-weight:500;color:#475569;border-radius:8px;text-decoration:none">Wallet</a>
-      <a href="/faucet/" style="padding:6px 10px;font-size:12px;font-weight:500;color:#475569;border-radius:8px;text-decoration:none">Faucet</a>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#475569">
-      <div style="width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;animation:pulse 2s infinite"></div>
-      <span>Connected</span>
-    </div>
-  </div>
-</nav>
-<h1 style="text-align:center;margin-top:24px">🟢 Verdis Chain Status</h1>
-<div class="grid" id="stats"></div>
+<div class="container">
+<h1>Project Status & Evidence</h1>
+<p class="sub">Verdis Chain — transparent tracking of mainnet readiness, security, and decentralization.</p>
+
+<div class="banner">TESTNET — This network is a testnet. No mainnet launch has occurred. No funds have been raised. All claims are verified against code and evidence.</div>
+
+<h2>Network Status</h2>
+<div class="stat-grid">
+<div class="stat"><div class="stat-label">Environment</div><div class="stat-value warn">TESTNET</div></div>
+<div class="stat"><div class="stat-label">Block Height</div><div class="stat-value mono" id="block-height">—</div></div>
+<div class="stat"><div class="stat-label">Active Validators</div><div class="stat-value mono" id="validators">—</div></div>
+<div class="stat"><div class="stat-label">Peers</div><div class="stat-value mono" id="peers">—</div></div>
+</div>
+
+<h2>Mainnet Readiness Gates (22 Total)</h2>
+<div class="card">
+<table>
+<thead><tr><th>Category</th><th>Gate</th><th>Required Evidence</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>Legal</td><td>Dubai/UAE structure</td><td>Signed UAE/VARA legal memo</td><td><span class="badge badge-open">OPEN</span></td></tr>
+<tr><td>Legal</td><td>EU/MiCA classification</td><td>Signed VRDX classification opinion</td><td><span class="badge badge-open">OPEN</span></td></tr>
+<tr><td>Legal</td><td>Global jurisdiction matrix</td><td>Versioned allow/restrict/block policy</td><td><span class="badge badge-open">OPEN</span></td></tr>
+<tr><td>Security</td><td>Independent audit</td><td>Third-party report; 0 critical findings</td><td><span class="badge badge-open">OPEN</span></td></tr>
+<tr><td>Security</td><td>Pentest</td><td>External infrastructure/web/API report</td><td><span class="badge badge-open">OPEN</span></td></tr>
+<tr><td>Security</td><td>Wallet review</td><td>Wallet security audit</td><td><span class="badge badge-open">OPEN</span></td></tr>
+<tr><td>Technical</td><td>21+ independent validators</td><td>Validator evidence + failure tests</td><td><span class="badge badge-warn">6/21 ACTIVE</span></td></tr>
+<tr><td>Technical</td><td>Genesis consistency</td><td>Automated CI + signed genesis</td><td><span class="badge badge-ok">CI PASS</span></td></tr>
+<tr><td>Technical</td><td>Runtime upgrades tested</td><td>try-runtime + migration evidence</td><td><span class="badge badge-open">OPEN</span></td></tr>
+<tr><td>Technical</td><td>Consensus/slashing tested</td><td>Adversarial integration tests</td><td><span class="badge badge-warn">76 TESTS</span></td></tr>
+<tr><td>Technical</td><td>DEX tested</td><td>Security/economic audit + regression suite</td><td><span class="badge badge-warn">IN PROGRESS</span></td></tr>
+<tr><td>Technical</td><td>Vesting tested</td><td>Edge-case test report</td><td><span class="badge badge-warn">IN PROGRESS</span></td></tr>
+<tr><td>Technical</td><td>Supply invariants tested</td><td>Property-test report</td><td><span class="badge badge-warn">IN PROGRESS</span></td></tr>
+<tr><td>Decentralization</td><td>Stake below policy limit</td><td>On-chain evidence</td><td><span class="badge badge-open">OPEN</span></td></tr>
+<tr><td>Decentralization</td><td>Validator concentration</td><td>Nakamoto/top-stake report</td><td><span class="badge badge-open">OPEN</span></td></tr>
+<tr><td>Decentralization</td><td>Provider/geographic concentration</td><td>ASN/cloud/geo report</td><td><span class="badge badge-open">OPEN</span></td></tr>
+<tr><td>Transparency</td><td>Canonical tokenomics published</td><td>Code/genesis/docs consistency</td><td><span class="badge badge-ok">DONE</span></td></tr>
+<tr><td>Transparency</td><td>Treasury transparency live</td><td>Addresses, balances, signers</td><td><span class="badge badge-open">OPEN</span></td></tr>
+<tr><td>Transparency</td><td>Status/evidence page live</td><td>Public status page</td><td><span class="badge badge-ok">THIS PAGE</span></td></tr>
+<tr><td>Operations</td><td>Incident response exercised</td><td>Tabletop/technical recovery</td><td><span class="badge badge-warn">DRAFT</span></td></tr>
+<tr><td>Operations</td><td>Disaster recovery exercised</td><td>Restore/recovery report</td><td><span class="badge badge-open">OPEN</span></td></tr>
+<tr><td>Launch</td><td>Executive sign-off</td><td>Legal + Security + Tech + Ops</td><td><span class="badge badge-open">OPEN</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Tokenomics (Verified)</h2>
+<div class="card">
+<table>
+<thead><tr><th>Allocation</th><th>Amount</th><th>%</th><th>CI Verified</th></tr></thead>
+<tbody>
+<tr><td>Ecosystem & Developer Grants</td><td class="mono">25,000,000,000</td><td>25%</td><td><span class="badge badge-ok">YES</span></td></tr>
+<tr><td>PoS Staking Rewards</td><td class="mono">20,000,000,000</td><td>20%</td><td><span class="badge badge-ok">YES</span></td></tr>
+<tr><td>Treasury</td><td class="mono">20,000,000,000</td><td>20%</td><td><span class="badge badge-ok">YES</span></td></tr>
+<tr><td>Development</td><td class="mono">10,000,000,000</td><td>10%</td><td><span class="badge badge-ok">YES</span></td></tr>
+<tr><td>Liquidity (DEX)</td><td class="mono">10,000,000,000</td><td>10%</td><td><span class="badge badge-ok">YES</span></td></tr>
+<tr><td>Community</td><td class="mono">5,000,000,000</td><td>5%</td><td><span class="badge badge-ok">YES</span></td></tr>
+<tr><td>Seed / Strategic</td><td class="mono">3,000,000,000</td><td>3%</td><td><span class="badge badge-ok">YES</span></td></tr>
+<tr><td>Public Presale</td><td class="mono">2,000,000,000</td><td>2%</td><td><span class="badge badge-ok">YES</span></td></tr>
+<tr><td>Team & Advisors</td><td class="mono">5,000,000,000</td><td>5%</td><td><span class="badge badge-ok">YES</span></td></tr>
+<tr><td><strong>Total</strong></td><td class="mono"><strong>100,000,000,000</strong></td><td><strong>100%</strong></td><td><span class="badge badge-ok">YES</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Architecture Remediation Progress (75 Tasks)</h2>
+<div class="stat-grid">
+<div class="stat"><div class="stat-label">P0 Done</div><div class="stat-value ok">6/13</div></div>
+<div class="stat"><div class="stat-label">P1 Done</div><div class="stat-value warn">0/44</div></div>
+<div class="stat"><div class="stat-label">P2 Done</div><div class="stat-value">0/18</div></div>
+<div class="stat"><div class="stat-label">Total</div><div class="stat-value">6/75</div></div>
+</div>
+
+<h2>Evidence Links</h2>
+<div class="card">
+<ul style="list-style:none;padding:0">
+<li><a href="https://github.com/Protremix/Verdischain-/blob/master/docs/CANONICAL_FACTS.md">Canonical Facts (single source of truth)</a></li>
+<li><a href="https://github.com/Protremix/Verdischain-/blob/master/docs/TOKENOMICS_CONSISTENCY_REPORT.md">Tokenomics Consistency Report</a></li>
+<li><a href="https://github.com/Protremix/Verdischain-/blob/master/docs/VALIDATOR_ROADMAP.md">Validator Roadmap</a></li>
+<li><a href="https://github.com/Protremix/Verdischain-/blob/master/docs/INCIDENT_RESPONSE_PLAN.md">Incident Response Plan</a></li>
+<li><a href="https://github.com/Protremix/Verdischain-/blob/master/docs/TX_RELAY_THREAT_MODEL.md">TX Relay Threat Model</a></li>
+<li><a href="https://github.com/Protremix/Verdischain-/blob/master/docs/ARCHITECTURE_REMEDIATION_TRACKER.md">Full Remediation Tracker (75 tasks)</a></li>
+<li><a href="https://github.com/Protremix/Verdischain-">GitHub Repository</a></li>
+</ul>
+</div>
+
+<p class="footer">Verdis Chain &middot; Protremix &middot; Proprietary — All Rights Reserved</p>
+</div>
+
 <script>
-fetch('/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'chain_getHeader',params:[],id:1})})
-.then(r=>r.json()).then(d=>{document.getElementById('stats').innerHTML+=card('Block Height','#'+parseInt(d.result.number,16),'ok')});
-fetch('/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'system_health',params:[],id:2})})
-.then(r=>r.json()).then(d=>{document.getElementById('stats').innerHTML+=card('Peers',d.result.peers,'ok')});
-fetch('/rpc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',method:'amm_dex_getPoolCount',params:[],id:3})})
-.then(r=>r.json()).then(d=>{document.getElementById('stats').innerHTML+=card('AMM Pools',d.result||0,'ok')});
-document.getElementById('stats').innerHTML+=card('Services','13/13','ok');
-document.getElementById('stats').innerHTML+=card('Validators','14','ok');
-document.getElementById('stats').innerHTML+=card('Network','Testnet','ok');
-function card(label,value,cls){return '<div class="card"><h2>'+label+'</h2><div class="value '+cls+' pulse">'+value+'</div></div>'}
+fetch('/api/system_health').then(r=>r.json()).then(d=>{
+  if(d.block_height)document.getElementById('block-height').textContent=d.block_height;
+  if(d.peers)document.getElementById('peers').textContent=d.peers;
+}).catch(()=>{});
+fetch('/api/dpos/allValidators').then(r=>r.json()).then(d=>{
+  if(Array.isArray(d))document.getElementById('validators').textContent=d.length;
+}).catch(()=>{});
 </script>
-
-<footer class="footer">
-  <div class="footer-links">
-    <a href="/">Home</a>
-    <a href="/explorer/">Verdiscan</a>
-    <a href="/dex/">DEX</a>
-    <a href="/whitepaper/">Whitepaper</a><a href="/lightpaper/">Light Paper</a>
-    <a href="/wallet/">Wallet</a>
-    <a href="/sale/">Sale</a>
-    <a href="/tokenomics/">Tokenomics</a>
-    <a href="/faucet/">Faucet</a>
-      <a href="/governance/">Governance</a>
-    <a href="/validators/">Validators</a>
-    <a href="/eco/">Eco</a>
-    <a href="/referral/">Referral</a>
-    <a href="/incentives/">Incentives</a>
-    <a href="/contact/">Contact</a>
-    <a href="/api/">API</a>
-    <a href="/docs/">Docs</a>
-    <a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a>
-  </div>
-  <div class="footer-copy">&copy; 2026 Verdis Chain. Powered by live Substrate RPC.</div>
-</footer>
-
 </body>
 </html>

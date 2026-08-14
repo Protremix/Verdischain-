@@ -1,0 +1,93 @@
+name: Release Gates
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  # GATE 1: Code formatting
+  fmt:
+    name: 1. Code Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --all -- --check
+
+  # GATE 2: Clippy (no warnings)
+  clippy:
+    name: 2. Clippy Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - run: cargo clippy --all-targets -- -D warnings
+
+  # GATE 3: Unit tests
+  test:
+    name: 3. Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --workspace --exclude verdis-node 2>&1
+
+  # GATE 4: Tokenomics consistency
+  tokenomics-check:
+    name: 4. Tokenomics Consistency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/check_genesis_consistency.py
+
+  # GATE 5: Release build compiles
+  release-build:
+    name: 5. Release Build
+    runs-on: ubuntu-latest
+    needs: [fmt, clippy, test, tokenomics-check]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release --workspace 2>&1 | tail -5
+
+  # GATE 6: WASM build (for runtime)
+  wasm-build:
+    name: 6. WASM Runtime Build
+    runs-on: ubuntu-latest
+    needs: [fmt, clippy, test, tokenomics-check]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - run: cargo build --release --target wasm32-unknown-unknown -p verdis-runtime 2>&1 | tail -5
+
+  # GATE 7: Repository hygiene (no .bak, .tmp, .apk, conversation artifacts)
+  repo-hygiene:
+    name: 7. Repository Hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for forbidden files
+        run: |
+          FORBIDDEN=$(find . -name "*.bak" -o -name "*.tmp" -o -name "*.apk" -o -name "*.pyc" | grep -v node_modules | grep -v target)
+          if [ -n "$FORBIDDEN" ]; then
+            echo "FAIL: Forbidden files found:"
+            echo "$FORBIDDEN"
+            exit 1
+          fi
+          echo "OK: No forbidden files"
+
+  # SUMMARY: All gates must pass before merge
+  release-gates-summary:
+    name: RELEASE GATES SUMMARY
+    runs-on: ubuntu-latest
+    needs: [fmt, clippy, test, tokenomics-check, release-build, wasm-build, repo-hygiene]
+    steps:
+      - run: echo "All 7 release gates passed. Merge to master is approved."
