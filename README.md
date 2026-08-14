@@ -24,7 +24,7 @@
   <img src="https://img.shields.io/badge/tests-489%20passing-22c55e" alt="Tests">
   <img src="https://img.shields.io/badge/pages-31%20live-22c55e" alt="Pages">
   <img src="https://img.shields.io/badge/status-TESTNET-f59e0b" alt="Status">
-  <img src="https://img.shields.io/badge/license-Proprietary-red" alt="License">
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
 </p>
 
 ---
@@ -196,6 +196,6 @@ Full documentation in `docs/`:
 
 ## License
 
-Copyright (c) 2026 Verdis Chain / Protremix. All rights reserved.
+Copyright (c) 2026 Verdis Chain / Protremix. Licensed under the MIT License.
 
-Proprietary and confidential. See [LICENSE](LICENSE) for details.
+See [LICENSE](LICENSE) for details.

@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Added
 - Comprehensive README.md with full architecture documentation
-- LICENSE file (proprietary)
+- LICENSE file (MIT)
 - CONTRIBUTING.md with development guidelines
 - Issue templates (bug report, feature request)
 - Pull request template
