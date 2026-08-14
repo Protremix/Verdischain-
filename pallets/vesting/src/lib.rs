@@ -432,6 +432,8 @@ pub mod pallet {
 mod tests {
     #[path = "vesting_tests.rs"]
     mod vesting_tests;
+    #[path = "edge_case_tests.rs"]
+    mod edge_case_tests;
     use super::*;
     use frame_support::traits::UnfilteredDispatchable;
     use frame_support::{
