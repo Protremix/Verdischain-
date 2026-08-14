@@ -1,5 +1,5 @@
 use crate::*;
-use frame_support::{
+use frame_support::{assert_noop, 
     assert_err, assert_ok, construct_runtime, derive_impl, parameter_types,
     traits::{ConstU128, ConstU32, ConstU64},
 };
@@ -625,5 +625,114 @@ fn test_close_channel_non_root_rejected() {
             Pallet::<Test>::close_channel(frame_system::RawOrigin::Signed(acct).into(), 999),
             sp_runtime::DispatchError::BadOrigin
         );
+    });
+}
+
+
+// ============================================================================
+// IBC EDGE CASE TESTS (Aug 14 2026)
+// ============================================================================
+
+/// Height regression must be rejected — client cannot go backwards.
+#[test]
+fn test_update_client_height_regression_rejected() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        assert_ok!(Pallet::<Test>::create_client(
+            RawOrigin::Root.into(),
+            1, 100, 86400
+        ));
+        // Try to update to lower height — should fail
+        assert_noop!(
+            Pallet::<Test>::update_client(RawOrigin::Root.into(), 0, 99),
+            Error::<Test>::InvalidSequence
+        );
+    });
+}
+
+/// Excessive height jump must be rejected.
+#[test]
+fn test_update_client_excessive_jump_rejected() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        assert_ok!(Pallet::<Test>::create_client(
+            RawOrigin::Root.into(),
+            1, 100, 86400
+        ));
+        // Try to jump to height 100 + MaxHeightJump + 1 — should fail
+        let max_jump = <Test as crate::Config>::MaxHeightJump::get();
+        assert_noop!(
+            Pallet::<Test>::update_client(RawOrigin::Root.into(), 0, 100 + max_jump + 1),
+            Error::<Test>::HeightJumpTooLarge
+        );
+        // Jump within limit should succeed
+        assert_ok!(Pallet::<Test>::update_client(
+            RawOrigin::Root.into(),
+            0, 100 + max_jump
+        ));
+    });
+}
+
+/// Update on frozen client must fail.
+#[test]
+fn test_update_frozen_client_rejected() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        assert_ok!(Pallet::<Test>::create_client(
+            RawOrigin::Root.into(),
+            1, 100, 86400
+        ));
+        assert_ok!(Pallet::<Test>::freeze_client(
+            RawOrigin::Root.into(),
+            0
+        ));
+        // Any update on frozen client must fail
+        assert_noop!(
+            Pallet::<Test>::update_client(RawOrigin::Root.into(), 0, 200),
+            Error::<Test>::ClientFrozen
+        );
+    });
+}
+
+/// Non-root cannot create or update IBC clients.
+#[test]
+fn test_non_root_client_operations_rejected() {
+    new_test_ext().execute_with(|| {
+        // Non-root create
+        assert_noop!(
+            Pallet::<Test>::create_client(RuntimeOrigin::signed(sp_core::crypto::AccountId32::new([1u8; 32])), 1, 100, 86400),
+            sp_runtime::DispatchError::BadOrigin
+        );
+        // Root create first
+        use frame_system::RawOrigin;
+        assert_ok!(Pallet::<Test>::create_client(
+            RawOrigin::Root.into(),
+            1, 100, 86400
+        ));
+        // Non-root update
+        assert_noop!(
+            Pallet::<Test>::update_client(RuntimeOrigin::signed(sp_core::crypto::AccountId32::new([1u8; 32])), 0, 200),
+            sp_runtime::DispatchError::BadOrigin
+        );
+    });
+}
+
+/// Client ID counter increments correctly.
+#[test]
+fn test_client_id_counter_increments() {
+    new_test_ext().execute_with(|| {
+        use frame_system::RawOrigin;
+        // Create 3 clients
+        assert_ok!(Pallet::<Test>::create_client(RawOrigin::Root.into(), 1, 100, 86400));
+        assert_ok!(Pallet::<Test>::create_client(RawOrigin::Root.into(), 2, 200, 86400));
+        assert_ok!(Pallet::<Test>::create_client(RawOrigin::Root.into(), 3, 300, 86400));
+
+        // Verify each has correct ID
+        let c0 = IbcClients::<Test>::get(0).unwrap();
+        assert_eq!(c0.chain_id, 1);
+        let c1 = IbcClients::<Test>::get(1).unwrap();
+        assert_eq!(c1.chain_id, 2);
+        let c2 = IbcClients::<Test>::get(2).unwrap();
+        assert_eq!(c2.chain_id, 3);
     });
 }

@@ -776,3 +776,54 @@ fn mint_above_max_supply_fails() {
         assert_eq!(token.total_supply, 1000);
     });
 }
+
+// === Missing tests: overflow and ratchet ===
+
+#[test]
+fn mint_u128_overflow_fails() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(FungibleTokens::create(
+            RuntimeOrigin::signed(alice()),
+            b"Overflow".to_vec(),
+            b"OVR".to_vec(),
+            6,
+        ));
+        assert_ok!(FungibleTokens::set_max_supply(
+            RuntimeOrigin::signed(alice()),
+            0,
+            u128::MAX,
+        ));
+        assert_ok!(FungibleTokens::mint(
+            RuntimeOrigin::signed(alice()),
+            0,
+            alice(),
+            u128::MAX - 1,
+        ));
+        assert_noop!(
+            FungibleTokens::mint(RuntimeOrigin::signed(alice()), 0, alice(), 2),
+            Error::<Test>::Overflow
+        );
+    });
+}
+
+#[test]
+fn set_max_supply_cannot_increase_ratchet() {
+    new_test_ext().execute_with(|| {
+        assert_ok!(FungibleTokens::create(
+            RuntimeOrigin::signed(alice()),
+            b"Ratchet".to_vec(),
+            b"RCH".to_vec(),
+            6,
+        ));
+        assert_ok!(FungibleTokens::set_max_supply(
+            RuntimeOrigin::signed(alice()),
+            0,
+            1000,
+        ));
+        assert_noop!(
+            FungibleTokens::set_max_supply(RuntimeOrigin::signed(alice()), 0, 2000),
+            Error::<Test>::MaxSupplyCannotIncrease
+        );
+    });
+}
+
