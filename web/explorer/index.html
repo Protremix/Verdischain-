@@ -151,11 +151,6 @@ a{color:inherit;text-decoration:none}
 /* Footer */
 
 
-
-
-
-
-
 /* Reveal */
 .reveal{opacity:0;transform:translateY(16px);transition:all .6s cubic-bezier(0.16,1,0.3,1)}
 .reveal.visible{opacity:1;transform:translateY(0)}
@@ -174,21 +169,6 @@ a{color:inherit;text-decoration:none}
 .nav-menu-btn{display:none;padding:8px;background:none;border:none;cursor:pointer;flex-direction:column;gap:4px}
 .nav-menu-btn span{width:20px;height:2px;background:var(--text);border-radius:2px}
 @media(max-width:768px){.nav-menu-btn{display:flex}}
-
-/* === Footer (from homepage) === */
-
-
-
-
-
-
-
-
-
-
-@media (max-width: 768px) {  }
-@media (max-width: 480px) {   }
-/* === End Footer === */
 
 
 /* Explorer info cards */
@@ -225,7 +205,12 @@ a{color:inherit;text-decoration:none}
 .market-ticker-scroll-inner{display:flex;gap:24px;animation:scroll-ticker 40s linear infinite}
 .market-ticker-scroll:hover .market-ticker-scroll-inner{animation-play-state:paused}
 
-/* ===== STANDARD FOOTER (identical on all pages) ===== */
+
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>.testnet-banner{background:#f59e0b;color:#000;padding:8px 16px;text-align:center;font-size:13px;font-weight:600;font-family:Inter,sans-serif;position:sticky;top:0;z-index:9999}</style>
+<style id="standard-footer">
 .footer{background:#0a0e14;padding:28px 24px 32px;max-width:none;margin:0;border-top:none;margin-top:0}
 .footer-inner{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px}
 .footer-brand h3{font-size:13px;font-weight:800;color:#fff;margin-bottom:12px;font-family:'Inter',sans-serif}
@@ -238,12 +223,7 @@ a{color:inherit;text-decoration:none}
 .footer-col a:hover{color:#16a34a}
 .footer-bottom{max-width:1000px;margin:32px auto 0;padding-top:24px;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;font-size:13px;color:#64748b}
 @media(max-width:768px){.footer-inner{grid-template-columns:1fr 1fr;gap:24px}.footer-brand{grid-column:1/-1}.footer-bottom{flex-direction:column;gap:8px;text-align:center}}
-/* ===== END STANDARD FOOTER ===== */
-
 </style>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<style>.testnet-banner{background:#f59e0b;color:#000;padding:8px 16px;text-align:center;font-size:13px;font-weight:600;font-family:Inter,sans-serif;position:sticky;top:0;z-index:9999}</style>
 </head>
 <body>
 <div class="testnet-banner">TESTNET — Verdis Chain is currently in testnet phase. Not mainnet. Not investor-ready. <a href="/status/" style="color:inherit;text-decoration:underline">Status</a></div>
@@ -2556,7 +2536,6 @@ async function updateInfoCards() {
 }
 
 
-
 // ===== Account Explorer =====
 async function searchAccount(addr) {
   const input = document.getElementById('acctSearchInput');
@@ -3978,7 +3957,6 @@ switchTab = function(t) {
   origSwitchTab2(t);
   if (t === "valmetrics") loadValidatorMetrics();
 };
-
 
 
 // ============ PORTFOLIO TRACKER ============

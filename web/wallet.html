@@ -96,7 +96,7 @@
     .cal-days span.muted{color:rgba(255,255,255,0.15)}
     .cal-days span.active{background:var(--accent);color:var(--hero-bg);font-weight:700}
     .cal-
-    .cal-footer-dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+    
     .monitor-frame{top:130px;left:50%;transform:translateX(-50%);width:340px;padding:0;opacity:0;animation:fadeIn 800ms 1.4s forwards}
     .float-anim-3{animation:floatY 8s ease-in-out infinite 1s}
     .monitor-header{display:flex;align-items:center;padding:12px 16px;gap:8px;border-bottom:1px solid var(--hero-border)}
@@ -206,7 +206,11 @@
     @media(max-width:1024px){.features-grid{grid-template-columns:repeat(2,1fr)}.hero-right{display:none}.hero-container{min-height:600px}.vt-header,.vt-row{grid-template-columns:40px 2fr 1fr 1fr 80px}}
     @media(max-width:768px){.features-grid{grid-template-columns:1fr}.nav-links{display:none}.hero-left{padding:100px 24px 40px}.section-title{font-size:32px}.vt-header,.vt-row{grid-template-columns:40px 1fr 1fr 60px}}
   
-/* ===== STANDARD FOOTER (identical on all pages) ===== */
+
+
+</style>
+<style>.testnet-banner{background:#f59e0b;color:#000;padding:8px 16px;text-align:center;font-size:13px;font-weight:600;font-family:Inter,sans-serif;position:sticky;top:0;z-index:9999}</style>
+<style id="standard-footer">
 .footer{background:#0a0e14;padding:28px 24px 32px;max-width:none;margin:0;border-top:none;margin-top:0}
 .footer-inner{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px}
 .footer-brand h3{font-size:13px;font-weight:800;color:#fff;margin-bottom:12px;font-family:'Inter',sans-serif}
@@ -219,10 +223,7 @@
 .footer-col a:hover{color:#16a34a}
 .footer-bottom{max-width:1000px;margin:32px auto 0;padding-top:24px;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;font-size:13px;color:#64748b}
 @media(max-width:768px){.footer-inner{grid-template-columns:1fr 1fr;gap:24px}.footer-brand{grid-column:1/-1}.footer-bottom{flex-direction:column;gap:8px;text-align:center}}
-/* ===== END STANDARD FOOTER ===== */
-
 </style>
-<style>.testnet-banner{background:#f59e0b;color:#000;padding:8px 16px;text-align:center;font-size:13px;font-weight:600;font-family:Inter,sans-serif;position:sticky;top:0;z-index:9999}</style>
 </head>
 <body>
 <div class="testnet-banner">TESTNET — Verdis Chain is currently in testnet phase. Not mainnet. Not investor-ready. <a href="/status/" style="color:inherit;text-decoration:underline">Status</a></div>
