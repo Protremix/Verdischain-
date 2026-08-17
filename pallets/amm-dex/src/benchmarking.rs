@@ -194,6 +194,7 @@ mod benches {
             asset_b,
             BENCH_AMOUNT.try_into().unwrap_or_default(),
             BENCH_AMOUNT.try_into().unwrap_or_default(),
+            u64::MAX,
         )
         .expect("create_token_pool failed in benchmark setup");
 
@@ -222,6 +223,7 @@ mod benches {
             asset_b,
             BENCH_AMOUNT.try_into().unwrap_or_default(),
             BENCH_AMOUNT.try_into().unwrap_or_default(),
+            u64::MAX,
         )
         .expect("create_token_pool failed in benchmark setup");
 
@@ -247,6 +249,7 @@ mod benches {
             asset_b,
             BENCH_AMOUNT.try_into().unwrap_or_default(),
             BENCH_AMOUNT.try_into().unwrap_or_default(),
+            u64::MAX,
         )
         .expect("create_token_pool failed in benchmark setup");
 

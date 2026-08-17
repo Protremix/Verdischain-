@@ -312,6 +312,7 @@ fn test_create_token_pool_native_vs_custom() {
             aid_custom(0),
             100_000,
             100_000,
+            DEADLINE,
         ));
         assert_eq!(TokenPoolCount::<Test>::get(), 1);
         let pool = TokenPools::<Test>::get(0).unwrap();
@@ -337,6 +338,7 @@ fn test_token_pool_already_exists() {
             aid_custom(0),
             100_000,
             100_000,
+            DEADLINE,
         )
         .unwrap();
         assert_noop!(
@@ -346,6 +348,7 @@ fn test_token_pool_already_exists() {
                 aid_custom(0),
                 50_000,
                 50_000,
+                DEADLINE,
             ),
             Error::<Test>::PoolAlreadyExists
         );
@@ -369,6 +372,7 @@ fn test_token_swap_native_to_custom() {
             aid_custom(0),
             100_000,
             100_000,
+            DEADLINE,
         )
         .unwrap();
 
@@ -407,6 +411,7 @@ fn test_token_swap_custom_to_native() {
             aid_custom(0),
             100_000,
             100_000,
+            DEADLINE,
         )
         .unwrap();
 
@@ -445,6 +450,7 @@ fn test_token_add_liquidity() {
             aid_custom(0),
             100_000,
             100_000,
+            DEADLINE,
         )
         .unwrap();
 
@@ -478,6 +484,7 @@ fn test_token_remove_liquidity() {
             aid_custom(0),
             100_000,
             100_000,
+            DEADLINE,
         )
         .unwrap();
 
@@ -511,6 +518,7 @@ fn test_token_swap_insufficient_balance() {
             aid_custom(0),
             100_000,
             100_000,
+            DEADLINE,
         )
         .unwrap();
         assert_noop!(
@@ -537,6 +545,7 @@ fn test_same_asset_fails() {
                 aid_native(),
                 100_000,
                 100_000,
+                DEADLINE,
             ),
             Error::<Test>::SameToken
         );

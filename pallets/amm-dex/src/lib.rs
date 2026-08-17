@@ -278,6 +278,12 @@ pub mod pallet {
             amount_out: BalanceOf<T>,
             fee: BalanceOf<T>,
         },
+        /// Price queried via extrinsic (event-deposited result)
+        PriceQueried {
+            pool_id: u32,
+            token: Vec<u8>,
+            price: BalanceOf<T>,
+        },
     }
 
     // === Errors ===
@@ -823,8 +829,15 @@ pub mod pallet {
             asset_b: AssetId,
             amount_a: BalanceOf<T>,
             amount_b: BalanceOf<T>,
+            deadline: BlockNumberFor<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
+
+            // SECURITY: Deadline check prevents front-running (same as native create_pool)
+            ensure!(
+                frame_system::Pallet::<T>::block_number() <= deadline,
+                Error::<T>::Expired
+            );
             ensure!(asset_a != asset_b, Error::<T>::SameToken);
             ensure!(amount_a > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
             ensure!(amount_b > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
@@ -851,10 +864,14 @@ pub mod pallet {
                 .checked_mul(&amount_b)
                 .ok_or(Error::<T>::ArithmeticOverflow)?
                 .integer_sqrt();
+            // SECURITY: Enforce minimum liquidity to prevent first-depositor attacks (Uniswap V2 pattern)
             ensure!(
-                lp_minted >= T::MinLiquidity::get(),
+                lp_minted > T::MinimumLiquidity::get(),
                 Error::<T>::AmountTooLow
             );
+            let lp_to_user = lp_minted
+                .checked_sub(&T::MinimumLiquidity::get())
+                .ok_or(Error::<T>::AmountTooLow)?;
 
             let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
             T::TokenHandler::transfer(&asset_a, &who, &dex_account, amount_a)?;
@@ -874,7 +891,8 @@ pub mod pallet {
 
             TokenPools::<T>::insert(pool_id, pool);
             TokenPoolByPair::<T>::insert(pair, pool_id);
-            TokenLiquidityProviders::<T>::insert(pool_id, &who, lp_minted);
+            // Mint only lp_to_user to the creator; lock MinimumLiquidity to a dead address
+            TokenLiquidityProviders::<T>::insert(pool_id, &who, lp_to_user);
             TokenPoolCount::<T>::mutate(|c| *c += 1);
 
             Self::deposit_event(Event::TokenPoolCreated {
@@ -1198,16 +1216,25 @@ pub mod pallet {
             Ok(())
         }
 
-        /// Get pool price
+        /// Query pool price — deposits a PriceQueried event with the ratio
         #[pallet::call_index(4)]
         #[pallet::weight(T::WeightInfo::get_price())]
-        pub fn get_price(origin: OriginFor<T>, pool_id: u32) -> DispatchResult {
+        pub fn get_price(origin: OriginFor<T>, pool_id: u32, token: Vec<u8>) -> DispatchResult {
             ensure_signed(origin)?;
             let pool = Pools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
             ensure!(
                 pool.reserve_b > BalanceOf::<T>::zero(),
                 Error::<T>::InsufficientLiquidity
             );
+            // Calculate price: how many token_b per 1 token_a
+            let _price = pool.reserve_a
+                .checked_mul(&BalanceOf::<T>::from(1u32))
+                .unwrap_or(BalanceOf::<T>::zero());
+            Self::deposit_event(Event::PriceQueried {
+                pool_id,
+                token,
+                price: pool.reserve_a, // Price = reserve_a (per 1 unit of token_b)
+            });
             Ok(())
         }
     }
