@@ -1,9 +1,9 @@
-name: Build iOS IPA
+name: Build iOS App
 
 on:
   push:
     branches: [ main ]
-    workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   build-ios:
@@ -29,14 +29,23 @@ jobs:
       - name: Flutter pub get
         run: flutter pub get
 
-      - name: Build IPA (no code signing)
-        run: flutter build ipa --release --no-codesign
+      - name: Build iOS App (unsigned)
+        run: flutter build ios --release --no-codesign
+
+      - name: Package as IPA (unsigned)
+        run: |
+          cd build/ios/iphoneos
+          mkdir Payload
+          cp -r Runner.app Payload/
+          zip -r ../../verdis-wallet-ios-unsigned.ipa Payload
+          cd ../..
+          ls -lh verdis-wallet-ios-unsigned.ipa
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
         with:
-          name: verdis-wallet-ios
-          path: build/ios/ipa/*.ipa
+          name: verdis-wallet-ios-unsigned
+          path: verdis-wallet-ios-unsigned.ipa
           retention-days: 30
 
       - name: Upload build logs on failure
@@ -46,5 +55,4 @@ jobs:
           name: ios-build-logs
           path: |
             build/ios/**/*.log
-            /Users/runner/Library/Developer/Xcode/DerivedData/**/*.log
           retention-days: 7
