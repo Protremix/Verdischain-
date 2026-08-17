@@ -641,6 +641,7 @@ parameter_types! {
     pub const MaxValidators: u32 = 100;
     pub const ValidatorCount: u32 = 21; // 6 active validators matching 6 running nodes
     pub const MinimumValidatorCount: u32 = 4; // Below 4 active validators, chain halts
+    pub const MaxMissedEpochs: u32 = 3; // 3 consecutive zero-production epochs = deactivate
     pub const BlockReward: Balance = 342 * UNITS; // 342 VRDX per block (1.8B annual, 6% APR at 30% stake)
     pub const EpochLength: BlockNumber = 500;
     pub const UnbondingPeriod: u32 = 201_600; // 14 days at 6s blocks (14*24*3600/6)
@@ -662,6 +663,8 @@ impl pallet_dpos::Config for Runtime {
     type MinGreenScore = MinGreenScoreDpos;
     type MaxGreenScore = MaxGreenScoreDpos;
     type ReactivationCooldown = ReactivationCooldown;
+    type MaxMissedEpochs = MaxMissedEpochs;
+    type MinimumValidatorCount = MinimumValidatorCount;
     type WeightInfo = pallet_dpos::SubstrateWeight<Runtime>;
 }
 
@@ -762,6 +765,7 @@ parameter_types! {
     pub const MaxGreenValidators: u32 = 101;
     pub const MinGreenScore: u8 = 1;
     pub const MaxGreenScore: u8 = 5;
+    pub const EcoMaxNameLength: u32 = 128;
 }
 
 impl pallet_eco::Config for Runtime {
@@ -773,6 +777,7 @@ impl pallet_eco::Config for Runtime {
     type MaxGreenValidators = MaxGreenValidators;
     type MinGreenScore = MinGreenScore;
     type MaxGreenScore = MaxGreenScore;
+    type MaxNameLength = EcoMaxNameLength;
     type WeightInfo = pallet_eco::SubstrateWeight<Runtime>;
 }
 

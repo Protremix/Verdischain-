@@ -9,6 +9,8 @@ use sp_io::TestExternalities;
 use sp_keyring::Sr25519Keyring;
 use sp_runtime::{traits::IdentityLookup, BuildStorage};
 
+const DEADLINE: u64 = 999_999_999;
+
 type Block = frame_system::mocking::MockBlock<Test>;
 
 construct_runtime!(
@@ -248,6 +250,7 @@ fn test_create_pool() {
             b"ECO".to_vec(),
             100_000,
             100_000,
+            DEADLINE,
         ));
         assert_eq!(PoolCount::<Test>::get(), 1);
     });
@@ -262,6 +265,7 @@ fn test_swap() {
             b"ECO".to_vec(),
             100_000,
             100_000,
+            DEADLINE,
         )
         .unwrap();
         assert_ok!(AmmDex::swap(
@@ -279,7 +283,7 @@ fn test_swap() {
 fn test_pool_not_found() {
     new_test_ext().execute_with(|| {
         assert_noop!(
-            AmmDex::add_liquidity(RuntimeOrigin::signed(alice()), 99, 1000, 1000, 1000),
+            AmmDex::add_liquidity(RuntimeOrigin::signed(alice()), 99, 1000, 1000, 0u128, 1000),
             Error::<Test>::PoolNotFound
         );
     });
@@ -449,6 +453,8 @@ fn test_token_add_liquidity() {
             0,
             50_000,
             50_000,
+            0u128,
+            DEADLINE,
         ));
         let bob_lp = AmmDex::token_lp(0, &bob()).unwrap_or(0);
         assert!(bob_lp > 0, "Bob should have LP tokens");
@@ -481,6 +487,7 @@ fn test_token_remove_liquidity() {
             RuntimeOrigin::signed(alice()),
             0,
             alice_lp / 2,
+            DEADLINE,
         ));
         let alice_lp_after = AmmDex::token_lp(0, &alice()).unwrap_or(0);
         assert!(alice_lp_after < alice_lp);
@@ -555,6 +562,7 @@ fn prop_constant_product_never_decreases_after_swap() {
             token_b.clone(),
             reserve_a,
             reserve_b,
+            DEADLINE,
         ));
 
         let pool = Pools::<Test>::get(0).unwrap();
@@ -614,6 +622,7 @@ fn prop_constant_product_monotonic_across_many_swaps() {
             token_b.clone(),
             10_000_000,
             10_000_000,
+            DEADLINE,
         ));
 
         let mut last_k: u128 = {
@@ -658,6 +667,7 @@ fn prop_circuit_breaker_blocks_large_swaps() {
             token_b.clone(),
             reserve,
             reserve,
+            DEADLINE,
         ));
 
         // Swap within 10% limit should succeed
@@ -677,6 +687,7 @@ fn prop_circuit_breaker_blocks_large_swaps() {
             b"ECO2".to_vec(),
             reserve,
             reserve,
+            DEADLINE,
         ));
 
         // Swap exceeding 10% should fail
@@ -710,6 +721,7 @@ fn prop_remove_liquidity_preserves_ratio() {
             token_b.clone(),
             ra,
             rb,
+            DEADLINE,
         ));
 
         let pool = Pools::<Test>::get(0).unwrap();
@@ -765,6 +777,7 @@ fn prop_swap_output_matches_formula() {
             token_b.clone(),
             reserve_a,
             reserve_b,
+            DEADLINE,
         ));
 
         // Calculate expected output
@@ -808,6 +821,7 @@ fn prop_zero_amount_swap_rejected() {
             token_b.clone(),
             1_000_000,
             1_000_000,
+            DEADLINE,
         ));
 
         assert_noop!(
@@ -830,6 +844,7 @@ fn prop_slippage_protection_works() {
             token_b.clone(),
             1_000_000,
             1_000_000,
+            DEADLINE,
         ));
 
         // Set min_amount_out impossibly high
@@ -860,6 +875,7 @@ fn test_k_invariant_after_swap() {
             b"ECO".to_vec(),
             100_000,
             100_000,
+            DEADLINE,
         ));
 
         let pool = Pools::<Test>::get(0).unwrap();
@@ -897,6 +913,7 @@ fn test_k_invariant_after_multiple_swaps() {
             b"ECO".to_vec(),
             1_000_000,
             1_000_000,
+            DEADLINE,
         ));
 
         // Alternate swaps back and forth
@@ -937,6 +954,7 @@ fn test_swap_zero_amount_rejected() {
             b"ECO".to_vec(),
             100_000,
             100_000,
+            DEADLINE,
         ));
 
         assert_noop!(
@@ -956,6 +974,7 @@ fn test_slippage_protection_enforced() {
             b"ECO".to_vec(),
             100_000,
             100_000,
+            DEADLINE,
         ));
 
         // Swap 10,000 VRS for ECO with min_amount_out of 999,999 (unrealistic)
@@ -984,6 +1003,7 @@ fn test_price_impact_circuit_breaker() {
             b"ECO".to_vec(),
             100_000,
             100_000,
+            DEADLINE,
         ));
 
         // MaxPriceImpact is 10%, so max swap = 100,000 * 10% = 10,000
@@ -1012,6 +1032,7 @@ fn test_remove_liquidity_insufficient_lp() {
             b"ECO".to_vec(),
             100_000,
             100_000,
+            DEADLINE,
         ));
 
         // Bob has no LP tokens, tries to remove liquidity
@@ -1032,10 +1053,11 @@ fn test_add_liquidity_zero_amount_rejected() {
             b"ECO".to_vec(),
             100_000,
             100_000,
+            DEADLINE,
         ));
 
         assert_noop!(
-            AmmDex::add_liquidity(RuntimeOrigin::signed(bob()), 0, 0, 10_000, 1000),
+            AmmDex::add_liquidity(RuntimeOrigin::signed(bob()), 0, 0, 10_000, 0u128, 1000),
             Error::<Test>::ZeroAmount
         );
     });
@@ -1052,6 +1074,7 @@ fn test_create_pool_same_token_rejected() {
                 b"VRS".to_vec(),
                 100_000,
                 100_000,
+                DEADLINE,
             ),
             Error::<Test>::SameToken
         );
@@ -1069,6 +1092,7 @@ fn test_create_pool_zero_amount_rejected() {
                 b"ECO".to_vec(),
                 0,
                 100_000,
+                DEADLINE,
             ),
             Error::<Test>::ZeroAmount
         );
@@ -1085,6 +1109,7 @@ fn test_duplicate_pool_rejected() {
             b"ECO".to_vec(),
             100_000,
             100_000,
+            DEADLINE,
         ));
 
         // Try to create the same pool again
@@ -1095,6 +1120,7 @@ fn test_duplicate_pool_rejected() {
                 b"ECO".to_vec(),
                 100_000,
                 100_000,
+                DEADLINE,
             ),
             Error::<Test>::PoolAlreadyExists
         );
@@ -1129,6 +1155,7 @@ fn test_swap_invalid_token_rejected() {
             b"ECO".to_vec(),
             100_000,
             100_000,
+            DEADLINE,
         ));
 
         assert_noop!(
@@ -1159,6 +1186,7 @@ fn test_max_pools_limit_enforced() {
                 token_b.as_bytes().to_vec(),
                 100_000,
                 100_000,
+                DEADLINE,
             ));
         }
 
@@ -1170,6 +1198,7 @@ fn test_max_pools_limit_enforced() {
                 b"MANY".to_vec(),
                 100_000,
                 100_000,
+                DEADLINE,
             ),
             Error::<Test>::MaxPoolsReached
         );
@@ -1189,6 +1218,7 @@ fn test_token_name_too_long_rejected() {
                 b"ECO".to_vec(),
                 100_000,
                 100_000,
+                DEADLINE,
             ),
             Error::<Test>::TokenTooLong
         );

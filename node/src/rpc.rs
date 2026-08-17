@@ -23,6 +23,10 @@ pub trait AmmDexRpc {
     #[method(name = "amm_dex_getPoolCount")]
     fn get_pool_count(&self) -> RpcResult<u32>;
 
+    /// Alias for amm_getPoolCount — returns the number of DEX pools.
+    #[method(name = "amm_getPoolCount")]
+    fn amm_pool_count(&self) -> RpcResult<u32>;
+
     #[method(name = "amm_dex_getAllPools")]
     fn get_all_pools(&self) -> RpcResult<Vec<Pool<AccountId, Balance>>>;
 
@@ -69,6 +73,14 @@ where
     }
 
     fn get_pool_count(&self) -> RpcResult<u32> {
+        let at = self.client.info().best_hash;
+        self.client
+            .runtime_api()
+            .get_pool_count(at)
+            .map_err(rpc_err)
+    }
+
+    fn amm_pool_count(&self) -> RpcResult<u32> {
         let at = self.client.info().best_hash;
         self.client
             .runtime_api()
@@ -207,8 +219,29 @@ where
 // === EcoApi RPC ===
 use verdis_runtime::EcoApi as EcoRuntimeApi;
 
+/// Combined eco metrics returned by eco_getEcoMetrics.
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+pub struct EcoMetrics {
+    /// Total CO2 offset in tons
+    pub total_co2_offset: u64,
+    /// Total trees planted
+    pub total_trees_planted: u32,
+    /// Total carbon credits retired
+    pub total_credits_retired: u64,
+    /// Total carbon credit count
+    pub carbon_credit_count: u32,
+    /// Total reforest project count
+    pub reforest_project_count: u32,
+    /// Total green validator count
+    pub green_validator_count: u32,
+}
+
 #[rpc(server)]
 pub trait EcoRpc {
+    /// Get combined eco metrics (CO2 offset, trees, carbon credits, etc.)
+    #[method(name = "eco_getEcoMetrics")]
+    fn get_eco_metrics(&self) -> RpcResult<EcoMetrics>;
+
     #[method(name = "eco_getTotalCO2Offset")]
     fn get_total_co2_offset(&self) -> RpcResult<u64>;
 
@@ -249,6 +282,19 @@ where
     C: ProvideRuntimeApi<Block> + HeaderBackend<Block> + 'static,
     C::Api: EcoRuntimeApi<Block>,
 {
+    fn get_eco_metrics(&self) -> RpcResult<EcoMetrics> {
+        let at = self.client.info().best_hash;
+        let api = self.client.runtime_api();
+        Ok(EcoMetrics {
+            total_co2_offset: api.get_total_co2_offset(at).map_err(rpc_err)?,
+            total_trees_planted: api.get_total_trees_planted(at).map_err(rpc_err)?,
+            total_credits_retired: api.get_total_credits_retired(at).map_err(rpc_err)?,
+            carbon_credit_count: api.get_carbon_credit_count(at).map_err(rpc_err)?,
+            reforest_project_count: api.get_reforest_project_count(at).map_err(rpc_err)?,
+            green_validator_count: api.get_green_validator_count(at).map_err(rpc_err)?,
+        })
+    }
+
     fn get_total_co2_offset(&self) -> RpcResult<u64> {
         let at = self.client.info().best_hash;
         self.client

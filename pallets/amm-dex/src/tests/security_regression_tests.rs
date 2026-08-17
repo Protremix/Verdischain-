@@ -23,6 +23,7 @@ fn test_sec_swap_zero_input_rejected() {
             b"ECO".to_vec(),
             100_000u128,
             100_000u128,
+            DEADLINE,
         ));
 
         assert_noop!(
@@ -49,6 +50,7 @@ fn test_sec_swap_slippage_enforced() {
             b"ECO".to_vec(),
             100_000u128,
             100_000u128,
+            DEADLINE,
         ));
 
         assert_noop!(
@@ -93,6 +95,7 @@ fn test_sec_add_liquidity_zero_rejected() {
             b"ECO".to_vec(),
             100_000u128,
             100_000u128,
+            DEADLINE,
         ));
 
         assert_noop!(
@@ -101,6 +104,7 @@ fn test_sec_add_liquidity_zero_rejected() {
                 0u32,
                 0u128,
                 10_000u128,
+                0u128,
                 DEADLINE,
             ),
             Error::<Test>::ZeroAmount
@@ -118,6 +122,7 @@ fn test_sec_remove_liquidity_zero_lp_fails() {
             b"ECO".to_vec(),
             100_000u128,
             100_000u128,
+            DEADLINE,
         ));
 
         let result =
@@ -136,6 +141,7 @@ fn test_sec_remove_more_than_owned_fails() {
             b"ECO".to_vec(),
             100_000u128,
             100_000u128,
+            DEADLINE,
         ));
 
         let result =
@@ -154,6 +160,7 @@ fn test_sec_swap_expired_rejected() {
             b"ECO".to_vec(),
             100_000u128,
             100_000u128,
+            DEADLINE,
         ));
 
         System::set_block_number(100);
@@ -183,6 +190,7 @@ fn test_sec_identical_tokens_rejected() {
                 b"VRDX".to_vec(),
                 100u128,
                 100u128,
+                DEADLINE,
             ),
             Error::<Test>::SameToken
         );
@@ -199,6 +207,7 @@ fn test_sec_multiple_swaps_same_block() {
             b"ECO".to_vec(),
             1_000_000u128,
             1_000_000u128,
+            DEADLINE,
         ));
 
         for _ in 0..3 {
@@ -227,6 +236,7 @@ fn test_sec_k_invariant_maintained() {
             b"ECO".to_vec(),
             1_000_000u128,
             1_000_000u128,
+            DEADLINE,
         ));
 
         let pool_before = Pools::<Test>::get(0u32).unwrap();
@@ -263,6 +273,7 @@ fn test_sec_swap_unknown_token_rejected() {
             b"ECO".to_vec(),
             100_000u128,
             100_000u128,
+            DEADLINE,
         ));
 
         assert_noop!(
@@ -292,6 +303,7 @@ fn test_sec_token_name_too_long() {
                 b"ECO".to_vec(),
                 100u128,
                 100u128,
+                DEADLINE,
             ),
             Error::<Test>::TokenTooLong
         );
@@ -308,6 +320,7 @@ fn test_sec_add_liquidity_nonexistent_pool() {
                 999u32,
                 1_000u128,
                 1_000u128,
+                0u128,
                 DEADLINE,
             ),
             Error::<Test>::PoolNotFound
@@ -336,6 +349,7 @@ fn test_sec_large_swap_handled() {
             b"ECO".to_vec(),
             100_000u128,
             100_000u128,
+            DEADLINE,
         ));
 
         // Very large swap relative to pool — should either succeed or fail with PriceImpactTooHigh
@@ -362,6 +376,7 @@ fn test_sec_lp_tokens_minted() {
             b"ECO".to_vec(),
             100_000u128,
             100_000u128,
+            DEADLINE,
         ));
 
         assert_ok!(AmmDex::add_liquidity(
@@ -369,6 +384,7 @@ fn test_sec_lp_tokens_minted() {
             0u32,
             50_000u128,
             50_000u128,
+            0u128,
             DEADLINE,
         ));
 
@@ -387,6 +403,7 @@ fn test_sec_reserves_change_after_swap() {
             b"ECO".to_vec(),
             1_000_000u128,
             1_000_000u128,
+            DEADLINE,
         ));
 
         let pool_before = Pools::<Test>::get(0u32).unwrap();
@@ -423,6 +440,7 @@ fn test_sec_add_liquidity_expired_rejected() {
             b"ECO".to_vec(),
             100_000u128,
             100_000u128,
+            DEADLINE,
         ));
 
         System::set_block_number(100);
@@ -433,6 +451,7 @@ fn test_sec_add_liquidity_expired_rejected() {
                 0u32,
                 10_000u128,
                 10_000u128,
+                0u128,
                 50u64,
             ),
             Error::<Test>::Expired

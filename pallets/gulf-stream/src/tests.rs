@@ -8,6 +8,7 @@ type Block = frame_system::mocking::MockBlock<Test>;
 construct_runtime!(
     pub enum Test {
         System: frame_system,
+        Timestamp: pallet_timestamp,
         GulfStream: crate,
     }
 );
@@ -17,6 +18,17 @@ impl frame_system::Config for Test {
     type AccountId = sp_core::crypto::AccountId32;
     type Lookup = IdentityLookup<Self::AccountId>;
     type Block = Block;
+}
+
+parameter_types! {
+    pub const MinimumPeriod: u64 = 1;
+}
+
+impl pallet_timestamp::Config for Test {
+    type Moment = u64;
+    type OnTimestampSet = ();
+    type MinimumPeriod = MinimumPeriod;
+    type WeightInfo = ();
 }
 
 parameter_types! {

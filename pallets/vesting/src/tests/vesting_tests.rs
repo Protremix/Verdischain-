@@ -81,7 +81,7 @@ fn test_add_schedule_zero_vesting_days_fails() {
                 0, // zero vesting days
                 0,
             ),
-            Error::<Test>::VestingNotStarted
+            Error::<Test>::InvalidVestingDays
         );
     });
 }
@@ -97,7 +97,7 @@ fn test_add_schedule_cliff_exceeds_vesting_fails() {
                 100, // 100 vesting days
                 200, // 200 cliff days > vesting days
             ),
-            Error::<Test>::VestingNotStarted
+            Error::<Test>::InvalidVestingDays
         );
     });
 }

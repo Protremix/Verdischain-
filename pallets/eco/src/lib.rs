@@ -118,6 +118,13 @@ pub mod pallet {
     pub type TotalCreditsRetired<T: Config> = StorageValue<_, u64, ValueQuery>;
 
     // === Events ===
+    //
+    // NOTE on remaining Vec<u8> in events:
+    // Event fields use plain Vec<u8> because events are transient — they are
+    // not stored in bounded on-chain storage and therefore do not require a
+    // BoundedVec. Every Vec<u8> in an event is constructed from an
+    // already-validated BoundedVec via .into(), so the data has already been
+    // length-checked before the event is emitted.
 
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -181,8 +188,17 @@ pub mod pallet {
         MaxGreenValidatorsReached,
         InvalidScore,
         AlreadyVerified,
+        /// ID exceeds the ConstU32<64> bound. With BoundedVec extrinsic
+        /// parameters this is enforced at decode time; the variant is retained
+        /// for backward compatibility and potential genesis validation.
         IdTooLong,
+        /// Name exceeds T::MaxNameLength. With BoundedVec extrinsic
+        /// parameters this is enforced at decode time; the variant is retained
+        /// for backward compatibility and potential genesis validation.
         NameTooLong,
+        /// Location exceeds the ConstU32<64> bound. With BoundedVec
+        /// extrinsic parameters this is enforced at decode time; the variant is
+        /// retained for backward compatibility.
         LocationTooLong,
         PerBlockMintLimitReached,
     }
@@ -204,12 +220,25 @@ pub mod pallet {
         type MinGreenScore: Get<u8>;
         #[pallet::constant]
         type MaxGreenScore: Get<u8>;
+        /// Maximum length (in bytes) for user-supplied name fields such as
+        /// carbon-credit project names and reforestation project names.
+        /// Extrinsic parameters use BoundedVec<u8, T::MaxNameLength> so the
+        /// bound is enforced at decode time, before any pallet logic runs.
+        #[pallet::constant]
+        type MaxNameLength: Get<u32>;
         type WeightInfo: WeightInfo;
         /// Post-sudo: Council (2/3) administers eco operations
         type AdminOrigin: EnsureOrigin<Self::RuntimeOrigin>;
     }
 
     // === Genesis ===
+    //
+    // NOTE on remaining Vec<u8> in GenesisConfig:
+    // Genesis configuration types use plain Vec<u8> because genesis is a
+    // build-time / chain-instantiation concern, not a runtime extrinsic. The
+    // build() method converts each Vec<u8> to the appropriate BoundedVec
+    // via try_into().unwrap_or_default(), so oversized values are silently
+    // truncated at genesis rather than causing a runtime DoS vector.
 
     #[pallet::genesis_config]
     #[derive(DefaultNoBound)]
@@ -278,28 +307,33 @@ pub mod pallet {
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        /// Mint a new carbon credit
+        /// Mint a new carbon credit.
+        ///
+        /// # Authorization
+        ///
+        /// Requires AdminOrigin (council / governance root). A regular signed
+        /// user cannot mint carbon credits.
         #[pallet::call_index(0)]
         #[pallet::weight(T::WeightInfo::mint_carbon_credit())]
         pub fn mint_carbon_credit(
             origin: OriginFor<T>,
             owner: T::AccountId,
-            id: Vec<u8>,
-            project_name: Vec<u8>,
+            id: BoundedVec<u8, ConstU32<64>>,
+            project_name: BoundedVec<u8, T::MaxNameLength>,
             tons_co2: u64,
         ) -> DispatchResult {
             T::AdminOrigin::ensure_origin(origin)?;
             let who = owner;
 
-            let id_bv: BoundedVec<u8, ConstU32<64>> =
-                id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
+            // BoundedVec enforces length bounds at decode time.
             let name_bv: BoundedVec<u8, ConstU32<128>> = project_name
                 .clone()
+                .into_inner()
                 .try_into()
                 .map_err(|_| Error::<T>::NameTooLong)?;
 
             ensure!(
-                !CarbonCredits::<T>::contains_key(&id_bv),
+                !CarbonCredits::<T>::contains_key(&id),
                 Error::<T>::CreditAlreadyExists
             );
             ensure!(
@@ -325,7 +359,7 @@ pub mod pallet {
             }
 
             let credit = CarbonCredit {
-                id: id_bv.clone(),
+                id: id.clone(),
                 project_name: name_bv,
                 tons_co2,
                 verified: false,
@@ -334,47 +368,56 @@ pub mod pallet {
                 created_at: 0,
             };
 
-            CarbonCredits::<T>::insert(id_bv, credit);
+            CarbonCredits::<T>::insert(id.clone(), credit);
             TotalCO2Offset::<T>::mutate(|t| *t = t.saturating_add(tons_co2));
 
             Self::deposit_event(Event::CarbonCreditMinted {
-                id,
+                id: id.into(),
                 tons_co2,
                 owner: who,
             });
             Ok(())
         }
 
-        /// Verify a carbon credit (authority only)
+        /// Verify a carbon credit.
+        ///
+        /// # Authorization
+        ///
+        /// Requires AdminOrigin (council / governance root). A regular signed
+        /// user cannot verify carbon credits.
         #[pallet::call_index(1)]
         #[pallet::weight(T::WeightInfo::verify_carbon_credit())]
-        pub fn verify_carbon_credit(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
+        pub fn verify_carbon_credit(
+            origin: OriginFor<T>,
+            id: BoundedVec<u8, ConstU32<64>>,
+        ) -> DispatchResult {
             T::AdminOrigin::ensure_origin(origin)?;
 
-            let id_bv: BoundedVec<u8, ConstU32<64>> =
-                id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
-
-            CarbonCredits::<T>::mutate(&id_bv, |c| {
+            CarbonCredits::<T>::mutate(&id, |c| {
                 let credit = c.as_mut().ok_or(Error::<T>::CreditNotFound)?;
                 ensure!(!credit.verified, Error::<T>::AlreadyVerified);
                 credit.verified = true;
                 Ok::<(), Error<T>>(())
             })?;
 
-            Self::deposit_event(Event::CarbonCreditVerified { id });
+            Self::deposit_event(Event::CarbonCreditVerified { id: id.into() });
             Ok(())
         }
 
-        /// Retire a carbon credit (owner only)
+        /// Retire a carbon credit (owner only).
+        ///
+        /// # Authorization
+        ///
+        /// Requires a signed origin that is the current owner of the credit.
         #[pallet::call_index(2)]
         #[pallet::weight(T::WeightInfo::retire_carbon_credit())]
-        pub fn retire_carbon_credit(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
+        pub fn retire_carbon_credit(
+            origin: OriginFor<T>,
+            id: BoundedVec<u8, ConstU32<64>>,
+        ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
-            let id_bv: BoundedVec<u8, ConstU32<64>> =
-                id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
-
-            CarbonCredits::<T>::mutate(&id_bv, |c| {
+            CarbonCredits::<T>::mutate(&id, |c| {
                 let credit = c.as_mut().ok_or(Error::<T>::CreditNotFound)?;
                 ensure!(credit.owner == who, Error::<T>::NotCreditOwner);
                 ensure!(!credit.retired, Error::<T>::CreditAlreadyRetired);
@@ -382,30 +425,31 @@ pub mod pallet {
                 Ok::<(), Error<T>>(())
             })?;
 
-            let credit = CarbonCredits::<T>::get(&id_bv).ok_or(Error::<T>::CreditNotFound)?;
+            let credit = CarbonCredits::<T>::get(&id).ok_or(Error::<T>::CreditNotFound)?;
             TotalCreditsRetired::<T>::mutate(|t| *t = t.saturating_add(credit.tons_co2));
 
             Self::deposit_event(Event::CarbonCreditRetired {
-                id,
+                id: id.into(),
                 tons_co2: credit.tons_co2,
             });
             Ok(())
         }
 
-        /// Transfer a carbon credit to a new owner
+        /// Transfer a carbon credit to a new owner.
+        ///
+        /// # Authorization
+        ///
+        /// Requires a signed origin that is the current owner of the credit.
         #[pallet::call_index(3)]
         #[pallet::weight(T::WeightInfo::transfer_carbon_credit())]
         pub fn transfer_carbon_credit(
             origin: OriginFor<T>,
-            id: Vec<u8>,
+            id: BoundedVec<u8, ConstU32<64>>,
             to: T::AccountId,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
-            let id_bv: BoundedVec<u8, ConstU32<64>> =
-                id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
-
-            CarbonCredits::<T>::mutate(&id_bv, |c| {
+            CarbonCredits::<T>::mutate(&id, |c| {
                 let credit = c.as_mut().ok_or(Error::<T>::CreditNotFound)?;
                 ensure!(credit.owner == who, Error::<T>::NotCreditOwner);
                 ensure!(!credit.retired, Error::<T>::CreditAlreadyRetired);
@@ -413,27 +457,40 @@ pub mod pallet {
                 Ok::<(), Error<T>>(())
             })?;
 
-            Self::deposit_event(Event::CarbonCreditTransferred { id, from: who, to });
+            Self::deposit_event(Event::CarbonCreditTransferred {
+                id: id.into(),
+                from: who,
+                to,
+            });
             Ok(())
         }
 
-        /// Create a reforestation project
+        /// Create a reforestation project.
+        ///
+        /// # Authorization
+        ///
+        /// Requires AdminOrigin (council / governance root). A regular signed
+        /// user cannot create reforestation projects.
         #[pallet::call_index(4)]
         #[pallet::weight(T::WeightInfo::create_reforest_project())]
         pub fn create_reforest_project(
             origin: OriginFor<T>,
-            id: Vec<u8>,
-            name: Vec<u8>,
+            id: BoundedVec<u8, ConstU32<64>>,
+            name: BoundedVec<u8, T::MaxNameLength>,
             trees_planted: u32,
-            location: Vec<u8>,
+            location: BoundedVec<u8, ConstU32<64>>,
         ) -> DispatchResult {
             T::AdminOrigin::ensure_origin(origin)?;
 
-            let id_bv: BoundedVec<u8, ConstU32<64>> =
-                id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
+            // BoundedVec enforces length bounds at decode time.
+            let name_bv: BoundedVec<u8, ConstU32<128>> = name
+                .clone()
+                .into_inner()
+                .try_into()
+                .map_err(|_| Error::<T>::NameTooLong)?;
 
             ensure!(
-                !ReforestProjects::<T>::contains_key(&id_bv),
+                !ReforestProjects::<T>::contains_key(&id),
                 Error::<T>::ProjectAlreadyExists
             );
             ensure!(
@@ -442,40 +499,42 @@ pub mod pallet {
             );
 
             let project = ReforestProject {
-                id: id_bv.clone(),
-                name: name.clone().try_into().unwrap_or_default(),
+                id: id.clone(),
+                name: name_bv,
                 trees_planted,
-                location: location.clone().try_into().unwrap_or_default(),
+                location,
                 survival_rate: 0,
                 verified: false,
             };
 
-            ReforestProjects::<T>::insert(id_bv, project);
+            ReforestProjects::<T>::insert(id.clone(), project);
             TotalTreesPlanted::<T>::mutate(|t| *t = t.saturating_add(trees_planted));
 
             Self::deposit_event(Event::ReforestProjectCreated {
-                id,
-                name,
+                id: id.into(),
+                name: name.into(),
                 trees: trees_planted,
             });
             Ok(())
         }
 
-        /// Update a reforestation project
+        /// Update a reforestation project.
+        ///
+        /// # Authorization
+        ///
+        /// Requires AdminOrigin (council / governance root). A regular signed
+        /// user cannot update reforestation projects.
         #[pallet::call_index(5)]
         #[pallet::weight(T::WeightInfo::update_reforest_project())]
         pub fn update_reforest_project(
             origin: OriginFor<T>,
-            id: Vec<u8>,
+            id: BoundedVec<u8, ConstU32<64>>,
             trees_planted: u32,
             survival_rate: u8,
         ) -> DispatchResult {
             T::AdminOrigin::ensure_origin(origin)?;
 
-            let id_bv: BoundedVec<u8, ConstU32<64>> =
-                id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
-
-            ReforestProjects::<T>::mutate(&id_bv, |p| {
+            ReforestProjects::<T>::mutate(&id, |p| {
                 let project = p.as_mut().ok_or(Error::<T>::ProjectNotFound)?;
                 project.trees_planted = trees_planted;
                 project.survival_rate = survival_rate;
@@ -483,50 +542,57 @@ pub mod pallet {
             })?;
 
             Self::deposit_event(Event::ReforestProjectUpdated {
-                id,
+                id: id.into(),
                 trees: trees_planted,
                 survival_rate,
             });
             Ok(())
         }
 
-        /// Verify a reforestation project
+        /// Verify a reforestation project.
+        ///
+        /// # Authorization
+        ///
+        /// Requires AdminOrigin (council / governance root). A regular signed
+        /// user cannot verify reforestation projects.
         #[pallet::call_index(6)]
         #[pallet::weight(T::WeightInfo::verify_reforest_project())]
-        pub fn verify_reforest_project(origin: OriginFor<T>, id: Vec<u8>) -> DispatchResult {
+        pub fn verify_reforest_project(
+            origin: OriginFor<T>,
+            id: BoundedVec<u8, ConstU32<64>>,
+        ) -> DispatchResult {
             T::AdminOrigin::ensure_origin(origin)?;
 
-            let id_bv: BoundedVec<u8, ConstU32<64>> =
-                id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
-
-            ReforestProjects::<T>::mutate(&id_bv, |p| {
+            ReforestProjects::<T>::mutate(&id, |p| {
                 let project = p.as_mut().ok_or(Error::<T>::ProjectNotFound)?;
                 ensure!(!project.verified, Error::<T>::AlreadyVerified);
                 project.verified = true;
                 Ok::<(), Error<T>>(())
             })?;
 
-            Self::deposit_event(Event::ReforestProjectVerified { id });
+            Self::deposit_event(Event::ReforestProjectVerified { id: id.into() });
             Ok(())
         }
 
-        /// Register as a green validator
+        /// Register as a green validator.
+        ///
+        /// # Authorization
+        ///
+        /// Requires a signed origin. Any account may self-register as a green
+        /// validator. The initial score is constrained by MinGreenScore
+        /// and MaxGreenScore.
         #[pallet::call_index(7)]
         #[pallet::weight(T::WeightInfo::register_green_validator())]
         pub fn register_green_validator(
             origin: OriginFor<T>,
-            energy_source: Vec<u8>,
+            energy_source: BoundedVec<u8, ConstU32<64>>,
             carbon_offset: u64,
             trees_planted: u32,
             score: u8,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
-            let energy_bv: BoundedVec<u8, ConstU32<64>> = energy_source
-                .clone()
-                .try_into()
-                .map_err(|_| Error::<T>::IdTooLong)?;
-
+            // BoundedVec enforces length bounds at decode time.
             ensure!(
                 !GreenValidators::<T>::contains_key(&who),
                 Error::<T>::ValidatorAlreadyRegistered
@@ -541,7 +607,7 @@ pub mod pallet {
             let gv = GreenValidator {
                 address: who.clone(),
                 renewable_energy: true,
-                energy_source: energy_bv,
+                energy_source: energy_source.clone(),
                 carbon_offset,
                 trees_planted,
                 score,
@@ -552,13 +618,25 @@ pub mod pallet {
 
             Self::deposit_event(Event::GreenValidatorRegistered {
                 address: who,
-                energy_source,
+                energy_source: energy_source.into(),
                 score,
             });
             Ok(())
         }
 
-        /// Update green score
+        /// Update a validator's green score.
+        ///
+        /// # Authorization
+        ///
+        /// **This extrinsic requires AdminOrigin (council / governance root,
+        /// configured as EnsureRoot by default).** A regular signed user
+        /// **cannot** update green scores — neither their own nor another
+        /// validator's. Green scores are a security / economic signal and must
+        /// only be set by the authorized governance authority.
+        ///
+        /// There is no on-chain verifier registry in this pallet, so the
+        /// council / root path is used. If a verifier registry is added in the
+        /// future, authorization should be restricted to registered verifiers.
         #[pallet::call_index(8)]
         #[pallet::weight(T::WeightInfo::update_green_score())]
         pub fn update_green_score(
@@ -637,6 +715,7 @@ pub mod tests {
         pub const MaxGreenValidators: u32 = 101;
         pub const MinGreenScore: u8 = 1;
         pub const MaxGreenScore: u8 = 5;
+        pub const MaxNameLength: u32 = 128;
     }
 
     impl Config for Test {
@@ -647,6 +726,7 @@ pub mod tests {
         type MaxGreenValidators = MaxGreenValidators;
         type MinGreenScore = MinGreenScore;
         type MaxGreenScore = MaxGreenScore;
+        type MaxNameLength = MaxNameLength;
         type WeightInfo = SubstrateWeight<Test>;
         type AdminOrigin = frame_system::EnsureRoot<Self::AccountId>;
     }
@@ -667,6 +747,16 @@ pub mod tests {
         ext
     }
 
+    /// Helper: construct a BoundedVec<u8, ConstU32<64>> from a slice.
+    fn bv64(s: &[u8]) -> BoundedVec<u8, ConstU32<64>> {
+        s.to_vec().try_into().unwrap()
+    }
+
+    /// Helper: construct a BoundedVec<u8, MaxNameLength> from a slice.
+    fn bv_name(s: &[u8]) -> BoundedVec<u8, MaxNameLength> {
+        s.to_vec().try_into().unwrap()
+    }
+
     #[test]
     fn test_genesis_empty() {
         new_test_ext().execute_with(|| {
@@ -681,8 +771,8 @@ pub mod tests {
             assert_ok!(Eco::mint_carbon_credit(
                 RuntimeOrigin::root(),
                 Sr25519Keyring::Alice.to_account_id(),
-                b"c1".to_vec(),
-                b"Amazon".to_vec(),
+                bv64(b"c1"),
+                bv_name(b"Amazon"),
                 100,
             ));
             assert_eq!(TotalCO2Offset::<Test>::get(), 100);
@@ -695,8 +785,8 @@ pub mod tests {
             Eco::mint_carbon_credit(
                 RuntimeOrigin::root(),
                 Sr25519Keyring::Alice.to_account_id(),
-                b"c1".to_vec(),
-                b"P".to_vec(),
+                bv64(b"c1"),
+                bv_name(b"P"),
                 50,
             )
             .unwrap();
@@ -704,8 +794,8 @@ pub mod tests {
                 Eco::mint_carbon_credit(
                     RuntimeOrigin::root(),
                     Sr25519Keyring::Bob.to_account_id(),
-                    b"c1".to_vec(),
-                    b"P2".to_vec(),
+                    bv64(b"c1"),
+                    bv_name(b"P2"),
                     30,
                 ),
                 Error::<Test>::CreditAlreadyExists
@@ -719,14 +809,14 @@ pub mod tests {
             Eco::mint_carbon_credit(
                 RuntimeOrigin::root(),
                 Sr25519Keyring::Alice.to_account_id(),
-                b"c1".to_vec(),
-                b"P".to_vec(),
+                bv64(b"c1"),
+                bv_name(b"P"),
                 50,
             )
             .unwrap();
             assert_ok!(Eco::verify_carbon_credit(
                 RuntimeOrigin::root(),
-                b"c1".to_vec()
+                bv64(b"c1")
             ));
         });
     }
@@ -735,7 +825,7 @@ pub mod tests {
     fn test_verify_nonexistent() {
         new_test_ext().execute_with(|| {
             assert_noop!(
-                Eco::verify_carbon_credit(RuntimeOrigin::root(), b"nope".to_vec()),
+                Eco::verify_carbon_credit(RuntimeOrigin::root(), bv64(b"nope")),
                 Error::<Test>::CreditNotFound
             );
         });
@@ -746,10 +836,10 @@ pub mod tests {
         new_test_ext().execute_with(|| {
             assert_ok!(Eco::create_reforest_project(
                 RuntimeOrigin::root(),
-                b"p1".to_vec(),
-                b"Amazon".to_vec(),
+                bv64(b"p1"),
+                bv_name(b"Amazon"),
                 5000,
-                b"Brazil".to_vec(),
+                bv64(b"Brazil"),
             ));
             assert_eq!(TotalTreesPlanted::<Test>::get(), 5000);
         });
@@ -761,7 +851,7 @@ pub mod tests {
             let alice = Sr25519Keyring::Alice.to_account_id();
             assert_ok!(Eco::register_green_validator(
                 RuntimeOrigin::signed(alice.clone()),
-                b"Solar".to_vec(),
+                bv64(b"Solar"),
                 500,
                 100,
                 4,
@@ -776,7 +866,7 @@ pub mod tests {
             let alice = Sr25519Keyring::Alice.to_account_id();
             Eco::register_green_validator(
                 RuntimeOrigin::signed(alice.clone()),
-                b"Solar".to_vec(),
+                bv64(b"Solar"),
                 500,
                 100,
                 4,
@@ -799,8 +889,8 @@ pub mod tests {
                 Eco::mint_carbon_credit(
                     RuntimeOrigin::signed(alice.clone()),
                     alice,
-                    b"c1".to_vec(),
-                    b"Amazon".to_vec(),
+                    bv64(b"c1"),
+                    bv_name(b"Amazon"),
                     100,
                 ),
                 sp_runtime::DispatchError::BadOrigin
@@ -813,7 +903,7 @@ pub mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             assert_noop!(
-                Eco::verify_carbon_credit(RuntimeOrigin::signed(alice), b"c1".to_vec(),),
+                Eco::verify_carbon_credit(RuntimeOrigin::signed(alice), bv64(b"c1"),),
                 sp_runtime::DispatchError::BadOrigin
             );
         });
@@ -824,7 +914,7 @@ pub mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             assert_noop!(
-                Eco::retire_carbon_credit(RuntimeOrigin::signed(alice), b"nonexistent".to_vec(),),
+                Eco::retire_carbon_credit(RuntimeOrigin::signed(alice), bv64(b"nonexistent"),),
                 Error::<Test>::CreditNotFound
             );
         });
@@ -838,7 +928,7 @@ pub mod tests {
             assert_noop!(
                 Eco::transfer_carbon_credit(
                     RuntimeOrigin::signed(alice),
-                    b"nonexistent".to_vec(),
+                    bv64(b"nonexistent"),
                     bob,
                 ),
                 Error::<Test>::CreditNotFound
@@ -854,15 +944,15 @@ pub mod tests {
             Eco::mint_carbon_credit(
                 RuntimeOrigin::root(),
                 alice.clone(),
-                b"c1".to_vec(),
-                b"Amazon".to_vec(),
+                bv64(b"c1"),
+                bv_name(b"Amazon"),
                 100,
             )
             .unwrap();
-            Eco::retire_carbon_credit(RuntimeOrigin::signed(alice.clone()), b"c1".to_vec())
+            Eco::retire_carbon_credit(RuntimeOrigin::signed(alice.clone()), bv64(b"c1"))
                 .unwrap();
             assert_noop!(
-                Eco::transfer_carbon_credit(RuntimeOrigin::signed(alice), b"c1".to_vec(), bob,),
+                Eco::transfer_carbon_credit(RuntimeOrigin::signed(alice), bv64(b"c1"), bob,),
                 Error::<Test>::CreditAlreadyRetired
             );
         });
@@ -877,13 +967,13 @@ pub mod tests {
             Eco::mint_carbon_credit(
                 RuntimeOrigin::root(),
                 alice,
-                b"c1".to_vec(),
-                b"Amazon".to_vec(),
+                bv64(b"c1"),
+                bv_name(b"Amazon"),
                 100,
             )
             .unwrap();
             assert_noop!(
-                Eco::transfer_carbon_credit(RuntimeOrigin::signed(bob), b"c1".to_vec(), charlie,),
+                Eco::transfer_carbon_credit(RuntimeOrigin::signed(bob), bv64(b"c1"), charlie,),
                 Error::<Test>::NotCreditOwner
             );
         });
@@ -896,10 +986,10 @@ pub mod tests {
             assert_noop!(
                 Eco::create_reforest_project(
                     RuntimeOrigin::signed(alice),
-                    b"p1".to_vec(),
-                    b"Amazon".to_vec(),
+                    bv64(b"p1"),
+                    bv_name(b"Amazon"),
                     1000,
-                    b"Brazil".to_vec(),
+                    bv64(b"Brazil"),
                 ),
                 sp_runtime::DispatchError::BadOrigin
             );
@@ -911,19 +1001,19 @@ pub mod tests {
         new_test_ext().execute_with(|| {
             Eco::create_reforest_project(
                 RuntimeOrigin::root(),
-                b"p1".to_vec(),
-                b"Amazon".to_vec(),
+                bv64(b"p1"),
+                bv_name(b"Amazon"),
                 1000,
-                b"Brazil".to_vec(),
+                bv64(b"Brazil"),
             )
             .unwrap();
             assert_noop!(
                 Eco::create_reforest_project(
                     RuntimeOrigin::root(),
-                    b"p1".to_vec(),
-                    b"Amazon 2".to_vec(),
+                    bv64(b"p1"),
+                    bv_name(b"Amazon 2"),
                     2000,
-                    b"Peru".to_vec(),
+                    bv64(b"Peru"),
                 ),
                 Error::<Test>::ProjectAlreadyExists
             );
@@ -937,7 +1027,7 @@ pub mod tests {
             assert_noop!(
                 Eco::update_reforest_project(
                     RuntimeOrigin::signed(alice),
-                    b"p1".to_vec(),
+                    bv64(b"p1"),
                     1000,
                     80,
                 ),
@@ -952,7 +1042,7 @@ pub mod tests {
             assert_noop!(
                 Eco::update_reforest_project(
                     RuntimeOrigin::root(),
-                    b"nonexistent".to_vec(),
+                    bv64(b"nonexistent"),
                     1000,
                     80,
                 ),
@@ -967,7 +1057,7 @@ pub mod tests {
             let alice = Sr25519Keyring::Alice.to_account_id();
             Eco::register_green_validator(
                 RuntimeOrigin::signed(alice.clone()),
-                b"Solar".to_vec(),
+                bv64(b"Solar"),
                 500,
                 100,
                 4,
@@ -976,7 +1066,7 @@ pub mod tests {
             assert_noop!(
                 Eco::register_green_validator(
                     RuntimeOrigin::signed(alice),
-                    b"Wind".to_vec(),
+                    bv64(b"Wind"),
                     300,
                     50,
                     4,
@@ -993,7 +1083,7 @@ pub mod tests {
             assert_noop!(
                 Eco::register_green_validator(
                     RuntimeOrigin::signed(alice),
-                    b"Solar".to_vec(),
+                    bv64(b"Solar"),
                     500,
                     100,
                     6,
@@ -1010,7 +1100,7 @@ pub mod tests {
             assert_noop!(
                 Eco::register_green_validator(
                     RuntimeOrigin::signed(alice),
-                    b"Solar".to_vec(),
+                    bv64(b"Solar"),
                     500,
                     100,
                     0,
@@ -1027,7 +1117,7 @@ pub mod tests {
             assert_noop!(
                 Eco::register_green_validator(
                     RuntimeOrigin::signed(alice),
-                    b"Solar".to_vec(),
+                    bv64(b"Solar"),
                     500,
                     100,
                     6,
@@ -1043,7 +1133,7 @@ pub mod tests {
             let alice = Sr25519Keyring::Alice.to_account_id();
             Eco::register_green_validator(
                 RuntimeOrigin::signed(alice.clone()),
-                b"Solar".to_vec(),
+                bv64(b"Solar"),
                 500,
                 100,
                 3,
@@ -1065,11 +1155,55 @@ pub mod tests {
     }
 
     #[test]
+    fn test_update_green_score_authorized_succeeds() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            Eco::register_green_validator(
+                RuntimeOrigin::signed(alice.clone()),
+                bv64(b"Solar"),
+                500,
+                100,
+                3,
+            )
+            .unwrap();
+            // Authorized (root / AdminOrigin) call succeeds
+            assert_ok!(Eco::update_green_score(
+                RuntimeOrigin::root(),
+                alice.clone(),
+                5,
+            ));
+            assert_eq!(GreenValidators::<Test>::get(&alice).unwrap().score, 5);
+        });
+    }
+
+    #[test]
     fn test_update_green_score_non_root_rejected() {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
+            // A regular signed user cannot update green scores
             assert_noop!(
-                Eco::update_green_score(RuntimeOrigin::signed(alice.clone()), alice, 95,),
+                Eco::update_green_score(RuntimeOrigin::signed(alice.clone()), alice, 5,),
+                sp_runtime::DispatchError::BadOrigin
+            );
+        });
+    }
+
+    #[test]
+    fn test_update_green_score_other_user_rejected() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let bob = Sr25519Keyring::Bob.to_account_id();
+            Eco::register_green_validator(
+                RuntimeOrigin::signed(alice.clone()),
+                bv64(b"Solar"),
+                500,
+                100,
+                3,
+            )
+            .unwrap();
+            // Bob (a non-root user) cannot update Alice's score
+            assert_noop!(
+                Eco::update_green_score(RuntimeOrigin::signed(bob), alice, 5,),
                 sp_runtime::DispatchError::BadOrigin
             );
         });
@@ -1080,27 +1214,65 @@ pub mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             assert_noop!(
-                Eco::update_green_score(RuntimeOrigin::root(), alice, 95,),
+                Eco::update_green_score(RuntimeOrigin::root(), alice, 5,),
                 Error::<Test>::ValidatorNotFound
             );
         });
+    }
+
+    // --- BoundedVec length enforcement tests ---
+    //
+    // With BoundedVec extrinsic parameters, length is enforced at decode time.
+    // These tests verify that the BoundedVec type rejects oversized inputs.
+
+    #[test]
+    fn test_id_too_long_rejected() {
+        // A 65-byte value exceeds the ConstU32<64> bound and cannot be
+        // constructed as a BoundedVec — the length check is enforced at the
+        // type level before any pallet logic runs.
+        let result: Result<BoundedVec<u8, ConstU32<64>>, _> = vec![0u8; 65].try_into();
+        assert!(result.is_err(), "65-byte ID should not fit in BoundedVec<u8, ConstU32<64>>");
+    }
+
+    #[test]
+    fn test_name_too_long_rejected() {
+        // A 129-byte value exceeds MaxNameLength (128) and cannot be
+        // constructed as a BoundedVec.
+        let result: Result<BoundedVec<u8, MaxNameLength>, _> = vec![0u8; 129].try_into();
+        assert!(result.is_err(), "129-byte name should not fit in BoundedVec<u8, MaxNameLength>");
+    }
+
+    #[test]
+    fn test_location_too_long_rejected() {
+        // A 65-byte location exceeds the ConstU32<64> bound.
+        let result: Result<BoundedVec<u8, ConstU32<64>>, _> = vec![0u8; 65].try_into();
+        assert!(result.is_err(), "65-byte location should not fit in BoundedVec<u8, ConstU32<64>>");
+    }
+
+    #[test]
+    fn test_energy_source_too_long_rejected() {
+        // A 65-byte energy_source exceeds the ConstU32<64> bound.
+        let result: Result<BoundedVec<u8, ConstU32<64>>, _> = vec![0u8; 65].try_into();
+        assert!(result.is_err(), "65-byte energy source should not fit in BoundedVec<u8, ConstU32<64>>");
     }
 
     #[test]
     fn test_mint_carbon_credit_id_too_long_rejected() {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
-            let long_id = vec![0u8; 65];
-            assert_noop!(
-                Eco::mint_carbon_credit(
-                    RuntimeOrigin::root(),
-                    alice,
-                    long_id,
-                    b"Amazon".to_vec(),
-                    100,
-                ),
-                Error::<Test>::IdTooLong
-            );
+            // The 65-byte value cannot be converted to BoundedVec<u8, ConstU32<64>>,
+            // simulating what happens at decode time when a malicious user sends
+            // an oversized extrinsic parameter.
+            let long_id: Result<BoundedVec<u8, ConstU32<64>>, _> = vec![0u8; 65].try_into();
+            assert!(long_id.is_err());
+            // A valid-sized call still succeeds
+            assert_ok!(Eco::mint_carbon_credit(
+                RuntimeOrigin::root(),
+                alice,
+                bv64(b"c1"),
+                bv_name(b"Amazon"),
+                100,
+            ));
         });
     }
 
@@ -1108,17 +1280,17 @@ pub mod tests {
     fn test_mint_carbon_credit_name_too_long_rejected() {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
-            let long_name = vec![0u8; 129];
-            assert_noop!(
-                Eco::mint_carbon_credit(
-                    RuntimeOrigin::root(),
-                    alice,
-                    b"c1".to_vec(),
-                    long_name,
-                    100,
-                ),
-                Error::<Test>::NameTooLong
-            );
+            // The 129-byte value cannot be converted to BoundedVec<u8, MaxNameLength>.
+            let long_name: Result<BoundedVec<u8, MaxNameLength>, _> = vec![0u8; 129].try_into();
+            assert!(long_name.is_err());
+            // A valid-sized call still succeeds
+            assert_ok!(Eco::mint_carbon_credit(
+                RuntimeOrigin::root(),
+                alice,
+                bv64(b"c1"),
+                bv_name(b"Amazon"),
+                100,
+            ));
         });
     }
 
@@ -1129,13 +1301,13 @@ pub mod tests {
             assert_ok!(Eco::mint_carbon_credit(
                 RuntimeOrigin::root(),
                 alice.clone(),
-                b"c1".to_vec(),
-                b"Amazon".to_vec(),
+                bv64(b"c1"),
+                bv_name(b"Amazon"),
                 100,
             ));
             assert_ok!(Eco::retire_carbon_credit(
                 RuntimeOrigin::signed(alice),
-                b"c1".to_vec()
+                bv64(b"c1")
             ));
             let id_bv: frame_support::BoundedVec<u8, frame_support::traits::ConstU32<64>> =
                 b"c1".to_vec().try_into().unwrap();
@@ -1153,13 +1325,13 @@ pub mod tests {
             assert_ok!(Eco::mint_carbon_credit(
                 RuntimeOrigin::root(),
                 alice.clone(),
-                b"c1".to_vec(),
-                b"Amazon".to_vec(),
+                bv64(b"c1"),
+                bv_name(b"Amazon"),
                 100,
             ));
             assert_ok!(Eco::transfer_carbon_credit(
                 RuntimeOrigin::signed(alice),
-                b"c1".to_vec(),
+                bv64(b"c1"),
                 bob.clone(),
             ));
             let id_bv: frame_support::BoundedVec<u8, frame_support::traits::ConstU32<64>> =

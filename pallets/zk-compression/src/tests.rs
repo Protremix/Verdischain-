@@ -67,6 +67,11 @@ fn compress_account_works() {
 #[test]
 fn verify_proof_works() {
     new_test_ext().execute_with(|| {
+        // Must create a tree first so MerkleRoots[0] exists
+        assert_ok!(Pallet::<Test>::create_tree(
+            frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+            10
+        ));
         assert_ok!(Pallet::<Test>::verify_proof(
             frame_system::RawOrigin::Root.into(),
             0,
@@ -153,11 +158,18 @@ fn verify_proof_non_root_rejected() {
 fn verify_proof_root_works() {
     new_test_ext().execute_with(|| {
         System::set_block_number(1);
+        // Must create a tree first so MerkleRoots[0] exists
+        assert_ok!(Pallet::<Test>::create_tree(
+            frame_system::RawOrigin::Signed(sp_core::crypto::AccountId32::from([0xff; 32])).into(),
+            10
+        ));
+        // Get the actual root from the TreeCreated event
+        let root = crate::MerkleRoots::<Test>::get(0).unwrap();
         assert_ok!(Pallet::<Test>::verify_proof(
             frame_system::RawOrigin::Root.into(),
             0,
             0,
-            [0u8; 32]
+            root
         ));
         System::assert_has_event(RuntimeEvent::ZkCompression(crate::Event::ProofVerified {
             tree_id: 0,

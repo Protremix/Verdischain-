@@ -132,6 +132,11 @@ pub mod pallet {
     pub type LastSlashedBlock<T: Config> =
         StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
 
+    /// FIX C5: Track consecutive epochs where validator produced 0 blocks
+    #[pallet::storage]
+    pub type MissedEpochs<T: Config> =
+        StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
+
     #[pallet::storage]
     #[pallet::getter(fn validator_names)]
     pub type ValidatorNames<T: Config> =
@@ -271,6 +276,12 @@ pub mod pallet {
         type MaxGreenScore: Get<u8>;
         #[pallet::constant]
         type ReactivationCooldown: Get<u32>;
+
+        /// FIX C5: Maximum consecutive epochs with 0 block production before deactivation
+        type MaxMissedEpochs: Get<u32>;
+
+        /// FIX C4: Minimum validators required — chain halts if below this count
+        type MinimumValidatorCount: Get<u32>;
         type WeightInfo: WeightInfo;
     }
 
@@ -336,10 +347,21 @@ pub mod pallet {
 
     #[pallet::hooks]
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-        fn on_initialize(_block: BlockNumberFor<T>) -> Weight {
-            // Epoch rotation is now triggered by new_session() when Session/BABE
-            // rotates, ensuring DPoS validator selection aligns with consensus.
-            Weight::zero()
+        fn on_initialize(block: BlockNumberFor<T>) -> Weight {
+            // FIX C5: Downtime detection — track blocks produced per validator
+            // At epoch boundaries, check which validators produced 0 blocks
+            // Deactivate validators with consecutive zero-production epochs >= MaxMissedEpochs
+
+            let block_u32: u32 = block.try_into().unwrap_or(0);
+            let epoch_start = EpochStartBlock::<T>::get();
+            let epoch_length = T::EpochLength::get();
+
+            // Check if we're at an epoch boundary
+            if block_u32 > 0 && epoch_start > 0 && block_u32 >= epoch_start.saturating_add(epoch_length) {
+                Self::check_downtime(block_u32);
+            }
+
+            Weight::from_parts(10_000, 0)
         }
     }
 
@@ -356,6 +378,16 @@ pub mod pallet {
             energy_source: Vec<u8>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
+
+            // FIX H1: Validate green_score bounds — prevents arbitrary voting weight manipulation
+            ensure!(
+                green_score <= T::MaxGreenScore::get(),
+                Error::<T>::InvalidGreenScore
+            );
+            ensure!(
+                green_score >= T::MinGreenScore::get(),
+                Error::<T>::InvalidGreenScore
+            );
 
             ensure!(
                 !Validators::<T>::contains_key(&who),
@@ -700,6 +732,13 @@ pub mod pallet {
             })?;
 
             SlashingEvents::<T>::mutate(&validator, |c| *c = c.saturating_add(1));
+
+            // FIX H2: Write LastSlashedBlock so reactivation cooldown is measured from slash time
+            let current_block: u32 = frame_system::Pallet::<T>::block_number()
+                .try_into()
+                .map_err(|_| Error::<T>::InvalidSlashReason)?;
+            LastSlashedBlock::<T>::insert(&validator, current_block);
+
             TotalStaked::<T>::try_mutate(|t| -> Result<(), Error<T>> {
                 *t = t.checked_sub(&actual_slash).ok_or(Error::<T>::Overflow)?;
                 Ok(())
@@ -889,6 +928,9 @@ pub mod pallet {
                         })
                         .collect();
 
+                    // FIX H3: Track total delegator slash to update total_votes
+                    let mut total_delegator_slash: BalanceOf<T> = BalanceOf::<T>::zero();
+
                     for (delegator, delegated_amount) in delegators {
                         let delegator_slash =
                             delegated_amount.saturating_mul(slash_fraction_bps) / 10_000u32.into();
@@ -904,11 +946,31 @@ pub mod pallet {
                                 )
                                 .is_ok()
                                 {
+                                    // FIX H4: Reduce TotalStaked by delegator slash
                                     TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(d_actual));
+                                    total_delegator_slash = total_delegator_slash.saturating_add(d_actual);
+
+                                    // FIX H3: Update VoteRecord.amount in storage
+                                    Votes::<T>::mutate(&delegator, |votes_opt| {
+                                        if let Some(votes) = votes_opt {
+                                            for vr in votes.iter_mut() {
+                                                if &vr.validator == validator {
+                                                    vr.amount = vr.amount.saturating_sub(d_actual);
+                                                }
+                                            }
+                                        }
+                                    });
                                 }
                             }
                         }
                     }
+
+                    // FIX H4: Reduce total_votes by delegator slash amount (not just validator slash)
+                    Validators::<T>::mutate(validator, |v| {
+                        if let Some(v) = v {
+                            v.total_votes = v.total_votes.saturating_sub(total_delegator_slash);
+                        }
+                    });
                 }
 
                 let current_block: u32 = frame_system::Pallet::<T>::block_number()
@@ -917,6 +979,7 @@ pub mod pallet {
                     .unwrap_or(0);
                 LastSlashedBlock::<T>::insert(validator, current_block);
                 SlashingEvents::<T>::mutate(validator, |c| *c = c.saturating_add(1));
+                // FIX H4: TotalStaked reduced by validator slash (delegator slashes already accounted above)
                 TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(actual_slash));
                 ActiveValidators::<T>::mutate(|v| v.retain(|a| a != validator));
                 Self::deposit_event(Event::ValidatorSlashed {
@@ -925,6 +988,51 @@ pub mod pallet {
                     reason: b"equivocation".to_vec(),
                 });
             }
+        }
+
+        /// FIX C5: Check downtime — deactivate validators with consecutive zero-production epochs
+        fn check_downtime(block: u32) {
+            let active = ActiveValidators::<T>::get();
+            let mut to_deactivate: Vec<T::AccountId> = Vec::new();
+
+            for validator_addr in active.iter() {
+                if let Some(validator) = Validators::<T>::get(validator_addr) {
+                    if validator.blocks_produced == 0 {
+                        // This validator produced 0 blocks this epoch
+                        MissedEpochs::<T>::mutate(validator_addr, |c| *c = c.saturating_add(1));
+                        if MissedEpochs::<T>::get(validator_addr) >= T::MaxMissedEpochs::get() {
+                            to_deactivate.push(validator_addr.clone());
+                        }
+                    } else {
+                        // Reset missed epochs counter — validator is active
+                        MissedEpochs::<T>::remove(validator_addr);
+                    }
+                    // Reset blocks_produced for next epoch
+                    Validators::<T>::mutate(validator_addr, |v| {
+                        if let Some(v) = v {
+                            v.blocks_produced = 0;
+                        }
+                    });
+                }
+            }
+
+            for validator_addr in to_deactivate {
+                Validators::<T>::mutate(&validator_addr, |v| {
+                    if let Some(v) = v {
+                        v.active = false;
+                    }
+                });
+                MissedEpochs::<T>::remove(&validator_addr);
+                ActiveValidators::<T>::mutate(|v| v.retain(|a| a != &validator_addr));
+                Self::deposit_event(Event::ValidatorSlashed {
+                    who: validator_addr,
+                    penalty: 0u32.into(),
+                    reason: b"downtime_threshold_exceeded".to_vec(),
+                });
+            }
+
+            // Rotate epoch after downtime check
+            Self::rotate_epoch(block);
         }
 
         /// Rotate epoch — select top validators by votes
@@ -1087,9 +1195,15 @@ pub mod pallet {
             if new_index > 0 {
                 let current_block = frame_system::Pallet::<T>::block_number();
                 let block_num: u32 = current_block.try_into().unwrap_or(0);
-                Self::rotate_epoch(block_num);
+                Self::check_downtime(block_num);
             }
             let active = ActiveValidators::<T>::get();
+            // FIX C4: Enforce MinimumValidatorCount — halt chain if below threshold
+            if (active.len() as u32) < T::MinimumValidatorCount::get() {
+                // Return None to keep previous validators — halting new session rotation
+                // This prevents the chain from operating with insufficient validators
+                return None;
+            }
             if active.is_empty() {
                 None
             } else {
@@ -1195,6 +1309,8 @@ mod tests {
         pub const MinGreenScore: u8 = 0;
         pub const MaxGreenScore: u8 = 5;
         pub const ReactivationCooldown: u32 = 10;
+        pub const MaxMissedEpochs: u32 = 3;
+        pub const MinimumValidatorCountTest: u32 = 2;
     }
 
     impl Config for Test {
@@ -1213,6 +1329,8 @@ mod tests {
         type MaxCommission = MaxCommission;
         type MinGreenScore = MinGreenScore;
         type MaxGreenScore = MaxGreenScore;
+        type MaxMissedEpochs = MaxMissedEpochs;
+        type MinimumValidatorCount = MinimumValidatorCountTest;
         type WeightInfo = SubstrateWeight<Test>;
     }
 
@@ -1283,14 +1401,14 @@ mod tests {
 
             assert_ok!(Dpos::register_validator(
                 RuntimeOrigin::signed(charlie.clone()),
-                85,
+                3,
                 energy
             ));
 
             assert!(Validators::<Test>::contains_key(&charlie));
             let val = Validators::<Test>::get(&charlie).unwrap();
             assert_eq!(val.stake, 1000);
-            assert_eq!(val.green_score, 85);
+            assert_eq!(val.green_score, 3);
             assert_eq!(TotalStaked::<Test>::get(), 9000);
         });
     }
@@ -1303,13 +1421,13 @@ mod tests {
 
             // Already registered
             assert_noop!(
-                Dpos::register_validator(RuntimeOrigin::signed(alice), 90, b"Wind".to_vec()),
+                Dpos::register_validator(RuntimeOrigin::signed(alice), 3, b"Wind".to_vec()),
                 Error::<Test>::ValidatorAlreadyRegistered
             );
 
             // Insufficient funds (Dave only has 500, MinStake is 1000)
             assert_noop!(
-                Dpos::register_validator(RuntimeOrigin::signed(dave), 90, b"Wind".to_vec()),
+                Dpos::register_validator(RuntimeOrigin::signed(dave), 3, b"Wind".to_vec()),
                 Error::<Test>::InsufficientFunds
             );
         });
@@ -2253,7 +2371,7 @@ mod tests {
             // Alice registers Charlie as validator (she funds him)
             assert_ok!(Dpos::register_validator(
                 RuntimeOrigin::signed(charlie.clone()),
-                90,
+                3,
                 b"solar".to_vec()
             ));
 
@@ -2307,7 +2425,7 @@ mod tests {
             // Charlie registers as validator
             assert_ok!(Dpos::register_validator(
                 RuntimeOrigin::signed(charlie.clone()),
-                90,
+                3,
                 b"wind".to_vec()
             ));
 
@@ -2342,7 +2460,7 @@ mod tests {
             // Charlie registers with MinStake (1000)
             assert_ok!(Dpos::register_validator(
                 RuntimeOrigin::signed(charlie.clone()),
-                90,
+                3,
                 b"solar".to_vec()
             ));
 
@@ -2390,7 +2508,7 @@ mod tests {
             // Alice re-registers — should succeed (she was not slashed)
             assert_ok!(Dpos::register_validator(
                 RuntimeOrigin::signed(alice.clone()),
-                90,
+                3,
                 b"solar".to_vec()
             ));
             assert!(Validators::<Test>::contains_key(&alice));
@@ -2408,7 +2526,7 @@ mod tests {
             // Charlie registers
             assert_ok!(Dpos::register_validator(
                 RuntimeOrigin::signed(charlie.clone()),
-                90,
+                3,
                 b"solar".to_vec()
             ));
 

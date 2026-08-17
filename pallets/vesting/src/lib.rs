@@ -220,7 +220,7 @@ pub mod pallet {
                 Error::<T>::ScheduleAlreadyExists
             );
             ensure!(vesting_days > 0, Error::<T>::InvalidVestingDays);
-            ensure!(cliff_days <= vesting_days, Error::<T>::VestingNotStarted);
+            ensure!(cliff_days <= vesting_days, Error::<T>::InvalidVestingDays);
 
             let schedule = VestingSchedule {
                 label: label_bv.clone(),
@@ -842,7 +842,7 @@ mod tests {
                     0,
                     0,
                 ),
-                Error::<Test>::VestingNotStarted
+                Error::<Test>::InvalidVestingDays
             );
         });
     }
@@ -858,7 +858,7 @@ mod tests {
                     30,
                     60, // cliff > vesting_days
                 ),
-                Error::<Test>::VestingNotStarted
+                Error::<Test>::InvalidVestingDays
             );
         });
     }
