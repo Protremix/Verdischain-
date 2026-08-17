@@ -28,6 +28,7 @@ use codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
+use frame_support::traits::KeyOwnerProofSystem;
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
@@ -214,6 +215,58 @@ impl frame_support::traits::Contains<RuntimeCall> for VerdisBaseCallFilter {
             }
             // Block dangerous system calls (runtime upgrade without governance)
             RuntimeCall::System(frame_system::Call::set_code { .. }) => false,
+            // FIX: Block set_storage — allows arbitrary storage writes bypassing all logic
+            RuntimeCall::System(frame_system::Call::set_storage { .. }) => false,
+            // FIX: Block kill_storage — allows arbitrary storage deletion
+            RuntimeCall::System(frame_system::Call::kill_storage { .. }) => false,
+            // FIX: Block set_heap_pages — changes memory allocation at runtime
+            RuntimeCall::System(frame_system::Call::set_heap_pages { .. }) => false,
+            // FIX: Expand Circuit Breaker coverage to all remaining pallets
+            RuntimeCall::Vesting(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Vesting") =>
+            {
+                false
+            }
+            RuntimeCall::Tokenomics(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Tokenomics") =>
+            {
+                false
+            }
+            RuntimeCall::FungibleTokens(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"FungibleTokens") =>
+            {
+                false
+            }
+            RuntimeCall::Treasury(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Treasury") =>
+            {
+                false
+            }
+            RuntimeCall::Democracy(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Democracy") =>
+            {
+                false
+            }
+            RuntimeCall::Council(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Council") =>
+            {
+                false
+            }
+            RuntimeCall::Multisig(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Multisig") =>
+            {
+                false
+            }
+            RuntimeCall::Nfts(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Nfts") =>
+            {
+                false
+            }
+            RuntimeCall::Contracts(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Contracts") =>
+            {
+                false
+            }
             // Allow everything else
             _ => true,
         }
@@ -412,14 +465,19 @@ impl
             AccountId,
             pallet_session::historical::IdentificationTuple<Runtime>,
         >],
-        _slash_fraction: &[sp_runtime::Perbill],
+        slash_fraction_param: &[sp_runtime::Perbill],
         _session: sp_staking::SessionIndex,
     ) -> frame_support::weights::Weight {
         for offender in offenders {
             let (validator_id, _full_id) = &offender.offender;
             if let Some(val) = Dpos::validators(validator_id) {
-                // Slash 5% of the validator's stake
-                let slash_amount: Balance = val.stake / 20u128;
+                // Slash according to the governance-provided slash fraction,
+                // falling back to 5% if none is supplied.
+                let slash_fraction = slash_fraction_param
+                    .first()
+                    .copied()
+                    .unwrap_or(Perbill::from_percent(5));
+                let slash_amount: Balance = slash_fraction * val.stake;
                 Dpos::do_slash(validator_id, slash_amount);
             }
         }
@@ -769,6 +827,7 @@ impl pallet_vesting::Config for Runtime {
     type Currency = Balances;
     type PalletId = VestingPalletId;
     type WeightInfo = pallet_vesting::SubstrateWeight<Runtime>;
+    type BlockTimeMs = ConstU64<5000>;
 }
 
 // === Verdis Presale ===
@@ -783,6 +842,7 @@ impl pallet_presale::Config for Runtime {
     type AdminOrigin = frame_system::EnsureRoot<AccountId>;
     type Vesting = PresaleVestingHandler;
     type WeightInfo = pallet_presale::SubstrateWeight<Runtime>;
+    type Treasury = TreasuryAccount;
 }
 
 /// Bridge presale → vesting pallet for atomic vesting creation
@@ -790,6 +850,9 @@ pub struct PresaleVestingHandler;
 impl pallet_presale::VestingHandler<AccountId, u128> for PresaleVestingHandler {
     fn assign_vesting(who: &AccountId, schedule_label: Vec<u8>, amount: u128) -> DispatchResult {
         pallet_vesting::Pallet::<Runtime>::do_assign_vesting(who.clone(), schedule_label, amount)
+    }
+    fn remove_vesting(who: &AccountId, schedule_label: Vec<u8>, amount: u128) -> DispatchResult {
+        pallet_vesting::Pallet::<Runtime>::remove_vesting(who, schedule_label, amount)
     }
 }
 
@@ -1250,7 +1313,7 @@ impl pallet_democracy::Config for Runtime {
     type VotingPeriod = VotingPeriod;
     type VoteLockingPeriod = EnactmentPeriod;
     type MinimumDeposit = MinimumDeposit;
-    type InstantAllowed = ConstBool<true>;
+    type InstantAllowed = ConstBool<false>;
     type FastTrackVotingPeriod = FastTrackVotingPeriod;
     type CooloffPeriod = CooloffPeriod;
     type MaxVotes = MaxVotes;
@@ -1706,9 +1769,13 @@ impl_runtime_apis! {
         }
         fn generate_key_ownership_proof(
             _slot: sp_consensus_babe::Slot,
-            _authority_id: sp_consensus_babe::AuthorityId,
+            authority_id: sp_consensus_babe::AuthorityId,
         ) -> Option<sp_consensus_babe::OpaqueKeyOwnershipProof> {
-            None
+            use codec::Encode;
+            use frame_support::traits::KeyOwnerProofSystem;
+            Historical::prove((sp_consensus_babe::KEY_TYPE, authority_id))
+                .map(|p| p.encode())
+                .map(sp_consensus_babe::OpaqueKeyOwnershipProof::new)
         }
         fn submit_report_equivocation_unsigned_extrinsic(
             _equivocation_proof: sp_consensus_babe::EquivocationProof<<Block as BlockT>::Header>,
@@ -1738,9 +1805,13 @@ impl_runtime_apis! {
         }
         fn generate_key_ownership_proof(
             _set_id: sp_consensus_grandpa::SetId,
-            _authority_id: sp_consensus_grandpa::AuthorityId,
+            authority_id: sp_consensus_grandpa::AuthorityId,
         ) -> Option<sp_consensus_grandpa::OpaqueKeyOwnershipProof> {
-            None
+            use codec::Encode;
+            use frame_support::traits::KeyOwnerProofSystem;
+            Historical::prove((sp_consensus_grandpa::KEY_TYPE, authority_id))
+                .map(|p| p.encode())
+                .map(sp_consensus_grandpa::OpaqueKeyOwnershipProof::new)
         }
     }
 

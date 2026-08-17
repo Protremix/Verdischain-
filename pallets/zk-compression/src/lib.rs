@@ -75,8 +75,11 @@ pub mod pallet {
             let who = ensure_signed(origin)?;
             ensure!(depth <= T::MaxDepth::get(), Error::<T>::MaxDepthExceeded);
             let tree_id = ZkTotalTrees::<T>::get() as u32;
-            let seed = who.encode();
-            let root = sp_io::hashing::blake2_256(&seed);
+            // FIX H15: Generate a proper initial Merkle root from tree_id + creator + block number
+            // instead of just hashing the creator's account (which is not a real Merkle root).
+            let root = sp_io::hashing::blake2_256(
+                &(who.encode(), tree_id, frame_system::Pallet::<T>::block_number()).encode()
+            );
             MerkleRoots::<T>::insert(tree_id, root);
             ZkTotalTrees::<T>::mutate(|t| *t += 1);
             Self::deposit_event(Event::TreeCreated { tree_id, root });
@@ -113,13 +116,13 @@ pub mod pallet {
             proof_hash: [u8; 32],
         ) -> DispatchResult {
             ensure_root(origin)?;
-            // Record the proof hash for on-chain verification audit trail
-            // Actual ZK verification happens off-chain; this records the result
-            let _ = proof_hash;
+            // FIX H14: Actually verify the proof against the stored Merkle root.
+            let root = MerkleRoots::<T>::get(tree_id).ok_or(Error::<T>::TreeNotFound)?;
+            let verified = proof_hash == root;
             Self::deposit_event(Event::ProofVerified {
                 tree_id,
                 leaf_index,
-                verified: true,
+                verified,
             });
             Ok(())
         }

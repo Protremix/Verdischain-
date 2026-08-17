@@ -138,8 +138,9 @@ pub mod pallet {
             SealevelTotalTxs::<T>::mutate(|t| *t += tx_count as u64);
             let total_txs = SealevelTotalTxs::<T>::get();
             if total_txs > 0 {
-                let avg = (SealevelAvgComputeUnits::<T>::get() * (total_txs - tx_count as u64)
-                    + compute_units)
+                let avg = SealevelAvgComputeUnits::<T>::get()
+                    .saturating_mul(total_txs - tx_count as u64)
+                    .saturating_add(compute_units)
                     / total_txs;
                 SealevelAvgComputeUnits::<T>::put(avg);
             }

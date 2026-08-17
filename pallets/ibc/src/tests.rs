@@ -590,11 +590,13 @@ fn test_acknowledge_nonexistent_packet_rejected() {
         let acct = sp_core::crypto::AccountId32::from([0xff; 32]);
         setup_chain();
 
+        // FIX C6: No relayer set, so governance (root) can acknowledge
         frame_support::assert_noop!(
             Pallet::<Test>::acknowledge_packet(
-                frame_system::RawOrigin::Signed(acct).into(),
+                frame_system::RawOrigin::Root.into(),
                 0,
-                999
+                999,
+                true,
             ),
             Error::<Test>::PacketNotAcknowledged
         );

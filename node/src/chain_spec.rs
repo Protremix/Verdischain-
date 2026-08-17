@@ -135,7 +135,27 @@ fn build_session_keys(uris: &[&str]) -> Vec<(AccountId, AccountId, SessionKeys)>
         .collect()
 }
 
-// ─── 6-validator key set (dev) ──────────────────────────────────────────────
+
+/// Build session keys by always deriving from URIs (no dev keyring).
+/// Used for mainnet where validator URIs are //MAINNET_VALIDATOR_N.
+fn build_session_keys_from_uris(uris: &[&str]) -> Vec<(AccountId, AccountId, SessionKeys)> {
+    uris.iter()
+        .map(|uri| {
+            let pair = sr_from(uri);
+            let controller: AccountId = pair.public().into();
+            (
+                controller.clone(),
+                controller,
+                SessionKeys {
+                    babe: pair.public().into(),
+                    grandpa: ed_from(uri).public().into(),
+                },
+            )
+        })
+        .collect()
+}
+
+// ─── 6-validator key set (dev) ──
 
 fn dev_validator_uris() -> Vec<&'static str> {
     vec!["Alice", "Bob", "Charlie", "Dave", "Eve", "Ferdie"]
@@ -814,7 +834,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     // 21 validators — placeholder keys (MUST be replaced before mainnet launch)
     let uris = mainnet_validator_uris();
     let uri_refs: Vec<&str> = uris.iter().map(|s| s.as_str()).collect();
-    let session_keys = build_session_keys(&uri_refs);
+    let session_keys = build_session_keys_from_uris(&uri_refs);
 
     // Only first 6 validators are initial BABE/GRANDPA authorities
     // (matching ActiveValidatorCount=6). Others join via epoch rotation.

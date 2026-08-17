@@ -14,6 +14,7 @@ pub trait WeightInfo {
     fn transfer() -> Weight;
     fn close_channel() -> Weight;
     fn update_client() -> Weight;
+    fn set_channel_relayer() -> Weight;
 }
 
 /// Default weights using reasonable estimates.
@@ -69,6 +70,11 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
             .saturating_add(T::DbWeight::get().reads(2))
             .saturating_add(T::DbWeight::get().writes(1))
     }
+    fn set_channel_relayer() -> Weight {
+        Weight::from_parts(10_000, 0)
+            .saturating_add(T::DbWeight::get().reads(1))
+            .saturating_add(T::DbWeight::get().writes(1))
+    }
 }
 
 impl WeightInfo for () {
@@ -100,6 +106,9 @@ impl WeightInfo for () {
         Weight::from_parts(10_000, 0)
     }
     fn update_client() -> Weight {
+        Weight::from_parts(10_000, 0)
+    }
+    fn set_channel_relayer() -> Weight {
         Weight::from_parts(10_000, 0)
     }
 }

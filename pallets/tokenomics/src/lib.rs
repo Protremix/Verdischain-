@@ -405,6 +405,13 @@ pub mod pallet {
         ) -> DispatchResult {
             T::AdminOrigin::ensure_origin(origin)?;
 
+            // NOTE: This function performs pure accounting only. It marks an amount as
+            // released from a vesting distribution category and updates the
+            // CirculatingSupply tracking variable. No tokens are actually transferred;
+            // actual token movement must be handled by the caller/scheduler outside
+            // this pallet. CirculatingSupply MUST NOT be relied upon for
+            // security-critical decisions (e.g. balances, slashing, or permissions).
+
             let cat_bv: BoundedVec<u8, ConstU32<32>> = category
                 .clone()
                 .try_into()

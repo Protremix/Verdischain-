@@ -123,6 +123,11 @@ pub mod pallet {
             who: T::AccountId,
             locked: BalanceOf<T>,
         },
+        VestingRemoved {
+            who: T::AccountId,
+            schedule: Vec<u8>,
+            amount: BalanceOf<T>,
+        },
     }
 
     // === Errors ===
@@ -141,6 +146,8 @@ pub mod pallet {
         ScheduleAlreadyExists,
         Overflow,
         Underflow,
+        /// Vesting days is zero — would cause division by zero
+        InvalidVestingDays,
     }
 
     // === Config ===
@@ -155,6 +162,9 @@ pub mod pallet {
         /// Maximum number of vesting schedules per account
         #[pallet::constant]
         type MaxSchedulesPerAccount: Get<u32>;
+        /// Target block time in milliseconds — used for vesting schedule calculations
+        #[pallet::constant]
+        type BlockTimeMs: Get<u64>;
     }
 
     // === Genesis ===
@@ -169,6 +179,8 @@ pub mod pallet {
     impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
         fn build(&self) {
             for (label, amount, vesting_days, cliff_days) in &self.vesting_schedules {
+                assert!(*vesting_days > 0, "vesting_days must be > 0 to prevent division-by-zero");
+                assert!(*cliff_days <= *vesting_days, "cliff_days must be <= vesting_days");
                 let label_bv: BoundedVec<u8, ConstU32<64>> =
                     label.clone().try_into().unwrap_or_default();
                 let schedule = VestingSchedule {
@@ -207,7 +219,7 @@ pub mod pallet {
                 !Schedules::<T>::contains_key(&label_bv),
                 Error::<T>::ScheduleAlreadyExists
             );
-            ensure!(vesting_days > 0, Error::<T>::VestingNotStarted);
+            ensure!(vesting_days > 0, Error::<T>::InvalidVestingDays);
             ensure!(cliff_days <= vesting_days, Error::<T>::VestingNotStarted);
 
             let schedule = VestingSchedule {
@@ -247,7 +259,7 @@ pub mod pallet {
 
             let vesting = UserVestings::<T>::get(&who).ok_or(Error::<T>::NoVestingForAccount)?;
             let current_block = frame_system::Pallet::<T>::block_number();
-            let block_time_ms = 5000u64; // 5 second blocks (chain target)
+            let block_time_ms = T::BlockTimeMs::get();
             let blocks_per_day = (86_400_000 / block_time_ms) as u32;
 
             let mut total_releasable = BalanceOf::<T>::zero();
@@ -407,6 +419,77 @@ pub mod pallet {
             Ok(())
         }
 
+
+        /// Remove a specific vesting entry for an account.
+        ///
+        /// Removes the vesting entry matching `schedule_label` and `amount` from
+        /// `UserVestings`, reduces `LockedBalances` by the remaining locked amount,
+        /// and updates or removes the native Substrate lock.
+        ///
+        /// Called by the presale pallet during refund to clean up vesting.
+        pub fn remove_vesting(
+            who: &T::AccountId,
+            schedule_label: Vec<u8>,
+            amount: BalanceOf<T>,
+        ) -> DispatchResult {
+            let label_bv: BoundedVec<u8, ConstU32<64>> = schedule_label
+                .clone()
+                .try_into()
+                .map_err(|_| Error::<T>::LabelTooLong)?;
+
+            UserVestings::<T>::try_mutate(who, |maybe_vestings| -> Result<(), Error<T>> {
+                let vestings = maybe_vestings
+                    .as_mut()
+                    .ok_or(Error::<T>::NoVestingForAccount)?;
+
+                // Find the first entry matching the schedule label and amount
+                let idx = vestings
+                    .iter()
+                    .position(|v| v.schedule == label_bv && v.total_amount == amount)
+                    .ok_or(Error::<T>::NoVestingForAccount)?;
+
+                let entry = vestings.swap_remove(idx);
+
+                // Reduce LockedBalances by the remaining locked amount for this entry
+                let remaining_locked_for_entry = entry
+                    .total_amount
+                    .checked_sub(&entry.released)
+                    .ok_or(Error::<T>::Underflow)?;
+
+                let new_locked = LockedBalances::<T>::get(who)
+                    .checked_sub(&remaining_locked_for_entry)
+                    .ok_or(Error::<T>::Underflow)?;
+                LockedBalances::<T>::insert(who, new_locked);
+
+                // If no more vesting entries, remove the storage entirely
+                if vestings.is_empty() {
+                    *maybe_vestings = None;
+                }
+
+                Ok(())
+            })?;
+
+            // Update or remove the native Substrate lock
+            let remaining_locked = LockedBalances::<T>::get(who);
+            if remaining_locked.is_zero() {
+                T::Currency::remove_lock(VESTING_LOCK_ID, who);
+            } else {
+                T::Currency::set_lock(
+                    VESTING_LOCK_ID,
+                    who,
+                    remaining_locked,
+                    WithdrawReasons::TRANSFER,
+                );
+            }
+
+            Self::deposit_event(Event::VestingRemoved {
+                who: who.clone(),
+                schedule: schedule_label,
+                amount,
+            });
+            Ok(())
+        }
+
         /// Get the locked balance for an account
         pub fn get_locked_balance(who: &T::AccountId) -> BalanceOf<T> {
             LockedBalances::<T>::get(who)
@@ -487,6 +570,7 @@ mod tests {
         type PalletId = VestPalletId;
         type WeightInfo = SubstrateWeight<Test>;
         type MaxSchedulesPerAccount = MaxSchedulesPerAccount;
+        type BlockTimeMs = frame_support::traits::ConstU64<5000>;
     }
 
     pub fn new_test_ext() -> TestExternalities {

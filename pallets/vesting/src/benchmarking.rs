@@ -119,7 +119,7 @@ mod benches {
             WithdrawReasons::TRANSFER,
         );
 
-        let blocks_per_day = 86_400_000u32 / 5000u32;
+        let blocks_per_day = (86_400_000u64 / T::BlockTimeMs::get()) as u32;
         let target_block = 45u32 * blocks_per_day;
         frame_system::Pallet::<T>::set_block_number(target_block.into());
 

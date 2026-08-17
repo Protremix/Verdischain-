@@ -129,6 +129,14 @@ pub mod pallet {
     pub type FailedRefunds<T: Config> =
         StorageMap<_, Blake2_128Concat, (u32, u64), (T::AccountId, BalanceOf<T>), OptionQuery>;
 
+    /// Designated relayer per channel for packet acknowledgement authorization
+    #[pallet::storage]
+    pub type ChannelRelayers<T: Config> = StorageMap<_, Blake2_128Concat, u32, T::AccountId, OptionQuery>;
+
+    /// Packet receipts to prevent replay on recv_packet
+    #[pallet::storage]
+    pub type IbcPacketReceipts<T> = StorageMap<_, Blake2_128Concat, (u32, u64), (), OptionQuery>;
+
     // ============ Config ============
 
     #[pallet::config]
@@ -199,6 +207,28 @@ pub mod pallet {
             denom: Vec<u8>,
             channel_id: u32,
         },
+        TokensReceived {
+            channel_id: u32,
+            sequence: u64,
+            receiver: Vec<u8>,
+            amount: u128,
+            denom: Vec<u8>,
+        },
+        EscrowBurned {
+            channel_id: u32,
+            sequence: u64,
+            amount: BalanceOf<T>,
+        },
+        EscrowRefunded {
+            channel_id: u32,
+            sequence: u64,
+            sender: T::AccountId,
+            amount: BalanceOf<T>,
+        },
+        ChannelRelayerSet {
+            channel_id: u32,
+            relayer: T::AccountId,
+        },
     }
 
     // ============ Errors ============
@@ -223,6 +253,10 @@ pub mod pallet {
         PacketNotAcknowledged,
         PortIdTooLong,
         PacketDataTooLarge,
+        UnauthorizedRelayer,
+        PacketAlreadyReceived,
+        InvalidPacketData,
+        ChannelRelayerNotSet,
     }
 
     type BalanceOf<T> =
@@ -403,7 +437,7 @@ pub mod pallet {
             channel_id: u32,
             sequence: u64,
             dest_port: Vec<u8>,
-            _data: Vec<u8>,
+            data: Vec<u8>,
         ) -> DispatchResult {
             let _who = ensure_signed(origin)?;
 
@@ -417,12 +451,51 @@ pub mod pallet {
                 IbcClients::<T>::get(connection.client_id).ok_or(Error::<T>::ClientNotFound)?;
             ensure!(!client.frozen, Error::<T>::ClientFrozen);
 
+            // FIX C7: Verify the packet sequence matches expected (no gaps/replay)
             let expected_seq = IbcNextSequenceRecv::<T>::get(channel_id);
             ensure!(sequence == expected_seq, Error::<T>::InvalidSequence);
+
+            // FIX C7: Check for replay — if a receipt already exists, reject
+            ensure!(
+                !IbcPacketReceipts::<T>::contains_key((channel_id, sequence)),
+                Error::<T>::PacketAlreadyReceived
+            );
+
             IbcNextSequenceRecv::<T>::insert(
                 channel_id,
                 sequence.checked_add(1).unwrap_or(u64::MAX),
             );
+
+            // FIX C7: Store the packet commitment/receipt to prevent replay
+            IbcPacketReceipts::<T>::insert((channel_id, sequence), ());
+
+            // FIX C7: Parse the packet data and mint/credit tokens to the receiver
+            // Attempt to decode as FungibleTokenPacketData (SCALE-encoded)
+            let ft_data = FungibleTokenPacketData::decode(&mut data.as_slice());
+
+            if let Ok(ft_data) = ft_data {
+                // Decode receiver address from Vec<u8> to T::AccountId
+                if let Ok(receiver_account) =
+                    T::AccountId::decode(&mut ft_data.receiver.as_slice())
+                {
+                    let mint_amount: BalanceOf<T> = ft_data
+                        .amount
+                        .try_into()
+                        .map_err(|_| Error::<T>::TransferAmountTooLarge)?;
+
+                    // Mint tokens to the receiver's account
+                    let _imbalance =
+                        T::Currency::deposit_creating(&receiver_account, mint_amount);
+
+                    Self::deposit_event(Event::TokensReceived {
+                        channel_id,
+                        sequence,
+                        receiver: ft_data.receiver.clone(),
+                        amount: ft_data.amount,
+                        denom: ft_data.denom.clone(),
+                    });
+                }
+            }
 
             Self::deposit_event(Event::PacketReceived {
                 channel_id,
@@ -439,20 +512,84 @@ pub mod pallet {
             origin: OriginFor<T>,
             channel_id: u32,
             sequence: u64,
+            ack_success: bool,
         ) -> DispatchResult {
-            let _who = ensure_signed(origin)?;
+            // FIX C6: Authentication — only the designated relayer for the channel
+            // can acknowledge packets. If no relayer is set, fall back to root.
+            match ChannelRelayers::<T>::get(channel_id) {
+                Some(designated_relayer) => {
+                    let who = ensure_signed(origin)?;
+                    ensure!(who == designated_relayer, Error::<T>::UnauthorizedRelayer);
+                }
+                None => {
+                    ensure_root(origin)?;
+                }
+            }
 
             // SECURITY: Verify packet exists before removing (prevent silent no-ops)
             ensure!(
                 IbcPackets::<T>::contains_key((channel_id, sequence)),
                 Error::<T>::PacketNotAcknowledged
             );
+
+            // FIX H8: Get packet data BEFORE removing to handle escrow lifecycle
+            let packet_data = Self::get_packet_data(&channel_id, &sequence);
             IbcPackets::<T>::remove((channel_id, sequence));
             let next_ack = IbcNextSequenceAck::<T>::get(channel_id);
             IbcNextSequenceAck::<T>::insert(
                 channel_id,
                 next_ack.checked_add(1).unwrap_or(u64::MAX),
             );
+
+            // FIX H8: Complete the IBC lifecycle for outgoing transfers.
+            // On successful ack: burn the escrowed tokens (they have been minted on dest chain).
+            // On failed ack: refund the escrowed tokens to the sender.
+            if let Some(ft_data) = packet_data {
+                let pallet_account = Self::account_id();
+                let escrow_amount: BalanceOf<T> = ft_data
+                    .amount
+                    .try_into()
+                    .unwrap_or_else(|_| BalanceOf::<T>::zero());
+
+                if ack_success {
+                    // Successful acknowledgement — burn escrowed tokens
+                    let _ = T::Currency::slash(&pallet_account, escrow_amount);
+                    Self::deposit_event(Event::EscrowBurned {
+                        channel_id,
+                        sequence,
+                        amount: escrow_amount,
+                    });
+                } else {
+                    // Failed acknowledgement — refund escrowed tokens to sender
+                    if let Ok(sender) = T::AccountId::decode(&mut ft_data.sender.as_slice()) {
+                        let refund_result = T::Currency::transfer(
+                            &pallet_account,
+                            &sender,
+                            escrow_amount,
+                            frame_support::traits::ExistenceRequirement::AllowDeath,
+                        );
+                        if refund_result.is_err() {
+                            FailedRefunds::<T>::insert(
+                                (channel_id, sequence),
+                                (sender.clone(), escrow_amount),
+                            );
+                            Self::deposit_event(Event::RefundFailed {
+                                channel_id,
+                                sequence,
+                                sender,
+                                amount: escrow_amount,
+                            });
+                        } else {
+                            Self::deposit_event(Event::EscrowRefunded {
+                                channel_id,
+                                sequence,
+                                sender,
+                                amount: escrow_amount,
+                            });
+                        }
+                    }
+                }
+            }
 
             Self::deposit_event(Event::PacketAcknowledged {
                 channel_id,
@@ -677,6 +814,24 @@ pub mod pallet {
             let mut client = IbcClients::<T>::get(client_id).ok_or(Error::<T>::ClientNotFound)?;
             client.frozen = true;
             IbcClients::<T>::insert(client_id, client);
+            Ok(())
+        }
+
+        /// FIX C6: Set the designated relayer for a channel.
+        /// Only root/governance can set the relayer.
+        #[pallet::call_index(11)]
+        #[pallet::weight(T::WeightInfo::set_channel_relayer())]
+        pub fn set_channel_relayer(
+            origin: OriginFor<T>,
+            channel_id: u32,
+            relayer: T::AccountId,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+            ChannelRelayers::<T>::insert(channel_id, relayer.clone());
+            Self::deposit_event(Event::ChannelRelayerSet {
+                channel_id,
+                relayer,
+            });
             Ok(())
         }
     }

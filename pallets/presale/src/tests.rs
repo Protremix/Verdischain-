@@ -49,6 +49,7 @@ impl pallet_balances::Config for Test {
 
 parameter_types! {
     pub const PresalePalletId: frame_support::PalletId = frame_support::PalletId(*b"verdisps");
+    pub const TestTreasury: u64 = 999;
 }
 
 impl crate::Config for Test {
@@ -58,6 +59,7 @@ impl crate::Config for Test {
     type AdminOrigin = frame_system::EnsureRoot<u64>;
     type Vesting = ();
     type WeightInfo = ();
+    type Treasury = TestTreasury;
 }
 
 pub fn new_test_ext() -> TestExternalities {

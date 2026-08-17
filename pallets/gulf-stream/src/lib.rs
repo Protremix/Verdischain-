@@ -42,7 +42,7 @@ pub mod pallet {
     }
 
     #[pallet::config]
-    pub trait Config: frame_system::Config {
+    pub trait Config: frame_system::Config + pallet_timestamp::Config {
         type MaxPendingForwards: Get<u32>;
         type MaxForwardedHistory: Get<u32>;
         type MaxForwardTimeMs: Get<u64>;
@@ -140,7 +140,16 @@ pub mod pallet {
             to_validator: Vec<u8>,
             tx_size: u32,
         ) -> DispatchResult {
-            let who = ensure_signed(origin)?;
+            // FIX H16.3: Restrict to active validators only
+            let caller = ensure_signed(origin)?;
+            Self::ensure_active_validator(&caller)?;
+
+            // FIX H16.1: Enforce MaxPendingForwards bound
+            let pending_count = PendingForwards::<T>::iter().count();
+            ensure!(
+                pending_count < T::MaxPendingForwards::get() as usize,
+                Error::<T>::MaxPendingExceeded
+            );
 
             // Check if already forwarded
             ensure!(
@@ -148,17 +157,29 @@ pub mod pallet {
                 Error::<T>::AlreadyForwarded
             );
 
+            // FIX H16.5: Use pallet_timestamp instead of hardcoded 0
+            let timestamp: u64 = pallet_timestamp::Pallet::<T>::get().try_into().unwrap_or(0u64);
+
             let forwarded = ForwardedTransaction {
                 tx_hash,
-                from_validator: who.encode(),
+                from_validator: caller.encode(),
                 to_validator: to_validator.clone(),
-                timestamp: 0, // Would use timestamp pallet in production
+                timestamp,
                 tx_size,
                 status: ForwardStatus::Pending,
             };
 
             PendingForwards::<T>::insert(tx_hash, forwarded);
-            ForwardedTxs::<T>::mutate(|txs| txs.push(tx_hash));
+
+            // FIX H16.2: Bound ForwardedTxs Vec with pruning
+            let mut forwarded_txs = ForwardedTxs::<T>::get();
+            let max_history = T::MaxForwardedHistory::get() as usize;
+            if forwarded_txs.len() >= max_history {
+                let excess = forwarded_txs.len() + 1 - max_history;
+                forwarded_txs.drain(0..excess);
+            }
+            forwarded_txs.push(tx_hash);
+            ForwardedTxs::<T>::put(forwarded_txs);
 
             let mut stats = GulfStreamStatsStorage::<T>::get();
             stats.total_forwarded = stats.total_forwarded.saturating_add(1u64);
@@ -251,8 +272,9 @@ pub mod pallet {
         #[pallet::weight(Weight::from_parts(10_000, 0))]
         #[pallet::call_index(2)]
         pub fn expire_transaction(origin: OriginFor<T>, tx_hash: [u8; 32]) -> DispatchResult {
-            // FIX: Allow any signed origin (validator/relayer) to expire stale txs
-            let _caller = ensure_signed(origin)?;
+            // FIX H16.4: Restrict to active validators only
+            let caller = ensure_signed(origin)?;
+            Self::ensure_active_validator(&caller)?;
 
             let _tx = PendingForwards::<T>::get(tx_hash).ok_or(Error::<T>::TransactionNotFound)?;
             PendingForwards::<T>::remove(tx_hash);

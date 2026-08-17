@@ -811,7 +811,7 @@ pub mod pallet {
             Ok(())
         }
 
-        /// Refill the reward pool (governance only)
+        /// Refill the reward pool (permissionless donation)
         #[pallet::call_index(9)]
         #[pallet::weight(T::WeightInfo::slash_validator())]
         pub fn refill_reward_pool(origin: OriginFor<T>, amount: BalanceOf<T>) -> DispatchResult {
@@ -958,7 +958,7 @@ pub mod pallet {
                 .map(|(addr, _)| addr)
                 .collect();
 
-            let epoch = CurrentEpoch::<T>::get() + 1;
+            let epoch = CurrentEpoch::<T>::get().saturating_add(1);
             CurrentEpoch::<T>::put(epoch);
             EpochStartBlock::<T>::put(block);
 

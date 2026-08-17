@@ -78,11 +78,22 @@ pub mod pallet {
             schedule_label: Vec<u8>,
             amount: Balance,
         ) -> DispatchResult;
+
+        /// Remove the vesting entry for `who` matching `schedule_label` and `amount`.
+        /// Returns Err if no matching vesting entry exists.
+        fn remove_vesting(
+            who: &AccountId,
+            schedule_label: Vec<u8>,
+            amount: Balance,
+        ) -> DispatchResult;
     }
 
     /// Default no-op implementation (for testing without vesting pallet)
     impl<AccountId, Balance> VestingHandler<AccountId, Balance> for () {
         fn assign_vesting(_: &AccountId, _: Vec<u8>, _: Balance) -> DispatchResult {
+            Ok(())
+        }
+        fn remove_vesting(_: &AccountId, _: Vec<u8>, _: Balance) -> DispatchResult {
             Ok(())
         }
     }
@@ -222,6 +233,11 @@ pub mod pallet {
             account: T::AccountId,
             amount: BalanceOf<T>,
         },
+        /// Unsold tokens swept to treasury after all refunds
+        UnsoldTokensSwept {
+            round_id: u32,
+            amount: BalanceOf<T>,
+        },
         WhitelistUpdated {
             who: T::AccountId,
             whitelisted: bool,
@@ -271,6 +287,8 @@ pub mod pallet {
         type AdminOrigin: EnsureOrigin<Self::RuntimeOrigin>;
         type Vesting: VestingHandler<Self::AccountId, BalanceOf<Self>>;
         type WeightInfo: WeightInfo;
+        /// Treasury account for sweeping unsold tokens
+        type Treasury: Get<Self::AccountId>;
     }
 
     // === Genesis ===
@@ -761,6 +779,15 @@ pub mod pallet {
                 .map_err(|_| Error::<T>::InsufficientPayment)?;
             }
 
+            // Remove the vesting schedule for this user (clean up vesting on refund)
+            if tokens_to_return > BalanceOf::<T>::zero() && !round.vesting_label.is_empty() {
+                let _ = T::Vesting::remove_vesting(
+                    &who,
+                    round.vesting_label.clone().into_inner(),
+                    tokens_to_return,
+                );
+            }
+
             // Transfer refund from escrow to user
             T::Currency::transfer(
                 &escrow,
@@ -768,6 +795,49 @@ pub mod pallet {
                 refund_amount,
                 ExistenceRequirement::KeepAlive,
             )?;
+
+            // Fix double-accounting: reduce the round's sold counter by the refunded amount
+            let new_round_sold = {
+                Rounds::<T>::try_mutate(round_id, |round_opt| -> Result<BalanceOf<T>, Error<T>> {
+                    let r = round_opt.as_mut().ok_or(Error::<T>::RoundNotFound)?;
+                    r.sold = r
+                        .sold
+                        .checked_sub(&tokens_to_return)
+                        .ok_or(Error::<T>::CalculationOverflow)?;
+                    Ok(r.sold)
+                })?
+            };
+
+            // Reduce global TotalSold counter
+            TotalSold::<T>::mutate(|total| {
+                *total = total
+                    .checked_sub(&tokens_to_return)
+                    .unwrap_or(0u32.into());
+            });
+
+            // If all tokens in this round are refunded (sold == 0), sweep remaining
+            // unsold tokens from escrow back to treasury
+            if new_round_sold.is_zero() {
+                let treasury = T::Treasury::get();
+                let escrow_balance = T::Currency::free_balance(&escrow);
+                let sweep_amount = if escrow_balance >= round.total_allocation {
+                    round.total_allocation
+                } else {
+                    escrow_balance
+                };
+                if sweep_amount > BalanceOf::<T>::zero() {
+                    let _ = T::Currency::transfer(
+                        &escrow,
+                        &treasury,
+                        sweep_amount,
+                        ExistenceRequirement::AllowDeath,
+                    );
+                    Self::deposit_event(Event::UnsoldTokensSwept {
+                        round_id,
+                        amount: sweep_amount,
+                    });
+                }
+            }
 
             Self::deposit_event(Event::RefundClaimed {
                 round_id,

@@ -305,6 +305,7 @@ pub mod pallet {
         ArithmeticUnderflow,
         KInvariantViolated,
         Overflow,
+        InsufficientLpMinted,
     }
 
     // === Config ===
@@ -345,6 +346,9 @@ pub mod pallet {
     #[pallet::genesis_build]
     impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
         fn build(&self) {
+            // FeeDenominator must be non-zero to avoid division-by-zero in swap fee math.
+            assert!(T::FeeDenominator::get() > 0, "FeeDenominator must be non-zero");
+
             let mut id = 0u32;
             for (token_a, token_b, reserve_a, reserve_b, fee) in &self.initial_pools {
                 let ta: BoundedVec<u8, ConstU32<32>> =
@@ -388,9 +392,14 @@ pub mod pallet {
             token_b: Vec<u8>,
             amount_a: BalanceOf<T>,
             amount_b: BalanceOf<T>,
+            deadline: BlockNumberFor<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
+            ensure!(
+                frame_system::Pallet::<T>::block_number() <= deadline,
+                Error::<T>::Expired
+            );
             ensure!(token_a != token_b, Error::<T>::SameToken);
             ensure!(amount_a > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
             ensure!(amount_b > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
@@ -417,9 +426,13 @@ pub mod pallet {
                 .ok_or(Error::<T>::ArithmeticOverflow)?
                 .integer_sqrt();
             ensure!(
-                lp_minted >= T::MinLiquidity::get(),
+                lp_minted > T::MinimumLiquidity::get(),
                 Error::<T>::AmountTooLow
             );
+            // Lock MinimumLiquidity tokens to prevent first-depositor attacks (Uniswap V2 pattern)
+            let lp_to_user = lp_minted
+                .checked_sub(&T::MinimumLiquidity::get())
+                .ok_or(Error::<T>::AmountTooLow)?;
 
             let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
             T::Currency::transfer(
@@ -449,7 +462,8 @@ pub mod pallet {
 
             Pools::<T>::insert(pool_id, pool);
             PoolByPair::<T>::insert((ta, tb), pool_id);
-            LiquidityProviders::<T>::insert(pool_id, &who, lp_minted);
+            // Mint only lp_to_user to the creator; lock MinimumLiquidity to a dead address
+            LiquidityProviders::<T>::insert(pool_id, &who, lp_to_user);
             PoolCount::<T>::mutate(|c| *c += 1);
 
             Self::deposit_event(Event::PoolCreated {
@@ -469,6 +483,7 @@ pub mod pallet {
             pool_id: u32,
             amount_a: BalanceOf<T>,
             amount_b: BalanceOf<T>,
+            min_lp_minted: BalanceOf<T>,
             deadline: BlockNumberFor<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
@@ -506,17 +521,19 @@ pub mod pallet {
                     .checked_mul(&amount_a)
                     .ok_or(Error::<T>::ArithmeticOverflow)?
                     .checked_div(&pool.reserve_a)
-                    .unwrap_or(0u32.into());
+                    .ok_or(Error::<T>::ArithmeticOverflow)?;
                 let lp_b = pool
                     .total_lp
                     .checked_mul(&amount_b)
                     .ok_or(Error::<T>::ArithmeticOverflow)?
                     .checked_div(&pool.reserve_b)
-                    .unwrap_or(0u32.into());
+                    .ok_or(Error::<T>::ArithmeticOverflow)?;
                 let lp = lp_a.min(lp_b);
                 ensure!(lp > BalanceOf::<T>::zero(), Error::<T>::InsufficientAmount);
                 lp
             };
+
+            ensure!(lp_minted >= min_lp_minted, Error::<T>::InsufficientLpMinted);
 
             let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
             T::Currency::transfer(
@@ -877,8 +894,14 @@ pub mod pallet {
             pool_id: u32,
             amount_a: BalanceOf<T>,
             amount_b: BalanceOf<T>,
+            min_lp_minted: BalanceOf<T>,
+            deadline: BlockNumberFor<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
+            ensure!(
+                frame_system::Pallet::<T>::block_number() <= deadline,
+                Error::<T>::Expired
+            );
             let mut pool = TokenPools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
             ensure!(amount_a > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
             ensure!(amount_b > BalanceOf::<T>::zero(), Error::<T>::ZeroAmount);
@@ -907,17 +930,19 @@ pub mod pallet {
                     .checked_mul(&amount_a)
                     .ok_or(Error::<T>::ArithmeticOverflow)?
                     .checked_div(&pool.reserve_a)
-                    .unwrap_or(0u32.into());
+                    .ok_or(Error::<T>::ArithmeticOverflow)?;
                 let lp_b = pool
                     .total_lp
                     .checked_mul(&amount_b)
                     .ok_or(Error::<T>::ArithmeticOverflow)?
                     .checked_div(&pool.reserve_b)
-                    .unwrap_or(0u32.into());
+                    .ok_or(Error::<T>::ArithmeticOverflow)?;
                 let lp = lp_a.min(lp_b);
                 ensure!(lp > BalanceOf::<T>::zero(), Error::<T>::InsufficientAmount);
                 lp
             };
+
+            ensure!(lp_minted >= min_lp_minted, Error::<T>::InsufficientLpMinted);
 
             ensure!(
                 T::TokenHandler::has_balance(&pool.asset_a, &who, amount_a),
@@ -977,8 +1002,13 @@ pub mod pallet {
             origin: OriginFor<T>,
             pool_id: u32,
             lp_amount: BalanceOf<T>,
+            deadline: BlockNumberFor<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
+            ensure!(
+                frame_system::Pallet::<T>::block_number() <= deadline,
+                Error::<T>::Expired
+            );
             let mut pool = TokenPools::<T>::get(pool_id).ok_or(Error::<T>::PoolNotFound)?;
 
             let user_lp =
@@ -1001,10 +1031,7 @@ pub mod pallet {
                 .ok_or(Error::<T>::ArithmeticOverflow)?
                 / pool.total_lp;
 
-            let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
-            T::TokenHandler::transfer(&pool.asset_a, &dex_account, &who, amount_a)?;
-            T::TokenHandler::transfer(&pool.asset_b, &dex_account, &who, amount_b)?;
-
+            // CEI: Update state FIRST, then transfer (prevents reentrancy)
             pool.reserve_a = pool
                 .reserve_a
                 .checked_sub(&amount_a)
@@ -1018,6 +1045,9 @@ pub mod pallet {
                 .checked_sub(&lp_amount)
                 .ok_or(Error::<T>::ArithmeticUnderflow)?;
 
+            let asset_a = pool.asset_a;
+            let asset_b = pool.asset_b;
+
             TokenPools::<T>::insert(pool_id, pool);
             TokenLiquidityProviders::<T>::mutate(pool_id, &who, |lp| {
                 *lp = Some(
@@ -1027,6 +1057,11 @@ pub mod pallet {
                 );
                 Ok::<(), Error<T>>(())
             })?;
+
+            // Interactions: transfer after state is committed
+            let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
+            T::TokenHandler::transfer(&asset_a, &dex_account, &who, amount_a)?;
+            T::TokenHandler::transfer(&asset_b, &dex_account, &who, amount_b)?;
 
             Self::deposit_event(Event::TokenLiquidityRemoved {
                 pool_id,
@@ -1110,10 +1145,7 @@ pub mod pallet {
                 Error::<T>::InsufficientLiquidityBalance
             );
 
-            let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
-            T::TokenHandler::transfer(&asset_in, &who, &dex_account, amount_in)?;
-            T::TokenHandler::transfer(&asset_out, &dex_account, &who, amount_out)?;
-
+            // CEI: Update state FIRST, then transfer (prevents reentrancy)
             if is_a_to_b {
                 pool.reserve_a = pool
                     .reserve_a
@@ -1134,7 +1166,23 @@ pub mod pallet {
                     .ok_or(Error::<T>::ArithmeticUnderflow)?;
             }
 
+            // K-invariant check: verify k_after >= k_before
+            let k_before = reserve_in
+                .checked_mul(&reserve_out)
+                .ok_or(Error::<T>::ArithmeticOverflow)?;
+            let k_after = pool
+                .reserve_a
+                .checked_mul(&pool.reserve_b)
+                .ok_or(Error::<T>::ArithmeticOverflow)?;
+            ensure!(k_after >= k_before, Error::<T>::KInvariantViolated);
+
             TokenPools::<T>::insert(pool_id, pool);
+
+            // Interactions: transfer after state committed
+            let dex_account: T::AccountId = T::PalletId::get().into_account_truncating();
+            T::TokenHandler::transfer(&asset_in, &who, &dex_account, amount_in)?;
+            T::TokenHandler::transfer(&asset_out, &dex_account, &who, amount_out)?;
+
             TotalVolume::<T>::mutate(|v| *v = v.saturating_add(amount_in));
             TotalSwaps::<T>::mutate(|s| *s = s.saturating_add(1));
 
