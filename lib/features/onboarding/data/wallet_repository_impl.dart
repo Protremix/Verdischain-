@@ -7,7 +7,7 @@ import 'package:verdis_wallet/core/security/secure_storage.dart';
 import '../domain/wallet_repository.dart';
 
 /// SR25519-based wallet repository using polkadart_keyring.
-/// Replaces Ed25519 derivation — now matches the web wallet's crypto scheme.
+/// Replaces Ed25519 derivation - now matches the web wallet's crypto scheme.
 class WalletRepositoryImpl implements WalletRepository {
 
   WalletRepositoryImpl(this._secureStorage);
@@ -63,34 +63,64 @@ class WalletRepositoryImpl implements WalletRepository {
     return deriveKeypair(mnemonic);
   }
 
+  /// Store wallet with encrypted mnemonic.
+  /// The mnemonic is encrypted using the user's PIN as the encryption key.
+  /// Private key is NOT stored separately - derived from mnemonic on demand.
   @override
   Future<void> storeWallet({
     required String mnemonic,
     required String privateKey,
     required String publicKey,
     required String address,
+    String? pin,
   }) async {
-    await _secureStorage.storePrivateKey(privateKey);
+    // Store mnemonic encrypted with PIN if available
+    if (pin != null && pin.isNotEmpty) {
+      await _secureStorage.storeMnemonicEncrypted(mnemonic, pin);
+    } else {
+      // Fallback to legacy storage during onboarding before PIN is set
+      await _secureStorage.write(_mnemonicKey, mnemonic);
+    }
+    // Store public key and address (not secrets, but useful for display)
     await _secureStorage.storePublicKey(publicKey);
     await _secureStorage.write(AppConstants.walletKey, address);
-    await _secureStorage.write(_mnemonicKey, mnemonic);
     await _secureStorage.write(AppConstants.onboardingCompleteKey, 'true');
+    // Migrate: remove old plaintext mnemonic and private key
+    await _secureStorage.delete('wallet_mnemonic');
+    await _secureStorage.delete('wallet_private_key');
   }
 
   @override
-  Future<Map<String, String>?> loadWallet() async {
-    final privateKey = await _secureStorage.getPrivateKey();
+  Future<Map<String, String>?> loadWallet({String? pin}) async {
     final publicKey = await _secureStorage.getPublicKey();
     final address = await _secureStorage.read(AppConstants.walletKey);
-    final mnemonic = await _secureStorage.read(_mnemonicKey);
 
-    if (privateKey == null || address == null) {
-      return null;
+    if (address == null) return null;
+
+    String? mnemonic;
+    String? privateKey;
+
+    // Try encrypted mnemonic first (new secure path)
+    if (pin != null && pin.isNotEmpty) {
+      mnemonic = await _secureStorage.getMnemonicEncrypted(pin);
+      if (mnemonic != null) {
+        // Derive private key on demand from decrypted mnemonic
+        final keypair = await deriveKeypair(mnemonic);
+        privateKey = keypair['privateKey'];
+      }
     }
+
+    // Fallback to legacy storage (migration path)
+    if (mnemonic == null) {
+      mnemonic = await _secureStorage.read(_mnemonicKey);
+      privateKey = await _secureStorage.getPrivateKey();
+    }
+
+    if (mnemonic == null && privateKey == null) return null;
 
     return {
       if (mnemonic != null) 'mnemonic': mnemonic,
-      'privateKey': privateKey,
+      if (privateKey != null) 'privateKey': privateKey,
       if (publicKey != null) 'publicKey': publicKey,
       'address': address,
     };
@@ -106,7 +136,6 @@ class WalletRepositoryImpl implements WalletRepository {
 
   @override
   Future<String> hashPin(String pin) async {
-    // Use canonical PBKDF2 from WalletCrypto
     return WalletCrypto.hashPin(pin);
   }
 

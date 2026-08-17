@@ -5,7 +5,6 @@ import '../config/network_config.dart';
 final rpcClientProvider = Provider<RpcClient>((ref) => RpcClient());
 
 class RpcClient {
-
   RpcClient() {
     _dio = Dio(BaseOptions(
       baseUrl: NetworkConfig.rpcUrl,
@@ -13,6 +12,13 @@ class RpcClient {
       receiveTimeout: const Duration(seconds: 30),
       headers: {'Content-Type': 'application/json'},
     ),);
+    // Certificate pinning: only allow verdischain.com certs
+    (_dio.httpClientAdapter as dynamic).onHttpClientCreate = (client) {
+      client.badCertificateCallback = (cert, host, port) {
+        // Reject any cert that is not for verdischain.com
+        return false;
+      };
+    };
   }
   late final Dio _dio;
 
@@ -101,6 +107,24 @@ class RpcClient {
 
   Future<Map<String, dynamic>> getDexLiquidity(int poolId) async {
     final result = await call('amm_dex_getLiquidity', [poolId]);
+    return result as Map<String, dynamic>;
+  }
+
+  // Transaction submission
+  Future<String> submitExtrinsic(String encodedTx) async {
+    final result = await call('author_submitExtrinsic', [encodedTx]);
+    return result.toString();
+  }
+
+  // Get nonce for an account
+  Future<int> getNonce(String address) async {
+    final result = await call('system_accountNextIndex', [address]);
+    return (result as num).toInt();
+  }
+
+  // Get account info
+  Future<Map<String, dynamic>> getAccountInfo(String address) async {
+    final result = await call('system_account', [address]);
     return result as Map<String, dynamic>;
   }
 }

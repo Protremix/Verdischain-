@@ -17,13 +17,13 @@ class NetworkConfig {
   static const String tokenName = 'Verdis';
   static const int decimals = 9; // Verdis uses 9 decimals
   static const String genesisHash = ''; // Set after chain spec freeze
-  static const int specVersion = 10;
-  static const String runtimeVersion = '3.0.0';
+  static const int specVersion = 11;
+  static const String runtimeVersion = '3.1.0';
 
   // Consensus
   static const String consensus = 'BABE/GRANDPA + DPoS';
-  static const int validatorCount = 14;
-  static const int totalNodes = 15;
+  static const int validatorCount = 21;
+  static const int totalNodes = 21;
 
   // Tokenomics
   static const int totalSupply = 100000000000; // 100B VRDX
@@ -49,7 +49,7 @@ class AppConstants {
 
   // Security
   static const int pinLength = 6;
-  static const int sessionTimeoutMinutes = 5;
+  static const int sessionTimeoutMinutes = 2;
   static const int autoLockMinutes = 1;
   static const int clipboardClearSeconds = 30;
 
