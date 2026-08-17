@@ -109,6 +109,11 @@ pub mod pallet {
     #[pallet::getter(fn total_co2_offset)]
     pub type TotalCO2Offset<T: Config> = StorageValue<_, u64, ValueQuery>;
 
+    /// Active (non-retired) CO2 offset — decremented when credits are retired
+    #[pallet::storage]
+    #[pallet::getter(fn active_co2_offset)]
+    pub type ActiveCO2Offset<T: Config> = StorageValue<_, u64, ValueQuery>;
+
     #[pallet::storage]
     #[pallet::getter(fn total_trees_planted)]
     pub type TotalTreesPlanted<T: Config> = StorageValue<_, u32, ValueQuery>;
@@ -365,11 +370,12 @@ pub mod pallet {
                 verified: false,
                 retired: false,
                 owner: who.clone(),
-                created_at: 0,
+                created_at: frame_system::Pallet::<T>::block_number().try_into().unwrap_or(0),
             };
 
             CarbonCredits::<T>::insert(id.clone(), credit);
             TotalCO2Offset::<T>::mutate(|t| *t = t.saturating_add(tons_co2));
+            ActiveCO2Offset::<T>::mutate(|t| *t = t.saturating_add(tons_co2));
 
             Self::deposit_event(Event::CarbonCreditMinted {
                 id: id.into(),
@@ -589,6 +595,7 @@ pub mod pallet {
             carbon_offset: u64,
             trees_planted: u32,
             score: u8,
+            renewable_energy: bool,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
@@ -606,12 +613,12 @@ pub mod pallet {
 
             let gv = GreenValidator {
                 address: who.clone(),
-                renewable_energy: true,
+                renewable_energy,
                 energy_source: energy_source.clone(),
                 carbon_offset,
                 trees_planted,
                 score,
-                last_updated: 0,
+                last_updated: frame_system::Pallet::<T>::block_number().try_into().unwrap_or(0),
             };
 
             GreenValidators::<T>::insert(who.clone(), gv);
@@ -657,7 +664,7 @@ pub mod pallet {
             GreenValidators::<T>::mutate(&who, |v| {
                 if let Some(v) = v {
                     v.score = score;
-                    v.last_updated = 0;
+                    v.last_updated = frame_system::Pallet::<T>::block_number().try_into().unwrap_or(0);
                 }
             });
 
@@ -855,6 +862,7 @@ pub mod tests {
                 500,
                 100,
                 4,
+                true,
             ));
             assert_eq!(GreenValidators::<Test>::get(&alice).unwrap().score, 4);
         });
@@ -870,6 +878,7 @@ pub mod tests {
                 500,
                 100,
                 4,
+                true,
             )
             .unwrap();
             assert_ok!(Eco::update_green_score(
@@ -1061,6 +1070,7 @@ pub mod tests {
                 500,
                 100,
                 4,
+                true,
             )
             .unwrap();
             assert_noop!(
@@ -1070,6 +1080,7 @@ pub mod tests {
                     300,
                     50,
                     4,
+                    true,
                 ),
                 Error::<Test>::ValidatorAlreadyRegistered
             );
@@ -1087,6 +1098,7 @@ pub mod tests {
                     500,
                     100,
                     6,
+                    true,
                 ),
                 Error::<Test>::InvalidScore
             );
@@ -1104,6 +1116,7 @@ pub mod tests {
                     500,
                     100,
                     0,
+                    true,
                 ),
                 Error::<Test>::InvalidScore
             );
@@ -1121,6 +1134,7 @@ pub mod tests {
                     500,
                     100,
                     6,
+                    true,
                 ),
                 Error::<Test>::InvalidScore
             );
@@ -1137,6 +1151,7 @@ pub mod tests {
                 500,
                 100,
                 3,
+                true,
             )
             .unwrap();
             assert_ok!(Eco::update_green_score(
@@ -1164,6 +1179,7 @@ pub mod tests {
                 500,
                 100,
                 3,
+                true,
             )
             .unwrap();
             // Authorized (root / AdminOrigin) call succeeds
@@ -1199,6 +1215,7 @@ pub mod tests {
                 500,
                 100,
                 3,
+                true,
             )
             .unwrap();
             // Bob (a non-root user) cannot update Alice's score
