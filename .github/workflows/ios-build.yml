@@ -30,23 +30,23 @@ jobs:
       - name: Flutter pub get
         run: flutter pub get
 
-      - name: Build iOS App (simulator, no signing)
-        run: flutter build ios --debug --simulator --no-codesign
+      - name: Build iOS App (unsigned, no signing)
+        run: flutter build ios --release --no-codesign
 
-      - name: Package as IPA (simulator)
+      - name: Package unsigned IPA
         run: |
-          cd build/ios/iphonesimulator
+          cd build/ios/iphoneos
           mkdir Payload
           cp -r Runner.app Payload/
-          zip -r ../../verdis-wallet-ios-simulator.ipa Payload
+          zip -r ../../verdis-wallet-ios-unsigned.ipa Payload
           cd ../..
-          ls -lh verdis-wallet-ios-simulator.ipa
+          ls -lh verdis-wallet-ios-unsigned.ipa
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
         with:
-          name: verdis-wallet-ios-simulator
-          path: verdis-wallet-ios-simulator.ipa
+          name: verdis-wallet-ios-unsigned
+          path: verdis-wallet-ios-unsigned.ipa
           retention-days: 30
 
       - name: Upload build directory on failure
@@ -54,6 +54,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ios-build-output
-          path: |
-            build/ios/
+          path: build/ios/
           retention-days: 7
