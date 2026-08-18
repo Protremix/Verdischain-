@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:verdis_wallet/core/router/route_names.dart';
+import 'package:verdis_wallet/core/security/persistent_storage.dart';
 import '../domain/wallet_repository.dart';
 import 'package:verdis_wallet/core/config/network_config.dart';
 
@@ -25,18 +26,34 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     if (!mounted) return;
 
     try {
+      // Check 1: PersistentStorage (plain file — always reliable)
+      final prefsOnboarding = await PersistentStorage.isOnboardingComplete();
+      final prefsAddress = await PersistentStorage.getWalletAddress();
+      debugPrint('🔵 Splash: prefsOnboarding=$prefsOnboarding, prefsAddress=$prefsAddress');
+
+      if (prefsOnboarding && prefsAddress != null && prefsAddress.isNotEmpty) {
+        debugPrint('🔵 Splash: Wallet found via PersistentStorage → lock screen');
+        if (!mounted) return;
+        context.go(RouteNames.lock);
+        return;
+      }
+
+      // Check 2: Repository (flutter_secure_storage fallback)
       final repository = ref.read(walletRepositoryProvider);
       final hasWallet = await repository.hasWallet();
+      debugPrint('🔵 Splash: repository.hasWallet()=$hasWallet');
 
       if (!mounted) return;
       if (hasWallet) {
-        // Wallet exists — go to lock screen for PIN/biometric unlock
+        debugPrint('🔵 Splash: Wallet found via repository → lock screen');
         if (!mounted) return;
         context.go(RouteNames.lock);
       } else {
+        debugPrint('🔵 Splash: No wallet found → welcome page');
         context.go(RouteNames.welcome);
       }
     } catch (e) {
+      debugPrint('🔵 Splash: ERROR: $e → welcome page');
       if (!mounted) return;
       context.go(RouteNames.welcome);
     }
