@@ -27,7 +27,7 @@ pub mod pallet {
         type MaxPalletNameLen: Get<u32>;
     }
 
-    /// Map of paused pallets. Key = pallet name (e.g. "Ibc", "AmmDex")
+    /// Map of paused pallets. Key = pallet name (e.g. "AmmDex", "AmmDex")
     #[pallet::storage]
     pub type PausedPallets<T: Config> =
         StorageMap<_, Blake2_128Concat, BoundedVec<u8, ConstU32<32>>, bool, ValueQuery>;
@@ -261,9 +261,9 @@ mod tests {
         new_test_ext().execute_with(|| {
             assert_ok!(CircuitBreaker::pause_pallet(
                 RuntimeOrigin::root(),
-                b"Ibc".to_vec()
+                b"AmmDex".to_vec()
             ));
-            assert!(CircuitBreaker::is_paused(b"Ibc"));
+            assert!(CircuitBreaker::is_paused(b"AmmDex"));
         });
     }
 

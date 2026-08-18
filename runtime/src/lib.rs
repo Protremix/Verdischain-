@@ -67,7 +67,6 @@ pub use pallet_dpos;
 pub use pallet_eco;
 pub use pallet_fungible_tokens;
 pub use pallet_gulf_stream;
-pub use pallet_ibc;
 pub use pallet_poh;
 pub use pallet_presale;
 pub use pallet_sealevel;
@@ -166,9 +165,6 @@ impl frame_support::traits::Contains<RuntimeCall> for VerdisBaseCallFilter {
     fn contains(call: &RuntimeCall) -> bool {
         match call {
             // Circuit breaker: check if the pallet is paused by governance
-            RuntimeCall::Ibc(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Ibc") => {
-                false
-            }
             RuntimeCall::AmmDex(_)
                 if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"AmmDex") =>
             {
@@ -1426,31 +1422,10 @@ impl pallet_sealevel::Config for Runtime {
 // Note: Storage Config already exists, we need to add ShardCount
 
 parameter_types! {
-    pub const IbcMaxPortIdLen: u32 = 128;
-    pub const IbcMaxPacketDataLen: u32 = 1024;
-    pub const IbcMaxTransferAmount: u128 = 1_000_000_000_000_000; // 1B VRDX with 9 decimals
-    pub const IbcMaxHeightJump: u64 = 1_000_000;  // Max 1M block height jump per update
     pub const CircuitBreakerMaxPalletNameLen: u32 = 32;
 }
 
-/// Provides current timestamp in milliseconds for IBC timeout handling
-pub struct IbcTimestampProvider;
-impl Get<u64> for IbcTimestampProvider {
-    fn get() -> u64 {
-        Timestamp::get()
-    }
-}
 
-impl pallet_ibc::Config for Runtime {
-    type RuntimeEvent = RuntimeEvent;
-    type MaxPortIdLen = IbcMaxPortIdLen;
-    type MaxPacketDataLen = IbcMaxPacketDataLen;
-    type Currency = Balances;
-    type MaxTransferAmount = IbcMaxTransferAmount;
-    type MaxHeightJump = IbcMaxHeightJump;
-    type TimestampProvider = IbcTimestampProvider;
-    type WeightInfo = pallet_ibc::SubstrateWeight<Runtime>;
-}
 
 impl pallet_circuit_breaker::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
@@ -1495,7 +1470,6 @@ construct_runtime! {
         ZkCompression: pallet_zk_compression = 54,
         AddressLookupTables: pallet_address_lookup_tables = 55,
         Sealevel: pallet_sealevel = 56,
-        Ibc: pallet_ibc = 57,
         CircuitBreaker: pallet_circuit_breaker = 60,
         TechnicalCommittee: pallet_collective::<Instance2> = 61,
     }
@@ -1637,7 +1611,6 @@ frame_benchmarking::define_benchmarks!(
     [pallet_storage, Storage]
     [pallet_circuit_breaker, CircuitBreaker]
     [pallet_gulf_stream, GulfStream]
-    [pallet_ibc, Ibc]
     [pallet_address_lookup_tables, AddressLookupTables]
     [pallet_presale, Presale]
     [pallet_sealevel, Sealevel]
