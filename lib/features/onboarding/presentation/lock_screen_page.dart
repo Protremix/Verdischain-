@@ -3,12 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:verdis_wallet/core/router/route_names.dart';
 import 'package:verdis_wallet/core/security/biometric_auth.dart';
+import 'package:verdis_wallet/core/security/persistent_storage.dart';
+import 'package:verdis_wallet/core/security/pin_security_service.dart';
 import 'onboarding_providers.dart';
-import 'package:verdis_wallet/core/config/network_config.dart';
 import 'package:verdis_wallet/features/home/presentation/home_providers.dart';
 
 /// Lock screen that appears when the app reopens and a wallet already exists.
 /// Offers biometric unlock (if enabled) and PIN entry.
+///
+/// Uses dual verification:
+/// 1. Local PIN hash (flutter_secure_storage) — fast, offline
+/// 2. Server-side PIN verification (TX Relay) — fallback if local hash lost
 class LockScreenPage extends ConsumerStatefulWidget {
   const LockScreenPage({super.key});
 
@@ -21,24 +26,29 @@ class _LockScreenPageState extends ConsumerState<LockScreenPage> {
   bool _isLoading = false;
   String? _error;
   int _attempts = 0;
+  String? _walletAddress;
 
   @override
   void initState() {
     super.initState();
-    _tryBiometric();
+    _initAndTryBiometric();
+  }
+
+  Future<void> _initAndTryBiometric() async {
+    // Get wallet address from PersistentStorage (always reliable)
+    _walletAddress = await PersistentStorage.getWalletAddress();
+    
+    // Try biometric unlock if enabled
+    final biometricEnabled = await PersistentStorage.isBiometricEnabled();
+    if (biometricEnabled && mounted) {
+      await _tryBiometric();
+    }
   }
 
   Future<void> _tryBiometric() async {
     try {
-      final repo = ref.read(onboardingWalletProvider);
-      final biometricEnabled = await repo.isBiometricEnabled();
-
-      if (!biometricEnabled) return;
-      if (!mounted) return;
-
       final biometricManager = ref.read(biometricAuthProvider);
       final available = await biometricManager.isAvailable();
-
       if (!available || !mounted) return;
 
       final success = await biometricManager.authenticate(
@@ -54,14 +64,21 @@ class _LockScreenPageState extends ConsumerState<LockScreenPage> {
   }
 
   Future<void> _unlockAndGoHome() async {
-    // Load wallet address from secure storage
+    // Load wallet address from PersistentStorage (reliable) or secure storage
     try {
       final repo = ref.read(onboardingWalletProvider);
       final wallet = await repo.loadWallet();
       if (wallet != null && wallet.containsKey('address') && mounted) {
         ref.read(selectedAddressProvider.notifier).state = wallet['address']!;
+      } else if (_walletAddress != null && mounted) {
+        // Fall back to PersistentStorage address
+        ref.read(selectedAddressProvider.notifier).state = _walletAddress!;
       }
-    } catch (_) {}
+    } catch (_) {
+      if (_walletAddress != null && mounted) {
+        ref.read(selectedAddressProvider.notifier).state = _walletAddress!;
+      }
+    }
 
     if (!mounted) return;
     context.go(RouteNames.home);
@@ -84,22 +101,52 @@ class _LockScreenPageState extends ConsumerState<LockScreenPage> {
     setState(() => _isLoading = true);
 
     try {
+      // Step 1: Try local PIN hash verification (fast, offline)
       final repo = ref.read(onboardingWalletProvider);
-      final isCorrect = await repo.verifyPin(_enteredPin);
+      final localCorrect = await repo.verifyPin(_enteredPin);
 
-      if (isCorrect) {
+      if (localCorrect) {
         if (!mounted) return;
         await _unlockAndGoHome();
-      } else {
+        return;
+      }
+
+      // Step 2: Fall back to server-side PIN verification
+      // (handles case where local hash was wiped but server still has it)
+      if (_walletAddress != null) {
+        final (success, message, remaining) = await PinSecurityService.verifyPin(
+          address: _walletAddress!,
+          pin: _enteredPin,
+        );
+
+        if (success) {
+          if (!mounted) return;
+          await _unlockAndGoHome();
+          return;
+        }
+
         _attempts++;
         setState(() {
           _isLoading = false;
           _enteredPin = '';
-          _error = _attempts >= 3
-              ? 'Wrong PIN. Multiple failed attempts. Try biometric or check your PIN.'
-              : 'Wrong PIN. Try again.';
+          if (message == 'locked') {
+            _error = 'Too many failed attempts. Wallet locked for 15 minutes.';
+          } else if (remaining > 0) {
+            _error = 'Wrong PIN. $remaining attempts remaining.';
+          } else {
+            _error = 'Wrong PIN. Try again.';
+          }
         });
+        return;
       }
+
+      // No wallet address available — can't verify server-side
+      _attempts++;
+      setState(() {
+        _isLoading = false;
+        _enteredPin = '';
+        _error = 'Wrong PIN. Try again.';
+      });
     } catch (e) {
       setState(() {
         _isLoading = false;
