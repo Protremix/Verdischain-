@@ -5,13 +5,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:verdis_wallet/shared/widgets/verdis_widgets.dart';
 import 'onboarding_providers.dart';
+import 'package:verdis_wallet/core/config/remote_config.dart';
 
 /// Page to enable or skip Biometric Authentication (Face ID / Fingerprint)
-class BiometricSetupPage extends ConsumerWidget {
+class BiometricSetupPage extends ConsumerStatefulWidget {
   const BiometricSetupPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BiometricSetupPage> createState() => _BiometricSetupPageState();
+}
+
+class _BiometricSetupPageState extends ConsumerState<BiometricSetupPage> {
+  @override
+  Widget build(BuildContext context) {
     final bioState = ref.watch(biometricSetupProvider);
     final theme = Theme.of(context);
 
@@ -118,7 +124,7 @@ class BiometricSetupPage extends ConsumerWidget {
                     ),
                     Switch(
                       value: bioState.isEnabled,
-                      onChanged: bioState.isAvailable
+                      onChanged: (bioState.isAvailable && ref.read(remoteConfigProvider).isFeatureEnabled('biometric_auth'))
                           ? (val) {
                               ref
                                   .read(biometricSetupProvider.notifier)
