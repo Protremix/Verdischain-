@@ -1043,7 +1043,7 @@ pub mod pallet {
                 .into_iter()
                 .filter_map(|addr| {
                     Validators::<T>::get(&addr)
-                        .filter(|v| v.active && !v.slashed)
+                        .filter(|v| !v.slashed)
                         .map(|v| {
                             let score: BalanceOf<T> = (v.green_score as u32).into();
                             let hundred: BalanceOf<T> = 100u32.into();
@@ -1079,6 +1079,14 @@ pub mod pallet {
                 let _ = bounded_active.try_push(addr.clone());
             }
             ActiveValidators::<T>::put(bounded_active);
+            // Re-activate selected validators
+            for addr in new_active.iter() {
+                Validators::<T>::mutate(addr, |v| {
+                    if let Some(v) = v {
+                        v.active = true;
+                    }
+                });
+            }
 
             Self::deposit_event(Event::EpochChanged {
                 epoch,
