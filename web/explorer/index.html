@@ -115,6 +115,7 @@ a{color:inherit;text-decoration:none}
 .panel-link{font-size:12px;color:var(--accent);font-weight:500;cursor:pointer}
 .panel-link:hover{text-decoration:underline}
 
+
 .btn-export{padding:3px 8px;font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(22,163,74,0.3);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:4px}
 .btn-export:hover{background:var(--accent);color:#ffffff;border-color:var(--accent)}
 
@@ -148,6 +149,12 @@ a{color:inherit;text-decoration:none}
 .modal-body dd{font-family:var(--mono);font-size:12px;color:var(--text);word-break:break-all}
 
 /* Footer */
+.footer{max-width:1200px;margin:0 auto;padding:40px 24px;border-top:1px solid var(--border);margin-top:40px}
+.footer-social{display:flex;gap:10px;margin-top:16px}.footer-social a{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;color:var(--text-muted,#94a3b8);transition:all .2s}.footer-social a:hover{color:#fff;background:rgba(255,255,255,0.1)}
+.footer-links{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:12px}
+.footer-links a{font-size:12px;color:var(--text-2)}
+.footer-links a:hover{color:var(--accent)}
+.footer-copy{font-size:11px;color:var(--text-3)}
 
 /* Reveal */
 .reveal{opacity:0;transform:translateY(16px);transition:all .6s cubic-bezier(0.16,1,0.3,1)}
@@ -168,6 +175,22 @@ a{color:inherit;text-decoration:none}
 .nav-menu-btn span{width:20px;height:2px;background:var(--text);border-radius:2px}
 @media(max-width:768px){.nav-menu-btn{display:flex}}
 
+/* === Footer (from homepage) === */
+.footer { background: var(--hero-bg, #1a1a1a); padding: 28px 24px 32px; max-width: none; margin: 0; border-top: none; margin-top: 0; }
+.footer-inner { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 48px; }
+.footer-brand h3 { font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 12px; }
+.footer-brand p { font-size: 14px; color: #94a3b8; max-width: 280px; }
+.footer-col h4 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 16px; }
+.footer-col a { display: block; font-size: 14px; color: #cbd5e1; margin-bottom: 10px; transition: color .2s; text-decoration: none; }
+.footer-col a:hover { color: #16a34a; }
+.footer-bottom { max-width: 1000px; margin: 32px auto 0; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; font-size: 13px; color: #64748b; }
+.footer-links { display: none; }
+.footer-copy { display: none; }
+@media (max-width: 768px) { .footer-inner { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .footer-inner { grid-template-columns: 1fr; gap: 24px; } .footer-bottom { flex-direction: column; gap: 8px; text-align: center; } }
+/* === End Footer === */
+
+
 /* Explorer info cards */
 .info-cards{max-width:1200px;margin:0 auto;padding:0 24px 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .info-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;position:relative;overflow:hidden}
@@ -183,7 +206,8 @@ a{color:inherit;text-decoration:none}
 .badge-sm.warn{background:rgba(251,191,36,.1);color:var(--warning)}
 .badge-sm.err{background:rgba(248,113,113,.1);color:var(--error)}
 @media(max-width:768px){.info-cards{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:768px){#vrdxPriceGrid{grid-template-columns:repeat(2,1fr)!important}#vrdxPrice}
+@media(max-width:768px){#vrdxPriceGrid{grid-template-columns:repeat(2,1fr)!important}#vrdxPriceFooter{gap:12px!important}}
+
 
 /* Top Markets Ticker */
 .market-ticker{display:flex;align-items:center;gap:0;padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin:12px 0;overflow:hidden;position:relative}
@@ -200,33 +224,11 @@ a{color:inherit;text-decoration:none}
 @keyframes scroll-ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 .market-ticker-scroll-inner{display:flex;gap:24px;animation:scroll-ticker 40s linear infinite}
 .market-ticker-scroll:hover .market-ticker-scroll-inner{animation-play-state:paused}
-
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<style>.testnet-banner{background:#f59e0b;color:#000;padding:8px 16px;text-align:center;font-size:13px;font-weight:600;font-family:Inter,sans-serif;position:sticky;top:0;z-index:9999}</style>
-<style id="standard-footer">
-
-@media(max-width:768px){}
-.footer{background:#0a0e14;padding:28px 24px 32px;max-width:none;margin:0;border-top:none;margin-top:0}
-.footer-inner{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:48px}
-.footer-brand h3{font-size:13px;font-weight:800;color:#fff;margin-bottom:12px;font-family:'Inter',sans-serif}
-.footer-brand p{font-size:14px;color:#94a3b8;max-width:280px;line-height:1.5}
-.footer-social{display:flex;gap:10px;margin-top:16px}
-.footer-social a{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;color:#94a3b8;transition:all .2s;text-decoration:none}
-.footer-social a:hover{color:#fff;background:rgba(255,255,255,0.1)}
-.footer-col h4{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;margin-bottom:16px;font-family:'Inter',sans-serif}
-.footer-col a{display:block;font-size:14px;color:#cbd5e1;margin-bottom:10px;transition:color .2s;text-decoration:none}
-.footer-col a:hover{color:#16a34a}
-.footer-bottom{max-width:1000px;margin:32px auto 0;padding-top:24px;border-top:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between;font-size:13px;color:#64748b}
-.footer-bottom a:hover{color:#16a34a}
-.footer-inner{grid-template-columns:1fr 1fr;gap:24px}
-.footer-brand{grid-column:1/-1}
-.footer-bottom{flex-direction:column;gap:8px;text-align:center}
-</style>
 </head>
 <body>
-<div class="testnet-banner">TESTNET — Verdis Chain is currently in testnet phase. Not mainnet. Not investor-ready. <a href="/status/" style="color:inherit;text-decoration:underline">Status</a></div>
 <div class="scroll-progress" id="progress"></div>
 <div class="cursor-glow" id="glow"></div>
 
@@ -271,7 +273,7 @@ a{color:inherit;text-decoration:none}
       <div class="float-card fc-3"><div class="float-card-label">Validators</div><div class="float-card-value" id="heroValidators">—</div><div class="float-card-sub">DPoS Active</div></div>
       <div class="float-card fc-4"><div class="float-card-label">VRDX Supply</div><div class="float-card-value">100B</div><div class="float-card-sub">Total</div></div>
       <div class="float-tag ft-1">DPoS Consensus</div>
-      <div class="float-tag ft-2">Energy-Efficient</div>
+      <div class="float-tag ft-2">Designed for efficiency</div>
     </div>
   </div>
 </section>
@@ -284,6 +286,7 @@ a{color:inherit;text-decoration:none}
   <div class="stat-card reveal"><div class="stat-label">TPS</div><div class="stat-value" id="statTps"><span class="skel" style="width:40px"></span></div><div class="stat-sub">Transactions/sec</div><canvas id="tpsChart" width="180" height="40" style="margin-top:8px;width:100%;height:40px"></canvas></div>
   <div class="stat-card reveal"><div class="stat-label">Validators</div><div class="stat-value success" id="statVal"><span class="skel" style="width:30px"></span></div><div class="stat-sub">DPoS Active</div></div>
 </section>
+
 
 <!-- Explorer Info Cards -->
 <div class="info-cards">
@@ -313,6 +316,7 @@ a{color:inherit;text-decoration:none}
     <div class="badge-row"><span class="badge-sm" id="infoPoolCount">— pools</span></div>
   </div>
 </div>
+
 
 <!-- Top Markets Ticker -->
 <div class="market-ticker" id="marketTicker" style="display:none">
@@ -368,7 +372,7 @@ a{color:inherit;text-decoration:none}
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;padding:16px 20px" id="vrdxPriceGrid">
         <div><div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em">Price</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--accent)" id="vrdxPrice">$0.005</div><div style="font-size:11px;color:var(--text-3);margin-top:2px">TGE Price</div></div>
         <div><div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em">Market Cap</div><div style="font-family:var(--mono);font-size:20px;font-weight:700" id="vrdxMcap">00M</div><div style="font-size:11px;color:var(--text-3);margin-top:2px">8B circulating</div></div>
-        <div><div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em">FDV</div><div style="font-family:var(--mono);font-size:20px;font-weight:700" id="vrdxFdv">00M</div><div style="font-size:11px;color:var(--text-3);margin-top:2px">100B × $0.005</div></div>
+        <div><div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em">FDV</div><div style="font-family:var(--mono);font-size:20px;font-weight:700" id="vrdxFdv">00M</div><div style="font-size:11px;color:var(--text-3);margin-top:2px">100B VRDX (Testnet)</div></div>
         <div><div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em">Circulating</div><div style="font-family:var(--mono);font-size:20px;font-weight:700" id="vrdxCirc">8B VRDX</div><div style="font-size:11px;color:var(--text-3);margin-top:2px">8% of total</div></div>
         <div><div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em">Total Supply</div><div style="font-family:var(--mono);font-size:20px;font-weight:700" id="vrdxSupply">100B VRDX</div><div style="font-size:11px;color:var(--text-3);margin-top:2px">9 decimals</div></div>
       </div>
@@ -444,6 +448,7 @@ a{color:inherit;text-decoration:none}
     </div>
   </div>
 </div>
+
 
   <!-- Accounts -->
   <div class="tab-content" id="tab-accounts">
@@ -618,6 +623,7 @@ a{color:inherit;text-decoration:none}
     </div>
   </div>
 
+
   <!-- API Documentation -->
   <div class="tab-content" id="tab-api">
     <div style="display:flex;flex-direction:column;gap:20px">
@@ -786,6 +792,7 @@ a{color:inherit;text-decoration:none}
       </div>
     </div>
   </div>
+
 
   <div class="tab-content" id="tab-network">
     <div style="display:flex;flex-direction:column;gap:20px">
@@ -1135,6 +1142,7 @@ a{color:inherit;text-decoration:none}
     </div>
   </div>
 
+
   <div class="tab-content" id="tab-prices">
     <div class="panel">
       <div class="panel-header">
@@ -1215,20 +1223,23 @@ a{color:inherit;text-decoration:none}
 <div class="footer-inner">
 <div class="footer-brand">
 <h3>VERDIS CHAIN</h3>
-<p>The energy-efficient blockchain with native DPoS consensus, AMM DEX, and carbon credit tracking. Built on Substrate.</p>
+<p>The world's first green blockchain with native DPoS consensus, AMM DEX, and carbon credit tracking. Built on Substrate.</p>
 <div class="footer-social">
 <a href="https://x.com/Verdischain" target="_blank" aria-label="X (Twitter)"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
 <a href="https://github.com/Protremix/Verdischain-" target="_blank" aria-label="GitHub"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.26.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.5 11.5 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.218.694.825.576C20.565 21.795 24 17.298 24 12 24 5.37 18.627 0 12 0z"/></svg></a>
+<a href="https://facebook.com/verdischain" target="_blank" aria-label="Facebook"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
+<a href="https://wa.me/447451261353" target="_blank" aria-label="WhatsApp"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.692.248-1.287.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
 <a href="/contact/" aria-label="Contact"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M24 4l-12 7-12-7v-2l12 7 12-7v2zm0 2v14h-24v-14l12 7 12-7z"/></svg></a>
 <a href="/status/" aria-label="Network Status"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></a>
 </div>
 </div>
-<div class="footer-col"><h4>Products</h4><a href="/explorer/">Verdiscan</a><a href="/dex/">DEX</a><a href="/wallet/">Web Wallet</a><a href="/faucet/">Faucet</a><a href="/governance/">Governance</a><a href="/sale/">Token Sale</a></div>
+<div class="footer-col"><h4>Products</h4><a href="/explorer/">Verdiscan</a><a href="/dex/">DEX</a><a href="/wallet/">Web Wallet</a><a href="/faucet/">Faucet</a>
+      <a href="/governance/">Governance</a><a href="/sale/">Token Sale</a></div>
 <div class="footer-col"><h4>Resources</h4><a href="/docs/">Documentation</a><a href="/whitepaper/">Whitepaper</a><a href="/lightpaper/">Light Paper</a><a href="/tokenomics/">Tokenomics</a><a href="/api/">API Reference</a><a href="https://github.com/Protremix/Verdischain-" target="_blank">GitHub</a></div>
-<div class="footer-col"><h4>Community</h4><a href="/validators/">Validators</a><a href="/eco/">Eco Metrics</a><a href="/governance/">Governance</a><a href="/referral/">Referral (Discontinued)</a><a href="/incentives/">Validator Incentives</a><a href="/contact/">Contact</a></div>
+<div class="footer-col"><h4>Community</h4><a href="/validators/">Validators</a><a href="/eco/">Eco Metrics</a><a href="/governance/">Governance</a><a href="/referral/">Referral Program</a><a href="/incentives/">Validator Incentives</a><a href="/contact/">Contact</a></div>
 <div class="footer-col"><h4>Legal</h4><a href="/terms/">Terms of Service</a><a href="/privacy/">Privacy Policy</a><a href="/cookies/">Cookie Policy</a><a href="/security/">Security</a><a href="/disclaimer/">Disclaimer</a></div>
 </div>
-<div class="footer-bottom"><span>&copy; 2026 Verdis Chain &middot; Protremix &middot; MIT License</span><span><a href="/privacy/" style="color:#64748b;text-decoration:none">Privacy Policy</a> &middot; <a href="/security/" style="color:#64748b;text-decoration:none">Security</a></span></div>
+<div class="footer-bottom"><span>&copy; 2026 Verdis Chain &middot; Protremix &middot; Open-source under MIT License</span><span><a href="/privacy/" style="color:#64748b;text-decoration:none">GDPR Compliant</a> &middot; <a href="/security/" style="color:#64748b;text-decoration:none">Security</a></span></div>
 </footer>
 
 <script type="module">
@@ -1268,25 +1279,36 @@ async function searchTransactions() {
     }
     
     let results = [];
-    for (let b = toBlock; b >= actualFrom && results.length < 100; b--) {
-      const blockHash = await rpc("chain_getBlockHash", [b]);
-      if (!blockHash || blockHash === "0x" + "0".repeat(64)) continue;
-      const blockData = await rpc("chain_getBlock", [blockHash]);
-      if (!blockData || !blockData.block) continue;
-      
-      const exts = blockData.block.extrinsics || [];
-      for (let i = 0; i < exts.length; i++) {
-        const ext = exts[i];
-        const callInfo = decodeExtrinsicCall(ext);
-        const fullType = callInfo.section + "." + callInfo.method;
-        
-        if (typeFilter && fullType !== typeFilter) continue;
-        if (senderFilter && callInfo.sender && callInfo.sender.toLowerCase().indexOf(senderFilter) === -1) continue;
-        
-        results.push({
-          block: b, index: i, sender: callInfo.sender,
-          type: fullType, hash: blockHash
+    // PARALLEL: fetch all blocks at once instead of sequentially
+    const searchBlockNums = [];
+    for (let b = toBlock; b >= actualFrom; b--) searchBlockNums.push(b);
+    const searchPromises = searchBlockNums.map(function(b) {
+      return rpc("chain_getBlockHash", [b]).then(function(blockHash) {
+        if (!blockHash || blockHash === "0x" + "0".repeat(64)) return null;
+        return rpc("chain_getBlock", [blockHash]).then(function(blockData) {
+          if (!blockData || !blockData.block) return null;
+          const exts = blockData.block.extrinsics || [];
+          const blockResults = [];
+          for (let i = 0; i < exts.length; i++) {
+            const ext = exts[i];
+            const callInfo = decodeExtrinsicCall(ext);
+            const fullType = callInfo.section + "." + callInfo.method;
+            if (typeFilter && fullType !== typeFilter) continue;
+            if (senderFilter && callInfo.sender && callInfo.sender.toLowerCase().indexOf(senderFilter) === -1) continue;
+            blockResults.push({
+              block: b, index: i, sender: callInfo.sender,
+              type: fullType, hash: blockHash
+            });
+          }
+          return blockResults;
         });
+      }).catch(function() { return null; });
+    });
+    const searchResults = await Promise.all(searchPromises);
+    for (let si = 0; si < searchResults.length; si++) {
+      if (searchResults[si]) {
+        results = results.concat(searchResults[si]);
+        if (results.length >= 100) { results = results.slice(0, 100); break; }
       }
     }
     
@@ -1390,26 +1412,33 @@ async function loadValidatorMetrics() {
     var blockCounts = {};
     var maxBlocks = Math.min(50, currentBlock);
     var blocksChecked = 0;
-    for (var b = currentBlock; b > currentBlock - maxBlocks && b >= 0; b--) {
-      try {
-        var hash = await rpc("chain_getBlockHash", [b]);
-        if (!hash || hash === "0x" + "0".repeat(64)) continue;
-        var block = await rpc("chain_getBlock", [hash]);
-        if (block && block.block && block.block.header) {
-          var digest = block.block.header.digest || { logs: [] };
-          for (var li = 0; li < (digest.logs || []).length; li++) {
-            var log = digest.logs[li];
-            if (typeof log === "string" && log.startsWith("0x")) {
-              var logHex = log.slice(2);
-              if (logHex.startsWith("01")) {
-                var authIdx = parseInt(logHex.slice(18, 20), 16);
-                if (!isNaN(authIdx)) blockCounts[authIdx] = (blockCounts[authIdx] || 0) + 1;
-              }
-            }
+    // PARALLEL: fetch all 50 blocks at once instead of sequentially
+    var blockNums_vm = [];
+    for (var b = currentBlock; b > currentBlock - maxBlocks && b >= 0; b--) blockNums_vm.push(b);
+    var vmPromises = blockNums_vm.map(function(bn) {
+      return rpc("chain_getBlockHash", [bn]).then(function(h) {
+        if (!h || h === "0x" + "0".repeat(64)) return null;
+        return rpc("chain_getBlock", [h]).then(function(blk) {
+          return {bn: bn, block: blk};
+        });
+      }).catch(function() { return null; });
+    });
+    var vmResults = await Promise.all(vmPromises);
+    for (var ri = 0; ri < vmResults.length; ri++) {
+      var r = vmResults[ri];
+      if (!r || !r.block || !r.block.block || !r.block.block.header) continue;
+      var digest = r.block.block.header.digest || { logs: [] };
+      for (var li = 0; li < (digest.logs || []).length; li++) {
+        var log = digest.logs[li];
+        if (typeof log === "string" && log.startsWith("0x")) {
+          var logHex = log.slice(2);
+          if (logHex.startsWith("01")) {
+            var authIdx = parseInt(logHex.slice(18, 20), 16);
+            if (!isNaN(authIdx)) blockCounts[authIdx] = (blockCounts[authIdx] || 0) + 1;
           }
-          blocksChecked++;
         }
-      } catch(e) {}
+      }
+      blocksChecked++;
     }
     
     var totalBlocksProduced = 0;
@@ -1502,6 +1531,7 @@ switchTab = function(t) {
   if (t === "portfolio") {/* loaded on demand */}
 };
 
+
 </script>
 <script>
 // XSS Prevention: escape all chain-controlled data before innerHTML
@@ -1592,6 +1622,7 @@ function timeAgo(ts) {
   if (s < 3600) return Math.floor(s/60)+'m ago';
   return Math.floor(s/3600)+'h ago';
 }
+
 
 // Export Data Utilities
 function exportToCSV(tableId, filename) {
@@ -1952,21 +1983,29 @@ async function loadBlocks() {
   }
   const start = blockNum || 100;
   if (start === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-3)">No blocks yet</td></tr>'; return; }
-  for (let i = 0; i < 20; i++) {
-    const bn = start - i;
-    if (bn < 0) break;
-    const hash = await rpc('chain_getBlockHash', [bn]);
-    if (!hash) continue;
-    const block = await rpc('chain_getBlock', [hash]);
-    if (!block) continue;
-    const exts = block.block?.extrinsics || [];
-    const extRoot = block.block?.header?.extrinsicsRoot || '—';
-    html += `<tr onclick="showBlock('${hash}')">
-      <td class="hash hash-accent">#${bn}</td>
+  // PARALLEL: fetch all 20 blocks at once instead of sequentially
+  const blockNums_lb = [];
+  for (let i = 0; i < 20; i++) { if (start - i >= 0) blockNums_lb.push(start - i); }
+  const lbPromises = blockNums_lb.map(function(bn) {
+    return rpc('chain_getBlockHash', [bn]).then(function(h) {
+      if (!h) return null;
+      return rpc('chain_getBlock', [h]).then(function(b) {
+        return {bn: bn, hash: h, block: b};
+      });
+    }).catch(function() { return null; });
+  });
+  const lbResults = await Promise.all(lbPromises);
+  for (let i = 0; i < lbResults.length; i++) {
+    const r = lbResults[i];
+    if (!r || !r.block) continue;
+    const exts = r.block.block?.extrinsics || [];
+    const extRoot = r.block.block?.header?.extrinsicsRoot || '—';
+    html += `<tr onclick="showBlock('${r.hash}')">
+      <td class="hash hash-accent">#${r.bn}</td>
       <td>${i===0?'now':(i*6)+'s ago'}</td>
       <td>${exts.length}</td>
       <td class="hash">${shortHash(extRoot,4)}</td>
-      <td class="hash">${shortHash(hash)}</td>
+      <td class="hash">${shortHash(r.hash)}</td>
     </tr>`;
   }
   tbody.innerHTML = html;
@@ -2527,6 +2566,8 @@ async function updateInfoCards() {
   } catch(e) {}
 }
 
+
+
 // ===== Account Explorer =====
 async function searchAccount(addr) {
   const input = document.getElementById('acctSearchInput');
@@ -2675,6 +2716,7 @@ async function loadAccountHistory(addr) {
     if (txTable) txTable.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-3)">Error loading history</td></tr>';
   }
 }
+
 
 // ===== Top Accounts =====
 async function loadTopAccounts() {
@@ -3392,12 +3434,7 @@ function updateValidatorsQuick() {
 
 init();
 
-// Auto-refresh every 12 seconds
-setInterval(function() {
-  loadLatestBlocks();
-  loadLatestTxs();
-  loadVrdxPrice();
-}, 12000);
+// NOTE: Auto-refresh handled by init() setInterval at 10s — removed duplicate 12s interval
 
 // Also refresh stats every 6 seconds
 setInterval(function() {
@@ -3425,6 +3462,7 @@ setInterval(function() {
     }
   });
 }, 6000);
+
 
 // ===== Top Markets Ticker =====
 async function loadMarketTicker() {
@@ -3464,6 +3502,7 @@ async function loadMarketTicker() {
   } catch(e) {
   }
 }
+
 
 // Load Network info
 async function loadNetwork() {
@@ -3684,6 +3723,7 @@ async function loadGovernance() {
   }
 }
 
+
 // === Advanced Transaction Search ===
 async function searchTransactions() {
   const fromBlock = parseInt(document.getElementById("txSearchFrom").value) || 0;
@@ -3715,25 +3755,36 @@ async function searchTransactions() {
     }
     
     let results = [];
-    for (let b = toBlock; b >= actualFrom && results.length < 100; b--) {
-      const blockHash = await rpc("chain_getBlockHash", [b]);
-      if (!blockHash || blockHash === "0x" + "0".repeat(64)) continue;
-      const blockData = await rpc("chain_getBlock", [blockHash]);
-      if (!blockData || !blockData.block) continue;
-      
-      const exts = blockData.block.extrinsics || [];
-      for (let i = 0; i < exts.length; i++) {
-        const ext = exts[i];
-        const callInfo = decodeExtrinsicCall(ext);
-        const fullType = callInfo.section + "." + callInfo.method;
-        
-        if (typeFilter && fullType !== typeFilter) continue;
-        if (senderFilter && callInfo.sender && callInfo.sender.toLowerCase().indexOf(senderFilter) === -1) continue;
-        
-        results.push({
-          block: b, index: i, sender: callInfo.sender,
-          type: fullType, hash: blockHash
+    // PARALLEL: fetch all blocks at once instead of sequentially
+    const searchBlockNums = [];
+    for (let b = toBlock; b >= actualFrom; b--) searchBlockNums.push(b);
+    const searchPromises = searchBlockNums.map(function(b) {
+      return rpc("chain_getBlockHash", [b]).then(function(blockHash) {
+        if (!blockHash || blockHash === "0x" + "0".repeat(64)) return null;
+        return rpc("chain_getBlock", [blockHash]).then(function(blockData) {
+          if (!blockData || !blockData.block) return null;
+          const exts = blockData.block.extrinsics || [];
+          const blockResults = [];
+          for (let i = 0; i < exts.length; i++) {
+            const ext = exts[i];
+            const callInfo = decodeExtrinsicCall(ext);
+            const fullType = callInfo.section + "." + callInfo.method;
+            if (typeFilter && fullType !== typeFilter) continue;
+            if (senderFilter && callInfo.sender && callInfo.sender.toLowerCase().indexOf(senderFilter) === -1) continue;
+            blockResults.push({
+              block: b, index: i, sender: callInfo.sender,
+              type: fullType, hash: blockHash
+            });
+          }
+          return blockResults;
         });
+      }).catch(function() { return null; });
+    });
+    const searchResults = await Promise.all(searchPromises);
+    for (let si = 0; si < searchResults.length; si++) {
+      if (searchResults[si]) {
+        results = results.concat(searchResults[si]);
+        if (results.length >= 100) { results = results.slice(0, 100); break; }
       }
     }
     
@@ -3834,26 +3885,33 @@ async function loadValidatorMetrics() {
     var blockCounts = {};
     var maxBlocks = Math.min(50, currentBlock);
     var blocksChecked = 0;
-    for (var b = currentBlock; b > currentBlock - maxBlocks && b >= 0; b--) {
-      try {
-        var hash = await rpc("chain_getBlockHash", [b]);
-        if (!hash || hash === "0x" + "0".repeat(64)) continue;
-        var block = await rpc("chain_getBlock", [hash]);
-        if (block && block.block && block.block.header) {
-          var digest = block.block.header.digest || { logs: [] };
-          for (var li = 0; li < (digest.logs || []).length; li++) {
-            var log = digest.logs[li];
-            if (typeof log === "string" && log.startsWith("0x")) {
-              var logHex = log.slice(2);
-              if (logHex.startsWith("01")) {
-                var authIdx = parseInt(logHex.slice(18, 20), 16);
-                if (!isNaN(authIdx)) blockCounts[authIdx] = (blockCounts[authIdx] || 0) + 1;
-              }
-            }
+    // PARALLEL: fetch all 50 blocks at once instead of sequentially
+    var blockNums_vm = [];
+    for (var b = currentBlock; b > currentBlock - maxBlocks && b >= 0; b--) blockNums_vm.push(b);
+    var vmPromises = blockNums_vm.map(function(bn) {
+      return rpc("chain_getBlockHash", [bn]).then(function(h) {
+        if (!h || h === "0x" + "0".repeat(64)) return null;
+        return rpc("chain_getBlock", [h]).then(function(blk) {
+          return {bn: bn, block: blk};
+        });
+      }).catch(function() { return null; });
+    });
+    var vmResults = await Promise.all(vmPromises);
+    for (var ri = 0; ri < vmResults.length; ri++) {
+      var r = vmResults[ri];
+      if (!r || !r.block || !r.block.block || !r.block.block.header) continue;
+      var digest = r.block.block.header.digest || { logs: [] };
+      for (var li = 0; li < (digest.logs || []).length; li++) {
+        var log = digest.logs[li];
+        if (typeof log === "string" && log.startsWith("0x")) {
+          var logHex = log.slice(2);
+          if (logHex.startsWith("01")) {
+            var authIdx = parseInt(logHex.slice(18, 20), 16);
+            if (!isNaN(authIdx)) blockCounts[authIdx] = (blockCounts[authIdx] || 0) + 1;
           }
-          blocksChecked++;
         }
-      } catch(e) {}
+      }
+      blocksChecked++;
     }
     
     var totalBlocksProduced = 0;
@@ -3944,6 +4002,8 @@ switchTab = function(t) {
   origSwitchTab2(t);
   if (t === "valmetrics") loadValidatorMetrics();
 };
+
+
 
 // ============ PORTFOLIO TRACKER ============
 var pfAddress = null;
