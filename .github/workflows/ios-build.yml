@@ -16,7 +16,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: "3.27.0"
+          flutter-version: '3.27.0'
           cache: true
 
       - name: Setup Ruby
@@ -30,9 +30,15 @@ jobs:
       - name: Flutter pub get
         run: flutter pub get
 
-      - name: Build iOS App (simulator, no signing)
+      - name: Clean and install Pods
         run: |
-          flutter build ios --debug --simulator --no-codesign
+          cd ios
+          rm -rf Pods Podfile.lock
+          pod install --verbose
+          cd ..
+
+      - name: Build iOS App (simulator, no signing)
+        run: flutter build ios --debug --simulator --no-codesign --verbose
 
       - name: Package as IPA (simulator)
         run: |
@@ -57,4 +63,5 @@ jobs:
           name: ios-build-logs
           path: |
             build/ios/**/*.log
+            /Users/runner/.cocoapods/**/*.log
           retention-days: 7
