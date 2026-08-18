@@ -1,14 +1,99 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:verdis_wallet/core/config/network_config.dart';
+import 'package:verdis_wallet/core/security/secure_storage.dart';
 import 'package:verdis_wallet/shared/widgets/verdis_widgets.dart';
 import 'package:go_router/go_router.dart';
 
-class SettingsPage extends ConsumerWidget {
+class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends ConsumerState<SettingsPage> {
+  String? _recoveryEmail;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEmail();
+  }
+
+  Future<void> _loadEmail() async {
+    final storage = ref.read(secureStorageProvider);
+    final email = await storage.getRecoveryEmail();
+    if (mounted) {
+      setState(() {
+        _recoveryEmail = email;
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _addOrUpdateEmail() async {
+    final emailController = TextEditingController(text: _recoveryEmail ?? '');
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(_recoveryEmail != null ? 'Update Email' : 'Add Your Email'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Your email is used for wallet recovery and important account notifications.',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(
+                labelText: 'Email Address',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.email),
+                hintText: 'you@example.com',
+              ),
+              keyboardType: TextInputType.emailAddress,
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          FilledButton(
+            onPressed: () {
+              final email = emailController.text.trim();
+              if (email.isNotEmpty && RegExp(r'^[\w.+-]+@[\w-]+\.[\w.-]+$').hasMatch(email)) {
+                Navigator.pop(context, email);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter a valid email address')),
+                );
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == null) return;
+
+    final storage = ref.read(secureStorageProvider);
+    await storage.setRecoveryEmail(result);
+    if (mounted) {
+      setState(() => _recoveryEmail = result);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email saved')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
@@ -22,6 +107,24 @@ class SettingsPage extends ConsumerWidget {
               title: Text('Wallet Account'),
               subtitle: Text('Address, backup, export, delete'),
               trailing: Icon(Icons.chevron_right),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Email section — direct on settings page
+          VerdisCard(
+            child: ListTile(
+              leading: const Icon(Icons.email, size: 32),
+              title: const Text('Email'),
+              subtitle: Text(
+                _isLoading
+                    ? 'Loading...'
+                    : _recoveryEmail != null
+                        ? _recoveryEmail!
+                        : 'Add your email for recovery & notifications',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: _addOrUpdateEmail,
             ),
           ),
           const SizedBox(height: 24),
