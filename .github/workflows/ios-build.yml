@@ -30,15 +30,8 @@ jobs:
       - name: Flutter pub get
         run: flutter pub get
 
-      - name: Clean and install Pods
-        run: |
-          cd ios
-          rm -rf Pods Podfile.lock
-          pod install --verbose
-          cd ..
-
       - name: Build iOS App (simulator, no signing)
-        run: flutter build ios --debug --simulator --no-codesign --verbose
+        run: flutter build ios --debug --simulator --no-codesign
 
       - name: Package as IPA (simulator)
         run: |
@@ -56,12 +49,11 @@ jobs:
           path: verdis-wallet-ios-simulator.ipa
           retention-days: 30
 
-      - name: Upload build logs on failure
+      - name: Upload build directory on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: ios-build-logs
+          name: ios-build-output
           path: |
-            build/ios/**/*.log
-            /Users/runner/.cocoapods/**/*.log
+            build/ios/
           retention-days: 7
