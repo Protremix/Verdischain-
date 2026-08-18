@@ -5,6 +5,7 @@ import 'package:verdis_wallet/core/router/route_names.dart';
 import 'package:verdis_wallet/core/security/biometric_auth.dart';
 import 'package:verdis_wallet/core/security/persistent_storage.dart';
 import 'package:verdis_wallet/core/security/pin_security_service.dart';
+import 'package:verdis_wallet/core/storage/hive_helper.dart';
 import 'onboarding_providers.dart';
 import 'package:verdis_wallet/features/home/presentation/home_providers.dart';
 
@@ -38,9 +39,23 @@ class _LockScreenPageState extends ConsumerState<LockScreenPage> {
     // Get wallet address from PersistentStorage (always reliable)
     _walletAddress = await PersistentStorage.getWalletAddress();
     
-    // Try biometric unlock if enabled
-    final biometricEnabled = await PersistentStorage.isBiometricEnabled();
-    if (biometricEnabled && mounted) {
+    // Check biometric from ALL sources (plain file, Hive, secure storage)
+    bool bioEnabled = await PersistentStorage.isBiometricEnabled();
+    if (!bioEnabled) {
+      try {
+        bioEnabled = HiveHelper.getSetting<bool>('biometric_enabled') ?? false;
+      } catch (_) {}
+    }
+    if (!bioEnabled) {
+      try {
+        final repo = ref.read(onboardingWalletProvider);
+        bioEnabled = await repo.isBiometricEnabled();
+      } catch (_) {}
+    }
+
+    debugPrint('🔵 Lock: biometricEnabled=$bioEnabled, address=$_walletAddress');
+
+    if (bioEnabled && mounted) {
       await _tryBiometric();
     }
   }
@@ -49,29 +64,29 @@ class _LockScreenPageState extends ConsumerState<LockScreenPage> {
     try {
       final biometricManager = ref.read(biometricAuthProvider);
       final available = await biometricManager.isAvailable();
+      debugPrint('🔵 Lock: biometric available=$available');
       if (!available || !mounted) return;
 
       final success = await biometricManager.authenticate(
         reason: 'Unlock your Verdis Wallet',
       );
 
+      debugPrint('🔵 Lock: biometric success=$success');
       if (success && mounted) {
         _unlockAndGoHome();
       }
-    } catch (_) {
-      // Silent fail — user can enter PIN manually
+    } catch (e) {
+      debugPrint('🔵 Lock: biometric error: $e');
     }
   }
 
   Future<void> _unlockAndGoHome() async {
-    // Load wallet address from PersistentStorage (reliable) or secure storage
     try {
       final repo = ref.read(onboardingWalletProvider);
       final wallet = await repo.loadWallet();
       if (wallet != null && wallet.containsKey('address') && mounted) {
         ref.read(selectedAddressProvider.notifier).state = wallet['address']!;
       } else if (_walletAddress != null && mounted) {
-        // Fall back to PersistentStorage address
         ref.read(selectedAddressProvider.notifier).state = _walletAddress!;
       }
     } catch (_) {
@@ -112,7 +127,6 @@ class _LockScreenPageState extends ConsumerState<LockScreenPage> {
       }
 
       // Step 2: Fall back to server-side PIN verification
-      // (handles case where local hash was wiped but server still has it)
       if (_walletAddress != null) {
         final (success, message, remaining) = await PinSecurityService.verifyPin(
           address: _walletAddress!,
@@ -140,7 +154,6 @@ class _LockScreenPageState extends ConsumerState<LockScreenPage> {
         return;
       }
 
-      // No wallet address available — can't verify server-side
       _attempts++;
       setState(() {
         _isLoading = false;

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:verdis_wallet/core/security/biometric_auth.dart';
 import 'package:verdis_wallet/core/security/secure_storage.dart';
+import "package:verdis_wallet/core/security/persistent_storage.dart";
 import 'package:verdis_wallet/core/security/wallet_crypto.dart';
 import 'package:verdis_wallet/shared/widgets/verdis_widgets.dart';
 import 'package:go_router/go_router.dart';
@@ -58,6 +59,7 @@ class _SecuritySettingsPageState extends ConsumerState<SecuritySettingsPage> {
     }
     final storage = ref.read(secureStorageProvider);
     await storage.setBiometricEnabled(value);
+    await PersistentStorage.setBiometricEnabled(value);
     setState(() => _biometricEnabled = value);
   }
 
