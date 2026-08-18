@@ -45,7 +45,35 @@ class HomeRepositoryImpl implements HomeRepository {
 
   @override
   Future<StakingSummaryData> getStakingSummary(String address) async {
-    // No fake staking data — return zeros
+    // Query TX Relay for real validator/staking data
+    try {
+      final response = await http.post(
+        Uri.parse(_txRelayUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'action': 'validators'}),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['ok'] == true) {
+          final validators = data['data']?['validators'] as List<dynamic>? ?? [];
+          int activeCount = 0;
+          int totalStaked = 0;
+          for (final v in validators) {
+            final vMap = v as Map<String, dynamic>;
+            if (vMap['isActive'] == true) activeCount++;
+            totalStaked += (vMap['stake'] as num? ?? 0).toInt();
+          }
+          return StakingSummaryData(
+            totalStaked: totalStaked,
+            activeValidators: activeCount,
+            rewardsEarned: 0,
+            apyEstimate: 0.0,
+          );
+        }
+      }
+    } catch (_) {}
+
     return const StakingSummaryData(
       totalStaked: 0,
       activeValidators: 0,
@@ -138,8 +166,11 @@ class HomeRepositoryImpl implements HomeRepository {
 
   @override
   Future<List<double>> get7DayBalanceHistory(String address) async {
-    // No fake history — return zeros
-    return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+    // Show current balance as a flat line — no historical price API available yet
+    if (address.isEmpty) return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+    final balance = await getBalance(address);
+    final vrdxBalance = balance / 1e9;
+    return List.filled(7, vrdxBalance);
   }
 
   int _parseBlockNumber(dynamic rawNumber) {

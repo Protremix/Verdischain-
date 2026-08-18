@@ -45,8 +45,8 @@ class PortfolioView extends ConsumerWidget {
               BalanceCard(
                 balance: data.balance,
                 totalStaked: data.stakingSummary.totalStaked,
-                vrdxPriceUsd: 0.25,
-                change24hPercent: 5.4,
+                vrdxPriceUsd: 0.0,
+                change24hPercent: 0.0,
               ),
               const SizedBox(height: 20),
 
@@ -93,7 +93,7 @@ class PortfolioView extends ConsumerWidget {
               NetworkStatusCard(
                 networkStatus: data.networkStatus,
                 onTap: () {
-                  _showToast(context, 'Connected to Verdis Mainnet Node');
+                  _showToast(context, 'Connected to Verdis Testnet Node');
                 },
               ),
               const SizedBox(height: 24),

@@ -38,6 +38,7 @@ class BalanceCard extends StatelessWidget {
   double get totalVrdxAmount => vrdxAmount + stakedVrdxAmount;
   double get usdValue => vrdxAmount * vrdxPriceUsd;
   double get totalUsdValue => totalVrdxAmount * vrdxPriceUsd;
+  bool get hasPriceData => vrdxPriceUsd > 0;
 
   /// Percentage of the given VRDX amount relative to the total portfolio
   /// (liquid + staked). Returns 0 when there is no balance at all, instead
@@ -100,7 +101,7 @@ class BalanceCard extends StatelessWidget {
               _buildAllocationRow(
                 context,
                 title: 'Total Portfolio Value',
-                amount: '\$${totalUsdValue.toStringAsFixed(2)} USD',
+                amount: hasPriceData ? '\$${totalUsdValue.toStringAsFixed(2)} USD' : 'Testnet',
                 percentage: '100.0%',
                 color: Colors.white,
                 isBold: true,
@@ -223,7 +224,8 @@ class BalanceCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  Container(
+                  if (hasPriceData)
+Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: (isPositive ? const Color(0xFF00E676) : theme.colorScheme.error)
@@ -278,7 +280,7 @@ class BalanceCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '≈ \$${usdValue.toStringAsFixed(2)} USD',
+                    hasPriceData ? '≈ \$${usdValue.toStringAsFixed(2)} USD' : 'Testnet — No USD value',
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
