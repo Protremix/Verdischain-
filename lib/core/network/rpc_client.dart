@@ -37,6 +37,16 @@ class RpcClient {
     return result as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> getSyncState() async {
+    final result = await call('system_syncState');
+    return result as Map<String, dynamic>;
+  }
+
+  Future<String> getFinalizedHead() async {
+    final result = await call('chain_getFinalizedHead');
+    return result.toString();
+  }
+
   Future<String> getChainName() async {
     final result = await call('system_chain');
     return result.toString();

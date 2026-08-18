@@ -235,19 +235,34 @@ class NetworkStatusBadge extends StatelessWidget {
     super.key,
     required this.isConnected,
     this.blockNumber,
+    this.isSyncing = false,
   });
   final bool isConnected;
   final int? blockNumber;
+  final bool isSyncing;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    
+    // Syncing = orange/amber, Connected = green, Disconnected = red
+    final bool isHealthy = isConnected && !isSyncing;
+    final color = isHealthy
+        ? theme.colorScheme.primary
+        : isSyncing
+            ? Colors.amber
+            : theme.colorScheme.error;
+    
+    final label = isSyncing
+        ? 'Syncing...'
+        : isConnected
+            ? (blockNumber != null ? 'Block #$blockNumber' : 'Connected')
+            : 'Disconnected';
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: isConnected
-            ? theme.colorScheme.primary.withOpacity(0.1)
-            : theme.colorScheme.error.withOpacity(0.1),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -258,16 +273,14 @@ class NetworkStatusBadge extends StatelessWidget {
             height: 8,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isConnected ? theme.colorScheme.primary : theme.colorScheme.error,
+              color: color,
             ),
           ),
           const SizedBox(width: 8),
           Text(
-            isConnected
-                ? blockNumber != null ? 'Block #$blockNumber' : 'Connected'
-                : 'Disconnected',
+            label,
             style: theme.textTheme.labelSmall?.copyWith(
-              color: isConnected ? theme.colorScheme.primary : theme.colorScheme.error,
+              color: color,
             ),
           ),
         ],

@@ -7,10 +7,11 @@ class NetworkStatusData {
     required this.blockHeight,
     required this.peersCount,
     required this.epochProgress,
-    this.currentEpoch = 42,
+    this.currentEpoch = 0,
     required this.validatorCount,
     required this.consensusInfo,
     this.isConnected = true,
+    this.isSyncing = false,
   });
   final int blockHeight;
   final int peersCount;
@@ -19,6 +20,7 @@ class NetworkStatusData {
   final int validatorCount;
   final String consensusInfo;
   final bool isConnected;
+  final bool isSyncing;
 }
 
 /// Data class representing staking summary for the current user account

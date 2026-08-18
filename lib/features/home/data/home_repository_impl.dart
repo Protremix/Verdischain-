@@ -58,32 +58,64 @@ class HomeRepositoryImpl implements HomeRepository {
   Future<NetworkStatusData> getNetworkStatus() async {
     int blockHeight = 0;
     int peers = 0;
+    bool isSyncing = false;
+    int validatorCount = 0;
 
+    // 1. Get current block height
     try {
       final header = await _rpcClient.getHeader();
       final parsedNum = _parseBlockNumber(header['number']);
       if (parsedNum > 0) blockHeight = parsedNum;
     } catch (_) {}
 
+    // 2. Get peer count and sync status from system_health
     try {
       final health = await _rpcClient.getHealth();
       if (health.containsKey('peers')) {
         peers = (health['peers'] as num).toInt();
       }
+      if (health.containsKey('isSyncing')) {
+        isSyncing = health['isSyncing'] as bool;
+      }
     } catch (_) {}
 
-    // Calculate epoch progress assuming 2400 blocks per epoch
-    final epochProgress = blockHeight > 0 ? (blockHeight % 2400) / 2400.0 : 0.0;
-    final currentEpoch = blockHeight > 0 ? (blockHeight / 2400).floor() : 0;
+    // 3. Get validator count from TX Relay
+    try {
+      final response = await http.post(
+        Uri.parse(_txRelayUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'action': 'validators'}),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['ok'] == true) {
+          final validators = data['data']?['validators'] as List<dynamic>?;
+          if (validators != null) {
+            validatorCount = validators.length;
+          }
+        }
+      }
+    } catch (_) {}
+
+    // 4. Calculate epoch progress — actual EpochDuration is 20 blocks
+    const epochDuration = 20;
+    final epochProgress = blockHeight > 0 ? (blockHeight % epochDuration) / epochDuration.toDouble() : 0.0;
+    final currentEpoch = blockHeight > 0 ? (blockHeight / epochDuration).floor() : 0;
+
+    // Node is connected if it has a block height and is not actively syncing
+    // (or if it is syncing but already has blocks — initial sync in progress)
+    final isConnected = blockHeight > 0;
 
     return NetworkStatusData(
       blockHeight: blockHeight,
       peersCount: peers,
       epochProgress: epochProgress,
       currentEpoch: currentEpoch,
-      validatorCount: 0,
+      validatorCount: validatorCount,
       consensusInfo: 'BABE/GRANDPA + DPoS',
-      isConnected: blockHeight > 0,
+      isConnected: isConnected,
+      isSyncing: isSyncing,
     );
   }
 

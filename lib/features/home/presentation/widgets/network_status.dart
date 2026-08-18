@@ -46,6 +46,7 @@ class NetworkStatusCard extends StatelessWidget {
               NetworkStatusBadge(
                 isConnected: networkStatus.isConnected,
                 blockNumber: networkStatus.blockHeight,
+                isSyncing: networkStatus.isSyncing,
               ),
             ],
           ),
