@@ -1,0 +1,110 @@
+# Codemagic CI/CD Configuration for Verdis Wallet
+# Builds iOS (IPA) and Android (APK) from the same config
+# Documentation: https://docs.codemagic.io/yaml/yaml-getting-started/
+
+definitions:
+  - name: &flutter_version 3.24.5
+
+workflows:
+  ios-workflow:
+    name: iOS Build
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      flutter: *flutter_version
+      groups:
+        - ios_credentials
+      vars:
+        BUNDLE_ID: "com.verdis.verdisWallet"
+      xcode: latest
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+        - pattern: wallet-security
+          include: true
+      cancel_previous_builds: true
+    scripts:
+      - name: Install dependencies
+        script: |
+          flutter pub get
+      - name: Generate code (freezed/json)
+        script: |
+          dart run build_runner build --delete-conflicting-outputs || true
+      - name: Build iOS (unsigned for testing)
+        script: |
+          flutter build ios --release --no-codesign
+    artifacts:
+      - build/ios/iphoneos/Runner.app
+      - build/ios/ipa/*.ipa
+    publishing:
+      email:
+        recipients:
+          - roygordons15@gmail.com
+
+  ios-signed-workflow:
+    name: iOS Signed IPA
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      flutter: *flutter_version
+      groups:
+        - ios_credentials
+      vars:
+        BUNDLE_ID: "com.verdis.verdisWallet"
+      xcode: latest
+    triggering:
+      events:
+        - manual
+      cancel_previous_builds: true
+    scripts:
+      - name: Install dependencies
+        script: |
+          flutter pub get
+      - name: Generate code
+        script: |
+          dart run build_runner build --delete-conflicting-outputs || true
+      - name: Build signed IPA
+        script: |
+          # Codemagic handles code signing via the ios_credentials group
+          # Requires: APP_STORE_CONNECT_PRIVATE_KEY, APP_STORE_CONNECT_KEY_IDENTIFIER,
+          #            APP_STORE_CONNECT_ISSUER_ID in environment variables
+          flutter build ipa --release
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      email:
+        recipients:
+          - roygordons15@gmail.com
+
+  android-workflow:
+    name: Android APK
+    instance_type: linux_x2
+    max_build_duration: 40
+    environment:
+      flutter: *flutter_version
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+      cancel_previous_builds: true
+    scripts:
+      - name: Install dependencies
+        script: |
+          flutter pub get
+      - name: Generate code
+        script: |
+          dart run build_runner build --delete-conflicting-outputs || true
+      - name: Build APK
+        script: |
+          flutter build apk --release
+    artifacts:
+      - build/app/outputs/apk/release/*.apk
+    publishing:
+      email:
+        recipients:
+          - roygordons15@gmail.com
