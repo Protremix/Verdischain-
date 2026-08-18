@@ -44,8 +44,8 @@ class AppConstants {
 
   // App Info
   static const String appName = 'Verdis Wallet';
-  static const String appVersion = '2.1.10';
-  static const String appBuild = '30';
+  static const String appVersion = '2.1.11';
+  static const String appBuild = '31';
 
   // Security
   static const int pinLength = 6;

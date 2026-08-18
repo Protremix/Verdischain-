@@ -32,10 +32,24 @@ class _AboutPageState extends ConsumerState<AboutPage> {
     } catch (_) {}
   }
 
+  // Use launchUrl directly — canLaunchUrl returns false on Android 11+
+  // without <queries> in manifest, even when the URL is launchable.
   Future<void> _launchUrl(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
+    try {
+      final uri = Uri.parse(url);
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      // Fallback: try in-app browser
+      try {
+        final uri = Uri.parse(url);
+        await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Could not open: $url')),
+          );
+        }
+      }
     }
   }
 
@@ -46,7 +60,7 @@ class _AboutPageState extends ConsumerState<AboutPage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Brand logo — same asset used on the splash screen, for consistent branding
+          // Brand logo
           Center(
             child: Column(
               children: [
@@ -65,44 +79,93 @@ class _AboutPageState extends ConsumerState<AboutPage> {
           ),
           const SizedBox(height: 32),
 
+          // About Verdis Chain — improved text
+          const _SectionTitle('About Verdis Chain'),
+          VerdisCard(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Energy-Efficient Blockchain Ecosystem',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Verdis Chain is a Substrate-based blockchain infrastructure designed for energy efficiency. '
+                    'It features native DPoS consensus with BABE/GRANDPA finality, on-chain carbon credit tracking, '
+                    'reforestation logging, and green validator scoring — incentivizing environmentally responsible '
+                    'blockchain participation.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'The ecosystem includes a native AMM-based decentralized exchange (DEX), fungible token support, '
+                    'governance, vesting, and presale pallets — all built as custom Substrate runtime modules.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  // Key stats
+                  _buildStatRow(context, 'Token', 'VRDX'),
+                  _buildStatRow(context, 'Total Supply', '100,000,000,000 VRDX'),
+                  _buildStatRow(context, 'Consensus', 'DPoS (BABE/GRANDPA)'),
+                  _buildStatRow(context, 'Decimals', '9'),
+                  _buildStatRow(context, 'Network Status', 'Testnet'),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
           // Links
           const _SectionTitle('Links'),
           VerdisCard(
             child: Column(
               children: [
-                ListTile(
-                  leading: const Icon(Icons.language),
-                  title: const Text('verdischain.com'),
-                  trailing: const Icon(Icons.open_in_new, size: 18),
-                  onTap: () => _launchUrl('https://verdischain.com'),
+                _buildLinkTile(
+                  icon: Icons.language,
+                  title: 'Website',
+                  subtitle: 'verdischain.com',
+                  url: 'https://verdischain.com',
                 ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.menu_book),
-                  title: const Text('Documentation'),
-                  trailing: const Icon(Icons.open_in_new, size: 18),
-                  onTap: () => _launchUrl('https://docs.verdischain.com'),
+                const Divider(height: 1),
+                _buildLinkTile(
+                  icon: Icons.explore,
+                  title: 'Block Explorer',
+                  subtitle: 'verdischain.com/explorer',
+                  url: NetworkConfig.explorerUrl,
                 ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.search),
-                  title: const Text('Block Explorer'),
-                  trailing: const Icon(Icons.open_in_new, size: 18),
-                  onTap: () => _launchUrl(NetworkConfig.explorerUrl),
+                const Divider(height: 1),
+                _buildLinkTile(
+                  icon: Icons.menu_book,
+                  title: 'Documentation',
+                  subtitle: 'docs.verdischain.com',
+                  url: 'https://docs.verdischain.com',
                 ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.code),
-                  title: const Text('GitHub'),
-                  trailing: const Icon(Icons.open_in_new, size: 18),
-                  onTap: () => _launchUrl('https://github.com/Protremix/Verdischain-'),
+                const Divider(height: 1),
+                _buildLinkTile(
+                  icon: Icons.local_drink,
+                  title: 'Faucet',
+                  subtitle: 'verdischain.com/faucet',
+                  url: NetworkConfig.faucetUrl,
                 ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.local_drink),
-                  title: const Text('Faucet'),
-                  trailing: const Icon(Icons.open_in_new, size: 18),
-                  onTap: () => _launchUrl(NetworkConfig.faucetUrl),
+                const Divider(height: 1),
+                _buildLinkTile(
+                  icon: Icons.code,
+                  title: 'GitHub',
+                  subtitle: 'github.com/Protremix/Verdischain-',
+                  url: 'https://github.com/Protremix/Verdischain-',
+                ),
+                const Divider(height: 1),
+                _buildLinkTile(
+                  icon: Icons.email,
+                  title: 'Contact',
+                  subtitle: 'info@verdischain.com',
+                  url: 'mailto:info@verdischain.com',
                 ),
               ],
             ),
@@ -114,54 +177,50 @@ class _AboutPageState extends ConsumerState<AboutPage> {
           VerdisCard(
             child: Column(
               children: [
-                ListTile(
-                  leading: const Icon(Icons.description),
-                  title: const Text('Privacy Policy'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _launchUrl('https://verdischain.com/privacy'),
+                _buildLinkTile(
+                  icon: Icons.description,
+                  title: 'Privacy Policy',
+                  subtitle: 'verdischain.com/privacy',
+                  url: 'https://verdischain.com/privacy',
                 ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.security),
-                  title: const Text('Security'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _launchUrl('https://verdischain.com/security'),
+                const Divider(height: 1),
+                _buildLinkTile(
+                  icon: Icons.security,
+                  title: 'Security',
+                  subtitle: 'verdischain.com/security',
+                  url: 'https://verdischain.com/security',
                 ),
               ],
             ),
           ),
           const SizedBox(height: 24),
 
-          // About Verdis
-          const _SectionTitle('About Verdis'),
+          // Community
+          const _SectionTitle('Community'),
           VerdisCard(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'The First Fully Green Blockchain Ecosystem',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Verdis is a carbon-negative blockchain ecosystem featuring on-chain carbon credits, '
-                    'reforestation logging, and green validator scoring. Powered by BABE/GRANDPA consensus '
-                    'with native DPoS, AMM DEX, and smart contract support.',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Total Supply: ${NetworkConfig.totalSupply} ${NetworkConfig.tokenSymbol}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ],
-              ),
+            child: Column(
+              children: [
+                _buildLinkTile(
+                  icon: Icons.chat,
+                  title: 'WhatsApp Support',
+                  subtitle: '+44 7451 261353',
+                  url: 'https://wa.me/447451261353',
+                ),
+                const Divider(height: 1),
+                _buildLinkTile(
+                  icon: Icons.article,
+                  title: 'Whitepaper',
+                  subtitle: 'verdischain.com/whitepaper',
+                  url: 'https://verdischain.com/whitepaper',
+                ),
+                const Divider(height: 1),
+                _buildLinkTile(
+                  icon: Icons.swap_horiz,
+                  title: 'DEX',
+                  subtitle: 'verdischain.com/dex',
+                  url: 'https://verdischain.com/dex',
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 32),
@@ -173,15 +232,59 @@ class _AboutPageState extends ConsumerState<AboutPage> {
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
+          const SizedBox(height: 16),
         ],
       ),
+    );
+  }
+
+  Widget _buildStatRow(BuildContext context, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLinkTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required String url,
+  }) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
+      trailing: const Icon(Icons.open_in_new, size: 18),
+      onTap: () => _launchUrl(url),
     );
   }
 }
 
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle(this.title);
-  final String title;
+  final title;
 
   @override
   Widget build(BuildContext context) {
