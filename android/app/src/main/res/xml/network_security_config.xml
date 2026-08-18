@@ -2,8 +2,12 @@
 <network-security-config>
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">verdischain.com</domain>
-        <pin-set expiration="2027-01-01">
-            <!-- Production SSL pinning would go here -->
+        <pin-set expiration="2027-08-01">
+            <pin digest="SHA-256">Q9Es7Pcby7+GIVo+q5+j1RPHZbj7O/IUySuEy16zsB8=</pin>
+            <pin digest="SHA-256">brzvtCELCIZUo4sD/qPX0ccRtPsd3DY6RfmxpOU9oB4=</pin>
         </pin-set>
+    </domain-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">evolvixos.com</domain>
     </domain-config>
 </network-security-config>

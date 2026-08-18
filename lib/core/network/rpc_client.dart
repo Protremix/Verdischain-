@@ -12,7 +12,7 @@ class RpcClient {
       receiveTimeout: const Duration(seconds: 30),
       headers: {'Content-Type': 'application/json'},
     ),);
-    // Certificate pinning: only allow verdischain.com certs
+    // Reject all invalid certificates (cert pinning is enforced at OS level via network_security_config.xml)
     (_dio.httpClientAdapter as dynamic).onHttpClientCreate = (client) {
       client.badCertificateCallback = (cert, host, port) {
         // Reject any cert that is not for verdischain.com
