@@ -1766,6 +1766,7 @@ async function loadLatestBlocks() {
   tbody.innerHTML = html || '<tr><td colspan="4" style="text-align:center;color:var(--text-3)">No blocks</td></tr>';
   window._blocksLoaded = true;
   loadLatestExtrinsics();
+  loadLatestTxs();
 }
 
 // Helper: decode extrinsic bytes
@@ -3415,7 +3416,7 @@ async function init() {
   setInterval(updateInfoCards, 15000);
   setInterval(updateTps, 5000);
   setInterval(updateValidatorsQuick, 10000);
-  setInterval(function() { loadLatestBlocks(); loadLatestTxs(); loadVrdxPrice(); }, 10000);
+  setInterval(function() { loadLatestBlocks(); loadVrdxPrice(); }, 10000);
 }
 
 // updateTps is now defined above with real RPC data
