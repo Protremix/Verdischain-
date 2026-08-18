@@ -12,7 +12,10 @@ final secureStorageProvider = Provider<SecureStorageHelper>((ref) {
 
 class SecureStorageHelper {
   SecureStorageHelper() : _storage = const FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    aOptions: AndroidOptions(
+      encryptedSharedPreferences: false,
+      resetOnError: true,
+    ),
   );
   final FlutterSecureStorage _storage;
 

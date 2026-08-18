@@ -7,6 +7,7 @@ class RouteNames {
   static const String verifyPhrase = '/verify-phrase';
   static const String biometricSetup = '/biometric-setup';
   static const String pinSetup = '/pin-setup';
+  static const String lock = '/lock';
   static const String home = '/home';
   static const String send = '/send';
   static const String receive = '/receive';

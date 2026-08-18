@@ -25,6 +25,7 @@ abstract class WalletRepository {
     required String privateKey,
     required String publicKey,
     required String address,
+    String? pin,
   });
 
   /// Read active wallet keys and address from secure storage

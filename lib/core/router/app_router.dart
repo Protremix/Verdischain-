@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/onboarding/presentation/splash_page.dart';
+import '../../features/onboarding/presentation/lock_screen_page.dart';
 import '../../features/onboarding/presentation/welcome_page.dart';
 import '../../features/onboarding/presentation/create_wallet_page.dart';
 import '../../features/onboarding/presentation/import_wallet_page.dart';
@@ -34,6 +35,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/splash',
     routes: [
       GoRoute(path: '/splash', builder: (c, s) => const SplashPage()),
+      GoRoute(path: "/lock", builder: (c, s) => const LockScreenPage()),
       GoRoute(
         path: '/security-notice',
         name: 'SecurityNotice',

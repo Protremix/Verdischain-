@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:verdis_wallet/core/router/route_names.dart';
 import '../domain/wallet_repository.dart';
 import 'package:verdis_wallet/core/config/network_config.dart';
-import 'package:verdis_wallet/features/home/presentation/home_providers.dart';
 
 /// Animated splash page with Verdis V logo animation
 class SplashPage extends ConsumerStatefulWidget {
@@ -31,14 +30,9 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
       if (!mounted) return;
       if (hasWallet) {
-        // Load the stored wallet and set the address provider
-        final wallet = await repository.loadWallet();
-        if (wallet != null && wallet.containsKey('address')) {
-          // Update the selectedAddressProvider with the real wallet address
-          ref.read(selectedAddressProvider.notifier).state = wallet['address']!;
-        }
+        // Wallet exists — go to lock screen for PIN/biometric unlock
         if (!mounted) return;
-        context.go(RouteNames.home);
+        context.go(RouteNames.lock);
       } else {
         context.go(RouteNames.welcome);
       }

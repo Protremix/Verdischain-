@@ -371,12 +371,13 @@ class PinSetupNotifier extends StateNotifier<PinSetupState> {
       final pinHash = await _repository.hashPin(state.pin);
       await _repository.savePinHash(pinHash);
 
-      // 3. Store wallet in secure storage
+      // 3. Store wallet in secure storage (with PIN for mnemonic encryption)
       await _repository.storeWallet(
         mnemonic: mnemonic,
         privateKey: privateKey,
         publicKey: publicKey,
         address: address,
+        pin: state.pin,
       );
 
       state = state.copyWith(isLoading: false, isSuccess: true);
