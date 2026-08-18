@@ -55,10 +55,9 @@ workflows:
       vars:
         BUNDLE_ID: "com.verdis.verdisWallet"
       xcode: latest
-    triggering:
-      events:
-        - manual
-      cancel_previous_builds: true
+    # No "triggering" block = this workflow does not auto-trigger on push.
+    # Start it manually from the Codemagic dashboard ("Start new build" -> select this workflow)
+    # or via the Codemagic REST API / CLI.
     scripts:
       - name: Install dependencies
         script: |
