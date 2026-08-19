@@ -199,7 +199,15 @@ workflows:
 
       - name: Build Android APK
         script: |
-          flutter build apk --release --verbose
+          flutter build apk --release --verbose || true
+          # Flutter 3.41.7 outputs to android/app/build, copy to expected path
+          if [ ! -f build/app/outputs/flutter-apk/app-release.apk ] && [ -f android/app/build/outputs/flutter-apk/app-release.apk ]; then
+            mkdir -p build/app/outputs/flutter-apk
+            cp android/app/build/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/
+            echo 'Copied APK to expected Flutter path'
+          fi
+          # Verify APK exists
+          ls -la build/app/outputs/flutter-apk/app-release.apk || ls -la android/app/build/outputs/flutter-apk/app-release.apk
 
     artifacts:
       - build/app/outputs/flutter-apk/*.apk
