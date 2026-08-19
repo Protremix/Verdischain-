@@ -31,14 +31,35 @@ workflows:
         script: |
           keychain initialize
           
-          # Generate a stable RSA key and pass as PEM content (NOT @file:)
-          # This key is needed by fetch-signing-files to create a CSR and new certificate
+          # Generate RSA key for CSR
           ssh-keygen -t rsa -b 2048 -m PEM -f /tmp/cert_key -q -N ""
           export CERTIFICATE_PRIVATE_KEY="$(cat /tmp/cert_key)"
           
+          # Create cert + profile
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
+          
+          # CRITICAL: fetch-signing-files saves .p12 to disk but does NOT import into keychain
+          # Manually import the .p12 into the keychain so xcodebuild can find it
+          KEYCHAIN=$(security default-keychain | tr -d '"')
+          security unlock-keychain -p '' "$KEYCHAIN"
+          P12_FILE=$(ls /Users/builder/Library/Developer/Xcode/UserData/Certificates/DISTRIBUTION_*.p12 2>/dev/null | head -1)
+          if [ -n "$P12_FILE" ]; then
+            echo "Importing certificate: $P12_FILE"
+            security import "$P12_FILE" -k "$KEYCHAIN" -P '' -T /usr/bin/codesign -T /usr/bin/security -A
+          else
+            echo "ERROR: No .p12 file found"
+            exit 1
+          fi
+          
+          # Verify cert is in keychain
+          IDENTITY_COUNT=$(security find-identity -p codesigning | grep -c "valid identities")
+          echo "Valid code signing identities: $IDENTITY_COUNT"
+          if [ "$IDENTITY_COUNT" -eq 0 ]; then
+            echo "ERROR: No valid identities in keychain after import"
+            exit 1
+          fi
           
           xcode-project use-profiles
 
@@ -51,7 +72,14 @@ workflows:
 
       - name: Build iOS IPA (App Store)
         script: |
+          # Use Codemagic-generated export options
           cat /Users/builder/export_options.plist
+          
+          # Clean build to avoid "replacing existing signature" error
+          flutter clean
+          flutter pub get
+          cd ios && pod install && cd ..
+          
           flutter build ipa --release \
             --export-options-plist=/Users/builder/export_options.plist
 
