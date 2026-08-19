@@ -42,8 +42,11 @@ workflows:
           
           # CRITICAL: fetch-signing-files saves .p12 to disk but does NOT import into keychain
           # Manually import the .p12 into the keychain so xcodebuild can find it
-          KEYCHAIN=$(security default-keychain | tr -d '"')
+          # Use xargs to trim leading/trailing whitespace from security default-keychain output
+          KEYCHAIN=$(security default-keychain | tr -d '"' | xargs)
+          echo "Keychain: $KEYCHAIN"
           security unlock-keychain -p '' "$KEYCHAIN"
+          
           P12_FILE=$(ls /Users/builder/Library/Developer/Xcode/UserData/Certificates/DISTRIBUTION_*.p12 2>/dev/null | head -1)
           if [ -n "$P12_FILE" ]; then
             echo "Importing certificate: $P12_FILE"
@@ -53,13 +56,14 @@ workflows:
             exit 1
           fi
           
-          # Verify cert is in keychain
-          IDENTITY_COUNT=$(security find-identity -p codesigning | grep -c "valid identities")
-          echo "Valid code signing identities: $IDENTITY_COUNT"
-          if [ "$IDENTITY_COUNT" -eq 0 ]; then
-            echo "ERROR: No valid identities in keychain after import"
+          # Verify cert is in keychain — check for actual identity, not just the "0 valid" string
+          IDENTITY=$(security find-identity -v -p codesigning | grep "Apple Distribution" || true)
+          if [ -z "$IDENTITY" ]; then
+            echo "ERROR: No valid Apple Distribution identity in keychain after import"
+            security find-identity -v -p codesigning
             exit 1
           fi
+          echo "Identity found: $IDENTITY"
           
           xcode-project use-profiles
 
@@ -72,7 +76,6 @@ workflows:
 
       - name: Build iOS IPA (App Store)
         script: |
-          # Use Codemagic-generated export options
           cat /Users/builder/export_options.plist
           
           # Clean build to avoid "replacing existing signature" error
