@@ -1,21 +1,15 @@
 # Codemagic Configuration for Verdis Wallet — iOS + Android
-# Documentation: https://docs.codemagic.io/yaml/yaml-getting-started/
-#
-# iOS signing + publishing uses the Codemagic "app_store_connect" integration
-# named "Protremix" (Team Settings > Integrations > Apple Developer Portal).
-# This single App Store Connect API key handles BOTH certificate/profile
-# management (fetch-signing-files) AND TestFlight publishing.
-# Android signing + Google Play publishing uses the "Protremix" environment
-# variable group (Team Settings > Environment variable groups).
+# iOS signing via App Store Connect API key (env vars from Protremix group)
 
 workflows:
-  # === iOS BUILD + TESTFLIGHT DEPLOY ===
   ios-build:
     name: Verdis Wallet iOS
     max_build_duration: 30
     integrations:
       app_store_connect: Protremix
     environment:
+      groups:
+        - Protremix
       vars:
         BUNDLE_ID: com.verdis.wallet
         APP_NAME: Verdis Wallet
@@ -37,14 +31,22 @@ workflows:
       - name: Set up code signing (Development)
         script: |
           keychain initialize
+          # Debug: show what credentials are available
+          echo "APP_STORE_CONNECT_ISSUER_ID is set: ${APP_STORE_CONNECT_ISSUER_ID:+yes}"
+          echo "APP_STORE_CONNECT_KEY_ID is set: ${APP_STORE_CONNECT_KEY_ID:+yes}"
+          echo "APP_STORE_CONNECT_PRIVATE_KEY is set: ${APP_STORE_CONNECT_PRIVATE_KEY:+yes}"
+          echo "CM_APP_STORE_CONNECT_ISSUER_ID is set: ${CM_APP_STORE_CONNECT_ISSUER_ID:+yes}"
+          echo "CM_APP_STORE_CONNECT_KEY_ID is set: ${CM_APP_STORE_CONNECT_KEY_ID:+yes}"
+          echo "CM_APP_STORE_CONNECT_PRIVATE_KEY is set: ${CM_APP_STORE_CONNECT_PRIVATE_KEY:+yes}"
+          # Try fetching signing files with verbose output
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_DEVELOPMENT \
-            --create
+            --create \
+            --verbose
           xcode-project use-profiles
 
       - name: Install CocoaPods
         script: |
-          # Delete stale Generated.xcconfig (may have wrong FLUTTER_ROOT from another machine)
           rm -f ios/Flutter/Generated.xcconfig
           flutter precache --ios
           flutter pub get
@@ -69,7 +71,6 @@ workflows:
         submit_to_testflight: true
         submit_to_app_store: false
 
-  # === ANDROID BUILD + PLAY STORE DEPLOY ===
   android-build:
     name: Verdis Wallet Android
     max_build_duration: 20
