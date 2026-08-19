@@ -37,11 +37,10 @@ workflows:
           export CERTIFICATE_PRIVATE_KEY="@file:/tmp/cert_private_key"
           echo "Certificate private key generated and CERTIFICATE_PRIVATE_KEY set"
           
-          # The integration already sets APP_STORE_CONNECT_ISSUER_ID, 
-          # APP_STORE_CONNECT_KEY_IDENTIFIER, and APP_STORE_CONNECT_PRIVATE_KEY
-          # so we don't need to pass --issuer-id, --key-id, or --private-key explicitly
+          # Use IOS_APP_STORE profile type — IOS_APP_DEVELOPMENT requires registered test devices
+          # IOS_APP_STORE works for TestFlight + App Store distribution without device registration
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_DEVELOPMENT \
+            --type IOS_APP_STORE \
             --create
           
           xcode-project use-profiles
@@ -53,7 +52,7 @@ workflows:
           flutter pub get
           cd ios && pod install
 
-      - name: Build iOS IPA (Development)
+      - name: Build iOS IPA (App Store)
         script: |
           flutter build ipa --release \
             --export-options-plist=ios/ExportOptions.plist
