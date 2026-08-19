@@ -1,4 +1,3 @@
-# Build trigger: use Apple Dev Portal integration + fix Generated.xcconfig
 # Codemagic Configuration for Verdis Wallet — iOS + Android
 # Documentation: https://docs.codemagic.io/yaml/yaml-getting-started/
 #
@@ -8,7 +7,7 @@
 # variable group (Team Settings > Environment variable groups).
 
 workflows:
-  # === iOS BUILD + APP STORE DEPLOY ===
+  # === iOS BUILD + TESTFLIGHT DEPLOY ===
   ios-build:
     name: Verdis Wallet iOS
     max_build_duration: 30
@@ -33,11 +32,11 @@ workflows:
         script: |
           flutter pub get
 
-      - name: Set up code signing
+      - name: Set up code signing (Development)
         script: |
           keychain initialize
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
+            --type IOS_APP_DEVELOPMENT \
             --create
           xcode-project use-profiles
 
@@ -49,7 +48,7 @@ workflows:
           flutter pub get
           cd ios && pod install
 
-      - name: Build iOS IPA
+      - name: Build iOS IPA (Development)
         script: |
           flutter build ipa --release \
             --export-options-plist=ios/ExportOptions.plist
