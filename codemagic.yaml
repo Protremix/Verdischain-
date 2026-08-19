@@ -1,5 +1,5 @@
 # Codemagic Configuration for Verdis Wallet — iOS + Android
-# iOS signing via App Store Connect API key (env vars from Protremix group)
+# iOS signing via App Store Connect API key
 
 workflows:
   ios-build:
@@ -13,6 +13,7 @@ workflows:
       vars:
         BUNDLE_ID: com.verdis.wallet
         APP_NAME: Verdis Wallet
+        APP_STORE_CONNECT_KEY_ID: 458H542TK5
       flutter: stable
       xcode: latest
     triggering:
@@ -31,18 +32,9 @@ workflows:
       - name: Set up code signing (Development)
         script: |
           keychain initialize
-          # Debug: show what credentials are available
-          echo "APP_STORE_CONNECT_ISSUER_ID is set: ${APP_STORE_CONNECT_ISSUER_ID:+yes}"
-          echo "APP_STORE_CONNECT_KEY_ID is set: ${APP_STORE_CONNECT_KEY_ID:+yes}"
-          echo "APP_STORE_CONNECT_PRIVATE_KEY is set: ${APP_STORE_CONNECT_PRIVATE_KEY:+yes}"
-          echo "CM_APP_STORE_CONNECT_ISSUER_ID is set: ${CM_APP_STORE_CONNECT_ISSUER_ID:+yes}"
-          echo "CM_APP_STORE_CONNECT_KEY_ID is set: ${CM_APP_STORE_CONNECT_KEY_ID:+yes}"
-          echo "CM_APP_STORE_CONNECT_PRIVATE_KEY is set: ${CM_APP_STORE_CONNECT_PRIVATE_KEY:+yes}"
-          # Try fetching signing files with verbose output
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_DEVELOPMENT \
-            --create \
-            --verbose
+            --create
           xcode-project use-profiles
 
       - name: Install CocoaPods
