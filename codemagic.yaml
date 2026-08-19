@@ -1,108 +1,73 @@
-# Codemagic CI/CD Configuration for Verdis Wallet
-# Builds iOS (IPA) and Android (APK) from the same config
+# Codemagic Configuration for Verdis Wallet iOS builds
 # Documentation: https://docs.codemagic.io/yaml/yaml-getting-started/
-
-definitions:
-  - name: &flutter_version 3.24.5
+#
+# Setup requirements:
+# 1. Sign up at https://codemagic.io (free tier: 500 min/month)
+# 2. Add this repo (Protremix/Verdischain-)
+# 3. Create an App Store Connect API key:
+#    - Go to https://appstoreconnect.apple.com/access/integrations/api
+#    - Generate a key with "App Manager" role
+#    - Save the .p8 file, Issuer ID, and Key ID
+# 4. Add these as environment variables in Codemagic (App > Settings > Environment variables):
+#    - APP_STORE_CONNECT_PRIVATE_KEY (contents of .p8 file)
+#    - APP_STORE_CONNECT_ISSUER_ID
+#    - APP_STORE_CONNECT_KEY_IDENTIFIER
+#    - APP_STORE_TEAM_ID (your Apple Developer Team ID, found in Apple Developer > Account > Membership)
+# 5. Put the above vars in a group called "apple" (App > Settings > Environment variable groups)
+# 6. Push to main branch to trigger a build
 
 workflows:
-  ios-workflow:
-    name: iOS Build
-    instance_type: mac_mini_m2
-    max_build_duration: 60
+  ios-build:
+    name: Verdis Wallet iOS
+    max_build_duration: 30
     environment:
-      flutter: *flutter_version
       groups:
-        - ios_credentials
+        - apple
       vars:
-        BUNDLE_ID: "com.verdis.verdisWallet"
+        BUNDLE_ID: com.verdis.wallet
+        APP_NAME: Verdis Wallet
+      flutter: stable
       xcode: latest
     triggering:
       events:
         - push
-      branch_patterns:
-        - pattern: main
-          include: true
-        - pattern: wallet-security
-          include: true
-      cancel_previous_builds: true
-    scripts:
-      - name: Install dependencies
-        script: |
-          flutter pub get
-      - name: Generate code (freezed/json)
-        script: |
-          dart run build_runner build --delete-conflicting-outputs || true
-      - name: Build iOS (unsigned for testing)
-        script: |
-          flutter build ios --release --no-codesign
-    artifacts:
-      - build/ios/iphoneos/Runner.app
-      - build/ios/ipa/*.ipa
-    publishing:
-      email:
-        recipients:
-          - roygordons15@gmail.com
-
-  ios-signed-workflow:
-    name: iOS Signed IPA
-    instance_type: mac_mini_m2
-    max_build_duration: 60
-    environment:
-      flutter: *flutter_version
-      groups:
-        - ios_credentials
-      vars:
-        BUNDLE_ID: "com.verdis.verdisWallet"
-      xcode: latest
-    # No "triggering" block = this workflow does not auto-trigger on push.
-    # Start it manually from the Codemagic dashboard ("Start new build" -> select this workflow)
-    # or via the Codemagic REST API / CLI.
-    scripts:
-      - name: Install dependencies
-        script: |
-          flutter pub get
-      - name: Generate code
-        script: |
-          dart run build_runner build --delete-conflicting-outputs || true
-      - name: Build signed IPA
-        script: |
-          # Codemagic handles code signing via the ios_credentials group
-          # Requires: APP_STORE_CONNECT_PRIVATE_KEY, APP_STORE_CONNECT_KEY_IDENTIFIER,
-          #            APP_STORE_CONNECT_ISSUER_ID in environment variables
-          flutter build ipa --release
-    artifacts:
-      - build/ios/ipa/*.ipa
-    publishing:
-      email:
-        recipients:
-          - roygordons15@gmail.com
-
-  android-workflow:
-    name: Android APK
-    instance_type: linux_x2
-    max_build_duration: 40
-    environment:
-      flutter: *flutter_version
-    triggering:
-      events:
-        - push
+        - tag
       branch_patterns:
         - pattern: main
           include: true
       cancel_previous_builds: true
     scripts:
-      - name: Install dependencies
+      - name: Flutter dependencies
         script: |
           flutter pub get
-      - name: Generate code
+
+      - name: Set up code signing
         script: |
-          dart run build_runner build --delete-conflicting-outputs || true
-      - name: Build APK
+          # Initialize temporary keychain
+          keychain initialize
+
+          # Fetch signing files from App Store Connect
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+
+          # Use the fetched profiles
+          xcode-project use-profiles
+
+      - name: Install CocoaPods
         script: |
-          flutter build apk --release
+          cd ios && pod install
+
+      - name: Build iOS IPA
+        script: |
+          flutter build ipa --release \
+            --export-options-plist=ios/ExportOptions.plist
+
     artifacts:
-      - build/app/outputs/apk/release/*.apk
+      - build/ios/ipa/*.ipa
+      - build/ios/ipa/*.dSYM.zip
+      - $HOME/Library/Developer/Xcode/Archives/*.xcarchive
+
     publishing:
       email:
         recipients:
