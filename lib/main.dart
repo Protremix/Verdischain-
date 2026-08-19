@@ -4,22 +4,34 @@ import 'app.dart';
 import 'core/di/injection.dart';
 import 'core/security/platform_security_service.dart';
 import 'core/storage/hive_helper.dart';
-import 'core/config/remote_config.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize dependency injection
-  await configureDependencies();
+  // Initialize everything — if any step fails, still run the app
+  try {
+    await configureDependencies();
+  } catch (e) {
+    debugPrint('⚠️ configureDependencies failed: $e');
+  }
 
-  // Initialize Hive storage
-  await HiveHelper.init();
+  try {
+    await HiveHelper.init();
+  } catch (e) {
+    debugPrint('⚠️ HiveHelper.init failed: $e');
+  }
 
-  // Enable screenshot prevention (FLAG_SECURE) on Android
-  await PlatformSecurityService.setSecureFlag(enabled: true);
+  try {
+    await PlatformSecurityService.setSecureFlag(enabled: true);
+  } catch (e) {
+    debugPrint('⚠️ setSecureFlag failed: $e');
+  }
 
-  // Check for rooted device
-  final isRooted = await PlatformSecurityService.isDeviceRooted();
+  try {
+    await PlatformSecurityService.isDeviceRooted();
+  } catch (e) {
+    debugPrint('⚠️ isDeviceRooted failed: $e');
+  }
 
   runApp(
     ProviderScope(
