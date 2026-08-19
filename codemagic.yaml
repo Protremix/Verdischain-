@@ -31,26 +31,23 @@ workflows:
         script: |
           keychain initialize
           
-          # The integration exports APP_STORE_CONNECT_PRIVATE_KEY as @file:/path/to/AuthKey.p8
-          # We need to resolve it to the actual file path and read the key content
-          KEY_FILE_PATH="${APP_STORE_CONNECT_PRIVATE_KEY#@file:}"
-          echo "Private key file: $KEY_FILE_PATH"
+          # Generate a new 2048-bit RSA private key for the certificate
+          # fetch-signing-files needs this to create/save the signing certificate
+          ssh-keygen -t rsa -b 2048 -m PEM -f /tmp/cert_private_key -q -N ""
+          echo "Generated certificate private key"
           
-          if [ -f "$KEY_FILE_PATH" ]; then
-            echo "Key file exists, size: $(wc -c < "$KEY_FILE_PATH") bytes"
-            # Pass the file directly to --private-key flag
-            app-store-connect fetch-signing-files "$BUNDLE_ID" \
-              --type IOS_APP_DEVELOPMENT \
-              --create \
-              --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
-              --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-              --private-key "$KEY_FILE_PATH" 2>&1
-          else
-            echo "Key file not found, trying with env var directly"
-            app-store-connect fetch-signing-files "$BUNDLE_ID" \
-              --type IOS_APP_DEVELOPMENT \
-              --create 2>&1
-          fi
+          # Resolve the @file: prefix for the API key
+          API_KEY_PATH="${APP_STORE_CONNECT_PRIVATE_KEY#@file:}"
+          echo "API key path: $API_KEY_PATH"
+          
+          # Fetch signing files — pass both the API key AND the certificate private key
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_DEVELOPMENT \
+            --create \
+            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
+            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            --private-key "$API_KEY_PATH" \
+            --certificate-key /tmp/cert_private_key
           
           xcode-project use-profiles
 
