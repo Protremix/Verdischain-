@@ -1,14 +1,19 @@
 # Codemagic Configuration for Verdis Wallet — iOS + Android
 # Documentation: https://docs.codemagic.io/yaml/yaml-getting-started/
+#
+# iOS signing uses the Codemagic "Apple Developer Portal integration"
+# named "Protremix" (Team Settings > Integrations > Apple Developer Portal).
+# Android signing + Google Play publishing uses the "Protremix" environment
+# variable group (Team Settings > Environment variable groups).
 
 workflows:
   # === iOS BUILD + APP STORE DEPLOY ===
   ios-build:
     name: Verdis Wallet iOS
     max_build_duration: 30
+    integrations:
+      app_store_connect: Protremix
     environment:
-      groups:
-        - Protremix
       vars:
         BUNDLE_ID: com.verdis.wallet
         APP_NAME: Verdis Wallet
@@ -39,7 +44,6 @@ workflows:
         script: |
           # Delete stale Generated.xcconfig (may have wrong FLUTTER_ROOT from another machine)
           rm -f ios/Flutter/Generated.xcconfig
-          # Regenerate it with the correct Flutter SDK path
           flutter precache --ios
           flutter pub get
           cd ios && pod install
@@ -59,9 +63,7 @@ workflows:
         recipients:
           - roygordons15@gmail.com
       app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        auth: integration
         submit_to_testflight: true
         submit_to_app_store: false
 
