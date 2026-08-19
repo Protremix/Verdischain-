@@ -30,26 +30,9 @@ workflows:
       - name: Set up code signing
         script: |
           keychain initialize
-          
-          # Use stable certificate key from env var if available, otherwise generate one
-          if [ -n "$CERTIFICATE_PRIVATE_KEY" ] && [ "$CERTIFICATE_PRIVATE_KEY" != "" ]; then
-            echo "Using stable CERTIFICATE_PRIVATE_KEY from environment"
-            echo "$CERTIFICATE_PRIVATE_KEY" > /tmp/cert_private_key
-            chmod 600 /tmp/cert_private_key
-          else
-            echo "Generating new certificate private key (WARN: store this in env vars for reuse)"
-            ssh-keygen -t rsa -b 2048 -m PEM -f /tmp/cert_private_key -q -N ""
-            echo "=== SAVE THIS KEY IN PROTREMIX ENV GROUP ==="
-            cat /tmp/cert_private_key
-            echo "=== END KEY ==="
-          fi
-          export CERTIFICATE_PRIVATE_KEY="@file:/tmp/cert_private_key"
-          
-          # Use IOS_APP_STORE — works for TestFlight without requiring registered test devices
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
-          
           xcode-project use-profiles
 
       - name: Install CocoaPods
@@ -61,6 +44,8 @@ workflows:
 
       - name: Build iOS IPA (App Store)
         script: |
+          # Use Codemagic-generated export options
+          cat /Users/builder/export_options.plist
           flutter build ipa --release \
             --export-options-plist=/Users/builder/export_options.plist
 
