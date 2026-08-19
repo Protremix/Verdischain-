@@ -1,5 +1,5 @@
 # Codemagic Configuration for Verdis Wallet — iOS + Android
-# iOS signing via App Store Connect API key
+# iOS signing via automatic signing with team ID
 
 workflows:
   ios-build:
@@ -29,13 +29,25 @@ workflows:
         script: |
           flutter pub get
 
-      - name: Set up code signing (Development)
+      - name: Set up automatic code signing
         script: |
+          # Initialize keychain
           keychain initialize
+          # Try to fetch signing files — if it fails, fall back to auto signing
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_DEVELOPMENT \
-            --create
-          xcode-project use-profiles
+            --create || true
+          # Force automatic signing with team ID in Xcode project
+          cd ios
+          /usr/libexec/PlistBuddy -c "Set :DevelopmentTeam 84399KX4RA" Runner.xcodeproj/project.pbxproj 2>/dev/null || true
+          # Use sed to set automatic signing style and team ID in pbxproj
+          sed -i '' 's/CODE_SIGN_STYLE = Manual/CODE_SIGN_STYLE = Automatic/g' Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGN_STYLE = \"Manual\"/CODE_SIGN_STYLE = Automatic/g' Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/DEVELOPMENT_TEAM = [A-Z0-9]*/DEVELOPMENT_TEAM = 84399KX4RA/g' Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/PROVISIONING_PROFILE_SPECIFIED = YES/PROVISIONING_PROFILE_SPECIFIED = NO/g' Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/PROVISIONING_PROFILE = \"[^\"]*\"/PROVISIONING_PROFILE = \"\"/g' Runner.xcodeproj/project.pbxproj
+          echo "Signing style set to Automatic, Team ID: 84399KX4RA"
+          xcode-project use-profiles || true
 
       - name: Install CocoaPods
         script: |
