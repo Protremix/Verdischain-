@@ -30,9 +30,16 @@ workflows:
       - name: Set up code signing
         script: |
           keychain initialize
+          
+          # Generate a stable RSA key and pass as PEM content (NOT @file:)
+          # This key is needed by fetch-signing-files to create a CSR and new certificate
+          ssh-keygen -t rsa -b 2048 -m PEM -f /tmp/cert_key -q -N ""
+          export CERTIFICATE_PRIVATE_KEY="$(cat /tmp/cert_key)"
+          
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
+          
           xcode-project use-profiles
 
       - name: Install CocoaPods
@@ -44,7 +51,6 @@ workflows:
 
       - name: Build iOS IPA (App Store)
         script: |
-          # Use Codemagic-generated export options
           cat /Users/builder/export_options.plist
           flutter build ipa --release \
             --export-options-plist=/Users/builder/export_options.plist
