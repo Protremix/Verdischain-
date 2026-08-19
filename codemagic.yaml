@@ -46,12 +46,15 @@ workflows:
             xcrun simctl install "$SIM_ID" "$APP_PATH"
             xcrun simctl launch "$SIM_ID" com.verdis.wallet
             sleep 10
-            mkdir -p simulator-screenshots
-            xcrun simctl io "$SIM_ID" screenshot simulator-screenshots/01-launch.png
+            SCREENSHOT_DIR="$CM_BUILD_DIR/simulator-screenshots"
+            mkdir -p "$SCREENSHOT_DIR"
+            echo "Screenshot dir: $SCREENSHOT_DIR"
+            ls -la "$SCREENSHOT_DIR"
+            xcrun simctl io "$SIM_ID" screenshot "$SCREENSHOT_DIR/01-launch.png"
             sleep 5
-            xcrun simctl io "$SIM_ID" screenshot simulator-screenshots/02-onboarding.png
+            xcrun simctl io "$SIM_ID" screenshot "$SCREENSHOT_DIR/02-onboarding.png"
             sleep 5
-            xcrun simctl io "$SIM_ID" screenshot simulator-screenshots/03-dashboard.png
+            xcrun simctl io "$SIM_ID" screenshot "$SCREENSHOT_DIR/03-dashboard.png"
           else
             echo "App not found, searching..."
             find build -name 'Runner.app' 2>/dev/null
@@ -187,7 +190,7 @@ workflows:
       - build/ios/ipa/*.ipa
       - build/ios/ipa/*.dSYM.zip
       - $HOME/Library/Developer/Xcode/Archives/*.xcarchive
-      - simulator-screenshots/*.png
+      - /simulator-screenshots/*.png
 
     publishing:
       email:
