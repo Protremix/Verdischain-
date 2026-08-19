@@ -1,8 +1,10 @@
 # Codemagic Configuration for Verdis Wallet — iOS + Android
 # Documentation: https://docs.codemagic.io/yaml/yaml-getting-started/
 #
-# iOS signing uses the Codemagic "Apple Developer Portal integration"
+# iOS signing + publishing uses the Codemagic "app_store_connect" integration
 # named "Protremix" (Team Settings > Integrations > Apple Developer Portal).
+# This single App Store Connect API key handles BOTH certificate/profile
+# management (fetch-signing-files) AND TestFlight publishing.
 # Android signing + Google Play publishing uses the "Protremix" environment
 # variable group (Team Settings > Environment variable groups).
 
@@ -13,7 +15,6 @@ workflows:
     max_build_duration: 30
     integrations:
       app_store_connect: Protremix
-      apple_developer_portal: Protremix
     environment:
       vars:
         BUNDLE_ID: com.verdis.wallet
