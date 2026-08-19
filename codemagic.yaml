@@ -146,7 +146,6 @@ workflows:
           
           echo "Using API key: $KEY_FILE"
           
-          # Upload using xcrun altool with verbose output
           xcrun altool --upload-app \
             --type ios \
             --file "$IPA_FILE" \
@@ -198,19 +197,14 @@ workflows:
           cp /tmp/key.properties android/key.properties
           cp /tmp/verdis-release.jks android/app/verdis-release.jks
 
-      - name: Build Android APK/AAB
+      - name: Build Android APK
         script: |
-          flutter build appbundle --release
+          flutter build apk --release
 
     artifacts:
-      - build/app/outputs/bundle/release/*.aab
       - build/app/outputs/flutter-apk/*.apk
 
     publishing:
       email:
         recipients:
           - rojsgordons@gmail.com
-      google_play:
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: internal
-        submit_as_draft: true
