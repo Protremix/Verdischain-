@@ -26,8 +26,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace "com.verdis.wallet"
-    compileSdk 35
-    buildToolsVersion "35.0.0"
+    compileSdk 36
+    buildToolsVersion "36.0.0"
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -41,7 +41,7 @@ android {
 
     defaultConfig {
         applicationId "com.verdis.wallet"
-        minSdk 21
+        minSdkVersion flutter.minSdkVersion
         targetSdk 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
