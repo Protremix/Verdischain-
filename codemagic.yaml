@@ -31,6 +31,48 @@ workflows:
         script: |
           keychain initialize
           
+          # Revoke any existing Distribution certificates to avoid 409 conflict
+          # Apple only allows ONE Distribution cert at a time
+          pip3 install --quiet PyJWT cryptography 2>/dev/null
+          python3 << 'PYEOF'
+          import json, time, urllib.request, os
+          ISSUER_ID = '4148739c-436f-4b67-a527-4476eb79a43b'
+          KEY_ID = os.environ.get('APP_STORE_CONNECT_KEY_IDENTIFIER', '458H542TK5')
+          # Find the private key file
+          import glob
+          key_files = glob.glob('/Users/builder/.appstoreconnect/private_keys/AuthKey_*.p8')
+          if not key_files:
+              key_files = glob.glob('/Users/builder/.appstoreconnect/private_keys/*.p8')
+          if not key_files:
+              print('No API key found, skipping revocation')
+              exit(0)
+          with open(key_files[0], 'r') as f:
+              private_key = f.read()
+          import jwt
+          payload = {'iss': ISSUER_ID, 'iat': int(time.time()), 'exp': int(time.time()) + 900, 'aud': 'appstoreconnect-v1'}
+          headers = {'kid': KEY_ID, 'typ': 'JWT', 'alg': 'ES256'}
+          token = jwt.encode(payload, private_key, algorithm='ES256', headers=headers)
+          if isinstance(token, bytes): token = token.decode('utf-8')
+          req = urllib.request.Request('https://api.appstoreconnect.apple.com/v1/certificates',
+              headers={'Authorization': f'Bearer {token}', 'Accept': 'application/json'})
+          resp = urllib.request.urlopen(req)
+          data = json.loads(resp.read())
+          certs = data.get('data', [])
+          print(f'Found {len(certs)} existing certificates')
+          for cert in certs:
+              if cert['attributes'].get('certificateType') in ('DISTRIBUTION', 'IOS_DISTRIBUTION'):
+                  cert_id = cert['id']
+                  revoke_req = urllib.request.Request(
+                      f'https://api.appstoreconnect.apple.com/v1/certificates/{cert_id}',
+                      method='DELETE',
+                      headers={'Authorization': f'Bearer {token}'})
+                  try:
+                      urllib.request.urlopen(revoke_req)
+                      print(f'Revoked cert {cert_id}')
+                  except Exception as e:
+                      print(f'Revoke failed for {cert_id}: {e}')
+          PYEOF
+          
           # Generate RSA key for CSR
           ssh-keygen -t rsa -b 2048 -m PEM -f /tmp/cert_key -q -N ""
           export CERTIFICATE_PRIVATE_KEY="$(cat /tmp/cert_key)"
@@ -42,7 +84,6 @@ workflows:
           
           # CRITICAL: fetch-signing-files saves .p12 to disk but does NOT import into keychain
           # Manually import the .p12 into the keychain so xcodebuild can find it
-          # Use xargs to trim leading/trailing whitespace from security default-keychain output
           KEYCHAIN=$(security default-keychain | tr -d '"' | xargs)
           echo "Keychain: $KEYCHAIN"
           security unlock-keychain -p '' "$KEYCHAIN"
@@ -56,7 +97,7 @@ workflows:
             exit 1
           fi
           
-          # Verify cert is in keychain — check for actual identity, not just the "0 valid" string
+          # Verify cert is in keychain
           IDENTITY=$(security find-identity -v -p codesigning | grep "Apple Distribution" || true)
           if [ -z "$IDENTITY" ]; then
             echo "ERROR: No valid Apple Distribution identity in keychain after import"
