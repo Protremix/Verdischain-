@@ -27,61 +27,32 @@ workflows:
         script: |
           flutter pub get
 
-      - name: Debug and set up code signing
+      - name: Set up code signing
         script: |
-          # Debug: show what credentials are available (masked)
-          echo "=== Credential Check ==="
-          echo "ISSUER_ID length: ${#APP_STORE_CONNECT_ISSUER_ID}"
-          echo "ISSUER_ID first 8: ${APP_STORE_CONNECT_ISSUER_ID:0:8}"
-          echo "KEY_ID length: ${#APP_STORE_CONNECT_KEY_ID}"
-          echo "KEY_ID value: '$APP_STORE_CONNECT_KEY_ID'"
-          echo "PRIVATE_KEY length: ${#APP_STORE_CONNECT_PRIVATE_KEY}"
-          echo "PRIVATE_KEY first 30: ${APP_STORE_CONNECT_PRIVATE_KEY:0:30}"
-          echo "PRIVATE_KEY last 30: ${APP_STORE_CONNECT_PRIVATE_KEY: -30}"
-          echo "PRIVATE_KEY contains BEGIN: $(echo $APP_STORE_CONNECT_PRIVATE_KEY | grep -c 'BEGIN')"
-          echo "PRIVATE_KEY contains END: $(echo $APP_STORE_CONNECT_PRIVATE_KEY | grep -c 'END')"
-          
-          # Also check CM_ prefixed vars
-          echo "CM_ISSUER_ID length: ${#CM_APP_STORE_CONNECT_ISSUER_ID}"
-          echo "CM_KEY_ID length: ${#CM_APP_STORE_CONNECT_KEY_ID}"
-          echo "CM_PRIVATE_KEY length: ${#CM_APP_STORE_CONNECT_PRIVATE_KEY}"
-          
-          # Check if API key file exists
-          echo "API_KEY_PATH: ${APP_STORE_CONNECT_API_KEY_PATH:-not set}"
-          ls -la ${APP_STORE_CONNECT_API_KEY_PATH:-/nonexistent} 2>&1 || true
-          
-          # Initialize keychain
           keychain initialize
           
-          # Try writing private key to file and using --private-key flag
-          if [ -n "$APP_STORE_CONNECT_PRIVATE_KEY" ]; then
-            echo "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/authkey.p8
-            echo "Wrote private key to /tmp/authkey.p8 ($(wc -c < /tmp/authkey.p8) bytes)"
-            
-            # Try with explicit flags
+          # The integration exports APP_STORE_CONNECT_PRIVATE_KEY as @file:/path/to/AuthKey.p8
+          # We need to resolve it to the actual file path and read the key content
+          KEY_FILE_PATH="${APP_STORE_CONNECT_PRIVATE_KEY#@file:}"
+          echo "Private key file: $KEY_FILE_PATH"
+          
+          if [ -f "$KEY_FILE_PATH" ]; then
+            echo "Key file exists, size: $(wc -c < "$KEY_FILE_PATH") bytes"
+            # Pass the file directly to --private-key flag
             app-store-connect fetch-signing-files "$BUNDLE_ID" \
               --type IOS_APP_DEVELOPMENT \
               --create \
               --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
-              --key-id "$APP_STORE_CONNECT_KEY_ID" \
-              --private-key /tmp/authkey.p8 2>&1 || echo "fetch-signing-files failed with explicit flags"
+              --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+              --private-key "$KEY_FILE_PATH" 2>&1
           else
-            echo "No private key found in env vars"
-            # Try integration-based approach
+            echo "Key file not found, trying with env var directly"
             app-store-connect fetch-signing-files "$BUNDLE_ID" \
               --type IOS_APP_DEVELOPMENT \
-              --create 2>&1 || echo "fetch-signing-files failed with integration"
+              --create 2>&1
           fi
           
-          # Set up automatic signing
-          cd ios
-          sed -i '' 's/CODE_SIGN_STYLE = Manual/CODE_SIGN_STYLE = Automatic/g' Runner.xcodeproj/project.pbxproj
-          sed -i '' 's/CODE_SIGN_STYLE = \"Manual\"/CODE_SIGN_STYLE = Automatic/g' Runner.xcodeproj/project.pbxproj
-          sed -i '' 's/DEVELOPMENT_TEAM = [A-Z0-9]*/DEVELOPMENT_TEAM = 84399KX4RA/g' Runner.xcodeproj/project.pbxproj
-          sed -i '' 's/PROVISIONING_PROFILE_SPECIFIED = YES/PROVISIONING_PROFILE_SPECIFIED = NO/g' Runner.xcodeproj/project.pbxproj
-          sed -i '' 's/PROVISIONING_PROFILE = \"[^\"]*\"/PROVISIONING_PROFILE = \"\"/g' Runner.xcodeproj/project.pbxproj
-          echo "Signing config updated"
-          xcode-project use-profiles || true
+          xcode-project use-profiles
 
       - name: Install CocoaPods
         script: |
