@@ -1,36 +1,5 @@
 # Codemagic Configuration for Verdis Wallet — iOS + Android
 # Documentation: https://docs.codemagic.io/yaml/yaml-getting-started/
-#
-# === SETUP ===
-#
-# 1. Sign up at https://codemagic.io (free tier: 500 min/month)
-# 2. Add this repo (Protremix/Verdischain-)
-# 3. Create an App Store Connect API key:
-#    - https://appstoreconnect.apple.com/access/integrations/api
-#    - Generate key with "App Manager" role
-#    - Save .p8 file, Issuer ID, Key ID
-#
-# 4. Create a Google Play service account:
-#    - https://console.cloud.google.com (create or use existing project)
-#    - APIs & Services > Library > enable "Google Play Android Developer API"
-#    - IAM & Admin > Service Accounts > Create service account
-#    - Download JSON key file
-#    - Go to Google Play Console > Settings > API Access
-#    - Link the project and add the service account with admin access
-#
-# 5. Add environment variables in Codemagic (App > Settings > Environment variable groups):
-#    Create group "Protremix":
-#      - APP_STORE_CONNECT_PRIVATE_KEY (contents of .p8 file)
-#      - APP_STORE_CONNECT_ISSUER_ID
-#      - APP_STORE_CONNECT_KEY_IDENTIFIER
-#      - APP_STORE_TEAM_ID (Apple Developer > Account > Membership)
-#      - GCLOUD_SERVICE_ACCOUNT_CREDENTIALS (contents of JSON key file)
-#      - KEYSTORE_BASE64 (base64-encoded .jks file: base64 -i verdis-release.jks)
-#      - KEYSTORE_PASSWORD
-#      - KEY_ALIAS
-#      - KEY_PASSWORD
-#
-# 6. Push to main branch to trigger builds
 
 workflows:
   # === iOS BUILD + APP STORE DEPLOY ===
@@ -68,6 +37,11 @@ workflows:
 
       - name: Install CocoaPods
         script: |
+          # Delete stale Generated.xcconfig (may have wrong FLUTTER_ROOT from another machine)
+          rm -f ios/Flutter/Generated.xcconfig
+          # Regenerate it with the correct Flutter SDK path
+          flutter precache --ios
+          flutter pub get
           cd ios && pod install
 
       - name: Build iOS IPA
@@ -116,18 +90,13 @@ workflows:
 
       - name: Set up Android signing
         script: |
-          # Decode keystore from environment variable
           echo "$KEYSTORE_BASE64" | base64 --decode > /tmp/verdis-release.jks
-
-          # Create key.properties
           cat > /tmp/key.properties << EOF
           storePassword=$KEYSTORE_PASSWORD
           keyPassword=$KEY_PASSWORD
           keyAlias=$KEY_ALIAS
           storeFile=/tmp/verdis-release.jks
           EOF
-
-          # Copy to android directory
           cp /tmp/key.properties android/key.properties
           cp /tmp/verdis-release.jks android/app/verdis-release.jks
 
