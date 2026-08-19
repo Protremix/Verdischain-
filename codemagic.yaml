@@ -31,14 +31,11 @@ workflows:
         script: |
           keychain initialize
           
-          # Revoke any existing Distribution certificates to avoid 409 conflict
-          # Apple only allows ONE Distribution cert at a time
           pip3 install --quiet PyJWT cryptography 2>/dev/null
           python3 << 'PYEOF'
           import json, time, urllib.request, os
           ISSUER_ID = '4148739c-436f-4b67-a527-4476eb79a43b'
           KEY_ID = os.environ.get('APP_STORE_CONNECT_KEY_IDENTIFIER', '458H542TK5')
-          # Find the private key file
           import glob
           key_files = glob.glob('/Users/builder/.appstoreconnect/private_keys/AuthKey_*.p8')
           if not key_files:
@@ -73,17 +70,13 @@ workflows:
                       print(f'Revoke failed for {cert_id}: {e}')
           PYEOF
           
-          # Generate RSA key for CSR
           ssh-keygen -t rsa -b 2048 -m PEM -f /tmp/cert_key -q -N ""
           export CERTIFICATE_PRIVATE_KEY="$(cat /tmp/cert_key)"
           
-          # Create cert + profile
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
           
-          # CRITICAL: fetch-signing-files saves .p12 to disk but does NOT import into keychain
-          # Manually import the .p12 into the keychain so xcodebuild can find it
           KEYCHAIN=$(security default-keychain | tr -d '"' | xargs)
           echo "Keychain: $KEYCHAIN"
           security unlock-keychain -p '' "$KEYCHAIN"
@@ -97,10 +90,9 @@ workflows:
             exit 1
           fi
           
-          # Verify cert is in keychain
           IDENTITY=$(security find-identity -v -p codesigning | grep "Apple Distribution" || true)
           if [ -z "$IDENTITY" ]; then
-            echo "ERROR: No valid Apple Distribution identity in keychain after import"
+            echo "ERROR: No valid Apple Distribution identity in keychain"
             security find-identity -v -p codesigning
             exit 1
           fi
@@ -119,13 +111,48 @@ workflows:
         script: |
           cat /Users/builder/export_options.plist
           
-          # Clean build to avoid "replacing existing signature" error
           flutter clean
           flutter pub get
           cd ios && pod install && cd ..
           
           flutter build ipa --release \
             --export-options-plist=/Users/builder/export_options.plist
+
+      - name: Upload to TestFlight
+        script: |
+          IPA_FILE=$(ls build/ios/ipa/*.ipa | head -1)
+          echo "Found IPA: $IPA_FILE"
+          ls -la "$IPA_FILE"
+          
+          KEY_ID="458H542TK5"
+          ISSUER_ID="4148739c-436f-4b67-a527-4476eb79a43b"
+          
+          KEY_FILE=""
+          for f in /Users/builder/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8 \
+                    /Users/builder/.appstoreconnect/private_keys/*.p8 \
+                    /tmp/AuthKey_${KEY_ID}.p8; do
+            if [ -f "$f" ]; then
+              KEY_FILE="$f"
+              break
+            fi
+          done
+          
+          if [ -z "$KEY_FILE" ]; then
+            echo "ERROR: No .p8 API key found"
+            find / -name "AuthKey_*.p8" 2>/dev/null
+            find / -name "*.p8" 2>/dev/null | head -10
+            exit 1
+          fi
+          
+          echo "Using API key: $KEY_FILE"
+          
+          # Upload using xcrun altool with verbose output
+          xcrun altool --upload-app \
+            --type ios \
+            --file "$IPA_FILE" \
+            --apiKey "$KEY_ID" \
+            --apiIssuer "$ISSUER_ID" \
+            --verbose 2>&1
 
     artifacts:
       - build/ios/ipa/*.ipa
@@ -136,10 +163,6 @@ workflows:
       email:
         recipients:
           - rojsgordons@gmail.com
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
-        submit_to_app_store: false
 
   android-build:
     name: Verdis Wallet Android
