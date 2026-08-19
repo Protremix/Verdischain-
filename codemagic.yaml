@@ -29,7 +29,14 @@ workflows:
 
       - name: Build and Test on iOS Simulator
         script: |
+          # Temporarily disable mobile_scanner (MLKit lacks arm64 sim slices on iOS 26)
+          cp pubspec.yaml pubspec.yaml.bak
+          sed -i '' 's/  mobile_scanner: ^5.2.3/  #mobile_scanner: ^5.2.3/' pubspec.yaml
+          flutter pub get
+          cd ios && pod install && cd ..
           flutter build ios --simulator --no-codesign --debug || true
+          # Restore pubspec
+          cp pubspec.yaml.bak pubspec.yaml
           SIM_ID=$(xcrun simctl list devices available | grep 'iPhone' | head -1 | grep -oE '[A-F0-9-]{36}')
           echo "Using simulator: $SIM_ID"
           xcrun simctl boot "$SIM_ID" 2>/dev/null || true
@@ -213,12 +220,7 @@ workflows:
         script: |
           echo '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' | base64 --decode > /tmp/verdis-release.jks
           keytool -list -keystore /tmp/verdis-release.jks -storepass 'Verdis2026!' 2>&1 | head -3
-          cat > android/key.properties << EOF
-          storePassword=Verdis2026!
-          keyPassword=Verdis2026!
-          keyAlias=verdis
-          storeFile=/tmp/verdis-release.jks
-          EOF
+          printf 'storePassword=Verdis2026!\nkeyPassword=Verdis2026!\nkeyAlias=verdis\nstoreFile=/tmp/verdis-release.jks\n' > android/key.properties
           cat android/key.properties
 
       - name: Build Android APK
