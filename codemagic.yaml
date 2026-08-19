@@ -1,22 +1,43 @@
-# Codemagic Configuration for Verdis Wallet iOS builds
+# Codemagic Configuration for Verdis Wallet — iOS + Android
 # Documentation: https://docs.codemagic.io/yaml/yaml-getting-started/
 #
-# Setup requirements:
+# === SETUP ===
+#
 # 1. Sign up at https://codemagic.io (free tier: 500 min/month)
 # 2. Add this repo (Protremix/Verdischain-)
 # 3. Create an App Store Connect API key:
-#    - Go to https://appstoreconnect.apple.com/access/integrations/api
-#    - Generate a key with "App Manager" role
-#    - Save the .p8 file, Issuer ID, and Key ID
-# 4. Add these as environment variables in Codemagic (App > Settings > Environment variables):
-#    - APP_STORE_CONNECT_PRIVATE_KEY (contents of .p8 file)
-#    - APP_STORE_CONNECT_ISSUER_ID
-#    - APP_STORE_CONNECT_KEY_IDENTIFIER
-#    - APP_STORE_TEAM_ID (your Apple Developer Team ID, found in Apple Developer > Account > Membership)
-# 5. Put the above vars in a group called "apple" (App > Settings > Environment variable groups)
-# 6. Push to main branch to trigger a build
+#    - https://appstoreconnect.apple.com/access/integrations/api
+#    - Generate key with "App Manager" role
+#    - Save .p8 file, Issuer ID, Key ID
+#
+# 4. Create a Google Play service account:
+#    - https://console.cloud.google.com (create or use existing project)
+#    - APIs & Services > Library > enable "Google Play Android Developer API"
+#    - IAM & Admin > Service Accounts > Create service account
+#    - Download JSON key file
+#    - Go to Google Play Console > Settings > API Access
+#    - Link the project and add the service account with admin access
+#
+# 5. Add environment variables in Codemagic (App > Settings > Environment variable groups):
+#    Create group "apple":
+#      - APP_STORE_CONNECT_PRIVATE_KEY (contents of .p8 file)
+#      - APP_STORE_CONNECT_ISSUER_ID
+#      - APP_STORE_CONNECT_KEY_IDENTIFIER
+#      - APP_STORE_TEAM_ID (Apple Developer > Account > Membership)
+#
+#    Create group "google_play":
+#      - GCLOUD_SERVICE_ACCOUNT_CREDENTIALS (contents of JSON key file)
+#
+#    Create group "android_signing":
+#      - KEYSTORE_BASE64 (base64-encoded .jks file: base64 -i verdis-release.jks)
+#      - KEYSTORE_PASSWORD
+#      - KEY_ALIAS
+#      - KEY_PASSWORD
+#
+# 6. Push to main branch to trigger builds
 
 workflows:
+  # === iOS BUILD + APP STORE DEPLOY ===
   ios-build:
     name: Verdis Wallet iOS
     max_build_duration: 30
@@ -43,15 +64,10 @@ workflows:
 
       - name: Set up code signing
         script: |
-          # Initialize temporary keychain
           keychain initialize
-
-          # Fetch signing files from App Store Connect
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
-
-          # Use the fetched profiles
           xcode-project use-profiles
 
       - name: Install CocoaPods
@@ -72,3 +88,67 @@ workflows:
       email:
         recipients:
           - roygordons15@gmail.com
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: true
+        submit_to_app_store: false
+
+  # === ANDROID BUILD + PLAY STORE DEPLOY ===
+  android-build:
+    name: Verdis Wallet Android
+    max_build_duration: 20
+    environment:
+      groups:
+        - android_signing
+        - google_play
+      vars:
+        PACKAGE_NAME: com.verdis.wallet
+      flutter: stable
+    triggering:
+      events:
+        - push
+        - tag
+      branch_patterns:
+        - pattern: main
+          include: true
+      cancel_previous_builds: true
+    scripts:
+      - name: Flutter dependencies
+        script: |
+          flutter pub get
+
+      - name: Set up Android signing
+        script: |
+          # Decode keystore from environment variable
+          echo "$KEYSTORE_BASE64" | base64 --decode > /tmp/verdis-release.jks
+
+          # Create key.properties
+          cat > /tmp/key.properties << EOF
+          storePassword=$KEYSTORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=/tmp/verdis-release.jks
+          EOF
+
+          # Copy to android directory
+          cp /tmp/key.properties android/key.properties
+          cp /tmp/verdis-release.jks android/app/verdis-release.jks
+
+      - name: Build Android APK/AAB
+        script: |
+          flutter build appbundle --release
+
+    artifacts:
+      - build/app/outputs/bundle/release/*.aab
+      - build/app/outputs/flutter-apk/*.apk
+
+    publishing:
+      email:
+        recipients:
+          - roygordons15@gmail.com
+      google_play:
+        service_account: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: true
