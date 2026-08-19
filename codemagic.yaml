@@ -19,16 +19,12 @@
 #    - Link the project and add the service account with admin access
 #
 # 5. Add environment variables in Codemagic (App > Settings > Environment variable groups):
-#    Create group "apple":
+#    Create group "Protremix":
 #      - APP_STORE_CONNECT_PRIVATE_KEY (contents of .p8 file)
 #      - APP_STORE_CONNECT_ISSUER_ID
 #      - APP_STORE_CONNECT_KEY_IDENTIFIER
 #      - APP_STORE_TEAM_ID (Apple Developer > Account > Membership)
-#
-#    Create group "google_play":
 #      - GCLOUD_SERVICE_ACCOUNT_CREDENTIALS (contents of JSON key file)
-#
-#    Create group "android_signing":
 #      - KEYSTORE_BASE64 (base64-encoded .jks file: base64 -i verdis-release.jks)
 #      - KEYSTORE_PASSWORD
 #      - KEY_ALIAS
@@ -43,7 +39,7 @@ workflows:
     max_build_duration: 30
     environment:
       groups:
-        - apple
+        - Protremix
       vars:
         BUNDLE_ID: com.verdis.wallet
         APP_NAME: Verdis Wallet
@@ -101,8 +97,7 @@ workflows:
     max_build_duration: 20
     environment:
       groups:
-        - android_signing
-        - google_play
+        - Protremix
       vars:
         PACKAGE_NAME: com.verdis.wallet
       flutter: stable
