@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
@@ -8,27 +9,32 @@ import 'core/storage/hive_helper.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize everything — if any step fails, still run the app
+  // Initialize everything with timeouts — if any step hangs (e.g., plugin
+  // not registered on this platform), the app still starts and renders.
+  // Each step has a 3-second timeout; failures are non-fatal.
+
   try {
-    await configureDependencies();
+    await configureDependencies().timeout(const Duration(seconds: 3));
   } catch (e) {
     debugPrint('⚠️ configureDependencies failed: $e');
   }
 
   try {
-    await HiveHelper.init();
+    await HiveHelper.init().timeout(const Duration(seconds: 3));
   } catch (e) {
     debugPrint('⚠️ HiveHelper.init failed: $e');
   }
 
   try {
-    await PlatformSecurityService.setSecureFlag(enabled: true);
+    await PlatformSecurityService.setSecureFlag(enabled: true)
+        .timeout(const Duration(seconds: 3));
   } catch (e) {
     debugPrint('⚠️ setSecureFlag failed: $e');
   }
 
   try {
-    await PlatformSecurityService.isDeviceRooted();
+    await PlatformSecurityService.isDeviceRooted()
+        .timeout(const Duration(seconds: 3));
   } catch (e) {
     debugPrint('⚠️ isDeviceRooted failed: $e');
   }
