@@ -14,7 +14,7 @@ import UIKit
     // FlutterViewController creates its own FlutterEngine and renders Dart code
     // We do NOT create a window here — iOS does it from the storyboard
 
-    NSLog(VERDIS_DEBUG: AppDelegate started — storyboard will create window)
+    NSLog("VERDIS_DEBUG: AppDelegate started — storyboard will create window")
 
     return true
   }
