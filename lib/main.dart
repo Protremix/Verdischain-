@@ -9,6 +9,14 @@ import 'core/storage/hive_helper.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Catch ALL Flutter framework errors — in release mode these are silently
+  // swallowed and render as empty (black) widgets. We log them so we can debug.
+  FlutterError.onError = (FlutterErrorDetails details) {
+    debugPrint('FLUTTER ERROR: ${details.exception}');
+    debugPrint('STACK: ${details.stack}');
+    FlutterError.dumpErrorToConsole(details);
+  };
+
   // Initialize everything with timeouts — if any step hangs (e.g., plugin
   // not registered on this platform), the app still starts and renders.
   // Each step has a 3-second timeout; failures are non-fatal.

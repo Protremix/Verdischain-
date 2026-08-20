@@ -83,6 +83,25 @@ class _VerdisWalletAppState extends ConsumerState<VerdisWalletApp> {
       themeMode: themeMode,
       routerConfig: router,
       builder: (context, child) {
+        // Show errors even in release mode (default ErrorWidget is invisible)
+        ErrorWidget.builder = (FlutterErrorDetails details) {
+          return Material(
+            color: const Color(0xFF1A0000),
+            child: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'RENDER ERROR:
+
+${details.exception}
+
+${details.stack}',
+                  style: const TextStyle(color: Color(0xFFFF6B6B), fontSize: 12),
+                ),
+              ),
+            ),
+          );
+        };
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(
             textScaler: const TextScaler.linear(1.0),
