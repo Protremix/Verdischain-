@@ -5,7 +5,7 @@ import UIKit
 @objc class AppDelegate: UIResponder, UIApplicationDelegate {
   var window: UIWindow?
 
-  override func application(
+  func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
