@@ -2,20 +2,20 @@ import Flutter
 import UIKit
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: UIResponder, UIApplicationDelegate {
+  var window: UIWindow?
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    NSLog("VERDIS_DEBUG: AppDelegate started")
+    // iOS loads Main.storyboard automatically (UIMainStoryboardFile in Info.plist)
+    // Main.storyboard has FlutterViewController as initialViewController
+    // FlutterViewController creates its own FlutterEngine and renders Dart code
+    // We do NOT create a window here — iOS does it from the storyboard
 
-    GeneratedPluginRegistrant.register(with: self)
+    NSLog(VERDIS_DEBUG: AppDelegate started — storyboard will create window)
 
-    // With UIApplicationSceneManifest in Info.plist, iOS 13+ uses SceneDelegate
-    // to create the window. We still call super for Flutter engine setup.
-    let result = super.application(application, didFinishLaunchingWithOptions: launchOptions)
-
-    NSLog("VERDIS_DEBUG: super.application returned \(result)")
-    return result
+    return true
   }
 }
