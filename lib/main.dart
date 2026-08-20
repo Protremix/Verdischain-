@@ -1,56 +1,72 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'app.dart';
+import 'core/di/injection.dart';
+import 'core/security/platform_security_service.dart';
+import 'core/storage/hive_helper.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Set ErrorWidget GLOBALLY before runApp — catches ANY widget build failure
+  // In release mode, default ErrorWidget is invisible (black screen)
   ErrorWidget.builder = (FlutterErrorDetails details) {
     return Material(
       color: const Color(0xFF1A0000),
       child: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Text(
-            'RENDER ERROR: ${details.exception}',
-            style: const TextStyle(color: Color(0xFFFF6B6B), fontSize: 14),
+            'RENDER ERROR: ${details.exception}\n${details.stack}',
+            style: const TextStyle(color: Color(0xFFFF6B6B), fontSize: 12),
           ),
         ),
       ),
     );
   };
 
-  // BYPASS everything — no providers, no router, no theme, no init
-  // Just show a green screen with text. If this renders, Flutter works
-  // and the issue is in our app structure. If not, the issue is native.
+  // Catch ALL Flutter framework errors
+  FlutterError.onError = (FlutterErrorDetails details) {
+    debugPrint('FLUTTER ERROR: ${details.exception}');
+    debugPrint('STACK: ${details.stack}');
+    FlutterError.dumpErrorToConsole(details);
+  };
+
+  // CRITICAL: runApp() FIRST so the user sees UI immediately.
+  // All initialization happens in the background while the splash screen is visible.
   runApp(
-    const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        backgroundColor: Color(0xFF00C853),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'FLUTTER WORKS',
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'Build 46 — Diagnostic',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white70,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    ProviderScope(
+      overrides: [],
+      child: const VerdisWalletApp(),
     ),
   );
+
+  // Background initialization — non-blocking, each step has a 3s timeout.
+  // Failures are non-fatal; the app still works with reduced functionality.
+  try {
+    await configureDependencies().timeout(const Duration(seconds: 3));
+  } catch (e) {
+    debugPrint('configureDependencies failed: $e');
+  }
+
+  try {
+    await HiveHelper.init().timeout(const Duration(seconds: 3));
+  } catch (e) {
+    debugPrint('HiveHelper.init failed: $e');
+  }
+
+  try {
+    await PlatformSecurityService.setSecureFlag(enabled: true)
+        .timeout(const Duration(seconds: 3));
+  } catch (e) {
+    debugPrint('setSecureFlag failed: $e');
+  }
+
+  try {
+    await PlatformSecurityService.isDeviceRooted()
+        .timeout(const Duration(seconds: 3));
+  } catch (e) {
+    debugPrint('isDeviceRooted failed: $e');
+  }
 }
