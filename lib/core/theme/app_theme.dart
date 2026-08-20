@@ -37,7 +37,7 @@ class AppTheme {
       colorScheme: colorScheme,
       scaffoldBackgroundColor: _background,
       canvasColor: _surface,
-      fontFamily: 'VerdisSans',
+      // fontFamily removed for testing
 
       // App Bar
       appBarTheme: const AppBarTheme(
