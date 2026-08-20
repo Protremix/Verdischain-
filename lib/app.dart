@@ -91,11 +91,7 @@ class _VerdisWalletAppState extends ConsumerState<VerdisWalletApp> {
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  'RENDER ERROR:
-
-' + details.exception.toString() + '
-
-' + details.stack.toString(),
+                  'RENDER ERROR: ' + details.exception.toString() + ' ' + details.stack.toString(),
                   style: const TextStyle(color: Color(0xFFFF6B6B), fontSize: 12),
                 ),
               ),
