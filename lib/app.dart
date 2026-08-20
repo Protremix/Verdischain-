@@ -93,9 +93,9 @@ class _VerdisWalletAppState extends ConsumerState<VerdisWalletApp> {
                 child: Text(
                   'RENDER ERROR:
 
-${details.exception}
+' + details.exception.toString() + '
 
-${details.stack}',
+' + details.stack.toString(),
                   style: const TextStyle(color: Color(0xFFFF6B6B), fontSize: 12),
                 ),
               ),
