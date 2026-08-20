@@ -27,8 +27,11 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
     try {
       // Check 1: PersistentStorage (plain file — always reliable)
-      final prefsOnboarding = await PersistentStorage.isOnboardingComplete();
-      final prefsAddress = await PersistentStorage.getWalletAddress();
+      // Timeout: if path_provider hangs, skip to welcome page
+      final prefsOnboarding = await PersistentStorage.isOnboardingComplete()
+          .timeout(const Duration(seconds: 3));
+      final prefsAddress = await PersistentStorage.getWalletAddress()
+          .timeout(const Duration(seconds: 3));
       debugPrint('🔵 Splash: prefsOnboarding=$prefsOnboarding, prefsAddress=$prefsAddress');
 
       if (prefsOnboarding && prefsAddress != null && prefsAddress.isNotEmpty) {
@@ -40,7 +43,8 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
       // Check 2: Repository (flutter_secure_storage fallback)
       final repository = ref.read(walletRepositoryProvider);
-      final hasWallet = await repository.hasWallet();
+      final hasWallet = await repository.hasWallet()
+          .timeout(const Duration(seconds: 3));
       debugPrint('🔵 Splash: repository.hasWallet()=$hasWallet');
 
       if (!mounted) return;
