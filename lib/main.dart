@@ -17,40 +17,40 @@ Future<void> main() async {
     FlutterError.dumpErrorToConsole(details);
   };
 
-  // Initialize everything with timeouts — if any step hangs (e.g., plugin
-  // not registered on this platform), the app still starts and renders.
-  // Each step has a 3-second timeout; failures are non-fatal.
-
-  try {
-    await configureDependencies().timeout(const Duration(seconds: 3));
-  } catch (e) {
-    debugPrint('⚠️ configureDependencies failed: $e');
-  }
-
-  try {
-    await HiveHelper.init().timeout(const Duration(seconds: 3));
-  } catch (e) {
-    debugPrint('⚠️ HiveHelper.init failed: $e');
-  }
-
-  try {
-    await PlatformSecurityService.setSecureFlag(enabled: true)
-        .timeout(const Duration(seconds: 3));
-  } catch (e) {
-    debugPrint('⚠️ setSecureFlag failed: $e');
-  }
-
-  try {
-    await PlatformSecurityService.isDeviceRooted()
-        .timeout(const Duration(seconds: 3));
-  } catch (e) {
-    debugPrint('⚠️ isDeviceRooted failed: $e');
-  }
-
+  // CRITICAL: runApp() FIRST so the user sees UI immediately.
+  // All initialization happens in the background while the splash screen is visible.
   runApp(
     ProviderScope(
       overrides: [],
       child: const VerdisWalletApp(),
     ),
   );
+
+  // Background initialization — non-blocking, each step has a 3s timeout.
+  // Failures are non-fatal; the app still works with reduced functionality.
+  try {
+    await configureDependencies().timeout(const Duration(seconds: 3));
+  } catch (e) {
+    debugPrint('configureDependencies failed: $e');
+  }
+
+  try {
+    await HiveHelper.init().timeout(const Duration(seconds: 3));
+  } catch (e) {
+    debugPrint('HiveHelper.init failed: $e');
+  }
+
+  try {
+    await PlatformSecurityService.setSecureFlag(enabled: true)
+        .timeout(const Duration(seconds: 3));
+  } catch (e) {
+    debugPrint('setSecureFlag failed: $e');
+  }
+
+  try {
+    await PlatformSecurityService.isDeviceRooted()
+        .timeout(const Duration(seconds: 3));
+  } catch (e) {
+    debugPrint('isDeviceRooted failed: $e');
+  }
 }
