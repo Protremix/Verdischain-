@@ -189,10 +189,14 @@ pub fn new_full<
             metrics,
         })?;
 
+    // GRANDPA shared voter state — created here so both RPC and voter share it
+    let shared_voter_state = SharedVoterState::empty();
+
     // RPC builder
     let rpc_builder = {
         let client = client.clone();
         let pool = transaction_pool.clone();
+        let shared_voter_state = shared_voter_state.clone();
         Box::new(
             move |_subscription_executor: sc_rpc::SubscriptionTaskExecutor| {
                 let mut module = jsonrpsee::RpcModule::new(());
@@ -222,6 +226,12 @@ pub fn new_full<
                 let dpos = rpc::DposRpcImpl::new(client.clone());
                 module
                     .merge(rpc::DposRpcServer::into_rpc(dpos))
+                    .map_err(|e| Error::Application(Box::new(e)))?;
+
+                // GrandpaApi RPC
+                let grandpa = rpc::GrandpaRpcImpl::new(client.clone());
+                module
+                    .merge(rpc::GrandpaRpcServer::into_rpc(grandpa))
                     .map_err(|e| Error::Application(Box::new(e)))?;
 
                 // EcoApi RPC
@@ -332,7 +342,7 @@ pub fn new_full<
             notification_service: grandpa_notification_service,
             voting_rule: VotingRulesBuilder::default().build(),
             prometheus_registry: prom_registry,
-            shared_voter_state: SharedVoterState::empty(),
+            shared_voter_state: shared_voter_state,
             telemetry: None,
             offchain_tx_pool_factory: OffchainTransactionPoolFactory::new(transaction_pool.clone()),
         })

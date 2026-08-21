@@ -47,6 +47,9 @@ pub trait AmmDexRpc {
 
     #[method(name = "amm_dex_getPrice")]
     fn get_price(&self, pool_id: u32, token: Vec<u8>) -> RpcResult<Option<Balance>>;
+
+    #[method(name = "amm_dex_getSwapQuote")]
+    fn get_swap_quote(&self, pool_id: u32, token_in: Vec<u8>, amount_in: Balance) -> RpcResult<Option<Balance>>;
 }
 
 pub struct AmmDexRpcImpl<C> {
@@ -140,6 +143,14 @@ where
             .get_price(at, pool_id, token)
             .map_err(rpc_err)
     }
+
+    fn get_swap_quote(&self, pool_id: u32, token_in: Vec<u8>, amount_in: Balance) -> RpcResult<Option<Balance>> {
+        let at = self.client.info().best_hash;
+        self.client
+            .runtime_api()
+            .get_swap_quote(at, pool_id, token_in, amount_in)
+            .map_err(rpc_err)
+    }
 }
 
 // === DposApi RPC ===
@@ -161,6 +172,9 @@ pub trait DposRpc {
 
     #[method(name = "dpos_validatorName")]
     fn get_validator_name(&self, validator: AccountId) -> RpcResult<Option<Vec<u8>>>;
+
+    #[method(name = "session_sessionIndex")]
+    fn session_index(&self) -> RpcResult<u32>;
 }
 
 pub struct DposRpcImpl<C> {
@@ -213,6 +227,59 @@ where
             .runtime_api()
             .get_validator_name(at, validator)
             .map_err(rpc_err)
+    }
+
+    fn session_index(&self) -> RpcResult<u32> {
+        let at = self.client.info().best_hash;
+        self.client
+            .runtime_api()
+            .session_index(at)
+            .map_err(rpc_err)
+    }
+}
+
+// === GrandpaRpc ===
+/// Simplified GRANDPA round state for monitoring
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+pub struct GrandpaRoundState {
+    pub best_hash: String,
+    pub best_number: u32,
+    pub finalized_hash: String,
+    pub finalized_number: u32,
+    pub round: u32,
+}
+
+#[rpc(server)]
+pub trait GrandpaRpc {
+    #[method(name = "grandpa_roundState")]
+    fn round_state(&self) -> RpcResult<GrandpaRoundState>;
+}
+
+pub struct GrandpaRpcImpl<C> {
+    client: Arc<C>,
+}
+
+impl<C> GrandpaRpcImpl<C> {
+    pub fn new(client: Arc<C>) -> Self {
+        Self { client }
+    }
+}
+
+impl<C> GrandpaRpcServer for GrandpaRpcImpl<C>
+where
+    C: ProvideRuntimeApi<Block> + HeaderBackend<Block> + 'static,
+{
+    fn round_state(&self) -> RpcResult<GrandpaRoundState> {
+        let info = self.client.info();
+        let best_number: u32 = info.best_number.try_into().unwrap_or(0);
+        let finalized_number: u32 = info.finalized_number.try_into().unwrap_or(0);
+        Ok(GrandpaRoundState {
+            best_hash: format!("{:?}", info.best_hash),
+            best_number,
+            finalized_hash: format!("{:?}", info.finalized_hash),
+            finalized_number,
+            round: best_number,
+        })
     }
 }
 

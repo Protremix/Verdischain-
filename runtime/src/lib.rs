@@ -1530,7 +1530,10 @@ sp_api::decl_runtime_apis! {
         /// Get liquidity for an account in a token pool
         fn get_token_liquidity(pool_id: u32, account: AccountId) -> Balance;
         /// Get price of a token in a native pool
+        /// Get price of a token in a native pool
         fn get_price(pool_id: u32, token: Vec<u8>) -> Option<Balance>;
+        /// Get a swap quote (expected output amount for a given input)
+        fn get_swap_quote(pool_id: u32, token_in: Vec<u8>, amount_in: Balance) -> Option<Balance>;
     }
 
     /// The API to interact with the contracts pallet without executing extrinsics.
@@ -1582,6 +1585,8 @@ sp_api::decl_runtime_apis! {
         fn current_epoch() -> u32;
         /// Get validator name
         fn get_validator_name(validator: AccountId) -> Option<Vec<u8>>;
+        /// Get current session index
+        fn session_index() -> u32;
     }
 
     /// Eco tracking API for RPC
@@ -1659,6 +1664,25 @@ impl_runtime_apis! {
         }
         fn get_price(pool_id: u32, _token: Vec<u8>) -> Option<Balance> {
             pallet_amm_dex::Pallet::<Runtime>::pool_price(pool_id)
+        }
+        fn get_swap_quote(pool_id: u32, token_in: Vec<u8>, amount_in: Balance) -> Option<Balance> {
+            let pool = pallet_amm_dex::Pools::<Runtime>::get(pool_id)?;
+            let token_in_bv: frame_support::BoundedVec<u8, ConstU32<32>> = token_in.try_into().ok()?;
+            let (reserve_in, reserve_out) = if token_in_bv == pool.token_a {
+                (pool.reserve_a, pool.reserve_b)
+            } else if token_in_bv == pool.token_b {
+                (pool.reserve_b, pool.reserve_a)
+            } else {
+                return None;
+            };
+            let fee_num: u128 = pool.fee_numerator as u128;
+            let fee = amount_in.checked_mul(fee_num)? / pool.fee_denominator as u128;
+            let amount_in_after_fee = amount_in.checked_sub(fee)?;
+            let numerator = reserve_out.checked_mul(amount_in_after_fee)?;
+            let denominator = reserve_in.checked_add(amount_in_after_fee)?;
+            let amount_out = numerator.checked_div(denominator)?;
+            if amount_out == 0 { return None; }
+            Some(amount_out)
         }
     }
 
@@ -1940,6 +1964,9 @@ impl_runtime_apis! {
         }
         fn get_validator_name(validator: AccountId) -> Option<Vec<u8>> {
             pallet_dpos::ValidatorNames::<Runtime>::get(&validator).map(|n| n.to_vec())
+        }
+        fn session_index() -> u32 {
+            pallet_session::Pallet::<Runtime>::current_index()
         }
     }
 
