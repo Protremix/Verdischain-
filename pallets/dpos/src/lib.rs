@@ -1017,11 +1017,20 @@ pub mod pallet {
             }
 
             for validator_addr in to_deactivate {
+                // P1-01 FIX: Set slashed=true and record LastSlashedBlock so:
+                // (1) rotate_epoch excludes this validator (!v.slashed filter)
+                // (2) reactivate_validator cooldown is enforced
+                // (3) The validator must explicitly call reactivate_validator to rejoin
+                let current_block_downtime: u32 = frame_system::Pallet::<T>::block_number()
+                    .try_into()
+                    .unwrap_or(0);
                 Validators::<T>::mutate(&validator_addr, |v| {
                     if let Some(v) = v {
                         v.active = false;
+                        v.slashed = true;
                     }
                 });
+                LastSlashedBlock::<T>::insert(&validator_addr, current_block_downtime);
                 MissedEpochs::<T>::remove(&validator_addr);
                 ActiveValidators::<T>::mutate(|v| v.retain(|a| a != &validator_addr));
                 Self::deposit_event(Event::ValidatorSlashed {
@@ -1198,16 +1207,20 @@ pub mod pallet {
         }
 
         fn new_session(new_index: u32) -> Option<Vec<T::AccountId>> {
-            // Rotate epoch when Session asks for new validators.
-            // This aligns DPoS validator selection with BABE/Session epoch boundaries.
+            // P2-01 FIX: Save the previous validator set before rotation.
+            // If the new set is below MinimumValidatorCount, restore the old set
+            // to prevent state inconsistency between Session and ActiveValidators storage.
+            let prev_validators = ActiveValidators::<T>::get();
             if new_index > 0 {
                 let current_block = frame_system::Pallet::<T>::block_number();
                 let block_num: u32 = current_block.try_into().unwrap_or(0);
                 Self::check_downtime(block_num);
             }
             let active = ActiveValidators::<T>::get();
-            // FIX C4: Enforce MinimumValidatorCount — halt chain if below threshold
+            // FIX C4 + P2-01: Enforce MinimumValidatorCount — halt chain if below threshold
             if (active.len() as u32) < T::MinimumValidatorCount::get() {
+                // Restore previous validators to keep state consistent
+                ActiveValidators::<T>::put(prev_validators);
                 // Return None to keep previous validators — halting new session rotation
                 // This prevents the chain from operating with insufficient validators
                 return None;

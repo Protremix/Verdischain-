@@ -274,6 +274,8 @@ pub mod pallet {
         RoundNotEnded,
         /// Presale escrow does not have enough VRDX to fulfill this contribution
         InsufficientEscrowBalance,
+        /// Price precision must be non-zero (P2-04 fix)
+        InvalidPricePrecision,
     }
 
     // === Config ===
@@ -493,13 +495,14 @@ pub mod pallet {
             let gross_amount = payment_amount
                 .checked_mul(&round.token_price)
                 .ok_or(Error::<T>::CalculationOverflow)?;
-            let token_amount = if round.price_precision > BalanceOf::<T>::zero() {
-                gross_amount
-                    .checked_div(&round.price_precision)
-                    .ok_or(Error::<T>::CalculationOverflow)?
-            } else {
-                gross_amount // Fallback for zero precision (treats as 1)
-            };
+            // P2-04 FIX: Reject zero price_precision instead of falling back to no-division
+            ensure!(
+                round.price_precision > BalanceOf::<T>::zero(),
+                Error::<T>::InvalidPricePrecision
+            );
+            let token_amount = gross_amount
+                .checked_div(&round.price_precision)
+                .ok_or(Error::<T>::CalculationOverflow)?;
 
             // Prevent zero-token purchases from truncation
             ensure!(

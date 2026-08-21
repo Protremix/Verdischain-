@@ -757,6 +757,33 @@ pub mod pallet {
                 Error::<T>::InsufficientLiquidity
             );
 
+            // P2-03 FIX: Check k-invariant BEFORE committing state (CEI pattern)
+            let k_before = reserve_in
+                .checked_mul(&reserve_out)
+                .ok_or(Error::<T>::ArithmeticOverflow)?;
+            let k_after = if is_a_to_b {
+                pool.reserve_a
+                    .checked_add(&amount_in)
+                    .ok_or(Error::<T>::ArithmeticOverflow)?
+                    .checked_mul(
+                        &pool.reserve_b
+                            .checked_sub(&amount_out)
+                            .ok_or(Error::<T>::ArithmeticUnderflow)?,
+                    )
+                    .ok_or(Error::<T>::ArithmeticOverflow)?
+            } else {
+                pool.reserve_b
+                    .checked_add(&amount_in)
+                    .ok_or(Error::<T>::ArithmeticOverflow)?
+                    .checked_mul(
+                        &pool.reserve_a
+                            .checked_sub(&amount_out)
+                            .ok_or(Error::<T>::ArithmeticUnderflow)?,
+                    )
+                    .ok_or(Error::<T>::ArithmeticOverflow)?
+            };
+            ensure!(k_after >= k_before, Error::<T>::KInvariantViolated);
+
             // CEI: Update state FIRST, then transfer (prevents reentrancy)
             if is_a_to_b {
                 pool.reserve_a = pool
@@ -793,17 +820,6 @@ pub mod pallet {
                 amount_out,
                 ExistenceRequirement::KeepAlive,
             )?;
-
-            let k_before = reserve_in
-                .checked_mul(&reserve_out)
-                .ok_or(Error::<T>::ArithmeticOverflow)?;
-            let k_after = pool
-                .reserve_a
-                .checked_mul(&pool.reserve_b)
-                .ok_or(Error::<T>::ArithmeticOverflow)?;
-            ensure!(k_after >= k_before, Error::<T>::KInvariantViolated);
-
-            Pools::<T>::insert(pool_id, pool.clone());
 
             TotalVolume::<T>::mutate(|v| *v = v.saturating_add(amount_in));
             TotalSwaps::<T>::mutate(|s| *s = s.saturating_add(1));
