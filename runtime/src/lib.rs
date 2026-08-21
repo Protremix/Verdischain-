@@ -97,6 +97,10 @@ pub type Hash = sp_core::H256;
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 
 /// Opaque types for the node
+pub mod max_supply_currency;
+
+pub use max_supply_currency::MaxSupplyCurrency;
+
 pub mod opaque {
     use super::*;
     pub type Block = generic::Block<Header, super::UncheckedExtrinsic>;
@@ -359,7 +363,7 @@ impl pallet_session::Config for Runtime {
     type Keys = SessionKeys;
     type DisablingStrategy = pallet_session::disabling::UpToLimitWithReEnablingDisablingStrategy;
     type WeightInfo = ();
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     type KeyDeposit = ();
 }
 
@@ -550,7 +554,7 @@ impl pallet_scheduler::Config for Runtime {
 impl pallet_preimage::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type WeightInfo = ();
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     // Post-sudo: Council (2/3) manages scheduler
     type ManagerOrigin =
         pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
@@ -593,7 +597,7 @@ impl frame_support::traits::Contains<RuntimeCall> for VerdisContractCallFilter {
 impl pallet_contracts::Config for Runtime {
     type Time = Timestamp;
     type Randomness = pallet_babe::RandomnessFromOneEpochAgo<Runtime>;
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
     type RuntimeHoldReason = RuntimeHoldReason;
@@ -645,7 +649,7 @@ parameter_types! {
 
 impl pallet_dpos::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     type BlockReward = BlockReward;
     type MinStake = MinValidatorStake;
     type MaxValidators = MaxValidators;
@@ -711,7 +715,7 @@ impl pallet_amm_dex::TokenHandler<AccountId, u128> for Runtime {
     fn fund_for_benchmark(asset: &pallet_amm_dex::AssetId, who: &AccountId, amount: u128) {
         match asset {
             pallet_amm_dex::AssetId::Native => {
-                let _ = <pallet_balances::Pallet<Runtime> as frame_support::traits::Currency<
+                let _ = <crate::max_supply_currency::MaxSupplyCurrency as frame_support::traits::Currency<
                     AccountId,
                 >>::deposit_creating(who, amount);
             }
@@ -740,7 +744,7 @@ impl pallet_amm_dex::TokenHandler<AccountId, u128> for Runtime {
 
 impl pallet_amm_dex::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     type PalletId = DexPalletId;
     type MinimumLiquidity = AmmMinimumLiquidity;
     type MaxPriceImpact = MaxPriceImpact;
@@ -787,7 +791,7 @@ parameter_types! {
 
 impl pallet_fungible_tokens::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     type PalletId = FungibleTokensPalletId;
     type MaxTokensPerAccount = MaxTokensPerAccount;
     type CreateTokenDeposit = CreateTokenDeposit;
@@ -806,7 +810,7 @@ parameter_types! {
 impl pallet_tokenomics::Config for Runtime {
     type AdminOrigin = frame_system::EnsureRoot<AccountId>;
     type RuntimeEvent = RuntimeEvent;
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     type TotalSupply = TotalSupplyConst;
     type InvestorAllocation = InvestorAllocationConst;
     type PalletId = TokenomicsPalletId;
@@ -825,7 +829,7 @@ parameter_types! {
 impl pallet_vesting::Config for Runtime {
     type MaxSchedulesPerAccount = frame_support::traits::ConstU32<10>;
     type RuntimeEvent = RuntimeEvent;
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     type PalletId = VestingPalletId;
     type WeightInfo = pallet_vesting::SubstrateWeight<Runtime>;
     type BlockTimeMs = ConstU64<5000>;
@@ -838,7 +842,7 @@ parameter_types! {
 
 impl pallet_presale::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     type PalletId = PresalePalletId;
     type AdminOrigin = frame_system::EnsureRoot<AccountId>;
     type Vesting = PresaleVestingHandler;
@@ -874,7 +878,7 @@ impl pallet_storage::Config for Runtime {
     type MaxRecords = MaxStorageRecords;
     type MaxSizeBytes = MaxStorageSizeBytes;
     type ShardCount = StorageShardCount;
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     type BaseDeposit = StorageBaseDeposit;
     type DepositPerByte = StorageDepositPerByte;
     type ExpiryBlocks = StorageExpiryBlocks;
@@ -906,7 +910,7 @@ parameter_types! {
 
 impl pallet_identity::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     type BasicDeposit = BasicDeposit;
     type ByteDeposit = ByteDeposit;
     type UsernameDeposit = UsernameDeposit;
@@ -940,7 +944,7 @@ parameter_types! {
 impl pallet_multisig::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     type DepositBase = MultisigDepositBase;
     type DepositFactor = MultisigDepositFactor;
     type MaxSignatories = MaxSignatories;
@@ -1010,7 +1014,7 @@ impl frame_support::traits::InstanceFilter<RuntimeCall> for ProxyType {
 impl pallet_proxy::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     type ProxyType = ProxyType;
     type ProxyDepositBase = ProxyDepositBase;
     type ProxyDepositFactor = ProxyDepositFactor;
@@ -1041,7 +1045,7 @@ impl pallet_assets::Config for Runtime {
     type AssetIdParameter = u32;
     type ReserveData = ();
     type RemoveItemsLimit = ConstU32<1000>;
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     // Post-sudo: Anyone can create NFT collections, Council (2/3) can force
     type CreateOrigin = frame_system::EnsureSigned<AccountId>;
     type ForceOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
@@ -1084,7 +1088,7 @@ impl pallet_nfts::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type CollectionId = u32;
     type ItemId = u32;
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     // Post-sudo: Council (2/3) can force NFT actions
     type ForceOrigin =
         pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
@@ -1156,7 +1160,7 @@ parameter_types! {
 
 impl pallet_treasury::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     type RejectOrigin =
         pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type SpendPeriod = TreasurySpendPeriod;
@@ -1308,7 +1312,7 @@ impl pallet_democracy::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Scheduler = Scheduler;
     type Preimages = Preimage;
-    type Currency = Balances;
+    type Currency = MaxSupplyCurrency;
     type EnactmentPeriod = EnactmentPeriod;
     type LaunchPeriod = LaunchPeriod;
     type VotingPeriod = VotingPeriod;

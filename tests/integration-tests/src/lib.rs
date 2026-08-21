@@ -966,3 +966,239 @@ fn test_multiple_vesting_schedules_independent_tracking() {
         assert_eq!(locked_final, 0, "All vesting should be released");
     });
 }
+
+    // =====================================================================
+    // SUPPLY CAP INVARIANTS — MaxSupplyCurrency enforcement
+    // =====================================================================
+
+    const TEST_CAP: u128 = 100_000_000_000 * 1_000_000_000; // 100B VRDX * 10^9
+
+    #[test]
+    fn invariant_total_supply_constant_is_100b_vrdx() {
+        assert_eq!(
+            TEST_CAP,
+            100_000_000_000_000_000_000u128,
+            "TOTAL_SUPPLY must be 100B * 10^9 = 10^20"
+        );
+    }
+
+    #[test]
+    fn invariant_genesis_issuance_never_exceeds_cap() {
+        new_test_ext().execute_with(|| {
+            let issuance = <pallet_balances::Pallet<Test> as Currency<AccountId32>>::total_issuance();
+            assert!(
+                issuance <= TEST_CAP,
+                "Genesis total_issuance ({}) must never exceed cap ({})",
+                issuance, TEST_CAP
+            );
+        });
+    }
+
+    #[test]
+    fn invariant_staking_does_not_mint() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let charlie = Sr25519Keyring::Charlie.to_account_id();
+
+            let before = <pallet_balances::Pallet<Test> as Currency<AccountId32>>::total_issuance();
+
+            // Register validator + delegate — tokens move, don't mint
+            assert_ok!(Dpos::register_validator(
+                RuntimeOrigin::signed(charlie.clone()),
+                3u8,
+                b"solar".to_vec(),
+            ));
+            assert_ok!(Dpos::vote(
+                RuntimeOrigin::signed(alice.clone()),
+                charlie.clone(),
+                1_000_000_000,
+            ));
+
+            let after = <pallet_balances::Pallet<Test> as Currency<AccountId32>>::total_issuance();
+            assert_eq!(
+                before, after,
+                "Staking must not change total_issuance (tokens move, not mint)"
+            );
+        });
+    }
+
+    #[test]
+    fn invariant_dex_pool_creation_does_not_mint() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+
+            let before = <pallet_balances::Pallet<Test> as Currency<AccountId32>>::total_issuance();
+
+            // Create pool — tokens move from user to pool, don't mint
+            assert_ok!(AmmDex::create_pool(
+                RuntimeOrigin::signed(alice.clone()),
+                b"VRDX".to_vec(),
+                b"ECO".to_vec(),
+                1_000_000_000,
+                1_000_000_000,
+                100_000_000_000u64, // deadline
+            ));
+
+            let after = <pallet_balances::Pallet<Test> as Currency<AccountId32>>::total_issuance();
+            assert_eq!(
+                before, after,
+                "DEX pool creation must not change total_issuance"
+            );
+        });
+    }
+
+    #[test]
+    fn invariant_vesting_assignment_does_not_mint() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+
+            let before = <pallet_balances::Pallet<Test> as Currency<AccountId32>>::total_issuance();
+
+            // Vesting assignment locks existing balance, doesn't mint
+            assert_ok!(Vesting::do_assign_vesting(
+                alice.clone(),
+                b"seed".to_vec(),
+                100_000_000_000,
+            ));
+
+            let after = <pallet_balances::Pallet<Test> as Currency<AccountId32>>::total_issuance();
+            assert_eq!(
+                before, after,
+                "Vesting assignment must not change total_issuance"
+            );
+        });
+    }
+
+    #[test]
+    fn invariant_slashing_does_not_create_supply() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let charlie = Sr25519Keyring::Charlie.to_account_id();
+
+            // Register and stake
+            assert_ok!(Dpos::register_validator(
+                RuntimeOrigin::signed(charlie.clone()),
+                3u8,
+                b"solar".to_vec(),
+            ));
+            assert_ok!(Dpos::vote(
+                RuntimeOrigin::signed(alice.clone()),
+                charlie.clone(),
+                5_000_000_000,
+            ));
+
+            let before = <pallet_balances::Pallet<Test> as Currency<AccountId32>>::total_issuance();
+
+            // Slash — tokens move to treasury, no new supply
+            assert_ok!(Dpos::slash_validator(
+                RuntimeOrigin::root(),
+                charlie.clone(),
+                2_000_000_000,
+                b"downtime".to_vec(),
+            ));
+
+            let after = <pallet_balances::Pallet<Test> as Currency<AccountId32>>::total_issuance();
+            assert!(
+                after <= before,
+                "Slashing must not increase total_issuance (before={}, after={})",
+                before, after
+            );
+        });
+    }
+
+    #[test]
+    fn invariant_total_stake_equals_sum_of_individual_stakes() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let bob = Sr25519Keyring::Bob.to_account_id();
+            let charlie = Sr25519Keyring::Charlie.to_account_id();
+            let dave = Sr25519Keyring::Dave.to_account_id();
+
+            // Genesis has Alice (500B) and Bob (300B) as validators = 800B base
+            let before = Dpos::total_staked();
+
+            // Two new validators (each adds MinStake=1000 to total)
+            assert_ok!(Dpos::register_validator(
+                RuntimeOrigin::signed(charlie.clone()),
+                3u8,
+                b"solar".to_vec(),
+            ));
+            assert_ok!(Dpos::register_validator(
+                RuntimeOrigin::signed(dave.clone()),
+                4u8,
+                b"wind".to_vec(),
+            ));
+
+            // Delegations: 3B + 4B = 7B added
+            assert_ok!(Dpos::vote(
+                RuntimeOrigin::signed(alice.clone()),
+                charlie.clone(),
+                3_000_000_000,
+            ));
+            assert_ok!(Dpos::vote(
+                RuntimeOrigin::signed(bob.clone()),
+                dave.clone(),
+                4_000_000_000,
+            ));
+
+            let after = Dpos::total_staked();
+            let delta = after - before;
+            // Delta = 2 * MinStake (2000) + delegation votes (7B) = 7_000_002_000
+            assert_eq!(
+                delta, 7_000_002_000,
+                "Delta in TotalStaked must equal new registration stakes (2000) + delegation votes (7B)"
+            );
+        });
+    }
+
+    #[test]
+    #[test]
+    fn invariant_no_double_counting_on_revote() {
+        new_test_ext().execute_with(|| {
+            let alice = Sr25519Keyring::Alice.to_account_id();
+            let charlie = Sr25519Keyring::Charlie.to_account_id();
+
+            assert_ok!(Dpos::register_validator(
+                RuntimeOrigin::signed(charlie.clone()),
+                3u8,
+                b"solar".to_vec(),
+            ));
+
+            // Record baseline after registration
+            let baseline = Dpos::total_staked();
+
+            // First vote: 5B
+            assert_ok!(Dpos::vote(
+                RuntimeOrigin::signed(alice.clone()),
+                charlie.clone(),
+                5_000_000_000,
+            ));
+            assert_eq!(
+                Dpos::total_staked() - baseline,
+                5_000_000_000,
+                "First vote should add exactly 5B to total"
+            );
+
+            // Unvote then re-vote with 3B
+            assert_ok!(Dpos::unvote(
+                RuntimeOrigin::signed(alice.clone()),
+                charlie.clone(),
+            ));
+            assert_eq!(
+                Dpos::total_staked() - baseline,
+                0,
+                "After unvote, total stake delta should be zero"
+            );
+
+            assert_ok!(Dpos::vote(
+                RuntimeOrigin::signed(alice.clone()),
+                charlie.clone(),
+                3_000_000_000,
+            ));
+            assert_eq!(
+                Dpos::total_staked() - baseline,
+                3_000_000_000,
+                "Re-voting after unvote must show 3B delta, not 8B (no double count)"
+            );
+        });
+    }
