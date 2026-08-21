@@ -1,0 +1,54 @@
+[package]
+name = "verdis-integration-tests"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "3.7.5", default-features = false, features = ["derive"] }
+scale-info = { version = "2.11.6", default-features = false, features = ["derive"] }
+serde = { version = "1.0", default-features = false, features = ["derive"] }
+
+frame-support = { version = "48.0.0", default-features = false }
+frame-system = { version = "48.0.0", default-features = false }
+sp-core = { version = "43.0.0", default-features = false }
+sp-runtime = { version = "48.0.0", default-features = false }
+sp-io = { version = "48.0.0", default-features = false }
+sp-keyring = { version = "48.0.0" }
+
+pallet-balances = { version = "50.0.0", default-features = false }
+pallet-timestamp = { version = "48.0.0", default-features = false }
+
+# Verdis pallets
+pallet-dpos = { path = "../../pallets/dpos", default-features = false }
+pallet-amm-dex = { path = "../../pallets/amm-dex", default-features = false }
+pallet-eco = { path = "../../pallets/eco", default-features = false }
+pallet-vesting = { path = "../../pallets/vesting", default-features = false }
+pallet-presale = { path = "../../pallets/presale", default-features = false }
+pallet-tokenomics = { path = "../../pallets/tokenomics", default-features = false }
+pallet-fungible-tokens = { path = "../../pallets/fungible-tokens", default-features = false }
+pallet-circuit-breaker = { path = "../../pallets/circuit-breaker", default-features = false }
+
+[features]
+default = ["std"]
+std = [
+    "codec/std",
+    "scale-info/std",
+    "serde/std",
+    "frame-support/std",
+    "frame-system/std",
+    "sp-core/std",
+    "sp-runtime/std",
+    "sp-io/std",
+    "sp-keyring/std",
+    "pallet-balances/std",
+    "pallet-timestamp/std",
+    "pallet-dpos/std",
+    "pallet-amm-dex/std",
+    "pallet-eco/std",
+    "pallet-vesting/std",
+    "pallet-presale/std",
+    "pallet-tokenomics/std",
+    "pallet-fungible-tokens/std",
+    "pallet-circuit-breaker/std",
+]
