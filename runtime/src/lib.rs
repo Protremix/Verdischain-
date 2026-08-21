@@ -690,7 +690,7 @@ impl pallet_amm_dex::TokenHandler<AccountId, u128> for Runtime {
     ) -> DispatchResult {
         match asset {
             pallet_amm_dex::AssetId::Native => {
-                <pallet_balances::Pallet<Runtime> as frame_support::traits::Currency<AccountId>>::transfer(
+                <crate::max_supply_currency::MaxSupplyCurrency as frame_support::traits::Currency<AccountId>>::transfer(
                     from, to, amount, frame_support::traits::ExistenceRequirement::AllowDeath,
                 )
             }
@@ -703,7 +703,7 @@ impl pallet_amm_dex::TokenHandler<AccountId, u128> for Runtime {
     fn has_balance(asset: &pallet_amm_dex::AssetId, who: &AccountId, amount: u128) -> bool {
         match asset {
             pallet_amm_dex::AssetId::Native => {
-                <pallet_balances::Pallet<Runtime> as frame_support::traits::Currency<AccountId>>::free_balance(who) >= amount
+                <crate::max_supply_currency::MaxSupplyCurrency as frame_support::traits::Currency<AccountId>>::free_balance(who) >= amount
             }
             pallet_amm_dex::AssetId::Custom(token_id) => {
                 pallet_fungible_tokens::Pallet::<Runtime>::balance_of(*token_id, who) >= amount
