@@ -175,6 +175,9 @@ pub trait DposRpc {
 
     #[method(name = "session_sessionIndex")]
     fn session_index(&self) -> RpcResult<u32>;
+
+    #[method(name = "dpos_getAllValidatorsDetailed")]
+    fn get_all_validators_detailed(&self) -> RpcResult<Vec<pallet_dpos::Validator<AccountId, Balance>>>;
 }
 
 pub struct DposRpcImpl<C> {
@@ -234,6 +237,14 @@ where
         self.client
             .runtime_api()
             .session_index(at)
+            .map_err(rpc_err)
+    }
+
+    fn get_all_validators_detailed(&self) -> RpcResult<Vec<pallet_dpos::Validator<AccountId, Balance>>> {
+        let at = self.client.info().best_hash;
+        self.client
+            .runtime_api()
+            .get_all_validators_detailed(at)
             .map_err(rpc_err)
     }
 }
@@ -332,6 +343,15 @@ pub trait EcoRpc {
 
     #[method(name = "eco_getAllGreenValidators")]
     fn get_all_green_validators(&self) -> RpcResult<Vec<(AccountId, u8)>>;
+
+    #[method(name = "eco_getAllCarbonCredits")]
+    fn get_all_carbon_credits(&self) -> RpcResult<Vec<pallet_eco::CarbonCredit<AccountId>>>;
+
+    #[method(name = "eco_getAllReforestProjects")]
+    fn get_all_reforest_projects(&self) -> RpcResult<Vec<pallet_eco::ReforestProject>>;
+
+    #[method(name = "eco_getAllGreenValidatorsDetailed")]
+    fn get_all_green_validators_detailed(&self) -> RpcResult<Vec<pallet_eco::GreenValidator<AccountId>>>;
 }
 
 pub struct EcoRpcImpl<C> {
@@ -425,11 +445,116 @@ where
             .get_all_green_validators(at)
             .map_err(rpc_err)
     }
+
+    fn get_all_carbon_credits(&self) -> RpcResult<Vec<pallet_eco::CarbonCredit<AccountId>>> {
+        let at = self.client.info().best_hash;
+        self.client
+            .runtime_api()
+            .get_all_carbon_credits(at)
+            .map_err(rpc_err)
+    }
+
+    fn get_all_reforest_projects(&self) -> RpcResult<Vec<pallet_eco::ReforestProject>> {
+        let at = self.client.info().best_hash;
+        self.client
+            .runtime_api()
+            .get_all_reforest_projects(at)
+            .map_err(rpc_err)
+    }
+
+    fn get_all_green_validators_detailed(&self) -> RpcResult<Vec<pallet_eco::GreenValidator<AccountId>>> {
+        let at = self.client.info().best_hash;
+        self.client
+            .runtime_api()
+            .get_all_green_validators_detailed(at)
+            .map_err(rpc_err)
+    }
+}
+
+// === TokenomicsApi RPC ===
+#[rpc(server)]
+pub trait TokenomicsRpc {
+    #[method(name = "tokenomics_getTotalSupply")]
+    fn get_total_supply(&self) -> RpcResult<Balance>;
+
+    #[method(name = "tokenomics_getCirculatingSupply")]
+    fn get_circulating_supply(&self) -> RpcResult<Balance>;
+
+    #[method(name = "tokenomics_getPresalePrice")]
+    fn get_presale_price(&self) -> RpcResult<u32>;
+
+    #[method(name = "tokenomics_getPresaleRaised")]
+    fn get_presale_raised(&self) -> RpcResult<Balance>;
+
+    #[method(name = "tokenomics_getPresaleSold")]
+    fn get_presale_sold(&self) -> RpcResult<Balance>;
+
+    #[method(name = "tokenomics_getTransferFeeBps")]
+    fn get_transfer_fee_bps(&self) -> RpcResult<u32>;
+
+    #[method(name = "tokenomics_getGreenTreasuryCollected")]
+    fn get_green_treasury_collected(&self) -> RpcResult<Balance>;
+
+    #[method(name = "tokenomics_getDistribution")]
+    fn get_distribution(&self) -> RpcResult<Vec<pallet_tokenomics::DistributionCategory<Balance>>>;
+}
+
+pub struct TokenomicsRpcImpl<C> {
+    client: Arc<C>,
+}
+
+impl<C> TokenomicsRpcImpl<C> {
+    pub fn new(client: Arc<C>) -> Self {
+        Self { client }
+    }
+}
+
+impl<C> TokenomicsRpcServer for TokenomicsRpcImpl<C>
+where
+    C: ProvideRuntimeApi<Block> + HeaderBackend<Block> + 'static,
+    C::Api: TokenomicsRuntimeApi<Block>,
+{
+    fn get_total_supply(&self) -> RpcResult<Balance> {
+        let at = self.client.info().best_hash;
+        self.client.runtime_api().get_total_supply(at).map_err(rpc_err)
+    }
+    fn get_circulating_supply(&self) -> RpcResult<Balance> {
+        let at = self.client.info().best_hash;
+        self.client.runtime_api().get_circulating_supply(at).map_err(rpc_err)
+    }
+    fn get_presale_price(&self) -> RpcResult<u32> {
+        let at = self.client.info().best_hash;
+        self.client.runtime_api().get_presale_price(at).map_err(rpc_err)
+    }
+    fn get_presale_raised(&self) -> RpcResult<Balance> {
+        let at = self.client.info().best_hash;
+        self.client.runtime_api().get_presale_raised(at).map_err(rpc_err)
+    }
+    fn get_presale_sold(&self) -> RpcResult<Balance> {
+        let at = self.client.info().best_hash;
+        self.client.runtime_api().get_presale_sold(at).map_err(rpc_err)
+    }
+    fn get_transfer_fee_bps(&self) -> RpcResult<u32> {
+        let at = self.client.info().best_hash;
+        self.client.runtime_api().get_transfer_fee_bps(at).map_err(rpc_err)
+    }
+    fn get_green_treasury_collected(&self) -> RpcResult<Balance> {
+        let at = self.client.info().best_hash;
+        self.client.runtime_api().get_green_treasury_collected(at).map_err(rpc_err)
+    }
+    fn get_distribution(&self) -> RpcResult<Vec<pallet_tokenomics::DistributionCategory<Balance>>> {
+        let at = self.client.info().best_hash;
+        self.client.runtime_api().get_distribution(at).map_err(rpc_err)
+    }
 }
 
 // === ContractsApi RPC ===
 use verdis_runtime::ContractsApi as ContractsRuntimeApi;
+use verdis_runtime::TokenomicsApi as TokenomicsRuntimeApi;
 use verdis_runtime::Hash;
+use pallet_dpos::Validator;
+use pallet_eco::{CarbonCredit, ReforestProject, GreenValidator};
+use pallet_tokenomics::DistributionCategory;
 
 #[rpc(server)]
 pub trait ContractsRpc {

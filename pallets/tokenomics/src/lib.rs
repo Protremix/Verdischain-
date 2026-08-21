@@ -53,6 +53,7 @@ pub mod pallet {
     // === Distribution Category ===
 
     #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
     pub struct DistributionCategory<Balance> {
         pub name: BoundedVec<u8, ConstU32<32>>,
         pub amount: Balance,
@@ -125,6 +126,7 @@ pub mod pallet {
 
     // === Token-2022: Token Metadata ===
     #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Default)]
+    #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
     pub struct TokenMetadata {
         pub name: BoundedVec<u8, ConstU32<64>>,
         pub symbol: BoundedVec<u8, ConstU32<16>>,

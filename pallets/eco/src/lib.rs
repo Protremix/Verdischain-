@@ -45,6 +45,7 @@ pub mod pallet {
     // === Carbon Credit ===
 
     #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
     pub struct CarbonCredit<AccountId> {
         pub id: BoundedVec<u8, ConstU32<64>>,
         pub project_name: BoundedVec<u8, ConstU32<128>>,
@@ -58,6 +59,7 @@ pub mod pallet {
     // === Reforestation Project ===
 
     #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
     pub struct ReforestProject {
         pub id: BoundedVec<u8, ConstU32<64>>,
         pub name: BoundedVec<u8, ConstU32<128>>,
@@ -70,6 +72,7 @@ pub mod pallet {
     // === Green Validator ===
 
     #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
     pub struct GreenValidator<AccountId> {
         pub address: AccountId,
         pub renewable_energy: bool,

@@ -1587,6 +1587,8 @@ sp_api::decl_runtime_apis! {
         fn get_validator_name(validator: AccountId) -> Option<Vec<u8>>;
         /// Get current session index
         fn session_index() -> u32;
+        /// Get all validators with full details (stake, name, commission, etc.)
+        fn get_all_validators_detailed() -> Vec<pallet_dpos::Validator<AccountId, Balance>>;
     }
 
     /// Eco tracking API for RPC
@@ -1607,6 +1609,32 @@ sp_api::decl_runtime_apis! {
         fn get_green_score(validator: AccountId) -> Option<u8>;
         /// Get all green validators with their scores
         fn get_all_green_validators() -> Vec<(AccountId, u8)>;
+        /// Get all carbon credits with full details
+        fn get_all_carbon_credits() -> Vec<pallet_eco::CarbonCredit<AccountId>>;
+        /// Get all reforestation projects with full details
+        fn get_all_reforest_projects() -> Vec<pallet_eco::ReforestProject>;
+        /// Get all green validators with full details
+        fn get_all_green_validators_detailed() -> Vec<pallet_eco::GreenValidator<AccountId>>;
+    }
+
+    /// Tokenomics API for RPC
+    pub trait TokenomicsApi {
+        /// Get total token supply
+        fn get_total_supply() -> Balance;
+        /// Get circulating supply
+        fn get_circulating_supply() -> Balance;
+        /// Get presale price
+        fn get_presale_price() -> u32;
+        /// Get total presale raised
+        fn get_presale_raised() -> Balance;
+        /// Get total presale sold
+        fn get_presale_sold() -> Balance;
+        /// Get transfer fee basis points
+        fn get_transfer_fee_bps() -> u32;
+        /// Get green treasury collected
+        fn get_green_treasury_collected() -> Balance;
+        /// Get all distribution categories
+        fn get_distribution() -> Vec<pallet_tokenomics::DistributionCategory<Balance>>;
     }
 }
 
@@ -1968,6 +1996,15 @@ impl_runtime_apis! {
         fn session_index() -> u32 {
             pallet_session::Pallet::<Runtime>::current_index()
         }
+        fn get_all_validators_detailed() -> Vec<pallet_dpos::Validator<AccountId, Balance>> {
+            pallet_dpos::Validators::<Runtime>::iter()
+                .map(|(addr, v)| {
+                    let mut v = v;
+                    v.address = addr;
+                    v
+                })
+                .collect()
+        }
     }
 
     impl crate::EcoApi<Block> for Runtime {
@@ -1994,6 +2031,42 @@ impl_runtime_apis! {
         }
         fn get_all_green_validators() -> Vec<(AccountId, u8)> {
             pallet_eco::GreenValidators::<Runtime>::iter().map(|(addr, gv)| (addr, gv.score)).collect()
+        }
+        fn get_all_carbon_credits() -> Vec<pallet_eco::CarbonCredit<AccountId>> {
+            pallet_eco::CarbonCredits::<Runtime>::iter().map(|(_, cc)| cc).collect()
+        }
+        fn get_all_reforest_projects() -> Vec<pallet_eco::ReforestProject> {
+            pallet_eco::ReforestProjects::<Runtime>::iter().map(|(_, rp)| rp).collect()
+        }
+        fn get_all_green_validators_detailed() -> Vec<pallet_eco::GreenValidator<AccountId>> {
+            pallet_eco::GreenValidators::<Runtime>::iter().map(|(_, gv)| gv).collect()
+        }
+    }
+
+    impl crate::TokenomicsApi<Block> for Runtime {
+        fn get_total_supply() -> Balance {
+            pallet_tokenomics::TotalSupply::<Runtime>::get()
+        }
+        fn get_circulating_supply() -> Balance {
+            pallet_tokenomics::CirculatingSupply::<Runtime>::get()
+        }
+        fn get_presale_price() -> u32 {
+            pallet_tokenomics::PresalePrice::<Runtime>::get()
+        }
+        fn get_presale_raised() -> Balance {
+            pallet_tokenomics::PresaleRaised::<Runtime>::get()
+        }
+        fn get_presale_sold() -> Balance {
+            pallet_tokenomics::PresaleSold::<Runtime>::get()
+        }
+        fn get_transfer_fee_bps() -> u32 {
+            pallet_tokenomics::TransferFeeBps::<Runtime>::get()
+        }
+        fn get_green_treasury_collected() -> Balance {
+            pallet_tokenomics::GreenTreasuryCollected::<Runtime>::get()
+        }
+        fn get_distribution() -> Vec<pallet_tokenomics::DistributionCategory<Balance>> {
+            pallet_tokenomics::Distribution::<Runtime>::iter().map(|(_, d)| d).collect()
         }
     }
 

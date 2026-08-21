@@ -234,6 +234,12 @@ pub fn new_full<
                     .merge(rpc::GrandpaRpcServer::into_rpc(grandpa))
                     .map_err(|e| Error::Application(Box::new(e)))?;
 
+                // TokenomicsApi RPC
+                let tokenomics = rpc::TokenomicsRpcImpl::new(client.clone());
+                module
+                    .merge(rpc::TokenomicsRpcServer::into_rpc(tokenomics))
+                    .map_err(|e| Error::Application(Box::new(e)))?;
+
                 // EcoApi RPC
                 let eco = rpc::EcoRpcImpl::new(client.clone());
                 module
