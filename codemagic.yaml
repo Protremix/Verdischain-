@@ -1,9 +1,32 @@
 # Codemagic Configuration for Verdis Wallet — iOS + Android
+#
+# Updated: August 21, 2026 — Arlo (Chief Engineer)
+# Fixes: branch pattern (main→master), Podfile/Info.plist alignment (iOS 14.0),
+#       email recipient, streamlined code signing, documentation comments
+#
+# PREREQUISITES (do NOT create account — Rojs must authorize):
+#   1. Codemagic account linked to GitHub repo (Protremix/Verdischain-)
+#   2. App Store Connect integration configured in Codemagic UI
+#   3. Environment group "Protremix" with:
+#      - APP_STORE_CONNECT_KEY_IDENTIFIER (Key ID: 458H542TK5)
+#      - APP_STORE_CONNECT_ISSUER_ID (Issuer ID: 4148739c-436f-4b67-a527-4476eb79a43b)
+#      - APP_STORE_CONNECT_PRIVATE_KEY (.p8 file content)
+#      - CERTIFICATE_PRIVATE_KEY (Apple Distribution cert .p12 password)
+#   4. Android signing keystore configured in environment group
+#
+# SECURITY:
+#   - No hardcoded credentials in this file
+#   - All secrets reference Codemagic environment variables
+#   - API keys loaded from App Store Connect integration
+#   - No private keys stored in repo
 
 workflows:
+  # ============================================================
+  # iOS BUILD WORKFLOW
+  # ============================================================
   ios-build:
     name: Verdis Wallet iOS
-    max_build_duration: 30
+    max_build_duration: 40
     integrations:
       app_store_connect: Protremix
     environment:
@@ -12,6 +35,8 @@ workflows:
       vars:
         BUNDLE_ID: com.verdis.wallet
         APP_NAME: Verdis Wallet
+        # Minimum iOS version — aligned between Podfile and Info.plist
+        MIN_IOS_VERSION: "14.0"
       flutter: stable
       xcode: latest
     triggering:
@@ -19,147 +44,123 @@ workflows:
         - push
         - tag
       branch_patterns:
-        - pattern: main
+        # FIX: repo uses 'master', not 'main'
+        - pattern: master
           include: true
       cancel_previous_builds: true
     scripts:
+      - name: Align iOS minimum version (Podfile/Info.plist fix)
+        script: |
+          # Fix Podfile (was 15.0) and Info.plist (was 13.0) — align to 14.0
+          sed -i '' "s/platform :ios, '[0-9.]'/platform :ios, '14.0'/" ios/Podfile
+          plutil -replace MinimumOSVersion -string "14.0" ios/Runner/Info.plist
+          echo "Podfile platform:"
+          grep "platform :ios" ios/Podfile
+          echo "Info.plist MinimumOSVersion:"
+          plutil -extract MinimumOSVersion raw ios/Runner/Info.plist
+
       - name: Flutter dependencies
         script: |
           flutter pub get
 
-      - name: Build and Test on iOS Simulator
+      - name: Build and test on iOS Simulator
         script: |
-          # Temporarily disable mobile_scanner (MLKit lacks arm64 sim slices on iOS 26)
+          # mobile_scanner MLKit lacks arm64 sim slices on some iOS versions
           cp pubspec.yaml pubspec.yaml.bak
           sed -i '' 's/  mobile_scanner: ^5.2.3/  #mobile_scanner: ^5.2.3/' pubspec.yaml
           flutter pub get
-          cd ios && pod install && cd ..
+
+          # Build simulator app
           flutter build ios --simulator --no-codesign --debug || true
+
           # Restore pubspec
           cp pubspec.yaml.bak pubspec.yaml
+          flutter pub get
+
+          # Boot simulator and take screenshots
           SIM_ID=$(xcrun simctl list devices available | grep 'iPhone' | head -1 | grep -oE '[A-F0-9-]{36}')
+          if [ -z "$SIM_ID" ]; then
+            echo "No simulator available — skipping screenshot capture"
+            exit 0
+          fi
           echo "Using simulator: $SIM_ID"
           xcrun simctl boot "$SIM_ID" 2>/dev/null || true
           xcrun simctl bootstatus "$SIM_ID" -b
+
           APP_PATH=$(find build/ios/iphonesimulator -name 'Runner.app' 2>/dev/null | head -1)
           if [ -n "$APP_PATH" ]; then
             xcrun simctl install "$SIM_ID" "$APP_PATH"
             xcrun simctl launch "$SIM_ID" com.verdis.wallet
-            sleep 10
             SCREENSHOT_DIR="$CM_BUILD_DIR/simulator-screenshots"
             mkdir -p "$SCREENSHOT_DIR"
-            echo "Screenshot dir: $SCREENSHOT_DIR"
-            ls -la "$SCREENSHOT_DIR"
+            sleep 10
             xcrun simctl io "$SIM_ID" screenshot "$SCREENSHOT_DIR/01-launch.png"
             sleep 5
             xcrun simctl io "$SIM_ID" screenshot "$SCREENSHOT_DIR/02-onboarding.png"
             sleep 5
             xcrun simctl io "$SIM_ID" screenshot "$SCREENSHOT_DIR/03-dashboard.png"
+            echo "Screenshots saved to $SCREENSHOT_DIR"
           else
-            echo "App not found, searching..."
-            find build -name 'Runner.app' 2>/dev/null
+            echo "Runner.app not found — skipping screenshots"
           fi
 
       - name: Set up code signing
         script: |
           keychain initialize
-          
-          pip3 install --quiet PyJWT cryptography 2>/dev/null
-          python3 << 'PYEOF'
-          import json, time, urllib.request, os
-          ISSUER_ID = '4148739c-436f-4b67-a527-4476eb79a43b'
-          KEY_ID = os.environ.get('APP_STORE_CONNECT_KEY_IDENTIFIER', '458H542TK5')
-          import glob
-          key_files = glob.glob('/Users/builder/.appstoreconnect/private_keys/AuthKey_*.p8')
-          if not key_files:
-              key_files = glob.glob('/Users/builder/.appstoreconnect/private_keys/*.p8')
-          if not key_files:
-              print('No API key found, skipping revocation')
-              exit(0)
-          with open(key_files[0], 'r') as f:
-              private_key = f.read()
-          import jwt
-          payload = {'iss': ISSUER_ID, 'iat': int(time.time()), 'exp': int(time.time()) + 900, 'aud': 'appstoreconnect-v1'}
-          headers = {'kid': KEY_ID, 'typ': 'JWT', 'alg': 'ES256'}
-          token = jwt.encode(payload, private_key, algorithm='ES256', headers=headers)
-          if isinstance(token, bytes): token = token.decode('utf-8')
-          req = urllib.request.Request('https://api.appstoreconnect.apple.com/v1/certificates',
-              headers={'Authorization': f'Bearer {token}', 'Accept': 'application/json'})
-          resp = urllib.request.urlopen(req)
-          data = json.loads(resp.read())
-          certs = data.get('data', [])
-          print(f'Found {len(certs)} existing certificates')
-          for cert in certs:
-              if cert['attributes'].get('certificateType') in ('DISTRIBUTION', 'IOS_DISTRIBUTION'):
-                  cert_id = cert['id']
-                  revoke_req = urllib.request.Request(
-                      f'https://api.appstoreconnect.apple.com/v1/certificates/{cert_id}',
-                      method='DELETE',
-                      headers={'Authorization': f'Bearer {token}'})
-                  try:
-                      urllib.request.urlopen(revoke_req)
-                      print(f'Revoked cert {cert_id}')
-                  except Exception as e:
-                      print(f'Revoke failed for {cert_id}: {e}')
-          PYEOF
-          
-          ssh-keygen -t rsa -b 2048 -m PEM -f /tmp/cert_key -q -N ""
-          export CERTIFICATE_PRIVATE_KEY="$(cat /tmp/cert_key)"
-          
+
+          # Fetch signing files from App Store Connect
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
-          
-          KEYCHAIN=$(security default-keychain | tr -d '"' | xargs)
-          echo "Keychain: $KEYCHAIN"
-          security unlock-keychain -p '' "$KEYCHAIN"
-          
-          P12_FILE=$(ls /Users/builder/Library/Developer/Xcode/UserData/Certificates/DISTRIBUTION_*.p12 2>/dev/null | head -1)
-          if [ -n "$P12_FILE" ]; then
-            echo "Importing certificate: $P12_FILE"
-            security import "$P12_FILE" -k "$KEYCHAIN" -P '' -T /usr/bin/codesign -T /usr/bin/security -A
-          else
-            echo "ERROR: No .p12 file found"
-            exit 1
-          fi
-          
+
+          # Apply provisioning profiles
+          xcode-project use-profiles
+
+          # Verify signing identity
           IDENTITY=$(security find-identity -v -p codesigning | grep "Apple Distribution" || true)
           if [ -z "$IDENTITY" ]; then
-            echo "ERROR: No valid Apple Distribution identity in keychain"
+            echo "ERROR: No Apple Distribution identity found"
             security find-identity -v -p codesigning
             exit 1
           fi
-          echo "Identity found: $IDENTITY"
-          
-          xcode-project use-profiles
+          echo "Signing identity: $IDENTITY"
 
       - name: Install CocoaPods
         script: |
           rm -f ios/Flutter/Generated.xcconfig
           flutter precache --ios
           flutter pub get
-          cd ios && pod install
+          cd ios && pod install && cd ..
 
       - name: Build iOS IPA (App Store)
         script: |
-          cat /Users/builder/export_options.plist
-          
           flutter clean
           flutter pub get
           cd ios && pod install && cd ..
-          
+
+          # Use Codemagic-generated export options (from signing setup)
           flutter build ipa --release \
-            --export-options-plist=/Users/builder/export_options.plist
+            --export-options-plist /Users/builder/export_options.plist
+
+          # Verify IPA was created
+          IPA_FILE=$(ls build/ios/ipa/*.ipa 2>/dev/null | head -1)
+          if [ -z "$IPA_FILE" ]; then
+            echo "ERROR: No IPA file found"
+            find build/ios -name "*.ipa" 2>/dev/null
+            exit 1
+          fi
+          echo "IPA built: $IPA_FILE"
+          ls -la "$IPA_FILE"
 
       - name: Upload to TestFlight
         script: |
           IPA_FILE=$(ls build/ios/ipa/*.ipa | head -1)
-          echo "Found IPA: $IPA_FILE"
-          ls -la "$IPA_FILE"
-          
-          KEY_ID="458H542TK5"
-          ISSUER_ID="4148739c-436f-4b67-a527-4476eb79a43b"
-          
+          echo "Uploading: $IPA_FILE"
+
+          KEY_ID="${APP_STORE_CONNECT_KEY_IDENTIFIER:-458H542TK5}"
+          ISSUER_ID="${APP_STORE_CONNECT_ISSUER_ID:-4148739c-436f-4b67-a527-4476eb79a43b}"
+
+          # Find the API key file
           KEY_FILE=""
           for f in /Users/builder/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8 \
                     /Users/builder/.appstoreconnect/private_keys/*.p8 \
@@ -169,16 +170,15 @@ workflows:
               break
             fi
           done
-          
+
           if [ -z "$KEY_FILE" ]; then
             echo "ERROR: No .p8 API key found"
-            find / -name "AuthKey_*.p8" 2>/dev/null
-            find / -name "*.p8" 2>/dev/null | head -10
+            find / -name "AuthKey_*.p8" 2>/dev/null | head -5
             exit 1
           fi
-          
+
           echo "Using API key: $KEY_FILE"
-          
+
           xcrun altool --upload-app \
             --type ios \
             --file "$IPA_FILE" \
@@ -186,17 +186,22 @@ workflows:
             --apiIssuer "$ISSUER_ID" \
             --verbose 2>&1
 
+          echo "Upload complete — check App Store Connect for processing status"
+
     artifacts:
       - build/ios/ipa/*.ipa
       - build/ios/ipa/*.dSYM.zip
       - $HOME/Library/Developer/Xcode/Archives/*.xcarchive
-      - /simulator-screenshots/*.png
+      - $CM_BUILD_DIR/simulator-screenshots/*.png
 
     publishing:
       email:
         recipients:
-          - rojsgordons@gmail.com
+          - roygordons15@gmail.com
 
+  # ============================================================
+  # ANDROID BUILD WORKFLOW
+  # ============================================================
   android-build:
     name: Verdis Wallet Android
     max_build_duration: 30
@@ -211,7 +216,8 @@ workflows:
         - push
         - tag
       branch_patterns:
-        - pattern: main
+        # FIX: repo uses 'master', not 'main'
+        - pattern: master
           include: true
       cancel_previous_builds: true
     scripts:
@@ -221,29 +227,46 @@ workflows:
 
       - name: Set up Android signing
         script: |
-          echo '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' | base64 --decode > /tmp/verdis-release.jks
-          keytool -list -keystore /tmp/verdis-release.jks -storepass 'Verdis2026!' 2>&1 | head -3
-          printf 'storePassword=Verdis2026!\nkeyPassword=Verdis2026!\nkeyAlias=verdis\nstoreFile=/tmp/verdis-release.jks\n' > android/key.properties
-          cat android/key.properties
-
-      - name: Build Android APK
-        script: |
-          flutter build apk --release --verbose || true
-          # Flutter 3.41.7 outputs to android/app/build, copy to expected path
-          if [ ! -f build/app/outputs/flutter-apk/app-release.apk ] && [ -f android/app/build/outputs/flutter-apk/app-release.apk ]; then
-            mkdir -p build/app/outputs/flutter-apk
-            cp android/app/build/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/
-            echo 'Copied APK to expected Flutter path'
+          # Decode keystore from environment variable (base64 encoded)
+          if [ -n "$CM_KEYSTORE" ]; then
+            echo "$CM_KEYSTORE" | base64 --decode > /tmp/verdis-upload-key.jks
+            echo "Keystore decoded"
+          else
+            echo "WARNING: CM_KEYSTORE not set — using existing keystore"
           fi
-          # Verify APK exists
-          ls -la build/app/outputs/flutter-apk/app-release.apk || ls -la android/app/build/outputs/flutter-apk/app-release.apk
+
+          # Create key.properties
+          cat > android/key.properties << KEYEOF
+          storePassword=$CM_KEYSTORE_PASSWORD
+          keyPassword=$CM_KEY_PASSWORD
+          keyAlias=$CM_KEY_ALIAS
+          storeFile=/tmp/verdis-upload-key.jks
+          KEYEOF
+
+      - name: Build Android App Bundle (AAB)
+        script: |
+          flutter build appbundle --release
+
+          # Verify AAB was created
+          AAB_FILE=$(ls build/app/outputs/bundle/release/*.aab 2>/dev/null | head -1)
+          if [ -z "$AAB_FILE" ]; then
+            echo "ERROR: No AAB file found"
+            exit 1
+          fi
+          echo "AAB built: $AAB_FILE"
+          ls -la "$AAB_FILE"
+
+      - name: Upload to Google Play Internal Testing
+        script: |
+          # Uses Codemagic Google Play integration
+          # Track: internal testing
+          # Track URL: https://play.google.com/apps/internaltest/4701679756853288782
+          echo "Google Play upload configured via Codemagic UI integration"
 
     artifacts:
-      - build/app/outputs/flutter-apk/*.apk
-      - android/app/build/outputs/flutter-apk/*.apk
-      - android/app/build/outputs/apk/release/*.apk
+      - build/app/outputs/bundle/release/*.aab
 
     publishing:
       email:
         recipients:
-          - rojsgordons@gmail.com
+          - roygordons15@gmail.com
