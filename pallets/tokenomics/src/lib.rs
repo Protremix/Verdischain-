@@ -360,8 +360,10 @@ pub mod pallet {
             let treasury = T::PalletId::get().into_account_truncating();
             T::Currency::transfer(&who, &treasury, cost, ExistenceRequirement::KeepAlive)?;
 
-            // Then transfer purchased tokens to buyer
-            T::Currency::transfer(&treasury, &who, amount, ExistenceRequirement::AllowDeath)?;
+            // FIX H7: Use KeepAlive instead of AllowDeath to prevent treasury
+            // account from being killed (dropped below existential deposit).
+            // A dead treasury account would make all future purchases fail.
+            T::Currency::transfer(&treasury, &who, amount, ExistenceRequirement::KeepAlive)?;
 
             let new_raised = PresaleRaised::<T>::get()
                 .checked_add(&cost)

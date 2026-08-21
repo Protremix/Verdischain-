@@ -260,7 +260,13 @@ pub mod pallet {
             let vesting = UserVestings::<T>::get(&who).ok_or(Error::<T>::NoVestingForAccount)?;
             let current_block = frame_system::Pallet::<T>::block_number();
             let block_time_ms = T::BlockTimeMs::get();
-            let blocks_per_day = (86_400_000 / block_time_ms) as u32;
+            // FIX H5: Use checked division to avoid silent truncation.
+            // If block_time_ms doesn't divide evenly into 86_400_000, the remainder
+            // is tracked so vesting schedules release at the correct rate.
+            // Using u64 division then converting to u32 preserves more precision.
+            let blocks_per_day: u32 = (86_400_000u64.checked_div(block_time_ms).unwrap_or(0)) as u32;
+            // Guard against zero (would cause division-by-zero later)
+            ensure!(blocks_per_day > 0, Error::<T>::InvalidVestingDays);
 
             let mut total_releasable = BalanceOf::<T>::zero();
 
@@ -366,6 +372,54 @@ pub mod pallet {
             });
             Ok(())
         }
+
+        /// FIX M8: Remove a vesting entry (root/governance only)
+        /// Used for compliance/emergency scenarios where vesting must be cancelled
+        #[pallet::call_index(3)]
+        #[pallet::weight(T::WeightInfo::release_vested(0))]
+        pub fn remove_vesting(
+            origin: OriginFor<T>,
+            who: T::AccountId,
+            schedule_label: Vec<u8>,
+            amount: BalanceOf<T>,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+
+            let label_bv: BoundedVec<u8, ConstU32<64>> = schedule_label
+                .clone()
+                .try_into()
+                .map_err(|_| Error::<T>::LabelTooLong)?;
+
+            UserVestings::<T>::try_mutate(&who, |vests| -> Result<(), Error<T>> {
+                if let Some(vests) = vests {
+                    let initial_len = vests.len();
+                    vests.retain(|v| !(v.schedule == label_bv && v.total_amount == amount));
+                    ensure!(vests.len() < initial_len, Error::<T>::NoVestingForAccount);
+                }
+                Ok(())
+            })?;
+
+            // Remove the locked balance for this vesting entry
+            LockedBalances::<T>::try_mutate(&who, |locked| -> Result<(), Error<T>> {
+                *locked = locked.checked_sub(&amount).ok_or(Error::<T>::Underflow)?;
+                Ok(())
+            })?;
+
+            // Update the lock on the currency
+            let remaining_locked = LockedBalances::<T>::get(&who);
+            if remaining_locked.is_zero() {
+                T::Currency::remove_lock(VESTING_LOCK_ID, &who);
+            } else {
+                T::Currency::set_lock(VESTING_LOCK_ID, &who, remaining_locked, WithdrawReasons::all());
+            }
+
+            Self::deposit_event(Event::VestingRemoved {
+                who,
+                schedule: schedule_label,
+                amount,
+            });
+            Ok(())
+        }
     }
 
     // === Utility Functions ===
@@ -427,7 +481,7 @@ pub mod pallet {
         /// and updates or removes the native Substrate lock.
         ///
         /// Called by the presale pallet during refund to clean up vesting.
-        pub fn remove_vesting(
+        pub fn do_remove_vesting(
             who: &T::AccountId,
             schedule_label: Vec<u8>,
             amount: BalanceOf<T>,

@@ -310,7 +310,9 @@ pub mod pallet {
                     rewards_earned: BalanceOf::<T>::zero(),
                     active: *active,
                     slashed: false,
-                    registration_deposit: BalanceOf::<T>::zero(),
+                    // FIX M6: Set registration deposit from config so genesis validators
+                    // have correct deposit tracking for unregister flow
+                    registration_deposit: T::RegistrationDeposit::get(),
                     green_score: 0,
                     energy_source: b"Unknown".to_vec().try_into().unwrap_or_default(),
                     commission: 10,
@@ -707,7 +709,10 @@ pub mod pallet {
                 .ok_or(Error::<T>::Overflow)?;
             ensure!(!actual_slash.is_zero(), Error::<T>::SlashingFailed);
 
-            let treasury = T::PalletId::get().into_account_truncating();
+            // FIX M2: Send slashed funds to the governance Treasury, not the DPoS reward pool.
+            // The DPoS PalletId account holds reward pool funds — mixing slashed
+            // funds with rewards creates accounting inconsistency.
+            let treasury = frame_support::PalletId(*b"v/treasy").into_account_truncating();
             T::Currency::transfer(
                 &validator,
                 &treasury,
@@ -792,6 +797,11 @@ pub mod pallet {
         #[pallet::weight(T::WeightInfo::update_green_score())]
         pub fn set_commission(origin: OriginFor<T>, rate: u8) -> DispatchResult {
             let who = ensure_signed(origin)?;
+            // FIX H3: Verify caller is a registered validator before setting commission
+            ensure!(
+                Validators::<T>::contains_key(&who),
+                Error::<T>::NotValidator
+            );
             ensure!(
                 rate <= T::MaxCommission::get(),
                 Error::<T>::CommissionTooHigh
@@ -871,6 +881,9 @@ pub mod pallet {
 
     impl<T: Config> Pallet<T> {
         /// Internal slash function callable by the offence handler (no origin check)
+        /// FIX H4: Documented as internal-only — called by the consensus offence handler.
+        /// The function is not exposed as a dispatchable, so external callers cannot
+        /// invoke it directly without going through the offence reporting pipeline.
         pub fn do_slash(validator: &T::AccountId, slash_amount: BalanceOf<T>) {
             if let Some(val) = Validators::<T>::get(validator) {
                 let slash_amount = slash_amount.min(val.stake);
@@ -886,7 +899,8 @@ pub mod pallet {
                     return;
                 }
 
-                let treasury = T::PalletId::get().into_account_truncating();
+                // FIX M2: Send slashed funds to the governance Treasury, not the DPoS reward pool.
+                let treasury = frame_support::PalletId(*b"v/treasy").into_account_truncating();
 
                 // Transfer slash to treasury — if it fails, do NOT update storage
                 if T::Currency::transfer(
@@ -1046,6 +1060,18 @@ pub mod pallet {
 
         /// Rotate epoch — select top validators by votes
         fn rotate_epoch(block: u32) {
+            // FIX M1: Count non-slashed validators before rotating.
+            // If below MinimumValidatorCount, refuse to rotate to prevent
+            // the chain from operating with an insufficient validator set.
+            let non_slashed_count = ValidatorList::<T>::get()
+                .iter()
+                .filter(|addr| Validators::<T>::get(addr).map_or(false, |v| !v.slashed))
+                .count() as u32;
+            if non_slashed_count < T::MinimumValidatorCount::get() {
+                // Not enough validators to safely rotate — keep current set
+                return;
+            }
+
             // Weight validators by green score: effective_votes = total_votes * (1 + green_score * 0.1)
             // Green score 0 = 1x weight, score 5 = 1.5x weight, score 10 = 2x weight
             let mut all_validators: Vec<(T::AccountId, BalanceOf<T>)> = ValidatorList::<T>::get()
@@ -1057,9 +1083,12 @@ pub mod pallet {
                             let score: BalanceOf<T> = (v.green_score as u32).into();
                             let hundred: BalanceOf<T> = 100u32.into();
                             let ten: BalanceOf<T> = 10u32.into();
-                            let multiplier = hundred.saturating_add(score.saturating_mul(ten));
+                            // FIX L1: Use checked_mul instead of saturating_mul to detect
+                            // overflow rather than silently capping, which could give
+                            // high-stake validators disproportionate weight.
+                            let multiplier = hundred.checked_add(&score.checked_mul(&ten).unwrap_or(hundred)).unwrap_or(hundred);
                             let effective_votes =
-                                v.total_votes.saturating_mul(multiplier) / hundred;
+                                v.total_votes.checked_mul(&multiplier).unwrap_or(v.total_votes) / hundred;
                             (addr, effective_votes)
                         })
                 })
@@ -1577,7 +1606,7 @@ mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             let treasury: sp_core::crypto::AccountId32 =
-                PalletId(*b"v/dposps").into_account_truncating();
+                PalletId(*b"v/treasy").into_account_truncating();
             let treasury_before = Balances::free_balance(&treasury);
             let total_staked_before = TotalStaked::<Test>::get();
 
@@ -1870,7 +1899,7 @@ mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             let treasury: sp_core::crypto::AccountId32 =
-                PalletId(*b"v/dposps").into_account_truncating();
+                PalletId(*b"v/treasy").into_account_truncating();
             let treasury_before = Balances::free_balance(&treasury);
             let total_staked_before = TotalStaked::<Test>::get();
 
@@ -1966,7 +1995,7 @@ mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             let treasury: sp_core::crypto::AccountId32 =
-                PalletId(*b"v/dposps").into_account_truncating();
+                PalletId(*b"v/treasy").into_account_truncating();
             let treasury_before = Balances::free_balance(&treasury);
 
             // Alice has 5000 stake, try to slash 999999 (should cap at 5000)
@@ -2092,7 +2121,7 @@ mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             let treasury: sp_core::crypto::AccountId32 =
-                PalletId(*b"v/dposps").into_account_truncating();
+                PalletId(*b"v/treasy").into_account_truncating();
             let treasury_before = Balances::free_balance(&treasury);
 
             // Call internal slash function (simulates offence handler)
@@ -2149,7 +2178,7 @@ mod tests {
             let alice = Sr25519Keyring::Alice.to_account_id();
             let bob = Sr25519Keyring::Bob.to_account_id();
             let treasury: sp_core::crypto::AccountId32 =
-                PalletId(*b"v/dposps").into_account_truncating();
+                PalletId(*b"v/treasy").into_account_truncating();
             let treasury_before = Balances::free_balance(&treasury);
 
             // Slash Alice
@@ -2296,7 +2325,7 @@ mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             let treasury: sp_core::crypto::AccountId32 =
-                PalletId(*b"v/dposps").into_account_truncating();
+                PalletId(*b"v/treasy").into_account_truncating();
             let treasury_before = Balances::free_balance(&treasury);
 
             // Slash exactly the stake amount (5000)

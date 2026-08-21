@@ -112,8 +112,12 @@ impl Currency<AccountId> for MaxSupplyCurrency {
 
     // ── Minting: cap-enforced ────────────────────────────────────────────────
     fn issue(amount: Self::Balance) -> Self::NegativeImbalance {
-        if let Err(e) = Self::check_mint(amount) {
-            panic!("MaxSupplyCurrency::issue: {:?} — amount={}, current={}, cap={}", e, amount, <Balances as Currency<AccountId>>::total_issuance(), TOTAL_SUPPLY);
+        // FIX H2: Return zero imbalance instead of panicking when cap is exceeded.
+        // Panicking in runtime causes block-level DoS — any tx that triggers the
+        // cap would reject the entire block. Returning a zero imbalance is safe
+        // because the caller will see no actual mint occurred.
+        if Self::check_mint(amount).is_err() {
+            return <Balances as Currency<AccountId>>::issue(0);
         }
         <Balances as Currency<AccountId>>::issue(amount)
     }
@@ -124,8 +128,11 @@ impl Currency<AccountId> for MaxSupplyCurrency {
     }
 
     fn deposit_creating(who: &AccountId, value: Self::Balance) -> Self::PositiveImbalance {
-        if let Err(e) = Self::check_mint(value) {
-            panic!("MaxSupplyCurrency::deposit_creating: {:?} — value={}, current={}, cap={}", e, value, <Balances as Currency<AccountId>>::total_issuance(), TOTAL_SUPPLY);
+        // FIX H1: Return zero imbalance instead of panicking when cap is exceeded.
+        // The caller will see a zero PositiveImbalance, meaning no mint occurred.
+        // This prevents block-level DoS while preserving the supply cap invariant.
+        if Self::check_mint(value).is_err() {
+            return <Balances as Currency<AccountId>>::deposit_creating(who, 0);
         }
         <Balances as Currency<AccountId>>::deposit_creating(who, value)
     }

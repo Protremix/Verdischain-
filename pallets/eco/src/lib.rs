@@ -591,13 +591,19 @@ pub mod pallet {
         #[pallet::weight(T::WeightInfo::register_green_validator())]
         pub fn register_green_validator(
             origin: OriginFor<T>,
+            validator: T::AccountId,
             energy_source: BoundedVec<u8, ConstU32<64>>,
             carbon_offset: u64,
             trees_planted: u32,
             score: u8,
             renewable_energy: bool,
         ) -> DispatchResult {
-            let who = ensure_signed(origin)?;
+            // FIX M7: Changed from self-registration (ensure_signed) to admin-gated
+            // (AdminOrigin). Self-attested carbon_offset/trees_planted could inflate
+            // aggregate eco metrics. Now only authorized governance can register
+            // green validators with verified data.
+            T::AdminOrigin::ensure_origin(origin)?;
+            let who = validator;
 
             // BoundedVec enforces length bounds at decode time.
             ensure!(
@@ -856,8 +862,10 @@ pub mod tests {
     fn test_register_green_validator() {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
+            // FIX M7: register_green_validator is now admin-gated
             assert_ok!(Eco::register_green_validator(
-                RuntimeOrigin::signed(alice.clone()),
+                RuntimeOrigin::root(),
+                alice.clone(),
                 bv64(b"Solar"),
                 500,
                 100,
@@ -872,8 +880,10 @@ pub mod tests {
     fn test_update_green_score() {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
+            // FIX M7: register_green_validator is now admin-gated
             Eco::register_green_validator(
-                RuntimeOrigin::signed(alice.clone()),
+                RuntimeOrigin::root(),
+                alice.clone(),
                 bv64(b"Solar"),
                 500,
                 100,
@@ -1065,7 +1075,8 @@ pub mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             Eco::register_green_validator(
-                RuntimeOrigin::signed(alice.clone()),
+                RuntimeOrigin::root(),
+                alice.clone(),
                 bv64(b"Solar"),
                 500,
                 100,
@@ -1075,7 +1086,8 @@ pub mod tests {
             .unwrap();
             assert_noop!(
                 Eco::register_green_validator(
-                    RuntimeOrigin::signed(alice),
+                    RuntimeOrigin::root(),
+                    alice.clone(),
                     bv64(b"Wind"),
                     300,
                     50,
@@ -1093,7 +1105,8 @@ pub mod tests {
             let alice = Sr25519Keyring::Alice.to_account_id();
             assert_noop!(
                 Eco::register_green_validator(
-                    RuntimeOrigin::signed(alice),
+                    RuntimeOrigin::root(),
+                    alice.clone(),
                     bv64(b"Solar"),
                     500,
                     100,
@@ -1111,7 +1124,8 @@ pub mod tests {
             let alice = Sr25519Keyring::Alice.to_account_id();
             assert_noop!(
                 Eco::register_green_validator(
-                    RuntimeOrigin::signed(alice),
+                    RuntimeOrigin::root(),
+                    alice.clone(),
                     bv64(b"Solar"),
                     500,
                     100,
@@ -1129,7 +1143,8 @@ pub mod tests {
             let alice = Sr25519Keyring::Alice.to_account_id();
             assert_noop!(
                 Eco::register_green_validator(
-                    RuntimeOrigin::signed(alice),
+                    RuntimeOrigin::root(),
+                    alice.clone(),
                     bv64(b"Solar"),
                     500,
                     100,
@@ -1146,7 +1161,8 @@ pub mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             Eco::register_green_validator(
-                RuntimeOrigin::signed(alice.clone()),
+                RuntimeOrigin::root(),
+                alice.clone(),
                 bv64(b"Solar"),
                 500,
                 100,
@@ -1174,7 +1190,8 @@ pub mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             Eco::register_green_validator(
-                RuntimeOrigin::signed(alice.clone()),
+                RuntimeOrigin::root(),
+                alice.clone(),
                 bv64(b"Solar"),
                 500,
                 100,
@@ -1210,7 +1227,8 @@ pub mod tests {
             let alice = Sr25519Keyring::Alice.to_account_id();
             let bob = Sr25519Keyring::Bob.to_account_id();
             Eco::register_green_validator(
-                RuntimeOrigin::signed(alice.clone()),
+                RuntimeOrigin::root(),
+                alice.clone(),
                 bv64(b"Solar"),
                 500,
                 100,

@@ -253,12 +253,12 @@ impl pallet_presale::VestingHandler<AccountId32, u128> for PresaleVestingHandler
     ) -> frame_support::dispatch::DispatchResult {
         pallet_vesting::Pallet::<Test>::do_assign_vesting(who.clone(), schedule_label, amount)
     }
-    fn remove_vesting(
+    fn do_remove_vesting(
         who: &AccountId32,
         schedule_label: Vec<u8>,
         amount: u128,
     ) -> frame_support::dispatch::DispatchResult {
-        pallet_vesting::Pallet::<Test>::remove_vesting(who, schedule_label, amount)
+        pallet_vesting::Pallet::<Test>::do_remove_vesting(who, schedule_label, amount)
     }
 }
 
@@ -305,6 +305,7 @@ parameter_types! {
 impl pallet_circuit_breaker::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type MaxPalletNameLen = CircuitBreakerMaxPalletNameLen;
+    type AdminOrigin = frame_system::EnsureRoot<AccountId32>;
 }
 
 // =========================================================================
@@ -489,7 +490,7 @@ fn test_vesting_assign_lock_and_release() {
         assert!(transfer_result.is_err(), "Transfer should fail when locked");
 
         // Remove the vesting entry (must match total_amount exactly)
-        assert_ok!(Vesting::remove_vesting(
+        assert_ok!(Vesting::do_remove_vesting(
             &alice,
             b"seed".to_vec(),
             100_000_000_000,
@@ -619,7 +620,8 @@ fn test_eco_register_green_validator_and_mint_carbon_credit() {
         // Register Alice as a green validator
         let energy_source = BoundedVec::try_from(b"solar".to_vec()).unwrap();
         assert_ok!(Eco::register_green_validator(
-            RuntimeOrigin::signed(alice.clone()),
+            RuntimeOrigin::root(),
+            alice.clone(),
             energy_source,
             1_000u64,    // carbon_offset
             100u32,     // trees_planted
@@ -882,7 +884,8 @@ fn test_eco_green_score_update_for_dpos_validator() {
         // Register Alice as green validator in Eco
         let energy_source = BoundedVec::try_from(b"hydro".to_vec()).unwrap();
         assert_ok!(Eco::register_green_validator(
-            RuntimeOrigin::signed(alice.clone()),
+            RuntimeOrigin::root(),
+            alice.clone(),
             energy_source,
             500u64,    // carbon_offset
             50u32,     // trees_planted
@@ -942,7 +945,7 @@ fn test_multiple_vesting_schedules_independent_tracking() {
         );
 
         // Remove first schedule
-        assert_ok!(Vesting::remove_vesting(
+        assert_ok!(Vesting::do_remove_vesting(
             &alice,
             b"seed".to_vec(),
             100_000_000_000,
@@ -956,7 +959,7 @@ fn test_multiple_vesting_schedules_independent_tracking() {
         );
 
         // Remove second schedule
-        assert_ok!(Vesting::remove_vesting(
+        assert_ok!(Vesting::do_remove_vesting(
             &alice,
             b"community".to_vec(),
             50_000_000_000,

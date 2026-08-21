@@ -81,7 +81,7 @@ pub mod pallet {
 
         /// Remove the vesting entry for `who` matching `schedule_label` and `amount`.
         /// Returns Err if no matching vesting entry exists.
-        fn remove_vesting(
+        fn do_remove_vesting(
             who: &AccountId,
             schedule_label: Vec<u8>,
             amount: Balance,
@@ -93,7 +93,7 @@ pub mod pallet {
         fn assign_vesting(_: &AccountId, _: Vec<u8>, _: Balance) -> DispatchResult {
             Ok(())
         }
-        fn remove_vesting(_: &AccountId, _: Vec<u8>, _: Balance) -> DispatchResult {
+        fn do_remove_vesting(_: &AccountId, _: Vec<u8>, _: Balance) -> DispatchResult {
             Ok(())
         }
     }
@@ -784,7 +784,7 @@ pub mod pallet {
 
             // Remove the vesting schedule for this user (clean up vesting on refund)
             if tokens_to_return > BalanceOf::<T>::zero() && !round.vesting_label.is_empty() {
-                let _ = T::Vesting::remove_vesting(
+                let _ = T::Vesting::do_remove_vesting(
                     &who,
                     round.vesting_label.clone().into_inner(),
                     tokens_to_return,

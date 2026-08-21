@@ -138,7 +138,7 @@ fn send_packet_works() {
         setup_chain();
         // Send packet
         assert_ok!(Pallet::<Test>::send_packet(
-            frame_system::RawOrigin::Signed(acct.clone()).into(),
+            frame_system::RawOrigin::Root.into(),
             0,
             b"transfer".to_vec(),
             b"transfer".to_vec(),
@@ -158,7 +158,7 @@ fn recv_packet_works() {
         setup_chain();
         // Send then receive
         assert_ok!(Pallet::<Test>::send_packet(
-            frame_system::RawOrigin::Signed(acct.clone()).into(),
+            frame_system::RawOrigin::Root.into(),
             0,
             b"transfer".to_vec(),
             b"transfer".to_vec(),
@@ -167,7 +167,7 @@ fn recv_packet_works() {
             0
         ));
         assert_ok!(Pallet::<Test>::recv_packet(
-            frame_system::RawOrigin::Signed(acct.clone()).into(),
+            frame_system::RawOrigin::Root.into(),
             0,
             1,
             b"transfer".to_vec(),
@@ -330,7 +330,7 @@ fn send_packet_with_timestamp_timeout_works() {
         let acct = sp_core::crypto::AccountId32::from([0xff; 32]);
         setup_chain();
         assert_ok!(Pallet::<Test>::send_packet(
-            frame_system::RawOrigin::Signed(acct.clone()).into(),
+            frame_system::RawOrigin::Root.into(),
             0,
             b"transfer".to_vec(),
             b"transfer".to_vec(),
@@ -471,7 +471,7 @@ fn test_send_packet_data_too_large_rejected() {
         let large_data = vec![0u8; 2048]; // MaxPacketDataLen = 1024
         frame_support::assert_noop!(
             Pallet::<Test>::send_packet(
-                frame_system::RawOrigin::Signed(acct).into(),
+                frame_system::RawOrigin::Root.into(),
                 0,
                 b"transfer".to_vec(),
                 b"transfer".to_vec(),
@@ -494,7 +494,7 @@ fn test_send_packet_past_timeout_rejected() {
         // Current block is 1, timeout at 0 (past)
         frame_support::assert_noop!(
             Pallet::<Test>::send_packet(
-                frame_system::RawOrigin::Signed(acct).into(),
+                frame_system::RawOrigin::Root.into(),
                 0,
                 b"transfer".to_vec(),
                 b"transfer".to_vec(),

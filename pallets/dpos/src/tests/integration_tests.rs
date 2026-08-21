@@ -119,7 +119,7 @@ fn test_slash_amount_deducted_from_stake() {
 
         let free_before = Balances::free_balance(&bob); // 97000
         let reserved_before = Balances::reserved_balance(&bob); // 3000
-        let treasury = DposPalletId::get().into_account_truncating();
+        let treasury = frame_support::PalletId(*b"v/treasy").into_account_truncating();
         let treasury_before = Balances::free_balance(&treasury);
 
         assert_ok!(Dpos::slash_validator(
@@ -183,7 +183,7 @@ fn test_multiple_validators_slashed_simultaneously() {
         let alice = Sr25519Keyring::Alice.to_account_id(); // 5000 stake
         let bob = Sr25519Keyring::Bob.to_account_id(); // 3000 stake
 
-        let treasury = DposPalletId::get().into_account_truncating();
+        let treasury = frame_support::PalletId(*b"v/treasy").into_account_truncating();
         let treasury_before = Balances::free_balance(&treasury);
         let total_staked_before = TotalStaked::<Test>::get(); // 8000
 
@@ -234,7 +234,7 @@ fn test_multiple_validators_slashed_simultaneously() {
 fn test_slash_insufficient_stake_edge_case() {
     new_test_ext().execute_with(|| {
         let alice = Sr25519Keyring::Alice.to_account_id(); // 5000 stake
-        let treasury = DposPalletId::get().into_account_truncating();
+        let treasury = frame_support::PalletId(*b"v/treasy").into_account_truncating();
         let treasury_before = Balances::free_balance(&treasury);
 
         // Penalty > current stake (100,000 > 5,000)
@@ -510,7 +510,7 @@ fn test_partial_unstake_remaining_bonded() {
 fn test_slashing_triggers_balance_transfer_correctly() {
     new_test_ext().execute_with(|| {
         let alice = Sr25519Keyring::Alice.to_account_id();
-        let treasury = DposPalletId::get().into_account_truncating();
+        let treasury = frame_support::PalletId(*b"v/treasy").into_account_truncating();
 
         let alice_total_before = Balances::total_balance(&alice);
         let alice_reserved_before = Balances::reserved_balance(&alice);
@@ -543,7 +543,7 @@ fn test_treasury_receives_slash_amount() {
     new_test_ext().execute_with(|| {
         let alice = Sr25519Keyring::Alice.to_account_id();
         let bob = Sr25519Keyring::Bob.to_account_id();
-        let treasury = DposPalletId::get().into_account_truncating();
+        let treasury = frame_support::PalletId(*b"v/treasy").into_account_truncating();
 
         let initial_treasury = Balances::free_balance(&treasury);
 

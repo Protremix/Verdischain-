@@ -255,6 +255,8 @@ pub mod pallet {
         NotApproved,
         TokenStillHasSupply,
         ZeroAmount,
+        /// FIX H6: Cannot mint beyond token's max_supply
+        MaxSupplyExceeded,
     }
 
     #[pallet::call]
@@ -597,6 +599,12 @@ pub mod pallet {
             recipients: Vec<(T::AccountId, u128)>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
+            // FIX L6: Enforce maximum batch size to prevent unbounded iteration
+            ensure!(!recipients.is_empty(), Error::<T>::ZeroAmount);
+            ensure!(
+                recipients.len() as u32 <= 100,
+                Error::<T>::TooManyTokensPerAccount
+            );
             let token = Tokens::<T>::get(token_id).ok_or(Error::<T>::TokenNotFound)?;
             ensure!(!token.is_frozen, Error::<T>::TokenFrozen);
 

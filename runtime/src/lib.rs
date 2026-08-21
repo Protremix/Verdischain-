@@ -856,8 +856,8 @@ impl pallet_presale::VestingHandler<AccountId, u128> for PresaleVestingHandler {
     fn assign_vesting(who: &AccountId, schedule_label: Vec<u8>, amount: u128) -> DispatchResult {
         pallet_vesting::Pallet::<Runtime>::do_assign_vesting(who.clone(), schedule_label, amount)
     }
-    fn remove_vesting(who: &AccountId, schedule_label: Vec<u8>, amount: u128) -> DispatchResult {
-        pallet_vesting::Pallet::<Runtime>::remove_vesting(who, schedule_label, amount)
+    fn do_remove_vesting(who: &AccountId, schedule_label: Vec<u8>, amount: u128) -> DispatchResult {
+        pallet_vesting::Pallet::<Runtime>::do_remove_vesting(who, schedule_label, amount)
     }
 }
 
@@ -1434,6 +1434,8 @@ parameter_types! {
 impl pallet_circuit_breaker::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type MaxPalletNameLen = CircuitBreakerMaxPalletNameLen;
+    // FIX H8: Use Council 2/3 as AdminOrigin instead of root
+    type AdminOrigin = EnsureCouncilSpend;
 }
 
 construct_runtime! {

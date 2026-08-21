@@ -25,6 +25,9 @@ pub mod pallet {
         type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
         /// Max pallet name length
         type MaxPalletNameLen: Get<u32>;
+        /// FIX H8: Admin origin for pause/unpause — should be governance (council 2/3),
+        /// not root. Root is not available on mainnet (sudo removed).
+        type AdminOrigin: frame_support::traits::EnsureOrigin<Self::RuntimeOrigin>;
     }
 
     /// Map of paused pallets. Key = pallet name (e.g. "AmmDex", "AmmDex")
@@ -52,7 +55,8 @@ pub mod pallet {
         #[pallet::call_index(0)]
         #[pallet::weight(Weight::from_parts(10_000, 0))]
         pub fn pause_pallet(origin: OriginFor<T>, pallet_name: Vec<u8>) -> DispatchResult {
-            ensure_root(origin)?;
+            // FIX H8: Use governance AdminOrigin instead of root
+            T::AdminOrigin::ensure_origin(origin)?;
 
             let name_bv: BoundedVec<u8, ConstU32<32>> = pallet_name
                 .clone()
@@ -73,7 +77,8 @@ pub mod pallet {
         #[pallet::call_index(1)]
         #[pallet::weight(Weight::from_parts(10_000, 0))]
         pub fn unpause_pallet(origin: OriginFor<T>, pallet_name: Vec<u8>) -> DispatchResult {
-            ensure_root(origin)?;
+            // FIX H8: Use governance AdminOrigin instead of root
+            T::AdminOrigin::ensure_origin(origin)?;
 
             let name_bv: BoundedVec<u8, ConstU32<32>> = pallet_name
                 .clone()
@@ -135,6 +140,7 @@ mod tests {
     impl Config for Test {
         type RuntimeEvent = RuntimeEvent;
         type MaxPalletNameLen = MaxPalletNameLen;
+        type AdminOrigin = frame_system::EnsureRoot<sp_core::crypto::AccountId32>;
     }
 
     pub fn new_test_ext() -> TestExternalities {

@@ -389,7 +389,17 @@ pub mod pallet {
             timeout_height: u64,
             timeout_timestamp: u64,
         ) -> DispatchResult {
-            let _who = ensure_signed(origin)?;
+            // FIX C3: Only the designated relayer can send packets on a channel.
+            // If no relayer is set, fall back to root (governance).
+            match ChannelRelayers::<T>::get(channel_id) {
+                Some(designated_relayer) => {
+                    let who = ensure_signed(origin)?;
+                    ensure!(who == designated_relayer, Error::<T>::UnauthorizedRelayer);
+                }
+                None => {
+                    ensure_root(origin)?;
+                }
+            }
 
             let channel = IbcChannels::<T>::get(channel_id).ok_or(Error::<T>::ChannelNotFound)?;
             ensure!(channel.state == 3, Error::<T>::ChannelNotOpen);
@@ -439,7 +449,18 @@ pub mod pallet {
             dest_port: Vec<u8>,
             data: Vec<u8>,
         ) -> DispatchResult {
-            let _who = ensure_signed(origin)?;
+            // FIX C2: Only the designated relayer can receive packets on a channel.
+            // If no relayer is set, fall back to root (governance).
+            // This prevents arbitrary accounts from forging packet data and minting tokens.
+            match ChannelRelayers::<T>::get(channel_id) {
+                Some(designated_relayer) => {
+                    let who = ensure_signed(origin)?;
+                    ensure!(who == designated_relayer, Error::<T>::UnauthorizedRelayer);
+                }
+                None => {
+                    ensure_root(origin)?;
+                }
+            }
 
             let channel = IbcChannels::<T>::get(channel_id).ok_or(Error::<T>::ChannelNotFound)?;
             ensure!(channel.state == 3, Error::<T>::ChannelNotOpen);
@@ -483,9 +504,13 @@ pub mod pallet {
                         .try_into()
                         .map_err(|_| Error::<T>::TransferAmountTooLarge)?;
 
-                    // Mint tokens to the receiver's account
-                    let _imbalance =
-                        T::Currency::deposit_creating(&receiver_account, mint_amount);
+                    // FIX C1: Use deposit_into_existing instead of deposit_creating.
+                    // deposit_creating panics in MaxSupplyCurrency when cap is exceeded,
+                    // and also creates accounts from nothing. deposit_into_existing
+                    // returns an error gracefully and respects the supply cap.
+                    // The receiver must already exist on-chain to receive tokens.
+                    T::Currency::deposit_into_existing(&receiver_account, mint_amount)
+                        .map_err(|_| Error::<T>::InvalidPacketData)?;
 
                     Self::deposit_event(Event::TokensReceived {
                         channel_id,
@@ -535,6 +560,8 @@ pub mod pallet {
             // FIX H8: Get packet data BEFORE removing to handle escrow lifecycle
             let packet_data = Self::get_packet_data(&channel_id, &sequence);
             IbcPackets::<T>::remove((channel_id, sequence));
+            // FIX M3: Also clean up the packet receipt to prevent unbounded storage growth
+            IbcPacketReceipts::<T>::remove((channel_id, sequence));
             let next_ack = IbcNextSequenceAck::<T>::get(channel_id);
             IbcNextSequenceAck::<T>::insert(
                 channel_id,
