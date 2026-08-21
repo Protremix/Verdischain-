@@ -748,6 +748,14 @@ pub mod pallet {
                 Error::<T>::RoundNotRefundable
             );
 
+            // C1 FIX: Prevent refund after funds have been collected.
+            // If admin already collected the raised funds via collect_funds(),
+            // the escrow no longer holds the payment — refunds would double-spend.
+            ensure!(
+                !RoundFundsCollected::<T>::get(round_id),
+                Error::<T>::FundsAlreadyCollected
+            );
+
             // Get user's contribution
             let contribution =
                 Contributions::<T>::get(round_id, &who).ok_or(Error::<T>::NoContribution)?;
