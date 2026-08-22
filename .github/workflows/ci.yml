@@ -34,8 +34,9 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
         run: |
-          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | head -1)
+          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | sort -u | tr '\n' ':' | sed 's/:$//')
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
+          echo "Found LIBCLANG_PATH=$LCP"
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Cargo check
@@ -56,8 +57,9 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
         run: |
-          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | head -1)
+          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | sort -u | tr '\n' ':' | sed 's/:$//')
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
+          echo "Found LIBCLANG_PATH=$LCP"
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Clippy check
@@ -77,12 +79,12 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
         run: |
-          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | head -1)
+          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | sort -u | tr '\n' ':' | sed 's/:$//')
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Run tests
-        run: cargo test --workspace --verbose
+        run: cargo test --workspace
 
   release-build:
     name: Release Build
@@ -98,7 +100,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
         run: |
-          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | head -1)
+          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | sort -u | tr '\n' ':' | sed 's/:$//')
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - run: cargo build --release
       - uses: actions/upload-artifact@v4
@@ -123,7 +125,7 @@ jobs:
         run: rustup target add wasm32-unknown-unknown
       - name: Set LIBCLANG_PATH
         run: |
-          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | head -1)
+          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | sort -u | tr '\n' ':' | sed 's/:$//')
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - run: cargo build --release -p verdis-runtime --no-default-features --target wasm32-unknown-unknown
       - uses: actions/upload-artifact@v4
