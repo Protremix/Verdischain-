@@ -11,7 +11,6 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
-  # Step 1: Format check
   fmt:
     name: Format Check
     runs-on: ubuntu-latest
@@ -23,7 +22,6 @@ jobs:
       - name: Check formatting
         run: cargo fmt --all -- --check
 
-  # Step 2: Compilation check
   check:
     name: Compile Check
     runs-on: ubuntu-latest
@@ -36,13 +34,23 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
-        run: echo "LIBCLANG_PATH=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)" >> $GITHUB_ENV
+        run: |
+          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)
+          echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Cargo check
-        run: cargo check --workspace --all-targets
+        run: |
+          set -o pipefail
+          cargo check --workspace --all-targets 2>&1 | tee /tmp/cargo-check.log
+          EXIT=${PIPESTATUS[0]}
+          if [ $EXIT -ne 0 ]; then
+            grep -E "^error" /tmp/cargo-check.log | head -30 | while IFS= read -r line; do
+              echo "::error::$line"
+            done
+          fi
+          exit $EXIT
 
-  # Step 3: Clippy (strict)
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
@@ -57,13 +65,23 @@ jobs:
           components: clippy
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
-        run: echo "LIBCLANG_PATH=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)" >> $GITHUB_ENV
+        run: |
+          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)
+          echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Clippy check
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: |
+          set -o pipefail
+          cargo clippy --workspace --all-targets -- -D warnings 2>&1 | tee /tmp/clippy.log
+          EXIT=${PIPESTATUS[0]}
+          if [ $EXIT -ne 0 ]; then
+            grep -E "^error" /tmp/clippy.log | head -30 | while IFS= read -r line; do
+              echo "::error::$line"
+            done
+          fi
+          exit $EXIT
 
-  # Step 4: Tests
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
@@ -77,13 +95,14 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
-        run: echo "LIBCLANG_PATH=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)" >> $GITHUB_ENV
+        run: |
+          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)
+          echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Run tests
         run: cargo test --workspace --verbose
 
-  # Step 5: Release build
   release-build:
     name: Release Build
     runs-on: ubuntu-latest
@@ -97,7 +116,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
-        run: echo "LIBCLANG_PATH=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)" >> $GITHUB_ENV
+        run: |
+          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)
+          echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - name: Build release binary
         run: cargo build --release
       - name: Upload binary
@@ -107,7 +128,6 @@ jobs:
           path: target/release/verdis
           retention-days: 7
 
-  # Step 6: WASM runtime build
   wasm-build:
     name: WASM Runtime Build
     runs-on: ubuntu-latest
@@ -123,7 +143,9 @@ jobs:
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Set LIBCLANG_PATH
-        run: echo "LIBCLANG_PATH=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)" >> $GITHUB_ENV
+        run: |
+          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)
+          echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - name: Build WASM runtime
         run: cargo build --release -p verdis-runtime --no-default-features --target wasm32-unknown-unknown
       - name: Upload WASM
@@ -134,7 +156,6 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-  # Step 7: Dependency audit
   audit:
     name: Dependency Audit
     runs-on: ubuntu-latest
