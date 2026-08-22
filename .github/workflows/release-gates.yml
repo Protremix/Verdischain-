@@ -33,7 +33,7 @@ jobs:
         run: |
           LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | head -1)
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
-      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo clippy --workspace --all-targets -- -D warnings
 
   test:
     name: 3. Unit Tests
@@ -49,7 +49,7 @@ jobs:
         run: |
           LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | head -1)
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
-      - run: cargo test --workspace --exclude verdis-node 2>&1
+      - run: cargo test --workspace --exclude verdis-node 2>&1 | tee /tmp/test-output.log
 
   tokenomics-check:
     name: 4. Tokenomics Consistency
