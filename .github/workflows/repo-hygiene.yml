@@ -16,10 +16,12 @@ jobs:
           fetch-depth: 0
       - name: Check for forbidden file types
         run: |
-          FORBIDDEN=$(find . -name "*.bak" -o -name "*.tmp" -o -name "*.apk" -o -name "*.pyc" | grep -v node_modules | grep -v target)
-          if [ -n "$FORBIDDEN" ]; then
-            echo "ERROR: Forbidden build/temp artifacts found in repository:"
-            echo "$FORBIDDEN"
+          set -x
+          FORBIDDEN= 2>/dev/null)
+          echo FORBIDDEN=
+          if [ -n  ]; then
+            echo ERROR: Forbidden build/temp artifacts found in repository:
+            echo 
             exit 1
           fi
-          echo "No forbidden artifacts found."
+          echo No forbidden artifacts found.
