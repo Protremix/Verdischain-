@@ -933,8 +933,7 @@ async def blocks(limit: int = Query(20, ge=1, le=100)):
             "number": i,
             "hash": block_hash or "",
             "timestamp": None,
-            "validator": None,
-            "tx_count": tx_count,
+            "extrinsics_count": tx_count,
         })
     return {"success": True, "count": len(out), "data": out}
 
