@@ -29,14 +29,14 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
         run: |
-          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | sort -u | tr '\n' ':' | sed 's/:$//')
+          LCP=$(llvm-config --libdir 2>/dev/null || echo "/usr/lib/llvm-18/lib:/usr/lib/llvm-17/lib:/usr/lib/llvm-19/lib:/usr/lib/x86_64-linux-gnu")
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
-          echo "Found LIBCLANG_PATH=$LCP"
+          echo "Using LIBCLANG_PATH=$LCP"
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Cargo check
@@ -50,16 +50,16 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
         run: |
-          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | sort -u | tr '\n' ':' | sed 's/:$//')
+          LCP=$(llvm-config --libdir 2>/dev/null || echo "/usr/lib/llvm-18/lib:/usr/lib/llvm-17/lib:/usr/lib/llvm-19/lib:/usr/lib/x86_64-linux-gnu")
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
-          echo "Found LIBCLANG_PATH=$LCP"
+          echo "Using LIBCLANG_PATH=$LCP"
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Clippy check
@@ -74,12 +74,12 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
         run: |
-          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | sort -u | tr '\n' ':' | sed 's/:$//')
+          LCP=$(llvm-config --libdir 2>/dev/null || echo "/usr/lib/llvm-18/lib:/usr/lib/llvm-17/lib:/usr/lib/llvm-19/lib:/usr/lib/x86_64-linux-gnu")
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
@@ -95,12 +95,12 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
         run: |
-          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | sort -u | tr '\n' ':' | sed 's/:$//')
+          LCP=$(llvm-config --libdir 2>/dev/null || echo "/usr/lib/llvm-18/lib:/usr/lib/llvm-17/lib:/usr/lib/llvm-19/lib:/usr/lib/x86_64-linux-gnu")
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - run: cargo build --release
       - uses: actions/upload-artifact@v4
@@ -118,14 +118,14 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Set LIBCLANG_PATH
         run: |
-          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | sort -u | tr '\n' ':' | sed 's/:$//')
+          LCP=$(llvm-config --libdir 2>/dev/null || echo "/usr/lib/llvm-18/lib:/usr/lib/llvm-17/lib:/usr/lib/llvm-19/lib:/usr/lib/x86_64-linux-gnu")
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - run: cargo build --release -p verdis-runtime --no-default-features --target wasm32-unknown-unknown
       - uses: actions/upload-artifact@v4
