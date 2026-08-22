@@ -24,9 +24,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
+      - name: Set LIBCLANG_PATH
+        run: echo "LIBCLANG_PATH=" >> 
       - run: cargo clippy --all-targets -- -D warnings
 
   # GATE 3: Unit tests
@@ -35,7 +41,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev
       - uses: dtolnay/rust-toolchain@stable
+      - name: Set LIBCLANG_PATH
+        run: echo "LIBCLANG_PATH=" >> 
       - run: cargo test --workspace --exclude verdis-node 2>&1
 
   # GATE 4: Tokenomics consistency
@@ -53,7 +65,13 @@ jobs:
     needs: [fmt, clippy, test, tokenomics-check]
     steps:
       - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev
       - uses: dtolnay/rust-toolchain@stable
+      - name: Set LIBCLANG_PATH
+        run: echo "LIBCLANG_PATH=" >> 
       - run: cargo build --release --workspace 2>&1 | tail -5
 
   # GATE 6: WASM build (for runtime)
@@ -63,9 +81,15 @@ jobs:
     needs: [fmt, clippy, test, tokenomics-check]
     steps:
       - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
+      - name: Set LIBCLANG_PATH
+        run: echo "LIBCLANG_PATH=" >> 
       - run: cargo build --release --target wasm32-unknown-unknown -p verdis-runtime 2>&1 | tail -5
 
   # GATE 7: Repository hygiene (no .bak, .tmp, .apk, conversation artifacts)
@@ -76,10 +100,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check for forbidden files
         run: |
-          FORBIDDEN=$(find . -name "*.bak" -o -name "*.tmp" -o -name "*.apk" -o -name "*.pyc" | grep -v node_modules | grep -v target)
-          if [ -n "$FORBIDDEN" ]; then
-            echo "FAIL: Forbidden files found:"
-            echo "$FORBIDDEN"
+          RESULTS=""
+          for ext in bak tmp apk pyc; do
+            FOUND=
+            if [ -n "$FOUND" ]; then
+              echo "Found .$ext files:"
+              echo "$FOUND"
+              RESULTS="$RESULTS$FOUND"
+            fi
+          done
+          if [ -n "$RESULTS" ]; then
+            echo "FAIL: Forbidden files found"
             exit 1
           fi
           echo "OK: No forbidden files"
