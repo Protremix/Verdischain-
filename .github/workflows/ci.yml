@@ -39,37 +39,29 @@ jobs:
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Cargo check
+        id: cargo-check
+        continue-on-error: true
+        run: cargo check --workspace --all-targets 2>&1 | tee /tmp/cargo-check.log
+      - name: Report errors via commit comment
+        if: steps.cargo-check.outcome == 'failure'
         run: |
-          cargo check --workspace --all-targets 2>&1 | tee /tmp/cargo-check.log
-          EXIT=${PIPESTATUS[0]}
-          if [ $EXIT -ne 0 ]; then
-            ERRORS=$(grep -E "^error" /tmp/cargo-check.log | head -50)
-            echo "ERRORS_START"
-            echo "$ERRORS"
-            echo "ERRORS_END"
-            # Post errors as commit comment for debugging
-            python3 -c "
-          import json, os, urllib.request
-          errors = os.environ.get(ERRORS,)
-          if errors:
-              body = ## Cargo check errorsn```n + errors + n```
-              data = json.dumps({body: body}).encode()
-              req = urllib.request.Request(
-                  https://api.github.com/repos/ + os.environ[GITHUB_REPOSITORY] + /commits/ + os.environ[GITHUB_SHA] + /comments,
-                  data=data,
-                  headers={Authorization: token  + os.environ[GITHUB_TOKEN], Content-Type: application/json}
-              )
-              try:
-                  urllib.request.urlopen(req)
-                  print(Posted errors as commit comment)
-              except Exception as e:
-                  print(Failed to post comment:, e)
-          "
+          ERRORS=$(grep -E "^error" /tmp/cargo-check.log | head -50)
+          if [ -n "$ERRORS" ]; then
+            BODY=$(jq -n --arg text "## Cargo check errors
+
+          \`\`\`
+          $ERRORS
+          \`\`\`" '{body: $text}')
+            curl -s -X POST \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              -d "$BODY" \
+              "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/comments"
+            echo "Posted errors as commit comment"
           fi
-          exit $EXIT
+          exit 1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ERRORS: ${{ steps.cargo-check.outputs.errors }}
 
   clippy:
     name: Clippy
@@ -91,30 +83,27 @@ jobs:
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Clippy check
+        id: clippy-check
+        continue-on-error: true
+        run: cargo clippy --workspace --all-targets -- -D warnings 2>&1 | tee /tmp/clippy.log
+      - name: Report errors via commit comment
+        if: steps.clippy-check.outcome == 'failure'
         run: |
-          cargo clippy --workspace --all-targets -- -D warnings 2>&1 | tee /tmp/clippy.log
-          EXIT=${PIPESTATUS[0]}
-          if [ $EXIT -ne 0 ]; then
-            ERRORS=$(grep -E "^error" /tmp/clippy.log | head -50)
-            python3 -c "
-          import json, os, urllib.request
-          errors = 
-          if errors:
-              body = ## Clippy errorsn```n + errors + n```
-              data = json.dumps({body: body}).encode()
-              req = urllib.request.Request(
-                  https://api.github.com/repos/ + os.environ[GITHUB_REPOSITORY] + /commits/ + os.environ[GITHUB_SHA] + /comments,
-                  data=data,
-                  headers={Authorization: token  + os.environ[GITHUB_TOKEN], Content-Type: application/json}
-              )
-              try:
-                  urllib.request.urlopen(req)
-                  print(Posted errors as commit comment)
-              except Exception as e:
-                  print(Failed to post comment:, e)
-          "
+          ERRORS=$(grep -E "^error" /tmp/clippy.log | head -50)
+          if [ -n "$ERRORS" ]; then
+            BODY=$(jq -n --arg text "## Clippy errors
+
+          \`\`\`
+          $ERRORS
+          \`\`\`" '{body: $text}')
+            curl -s -X POST \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              -d "$BODY" \
+              "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/comments"
+            echo "Posted errors as commit comment"
           fi
-          exit $EXIT
+          exit 1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
