@@ -19,8 +19,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
-      - name: Check formatting
-        run: cargo fmt --all -- --check
+      - run: cargo fmt --all -- --check
 
   check:
     name: Compile Check
@@ -41,15 +40,36 @@ jobs:
         run: rustup target add wasm32-unknown-unknown
       - name: Cargo check
         run: |
-          set -o pipefail
           cargo check --workspace --all-targets 2>&1 | tee /tmp/cargo-check.log
           EXIT=${PIPESTATUS[0]}
           if [ $EXIT -ne 0 ]; then
-            grep -E "^error" /tmp/cargo-check.log | head -30 | while IFS= read -r line; do
-              echo "::error::$line"
-            done
+            ERRORS=$(grep -E "^error" /tmp/cargo-check.log | head -50)
+            echo "ERRORS_START"
+            echo "$ERRORS"
+            echo "ERRORS_END"
+            # Post errors as commit comment for debugging
+            python3 -c "
+          import json, os, urllib.request
+          errors = os.environ.get(ERRORS,)
+          if errors:
+              body = ## Cargo check errorsn```n + errors + n```
+              data = json.dumps({body: body}).encode()
+              req = urllib.request.Request(
+                  https://api.github.com/repos/ + os.environ[GITHUB_REPOSITORY] + /commits/ + os.environ[GITHUB_SHA] + /comments,
+                  data=data,
+                  headers={Authorization: token  + os.environ[GITHUB_TOKEN], Content-Type: application/json}
+              )
+              try:
+                  urllib.request.urlopen(req)
+                  print(Posted errors as commit comment)
+              except Exception as e:
+                  print(Failed to post comment:, e)
+          "
           fi
           exit $EXIT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ERRORS: ${{ steps.cargo-check.outputs.errors }}
 
   clippy:
     name: Clippy
@@ -72,15 +92,31 @@ jobs:
         run: rustup target add wasm32-unknown-unknown
       - name: Clippy check
         run: |
-          set -o pipefail
           cargo clippy --workspace --all-targets -- -D warnings 2>&1 | tee /tmp/clippy.log
           EXIT=${PIPESTATUS[0]}
           if [ $EXIT -ne 0 ]; then
-            grep -E "^error" /tmp/clippy.log | head -30 | while IFS= read -r line; do
-              echo "::error::$line"
-            done
+            ERRORS=$(grep -E "^error" /tmp/clippy.log | head -50)
+            python3 -c "
+          import json, os, urllib.request
+          errors = 
+          if errors:
+              body = ## Clippy errorsn```n + errors + n```
+              data = json.dumps({body: body}).encode()
+              req = urllib.request.Request(
+                  https://api.github.com/repos/ + os.environ[GITHUB_REPOSITORY] + /commits/ + os.environ[GITHUB_SHA] + /comments,
+                  data=data,
+                  headers={Authorization: token  + os.environ[GITHUB_TOKEN], Content-Type: application/json}
+              )
+              try:
+                  urllib.request.urlopen(req)
+                  print(Posted errors as commit comment)
+              except Exception as e:
+                  print(Failed to post comment:, e)
+          "
           fi
           exit $EXIT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test:
     name: Unit Tests
@@ -100,8 +136,7 @@ jobs:
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
-      - name: Run tests
-        run: cargo test --workspace --verbose
+      - run: cargo test --workspace --verbose
 
   release-build:
     name: Release Build
@@ -119,10 +154,8 @@ jobs:
         run: |
           LCP=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
-      - name: Build release binary
-        run: cargo build --release
-      - name: Upload binary
-        uses: actions/upload-artifact@v4
+      - run: cargo build --release
+      - uses: actions/upload-artifact@v4
         with:
           name: verdis-node-binary
           path: target/release/verdis
@@ -146,10 +179,8 @@ jobs:
         run: |
           LCP=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
-      - name: Build WASM runtime
-        run: cargo build --release -p verdis-runtime --no-default-features --target wasm32-unknown-unknown
-      - name: Upload WASM
-        uses: actions/upload-artifact@v4
+      - run: cargo build --release -p verdis-runtime --no-default-features --target wasm32-unknown-unknown
+      - uses: actions/upload-artifact@v4
         with:
           name: verdis-runtime-wasm
           path: target/wasm32-unknown-unknown/release/*.wasm
@@ -163,7 +194,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - name: Install cargo-audit
-        run: cargo install cargo-audit
-      - name: Run audit
-        run: scripts/cargo-audit-safe.sh --ignore RUSTSEC-2026-0118 --ignore RUSTSEC-2026-0119 --ignore RUSTSEC-2025-0009 --ignore RUSTSEC-2025-0010 --ignore RUSTSEC-2026-0098 --ignore RUSTSEC-2026-0099 --ignore RUSTSEC-2026-0104 --ignore RUSTSEC-2025-0055 --ignore RUSTSEC-2024-0388 --ignore RUSTSEC-2025-0057
+      - run: cargo install cargo-audit
+      - run: scripts/cargo-audit-safe.sh --ignore RUSTSEC-2026-0118 --ignore RUSTSEC-2026-0119 --ignore RUSTSEC-2025-0009 --ignore RUSTSEC-2025-0010 --ignore RUSTSEC-2026-0098 --ignore RUSTSEC-2026-0099 --ignore RUSTSEC-2026-0104 --ignore RUSTSEC-2025-0055 --ignore RUSTSEC-2024-0388 --ignore RUSTSEC-2025-0057
