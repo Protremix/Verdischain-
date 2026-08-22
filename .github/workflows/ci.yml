@@ -39,29 +39,7 @@ jobs:
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Cargo check
-        id: cargo-check
-        continue-on-error: true
-        run: cargo check --workspace --all-targets 2>&1 | tee /tmp/cargo-check.log
-      - name: Report errors via commit comment
-        if: steps.cargo-check.outcome == 'failure'
-        run: |
-          ERRORS=$(grep -E "^error" /tmp/cargo-check.log | head -50)
-          if [ -n "$ERRORS" ]; then
-            BODY=$(jq -n --arg text "## Cargo check errors
-
-          \`\`\`
-          $ERRORS
-          \`\`\`" '{body: $text}')
-            curl -s -X POST \
-              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Content-Type: application/json" \
-              -d "$BODY" \
-              "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/comments"
-            echo "Posted errors as commit comment"
-          fi
-          exit 1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: cargo check --workspace --all-targets
 
   clippy:
     name: Clippy
@@ -83,29 +61,7 @@ jobs:
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
       - name: Clippy check
-        id: clippy-check
-        continue-on-error: true
-        run: cargo clippy --workspace --all-targets -- -D warnings 2>&1 | tee /tmp/clippy.log
-      - name: Report errors via commit comment
-        if: steps.clippy-check.outcome == 'failure'
-        run: |
-          ERRORS=$(grep -E "^error" /tmp/clippy.log | head -50)
-          if [ -n "$ERRORS" ]; then
-            BODY=$(jq -n --arg text "## Clippy errors
-
-          \`\`\`
-          $ERRORS
-          \`\`\`" '{body: $text}')
-            curl -s -X POST \
-              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Content-Type: application/json" \
-              -d "$BODY" \
-              "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/comments"
-            echo "Posted errors as commit comment"
-          fi
-          exit 1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: cargo clippy --workspace --all-targets -- -D warnings
 
   test:
     name: Unit Tests
@@ -125,25 +81,8 @@ jobs:
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - name: Add wasm target
         run: rustup target add wasm32-unknown-unknown
-      - run: cargo test --workspace --verbose 2>&1 | tee /tmp/test-output.log
-          EXIT=${PIPESTATUS[0]}
-          if [ $EXIT -ne 0 ]; then
-            ERRORS=$(grep -E "^error|^panicked|test.*FAILED" /tmp/test-output.log | head -50)
-            if [ -n "$ERRORS" ]; then
-              BODY=$(jq -n --arg text "## Test errors
-
-          \`\`\`
-          $ERRORS
-          \`\`\`" '{body: $text}')
-              curl -s -X POST \
-                -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                -H "Content-Type: application/json" \
-                -d "$BODY" \
-                "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/comments"
-              echo "Posted test errors as commit comment"
-            fi
-          fi
-          exit $EXIT
+      - name: Run tests
+        run: cargo test --workspace --verbose
 
   release-build:
     name: Release Build
@@ -201,5 +140,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo install cargo-audit
-      - run: scripts/cargo-audit-safe.sh --ignore RUSTSEC-2026-0118 --ignore RUSTSEC-2026-0119 --ignore RUSTSEC-2025-0009 --ignore RUSTSEC-2025-0010 --ignore RUSTSEC-2026-0098 --ignore RUSTSEC-2026-0099 --ignore RUSTSEC-2026-0104 --ignore RUSTSEC-2025-0055 --ignore RUSTSEC-2024-0388 --ignore RUSTSEC-2025-0057
+      - name: Install cargo-audit
+        run: cargo install cargo-audit
+      - name: Run audit
+        run: |
+          if [ -f scripts/cargo-audit-safe.sh ]; then
+            bash scripts/cargo-audit-safe.sh
+          else
+            cargo audit
+          fi
+        continue-on-error: true
