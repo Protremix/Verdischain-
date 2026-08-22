@@ -885,5 +885,60 @@ async def network_status():
     }
 
 
+@app.get("/api/v1/stats")
+async def stats():
+    latest = await get_latest_block_number()
+    finalized_hash = await rpc("chain_getFinalizedHead", [])
+    finalized_block = 0
+    if finalized_hash:
+        fin_header = await rpc("chain_getHeader", [finalized_hash])
+        if fin_header:
+            finalized_block = int(fin_header.get("number", "0x0"), 16)
+    validators_list = await rpc("session_validators", [])
+    validators_count = len(validators_list) if isinstance(validators_list, list) else 0
+    health = await rpc("system_health", [])
+    peers = health.get("peers", 0) if health else 0
+    tx_total = 0
+    for i in range(latest, max(latest - 20, -1), -1):
+        bd = await get_block_by_number(i)
+        if bd and "block" in bd:
+            tx_total += len(bd.get("block", {}).get("extrinsics", []))
+    tps = round(tx_total / (20 * 6), 4) if latest > 0 else 0
+    return {
+        "success": True,
+        "data": {
+            "block_height": latest,
+            "finalized_block": finalized_block,
+            "validators": validators_count,
+            "tps": tps,
+            "total_supply": 100_000_000_000,
+            "circulating_supply": None,
+            "epoch": None,
+            "peers": peers,
+        },
+    }
+
+
+@app.get("/api/v1/blocks")
+async def blocks(limit: int = Query(20, ge=1, le=100)):
+    latest = await get_latest_block_number()
+    out = []
+    for i in range(latest, max(latest - limit, -1), -1):
+        block_hash = await rpc("chain_getBlockHash", [i])
+        bd = await get_block_by_number(i)
+        tx_count = 0
+        if bd and "block" in bd:
+            tx_count = len(bd.get("block", {}).get("extrinsics", []))
+        out.append({
+            "number": i,
+            "hash": block_hash or "",
+            "timestamp": None,
+            "validator": None,
+            "tx_count": tx_count,
+        })
+    return {"success": True, "count": len(out), "data": out}
+
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=4400, log_level="info")
