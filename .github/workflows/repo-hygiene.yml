@@ -1,6 +1,8 @@
 name: Repository Hygiene
 
 on:
+  push:
+    branches: [master, main]
   pull_request:
     branches: [master, main]
 
@@ -14,11 +16,10 @@ jobs:
           fetch-depth: 0
       - name: Check for forbidden file types
         run: |
-          FORBIDDEN=./verdis-wallet.apk
-./wallet_files/verdis-wallet.apk
+          FORBIDDEN=$(find . -name "*.bak" -o -name "*.tmp" -o -name "*.apk" -o -name "*.pyc" | grep -v node_modules | grep -v target)
           if [ -n "$FORBIDDEN" ]; then
-            echo 'ERROR: Forbidden build/temp artifacts found in repository:'
+            echo "ERROR: Forbidden build/temp artifacts found in repository:"
             echo "$FORBIDDEN"
             exit 1
           fi
-          echo 'No forbidden artifacts found.'
+          echo "No forbidden artifacts found."
