@@ -33,6 +33,10 @@ jobs:
 
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@v2
+      - name: Set LIBCLANG_PATH
+        run: |
+          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | head -1)
+          echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
 
       - name: Install try-runtime CLI
         run: cargo install --git https://github.com/paritytech/try-runtime-cli --locked

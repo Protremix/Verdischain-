@@ -31,7 +31,7 @@ jobs:
           components: clippy
       - name: Set LIBCLANG_PATH
         run: |
-          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)
+          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | head -1)
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - run: cargo clippy --all-targets -- -D warnings
 
@@ -47,7 +47,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Set LIBCLANG_PATH
         run: |
-          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)
+          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | head -1)
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - run: cargo test --workspace --exclude verdis-node 2>&1
 
@@ -71,7 +71,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Set LIBCLANG_PATH
         run: |
-          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)
+          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | head -1)
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - run: cargo build --release --workspace 2>&1 | tail -5
 
@@ -90,7 +90,7 @@ jobs:
           targets: wasm32-unknown-unknown
       - name: Set LIBCLANG_PATH
         run: |
-          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h/" 2>/dev/null | head -1)
+          LCP=$(find /usr/lib -name "libclang*.so" -printf "%h\n" 2>/dev/null | head -1)
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - run: cargo build --release --target wasm32-unknown-unknown -p verdis-runtime 2>&1 | tail -5
 
