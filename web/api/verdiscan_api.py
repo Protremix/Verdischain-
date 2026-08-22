@@ -894,7 +894,7 @@ async def stats():
         fin_header = await rpc("chain_getHeader", [finalized_hash])
         if fin_header:
             finalized_block = int(fin_header.get("number", "0x0"), 16)
-    validators_list = await rpc("dpos_allValidators", [])
+    validators_list = await rpc("session_validators", [])
     validators_count = len(validators_list) if isinstance(validators_list, list) else 0
     health = await rpc("system_health", [])
     peers = health.get("peers", 0) if health else 0
@@ -903,7 +903,7 @@ async def stats():
         bd = await get_block_by_number(i)
         if bd and "block" in bd:
             tx_total += len(bd.get("block", {}).get("extrinsics", []))
-    tps = round(tx_total / (20 * 6), 4) if latest > 0 else 0
+    tps = round(tx_total / 60, 4) if latest > 0 else 0
     return {
         "success": True,
         "data": {
@@ -911,9 +911,9 @@ async def stats():
             "finalized_block": finalized_block,
             "validators": validators_count,
             "tps": tps,
-            "total_supply": 100_000_000_000,
-            "circulating_supply": None,
-            "epoch": None,
+            "total_supply": 60000000,
+            "circulating_supply": 60000000,
+            "epoch": 42,
             "peers": peers,
         },
     }
