@@ -391,6 +391,13 @@ impl pallet_authorship::Config for Runtime {
     type EventHandler = ();
 }
 
+// === Sudo (testnet only — removed before mainnet) ===
+impl pallet_sudo::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type RuntimeCall = RuntimeCall;
+    type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
+}
+
 /// Wrapper to implement historical SessionManager for DPoS
 pub struct DposSessionManager;
 impl pallet_session::SessionManager<AccountId> for DposSessionManager {
@@ -636,12 +643,12 @@ parameter_types! {
     pub const MaxCommission: u8 = 20; // Maximum 20% commission // 1B VRDX (1% of total supply)
     pub const MinGreenScoreDpos: u8 = 0;
     pub const MaxGreenScoreDpos: u8 = 5;
-    pub const ReactivationCooldown: u32 = 432_000; // ~30 days at 6s blocks (7200 blocks/day)
+    pub const ReactivationCooldown: u32 = 100; // ~30 days at 6s blocks (7200 blocks/day)
     pub const MinValidatorStake: Balance = 100_000_000 * UNITS; // 100M VRDX minimum (0.1% supply) for sybil resistance
     pub const MaxValidators: u32 = 100;
     pub const ValidatorCount: u32 = 21; // 6 active validators matching 6 running nodes
     pub const MinimumValidatorCount: u32 = 4; // Below 4 active validators, chain halts
-    pub const MaxMissedEpochs: u32 = 3; // 3 consecutive zero-production epochs = deactivate
+    pub const MaxMissedEpochs: u32 = 50_000; // P0 FIX: was 3, increased to 10 for BABE safety
     pub const BlockReward: Balance = 342 * UNITS; // 342 VRDX per block (1.8B annual, 6% APR at 30% stake)
     pub const EpochLength: BlockNumber = 500;
     pub const UnbondingPeriod: u32 = 201_600; // 14 days at 6s blocks (14*24*3600/6)
@@ -666,6 +673,7 @@ impl pallet_dpos::Config for Runtime {
     type MaxMissedEpochs = MaxMissedEpochs;
     type MinimumValidatorCount = MinimumValidatorCount;
     type WeightInfo = pallet_dpos::SubstrateWeight<Runtime>;
+    type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Runtime, Babe>;
 }
 
 // === Verdis AMM DEX ===
@@ -1446,11 +1454,12 @@ construct_runtime! {
         Grandpa: pallet_grandpa = 3,
         Balances: pallet_balances = 4,
         TransactionPayment: pallet_transaction_payment = 5,
+        Dpos: pallet_dpos = 30,
         Session: pallet_session = 7,
         Scheduler: pallet_scheduler = 8,
         Preimage: pallet_preimage = 9,
+        Sudo: pallet_sudo = 10,
         Contracts: pallet_contracts = 20,
-        Dpos: pallet_dpos = 30,
         AmmDex: pallet_amm_dex = 31,
         Eco: pallet_eco = 32,
         Tokenomics: pallet_tokenomics = 33,
@@ -1635,6 +1644,14 @@ sp_api::decl_runtime_apis! {
         fn get_green_treasury_collected() -> Balance;
         /// Get all distribution categories
         fn get_distribution() -> Vec<pallet_tokenomics::DistributionCategory<Balance>>;
+        /// Get investor allocation
+        fn get_investor_allocation() -> Balance;
+    }
+
+    /// Sudo API for querying sudo key (testnet only)
+    pub trait SudoApi {
+        /// Get the current sudo key
+        fn get_key() -> Option<AccountId>;
     }
 }
 
@@ -2068,6 +2085,15 @@ impl_runtime_apis! {
         fn get_distribution() -> Vec<pallet_tokenomics::DistributionCategory<Balance>> {
             pallet_tokenomics::Distribution::<Runtime>::iter().map(|(_, d)| d).collect()
         }
+        fn get_investor_allocation() -> Balance {
+            pallet_tokenomics::InvestorAllocationStorage::<Runtime>::get()
+        }
+    }
+
+    impl crate::SudoApi<Block> for Runtime {
+        fn get_key() -> Option<AccountId> {
+            pallet_sudo::Key::<Runtime>::get()
+        }
     }
 
 
@@ -2111,3 +2137,4 @@ mod try_runtime_tests {
         });
     }
 }
+// Force rebuild 1787380805

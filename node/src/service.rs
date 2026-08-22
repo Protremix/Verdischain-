@@ -240,6 +240,12 @@ pub fn new_full<
                     .merge(rpc::TokenomicsRpcServer::into_rpc(tokenomics))
                     .map_err(|e| Error::Application(Box::new(e)))?;
 
+                // SudoApi RPC
+                let sudo = rpc::SudoRpcImpl::new(client.clone());
+                module
+                    .merge(rpc::SudoRpcServer::into_rpc(sudo))
+                    .map_err(|e| Error::Application(Box::new(e)))?;
+
                 // EcoApi RPC
                 let eco = rpc::EcoRpcImpl::new(client.clone());
                 module
