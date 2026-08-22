@@ -894,7 +894,7 @@ async def stats():
         fin_header = await rpc("chain_getHeader", [finalized_hash])
         if fin_header:
             finalized_block = int(fin_header.get("number", "0x0"), 16)
-    validators_list = await rpc("session_validators", [])
+    validators_list = await rpc("dpos_allValidators", [])
     validators_count = len(validators_list) if isinstance(validators_list, list) else 0
     health = await rpc("system_health", [])
     peers = health.get("peers", 0) if health else 0
