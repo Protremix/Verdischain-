@@ -354,7 +354,7 @@ pub fn new_full<
             notification_service: grandpa_notification_service,
             voting_rule: VotingRulesBuilder::default().build(),
             prometheus_registry: prom_registry,
-            shared_voter_state: shared_voter_state,
+            shared_voter_state,
             telemetry: None,
             offchain_tx_pool_factory: OffchainTransactionPoolFactory::new(transaction_pool.clone()),
         })

@@ -826,4 +826,3 @@ fn set_max_supply_cannot_increase_ratchet() {
         );
     });
 }
-

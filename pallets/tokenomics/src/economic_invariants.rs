@@ -214,7 +214,7 @@ fn test_block_reward_annual_inflation() {
 
     // Annual inflation should be ~1.8B VRDX
     assert!(
-        annual_inflation > 1 * billion && annual_inflation < 3 * billion,
+        annual_inflation > billion && annual_inflation < 3 * billion,
         "Annual inflation should be 1-3B, got {}",
         annual_inflation / units
     );
@@ -262,7 +262,7 @@ fn test_green_score_range_enforced() {
     assert_eq!(max_score, 5, "MaxGreenScore must be 5");
 
     // Score 0 must be invalid
-    assert!(!(0 >= min_score), "Score 0 must be rejected");
+    assert!(min_score > 0, "Score 0 must be rejected");
 
     // Scores 1-5 must be valid
     for score in 1..=5 {

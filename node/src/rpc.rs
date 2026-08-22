@@ -36,7 +36,6 @@ pub struct DistributionCategoryDetailed<Balance> {
     pub released: Balance,
 }
 
-
 fn rpc_err(e: impl std::fmt::Display) -> ErrorObject<'static> {
     ErrorObject::owned(INTERNAL_ERROR_CODE, e.to_string(), None::<()>)
 }
@@ -75,7 +74,12 @@ pub trait AmmDexRpc {
     fn get_price(&self, pool_id: u32, token: Vec<u8>) -> RpcResult<Option<Balance>>;
 
     #[method(name = "amm_dex_getSwapQuote")]
-    fn get_swap_quote(&self, pool_id: u32, token_in: Vec<u8>, amount_in: Balance) -> RpcResult<Option<Balance>>;
+    fn get_swap_quote(
+        &self,
+        pool_id: u32,
+        token_in: Vec<u8>,
+        amount_in: Balance,
+    ) -> RpcResult<Option<Balance>>;
 }
 
 pub struct AmmDexRpcImpl<C> {
@@ -95,7 +99,11 @@ where
 {
     fn get_pool(&self, pool_id: u32) -> RpcResult<Option<PoolDetailed<AccountId, Balance>>> {
         let at = self.client.info().best_hash;
-        let pool = self.client.runtime_api().get_pool(at, pool_id).map_err(rpc_err)?;
+        let pool = self
+            .client
+            .runtime_api()
+            .get_pool(at, pool_id)
+            .map_err(rpc_err)?;
         Ok(pool.map(|p| PoolDetailed {
             id: p.id,
             token_a: String::from_utf8_lossy(&p.token_a).to_string(),
@@ -127,18 +135,25 @@ where
 
     fn get_all_pools(&self) -> RpcResult<Vec<PoolDetailed<AccountId, Balance>>> {
         let at = self.client.info().best_hash;
-        let pools = self.client.runtime_api().get_all_pools(at).map_err(rpc_err)?;
-        Ok(pools.into_iter().map(|p| PoolDetailed {
-            id: p.id,
-            token_a: String::from_utf8_lossy(&p.token_a).to_string(),
-            token_b: String::from_utf8_lossy(&p.token_b).to_string(),
-            reserve_a: p.reserve_a,
-            reserve_b: p.reserve_b,
-            total_lp: p.total_lp,
-            fee_numerator: p.fee_numerator,
-            fee_denominator: p.fee_denominator,
-            creator: p.creator,
-        }).collect())
+        let pools = self
+            .client
+            .runtime_api()
+            .get_all_pools(at)
+            .map_err(rpc_err)?;
+        Ok(pools
+            .into_iter()
+            .map(|p| PoolDetailed {
+                id: p.id,
+                token_a: String::from_utf8_lossy(&p.token_a).to_string(),
+                token_b: String::from_utf8_lossy(&p.token_b).to_string(),
+                reserve_a: p.reserve_a,
+                reserve_b: p.reserve_b,
+                total_lp: p.total_lp,
+                fee_numerator: p.fee_numerator,
+                fee_denominator: p.fee_denominator,
+                creator: p.creator,
+            })
+            .collect())
     }
 
     fn get_token_pool(&self, pool_id: u32) -> RpcResult<Option<TokenPool<AccountId, Balance>>> {
@@ -189,7 +204,12 @@ where
             .map_err(rpc_err)
     }
 
-    fn get_swap_quote(&self, pool_id: u32, token_in: Vec<u8>, amount_in: Balance) -> RpcResult<Option<Balance>> {
+    fn get_swap_quote(
+        &self,
+        pool_id: u32,
+        token_in: Vec<u8>,
+        amount_in: Balance,
+    ) -> RpcResult<Option<Balance>> {
         let at = self.client.info().best_hash;
         self.client
             .runtime_api()
@@ -296,19 +316,21 @@ where
 
     fn session_index(&self) -> RpcResult<u32> {
         let at = self.client.info().best_hash;
-        self.client
-            .runtime_api()
-            .session_index(at)
-            .map_err(rpc_err)
+        self.client.runtime_api().session_index(at).map_err(rpc_err)
     }
 
     fn get_all_validators_detailed(&self) -> RpcResult<Vec<ValidatorDetailed<AccountId, Balance>>> {
         let at = self.client.info().best_hash;
-        let validators = self.client.runtime_api().get_all_validators_detailed(at).map_err(rpc_err)?;
+        let validators = self
+            .client
+            .runtime_api()
+            .get_all_validators_detailed(at)
+            .map_err(rpc_err)?;
         let result: Vec<ValidatorDetailed<AccountId, Balance>> = validators
             .into_iter()
             .map(|v| {
-                let name = self.client
+                let name = self
+                    .client
                     .runtime_api()
                     .get_validator_name(at, v.address.clone())
                     .unwrap_or(None)
@@ -460,7 +482,9 @@ pub trait EcoRpc {
     fn get_all_reforest_projects(&self) -> RpcResult<Vec<ReforestProjectDetailed>>;
 
     #[method(name = "eco_getAllGreenValidatorsDetailed")]
-    fn get_all_green_validators_detailed(&self) -> RpcResult<Vec<pallet_eco::GreenValidator<AccountId>>>;
+    fn get_all_green_validators_detailed(
+        &self,
+    ) -> RpcResult<Vec<pallet_eco::GreenValidator<AccountId>>>;
 }
 
 pub struct EcoRpcImpl<C> {
@@ -557,7 +581,8 @@ where
 
     fn get_all_carbon_credits(&self) -> RpcResult<Vec<CarbonCreditDetailed<AccountId>>> {
         let at = self.client.info().best_hash;
-        let credits = self.client
+        let credits = self
+            .client
             .runtime_api()
             .get_all_carbon_credits(at)
             .map_err(rpc_err)?;
@@ -578,7 +603,8 @@ where
 
     fn get_all_reforest_projects(&self) -> RpcResult<Vec<ReforestProjectDetailed>> {
         let at = self.client.info().best_hash;
-        let projects = self.client
+        let projects = self
+            .client
             .runtime_api()
             .get_all_reforest_projects(at)
             .map_err(rpc_err)?;
@@ -596,7 +622,9 @@ where
         Ok(result)
     }
 
-    fn get_all_green_validators_detailed(&self) -> RpcResult<Vec<pallet_eco::GreenValidator<AccountId>>> {
+    fn get_all_green_validators_detailed(
+        &self,
+    ) -> RpcResult<Vec<pallet_eco::GreenValidator<AccountId>>> {
         let at = self.client.info().best_hash;
         self.client
             .runtime_api()
@@ -653,50 +681,80 @@ where
 {
     fn get_total_supply(&self) -> RpcResult<Balance> {
         let at = self.client.info().best_hash;
-        self.client.runtime_api().get_total_supply(at).map_err(rpc_err)
+        self.client
+            .runtime_api()
+            .get_total_supply(at)
+            .map_err(rpc_err)
     }
     fn get_circulating_supply(&self) -> RpcResult<Balance> {
         let at = self.client.info().best_hash;
-        self.client.runtime_api().get_circulating_supply(at).map_err(rpc_err)
+        self.client
+            .runtime_api()
+            .get_circulating_supply(at)
+            .map_err(rpc_err)
     }
     fn get_presale_price(&self) -> RpcResult<u32> {
         let at = self.client.info().best_hash;
-        self.client.runtime_api().get_presale_price(at).map_err(rpc_err)
+        self.client
+            .runtime_api()
+            .get_presale_price(at)
+            .map_err(rpc_err)
     }
     fn get_presale_raised(&self) -> RpcResult<Balance> {
         let at = self.client.info().best_hash;
-        self.client.runtime_api().get_presale_raised(at).map_err(rpc_err)
+        self.client
+            .runtime_api()
+            .get_presale_raised(at)
+            .map_err(rpc_err)
     }
     fn get_presale_sold(&self) -> RpcResult<Balance> {
         let at = self.client.info().best_hash;
-        self.client.runtime_api().get_presale_sold(at).map_err(rpc_err)
+        self.client
+            .runtime_api()
+            .get_presale_sold(at)
+            .map_err(rpc_err)
     }
     fn get_transfer_fee_bps(&self) -> RpcResult<u32> {
         let at = self.client.info().best_hash;
-        self.client.runtime_api().get_transfer_fee_bps(at).map_err(rpc_err)
+        self.client
+            .runtime_api()
+            .get_transfer_fee_bps(at)
+            .map_err(rpc_err)
     }
     fn get_green_treasury_collected(&self) -> RpcResult<Balance> {
         let at = self.client.info().best_hash;
-        self.client.runtime_api().get_green_treasury_collected(at).map_err(rpc_err)
+        self.client
+            .runtime_api()
+            .get_green_treasury_collected(at)
+            .map_err(rpc_err)
     }
     fn get_distribution(&self) -> RpcResult<Vec<DistributionCategoryDetailed<Balance>>> {
         let at = self.client.info().best_hash;
-        let cats = self.client.runtime_api().get_distribution(at).map_err(rpc_err)?;
-        Ok(cats.into_iter().map(|c| DistributionCategoryDetailed {
-            name: String::from_utf8_lossy(&c.name).to_string(),
-            amount: c.amount,
-            percentage: c.percentage,
-            vesting_days: c.vesting_days,
-            cliff_days: c.cliff_days,
-            released: c.released,
-        }).collect())
+        let cats = self
+            .client
+            .runtime_api()
+            .get_distribution(at)
+            .map_err(rpc_err)?;
+        Ok(cats
+            .into_iter()
+            .map(|c| DistributionCategoryDetailed {
+                name: String::from_utf8_lossy(&c.name).to_string(),
+                amount: c.amount,
+                percentage: c.percentage,
+                vesting_days: c.vesting_days,
+                cliff_days: c.cliff_days,
+                released: c.released,
+            })
+            .collect())
     }
     fn get_investor_allocation(&self) -> RpcResult<Balance> {
         let at = self.client.info().best_hash;
-        self.client.runtime_api().get_investor_allocation(at).map_err(rpc_err)
+        self.client
+            .runtime_api()
+            .get_investor_allocation(at)
+            .map_err(rpc_err)
     }
 }
-
 
 // === SudoApi RPC ===
 use verdis_runtime::SudoApi as SudoRuntimeApi;
@@ -729,12 +787,12 @@ where
 }
 
 // === ContractsApi RPC ===
-use verdis_runtime::ContractsApi as ContractsRuntimeApi;
-use verdis_runtime::TokenomicsApi as TokenomicsRuntimeApi;
-use verdis_runtime::Hash;
 use pallet_dpos::Validator;
-use pallet_eco::{CarbonCredit, ReforestProject, GreenValidator};
+use pallet_eco::{CarbonCredit, GreenValidator, ReforestProject};
 use pallet_tokenomics::DistributionCategory;
+use verdis_runtime::ContractsApi as ContractsRuntimeApi;
+use verdis_runtime::Hash;
+use verdis_runtime::TokenomicsApi as TokenomicsRuntimeApi;
 
 #[rpc(server)]
 pub trait ContractsRpc {

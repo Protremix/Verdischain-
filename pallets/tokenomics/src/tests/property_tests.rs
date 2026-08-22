@@ -327,7 +327,7 @@ fn test_prop_sum_allocation_pools_equals_total_supply() {
             let from_idx = step % 9;
             let to_idx = (step + 3) % 9;
             let from_bal = state.pools.get_pool(from_idx);
-            let transfer_amount = (from_bal / 10).min(1 * BILLION);
+            let transfer_amount = (from_bal / 10).min(BILLION);
 
             if transfer_amount > 0 {
                 let res = state.transfer_between_pools(from_idx, to_idx, transfer_amount);
@@ -461,7 +461,7 @@ fn test_prop_staking_rewards_capped_at_20b() {
 
         // Attempting a single huge reward distribution of 21B VRDX on fresh state must fail
         let mut fresh_state = TokenomicsState::genesis();
-        let huge_err = fresh_state.distribute_staking_reward(21 * BILLION);
+        let huge_err = fresh_state.distribute_staking_reward(2 * BILLION);
         assert!(huge_err.is_err());
         assert_eq!(fresh_state.staking_rewards_distributed, 0);
     });
@@ -531,7 +531,6 @@ fn test_prop_treasury_spending_reduces_balance_never_mints() {
     });
 }
 
-
 // ============================================================================
 // CORRECTED ALLOCATION TESTS (Aug 14 2026)
 // ============================================================================
@@ -544,7 +543,11 @@ fn test_corrected_genesis_allocations_match_spec() {
     let pools = AllocationPools::genesis();
     assert_eq!(pools.ecosystem, 25 * BILLION, "Ecosystem must be 25B");
     assert_eq!(pools.staking, 20 * BILLION, "Staking must be 20B");
-    assert_eq!(pools.treasury, 20 * BILLION, "Treasury must be 20B (corrected from 15B)");
+    assert_eq!(
+        pools.treasury,
+        20 * BILLION,
+        "Treasury must be 20B (corrected from 15B)"
+    );
     assert_eq!(pools.development, 10 * BILLION, "Development must be 10B");
     assert_eq!(pools.liquidity, 10 * BILLION, "Liquidity must be 10B");
     assert_eq!(pools.community, 5 * BILLION, "Community must be 5B");
@@ -568,7 +571,10 @@ fn test_investor_allocation_within_cap() {
 fn test_no_category_exceeds_25_percent() {
     let pools = AllocationPools::genesis();
     let total = pools.sum();
-    assert!(pools.ecosystem <= total / 4, "Ecosystem must not exceed 25%");
+    assert!(
+        pools.ecosystem <= total / 4,
+        "Ecosystem must not exceed 25%"
+    );
     assert!(pools.staking <= total / 4, "Staking must not exceed 25%");
     assert!(pools.treasury <= total / 4, "Treasury must not exceed 25%");
 }
@@ -576,7 +582,11 @@ fn test_no_category_exceeds_25_percent() {
 /// Verify treasury cap matches corrected 20B (not old 15B).
 #[test]
 fn test_treasury_cap_is_20b_not_15b() {
-    assert_eq!(TREASURY_POOL_CAP, 20 * BILLION, "Treasury cap must be 20B (corrected)");
+    assert_eq!(
+        TREASURY_POOL_CAP,
+        20 * BILLION,
+        "Treasury cap must be 20B (corrected)"
+    );
     let pools = AllocationPools::genesis();
     assert_eq!(pools.treasury, 20 * BILLION, "Treasury pool must be 20B");
 }
@@ -589,8 +599,16 @@ fn test_transfer_between_pools_preserves_total() {
         let initial_total = state.pools.sum();
         assert_ok!(state.transfer_between_pools(0, 3, 5 * BILLION));
         assert_eq!(state.pools.sum(), initial_total, "Total must be preserved");
-        assert_eq!(state.pools.ecosystem, 20 * BILLION, "Ecosystem reduced by 5B");
-        assert_eq!(state.pools.development, 15 * BILLION, "Development increased by 5B");
+        assert_eq!(
+            state.pools.ecosystem,
+            20 * BILLION,
+            "Ecosystem reduced by 5B"
+        );
+        assert_eq!(
+            state.pools.development,
+            15 * BILLION,
+            "Development increased by 5B"
+        );
     });
 }
 
@@ -600,9 +618,9 @@ fn test_mint_at_boundary() {
     new_test_ext().execute_with(|| {
         let mut state = TokenomicsState::genesis();
         assert!(state.mint(1).is_err(), "Cannot mint when at max supply");
-        assert_ok!(state.burn(1 * BILLION));
+        assert_ok!(state.burn(BILLION));
         assert_eq!(state.total_supply, 99 * BILLION);
-        assert_ok!(state.mint(1 * BILLION));
+        assert_ok!(state.mint(BILLION));
         assert_eq!(state.total_supply, MAX_SUPPLY);
         assert!(state.mint(1).is_err());
     });
@@ -613,7 +631,11 @@ fn test_mint_at_boundary() {
 fn test_staking_distribution_cap_corrected() {
     new_test_ext().execute_with(|| {
         let mut state = TokenomicsState::genesis();
-        assert_eq!(state.pools.staking, 20 * BILLION, "Staking pool must be 20B");
+        assert_eq!(
+            state.pools.staking,
+            20 * BILLION,
+            "Staking pool must be 20B"
+        );
         assert_ok!(state.distribute_staking_reward(20 * BILLION));
         assert_eq!(state.staking_rewards_distributed, 20 * BILLION);
         assert_eq!(state.pools.staking, 0);

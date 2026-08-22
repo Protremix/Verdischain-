@@ -1,3 +1,4 @@
+#![allow(unused_variables)]
 // ═══════════════════════════════════════════════════════════════════════════════
 // LUNA ADVERSARIAL TEST SUITE — Presale / Escrow / Vesting Security Review
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -325,10 +326,10 @@ fn test_refund_after_collect_funds_blocked() {
     new_test_ext().execute_with(|| {
         setup_round(5, 1_000_000, 100_000, 1, 100);
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10_000));
-        
+
         let escrow = PresalePalletId::get().into_account_truncating();
         let escrow_before = pallet_balances::Pallet::<Test>::free_balance(&escrow);
-        
+
         frame_system::Pallet::<Test>::set_block_number(100);
         // Admin collects funds (escrow → beneficiary)
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 999));
@@ -337,10 +338,10 @@ fn test_refund_after_collect_funds_blocked() {
             escrow_after_collect < escrow_before,
             "Escrow should be reduced after collection"
         );
-        
+
         // Admin deactivates the round
         assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
-        
+
         // User tries to refund — MUST FAIL (funds already collected)
         assert_noop!(
             Presale::claim_refund(RuntimeOrigin::signed(1), 0),
@@ -354,33 +355,42 @@ fn test_refund_after_collect_funds_no_double_spend() {
     new_test_ext().execute_with(|| {
         setup_round(5, 1_000_000, 100_000, 1, 100);
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10_000));
-        
+
         let escrow = PresalePalletId::get().into_account_truncating();
         let beneficiary = 999u64;
-        
+
         frame_system::Pallet::<Test>::set_block_number(100);
-        
+
         let benef_before = pallet_balances::Pallet::<Test>::free_balance(&beneficiary);
         let escrow_before = pallet_balances::Pallet::<Test>::free_balance(&escrow);
-        
+
         // Admin collects
-        assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, beneficiary));
+        assert_ok!(Presale::collect_funds(
+            RuntimeOrigin::root(),
+            0,
+            beneficiary
+        ));
         let benef_after = pallet_balances::Pallet::<Test>::free_balance(&beneficiary);
-        assert_eq!(benef_after, benef_before + 10_000, "Beneficiary got the payment");
-        
+        assert_eq!(
+            benef_after,
+            benef_before + 10_000,
+            "Beneficiary got the payment"
+        );
+
         // Deactivate and try refund
         assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
-        
+
         // Refund MUST be blocked
         assert_noop!(
             Presale::claim_refund(RuntimeOrigin::signed(1), 0),
             Error::<Test>::FundsAlreadyCollected
         );
-        
+
         // Verify escrow wasn't drained further
         let escrow_final = pallet_balances::Pallet::<Test>::free_balance(&escrow);
         assert_eq!(
-            escrow_final, escrow_before - 10_000,
+            escrow_final,
+            escrow_before - 10_000,
             "Escrow should only be reduced by collection, not by refund"
         );
     });
@@ -541,7 +551,10 @@ fn test_failed_contribution_no_state_change() {
         );
         // State should be unchanged — only first contribution recorded
         let c = Presale::contributions(0, &1).unwrap();
-        assert_eq!(c.total_purchased, 100, "Only first contribution should be recorded");
+        assert_eq!(
+            c.total_purchased, 100,
+            "Only first contribution should be recorded"
+        );
         assert_eq!(c.total_paid, 20);
     });
 }
@@ -553,7 +566,7 @@ fn test_failed_contribution_no_balance_change() {
         let user_before = pallet_balances::Pallet::<Test>::free_balance(&1);
         let escrow = PresalePalletId::get().into_account_truncating();
         let escrow_before = pallet_balances::Pallet::<Test>::free_balance(&escrow);
-        
+
         // First succeeds
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 20));
         // Second fails
@@ -561,11 +574,15 @@ fn test_failed_contribution_no_balance_change() {
             Presale::contribute(RuntimeOrigin::signed(1), 0, 1),
             Error::<Test>::ExceedsPerAccountCap
         );
-        
+
         // Balances should only reflect the first successful contribution
         let user_after = pallet_balances::Pallet::<Test>::free_balance(&1);
         // User paid 20, got 100 tokens back
-        assert_eq!(user_after, user_before - 20 + 100, "Only first contribution affected balance");
+        assert_eq!(
+            user_after,
+            user_before - 20 + 100,
+            "Only first contribution affected balance"
+        );
     });
 }
 
@@ -580,7 +597,7 @@ fn test_replay_refund_blocked() {
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
         assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
         frame_system::Pallet::<Test>::set_block_number(100);
-        
+
         // First refund succeeds
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 0));
         // Replay in same block → fails
@@ -603,7 +620,7 @@ fn test_replay_collection_blocked() {
         setup_round(5, 10_000, 1000, 1, 100);
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
         frame_system::Pallet::<Test>::set_block_number(100);
-        
+
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 999));
         // Replay
         assert_noop!(
@@ -624,7 +641,10 @@ fn test_accounting_invariant_sold_le_allocation() {
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 20));
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 0, 20));
         let round = Presale::rounds(0).unwrap();
-        assert!(round.sold <= round.total_allocation, "sold must never exceed allocation");
+        assert!(
+            round.sold <= round.total_allocation,
+            "sold must never exceed allocation"
+        );
         assert_eq!(round.sold, 200); // 2 * 100 tokens (20 * 5 each)
     });
 }
@@ -637,7 +657,10 @@ fn test_accounting_invariant_total_raised_equals_round_raised() {
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 0, 20));
         let total_raised = TotalRaised::<Test>::get();
         let round_raised = RoundRaised::<Test>::get(0);
-        assert_eq!(total_raised, round_raised, "TotalRaised should equal RoundRaised for single round");
+        assert_eq!(
+            total_raised, round_raised,
+            "TotalRaised should equal RoundRaised for single round"
+        );
         assert_eq!(total_raised, 30);
     });
 }
@@ -769,18 +792,32 @@ fn luna_attack_contribute_twice_different_rounds() {
     new_test_ext().execute_with(|| {
         // Create two rounds, contribute to both — should work (separate caps)
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(), 5, 10_000, 100, 1, 1000, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            100,
+            1,
+            1000,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r1".to_vec(), 10, 10_000, 100, 1, 1000, b"v1".to_vec(),
+            RuntimeOrigin::root(),
+            b"r1".to_vec(),
+            10,
+            10_000,
+            100,
+            1,
+            1000,
+            b"v1".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 1));
         frame_system::Pallet::<Test>::set_block_number(1);
-        
+
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 1, 10));
-        
+
         // Each round tracks separately
         let c0 = Presale::contributions(0, &1).unwrap();
         let c1 = Presale::contributions(1, &1).unwrap();
@@ -813,27 +850,27 @@ fn luna_attack_collect_then_refund_double_spend() {
     new_test_ext().execute_with(|| {
         setup_round(5, 1_000_000, 100_000, 1, 100);
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10_000));
-        
+
         let escrow = PresalePalletId::get().into_account_truncating();
         frame_system::Pallet::<Test>::set_block_number(100);
-        
+
         let escrow_before = pallet_balances::Pallet::<Test>::free_balance(&escrow);
         let benef_before = pallet_balances::Pallet::<Test>::free_balance(&999u64);
-        
+
         // Step 1: Admin collects
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 999));
         let benef_after = pallet_balances::Pallet::<Test>::free_balance(&999u64);
         assert_eq!(benef_after, benef_before + 10_000);
-        
+
         // Step 2: Deactivate
         assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
-        
+
         // Step 3: User tries refund — MUST BE BLOCKED
         assert_noop!(
             Presale::claim_refund(RuntimeOrigin::signed(1), 0),
             Error::<Test>::FundsAlreadyCollected
         );
-        
+
         // Verify: escrow only lost the collected amount, not double
         let escrow_after = pallet_balances::Pallet::<Test>::free_balance(&escrow);
         assert_eq!(escrow_after, escrow_before - 10_000);
@@ -876,7 +913,11 @@ fn luna_attack_insufficient_escrow_balance() {
     new_test_ext().execute_with(|| {
         // Escrow has 1T, user has 1B. Contribute 100M → 100M tokens from escrow. OK.
         setup_round(1, 2_000_000_000_000, 2_000_000_000_000, 1, 1000);
-        assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100_000_000));
+        assert_ok!(Presale::contribute(
+            RuntimeOrigin::signed(1),
+            0,
+            100_000_000
+        ));
         let c = Presale::contributions(0, &1).unwrap();
         assert_eq!(c.total_purchased, 100_000_000);
     });
@@ -887,12 +928,30 @@ fn luna_attack_privilege_escalation() {
     new_test_ext().execute_with(|| {
         setup_round(5, 10_000, 1000, 1, 1000);
         // Regular user tries admin operations
-        assert_noop!(Presale::activate_round(RuntimeOrigin::signed(1), 0), DispatchError::BadOrigin);
-        assert_noop!(Presale::deactivate_round(RuntimeOrigin::signed(1), 0), DispatchError::BadOrigin);
-        assert_noop!(Presale::set_paused(RuntimeOrigin::signed(1), true), DispatchError::BadOrigin);
-        assert_noop!(Presale::update_whitelist(RuntimeOrigin::signed(1), 0, 2, true), DispatchError::BadOrigin);
-        assert_noop!(Presale::collect_funds(RuntimeOrigin::signed(1), 0, 1), DispatchError::BadOrigin);
-        assert_noop!(Presale::set_whitelist_required(RuntimeOrigin::signed(1), 0, true), DispatchError::BadOrigin);
+        assert_noop!(
+            Presale::activate_round(RuntimeOrigin::signed(1), 0),
+            DispatchError::BadOrigin
+        );
+        assert_noop!(
+            Presale::deactivate_round(RuntimeOrigin::signed(1), 0),
+            DispatchError::BadOrigin
+        );
+        assert_noop!(
+            Presale::set_paused(RuntimeOrigin::signed(1), true),
+            DispatchError::BadOrigin
+        );
+        assert_noop!(
+            Presale::update_whitelist(RuntimeOrigin::signed(1), 0, 2, true),
+            DispatchError::BadOrigin
+        );
+        assert_noop!(
+            Presale::collect_funds(RuntimeOrigin::signed(1), 0, 1),
+            DispatchError::BadOrigin
+        );
+        assert_noop!(
+            Presale::set_whitelist_required(RuntimeOrigin::signed(1), 0, true),
+            DispatchError::BadOrigin
+        );
     });
 }
 
@@ -904,7 +963,14 @@ fn luna_attack_privilege_escalation() {
 fn test_state_inactive_to_active() {
     new_test_ext().execute_with(|| {
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"sm".to_vec(), 5, 10_000, 100, 1, 1000, b"v".to_vec(),
+            RuntimeOrigin::root(),
+            b"sm".to_vec(),
+            5,
+            10_000,
+            100,
+            1,
+            1000,
+            b"v".to_vec(),
         ));
         assert!(!Presale::rounds(0).unwrap().is_active);
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
@@ -925,7 +991,14 @@ fn test_state_active_to_inactive() {
 fn test_state_contribute_to_inactive_round() {
     new_test_ext().execute_with(|| {
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"sm".to_vec(), 5, 10_000, 100, 1, 1000, b"v".to_vec(),
+            RuntimeOrigin::root(),
+            b"sm".to_vec(),
+            5,
+            10_000,
+            100,
+            1,
+            1000,
+            b"v".to_vec(),
         ));
         // Not activated — contribute fails
         assert_noop!(
@@ -940,20 +1013,29 @@ fn test_state_refund_requires_inactive_and_ended() {
     new_test_ext().execute_with(|| {
         setup_round(5, 10_000, 1000, 1, 100);
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
-        
+
         // Active + before end → no refund
         frame_system::Pallet::<Test>::set_block_number(50);
-        assert_noop!(Presale::claim_refund(RuntimeOrigin::signed(1), 0), Error::<Test>::RoundNotRefundable);
-        
+        assert_noop!(
+            Presale::claim_refund(RuntimeOrigin::signed(1), 0),
+            Error::<Test>::RoundNotRefundable
+        );
+
         // Active + after end → no refund
         frame_system::Pallet::<Test>::set_block_number(100);
-        assert_noop!(Presale::claim_refund(RuntimeOrigin::signed(1), 0), Error::<Test>::RoundNotRefundable);
-        
+        assert_noop!(
+            Presale::claim_refund(RuntimeOrigin::signed(1), 0),
+            Error::<Test>::RoundNotRefundable
+        );
+
         // Inactive + before end → no refund
         assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
         frame_system::Pallet::<Test>::set_block_number(50);
-        assert_noop!(Presale::claim_refund(RuntimeOrigin::signed(1), 0), Error::<Test>::RoundNotRefundable);
-        
+        assert_noop!(
+            Presale::claim_refund(RuntimeOrigin::signed(1), 0),
+            Error::<Test>::RoundNotRefundable
+        );
+
         // Inactive + after end → refund OK
         frame_system::Pallet::<Test>::set_block_number(100);
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 0));
@@ -971,13 +1053,13 @@ fn test_payment_is_native_currency() {
         let user_before = pallet_balances::Pallet::<Test>::free_balance(&1);
         let escrow = PresalePalletId::get().into_account_truncating();
         let escrow_before = pallet_balances::Pallet::<Test>::free_balance(&escrow);
-        
+
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
-        
+
         // User balance: -10 (payment) + 50 (tokens from escrow)
         let user_after = pallet_balances::Pallet::<Test>::free_balance(&1);
         assert_eq!(user_after, user_before - 10 + 50);
-        
+
         // Escrow balance: +10 (payment) - 50 (tokens)
         let escrow_after = pallet_balances::Pallet::<Test>::free_balance(&escrow);
         assert_eq!(escrow_after, escrow_before + 10 - 50);

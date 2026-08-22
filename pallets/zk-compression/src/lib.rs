@@ -78,7 +78,12 @@ pub mod pallet {
             // FIX H15: Generate a proper initial Merkle root from tree_id + creator + block number
             // instead of just hashing the creator's account (which is not a real Merkle root).
             let root = sp_io::hashing::blake2_256(
-                &(who.encode(), tree_id, frame_system::Pallet::<T>::block_number()).encode()
+                &(
+                    who.encode(),
+                    tree_id,
+                    frame_system::Pallet::<T>::block_number(),
+                )
+                    .encode(),
             );
             MerkleRoots::<T>::insert(tree_id, root);
             ZkTotalTrees::<T>::mutate(|t| *t += 1);

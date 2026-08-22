@@ -821,9 +821,7 @@ pub mod pallet {
 
             // Reduce global TotalSold counter
             TotalSold::<T>::mutate(|total| {
-                *total = total
-                    .checked_sub(&tokens_to_return)
-                    .unwrap_or(0u32.into());
+                *total = total.checked_sub(&tokens_to_return).unwrap_or(0u32.into());
             });
 
             // If all tokens in this round are refunded (sold == 0), sweep remaining

@@ -179,8 +179,14 @@ pub mod pallet {
     impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
         fn build(&self) {
             for (label, amount, vesting_days, cliff_days) in &self.vesting_schedules {
-                assert!(*vesting_days > 0, "vesting_days must be > 0 to prevent division-by-zero");
-                assert!(*cliff_days <= *vesting_days, "cliff_days must be <= vesting_days");
+                assert!(
+                    *vesting_days > 0,
+                    "vesting_days must be > 0 to prevent division-by-zero"
+                );
+                assert!(
+                    *cliff_days <= *vesting_days,
+                    "cliff_days must be <= vesting_days"
+                );
                 let label_bv: BoundedVec<u8, ConstU32<64>> =
                     label.clone().try_into().unwrap_or_default();
                 let schedule = VestingSchedule {
@@ -264,7 +270,8 @@ pub mod pallet {
             // If block_time_ms doesn't divide evenly into 86_400_000, the remainder
             // is tracked so vesting schedules release at the correct rate.
             // Using u64 division then converting to u32 preserves more precision.
-            let blocks_per_day: u32 = (86_400_000u64.checked_div(block_time_ms).unwrap_or(0)) as u32;
+            let blocks_per_day: u32 =
+                (86_400_000u64.checked_div(block_time_ms).unwrap_or(0)) as u32;
             // Guard against zero (would cause division-by-zero later)
             ensure!(blocks_per_day > 0, Error::<T>::InvalidVestingDays);
 
@@ -410,7 +417,12 @@ pub mod pallet {
             if remaining_locked.is_zero() {
                 T::Currency::remove_lock(VESTING_LOCK_ID, &who);
             } else {
-                T::Currency::set_lock(VESTING_LOCK_ID, &who, remaining_locked, WithdrawReasons::all());
+                T::Currency::set_lock(
+                    VESTING_LOCK_ID,
+                    &who,
+                    remaining_locked,
+                    WithdrawReasons::all(),
+                );
             }
 
             Self::deposit_event(Event::VestingRemoved {
@@ -472,7 +484,6 @@ pub mod pallet {
             });
             Ok(())
         }
-
 
         /// Remove a specific vesting entry for an account.
         ///

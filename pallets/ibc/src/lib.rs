@@ -131,7 +131,8 @@ pub mod pallet {
 
     /// Designated relayer per channel for packet acknowledgement authorization
     #[pallet::storage]
-    pub type ChannelRelayers<T: Config> = StorageMap<_, Blake2_128Concat, u32, T::AccountId, OptionQuery>;
+    pub type ChannelRelayers<T: Config> =
+        StorageMap<_, Blake2_128Concat, u32, T::AccountId, OptionQuery>;
 
     /// Packet receipts to prevent replay on recv_packet
     #[pallet::storage]
@@ -496,8 +497,7 @@ pub mod pallet {
 
             if let Ok(ft_data) = ft_data {
                 // Decode receiver address from Vec<u8> to T::AccountId
-                if let Ok(receiver_account) =
-                    T::AccountId::decode(&mut ft_data.receiver.as_slice())
+                if let Ok(receiver_account) = T::AccountId::decode(&mut ft_data.receiver.as_slice())
                 {
                     let mint_amount: BalanceOf<T> = ft_data
                         .amount
@@ -509,7 +509,7 @@ pub mod pallet {
                     // and also creates accounts from nothing. deposit_into_existing
                     // returns an error gracefully and respects the supply cap.
                     // The receiver must already exist on-chain to receive tokens.
-                    T::Currency::deposit_into_existing(&receiver_account, mint_amount)
+                    let _ = T::Currency::deposit_into_existing(&receiver_account, mint_amount)
                         .map_err(|_| Error::<T>::InvalidPacketData)?;
 
                     Self::deposit_event(Event::TokensReceived {

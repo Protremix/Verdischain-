@@ -11,9 +11,6 @@ build = "build.rs"
 name = "verdis"
 path = "src/main.rs"
 
-[[bin]]
-name = "verdis-node"
-path = "src/main.rs"
 
 [dependencies]
 codec = { workspace = true }
@@ -56,6 +53,7 @@ pallet-amm-dex = { path = "../pallets/amm-dex" }
 pallet-dpos = { path = "../pallets/dpos" }
 pallet-eco = { path = "../pallets/eco" }
 pallet-tokenomics = { path = "../pallets/tokenomics" }
+pallet-sudo = { workspace = true }
 
 # Client
 sc-cli = { version = "0.61.0" }

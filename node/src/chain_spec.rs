@@ -135,7 +135,6 @@ fn build_session_keys(uris: &[&str]) -> Vec<(AccountId, AccountId, SessionKeys)>
         .collect()
 }
 
-
 /// Build session keys by always deriving from URIs (no dev keyring).
 /// Used for mainnet where validator URIs are //MAINNET_VALIDATOR_N.
 fn build_session_keys_from_uris(uris: &[&str]) -> Vec<(AccountId, AccountId, SessionKeys)> {
@@ -172,29 +171,8 @@ fn mainnet_validator_uris() -> Vec<String> {
 }
 
 fn testnet_validator_uris() -> Vec<&'static str> {
-    vec![
-        "Alice",
-        "Bob",
-        "Charlie",
-        "Dave",
-        "Eve",
-        "Ferdie",
-        "Validator7",
-        "Validator8",
-        "Validator9",
-        "Validator10",
-        "Validator11",
-        "Validator12",
-        "Validator13",
-        "Validator14",
-        "Validator15",
-        "Validator16",
-        "Validator17",
-        "Validator18",
-        "Validator19",
-        "Validator20",
-        "Validator21",
-    ]
+    // P0 FIX Aug 22: Only 6 validators - all have session keys.
+    vec!["Alice", "Bob", "Charlie", "Dave", "Eve", "Ferdie"]
 }
 
 // ─── DEV spec ──────────────────────────────────────────────────────────────
@@ -217,6 +195,7 @@ pub fn dev_spec() -> VerdisChainSpec {
 }
 
 fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
+    use sp_keyring::Sr25519Keyring;
     use verdis_runtime::{BabeConfig, BalancesConfig, GrandpaConfig, SessionConfig};
 
     let eco_pool: AccountId = PalletId(*b"verdisec").into_account_truncating();
@@ -369,8 +348,77 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             block_reward: 16 * u,
             validator_names,
         },
-        tokenomics: Default::default(),
+        tokenomics: pallet_tokenomics::GenesisConfig {
+            total_supply: 100_000_000_000 * 1_000_000_000, // 100B VRDX, 9 decimals
+            max_supply: 100_000_000_000 * 1_000_000_000,
+            circulating_supply: 0,
+            investor_allocation: 5_000_000_000 * 1_000_000_000, // 5B
+            distribution: vec![
+                (
+                    b"Ecosystem".to_vec(),
+                    25_000_000_000 * 1_000_000_000,
+                    25,
+                    0,
+                    0,
+                ),
+                (
+                    b"Staking".to_vec(),
+                    20_000_000_000 * 1_000_000_000,
+                    20,
+                    0,
+                    0,
+                ),
+                (
+                    b"Treasury".to_vec(),
+                    20_000_000_000 * 1_000_000_000,
+                    20,
+                    0,
+                    0,
+                ),
+                (
+                    b"Development".to_vec(),
+                    10_000_000_000 * 1_000_000_000,
+                    10,
+                    0,
+                    0,
+                ),
+                (
+                    b"Liquidity".to_vec(),
+                    10_000_000_000 * 1_000_000_000,
+                    10,
+                    0,
+                    0,
+                ),
+                (
+                    b"Community".to_vec(),
+                    5_000_000_000 * 1_000_000_000,
+                    5,
+                    0,
+                    0,
+                ),
+                (b"Seed".to_vec(), 3_000_000_000 * 1_000_000_000, 3, 730, 365),
+                (
+                    b"Presale".to_vec(),
+                    2_000_000_000 * 1_000_000_000,
+                    2,
+                    365,
+                    365,
+                ),
+                (
+                    b"Team".to_vec(),
+                    5_000_000_000 * 1_000_000_000,
+                    5,
+                    1095,
+                    365,
+                ),
+            ],
+            presale_price: 100,   // 0.01 per VRDX in basis points
+            transfer_fee_bps: 50, // 0.5% transfer fee
+        },
         presale: Default::default(),
+        sudo: pallet_sudo::GenesisConfig {
+            key: Some(Sr25519Keyring::Alice.to_account_id()),
+        },
         vesting: pallet_vesting::GenesisConfig {
             vesting_schedules: vec![
                 (b"seed".to_vec(), 3 * bn, 730, 365),
@@ -471,6 +519,7 @@ pub fn testnet_spec() -> VerdisChainSpec {
 }
 
 fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
+    use sp_keyring::Sr25519Keyring;
     use verdis_runtime::{BabeConfig, BalancesConfig, GrandpaConfig, SessionConfig};
 
     let eco_pool: AccountId = PalletId(*b"verdisec").into_account_truncating();
@@ -489,7 +538,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     let uris = testnet_validator_uris();
     let session_keys = build_session_keys(&uris)
         .into_iter()
-        .take(3)
+        .take(6)
         .collect::<Vec<_>>();
 
     let babe_authorities: Vec<(BabeId, u64)> = session_keys
@@ -511,13 +560,13 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         (community_pool, 5 * bn),
         (seed_pool, 3 * bn),
         (presale_pool, 2 * bn),
-        // Team & Advisors (5B) minus validator funding (6*10.001M + 15*1.001M = 75.021M)
+        // Team & Advisors (5B) minus validator funding (6*10.001M = 60.006M)
         (
             PalletId(*b"verdistm").into_account_truncating(),
-            5 * bn - 6 * 10_001_000 * u - 15 * 1_001_000 * u,
+            5 * bn - 6 * 10_001_000 * u,
         ),
     ];
-    // Fund validators: 6 active (10.001M each) + 15 standby (1.001M each)
+    // Fund validators: 6 active (10.001M each) - P0 FIX: removed 15 standby
     for (i, uri) in uris.iter().enumerate() {
         let acct: AccountId = match *uri {
             "Alice" => Sr25519Keyring::Alice.to_account_id(),
@@ -528,12 +577,11 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
             _ => sr_from(&format!("//{}", uri)).public().into(),
         };
-        let amount = if i < 6 { 10_001_000 * u } else { 1_001_000 * u };
+        let amount = 10_001_000 * u;
         balances.push((acct, amount));
     }
 
-    // DPoS validators (21): 6 active (10M stake) + 15 standby (1M stake)
-    // Higher stake ensures rotate_epoch() selects validators with session keys
+    // DPoS validators (6): all active (10M stake) - P0 FIX
     let dpos_validators: Vec<(AccountId, u128, bool)> = uris
         .iter()
         .enumerate()
@@ -547,7 +595,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
                 "Ferdie" => Sr25519Keyring::Ferdie.to_account_id(),
                 _ => sr_from(&format!("//{}", uri)).public().into(),
             };
-            let stake = if i < 6 { 10_000_000 * u } else { 1_000_000 * u };
+            let stake = 10_000_000 * u;
             (acct, stake, true)
         })
         .collect();
@@ -713,12 +761,81 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         },
         dpos: pallet_dpos::GenesisConfig {
             validators: dpos_validators,
-            validator_count: 21,
+            validator_count: 6, // P0 FIX: was 21
             block_reward: 16 * u,
             validator_names,
         },
-        tokenomics: Default::default(),
+        tokenomics: pallet_tokenomics::GenesisConfig {
+            total_supply: 100_000_000_000 * 1_000_000_000, // 100B VRDX, 9 decimals
+            max_supply: 100_000_000_000 * 1_000_000_000,
+            circulating_supply: 0,
+            investor_allocation: 5_000_000_000 * 1_000_000_000, // 5B
+            distribution: vec![
+                (
+                    b"Ecosystem".to_vec(),
+                    25_000_000_000 * 1_000_000_000,
+                    25,
+                    0,
+                    0,
+                ),
+                (
+                    b"Staking".to_vec(),
+                    20_000_000_000 * 1_000_000_000,
+                    20,
+                    0,
+                    0,
+                ),
+                (
+                    b"Treasury".to_vec(),
+                    20_000_000_000 * 1_000_000_000,
+                    20,
+                    0,
+                    0,
+                ),
+                (
+                    b"Development".to_vec(),
+                    10_000_000_000 * 1_000_000_000,
+                    10,
+                    0,
+                    0,
+                ),
+                (
+                    b"Liquidity".to_vec(),
+                    10_000_000_000 * 1_000_000_000,
+                    10,
+                    0,
+                    0,
+                ),
+                (
+                    b"Community".to_vec(),
+                    5_000_000_000 * 1_000_000_000,
+                    5,
+                    0,
+                    0,
+                ),
+                (b"Seed".to_vec(), 3_000_000_000 * 1_000_000_000, 3, 730, 365),
+                (
+                    b"Presale".to_vec(),
+                    2_000_000_000 * 1_000_000_000,
+                    2,
+                    365,
+                    365,
+                ),
+                (
+                    b"Team".to_vec(),
+                    5_000_000_000 * 1_000_000_000,
+                    5,
+                    1095,
+                    365,
+                ),
+            ],
+            presale_price: 100,   // 0.01 per VRDX in basis points
+            transfer_fee_bps: 50, // 0.5% transfer fee
+        },
         presale: Default::default(),
+        sudo: pallet_sudo::GenesisConfig {
+            key: Some(Sr25519Keyring::Alice.to_account_id()),
+        },
         vesting: pallet_vesting::GenesisConfig {
             vesting_schedules: vec![
                 (b"seed".to_vec(), 3 * bn, 730, 365),
@@ -864,10 +981,10 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             5 * bn - 6 * 10_001_000 * u - 15 * 1_001_000 * u,
         ), // Team (5B) minus validator funding (6 active + 15 standby)
     ];
-    // Fund validators: 6 active (10.001M each) + 15 standby (1.001M each)
+    // Fund validators: 6 active (10.001M each) - P0 FIX: removed 15 standby
     for (i, uri) in uris.iter().enumerate() {
         let acct: AccountId = sr_from(uri).public().into();
-        let amount = if i < 6 { 10_001_000 * u } else { 1_001_000 * u };
+        let amount = 10_001_000 * u;
         balances.push((acct, amount));
     }
 
@@ -877,7 +994,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         .enumerate()
         .map(|(i, uri)| {
             let acct: AccountId = sr_from(uri).public().into();
-            let stake = if i < 6 { 10_000_000 * u } else { 1_000_000 * u };
+            let stake = 10_000_000 * u;
             (acct, stake, true)
         })
         .collect();
@@ -902,6 +1019,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
 
     verdis_runtime::RuntimeGenesisConfig {
         system: Default::default(),
+        sudo: Default::default(), // No sudo on mainnet
         balances: BalancesConfig {
             balances,
             dev_accounts: None,
@@ -925,11 +1043,77 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         },
         dpos: pallet_dpos::GenesisConfig {
             validators: dpos_validators,
-            validator_count: 21,
+            validator_count: 6, // P0 FIX: was 21
             block_reward: 16 * u,
             validator_names,
         },
-        tokenomics: Default::default(),
+        tokenomics: pallet_tokenomics::GenesisConfig {
+            total_supply: 100_000_000_000 * 1_000_000_000, // 100B VRDX, 9 decimals
+            max_supply: 100_000_000_000 * 1_000_000_000,
+            circulating_supply: 0,
+            investor_allocation: 5_000_000_000 * 1_000_000_000, // 5B
+            distribution: vec![
+                (
+                    b"Ecosystem".to_vec(),
+                    25_000_000_000 * 1_000_000_000,
+                    25,
+                    0,
+                    0,
+                ),
+                (
+                    b"Staking".to_vec(),
+                    20_000_000_000 * 1_000_000_000,
+                    20,
+                    0,
+                    0,
+                ),
+                (
+                    b"Treasury".to_vec(),
+                    20_000_000_000 * 1_000_000_000,
+                    20,
+                    0,
+                    0,
+                ),
+                (
+                    b"Development".to_vec(),
+                    10_000_000_000 * 1_000_000_000,
+                    10,
+                    0,
+                    0,
+                ),
+                (
+                    b"Liquidity".to_vec(),
+                    10_000_000_000 * 1_000_000_000,
+                    10,
+                    0,
+                    0,
+                ),
+                (
+                    b"Community".to_vec(),
+                    5_000_000_000 * 1_000_000_000,
+                    5,
+                    0,
+                    0,
+                ),
+                (b"Seed".to_vec(), 3_000_000_000 * 1_000_000_000, 3, 730, 365),
+                (
+                    b"Presale".to_vec(),
+                    2_000_000_000 * 1_000_000_000,
+                    2,
+                    365,
+                    365,
+                ),
+                (
+                    b"Team".to_vec(),
+                    5_000_000_000 * 1_000_000_000,
+                    5,
+                    1095,
+                    365,
+                ),
+            ],
+            presale_price: 100,   // 0.01 per VRDX in basis points
+            transfer_fee_bps: 50, // 0.5% transfer fee
+        },
         presale: Default::default(),
         vesting: pallet_vesting::GenesisConfig {
             vesting_schedules: vec![

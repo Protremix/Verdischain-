@@ -4,7 +4,7 @@
 Sits between nginx and the Substrate node's WebSocket endpoint (port 9933),
 filtering out the same unsafe methods as the HTTP RPC filter proxy.
 
-Listens on 127.0.0.1:9945, forwards safe WebSocket requests to 127.0.0.1:9944.
+Listens on 0.0.0.0:9944, forwards safe WebSocket requests to 127.0.0.1:9944.
 """
 import asyncio
 import json
@@ -20,7 +20,7 @@ except ImportError:
     print("websockets package not found. Install with: pip3 install websockets")
     sys.exit(1)
 
-LISTEN_PORT = 9945
+LISTEN_PORT = 9944
 BACKEND_PORT = 9933
 BACKEND_URL = f"ws://127.0.0.1:{BACKEND_PORT}"
 
@@ -179,7 +179,7 @@ async def main():
     logger.info(f"Forwarding to {BACKEND_URL}")
     logger.info(f"Blocked methods: {BLOCKED_METHODS}")
 
-    async with websockets.serve(handle_client, "127.0.0.1", LISTEN_PORT,
+    async with websockets.serve(handle_client, "0.0.0.0", LISTEN_PORT,
                                 max_size=10 * 1024 * 1024,
                                 ping_interval=30,
                                 ping_timeout=120,

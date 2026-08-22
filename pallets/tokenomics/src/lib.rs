@@ -109,6 +109,11 @@ pub mod pallet {
     #[pallet::getter(fn transfer_fee_bps)]
     pub type TransferFeeBps<T: Config> = StorageValue<_, u32, ValueQuery>;
 
+    // === Investor Allocation Storage (for RPC access) ===
+    #[pallet::storage]
+    #[pallet::getter(fn investor_allocation_storage)]
+    pub type InvestorAllocationStorage<T: Config> = StorageValue<_, BalanceOf<T>, ValueQuery>;
+
     #[pallet::storage]
     #[pallet::getter(fn green_treasury_collected)]
     pub type GreenTreasuryCollected<T: Config> = StorageValue<_, BalanceOf<T>, ValueQuery>;
@@ -268,6 +273,7 @@ pub mod pallet {
         pub investor_allocation: BalanceOf<T>,
         pub distribution: Vec<(Vec<u8>, BalanceOf<T>, u8, u32, u32)>,
         pub presale_price: u32,
+        pub transfer_fee_bps: u32,
     }
 
     #[pallet::genesis_build]
@@ -276,6 +282,9 @@ pub mod pallet {
             TotalSupply::<T>::put(self.total_supply);
             CirculatingSupply::<T>::put(self.circulating_supply);
             PresalePrice::<T>::put(self.presale_price);
+            TransferFeeBps::<T>::put(self.transfer_fee_bps);
+            // Store investor allocation on-chain for RPC access
+            InvestorAllocationStorage::<T>::put(self.investor_allocation);
 
             for (name, amount, pct, vesting, cliff) in &self.distribution {
                 let name_bv: BoundedVec<u8, ConstU32<32>> =

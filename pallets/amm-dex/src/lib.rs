@@ -353,7 +353,10 @@ pub mod pallet {
     impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
         fn build(&self) {
             // FeeDenominator must be non-zero to avoid division-by-zero in swap fee math.
-            assert!(T::FeeDenominator::get() > 0, "FeeDenominator must be non-zero");
+            assert!(
+                T::FeeDenominator::get() > 0,
+                "FeeDenominator must be non-zero"
+            );
 
             let mut id = 0u32;
             for (token_a, token_b, reserve_a, reserve_b, fee) in &self.initial_pools {
@@ -766,7 +769,8 @@ pub mod pallet {
                     .checked_add(&amount_in)
                     .ok_or(Error::<T>::ArithmeticOverflow)?
                     .checked_mul(
-                        &pool.reserve_b
+                        &pool
+                            .reserve_b
                             .checked_sub(&amount_out)
                             .ok_or(Error::<T>::ArithmeticUnderflow)?,
                     )
@@ -776,7 +780,8 @@ pub mod pallet {
                     .checked_add(&amount_in)
                     .ok_or(Error::<T>::ArithmeticOverflow)?
                     .checked_mul(
-                        &pool.reserve_a
+                        &pool
+                            .reserve_a
                             .checked_sub(&amount_out)
                             .ok_or(Error::<T>::ArithmeticUnderflow)?,
                     )
@@ -1243,7 +1248,8 @@ pub mod pallet {
                 Error::<T>::InsufficientLiquidity
             );
             // Calculate price: how many token_b per 1 token_a
-            let _price = pool.reserve_a
+            let _price = pool
+                .reserve_a
                 .checked_mul(&BalanceOf::<T>::from(1u32))
                 .unwrap_or(BalanceOf::<T>::zero());
             Self::deposit_event(Event::PriceQueried {

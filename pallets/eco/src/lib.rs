@@ -373,7 +373,9 @@ pub mod pallet {
                 verified: false,
                 retired: false,
                 owner: who.clone(),
-                created_at: frame_system::Pallet::<T>::block_number().try_into().unwrap_or(0),
+                created_at: frame_system::Pallet::<T>::block_number()
+                    .try_into()
+                    .unwrap_or(0),
             };
 
             CarbonCredits::<T>::insert(id.clone(), credit);
@@ -627,7 +629,9 @@ pub mod pallet {
                 carbon_offset,
                 trees_planted,
                 score,
-                last_updated: frame_system::Pallet::<T>::block_number().try_into().unwrap_or(0),
+                last_updated: frame_system::Pallet::<T>::block_number()
+                    .try_into()
+                    .unwrap_or(0),
             };
 
             GreenValidators::<T>::insert(who.clone(), gv);
@@ -673,7 +677,9 @@ pub mod pallet {
             GreenValidators::<T>::mutate(&who, |v| {
                 if let Some(v) = v {
                     v.score = score;
-                    v.last_updated = frame_system::Pallet::<T>::block_number().try_into().unwrap_or(0);
+                    v.last_updated = frame_system::Pallet::<T>::block_number()
+                        .try_into()
+                        .unwrap_or(0);
                 }
             });
 
@@ -971,8 +977,7 @@ pub mod tests {
                 100,
             )
             .unwrap();
-            Eco::retire_carbon_credit(RuntimeOrigin::signed(alice.clone()), bv64(b"c1"))
-                .unwrap();
+            Eco::retire_carbon_credit(RuntimeOrigin::signed(alice.clone()), bv64(b"c1")).unwrap();
             assert_noop!(
                 Eco::transfer_carbon_credit(RuntimeOrigin::signed(alice), bv64(b"c1"), bob,),
                 Error::<Test>::CreditAlreadyRetired
@@ -1047,12 +1052,7 @@ pub mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             assert_noop!(
-                Eco::update_reforest_project(
-                    RuntimeOrigin::signed(alice),
-                    bv64(b"p1"),
-                    1000,
-                    80,
-                ),
+                Eco::update_reforest_project(RuntimeOrigin::signed(alice), bv64(b"p1"), 1000, 80,),
                 sp_runtime::DispatchError::BadOrigin
             );
         });
@@ -1269,7 +1269,10 @@ pub mod tests {
         // constructed as a BoundedVec — the length check is enforced at the
         // type level before any pallet logic runs.
         let result: Result<BoundedVec<u8, ConstU32<64>>, _> = vec![0u8; 65].try_into();
-        assert!(result.is_err(), "65-byte ID should not fit in BoundedVec<u8, ConstU32<64>>");
+        assert!(
+            result.is_err(),
+            "65-byte ID should not fit in BoundedVec<u8, ConstU32<64>>"
+        );
     }
 
     #[test]
@@ -1277,21 +1280,30 @@ pub mod tests {
         // A 129-byte value exceeds MaxNameLength (128) and cannot be
         // constructed as a BoundedVec.
         let result: Result<BoundedVec<u8, MaxNameLength>, _> = vec![0u8; 129].try_into();
-        assert!(result.is_err(), "129-byte name should not fit in BoundedVec<u8, MaxNameLength>");
+        assert!(
+            result.is_err(),
+            "129-byte name should not fit in BoundedVec<u8, MaxNameLength>"
+        );
     }
 
     #[test]
     fn test_location_too_long_rejected() {
         // A 65-byte location exceeds the ConstU32<64> bound.
         let result: Result<BoundedVec<u8, ConstU32<64>>, _> = vec![0u8; 65].try_into();
-        assert!(result.is_err(), "65-byte location should not fit in BoundedVec<u8, ConstU32<64>>");
+        assert!(
+            result.is_err(),
+            "65-byte location should not fit in BoundedVec<u8, ConstU32<64>>"
+        );
     }
 
     #[test]
     fn test_energy_source_too_long_rejected() {
         // A 65-byte energy_source exceeds the ConstU32<64> bound.
         let result: Result<BoundedVec<u8, ConstU32<64>>, _> = vec![0u8; 65].try_into();
-        assert!(result.is_err(), "65-byte energy source should not fit in BoundedVec<u8, ConstU32<64>>");
+        assert!(
+            result.is_err(),
+            "65-byte energy source should not fit in BoundedVec<u8, ConstU32<64>>"
+        );
     }
 
     #[test]

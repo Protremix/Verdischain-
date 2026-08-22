@@ -25,10 +25,10 @@ getrandom::register_custom_getrandom!(verdis_getrandom);
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use codec::{Decode, Encode, MaxEncodedLen};
+use frame_support::traits::KeyOwnerProofSystem;
 use scale_info::TypeInfo;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
-use frame_support::traits::KeyOwnerProofSystem;
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
@@ -698,8 +698,13 @@ impl pallet_amm_dex::TokenHandler<AccountId, u128> for Runtime {
     ) -> DispatchResult {
         match asset {
             pallet_amm_dex::AssetId::Native => {
-                <crate::max_supply_currency::MaxSupplyCurrency as frame_support::traits::Currency<AccountId>>::transfer(
-                    from, to, amount, frame_support::traits::ExistenceRequirement::AllowDeath,
+                <crate::max_supply_currency::MaxSupplyCurrency as frame_support::traits::Currency<
+                    AccountId,
+                >>::transfer(
+                    from,
+                    to,
+                    amount,
+                    frame_support::traits::ExistenceRequirement::AllowDeath,
                 )
             }
             pallet_amm_dex::AssetId::Custom(token_id) => {
@@ -711,7 +716,10 @@ impl pallet_amm_dex::TokenHandler<AccountId, u128> for Runtime {
     fn has_balance(asset: &pallet_amm_dex::AssetId, who: &AccountId, amount: u128) -> bool {
         match asset {
             pallet_amm_dex::AssetId::Native => {
-                <crate::max_supply_currency::MaxSupplyCurrency as frame_support::traits::Currency<AccountId>>::free_balance(who) >= amount
+                <crate::max_supply_currency::MaxSupplyCurrency as frame_support::traits::Currency<
+                    AccountId,
+                >>::free_balance(who)
+                    >= amount
             }
             pallet_amm_dex::AssetId::Custom(token_id) => {
                 pallet_fungible_tokens::Pallet::<Runtime>::balance_of(*token_id, who) >= amount
@@ -1436,8 +1444,6 @@ impl pallet_sealevel::Config for Runtime {
 parameter_types! {
     pub const CircuitBreakerMaxPalletNameLen: u32 = 32;
 }
-
-
 
 impl pallet_circuit_breaker::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;

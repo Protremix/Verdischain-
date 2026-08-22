@@ -158,7 +158,9 @@ pub mod pallet {
             );
 
             // FIX H16.5: Use pallet_timestamp instead of hardcoded 0
-            let timestamp: u64 = pallet_timestamp::Pallet::<T>::get().try_into().unwrap_or(0u64);
+            let timestamp: u64 = pallet_timestamp::Pallet::<T>::get()
+                .try_into()
+                .unwrap_or(0u64);
 
             let forwarded = ForwardedTransaction {
                 tx_hash,

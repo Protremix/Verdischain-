@@ -27,7 +27,7 @@ use frame_support::{
     dispatch::DispatchResult,
     ensure,
     pallet_prelude::*,
-    traits::{Currency, Get, ReservableCurrency},
+    traits::{Currency, FindAuthor, Get, ReservableCurrency},
     DefaultNoBound, PalletId,
 };
 use frame_system::pallet_prelude::*;
@@ -283,6 +283,8 @@ pub mod pallet {
         /// FIX C4: Minimum validators required — chain halts if below this count
         type MinimumValidatorCount: Get<u32>;
         type WeightInfo: WeightInfo;
+        /// Block author finder — used to track blocks_produced per validator
+        type FindAuthor: frame_support::traits::FindAuthor<Self::AccountId>;
     }
 
     // === Genesis Configuration ===
@@ -359,11 +361,31 @@ pub mod pallet {
             let epoch_length = T::EpochLength::get();
 
             // Check if we're at an epoch boundary
-            if block_u32 > 0 && epoch_start > 0 && block_u32 >= epoch_start.saturating_add(epoch_length) {
+            if block_u32 > 0
+                && epoch_start > 0
+                && block_u32 >= epoch_start.saturating_add(epoch_length)
+            {
                 Self::check_downtime(block_u32);
             }
 
             Weight::from_parts(10_000, 0)
+        }
+
+        fn on_finalize(_block: BlockNumberFor<T>) {
+            // Track block production: find the author and increment their blocks_produced counter
+            let digest = frame_system::Pallet::<T>::digest();
+            let pre_runtime_digests = digest.logs.iter().filter_map(|d| match d {
+                sp_runtime::generic::DigestItem::PreRuntime(engine_id, data) => {
+                    Some((*engine_id, data.as_slice()))
+                }
+                _ => None,
+            });
+            if let Some(author) = T::FindAuthor::find_author(pre_runtime_digests) {
+                if let Some(mut validator) = Validators::<T>::get(&author) {
+                    validator.blocks_produced = validator.blocks_produced.saturating_add(1);
+                    Validators::<T>::insert(&author, validator);
+                }
+            }
         }
     }
 
@@ -962,7 +984,8 @@ pub mod pallet {
                                 {
                                     // FIX H4: Reduce TotalStaked by delegator slash
                                     TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(d_actual));
-                                    total_delegator_slash = total_delegator_slash.saturating_add(d_actual);
+                                    total_delegator_slash =
+                                        total_delegator_slash.saturating_add(d_actual);
 
                                     // FIX H3: Update VoteRecord.amount in storage
                                     Votes::<T>::mutate(&delegator, |votes_opt| {
@@ -1065,7 +1088,7 @@ pub mod pallet {
             // the chain from operating with an insufficient validator set.
             let non_slashed_count = ValidatorList::<T>::get()
                 .iter()
-                .filter(|addr| Validators::<T>::get(addr).map_or(false, |v| !v.slashed))
+                .filter(|addr| Validators::<T>::get(addr).is_some_and(|v| !v.slashed))
                 .count() as u32;
             if non_slashed_count < T::MinimumValidatorCount::get() {
                 // Not enough validators to safely rotate — keep current set
@@ -1077,20 +1100,23 @@ pub mod pallet {
             let mut all_validators: Vec<(T::AccountId, BalanceOf<T>)> = ValidatorList::<T>::get()
                 .into_iter()
                 .filter_map(|addr| {
-                    Validators::<T>::get(&addr)
-                        .filter(|v| !v.slashed)
-                        .map(|v| {
-                            let score: BalanceOf<T> = (v.green_score as u32).into();
-                            let hundred: BalanceOf<T> = 100u32.into();
-                            let ten: BalanceOf<T> = 10u32.into();
-                            // FIX L1: Use checked_mul instead of saturating_mul to detect
-                            // overflow rather than silently capping, which could give
-                            // high-stake validators disproportionate weight.
-                            let multiplier = hundred.checked_add(&score.checked_mul(&ten).unwrap_or(hundred)).unwrap_or(hundred);
-                            let effective_votes =
-                                v.total_votes.checked_mul(&multiplier).unwrap_or(v.total_votes) / hundred;
-                            (addr, effective_votes)
-                        })
+                    Validators::<T>::get(&addr).filter(|v| !v.slashed).map(|v| {
+                        let score: BalanceOf<T> = (v.green_score as u32).into();
+                        let hundred: BalanceOf<T> = 100u32.into();
+                        let ten: BalanceOf<T> = 10u32.into();
+                        // FIX L1: Use checked_mul instead of saturating_mul to detect
+                        // overflow rather than silently capping, which could give
+                        // high-stake validators disproportionate weight.
+                        let multiplier = hundred
+                            .checked_add(&score.checked_mul(&ten).unwrap_or(hundred))
+                            .unwrap_or(hundred);
+                        let effective_votes = v
+                            .total_votes
+                            .checked_mul(&multiplier)
+                            .unwrap_or(v.total_votes)
+                            / hundred;
+                        (addr, effective_votes)
+                    })
                 })
                 .collect();
 
@@ -1359,8 +1385,18 @@ mod tests {
         pub const MinGreenScore: u8 = 0;
         pub const MaxGreenScore: u8 = 5;
         pub const ReactivationCooldown: u32 = 10;
-        pub const MaxMissedEpochs: u32 = 3;
+        pub const MaxMissedEpochs: u32 = 10;  // P0 FIX: was 3, increased to 10
         pub const MinimumValidatorCountTest: u32 = 2;
+    }
+
+    pub struct TestFindAuthor;
+    impl frame_support::traits::FindAuthor<sp_core::crypto::AccountId32> for TestFindAuthor {
+        fn find_author<'a, I>(_digests: I) -> Option<sp_core::crypto::AccountId32>
+        where
+            I: 'a + IntoIterator<Item = (frame_support::ConsensusEngineId, &'a [u8])>,
+        {
+            None
+        }
     }
 
     impl Config for Test {
@@ -1382,6 +1418,7 @@ mod tests {
         type MaxMissedEpochs = MaxMissedEpochs;
         type MinimumValidatorCount = MinimumValidatorCountTest;
         type WeightInfo = SubstrateWeight<Test>;
+        type FindAuthor = TestFindAuthor;
     }
 
     pub fn new_test_ext() -> TestExternalities {
@@ -2768,7 +2805,6 @@ mod tests {
         });
     }
     /// Test: Green score above MaxGreenScore is rejected    #[test]    fn test_green_score_exceeds_max_rejected() {        new_test_ext().execute_with(|| {            let alice = Sr25519Keyring::Alice.to_account_id();            // Score above MaxGreenScore (5) is rejected            assert_noop!(                Dpos::update_green_score(RuntimeOrigin::root(), alice.clone(), 6),                Error::<Test>::InvalidGreenScore            );            // Score at max boundary (5) is accepted            assert_ok!(Dpos::update_green_score(                RuntimeOrigin::root(),                alice.clone(),                5            ));            assert_eq!(Validators::<Test>::get(&alice).unwrap().green_score, 5);            // Score of 0 is accepted (not green)            assert_ok!(Dpos::update_green_score(                RuntimeOrigin::root(),                alice.clone(),                0            ));            assert_eq!(Validators::<Test>::get(&alice).unwrap().green_score, 0);        });    }
-
     /// Test: Vote to unregistered validator is rejected
     #[test]
     fn test_vote_to_unregistered_validator_rejected() {
