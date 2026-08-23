@@ -645,7 +645,7 @@ parameter_types! {
     pub const MaxGreenScoreDpos: u8 = 5;
     pub const ReactivationCooldown: u32 = 100; // ~30 days at 6s blocks (7200 blocks/day)
     pub const MinValidatorStake: Balance = 100_000_000 * UNITS; // 100M VRDX minimum (0.1% supply) for sybil resistance
-    pub const MaxValidators: u32 = 100;
+    pub const MaxValidators: u32 = 21; // P2-2 FIX: was 100, set to target for mainnet
     pub const ValidatorCount: u32 = 21; // 6 active validators matching 6 running nodes
     pub const MinimumValidatorCount: u32 = 4; // Below 4 active validators, chain halts
     pub const MaxMissedEpochs: u32 = 50_000; // P0 FIX: was 3, increased to 10 for BABE safety
@@ -785,7 +785,8 @@ parameter_types! {
 }
 
 impl pallet_eco::Config for Runtime {
-    type AdminOrigin = frame_system::EnsureRoot<AccountId>;
+    // P1-4 FIX: Council 2/3 required for mainnet (was EnsureRoot)
+    type AdminOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type RuntimeEvent = RuntimeEvent;
     type PalletId = EcoPalletId;
     type MaxCarbonCredits = MaxCarbonCredits;

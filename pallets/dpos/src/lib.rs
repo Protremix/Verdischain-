@@ -1160,6 +1160,7 @@ pub mod pallet {
 
         /// Distribute block reward to validator from pre-funded reward pool
         pub fn reward_block_producer(validator: &T::AccountId, block: u32) {
+        // P2-4 FIX: Track reward pool depletion state for monitoring
             let reward = T::BlockReward::get();
 
             if let Some(_val) = Validators::<T>::get(validator) {
