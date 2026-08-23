@@ -7,6 +7,8 @@ mod presale_tests;
 mod regression_tests;
 #[path = "luna_regression_tests.rs"]
 mod luna_regression_tests;
+#[path = "master6_regression_tests.rs"]
+mod master6_regression_tests;
 use crate::*;
 use frame_support::{
     assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types,
@@ -67,6 +69,7 @@ impl crate::Config for Test {
     type Vesting = ();
     type WeightInfo = ();
     type Treasury = TestTreasury;
+    type EnforceUniqueVestingLabels = frame_support::traits::ConstBool<false>;
 }
 
 pub fn new_test_ext() -> TestExternalities {

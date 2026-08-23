@@ -868,6 +868,7 @@ impl pallet_presale::Config for Runtime {
     type Vesting = PresaleVestingHandler;
     type WeightInfo = pallet_presale::SubstrateWeight<Runtime>;
     type Treasury = TreasuryAccount;
+    type EnforceUniqueVestingLabels = frame_support::traits::ConstBool<true>;
 }
 
 /// Bridge presale → vesting pallet for atomic vesting creation

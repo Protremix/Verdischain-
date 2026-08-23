@@ -358,6 +358,8 @@ pub mod pallet {
         FundsAlreadyCollected,
         /// Round has not ended yet — collection requires block >= end_block
         RoundNotEnded,
+        /// Vesting label already used by another round (cross-round isolation)
+        DuplicateVestingLabel,
         /// Presale escrow does not have enough VRDX to fulfill this contribution
         InsufficientEscrowBalance,
         /// Price precision must be non-zero (P2-04 fix)
@@ -392,6 +394,8 @@ pub mod pallet {
         type WeightInfo: WeightInfo;
         /// Treasury account for sweeping unsold tokens
         type Treasury: Get<Self::AccountId>;
+        /// Enforce globally unique vesting labels per round (enable for mainnet)
+        type EnforceUniqueVestingLabels: Get<bool>;
     }
 
     // === Genesis ===
@@ -508,6 +512,26 @@ pub mod pallet {
             );
             ensure!(end_block > start_block, Error::<T>::RoundNotStarted);
             ensure!(!vesting_label.is_empty(), Error::<T>::EmptyVestingLabel);
+
+            // MASTER-6 FIX: Enforce globally unique vesting labels per round.
+            // Prevents cross-round vesting deletion: a refund for round A
+            // must not remove vesting belonging to round B.
+            // Enabled via Config::EnforceUniqueVestingLabels (mainnet only).
+            if T::EnforceUniqueVestingLabels::get() {
+                let vesting_bv_check: BoundedVec<u8, ConstU32<64>> = vesting_label
+                    .clone()
+                    .try_into()
+                    .map_err(|_| Error::<T>::VestingLabelTooLong)?;
+                let current_next = NextRoundId::<T>::get();
+                for existing_id in 0..current_next {
+                    if let Some(existing_round) = Rounds::<T>::get(existing_id) {
+                        ensure!(
+                            existing_round.vesting_label != vesting_bv_check,
+                            Error::<T>::DuplicateVestingLabel
+                        );
+                    }
+                }
+            }
 
             let round = SaleRound {
                 label: label_bv,
@@ -670,7 +694,7 @@ pub mod pallet {
                 .ok_or(Error::<T>::CalculationOverflow)?;
 
             // === Verify escrow has enough VRDX before any state mutation ===
-            let escrow = T::PalletId::get().into_account_truncating();
+            let escrow = Self::round_escrow(round_id);
             let escrow_balance = T::Currency::free_balance(&escrow);
             ensure!(
                 escrow_balance >= token_amount,
@@ -877,7 +901,7 @@ pub mod pallet {
         /// 3. Transfer payment from escrow → user
         /// 4. Clean up contribution record (CEI: state cleared first)
         #[pallet::call_index(8)]
-        #[pallet::weight(T::WeightInfo::collect_funds())]
+        #[pallet::weight(T::WeightInfo::claim_refund())]
         pub fn claim_refund(origin: OriginFor<T>, round_id: u32) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
@@ -1159,7 +1183,12 @@ pub mod pallet {
             frame_support::weights::Weight::from_parts(5_000, 0)
         }
         fn claim_refund() -> frame_support::weights::Weight {
-            frame_support::weights::Weight::from_parts(15_000, 0)
+            // Weight accounts for: contribution lookup, vesting removal
+            // (iterates all vesting entries for user), multiple transfers,
+            // state cleanup, potential treasury sweep.
+            // Base: 15,000 + vesting iteration: 5,000 * max 20 entries = 100,000
+            // Total: 115,000 (conservative upper bound)
+            frame_support::weights::Weight::from_parts(115_000, 0)
         }
     }
 

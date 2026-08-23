@@ -289,6 +289,7 @@ impl pallet_presale::Config for Test {
     type Vesting = PresaleVestingHandler;
     type WeightInfo = pallet_presale::SubstrateWeight<Test>;
     type Treasury = TreasuryAccount;
+    type EnforceUniqueVestingLabels = frame_support::traits::ConstBool<false>;
 }
 
 // --- Tokenomics ---
