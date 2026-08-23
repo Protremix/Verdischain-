@@ -1,0 +1,48 @@
+[Unit]
+Description=Verdis Chain Mainnet Validator Node Instance %i
+After=network-online.target
+Wants=network-online.target
+Documentation=https://github.com/Protremix/Verdischain-
+
+[Service]
+Type=simple
+User=verdis
+Group=verdis
+WorkingDirectory=/var/lib/verdis-chain
+
+# Load environment configuration specific to validator instance %i
+EnvironmentFile=/etc/verdis-validator/validator-%i.env
+
+ExecStart=/opt/verdis-chain-rust/target/release/verdis-chain \
+  --validator \
+  --chain=${CHAIN_SPEC} \
+  --base-path=${BASE_PATH} \
+  --name=${VALIDATOR_NAME} \
+  --port=${P2P_PORT} \
+  --rpc-port=${RPC_PORT} \
+  --prometheus-port=${PROM_PORT} \
+  --bootnodes=${BOOTNODES} \
+  --rpc-methods=Unsafe \
+  --rpc-cors=all \
+  --prometheus-external \
+  --telemetry-url "wss://telemetry.verdis.chain/submit 0"
+
+# Process Management & Automatic Restart
+Restart=always
+RestartSec=10s
+KillSignal=SIGINT
+LimitNOFILE=65536
+
+# Security Sandboxing & Hardening Parameters
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+MemoryMax=8G
+TasksMax=8192
+
+[Install]
+WantedBy=multi-user.target
