@@ -206,7 +206,7 @@ pub mod pallet {
     impl<T: Config> Pallet<T> {
         /// Add a vesting schedule (governance only)
         #[pallet::call_index(0)]
-        #[pallet::weight(T::WeightInfo::add_schedule(0))]
+        #[pallet::weight(T::WeightInfo::add_schedule(64))]
         pub fn add_schedule(
             origin: OriginFor<T>,
             label: Vec<u8>,
@@ -246,7 +246,7 @@ pub mod pallet {
         }
 
         #[pallet::call_index(1)]
-        #[pallet::weight(T::WeightInfo::assign_vesting(0))]
+        #[pallet::weight(T::WeightInfo::assign_vesting(T::MaxSchedulesPerAccount::get()))]
         pub fn assign_vesting(
             origin: OriginFor<T>,
             who: T::AccountId,
@@ -259,7 +259,7 @@ pub mod pallet {
 
         /// Release vested tokens (called by the vested account)
         #[pallet::call_index(2)]
-        #[pallet::weight(T::WeightInfo::release_vested(0))]
+        #[pallet::weight(T::WeightInfo::release_vested(T::MaxSchedulesPerAccount::get()))]
         pub fn release_vested(origin: OriginFor<T>) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
@@ -383,7 +383,7 @@ pub mod pallet {
         /// FIX M8: Remove a vesting entry (root/governance only)
         /// Used for compliance/emergency scenarios where vesting must be cancelled
         #[pallet::call_index(3)]
-        #[pallet::weight(T::WeightInfo::release_vested(0))]
+        #[pallet::weight(T::WeightInfo::release_vested(T::MaxSchedulesPerAccount::get()))]
         pub fn remove_vesting(
             origin: OriginFor<T>,
             who: T::AccountId,

@@ -181,7 +181,7 @@ fn test_price_zero_token_result_fails() {
 #[test]
 fn test_escrow_account_is_pallet_id() {
     new_test_ext().execute_with(|| {
-        let escrow = PresalePalletId::get().into_account_truncating();
+        let escrow = PresalePalletId::get().into_sub_account_truncating(0u32);
         let balance = pallet_balances::Pallet::<Test>::free_balance(&escrow);
         assert!(balance > 0, "Escrow should have VRDX from genesis");
     });
@@ -327,7 +327,7 @@ fn test_refund_after_collect_funds_blocked() {
         setup_round(5, 1_000_000, 100_000, 1, 100);
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10_000));
 
-        let escrow = PresalePalletId::get().into_account_truncating();
+        let escrow = PresalePalletId::get().into_sub_account_truncating(0u32);
         let escrow_before = pallet_balances::Pallet::<Test>::free_balance(&escrow);
 
         frame_system::Pallet::<Test>::set_block_number(100);
@@ -355,7 +355,7 @@ fn test_refund_after_collect_funds_no_double_spend() {
         setup_round(5, 1_000_000, 100_000, 1, 100);
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10_000));
 
-        let escrow = PresalePalletId::get().into_account_truncating();
+        let escrow = PresalePalletId::get().into_sub_account_truncating(0u32);
         let beneficiary = 999u64;
 
         frame_system::Pallet::<Test>::set_block_number(100);
@@ -562,7 +562,7 @@ fn test_failed_contribution_no_balance_change() {
     new_test_ext().execute_with(|| {
         setup_round(5, 10_000, 100, 1, 1000);
         let user_before = pallet_balances::Pallet::<Test>::free_balance(&1);
-        let escrow = PresalePalletId::get().into_account_truncating();
+        let escrow = PresalePalletId::get().into_sub_account_truncating(0u32);
         let escrow_before = pallet_balances::Pallet::<Test>::free_balance(&escrow);
 
         // First succeeds
@@ -850,7 +850,7 @@ fn luna_attack_collect_then_refund_double_spend() {
         setup_round(5, 1_000_000, 100_000, 1, 100);
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10_000));
 
-        let escrow = PresalePalletId::get().into_account_truncating();
+        let escrow = PresalePalletId::get().into_sub_account_truncating(0u32);
         frame_system::Pallet::<Test>::set_block_number(100);
 
         let escrow_before = pallet_balances::Pallet::<Test>::free_balance(&escrow);
@@ -1049,7 +1049,7 @@ fn test_payment_is_native_currency() {
     new_test_ext().execute_with(|| {
         setup_round(5, 10_000, 1000, 1, 1000);
         let user_before = pallet_balances::Pallet::<Test>::free_balance(&1);
-        let escrow = PresalePalletId::get().into_account_truncating();
+        let escrow = PresalePalletId::get().into_sub_account_truncating(0u32);
         let escrow_before = pallet_balances::Pallet::<Test>::free_balance(&escrow);
 
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));

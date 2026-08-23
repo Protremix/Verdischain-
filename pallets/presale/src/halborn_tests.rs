@@ -15,7 +15,7 @@ use sp_runtime::traits::AccountIdConversion;
 
 #[allow(dead_code)]
 fn escrow_account() -> u64 {
-    PresalePalletId::get().into_account_truncating()
+    PresalePalletId::get().into_sub_account_truncating(0u32)
 }
 
 fn get_balance(who: u64) -> u64 {

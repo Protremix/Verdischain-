@@ -16,13 +16,13 @@
 //!
 //! On-chain presale/IDO contribution system with:
 //! - **Explicit round state machine**: Pending → Active → Successful/Failed/Cancelled → Closed
-//! - **Escrow-based payments**: buyer pays into a deterministic Presale Escrow
+//! - **Per-round escrow**: each round has its own deterministic sub-account escrow
 //!   account (derived from PalletId), NOT user reserved balances.
 //! - Per-round per-account caps (independent per round)
 //! - Per-round whitelist (independent per round)
 //! - Vesting schedule integration (atomic)
 //! - Overflow protection (checked arithmetic throughout — no saturating for financial accounting)
-//! - **O(1) fund collection** from escrow (no unbounded contributor iteration)
+//! - **O(1) fund collection** from per-round escrow (no unbounded contributor iteration)
 //! - **Double-collection prevention** via `RoundFundsCollected` flag
 //! - **Round-end enforcement**: collection only after `end_block`
 //! - **Escrow VRDX balance verification**: contribution fails if escrow lacks tokens
@@ -41,16 +41,16 @@
 //!
 //! ##[derive(Encode, Decode, DecodeWithMemTracking, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]Payment Flow
 //! ```text
-//! Buyer --payment--> Presale Escrow Account
-//! Presale Escrow Account --VRDX--> Buyer
-//! Presale Escrow Account --vesting--> Vesting Pallet
+//! Buyer --payment (PaymentCurrency)--> Per-Round Escrow Account
+//! Per-Round Escrow Account --VRDX (Currency)--> Buyer
+//! Per-Round Escrow Account --vesting--> Vesting Pallet
 //! ```
 //!
 //! ##[derive(Encode, Decode, DecodeWithMemTracking, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]Collection Flow
 //! ```text
 //! After round.end_block + admin finalizes as Successful:
 //!   Admin calls collect_funds(round_id, beneficiary)
-//!   Presale Escrow --RoundRaised amount--> Beneficiary
+//!   Per-Round Escrow --RoundRaised (PaymentCurrency)--> Beneficiary
 //!   RoundFundsCollected = true  (prevents double collection)
 //!   Status = Closed
 //! ```
@@ -205,10 +205,10 @@ pub mod pallet {
         pub total_paid: Balance,
     }
 
-    // === Storage ===
-
     #[pallet::pallet]
     pub struct Pallet<T>(_);
+
+    // === Storage ===
 
     #[pallet::storage]
     #[pallet::getter(fn rounds)]
@@ -379,7 +379,12 @@ pub mod pallet {
     #[pallet::config]
     pub trait Config: frame_system::Config {
         type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+        /// Token currency - VRDX tokens distributed to buyers.
         type Currency: Currency<Self::AccountId>;
+        /// Payment currency - asset buyers pay with.
+        /// For testnet, set to the same as Currency (native VRDX bonus-rate presale).
+        /// For mainnet, set to a stablecoin or other accepted payment asset.
+        type PaymentCurrency: Currency<Self::AccountId, Balance = BalanceOf<Self>>;
         #[pallet::constant]
         type PalletId: Get<PalletId>;
         type AdminOrigin: EnsureOrigin<Self::RuntimeOrigin>;
@@ -457,6 +462,15 @@ pub mod pallet {
     }
 
     // === Extrinsics ===
+
+    // Per-Round Escrow: each round gets its own deterministic sub-account
+    // derived from PalletId + round_id. This isolates funds per round so
+    // collect_funds for one round cannot drain another round payments.
+    impl<T: Config> Pallet<T> {
+        fn round_escrow(round_id: u32) -> T::AccountId {
+            T::PalletId::get().into_sub_account_truncating(round_id)
+        }
+    }
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
@@ -893,7 +907,7 @@ pub mod pallet {
 
             let refund_amount = contribution.total_paid;
             let tokens_to_return = contribution.total_purchased;
-            let escrow = T::PalletId::get().into_account_truncating();
+            let escrow = Self::round_escrow(round_id);
 
             // CEI: Clear state FIRST (prevents reentrant double-claim)
             Contributions::<T>::remove(round_id, &who);
@@ -921,7 +935,7 @@ pub mod pallet {
                 .map_err(|_| Error::<T>::VestingCleanupFailed)?;
             }
 
-            // Now that vesting is removed and tokens are unlocked, transfer them back to escrow
+            // Transfer VRDX tokens back from user to per-round escrow
             if tokens_to_return > BalanceOf::<T>::zero() {
                 T::Currency::transfer(
                     &who,
@@ -932,8 +946,8 @@ pub mod pallet {
                 .map_err(|_| Error::<T>::InsufficientPayment)?;
             }
 
-            // Transfer refund from escrow to user
-            T::Currency::transfer(
+            // Transfer refund (payment tokens) from per-round escrow to user
+            T::PaymentCurrency::transfer(
                 &escrow,
                 &who,
                 refund_amount,
@@ -1150,9 +1164,10 @@ pub mod pallet {
     }
 
     impl<T: Config> Pallet<T> {
-        /// Returns the deterministic escrow account for this pallet.
+        /// Returns the escrow account for round 0 (backward compat).
+        /// Use round_escrow(round_id) for per-round escrow accounts.
         pub fn escrow_account() -> T::AccountId {
-            T::PalletId::get().into_account_truncating()
+            Self::round_escrow(0)
         }
     }
 }

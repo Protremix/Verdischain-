@@ -3,6 +3,8 @@
 mod luna_adversarial_tests;
 #[path = "presale_tests.rs"]
 mod presale_tests;
+#[path = "regression_tests.rs"]
+mod regression_tests;
 use crate::*;
 use frame_support::{
     assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types,
@@ -57,6 +59,7 @@ parameter_types! {
 impl crate::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
+    type PaymentCurrency = Balances;
     type PalletId = PresalePalletId;
     type AdminOrigin = frame_system::EnsureRoot<u64>;
     type Vesting = ();
@@ -68,15 +71,23 @@ pub fn new_test_ext() -> TestExternalities {
     let mut t = frame_system::GenesisConfig::<Test>::default()
         .build_storage()
         .unwrap();
-    let escrow = PresalePalletId::get().into_account_truncating();
+    let escrow_0 = PresalePalletId::get().into_sub_account_truncating(0u32);
+    let escrow_1 = PresalePalletId::get().into_sub_account_truncating(1u32);
+    let escrow_2 = PresalePalletId::get().into_sub_account_truncating(2u32);
+    // Build deduplicated genesis balances (sub-accounts may collide with test accounts)
+    use std::collections::BTreeMap;
+    let mut balances_map = BTreeMap::new();
+    balances_map.insert(1u64, 1_000_000_000u64);
+    balances_map.insert(2u64, 1_000_000_000u64);
+    balances_map.insert(3u64, 1_000_000_000u64);
+    balances_map.insert(escrow_0, 1_000_000_000_000u64);
+    balances_map.insert(escrow_1, 1_000_000_000_000u64);
+    balances_map.insert(escrow_2, 1_000_000_000_000u64);
+    balances_map.insert(999u64, 1_000_000_000u64); // treasury
+    let balances: Vec<(u64, u64)> = balances_map.into_iter().collect();
     pallet_balances::GenesisConfig::<Test> {
         dev_accounts: None,
-        balances: vec![
-            (1, 1_000_000_000),
-            (2, 1_000_000_000),
-            (3, 1_000_000_000),
-            (escrow, 1_000_000_000_000),
-        ],
+        balances,
     }
     .assimilate_storage(&mut t)
     .unwrap();
@@ -88,7 +99,12 @@ fn set_block(n: u64) {
 }
 
 fn escrow_account() -> u64 {
-    PresalePalletId::get().into_account_truncating()
+    // Backward compat: returns round-0 escrow (most tests use round 0)
+    PresalePalletId::get().into_sub_account_truncating(0u32)
+}
+
+fn round_escrow_account(round_id: u32) -> u64 {
+    PresalePalletId::get().into_sub_account_truncating(round_id)
 }
 
 fn create_and_activate_round(
@@ -324,7 +340,7 @@ fn test_payment_transferred_to_escrow_not_reserved() {
     new_test_ext().execute_with(|| {
         set_block(1);
         create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
-        let escrow = escrow_account();
+        let escrow = round_escrow_account(0);
         let escrow_before = Balances::free_balance(escrow);
         let user1_before = Balances::free_balance(1);
 

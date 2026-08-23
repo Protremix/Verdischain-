@@ -283,6 +283,7 @@ impl pallet_presale::VestingHandler<AccountId32, u128> for PresaleVestingHandler
 impl pallet_presale::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
+    type PaymentCurrency = Balances;
     type PalletId = PresalePalletId;
     type AdminOrigin = frame_system::EnsureRoot<AccountId32>;
     type Vesting = PresaleVestingHandler;

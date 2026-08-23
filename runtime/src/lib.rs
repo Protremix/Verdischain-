@@ -859,6 +859,9 @@ parameter_types! {
 impl pallet_presale::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Currency = MaxSupplyCurrency;
+    // Payment currency: native VRDX for testnet (bonus-rate presale).
+    // For mainnet, change this to a stablecoin or other accepted asset.
+    type PaymentCurrency = MaxSupplyCurrency;
     type PalletId = PresalePalletId;
     type AdminOrigin = frame_system::EnsureRoot<AccountId>;
     type Vesting = PresaleVestingHandler;
