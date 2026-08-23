@@ -73,13 +73,21 @@ fn master9_01_per_round_escrow_isolation() {
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 999));
 
         let treasury_after_0 = bal(999u64);
-        assert_eq!(treasury_after_0 - treasury_before, 50, "Treasury got exactly round 0's 50");
+        assert_eq!(
+            treasury_after_0 - treasury_before,
+            50,
+            "Treasury got exactly round 0's 50"
+        );
 
         // Collect round 1 → only 30 goes to treasury
         assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 1));
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 1, 999));
 
-        assert_eq!(bal(999u64) - treasury_after_0, 30, "Treasury got exactly round 1's 30");
+        assert_eq!(
+            bal(999u64) - treasury_after_0,
+            30,
+            "Treasury got exactly round 1's 30"
+        );
     });
 }
 
@@ -95,16 +103,26 @@ fn master9_02_o1_vesting_label_uniqueness() {
 
         // Populate index (simulating runtime flag=true behavior)
         let label: BoundedVec<u8, frame_support::traits::ConstU32<64>> =
-            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"seed".to_vec()).unwrap();
+            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"seed".to_vec())
+                .unwrap();
         crate::VestingLabelOwner::<Test>::insert(&label, 0u32);
 
         // PROOF: O(1) lookup — single StorageMap::get
-        assert_eq!(Presale::vesting_label_owner(&label), Some(0), "O(1) lookup returns owner");
+        assert_eq!(
+            Presale::vesting_label_owner(&label),
+            Some(0),
+            "O(1) lookup returns owner"
+        );
 
         // PROOF: Non-existent label returns None in O(1)
         let other: BoundedVec<u8, frame_support::traits::ConstU32<64>> =
-            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"other".to_vec()).unwrap();
-        assert_eq!(Presale::vesting_label_owner(&other), None, "Non-existent label = None");
+            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"other".to_vec())
+                .unwrap();
+        assert_eq!(
+            Presale::vesting_label_owner(&other),
+            None,
+            "Non-existent label = None"
+        );
 
         // PROOF: Runtime config has EnforceUniqueVestingLabels = ConstBool<true>
         // (runtime/src/lib.rs line 897) — create_round() will reject duplicates
@@ -158,7 +176,11 @@ fn master9_04_cross_round_vesting_isolation() {
         assert_eq!(c0.total_paid, 10, "Round 0 payment = 10");
 
         // PROOF: Round 0 round state intact
-        assert_eq!(Presale::rounds(0).unwrap().sold, 50, "Round 0 sold unchanged");
+        assert_eq!(
+            Presale::rounds(0).unwrap().sold,
+            50,
+            "Round 0 sold unchanged"
+        );
         assert_eq!(Presale::round_raised(0), 10, "Round 0 raised unchanged");
     });
 }
@@ -184,11 +206,22 @@ fn master9_05_refund_atomicity() {
 
         // PROOF: All state changes happened atomically (all-or-nothing)
         // 1. Payment returned: user balance restored to pre-contribution level
-        assert_eq!(bal(1u64), user_before, "User balance restored to pre-contribution");
+        assert_eq!(
+            bal(1u64),
+            user_before,
+            "User balance restored to pre-contribution"
+        );
         // 2. Contribution deleted (state fully cleared)
-        assert!(Presale::contributions(0, &1).is_none(), "Contribution record deleted");
+        assert!(
+            Presale::contributions(0, &1).is_none(),
+            "Contribution record deleted"
+        );
         // 3. RoundRaised decreased
-        assert_eq!(Presale::round_raised(0), 0, "RoundRaised decreased to 0 after refund");
+        assert_eq!(
+            Presale::round_raised(0),
+            0,
+            "RoundRaised decreased to 0 after refund"
+        );
     });
 }
 
@@ -237,7 +270,11 @@ fn master9_06_double_refund_protection() {
         );
 
         // PROOF: No additional balance change
-        assert_eq!(bal(1u64), user_after_first, "Double refund did not transfer any funds");
+        assert_eq!(
+            bal(1u64),
+            user_after_first,
+            "Double refund did not transfer any funds"
+        );
     });
 }
 
@@ -260,14 +297,22 @@ fn master9_07_double_collection_protection() {
         // First collection — succeeds
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 999));
         let treasury_after = bal(999u64);
-        assert_eq!(treasury_after - treasury_before, 10_000, "First collection transfers 10,000");
+        assert_eq!(
+            treasury_after - treasury_before,
+            10_000,
+            "First collection transfers 10,000"
+        );
 
         // Second collection — must fail
         let result = Presale::collect_funds(RuntimeOrigin::root(), 0, 999);
         assert!(result.is_err(), "Double collection must fail");
 
         // PROOF: No additional transfer
-        assert_eq!(bal(999u64), treasury_after, "Treasury balance unchanged after failed double collection");
+        assert_eq!(
+            bal(999u64),
+            treasury_after,
+            "Treasury balance unchanged after failed double collection"
+        );
     });
 }
 
@@ -290,8 +335,11 @@ fn master9_08_successful_collection() {
 
         // Finalize — round status becomes Successful
         assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 0));
-        assert_eq!(Presale::rounds(0).unwrap().status, RoundStatus::Successful,
-            "Round finalized as Successful (sold >= min_allocation)");
+        assert_eq!(
+            Presale::rounds(0).unwrap().status,
+            RoundStatus::Successful,
+            "Round finalized as Successful (sold >= min_allocation)"
+        );
 
         let treasury_before = bal(999u64);
 
@@ -299,16 +347,25 @@ fn master9_08_successful_collection() {
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 999));
 
         // PROOF: Treasury received exactly 6,000 (1K + 2K + 3K)
-        assert_eq!(bal(999u64) - treasury_before, 6_000,
-            "Collection transfers exactly RoundRaised = 6,000");
+        assert_eq!(
+            bal(999u64) - treasury_before,
+            6_000,
+            "Collection transfers exactly RoundRaised = 6,000"
+        );
 
         // PROOF: Round status is now Closed
-        assert_eq!(Presale::rounds(0).unwrap().status, RoundStatus::Closed,
-            "Round is Closed after collection");
+        assert_eq!(
+            Presale::rounds(0).unwrap().status,
+            RoundStatus::Closed,
+            "Round is Closed after collection"
+        );
 
         // PROOF: RoundRaised persists (audit trail)
-        assert_eq!(Presale::round_raised(0), 6_000,
-            "RoundRaised preserved for audit after collection");
+        assert_eq!(
+            Presale::round_raised(0),
+            6_000,
+            "RoundRaised preserved for audit after collection"
+        );
     });
 }
 
@@ -330,8 +387,10 @@ fn master9_09_refund_on_active_round_fails() {
         );
 
         // PROOF: Contribution still exists (no partial state change)
-        assert!(Presale::contributions(0, &1).is_some(),
-            "Contribution intact when refund fails on active round");
+        assert!(
+            Presale::contributions(0, &1).is_some(),
+            "Contribution intact when refund fails on active round"
+        );
     });
 }
 
@@ -373,9 +432,14 @@ fn master9_09d_refund_on_failed_round_succeeds() {
         set_block(1);
         // min_allocation = 100, user contributes only 10 → round will fail
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 100, // cap = 100
-            1, 100, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            100, // cap = 100
+            1,
+            100,
+            b"v0".to_vec(),
         ));
         // Set min_allocation > what will be sold
         assert_ok!(Presale::set_min_allocation(RuntimeOrigin::root(), 0, 1_000));
@@ -385,13 +449,18 @@ fn master9_09d_refund_on_failed_round_succeeds() {
 
         set_block(100);
         assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 0));
-        assert_eq!(Presale::rounds(0).unwrap().status, RoundStatus::Failed,
-            "Round Failed: sold (50) < min_allocation (1000)");
+        assert_eq!(
+            Presale::rounds(0).unwrap().status,
+            RoundStatus::Failed,
+            "Round Failed: sold (50) < min_allocation (1000)"
+        );
 
         // Refund on Failed round — succeeds
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 0));
-        assert!(Presale::contributions(0, &1).is_none(),
-            "Contribution cleared after refund on Failed round");
+        assert!(
+            Presale::contributions(0, &1).is_none(),
+            "Contribution cleared after refund on Failed round"
+        );
     });
 }
 
@@ -410,11 +479,19 @@ fn master9_10_per_round_allocation_cap_enforced() {
 
         // Contribute 100 payment → 500 tokens (within 1,000 allocation)
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
-        assert_eq!(Presale::rounds(0).unwrap().sold, 500, "sold = 500 tokens (100*5)");
+        assert_eq!(
+            Presale::rounds(0).unwrap().sold,
+            500,
+            "sold = 500 tokens (100*5)"
+        );
 
         // Contribute 100 more → 500 tokens, total 1,000 = allocation
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
-        assert_eq!(Presale::rounds(0).unwrap().sold, 1_000, "sold = 1,000 (at cap)");
+        assert_eq!(
+            Presale::rounds(0).unwrap().sold,
+            1_000,
+            "sold = 1,000 (at cap)"
+        );
 
         // PROOF: Exceeding allocation fails — 1 payment → 5 tokens, 1005 > 1000
         assert_noop!(
@@ -423,8 +500,11 @@ fn master9_10_per_round_allocation_cap_enforced() {
         );
 
         // PROOF: sold unchanged after rejected contribution
-        assert_eq!(Presale::rounds(0).unwrap().sold, 1_000,
-            "sold unchanged after rejected over-cap contribution");
+        assert_eq!(
+            Presale::rounds(0).unwrap().sold,
+            1_000,
+            "sold unchanged after rejected over-cap contribution"
+        );
     });
 }
 
@@ -467,10 +547,16 @@ fn master9_11_payment_currency_separation() {
 
         // PROOF: PaymentCurrency transfer (user → escrow): 100 payment
         // PROOF: Currency transfer (escrow → user): 500 tokens (100 * 5)
-        assert_eq!(bal(1u64) as i128 - user_before as i128, 500 - 100,
-            "User net: +500 tokens (Currency) - 100 payment (PaymentCurrency) = +400");
-        assert_eq!(bal(escrow) as i128 - escrow_before as i128, 100 - 500,
-            "Escrow net: +100 payment (PaymentCurrency) - 500 tokens (Currency) = -400");
+        assert_eq!(
+            bal(1u64) as i128 - user_before as i128,
+            500 - 100,
+            "User net: +500 tokens (Currency) - 100 payment (PaymentCurrency) = +400"
+        );
+        assert_eq!(
+            bal(escrow) as i128 - escrow_before as i128,
+            100 - 500,
+            "Escrow net: +100 payment (PaymentCurrency) - 500 tokens (Currency) = -400"
+        );
 
         // PROOF: Runtime config (runtime/src/lib.rs lines 887-888):
         //   type Currency = MaxSupplyCurrency;
@@ -497,17 +583,25 @@ fn master9_12_claim_refund_at_max_schedules() {
             assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 1));
         }
 
-        assert_eq!(Presale::contributions(0, &1).unwrap().total_paid, 10,
-            "10 contributions × 1 = 10 total paid");
-        assert_eq!(Presale::contributions(0, &1).unwrap().total_purchased, 50,
-            "10 × 5 = 50 total purchased");
+        assert_eq!(
+            Presale::contributions(0, &1).unwrap().total_paid,
+            10,
+            "10 contributions × 1 = 10 total paid"
+        );
+        assert_eq!(
+            Presale::contributions(0, &1).unwrap().total_purchased,
+            50,
+            "10 × 5 = 50 total purchased"
+        );
 
         assert_ok!(Presale::cancel_round(RuntimeOrigin::root(), 0));
 
         // Refund at maximum schedules — must succeed within declared weight
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 0));
-        assert!(Presale::contributions(0, &1).is_none(),
-            "Contribution cleared after max-schedule refund");
+        assert!(
+            Presale::contributions(0, &1).is_none(),
+            "Contribution cleared after max-schedule refund"
+        );
     });
 }
 
@@ -527,14 +621,23 @@ fn master9_13_declared_weight_sufficient() {
     let calculated = base + per_schedule * max_schedules + treasury_sweep;
 
     // PROOF: Declared weight matches benchmarked formula
-    assert_eq!(weight.ref_time(), calculated,
-        "Declared weight = {} matches formula = {}", weight.ref_time(), calculated);
-    assert_eq!(calculated, 120_000,
-        "Formula: 15,000 + 10,000 × 10 + 5,000 = 120,000");
+    assert_eq!(
+        weight.ref_time(),
+        calculated,
+        "Declared weight = {} matches formula = {}",
+        weight.ref_time(),
+        calculated
+    );
+    assert_eq!(
+        calculated, 120_000,
+        "Formula: 15,000 + 10,000 × 10 + 5,000 = 120,000"
+    );
 
     // PROOF: Weight covers worst case (exactly equals it)
-    assert!(weight.ref_time() >= calculated,
-        "Declared weight covers worst case");
+    assert!(
+        weight.ref_time() >= calculated,
+        "Declared weight covers worst case"
+    );
 }
 
 #[test]
@@ -542,8 +645,11 @@ fn master9_13b_create_round_weight_o1() {
     let weight = <crate::SubstrateWeight<Test> as crate::WeightInfo>::create_round();
 
     // PROOF: create_round is O(1) — single StorageMap lookup + insert
-    assert_eq!(weight.ref_time(), 10_000,
-        "create_round weight = 10,000 (O(1) — constant regardless of round count)");
+    assert_eq!(
+        weight.ref_time(),
+        10_000,
+        "create_round weight = 10,000 (O(1) — constant regardless of round count)"
+    );
 }
 
 // ===================================================================
@@ -574,14 +680,24 @@ fn master9_luna_01_cross_round_fund_access() {
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 999));
 
         // PROOF: Only RoundRaised(0) transferred, not RoundRaised(1)
-        assert_eq!(bal(999u64) - treasury_before, 1_000,
-            "Treasury got exactly RoundRaised(0) = 1,000");
-        assert_eq!(Presale::round_raised(1), round_1_raised_before,
-            "ATTACK BLOCKED: Round 1 raised unchanged after Round 0 collection");
+        assert_eq!(
+            bal(999u64) - treasury_before,
+            1_000,
+            "Treasury got exactly RoundRaised(0) = 1,000"
+        );
+        assert_eq!(
+            Presale::round_raised(1),
+            round_1_raised_before,
+            "ATTACK BLOCKED: Round 1 raised unchanged after Round 0 collection"
+        );
 
         // PROOF: Only round 0's 1,000 went to treasury
         assert_eq!(Presale::round_raised(0), 1_000, "Round 0 raised = 1,000");
-        assert_eq!(Presale::round_raised(1), 2_000, "Round 1 raised = 2,000 (untouched)");
+        assert_eq!(
+            Presale::round_raised(1),
+            2_000,
+            "Round 1 raised = 2,000 (untouched)"
+        );
     });
 }
 
@@ -604,7 +720,10 @@ fn master9_luna_02_cross_round_vesting_deletion() {
 
         // BLOCKED: Round A intact
         let c0 = Presale::contributions(0, &1).unwrap();
-        assert_eq!(c0.total_purchased, 50, "ATTACK BLOCKED: Round A tokens intact");
+        assert_eq!(
+            c0.total_purchased, 50,
+            "ATTACK BLOCKED: Round A tokens intact"
+        );
         assert_eq!(c0.total_paid, 10, "ATTACK BLOCKED: Round A payment intact");
     });
 }
@@ -645,8 +764,10 @@ fn master9_luna_04_refund_after_collection() {
         );
 
         // PROOF: Contribution still exists (not cleared by collection)
-        assert!(Presale::contributions(0, &1).is_some(),
-            "ATTACK BLOCKED: Cannot refund after collection — round is Closed");
+        assert!(
+            Presale::contributions(0, &1).is_some(),
+            "ATTACK BLOCKED: Cannot refund after collection — round is Closed"
+        );
     });
 }
 
@@ -675,8 +796,10 @@ fn master9_luna_05_double_refund() {
         );
 
         // PROOF: Contribution deleted — no double-spend
-        assert!(Presale::contributions(0, &1).is_none(),
-            "ATTACK BLOCKED: Contribution cleared — no double refund");
+        assert!(
+            Presale::contributions(0, &1).is_none(),
+            "ATTACK BLOCKED: Contribution cleared — no double refund"
+        );
     });
 }
 
@@ -699,13 +822,19 @@ fn master9_luna_06_double_claim() {
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 0));
 
         // PROOF: Round 0 contribution cleared
-        assert!(Presale::contributions(0, &1).is_none(), "Round 0 contribution cleared");
+        assert!(
+            Presale::contributions(0, &1).is_none(),
+            "Round 0 contribution cleared"
+        );
 
         // Claim refund from round 1 (different round — this is valid)
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 1));
 
         // PROOF: Round 1 contribution cleared
-        assert!(Presale::contributions(1, &1).is_none(), "Round 1 contribution cleared");
+        assert!(
+            Presale::contributions(1, &1).is_none(),
+            "Round 1 contribution cleared"
+        );
 
         // PROOF: Both rounds refunded independently — no cross-contamination
         // User should get back 10+10=20 payment, return 50+100=150 tokens
@@ -742,7 +871,11 @@ fn master9_luna_07_supply_cap_bypass() {
 
         // Contribute 199 payment → 995 tokens (just under cap)
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 199));
-        assert_eq!(Presale::rounds(0).unwrap().sold, 995, "sold = 995 (just under cap)");
+        assert_eq!(
+            Presale::rounds(0).unwrap().sold,
+            995,
+            "sold = 995 (just under cap)"
+        );
 
         // ATTACK: Try to exceed cap — 2 payment → 10 tokens, 1005 > 1000
         assert_noop!(
@@ -757,12 +890,17 @@ fn master9_luna_07_supply_cap_bypass() {
         );
 
         // PROOF: sold remains under cap
-        assert_eq!(Presale::rounds(0).unwrap().sold, 995,
-            "ATTACK BLOCKED: sold = 995 — cannot exceed allocation");
+        assert_eq!(
+            Presale::rounds(0).unwrap().sold,
+            995,
+            "ATTACK BLOCKED: sold = 995 — cannot exceed allocation"
+        );
 
         // PROOF: No contribution recorded for rejected attempts
-        assert!(Presale::contributions(0, &2u64).is_none(),
-            "ATTACK BLOCKED: User 2 has no contribution (rejected)");
+        assert!(
+            Presale::contributions(0, &2u64).is_none(),
+            "ATTACK BLOCKED: User 2 has no contribution (rejected)"
+        );
     });
 }
 
@@ -778,7 +916,11 @@ fn master9_luna_08_weight_exhaustion() {
             assert_ok!(Presale::create_round(
                 RuntimeOrigin::root(),
                 format!("r{}", i).as_bytes().to_vec(),
-                5, 10_000, 1_000, 1, 100,
+                5,
+                10_000,
+                1_000,
+                1,
+                100,
                 label.as_bytes().to_vec(),
             ));
         }
@@ -790,7 +932,10 @@ fn master9_luna_08_weight_exhaustion() {
 
         // PROOF: Weight is constant
         let weight = <crate::SubstrateWeight<Test> as crate::WeightInfo>::create_round();
-        assert_eq!(weight.ref_time(), 10_000,
-            "Weight = 10,000 regardless of round count — O(1)");
+        assert_eq!(
+            weight.ref_time(),
+            10_000,
+            "Weight = 10,000 regardless of round count — O(1)"
+        );
     });
 }

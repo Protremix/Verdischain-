@@ -177,7 +177,11 @@ fn test_collect_funds_uses_payment_currency_not_token_currency() {
         let beneficiary = 42u64;
         let ben_before = Balances::free_balance(beneficiary);
 
-        assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, beneficiary));
+        assert_ok!(Presale::collect_funds(
+            RuntimeOrigin::root(),
+            0,
+            beneficiary
+        ));
 
         // Beneficiary should receive 10 (payment amount, not token amount)
         let ben_after = Balances::free_balance(beneficiary);

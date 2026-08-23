@@ -168,7 +168,11 @@ fn load_mainnet_validator_uris() -> Vec<String> {
             if let Some(validators) = json.get("validators").and_then(|v| v.as_array()) {
                 let uris: Vec<String> = validators
                     .iter()
-                    .filter_map(|v| v.get("sr25519_uri").and_then(|u| u.as_str()).map(String::from))
+                    .filter_map(|v| {
+                        v.get("sr25519_uri")
+                            .and_then(|u| u.as_str())
+                            .map(String::from)
+                    })
                     .collect();
                 if !uris.is_empty() {
                     eprintln!("Loaded {} validator URIs from {}", uris.len(), config_path);
@@ -177,7 +181,10 @@ fn load_mainnet_validator_uris() -> Vec<String> {
             }
         }
     }
-    eprintln!("WARNING: {} not found or invalid. Using placeholder URIs.", config_path);
+    eprintln!(
+        "WARNING: {} not found or invalid. Using placeholder URIs.",
+        config_path
+    );
     eprintln!("WARNING: DO NOT launch mainnet with placeholder keys!");
     mainnet_validator_uris()
 }

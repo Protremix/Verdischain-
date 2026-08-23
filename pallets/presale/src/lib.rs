@@ -487,7 +487,7 @@ pub mod pallet {
                 let round = SaleRound {
                     label: label_bv,
                     token_price: *price,
-                    price_precision: <BalanceOf::<T> as From<u32>>::from(1u32),
+                    price_precision: <BalanceOf<T> as From<u32>>::from(1u32),
                     total_allocation: *allocation,
                     min_allocation: BalanceOf::<T>::zero(),
                     sold: BalanceOf::<T>::zero(),

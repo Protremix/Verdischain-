@@ -125,8 +125,14 @@ fn test_sec_remove_liquidity_zero_lp_fails() {
             DEADLINE,
         ));
 
-        let result =
-            AmmDex::remove_liquidity(RuntimeOrigin::signed(alice()), 0u32, 0u128, 0u128, 0u128, DEADLINE);
+        let result = AmmDex::remove_liquidity(
+            RuntimeOrigin::signed(alice()),
+            0u32,
+            0u128,
+            0u128,
+            0u128,
+            DEADLINE,
+        );
         assert!(result.is_err(), "Removing zero LP should fail");
     });
 }
@@ -144,8 +150,14 @@ fn test_sec_remove_more_than_owned_fails() {
             DEADLINE,
         ));
 
-        let result =
-            AmmDex::remove_liquidity(RuntimeOrigin::signed(alice()), 0u32, u128::MAX, 0u128, 0u128, DEADLINE);
+        let result = AmmDex::remove_liquidity(
+            RuntimeOrigin::signed(alice()),
+            0u32,
+            u128::MAX,
+            0u128,
+            0u128,
+            DEADLINE,
+        );
         assert!(result.is_err(), "Removing more LP than owned should fail");
     });
 }
@@ -333,7 +345,14 @@ fn test_sec_add_liquidity_nonexistent_pool() {
 fn test_sec_remove_liquidity_nonexistent_pool() {
     new_test_ext().execute_with(|| {
         assert_noop!(
-            AmmDex::remove_liquidity(RuntimeOrigin::signed(alice()), 999u32, 1_000u128, 0u128, 0u128, DEADLINE,),
+            AmmDex::remove_liquidity(
+                RuntimeOrigin::signed(alice()),
+                999u32,
+                1_000u128,
+                0u128,
+                0u128,
+                DEADLINE,
+            ),
             Error::<Test>::PoolNotFound
         );
     });

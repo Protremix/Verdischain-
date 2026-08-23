@@ -4,7 +4,7 @@
 // Each test should FAIL to break the pallet (assert_ok or assert_noop).
 
 use super::*;
-use frame_support::{assert_ok, assert_noop};
+use frame_support::{assert_noop, assert_ok};
 use sp_runtime::DispatchError;
 
 // === ATTACK 1: Cross-round drain via collect_funds ===

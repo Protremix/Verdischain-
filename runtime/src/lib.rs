@@ -268,9 +268,7 @@ impl frame_support::traits::Contains<RuntimeCall> for VerdisBaseCallFilter {
                 false
             }
             // FIX P2-1: Add missing pallets to circuit breaker coverage
-            RuntimeCall::Poh(_)
-                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Poh") =>
-            {
+            RuntimeCall::Poh(_) if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Poh") => {
                 false
             }
             RuntimeCall::ZkCompression(_)
@@ -810,7 +808,8 @@ parameter_types! {
 
 impl pallet_eco::Config for Runtime {
     // P1-4 FIX: Council 2/3 required for mainnet (was EnsureRoot)
-    type AdminOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
+    type AdminOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type RuntimeEvent = RuntimeEvent;
     type PalletId = EcoPalletId;
     type MaxCarbonCredits = MaxCarbonCredits;
@@ -850,7 +849,8 @@ parameter_types! {
 
 impl pallet_tokenomics::Config for Runtime {
     // FIX P1-2: Council 2/3 required for mainnet (was EnsureRoot/sudo)
-    type AdminOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
+    type AdminOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type RuntimeEvent = RuntimeEvent;
     type Currency = MaxSupplyCurrency;
     type TotalSupply = TotalSupplyConst;
@@ -890,7 +890,8 @@ impl pallet_presale::Config for Runtime {
     type PaymentCurrency = MaxSupplyCurrency;
     type PalletId = PresalePalletId;
     // FIX P1-3: Council 2/3 required for mainnet (was EnsureRoot/sudo)
-    type AdminOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
+    type AdminOrigin =
+        pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type Vesting = PresaleVestingHandler;
     type WeightInfo = pallet_presale::SubstrateWeight<Runtime>;
     type Treasury = TreasuryAccount;

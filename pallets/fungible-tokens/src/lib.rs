@@ -740,7 +740,13 @@ pub mod pallet {
             let to_balance = TokenBalances::<T>::get(token_id, to);
             let new_to_balance = to_balance.checked_add(amount).ok_or(Error::<T>::Overflow)?;
 
-            TokenBalances::<T>::insert(token_id, from, from_balance.checked_sub(amount).ok_or(Error::<T>::InsufficientBalance)?);
+            TokenBalances::<T>::insert(
+                token_id,
+                from,
+                from_balance
+                    .checked_sub(amount)
+                    .ok_or(Error::<T>::InsufficientBalance)?,
+            );
             TokenBalances::<T>::insert(token_id, to, new_to_balance);
 
             Self::deposit_event(Event::Transferred {

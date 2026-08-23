@@ -141,8 +141,7 @@ pub mod pallet {
     /// P0-3 FIX: Total number of times a validator has been slashed (defensive tracking)
     #[pallet::storage]
     #[pallet::getter(fn slash_count)]
-    pub type SlashCount<T: Config> =
-        StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
+    pub type SlashCount<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
 
     #[pallet::storage]
     #[pallet::getter(fn validator_names)]
@@ -1183,7 +1182,7 @@ pub mod pallet {
 
         /// Distribute block reward to validator from pre-funded reward pool
         pub fn reward_block_producer(validator: &T::AccountId, block: u32) {
-        // P2-4 FIX: Track reward pool depletion state for monitoring
+            // P2-4 FIX: Track reward pool depletion state for monitoring
             let reward = T::BlockReward::get();
 
             if let Some(_val) = Validators::<T>::get(validator) {

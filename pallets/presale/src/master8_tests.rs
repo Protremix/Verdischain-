@@ -28,8 +28,24 @@ fn master8_01_genesis_duplicate_labels_rejected() {
     // Two rounds with the SAME vesting_label "seed"
     let genesis = crate::GenesisConfig::<Test> {
         initial_rounds: vec![
-            (b"roundA".to_vec(), 5, 10_000, 1_000, 1, 100, b"seed".to_vec()),
-            (b"roundB".to_vec(), 10, 10_000, 1_000, 1, 100, b"seed".to_vec()), // DUPLICATE
+            (
+                b"roundA".to_vec(),
+                5,
+                10_000,
+                1_000,
+                1,
+                100,
+                b"seed".to_vec(),
+            ),
+            (
+                b"roundB".to_vec(),
+                10,
+                10_000,
+                1_000,
+                1,
+                100,
+                b"seed".to_vec(),
+            ), // DUPLICATE
         ],
     };
     genesis.assimilate_storage(&mut t).unwrap();
@@ -44,8 +60,24 @@ fn master8_02_genesis_unique_labels_accepted() {
 
     let genesis = crate::GenesisConfig::<Test> {
         initial_rounds: vec![
-            (b"roundA".to_vec(), 5, 10_000, 1_000, 1, 100, b"seed".to_vec()),
-            (b"roundB".to_vec(), 10, 10_000, 1_000, 1, 100, b"public".to_vec()), // UNIQUE
+            (
+                b"roundA".to_vec(),
+                5,
+                10_000,
+                1_000,
+                1,
+                100,
+                b"seed".to_vec(),
+            ),
+            (
+                b"roundB".to_vec(),
+                10,
+                10_000,
+                1_000,
+                1,
+                100,
+                b"public".to_vec(),
+            ), // UNIQUE
         ],
     };
     genesis.assimilate_storage(&mut t).unwrap();
@@ -54,10 +86,16 @@ fn master8_02_genesis_unique_labels_accepted() {
         // Both rounds created
         assert!(Presale::rounds(0).is_some(), "Round 0 created");
         assert!(Presale::rounds(1).is_some(), "Round 1 created");
-        assert_eq!(Presale::rounds(0).unwrap().vesting_label,
-            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"seed".to_vec()).unwrap());
-        assert_eq!(Presale::rounds(1).unwrap().vesting_label,
-            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"public".to_vec()).unwrap());
+        assert_eq!(
+            Presale::rounds(0).unwrap().vesting_label,
+            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"seed".to_vec())
+                .unwrap()
+        );
+        assert_eq!(
+            Presale::rounds(1).unwrap().vesting_label,
+            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"public".to_vec())
+                .unwrap()
+        );
     });
 }
 
@@ -71,21 +109,37 @@ fn master8_03_genesis_populates_label_index() {
     let genesis = crate::GenesisConfig::<Test> {
         initial_rounds: vec![
             (b"r0".to_vec(), 5, 10_000, 1_000, 1, 100, b"seed".to_vec()),
-            (b"r1".to_vec(), 10, 10_000, 1_000, 1, 100, b"public".to_vec()),
+            (
+                b"r1".to_vec(),
+                10,
+                10_000,
+                1_000,
+                1,
+                100,
+                b"public".to_vec(),
+            ),
         ],
     };
     genesis.assimilate_storage(&mut t).unwrap();
 
     TestExternalities::new(t).execute_with(|| {
         let seed_label: BoundedVec<u8, frame_support::traits::ConstU32<64>> =
-            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"seed".to_vec()).unwrap();
+            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"seed".to_vec())
+                .unwrap();
         let public_label: BoundedVec<u8, frame_support::traits::ConstU32<64>> =
-            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"public".to_vec()).unwrap();
+            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"public".to_vec())
+                .unwrap();
 
-        assert_eq!(Presale::vesting_label_owner(&seed_label), Some(0),
-            "Genesis populated VestingLabelOwner for 'seed' -> round 0");
-        assert_eq!(Presale::vesting_label_owner(&public_label), Some(1),
-            "Genesis populated VestingLabelOwner for 'public' -> round 1");
+        assert_eq!(
+            Presale::vesting_label_owner(&seed_label),
+            Some(0),
+            "Genesis populated VestingLabelOwner for 'seed' -> round 0"
+        );
+        assert_eq!(
+            Presale::vesting_label_owner(&public_label),
+            Some(1),
+            "Genesis populated VestingLabelOwner for 'public' -> round 1"
+        );
     });
 }
 
@@ -103,24 +157,37 @@ fn master8_04_label_index_o1_lookup() {
 
         // Create a round (flag=false, so no index entry created by create_round)
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 1_000, 1, 100, b"seed".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            1_000,
+            1,
+            100,
+            b"seed".to_vec(),
         ));
 
         // Manually populate the index (simulating what flag=true would do)
         let label: BoundedVec<u8, frame_support::traits::ConstU32<64>> =
-            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"seed".to_vec()).unwrap();
+            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"seed".to_vec())
+                .unwrap();
         crate::VestingLabelOwner::<Test>::insert(&label, 0u32);
 
         // O(1) lookup confirms label is owned
-        assert_eq!(Presale::vesting_label_owner(&label), Some(0),
-            "O(1) lookup: 'seed' owned by round 0");
+        assert_eq!(
+            Presale::vesting_label_owner(&label),
+            Some(0),
+            "O(1) lookup: 'seed' owned by round 0"
+        );
 
         // Different label has no owner
         let other: BoundedVec<u8, frame_support::traits::ConstU32<64>> =
             BoundedVec::try_from(b"other".to_vec()).unwrap();
-        assert_eq!(Presale::vesting_label_owner(&other), None,
-            "O(1) lookup: 'other' has no owner");
+        assert_eq!(
+            Presale::vesting_label_owner(&other),
+            None,
+            "O(1) lookup: 'other' has no owner"
+        );
 
         // PROOF: This is a single StorageMap::get — O(1), not O(N) loop.
         // The create_round() code (when flag=true) does:
@@ -137,13 +204,20 @@ fn master8_05_label_index_survives_round_closure() {
         set_block(1);
 
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 1_000, 1, 100, b"seed".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            1_000,
+            1,
+            100,
+            b"seed".to_vec(),
         ));
 
         // Populate index (simulating flag=true)
         let label: BoundedVec<u8, frame_support::traits::ConstU32<64>> =
-            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"seed".to_vec()).unwrap();
+            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"seed".to_vec())
+                .unwrap();
         crate::VestingLabelOwner::<Test>::insert(&label, 0u32);
 
         // Cancel the round
@@ -152,8 +226,11 @@ fn master8_05_label_index_survives_round_closure() {
         assert_eq!(Presale::rounds(0).unwrap().status, RoundStatus::Cancelled);
 
         // PROOF: Index entry persists after round closure
-        assert_eq!(Presale::vesting_label_owner(&label), Some(0),
-            "Label index persists after round cancellation — prevents label reuse");
+        assert_eq!(
+            Presale::vesting_label_owner(&label),
+            Some(0),
+            "Label index persists after round cancellation — prevents label reuse"
+        );
     });
 }
 
@@ -166,8 +243,11 @@ fn master8_05_label_index_survives_round_closure() {
 fn master8_06_create_round_weight_o1() {
     let weight = <crate::SubstrateWeight<Test> as crate::WeightInfo>::create_round();
     // O(1): single StorageMap lookup + insert = 10,000 ref_time
-    assert_eq!(weight.ref_time(), 10_000,
-        "create_round weight must be 10,000 (O(1) after MASTER-8)");
+    assert_eq!(
+        weight.ref_time(),
+        10_000,
+        "create_round weight must be 10,000 (O(1) after MASTER-8)"
+    );
     assert!(weight.ref_time() > 0, "Weight must be non-zero");
 }
 
@@ -183,11 +263,17 @@ fn master8_07_claim_refund_weight_benchmarked() {
     let treasury_sweep: u64 = 5_000;
     let calculated = base + per_schedule * max_schedules + treasury_sweep;
 
-    assert_eq!(weight.ref_time(), calculated,
+    assert_eq!(
+        weight.ref_time(),
+        calculated,
         "claim_refund weight = {} must match benchmarked formula = {}",
-        weight.ref_time(), calculated);
-    assert_eq!(calculated, 120_000,
-        "Formula: 15,000 + 10,000 * 10 + 5,000 = 120,000");
+        weight.ref_time(),
+        calculated
+    );
+    assert_eq!(
+        calculated, 120_000,
+        "Formula: 15,000 + 10,000 * 10 + 5,000 = 120,000"
+    );
 }
 
 // ===================================================================
@@ -223,8 +309,14 @@ fn master8_08_payment_asset_testnet_configuration() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 100_000, 100_000, 1, 100, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            100_000,
+            100_000,
+            1,
+            100,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
@@ -235,8 +327,11 @@ fn master8_08_payment_asset_testnet_configuration() {
         // With PaymentCurrency = Currency = Balances:
         // user pays 10 (PaymentCurrency) and receives 50 (Currency)
         // Net: +40 (both from same Balances pool)
-        assert_eq!(user_after - user_before, 50 - 10,
-            "Testnet: PaymentCurrency = Currency = Balances — single pool");
+        assert_eq!(
+            user_after - user_before,
+            50 - 10,
+            "Testnet: PaymentCurrency = Currency = Balances — single pool"
+        );
     });
 }
 
@@ -253,24 +348,36 @@ fn master8_09_duplicate_create_round_label_rejected() {
 
         // Create round 0 with "seed" label
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 1_000, 1, 100, b"seed".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            1_000,
+            1,
+            100,
+            b"seed".to_vec(),
         ));
 
         // Populate index (simulating flag=true behavior)
         let label: BoundedVec<u8, frame_support::traits::ConstU32<64>> =
-            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"seed".to_vec()).unwrap();
+            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"seed".to_vec())
+                .unwrap();
         crate::VestingLabelOwner::<Test>::insert(&label, 0u32);
 
         // PROOF: O(1) check would reject this — the label is already owned
-        assert!(Presale::vesting_label_owner(&label).is_some(),
-            "Label 'seed' already owned — duplicate would be rejected when flag=true");
+        assert!(
+            Presale::vesting_label_owner(&label).is_some(),
+            "Label 'seed' already owned — duplicate would be rejected when flag=true"
+        );
 
         // With a different label, the index would have no owner
         let unique: BoundedVec<u8, frame_support::traits::ConstU32<64>> =
-            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"public".to_vec()).unwrap();
-        assert!(Presale::vesting_label_owner(&unique).is_none(),
-            "Label 'public' not owned — would be accepted");
+            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"public".to_vec())
+                .unwrap();
+        assert!(
+            Presale::vesting_label_owner(&unique).is_none(),
+            "Label 'public' not owned — would be accepted"
+        );
     });
 }
 
@@ -286,7 +393,11 @@ fn master8_10_many_rounds() {
             assert_ok!(Presale::create_round(
                 RuntimeOrigin::root(),
                 format!("round_{}", i).as_bytes().to_vec(),
-                5, 10_000, 1_000, 1, 100,
+                5,
+                10_000,
+                1_000,
+                1,
+                100,
                 label.as_bytes().to_vec(),
             ));
             assert_ok!(Presale::activate_round(RuntimeOrigin::root(), i));
@@ -305,8 +416,10 @@ fn master8_10_many_rounds() {
         // PROOF: Contributions tracked per-round
         assert_eq!(Presale::contributions(0, &1).unwrap().total_paid, 10);
         assert_eq!(Presale::contributions(19, &1).unwrap().total_paid, 10);
-        assert!(Presale::contributions(10, &1).is_none(),
-            "Round 10 has no contribution from user 1");
+        assert!(
+            Presale::contributions(10, &1).is_none(),
+            "Round 10 has no contribution from user 1"
+        );
     });
 }
 
@@ -316,8 +429,14 @@ fn master8_11_claim_refund_at_max_schedules() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 1_000, 1, 100, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            1_000,
+            1,
+            100,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
@@ -335,8 +454,10 @@ fn master8_11_claim_refund_at_max_schedules() {
 
         // Refund at max schedules — weight must cover this
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 0));
-        assert!(Presale::contributions(0, &1).is_none(),
-            "Contribution cleared after max-schedule refund");
+        assert!(
+            Presale::contributions(0, &1).is_none(),
+            "Contribution cleared after max-schedule refund"
+        );
     });
 }
 
@@ -347,14 +468,26 @@ fn master8_12_cross_round_refund() {
         set_block(1);
 
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"rA".to_vec(),
-            5, 10_000, 1_000, 1, 100, b"vA".to_vec(),
+            RuntimeOrigin::root(),
+            b"rA".to_vec(),
+            5,
+            10_000,
+            1_000,
+            1,
+            100,
+            b"vA".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"rB".to_vec(),
-            10, 10_000, 2_000, 1, 100, b"vB".to_vec(),
+            RuntimeOrigin::root(),
+            b"rB".to_vec(),
+            10,
+            10_000,
+            2_000,
+            1,
+            100,
+            b"vB".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 1));
 
@@ -366,8 +499,10 @@ fn master8_12_cross_round_refund() {
 
         // Refund round A
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 0));
-        assert!(Presale::contributions(0, &1).is_none(),
-            "Round A contribution cleared");
+        assert!(
+            Presale::contributions(0, &1).is_none(),
+            "Round A contribution cleared"
+        );
 
         // PROOF: Round B contribution intact
         let contrib_b = Presale::contributions(1, &1).unwrap();
@@ -383,14 +518,26 @@ fn master8_13_cross_round_vesting_isolation() {
         set_block(1);
 
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"rA".to_vec(),
-            5, 10_000, 1_000, 1, 100, b"vestA".to_vec(),
+            RuntimeOrigin::root(),
+            b"rA".to_vec(),
+            5,
+            10_000,
+            1_000,
+            1,
+            100,
+            b"vestA".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"rB".to_vec(),
-            10, 10_000, 2_000, 1, 100, b"vestB".to_vec(),
+            RuntimeOrigin::root(),
+            b"rB".to_vec(),
+            10,
+            10_000,
+            2_000,
+            1,
+            100,
+            b"vestB".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 1));
 
@@ -407,10 +554,16 @@ fn master8_13_cross_round_vesting_isolation() {
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 1));
 
         // PROOF: Round A state unchanged
-        assert_eq!(Presale::rounds(0).unwrap().sold, round_a_sold,
-            "Round A sold unchanged by Round B refund");
-        assert_eq!(Presale::round_raised(0), round_a_raised,
-            "Round A raised unchanged by Round B refund");
+        assert_eq!(
+            Presale::rounds(0).unwrap().sold,
+            round_a_sold,
+            "Round A sold unchanged by Round B refund"
+        );
+        assert_eq!(
+            Presale::round_raised(0),
+            round_a_raised,
+            "Round A raised unchanged by Round B refund"
+        );
 
         let contrib_a = Presale::contributions(0, &1).unwrap();
         assert_eq!(contrib_a.total_purchased, 50, "Round A tokens intact");
@@ -425,14 +578,26 @@ fn master8_14_per_round_escrow_isolation() {
         set_block(1);
 
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"rA".to_vec(),
-            5, 100_000, 100_000, 1, 100, b"vA".to_vec(),
+            RuntimeOrigin::root(),
+            b"rA".to_vec(),
+            5,
+            100_000,
+            100_000,
+            1,
+            100,
+            b"vA".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"rB".to_vec(),
-            10, 100_000, 100_000, 1, 100, b"vB".to_vec(),
+            RuntimeOrigin::root(),
+            b"rB".to_vec(),
+            10,
+            100_000,
+            100_000,
+            1,
+            100,
+            b"vB".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 1));
 
@@ -448,17 +613,26 @@ fn master8_14_per_round_escrow_isolation() {
         // Collect round A — should only get RoundRaised(0) = 10
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 999));
         let treasury_after_a = pallet_balances::Pallet::<Test>::free_balance(&999u64);
-        assert_eq!(treasury_after_a - treasury_before, 10,
-            "Round A collection = RoundRaised(0) = 10");
+        assert_eq!(
+            treasury_after_a - treasury_before,
+            10,
+            "Round A collection = RoundRaised(0) = 10"
+        );
 
         // Collect round B — should only get RoundRaised(1) = 10
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 1, 999));
         let treasury_after_b = pallet_balances::Pallet::<Test>::free_balance(&999u64);
-        assert_eq!(treasury_after_b - treasury_after_a, 10,
-            "Round B collection = RoundRaised(1) = 10");
+        assert_eq!(
+            treasury_after_b - treasury_after_a,
+            10,
+            "Round B collection = RoundRaised(1) = 10"
+        );
 
-        assert_eq!(treasury_after_b - treasury_before, 20,
-            "Total = 20 (10 from each round, separately)");
+        assert_eq!(
+            treasury_after_b - treasury_before,
+            20,
+            "Total = 20 (10 from each round, separately)"
+        );
     });
 }
 
@@ -468,8 +642,14 @@ fn master8_15_double_refund_prevented() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 1_000, 1, 100, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            1_000,
+            1,
+            100,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
@@ -490,8 +670,14 @@ fn master8_16_double_collection_prevented() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 100_000, 100_000, 1, 100, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            100_000,
+            100_000,
+            1,
+            100,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10_000));
@@ -522,7 +708,15 @@ fn master8_luna_01_genesis_duplicate_attack() {
     let genesis = crate::GenesisConfig::<Test> {
         initial_rounds: vec![
             (b"r0".to_vec(), 5, 10_000, 1_000, 1, 100, b"seed".to_vec()),
-            (b"r1".to_vec(), 10, 10_000, 1_000, 1, 100, b"public".to_vec()),
+            (
+                b"r1".to_vec(),
+                10,
+                10_000,
+                1_000,
+                1,
+                100,
+                b"public".to_vec(),
+            ),
             (b"r2".to_vec(), 15, 10_000, 1_000, 1, 100, b"seed".to_vec()), // DUPLICATE of r0
         ],
     };
@@ -538,26 +732,37 @@ fn master8_luna_02_runtime_duplicate_label_attack() {
 
         // Create round 0 with "seed"
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 1_000, 1, 100, b"seed".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            1_000,
+            1,
+            100,
+            b"seed".to_vec(),
         ));
 
         // Simulate flag=true by populating the index
         let label: BoundedVec<u8, frame_support::traits::ConstU32<64>> =
-            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"seed".to_vec()).unwrap();
+            BoundedVec::<u8, frame_support::traits::ConstU32<64>>::try_from(b"seed".to_vec())
+                .unwrap();
         crate::VestingLabelOwner::<Test>::insert(&label, 0u32);
 
         // ATTACK: Try to create another round with "seed"
         // When flag=true, create_round() would check VestingLabelOwner and reject.
         // PROOF: The O(1) check catches this:
-        assert!(Presale::vesting_label_owner(&label).is_some(),
-            "ATTACK BLOCKED: 'seed' already in index — duplicate would be rejected");
+        assert!(
+            Presale::vesting_label_owner(&label).is_some(),
+            "ATTACK BLOCKED: 'seed' already in index — duplicate would be rejected"
+        );
 
         // A unique label passes the check
         let unique: BoundedVec<u8, frame_support::traits::ConstU32<64>> =
             BoundedVec::try_from(b"unique".to_vec()).unwrap();
-        assert!(Presale::vesting_label_owner(&unique).is_none(),
-            "UNIQUE label passes O(1) check");
+        assert!(
+            Presale::vesting_label_owner(&unique).is_none(),
+            "UNIQUE label passes O(1) check"
+        );
     });
 }
 
@@ -568,14 +773,26 @@ fn master8_luna_03_cross_round_vesting_deletion_attack() {
         set_block(1);
 
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"rA".to_vec(),
-            5, 10_000, 1_000, 1, 100, b"vestA".to_vec(),
+            RuntimeOrigin::root(),
+            b"rA".to_vec(),
+            5,
+            10_000,
+            1_000,
+            1,
+            100,
+            b"vestA".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"rB".to_vec(),
-            10, 10_000, 2_000, 1, 100, b"vestB".to_vec(),
+            RuntimeOrigin::root(),
+            b"rB".to_vec(),
+            10,
+            10_000,
+            2_000,
+            1,
+            100,
+            b"vestB".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 1));
 
@@ -589,13 +806,19 @@ fn master8_luna_03_cross_round_vesting_deletion_attack() {
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 1));
 
         // PROOF: Round A vesting intact
-        assert!(Presale::contributions(0, &1).is_some(),
-            "ATTACK BLOCKED: Round A contribution still exists");
+        assert!(
+            Presale::contributions(0, &1).is_some(),
+            "ATTACK BLOCKED: Round A contribution still exists"
+        );
         let contrib_a = Presale::contributions(0, &1).unwrap();
-        assert_eq!(contrib_a.total_purchased, 50,
-            "ATTACK BLOCKED: Round A tokens unchanged");
-        assert_eq!(contrib_a.total_paid, 10,
-            "ATTACK BLOCKED: Round A payment unchanged");
+        assert_eq!(
+            contrib_a.total_purchased, 50,
+            "ATTACK BLOCKED: Round A tokens unchanged"
+        );
+        assert_eq!(
+            contrib_a.total_paid, 10,
+            "ATTACK BLOCKED: Round A payment unchanged"
+        );
     });
 }
 
@@ -611,7 +834,11 @@ fn master8_luna_04_weight_exhaustion_many_rounds() {
             assert_ok!(Presale::create_round(
                 RuntimeOrigin::root(),
                 format!("r{}", i).as_bytes().to_vec(),
-                5, 10_000, 1_000, 1, 100,
+                5,
+                10_000,
+                1_000,
+                1,
+                100,
                 label.as_bytes().to_vec(),
             ));
         }
@@ -623,8 +850,11 @@ fn master8_luna_04_weight_exhaustion_many_rounds() {
 
         // PROOF: create_round weight is constant (O(1))
         let weight = <crate::SubstrateWeight<Test> as crate::WeightInfo>::create_round();
-        assert_eq!(weight.ref_time(), 10_000,
-            "Weight is O(1) — 10,000 regardless of round count");
+        assert_eq!(
+            weight.ref_time(),
+            10_000,
+            "Weight is O(1) — 10,000 regardless of round count"
+        );
     });
 }
 
@@ -634,8 +864,14 @@ fn master8_luna_05_refund_dos_attack() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 1_000, 1, 100, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            1_000,
+            1,
+            100,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
@@ -655,8 +891,10 @@ fn master8_luna_05_refund_dos_attack() {
         }
 
         // PROOF: Contribution is cleared — no DoS possible
-        assert!(Presale::contributions(0, &1).is_none(),
-            "ATTACK BLOCKED: Contribution cleared — repeated refunds fail");
+        assert!(
+            Presale::contributions(0, &1).is_none(),
+            "ATTACK BLOCKED: Contribution cleared — repeated refunds fail"
+        );
     });
 }
 
@@ -666,8 +904,14 @@ fn master8_luna_06_payment_asset_confusion_attack() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 100_000, 100_000, 1, 100, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            100_000,
+            100_000,
+            1,
+            100,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
@@ -686,10 +930,16 @@ fn master8_luna_06_payment_asset_confusion_attack() {
         // In testnet both are Balances, but the code paths are separate:
         //   T::PaymentCurrency::transfer(user, escrow, 10)  — payment
         //   T::Currency::transfer(escrow, user, 50)          — tokens
-        assert_eq!(user_after - user_before, 50 - 10,
-            "User: +50 tokens (Currency) - 10 payment (PaymentCurrency) = +40");
-        assert_eq!(escrow_after as i128 - escrow_before as i128, 10 - 50,
-            "Escrow: +10 payment (PaymentCurrency) - 50 tokens (Currency) = -40");
+        assert_eq!(
+            user_after - user_before,
+            50 - 10,
+            "User: +50 tokens (Currency) - 10 payment (PaymentCurrency) = +40"
+        );
+        assert_eq!(
+            escrow_after as i128 - escrow_before as i128,
+            10 - 50,
+            "Escrow: +10 payment (PaymentCurrency) - 50 tokens (Currency) = -40"
+        );
 
         // ATTACK: Cancel and refund — verify reverse paths
         assert_ok!(Presale::cancel_round(RuntimeOrigin::root(), 0));
@@ -706,12 +956,16 @@ fn master8_luna_06_payment_asset_confusion_attack() {
         // PROOF: Refund reverses the flows:
         //   T::Currency::transfer(user, escrow, 50)           — return tokens
         //   T::PaymentCurrency::transfer(escrow, user, 10)    — refund payment
-        assert_eq!(user_after_refund as i128 - user_before_refund as i128,
+        assert_eq!(
+            user_after_refund as i128 - user_before_refund as i128,
             10 - 50,
-            "Refund: +10 payment back - 50 tokens returned = -40");
+            "Refund: +10 payment back - 50 tokens returned = -40"
+        );
 
         // Treasury sweep occurs (unsold tokens)
-        assert!(treasury_after >= treasury_before,
-            "Treasury received sweep — no payment confusion");
+        assert!(
+            treasury_after >= treasury_before,
+            "Treasury received sweep — no payment confusion"
+        );
     });
 }

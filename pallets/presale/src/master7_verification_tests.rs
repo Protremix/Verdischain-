@@ -20,8 +20,14 @@ fn master7_01_contribute_uses_round_escrow() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 100, 1, 1000, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            100,
+            1,
+            1000,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
@@ -35,17 +41,25 @@ fn master7_01_contribute_uses_round_escrow() {
         let escrow_after = pallet_balances::Pallet::<Test>::free_balance(&escrow_0);
 
         // User paid 10, received 50 tokens → net +40
-        assert_eq!(user_after, user_before + 50 - 10,
-            "User balance: payment out + tokens received");
+        assert_eq!(
+            user_after,
+            user_before + 50 - 10,
+            "User balance: payment out + tokens received"
+        );
 
         // Escrow received 10 payment, sent 50 tokens → net -40
-        assert_eq!(escrow_after, escrow_before - 50 + 10,
-            "Escrow: received payment + sent tokens");
+        assert_eq!(
+            escrow_after,
+            escrow_before - 50 + 10,
+            "Escrow: received payment + sent tokens"
+        );
 
         // PROOF: escrow_0 == PalletId.into_sub_account_truncating(0)
         let expected: u64 = PresalePalletId::get().into_sub_account_truncating(0u32);
-        assert_eq!(escrow_0, expected,
-            "Escrow must be round_escrow(0) = PalletId.into_sub_account_truncating(0)");
+        assert_eq!(
+            escrow_0, expected,
+            "Escrow must be round_escrow(0) = PalletId.into_sub_account_truncating(0)"
+        );
     });
 }
 
@@ -55,8 +69,14 @@ fn master7_02_collect_funds_uses_same_escrow() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 100_000, 100_000, 1, 100, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            100_000,
+            100_000,
+            1,
+            100,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
@@ -80,10 +100,15 @@ fn master7_02_collect_funds_uses_same_escrow() {
 
         // collect_funds transfers RoundRaised from escrow to beneficiary
         // RoundRaised = 10_000 (the payment amount)
-        assert_eq!(collected, 10_000, "Treasury receives exact RoundRaised amount");
+        assert_eq!(
+            collected, 10_000,
+            "Treasury receives exact RoundRaised amount"
+        );
         assert_eq!(escrow_decrease, 10_000, "Escrow decreases by same amount");
-        assert_eq!(collected, escrow_decrease,
-            "PROOF: collect_funds drains round_escrow(0) — same escrow as contribute");
+        assert_eq!(
+            collected, escrow_decrease,
+            "PROOF: collect_funds drains round_escrow(0) — same escrow as contribute"
+        );
     });
 }
 
@@ -93,8 +118,14 @@ fn master7_03_claim_refund_uses_same_escrow() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 100, 1, 100, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            100,
+            1,
+            100,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
@@ -114,8 +145,11 @@ fn master7_03_claim_refund_uses_same_escrow() {
         let treasury_after = pallet_balances::Pallet::<Test>::free_balance(&999u64);
 
         // User: received 10 refund, returned 50 tokens → net -40
-        assert_eq!(user_after as i128 - user_before as i128, 10 - 50,
-            "User receives refund and returns tokens");
+        assert_eq!(
+            user_after as i128 - user_before as i128,
+            10 - 50,
+            "User receives refund and returns tokens"
+        );
 
         // Escrow: received 50 tokens back, sent 10 refund, swept unsold to treasury →
         // Net: +50 - 10 - sweep_amount
@@ -126,15 +160,23 @@ fn master7_03_claim_refund_uses_same_escrow() {
         let treasury_change = treasury_after as i128 - treasury_before as i128;
 
         // PROOF: refund came FROM escrow (escrow sent 10 to user)
-        assert!(escrow_change < 0, "Escrow decreased (refund + treasury sweep)");
+        assert!(
+            escrow_change < 0,
+            "Escrow decreased (refund + treasury sweep)"
+        );
 
         // PROOF: treasury received the sweep
-        assert_eq!(treasury_change, 10_000, "Treasury received unsold token sweep");
+        assert_eq!(
+            treasury_change, 10_000,
+            "Treasury received unsold token sweep"
+        );
 
         // PROOF: Same escrow — the refund and sweep both come from round_escrow(0)
         let expected_escrow_change: i128 = 50 - 10 - 10_000; // tokens_in - refund_out - sweep
-        assert_eq!(escrow_change, expected_escrow_change,
-            "Escrow change = +50 (tokens) - 10 (refund) - 10_000 (sweep) = -9,960");
+        assert_eq!(
+            escrow_change, expected_escrow_change,
+            "Escrow change = +50 (tokens) - 10 (refund) - 10_000 (sweep) = -9,960"
+        );
     });
 }
 
@@ -152,14 +194,26 @@ fn master7_04_cross_round_isolation_collect() {
         set_block(1);
 
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"roundA".to_vec(),
-            5, 10_000, 1_000, 1, 100, b"vestA".to_vec(),
+            RuntimeOrigin::root(),
+            b"roundA".to_vec(),
+            5,
+            10_000,
+            1_000,
+            1,
+            100,
+            b"vestA".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"roundB".to_vec(),
-            10, 10_000, 2_000, 1, 100, b"vestB".to_vec(),
+            RuntimeOrigin::root(),
+            b"roundB".to_vec(),
+            10,
+            10_000,
+            2_000,
+            1,
+            100,
+            b"vestB".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 1));
 
@@ -172,8 +226,14 @@ fn master7_04_cross_round_isolation_collect() {
         let contrib_b = Presale::contributions(1, &1).unwrap();
         assert_eq!(contrib_a.total_purchased, 50, "Round A tracked separately");
         assert_eq!(contrib_b.total_purchased, 100, "Round B tracked separately");
-        assert_eq!(contrib_a.total_paid, 10, "Round A payment tracked separately");
-        assert_eq!(contrib_b.total_paid, 10, "Round B payment tracked separately");
+        assert_eq!(
+            contrib_a.total_paid, 10,
+            "Round A payment tracked separately"
+        );
+        assert_eq!(
+            contrib_b.total_paid, 10,
+            "Round B payment tracked separately"
+        );
 
         assert_eq!(Presale::round_raised(0), 10, "Round A raised = 10");
         assert_eq!(Presale::round_raised(1), 10, "Round B raised = 10");
@@ -187,18 +247,27 @@ fn master7_04_cross_round_isolation_collect() {
         // Collect Round A → should only collect RoundRaised(0) = 10
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 999));
         let treasury_after_a = pallet_balances::Pallet::<Test>::free_balance(&999u64);
-        assert_eq!(treasury_after_a - treasury_before, 10,
-            "Round A collection = RoundRaised(0) = 10, NOT RoundRaised(1)");
+        assert_eq!(
+            treasury_after_a - treasury_before,
+            10,
+            "Round A collection = RoundRaised(0) = 10, NOT RoundRaised(1)"
+        );
 
         // Collect Round B → should only collect RoundRaised(1) = 10
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 1, 999));
         let treasury_after_b = pallet_balances::Pallet::<Test>::free_balance(&999u64);
-        assert_eq!(treasury_after_b - treasury_after_a, 10,
-            "Round B collection = RoundRaised(1) = 10, NOT combined");
+        assert_eq!(
+            treasury_after_b - treasury_after_a,
+            10,
+            "Round B collection = RoundRaised(1) = 10, NOT combined"
+        );
 
         // PROOF: Total collected = 10 + 10 = 20, not 20 from one round
-        assert_eq!(treasury_after_b - treasury_before, 20,
-            "Total collected = 20 (10 from each round separately)");
+        assert_eq!(
+            treasury_after_b - treasury_before,
+            20,
+            "Total collected = 20 (10 from each round separately)"
+        );
     });
 }
 
@@ -209,14 +278,26 @@ fn master7_04b_cross_round_isolation_refund() {
         set_block(1);
 
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"roundA".to_vec(),
-            5, 10_000, 1_000, 1, 100, b"vestA".to_vec(),
+            RuntimeOrigin::root(),
+            b"roundA".to_vec(),
+            5,
+            10_000,
+            1_000,
+            1,
+            100,
+            b"vestA".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"roundB".to_vec(),
-            10, 10_000, 2_000, 1, 100, b"vestB".to_vec(),
+            RuntimeOrigin::root(),
+            b"roundB".to_vec(),
+            10,
+            10_000,
+            2_000,
+            1,
+            100,
+            b"vestB".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 1));
 
@@ -237,18 +318,25 @@ fn master7_04b_cross_round_isolation_refund() {
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 0));
 
         // PROOF: Round A state changed by refund
-        assert!(Presale::contributions(0, &1).is_none(),
-            "Round A contribution cleared after refund");
+        assert!(
+            Presale::contributions(0, &1).is_none(),
+            "Round A contribution cleared after refund"
+        );
 
         // PROOF: Round B state untouched by Round A refund
         let round_a_sold_after = Presale::rounds(0).unwrap().sold;
         let round_a_raised_after = Presale::round_raised(0);
         let round_b_raised_after = Presale::round_raised(1);
 
-        assert_eq!(round_a_raised_before, round_a_raised_after + 10,
-            "Round A raised decreased by refund amount");
-        assert_eq!(round_b_raised_before, round_b_raised_after,
-            "Round B raised UNCHANGED by Round A refund");
+        assert_eq!(
+            round_a_raised_before,
+            round_a_raised_after + 10,
+            "Round A raised decreased by refund amount"
+        );
+        assert_eq!(
+            round_b_raised_before, round_b_raised_after,
+            "Round B raised UNCHANGED by Round A refund"
+        );
 
         // PROOF: Round B contribution intact
         let contrib_b = Presale::contributions(1, &1).unwrap();
@@ -284,13 +372,25 @@ fn master7_05b_duplicate_vesting_label_allowed_when_not_enforced() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 100, 1, 1000, b"seed".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            100,
+            1,
+            1000,
+            b"seed".to_vec(),
         ));
         // Same vesting_label on different round — allowed when enforcement is off
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r1".to_vec(),
-            10, 10_000, 100, 1, 1000, b"seed".to_vec(),
+            RuntimeOrigin::root(),
+            b"r1".to_vec(),
+            10,
+            10_000,
+            100,
+            1,
+            1000,
+            b"seed".to_vec(),
         ));
         assert!(Presale::rounds(1).is_some());
     });
@@ -302,8 +402,14 @@ fn master7_06_multiple_contributions_same_user() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 1_000, 1, 1000, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            1_000,
+            1,
+            1000,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
@@ -328,8 +434,16 @@ fn master7_06_multiple_contributions_same_user() {
         // Round-level tracking
         let round = Presale::rounds(0).unwrap();
         assert_eq!(round.sold, 175, "Round sold = sum of all contributions");
-        assert_eq!(Presale::round_raised(0), 35, "Round raised = sum of all payments");
-        assert_eq!(Presale::total_raised(), 35, "Total raised = sum of all payments");
+        assert_eq!(
+            Presale::round_raised(0),
+            35,
+            "Round raised = sum of all payments"
+        );
+        assert_eq!(
+            Presale::total_raised(),
+            35,
+            "Total raised = sum of all payments"
+        );
     });
 }
 
@@ -339,8 +453,14 @@ fn master7_07_cancelled_refund() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 100, 1, 100, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            100,
+            1,
+            100,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
@@ -350,8 +470,10 @@ fn master7_07_cancelled_refund() {
 
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 0));
 
-        assert!(Presale::contributions(0, &1).is_none(),
-            "Contribution cleared after refund");
+        assert!(
+            Presale::contributions(0, &1).is_none(),
+            "Contribution cleared after refund"
+        );
     });
 }
 
@@ -363,8 +485,14 @@ fn master7_07b_failed_round_refund() {
         // Create round — default min_allocation = 0, so it will be Successful
         // To get Failed, we need min_allocation > sold
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 1_000, 1, 100, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            1_000,
+            1,
+            100,
+            b"v0".to_vec(),
         ));
         // Set min_allocation high enough to fail (sold=50, min=1_000)
         assert_ok!(Presale::set_min_allocation(RuntimeOrigin::root(), 0, 1_000));
@@ -375,13 +503,18 @@ fn master7_07b_failed_round_refund() {
 
         set_block(100);
         assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 0));
-        assert_eq!(Presale::rounds(0).unwrap().status, RoundStatus::Failed,
-            "Round must be Failed when sold < min_allocation");
+        assert_eq!(
+            Presale::rounds(0).unwrap().status,
+            RoundStatus::Failed,
+            "Round must be Failed when sold < min_allocation"
+        );
 
         // Refund should work on Failed round
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 0));
-        assert!(Presale::contributions(0, &1).is_none(),
-            "Contribution cleared after failed-round refund");
+        assert!(
+            Presale::contributions(0, &1).is_none(),
+            "Contribution cleared after failed-round refund"
+        );
     });
 }
 
@@ -391,8 +524,14 @@ fn master7_08_successful_collection() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 200_000, 200_000, 1, 100, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            200_000,
+            200_000,
+            1,
+            100,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
@@ -407,8 +546,11 @@ fn master7_08_successful_collection() {
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 999));
         let treasury_after = pallet_balances::Pallet::<Test>::free_balance(&999u64);
 
-        assert_eq!(treasury_after - treasury_before, 15_000,
-            "Treasury receives total raised (10_000 + 5_000 = 15_000)");
+        assert_eq!(
+            treasury_after - treasury_before,
+            15_000,
+            "Treasury receives total raised (10_000 + 5_000 = 15_000)"
+        );
         assert_eq!(Presale::rounds(0).unwrap().status, RoundStatus::Closed);
         assert!(Presale::round_funds_collected(0), "FundsCollected flag set");
     });
@@ -420,8 +562,14 @@ fn master7_09_double_refund_prevented() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 100, 1, 100, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            100,
+            1,
+            100,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
@@ -444,8 +592,14 @@ fn master7_10_double_collection_prevented() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 100_000, 100_000, 1, 100, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            100_000,
+            100_000,
+            1,
+            100,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10_000));
@@ -471,22 +625,41 @@ fn master7_11_failed_transfer_state_rollback() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 100, 1, 100, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            100,
+            1,
+            100,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
         // Account 5 has 0 balance — contribute must fail
         let result = Presale::contribute(RuntimeOrigin::signed(5), 0, 10);
-        assert!(result.is_err(), "Contribution from zero-balance account must fail");
+        assert!(
+            result.is_err(),
+            "Contribution from zero-balance account must fail"
+        );
 
         // PROOF: State unchanged after failed transfer
-        assert!(Presale::contributions(0, &5u64).is_none(),
-            "No contribution record after failed transfer");
+        assert!(
+            Presale::contributions(0, &5u64).is_none(),
+            "No contribution record after failed transfer"
+        );
         let round = Presale::rounds(0).unwrap();
         assert_eq!(round.sold, 0, "Round sold = 0 after failed contribution");
-        assert_eq!(Presale::round_raised(0), 0, "Round raised = 0 after failed contribution");
-        assert_eq!(Presale::total_raised(), 0, "Total raised = 0 after failed contribution");
+        assert_eq!(
+            Presale::round_raised(0),
+            0,
+            "Round raised = 0 after failed contribution"
+        );
+        assert_eq!(
+            Presale::total_raised(),
+            0,
+            "Total raised = 0 after failed contribution"
+        );
     });
 }
 
@@ -496,8 +669,14 @@ fn master7_12_claim_refund_weight_at_max_schedules() {
     new_test_ext().execute_with(|| {
         set_block(1);
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"r0".to_vec(),
-            5, 10_000, 100, 1, 100, b"v0".to_vec(),
+            RuntimeOrigin::root(),
+            b"r0".to_vec(),
+            5,
+            10_000,
+            100,
+            1,
+            100,
+            b"v0".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
@@ -514,8 +693,10 @@ fn master7_12_claim_refund_weight_at_max_schedules() {
 
         // Refund should work with multiple contribution entries
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 0));
-        assert!(Presale::contributions(0, &1).is_none(),
-            "Contribution cleared after multi-contribution refund");
+        assert!(
+            Presale::contributions(0, &1).is_none(),
+            "Contribution cleared after multi-contribution refund"
+        );
     });
 }
 
@@ -548,20 +729,28 @@ fn master7_13_declared_weight_sufficient() {
     let max_entries: u64 = 10; // MaxSchedulesPerAccount = 10
     let treasury_sweep: u64 = 5_000;
     let calculated = base + per_entry * max_entries + treasury_sweep;
-    assert_eq!(calculated, 120_000,
-        "Documented: 15,000 + 10,000 * 10 + 5,000 = 120,000");
+    assert_eq!(
+        calculated, 120_000,
+        "Documented: 15,000 + 10,000 * 10 + 5,000 = 120,000"
+    );
 
     // PROOF: Weight exceeds actual worst case (MaxSchedulesPerAccount = 10)
     let actual_vesting_cost = per_entry * max_entries;
     let total_actual = base + actual_vesting_cost + treasury_sweep;
-    assert!(substrate_weight.ref_time() >= total_actual,
+    assert!(
+        substrate_weight.ref_time() >= total_actual,
         "Declared weight {} must cover actual worst case {} (safety margin)",
-        substrate_weight.ref_time(), total_actual);
+        substrate_weight.ref_time(),
+        total_actual
+    );
 
     // PROOF: Safety margin ratio
     let margin = substrate_weight.ref_time() as f64 / total_actual as f64;
-    assert!(margin >= 1.0,
-        "Safety margin must be > 1.5x, actual: {:.2}x", margin);
+    assert!(
+        margin >= 1.0,
+        "Safety margin must be > 1.5x, actual: {:.2}x",
+        margin
+    );
 }
 
 // === 17a. Luna independent cross-round fund theft attempt ===
@@ -572,15 +761,27 @@ fn master7_17a_luna_cross_round_fund_theft() {
 
         // Round A — will be successful
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"roundA".to_vec(),
-            5, 10_000, 1_000, 1, 100, b"vestA".to_vec(),
+            RuntimeOrigin::root(),
+            b"roundA".to_vec(),
+            5,
+            10_000,
+            1_000,
+            1,
+            100,
+            b"vestA".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
         // Round B — will be cancelled
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"roundB".to_vec(),
-            10, 10_000, 2_000, 1, 100, b"vestB".to_vec(),
+            RuntimeOrigin::root(),
+            b"roundB".to_vec(),
+            10,
+            10_000,
+            2_000,
+            1,
+            100,
+            b"vestB".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 1));
 
@@ -598,8 +799,11 @@ fn master7_17a_luna_cross_round_fund_theft() {
         let treasury_after_a = pallet_balances::Pallet::<Test>::free_balance(&999u64);
 
         // PROOF: Only RoundRaised(0) = 10 was collected, not RoundRaised(1)
-        assert_eq!(treasury_after_a - treasury_before, 10,
-            "Collection only drains RoundRaised(0) = 10, not Round B's funds");
+        assert_eq!(
+            treasury_after_a - treasury_before,
+            10,
+            "Collection only drains RoundRaised(0) = 10, not Round B's funds"
+        );
 
         // ATTACK 2: Try to collect Round B (Cancelled — not Successful)
         assert_noop!(
@@ -615,14 +819,18 @@ fn master7_17a_luna_cross_round_fund_theft() {
 
         // PROOF: Round B contribution still refundable
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 1));
-        assert!(Presale::contributions(1, &1).is_none(),
-            "Round B contribution cleared after legitimate refund");
+        assert!(
+            Presale::contributions(1, &1).is_none(),
+            "Round B contribution cleared after legitimate refund"
+        );
 
         // PROOF: Round A contribution NOT cleared by Round B refund
         // (Round A was collected, contribution record may still exist)
         // The key proof: Round B refund did NOT affect Round A's collected status
-        assert!(Presale::round_funds_collected(0),
-            "Round A still collected — Round B refund did not affect it");
+        assert!(
+            Presale::round_funds_collected(0),
+            "Round A still collected — Round B refund did not affect it"
+        );
     });
 }
 
@@ -634,15 +842,27 @@ fn master7_17b_luna_cross_round_vesting_deletion() {
 
         // Round A with vesting_label "vestA"
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"roundA".to_vec(),
-            5, 10_000, 1_000, 1, 100, b"vestA".to_vec(),
+            RuntimeOrigin::root(),
+            b"roundA".to_vec(),
+            5,
+            10_000,
+            1_000,
+            1,
+            100,
+            b"vestA".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
 
         // Round B with vesting_label "vestB" (different label)
         assert_ok!(Presale::create_round(
-            RuntimeOrigin::root(), b"roundB".to_vec(),
-            10, 10_000, 2_000, 1, 100, b"vestB".to_vec(),
+            RuntimeOrigin::root(),
+            b"roundB".to_vec(),
+            10,
+            10_000,
+            2_000,
+            1,
+            100,
+            b"vestB".to_vec(),
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 1));
 
@@ -664,10 +884,14 @@ fn master7_17b_luna_cross_round_vesting_deletion() {
         let round_a_sold_after = Presale::rounds(0).unwrap().sold;
         let round_a_raised_after = Presale::round_raised(0);
 
-        assert_eq!(round_a_sold_before, round_a_sold_after,
-            "Round A sold unchanged by Round B refund");
-        assert_eq!(round_a_raised_before, round_a_raised_after,
-            "Round A raised unchanged by Round B refund");
+        assert_eq!(
+            round_a_sold_before, round_a_sold_after,
+            "Round A sold unchanged by Round B refund"
+        );
+        assert_eq!(
+            round_a_raised_before, round_a_raised_after,
+            "Round A raised unchanged by Round B refund"
+        );
 
         // PROOF: Round A contribution intact
         let contrib_a = Presale::contributions(0, &1).unwrap();
@@ -675,8 +899,10 @@ fn master7_17b_luna_cross_round_vesting_deletion() {
         assert_eq!(contrib_a.total_paid, 10, "Round A payment intact");
 
         // PROOF: Round B contribution cleared
-        assert!(Presale::contributions(1, &1).is_none(),
-            "Round B contribution cleared after refund");
+        assert!(
+            Presale::contributions(1, &1).is_none(),
+            "Round B contribution cleared after refund"
+        );
     });
 }
 

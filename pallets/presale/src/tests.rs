@@ -1,20 +1,20 @@
 #![allow(unused_imports)]
+#[path = "luna_adversarial_tests.rs"]
+mod luna_adversarial_tests;
+#[path = "luna_regression_tests.rs"]
+mod luna_regression_tests;
+#[path = "master6_regression_tests.rs"]
+mod master6_regression_tests;
 #[path = "master7_verification_tests.rs"]
 mod master7_verification;
 #[path = "master8_tests.rs"]
 mod master8_tests;
 #[path = "master9_tests.rs"]
 mod master9_tests;
-#[path = "luna_adversarial_tests.rs"]
-mod luna_adversarial_tests;
 #[path = "presale_tests.rs"]
 mod presale_tests;
 #[path = "regression_tests.rs"]
 mod regression_tests;
-#[path = "luna_regression_tests.rs"]
-mod luna_regression_tests;
-#[path = "master6_regression_tests.rs"]
-mod master6_regression_tests;
 use crate::*;
 use frame_support::{
     assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types,

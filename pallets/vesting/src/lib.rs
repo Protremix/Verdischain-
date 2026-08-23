@@ -318,7 +318,8 @@ pub mod pallet {
             // FIX P3-1: Cache release amounts from first calculation instead of recalculating
             let mut release_map: Vec<(usize, BalanceOf<T>)> = Vec::new();
             {
-                let vesting = UserVestings::<T>::get(&who).ok_or(Error::<T>::NoVestingForAccount)?;
+                let vesting =
+                    UserVestings::<T>::get(&who).ok_or(Error::<T>::NoVestingForAccount)?;
                 for (i, v) in vesting.iter().enumerate() {
                     let elapsed_blocks: u32 = current_block
                         .checked_sub(&v.start_block)
@@ -349,7 +350,10 @@ pub mod pallet {
                 if let Some(vests) = vests {
                     for (i, releasable) in &release_map {
                         if let Some(v) = vests.get_mut(*i) {
-                            v.vested = v.vested.checked_add(releasable).ok_or(Error::<T>::Overflow)?;
+                            v.vested = v
+                                .vested
+                                .checked_add(releasable)
+                                .ok_or(Error::<T>::Overflow)?;
                             v.released = v
                                 .released
                                 .checked_add(releasable)

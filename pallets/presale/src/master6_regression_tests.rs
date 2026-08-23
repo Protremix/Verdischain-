@@ -17,7 +17,7 @@
 #![cfg(test)]
 
 use super::*;
-use frame_support::{assert_ok, assert_noop};
+use frame_support::{assert_noop, assert_ok};
 
 fn set_block(n: u64) {
     System::set_block_number(n);
@@ -62,8 +62,16 @@ fn test_cross_round_escrow_isolation() {
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(2), 1, 20_000));
 
         // Verify per-round tracking is isolated
-        assert_eq!(RoundRaised::<Test>::get(0), 10_000, "Round A raised = 10,000");
-        assert_eq!(RoundRaised::<Test>::get(1), 20_000, "Round B raised = 20,000");
+        assert_eq!(
+            RoundRaised::<Test>::get(0),
+            10_000,
+            "Round A raised = 10,000"
+        );
+        assert_eq!(
+            RoundRaised::<Test>::get(1),
+            20_000,
+            "Round B raised = 20,000"
+        );
         assert_eq!(TotalRaised::<Test>::get(), 30_000, "Total raised = 30,000");
 
         // Finalize both rounds
@@ -74,18 +82,28 @@ fn test_cross_round_escrow_isolation() {
         // Collect Round A — beneficiary gets exactly Round A's raised (10,000)
         let beneficiary = 999u64;
         let bene_before = Balances::free_balance(&beneficiary);
-        assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, beneficiary));
+        assert_ok!(Presale::collect_funds(
+            RuntimeOrigin::root(),
+            0,
+            beneficiary
+        ));
         let bene_after_collect_a = Balances::free_balance(&beneficiary);
         assert_eq!(
-            bene_after_collect_a - bene_before, 10_000,
+            bene_after_collect_a - bene_before,
+            10_000,
             "Beneficiary gets exactly Round A raised (10,000), not Round B's funds"
         );
 
         // Collect Round B — beneficiary gets Round B's raised (20,000)
-        assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 1, beneficiary));
+        assert_ok!(Presale::collect_funds(
+            RuntimeOrigin::root(),
+            1,
+            beneficiary
+        ));
         let bene_final = Balances::free_balance(&beneficiary);
         assert_eq!(
-            bene_final - bene_before, 30_000,
+            bene_final - bene_before,
+            30_000,
             "Beneficiary gets both rounds: 10,000 + 20,000 = 30,000"
         );
 
@@ -112,8 +130,14 @@ fn test_cross_round_refund_isolation() {
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 1, 10_000));
 
         // Verify both contributions exist
-        assert!(Contributions::<Test>::get(0, &1).is_some(), "Round A contribution exists");
-        assert!(Contributions::<Test>::get(1, &1).is_some(), "Round B contribution exists");
+        assert!(
+            Contributions::<Test>::get(0, &1).is_some(),
+            "Round A contribution exists"
+        );
+        assert!(
+            Contributions::<Test>::get(1, &1).is_some(),
+            "Round B contribution exists"
+        );
 
         // Cancel Round B only
         set_block(101);
@@ -129,7 +153,10 @@ fn test_cross_round_refund_isolation() {
             "Round A contribution must NOT be removed by Round B refund"
         );
         if let Some(c) = contrib_a {
-            assert_eq!(c.total_paid, 10_000, "Round A contribution amount unchanged");
+            assert_eq!(
+                c.total_paid, 10_000,
+                "Round A contribution amount unchanged"
+            );
             assert_eq!(c.total_purchased, 10_000, "Round A token amount unchanged");
         }
 
@@ -140,9 +167,17 @@ fn test_cross_round_refund_isolation() {
         );
 
         // Round A raised must be unchanged
-        assert_eq!(RoundRaised::<Test>::get(0), 10_000, "Round A raised unchanged after Round B refund");
+        assert_eq!(
+            RoundRaised::<Test>::get(0),
+            10_000,
+            "Round A raised unchanged after Round B refund"
+        );
         // Total raised decreased by Round B's refund
-        assert_eq!(TotalRaised::<Test>::get(), 10_000, "Total raised = 10,000 after Round B refund");
+        assert_eq!(
+            TotalRaised::<Test>::get(),
+            10_000,
+            "Total raised = 10,000 after Round B refund"
+        );
     });
 }
 
@@ -230,7 +265,10 @@ fn test_multiple_contributions_same_round() {
 
         let contrib = Contributions::<Test>::get(0, &1).unwrap();
         assert_eq!(contrib.total_paid, 60_000, "Total paid should be 60,000");
-        assert_eq!(contrib.total_purchased, 60_000, "Total purchased should be 60,000");
+        assert_eq!(
+            contrib.total_purchased, 60_000,
+            "Total purchased should be 60,000"
+        );
     });
 }
 
@@ -267,7 +305,11 @@ fn test_luna_cross_round_fund_theft() {
         // Collect Round A — should get exactly 10,000 (Round A's raised)
         let beneficiary = 999u64;
         let bene_before = Balances::free_balance(&beneficiary);
-        assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, beneficiary));
+        assert_ok!(Presale::collect_funds(
+            RuntimeOrigin::root(),
+            0,
+            beneficiary
+        ));
         let collected = Balances::free_balance(&beneficiary) - bene_before;
 
         assert_eq!(
@@ -276,7 +318,11 @@ fn test_luna_cross_round_fund_theft() {
         );
 
         // Round B raised is 0 (no contributions) — collecting it gives 0
-        assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 1, beneficiary));
+        assert_ok!(Presale::collect_funds(
+            RuntimeOrigin::root(),
+            1,
+            beneficiary
+        ));
         let collected_b = Balances::free_balance(&beneficiary) - bene_before - collected;
         assert_eq!(
             collected_b, 0,
@@ -320,7 +366,10 @@ fn test_luna_cross_round_vesting_deletion() {
         );
 
         // Round A sold is unchanged
-        assert_eq!(round_a.sold, 10_000, "Round A sold unchanged after Round B refund");
+        assert_eq!(
+            round_a.sold, 10_000,
+            "Round A sold unchanged after Round B refund"
+        );
     });
 }
 
@@ -423,7 +472,11 @@ fn test_large_number_of_rounds() {
         }
 
         // Total raised should be 0 after all refunds
-        assert_eq!(TotalRaised::<Test>::get(), 0, "Total raised = 0 after all refunds");
+        assert_eq!(
+            TotalRaised::<Test>::get(),
+            0,
+            "Total raised = 0 after all refunds"
+        );
     });
 }
 
@@ -471,7 +524,10 @@ fn test_failed_transfer_no_corruption() {
 
         // Round state should be unchanged
         let round = Rounds::<Test>::get(0).unwrap();
-        assert_eq!(round.sold, 0, "Round sold must be 0 after failed contribution");
+        assert_eq!(
+            round.sold, 0,
+            "Round sold must be 0 after failed contribution"
+        );
         assert_eq!(RoundRaised::<Test>::get(0), 0, "Round raised must be 0");
     });
 }
@@ -490,7 +546,10 @@ fn test_contribute_collect_end_to_end() {
         // Verify tokens were transferred from escrow to buyer
         let buyer_balance = Balances::free_balance(&1);
         // Buyer started with 1B, paid 10K, received 10K VRDX → net should be ~1B
-        assert!(buyer_balance > 900_000_000, "Buyer should have received VRDX tokens");
+        assert!(
+            buyer_balance > 900_000_000,
+            "Buyer should have received VRDX tokens"
+        );
 
         set_block(101);
         assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 0));
@@ -500,7 +559,8 @@ fn test_contribute_collect_end_to_end() {
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 999));
         let bene_after = Balances::free_balance(&999);
         assert_eq!(
-            bene_after - bene_before, 10_000,
+            bene_after - bene_before,
+            10_000,
             "Beneficiary receives exactly the round's raised amount"
         );
     });
