@@ -208,7 +208,7 @@ fn test_collect_funds_before_end_fails() {
         frame_system::Pallet::<Test>::set_block_number(50);
         assert_noop!(
             Presale::collect_funds(RuntimeOrigin::root(), 0, 999),
-            Error::<Test>::RoundNotEnded
+            Error::<Test>::RoundStatusInvalid
         );
     });
 }
@@ -220,11 +220,12 @@ fn test_double_collection_prevented() {
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
         frame_system::Pallet::<Test>::set_block_number(100);
         // First collection
+        assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 999));
         // Second collection → fails
         assert_noop!(
             Presale::collect_funds(RuntimeOrigin::root(), 0, 999),
-            Error::<Test>::FundsAlreadyCollected
+            Error::<Test>::RoundStatusInvalid
         );
     });
 }
@@ -238,8 +239,7 @@ fn test_refund_before_end_block_fails() {
     new_test_ext().execute_with(|| {
         setup_round(5, 10_000, 1000, 1, 100);
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
-        // Deactivate but don't advance block
-        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
+        // Round is still Active — claim_refund should fail
         frame_system::Pallet::<Test>::set_block_number(50);
         assert_noop!(
             Presale::claim_refund(RuntimeOrigin::signed(1), 0),
@@ -266,7 +266,7 @@ fn test_double_refund_prevented() {
     new_test_ext().execute_with(|| {
         setup_round(5, 10_000, 1000, 1, 100);
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
-        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
+        assert_ok!(Presale::cancel_round(RuntimeOrigin::root(), 0));
         frame_system::Pallet::<Test>::set_block_number(100);
         // First refund
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 0));
@@ -284,7 +284,7 @@ fn test_refund_returns_correct_amount() {
         setup_round(5, 1_000_000, 100_000, 1, 100);
         let user_balance_before = pallet_balances::Pallet::<Test>::free_balance(&1);
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10_000));
-        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
+        assert_ok!(Presale::cancel_round(RuntimeOrigin::root(), 0));
         frame_system::Pallet::<Test>::set_block_number(100);
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 0));
         // User should get back their payment (10_000) and return their tokens (50_000)
@@ -306,7 +306,7 @@ fn test_claim_after_refund_no_double_claim() {
     new_test_ext().execute_with(|| {
         setup_round(5, 10_000, 1000, 1, 100);
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
-        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
+        assert_ok!(Presale::cancel_round(RuntimeOrigin::root(), 0));
         frame_system::Pallet::<Test>::set_block_number(100);
         assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 0));
         // Try again
@@ -332,6 +332,7 @@ fn test_refund_after_collect_funds_blocked() {
 
         frame_system::Pallet::<Test>::set_block_number(100);
         // Admin collects funds (escrow → beneficiary)
+        assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 999));
         let escrow_after_collect = pallet_balances::Pallet::<Test>::free_balance(&escrow);
         assert!(
@@ -339,13 +340,11 @@ fn test_refund_after_collect_funds_blocked() {
             "Escrow should be reduced after collection"
         );
 
-        // Admin deactivates the round
-        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
-
-        // User tries to refund — MUST FAIL (funds already collected)
+        // Round is now Closed after collection
+        // User tries to refund — MUST FAIL (round is Closed, not Failed/Cancelled)
         assert_noop!(
             Presale::claim_refund(RuntimeOrigin::signed(1), 0),
-            Error::<Test>::FundsAlreadyCollected
+            Error::<Test>::RoundNotRefundable
         );
     });
 }
@@ -365,6 +364,7 @@ fn test_refund_after_collect_funds_no_double_spend() {
         let escrow_before = pallet_balances::Pallet::<Test>::free_balance(&escrow);
 
         // Admin collects
+        assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::collect_funds(
             RuntimeOrigin::root(),
             0,
@@ -377,13 +377,11 @@ fn test_refund_after_collect_funds_no_double_spend() {
             "Beneficiary got the payment"
         );
 
-        // Deactivate and try refund
-        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
-
-        // Refund MUST be blocked
+        // Round is now Closed after collection
+        // Refund MUST be blocked (round is Closed, not Failed/Cancelled)
         assert_noop!(
             Presale::claim_refund(RuntimeOrigin::signed(1), 0),
-            Error::<Test>::FundsAlreadyCollected
+            Error::<Test>::RoundNotRefundable
         );
 
         // Verify escrow wasn't drained further
@@ -444,7 +442,7 @@ fn test_non_admin_cannot_deactivate() {
     new_test_ext().execute_with(|| {
         setup_round(5, 10_000, 100, 1, 1000);
         assert_noop!(
-            Presale::deactivate_round(RuntimeOrigin::signed(1), 0),
+            Presale::cancel_round(RuntimeOrigin::signed(1), 0),
             DispatchError::BadOrigin
         );
     });
@@ -595,7 +593,7 @@ fn test_replay_refund_blocked() {
     new_test_ext().execute_with(|| {
         setup_round(5, 10_000, 1000, 1, 100);
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
-        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
+        assert_ok!(Presale::cancel_round(RuntimeOrigin::root(), 0));
         frame_system::Pallet::<Test>::set_block_number(100);
 
         // First refund succeeds
@@ -621,11 +619,12 @@ fn test_replay_collection_blocked() {
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
         frame_system::Pallet::<Test>::set_block_number(100);
 
+        assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 999));
         // Replay
         assert_noop!(
             Presale::collect_funds(RuntimeOrigin::root(), 0, 999),
-            Error::<Test>::FundsAlreadyCollected
+            Error::<Test>::RoundStatusInvalid
         );
     });
 }
@@ -832,7 +831,7 @@ fn luna_attack_steal_other_user_contribution() {
         setup_round(5, 10_000, 1000, 1, 1000);
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10));
         // Deactivate and advance past end block to allow refunds
-        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
+        assert_ok!(Presale::cancel_round(RuntimeOrigin::root(), 0));
         frame_system::Pallet::<Test>::set_block_number(1000);
         // User 2 tries to refund user 1's contribution → NoContribution (user 2 never contributed)
         assert_noop!(
@@ -858,17 +857,16 @@ fn luna_attack_collect_then_refund_double_spend() {
         let benef_before = pallet_balances::Pallet::<Test>::free_balance(&999u64);
 
         // Step 1: Admin collects
+        assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 999));
         let benef_after = pallet_balances::Pallet::<Test>::free_balance(&999u64);
         assert_eq!(benef_after, benef_before + 10_000);
 
-        // Step 2: Deactivate
-        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
-
-        // Step 3: User tries refund — MUST BE BLOCKED
+        // Step 2: Round is now Closed after collection
+        // Step 3: User tries refund — MUST BE BLOCKED (round is Closed)
         assert_noop!(
             Presale::claim_refund(RuntimeOrigin::signed(1), 0),
-            Error::<Test>::FundsAlreadyCollected
+            Error::<Test>::RoundNotRefundable
         );
 
         // Verify: escrow only lost the collected amount, not double
@@ -933,7 +931,7 @@ fn luna_attack_privilege_escalation() {
             DispatchError::BadOrigin
         );
         assert_noop!(
-            Presale::deactivate_round(RuntimeOrigin::signed(1), 0),
+            Presale::cancel_round(RuntimeOrigin::signed(1), 0),
             DispatchError::BadOrigin
         );
         assert_noop!(
@@ -972,9 +970,9 @@ fn test_state_inactive_to_active() {
             1000,
             b"v".to_vec(),
         ));
-        assert!(!Presale::rounds(0).unwrap().is_active);
+        assert!(Presale::rounds(0).unwrap().status != RoundStatus::Active);
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
-        assert!(Presale::rounds(0).unwrap().is_active);
+        assert!(Presale::rounds(0).unwrap().status == RoundStatus::Active);
     });
 }
 
@@ -982,8 +980,8 @@ fn test_state_inactive_to_active() {
 fn test_state_active_to_inactive() {
     new_test_ext().execute_with(|| {
         setup_round(5, 10_000, 100, 1, 1000);
-        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
-        assert!(!Presale::rounds(0).unwrap().is_active);
+        assert_ok!(Presale::cancel_round(RuntimeOrigin::root(), 0));
+        assert!(Presale::rounds(0).unwrap().status != RoundStatus::Active);
     });
 }
 
@@ -1028,17 +1026,17 @@ fn test_state_refund_requires_inactive_and_ended() {
             Error::<Test>::RoundNotRefundable
         );
 
-        // Inactive + before end → no refund
-        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
+        // Cancelled + before end → refund OK (Cancelled rounds allow immediate refunds)
+        assert_ok!(Presale::cancel_round(RuntimeOrigin::root(), 0));
         frame_system::Pallet::<Test>::set_block_number(50);
+        assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 0));
+
+        // Note: Cancelled rounds allow refunds at ANY block, no need to wait for end_block
+        frame_system::Pallet::<Test>::set_block_number(100);
         assert_noop!(
             Presale::claim_refund(RuntimeOrigin::signed(1), 0),
-            Error::<Test>::RoundNotRefundable
+            Error::<Test>::NoContribution
         );
-
-        // Inactive + after end → refund OK
-        frame_system::Pallet::<Test>::set_block_number(100);
-        assert_ok!(Presale::claim_refund(RuntimeOrigin::signed(1), 0));
     });
 }
 

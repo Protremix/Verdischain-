@@ -161,9 +161,9 @@ fn test_activate_deactivate_round() {
     new_test_ext().execute_with(|| {
         set_block(1);
         create_and_activate_round(0, 5, 1000, 100, 1, 100, b"vest".to_vec());
-        assert!(Presale::rounds(0).unwrap().is_active);
+        assert!(Presale::rounds(0).unwrap().status == RoundStatus::Active);
         assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
-        assert!(!Presale::rounds(0).unwrap().is_active);
+        assert!(Presale::rounds(0).unwrap().status != RoundStatus::Active);
     });
 }
 
@@ -400,10 +400,11 @@ fn test_collect_funds_after_round_end() {
         set_block(50);
         assert_noop!(
             Presale::collect_funds(RuntimeOrigin::root(), 0, 3),
-            Error::<Test>::RoundNotEnded
+            Error::<Test>::RoundStatusInvalid
         );
 
         set_block(100);
+        assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 0));
         let escrow = escrow_account();
         let escrow_before = Balances::free_balance(escrow);
         let beneficiary_before = Balances::free_balance(3);
@@ -429,7 +430,7 @@ fn test_collect_funds_active_round_fails() {
         assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
         assert_noop!(
             Presale::collect_funds(RuntimeOrigin::root(), 0, 3),
-            Error::<Test>::RoundNotEnded
+            Error::<Test>::RoundStatusInvalid
         );
     });
 }
@@ -446,7 +447,7 @@ fn test_collect_funds_deactivated_not_ended_fails() {
 
         assert_noop!(
             Presale::collect_funds(RuntimeOrigin::root(), 0, 3),
-            Error::<Test>::RoundNotEnded
+            Error::<Test>::RoundStatusInvalid
         );
     });
 }
@@ -459,10 +460,12 @@ fn test_collect_funds_double_collection_fails() {
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
 
         set_block(100);
+        assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 3));
+        // Second collect fails: round is now Closed (status check fails first)
         assert_noop!(
             Presale::collect_funds(RuntimeOrigin::root(), 0, 3),
-            Error::<Test>::FundsAlreadyCollected
+            Error::<Test>::RoundStatusInvalid
         );
     });
 }
@@ -500,6 +503,7 @@ fn test_collect_funds_zero_raised() {
         create_and_activate_round(0, 5, 10000, 1000, 1, 100, b"vest".to_vec());
 
         set_block(100);
+        assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 3));
         assert!(Presale::round_funds_collected(0));
     });
@@ -578,6 +582,7 @@ fn test_invariant_collected_le_round_raised() {
 
         set_block(100);
         let beneficiary_before = Balances::free_balance(3);
+        assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 3));
 
         let collected = Balances::free_balance(3) - beneficiary_before;
@@ -595,13 +600,14 @@ fn test_invariant_funds_cannot_be_collected_twice() {
 
         set_block(100);
         let before1 = Balances::free_balance(3);
+        assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 3));
         let first = Balances::free_balance(3) - before1;
 
         let before2 = Balances::free_balance(3);
         assert_noop!(
             Presale::collect_funds(RuntimeOrigin::root(), 0, 3),
-            Error::<Test>::FundsAlreadyCollected
+            Error::<Test>::RoundStatusInvalid
         );
         let second = Balances::free_balance(3) - before2;
         assert_eq!(second, 0);
@@ -747,10 +753,11 @@ fn test_attacker_double_collection_prevented() {
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
 
         set_block(100);
+        assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 3));
         assert_noop!(
             Presale::collect_funds(RuntimeOrigin::root(), 0, 2),
-            Error::<Test>::FundsAlreadyCollected
+            Error::<Test>::RoundStatusInvalid
         );
     });
 }
@@ -765,12 +772,12 @@ fn test_attacker_collection_before_round_end() {
         set_block(50);
         assert_noop!(
             Presale::collect_funds(RuntimeOrigin::root(), 0, 3),
-            Error::<Test>::RoundNotEnded
+            Error::<Test>::RoundStatusInvalid
         );
         assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
         assert_noop!(
             Presale::collect_funds(RuntimeOrigin::root(), 0, 3),
-            Error::<Test>::RoundNotEnded
+            Error::<Test>::RoundStatusInvalid
         );
     });
 }
@@ -907,10 +914,11 @@ fn test_attacker_malicious_beneficiary() {
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 100));
 
         set_block(100);
+        assert_ok!(Presale::finalize_round(RuntimeOrigin::root(), 0));
         assert_ok!(Presale::collect_funds(RuntimeOrigin::root(), 0, 1));
         assert_noop!(
             Presale::collect_funds(RuntimeOrigin::root(), 0, 2),
-            Error::<Test>::FundsAlreadyCollected
+            Error::<Test>::RoundStatusInvalid
         );
     });
 }
@@ -1229,3 +1237,5 @@ fn test_invariant_duplicate_contribution_no_duplicate_allocation() {
         assert_eq!(Presale::total_raised(), 20);
     });
 }
+#[path = "halborn_tests.rs"]
+mod halborn_tests;

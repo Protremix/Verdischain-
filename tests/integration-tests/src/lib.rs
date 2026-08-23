@@ -271,6 +271,13 @@ impl pallet_presale::VestingHandler<AccountId32, u128> for PresaleVestingHandler
     ) -> frame_support::dispatch::DispatchResult {
         pallet_vesting::Pallet::<Test>::do_remove_vesting(who, schedule_label, amount)
     }
+
+    fn remove_all_vesting_for_label(
+        who: &AccountId32,
+        schedule_label: Vec<u8>,
+    ) -> Result<u128, sp_runtime::DispatchError> {
+        pallet_vesting::Pallet::<Test>::remove_all_vesting_for_label(who, schedule_label)
+    }
 }
 
 impl pallet_presale::Config for Test {

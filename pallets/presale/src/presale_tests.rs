@@ -41,7 +41,7 @@ fn test_create_round_succeeds() {
         let round = round.unwrap();
         assert_eq!(round.token_price, 5u64);
         assert_eq!(round.total_allocation, 10_000_000u64);
-        assert!(!round.is_active, "New round should start inactive");
+        assert!(round.status != RoundStatus::Active, "New round should start inactive");
     });
 }
 
@@ -142,7 +142,7 @@ fn test_activate_round_succeeds() {
         frame_system::Pallet::<Test>::set_block_number(1);
 
         let round = Rounds::<Test>::get(0).unwrap();
-        assert!(round.is_active, "Round should be active after activation");
+        assert!(round.status == RoundStatus::Active, "Round should be active after activation");
     });
 }
 
@@ -161,11 +161,11 @@ fn test_deactivate_round() {
     new_test_ext().execute_with(|| {
         setup_active_round();
 
-        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
+        assert_ok!(Presale::cancel_round(RuntimeOrigin::root(), 0));
 
         let round = Rounds::<Test>::get(0).unwrap();
         assert!(
-            !round.is_active,
+            round.status != RoundStatus::Active,
             "Round should be inactive after deactivation"
         );
     });
@@ -413,7 +413,7 @@ fn test_claim_refund_after_round_ends() {
         assert_ok!(Presale::contribute(RuntimeOrigin::signed(1), 0, 10_000u64,));
 
         // Deactivate and advance past end block
-        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
+        assert_ok!(Presale::cancel_round(RuntimeOrigin::root(), 0));
         System::set_block_number(51);
 
         // Claim refund
@@ -459,7 +459,7 @@ fn test_claim_refund_no_contribution_fails() {
         ));
         assert_ok!(Presale::activate_round(RuntimeOrigin::root(), 0));
         frame_system::Pallet::<Test>::set_block_number(1);
-        assert_ok!(Presale::deactivate_round(RuntimeOrigin::root(), 0));
+        assert_ok!(Presale::cancel_round(RuntimeOrigin::root(), 0));
         System::set_block_number(51);
 
         // User 3 never contributed

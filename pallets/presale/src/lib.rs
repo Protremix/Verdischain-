@@ -12,9 +12,10 @@
     clippy::needless_borrows_for_generic_args,
     clippy::incompatible_msrv
 )]
-//! # Verdis Presale Pallet
+//! #[derive(Encode, Decode, DecodeWithMemTracking, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]Verdis Presale Pallet
 //!
 //! On-chain presale/IDO contribution system with:
+//! - **Explicit round state machine**: Pending → Active → Successful/Failed/Cancelled → Closed
 //! - **Escrow-based payments**: buyer pays into a deterministic Presale Escrow
 //!   account (derived from PalletId), NOT user reserved balances.
 //! - Per-round per-account caps (independent per round)
@@ -25,27 +26,46 @@
 //! - **Double-collection prevention** via `RoundFundsCollected` flag
 //! - **Round-end enforcement**: collection only after `end_block`
 //! - **Escrow VRDX balance verification**: contribution fails if escrow lacks tokens
-//! - Admin controls (start/stop, whitelist, emergency pause)
+//! - Admin controls (start/stop, whitelist, emergency pause, cancel, finalize)
 //! - Atomic accounting (all-or-nothing state changes)
+//! - **Refund safety**: collect_funds() CANNOT run on Failed/Cancelled rounds
+//!   — users always retain refund rights until admin explicitly finalizes as Successful
 //!
-//! ## Payment Flow
+//! ##[derive(Encode, Decode, DecodeWithMemTracking, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]State Machine
+//! ```text
+//! Pending → Active → (end_block reached, admin finalizes)
+//!   → Successful (sold >= min_allocation) → collect_funds() → Closed
+//!   → Failed (sold < min_allocation) → claim_refund()
+//! Active → (admin cancels) → Cancelled → claim_refund()
+//! ```
+//!
+//! ##[derive(Encode, Decode, DecodeWithMemTracking, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]Payment Flow
 //! ```text
 //! Buyer --payment--> Presale Escrow Account
 //! Presale Escrow Account --VRDX--> Buyer
 //! Presale Escrow Account --vesting--> Vesting Pallet
 //! ```
 //!
-//! ## Collection Flow
+//! ##[derive(Encode, Decode, DecodeWithMemTracking, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]Collection Flow
 //! ```text
-//! After round.end_block:
+//! After round.end_block + admin finalizes as Successful:
 //!   Admin calls collect_funds(round_id, beneficiary)
 //!   Presale Escrow --RoundRaised amount--> Beneficiary
 //!   RoundFundsCollected = true  (prevents double collection)
+//!   Status = Closed
 //! ```
 //!
-//! ## Price Formula
-//! `token_amount = payment_amount.checked_mul(token_price)`
-//! where `token_price` = tokens per payment unit (e.g. price=5 means 5 VRDX per 1 unit of payment).
+//! ##[derive(Encode, Decode, DecodeWithMemTracking, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]Refund Flow (Failed/Cancelled rounds only)
+//! ```text
+//! User calls claim_refund(round_id):
+//!   1. Remove ALL vesting entries for this round's label (unlocks tokens)
+//!   2. Transfer purchased tokens back from user → escrow
+//!   3. Transfer payment from escrow → user
+//!   4. Clean up contribution record
+//! ```
+//!
+//! ##[derive(Encode, Decode, DecodeWithMemTracking, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]Price Formula
+//! `token_amount = payment_amount.checked_mul(token_price) / price_precision`
 
 #![cfg_attr(not(feature = "std"), no_std)]
 use codec::{Decode, Encode, MaxEncodedLen};
@@ -79,49 +99,88 @@ pub mod pallet {
             amount: Balance,
         ) -> DispatchResult;
 
-        /// Remove the vesting entry for `who` matching `schedule_label` and `amount`.
+        /// Remove a specific vesting entry for `who` matching `schedule_label` and `amount`.
         /// Returns Err if no matching vesting entry exists.
         fn do_remove_vesting(
             who: &AccountId,
             schedule_label: Vec<u8>,
             amount: Balance,
         ) -> DispatchResult;
+
+        /// Remove ALL vesting entries for `who` matching `schedule_label`.
+        /// Returns the total unlocked amount, or Err if no matching entries exist.
+        /// This is used during refund to clean up multiple contribution vesting entries.
+        fn remove_all_vesting_for_label(
+            who: &AccountId,
+            schedule_label: Vec<u8>,
+        ) -> Result<Balance, DispatchError>;
     }
 
     /// Default no-op implementation (for testing without vesting pallet)
-    impl<AccountId, Balance> VestingHandler<AccountId, Balance> for () {
+    impl<AccountId, Balance: Zero> VestingHandler<AccountId, Balance> for () {
         fn assign_vesting(_: &AccountId, _: Vec<u8>, _: Balance) -> DispatchResult {
             Ok(())
         }
         fn do_remove_vesting(_: &AccountId, _: Vec<u8>, _: Balance) -> DispatchResult {
             Ok(())
         }
+        fn remove_all_vesting_for_label(
+            _: &AccountId,
+            _: Vec<u8>,
+        ) -> Result<Balance, DispatchError> {
+            Ok(Balance::zero())
+        }
+    }
+
+    /// Explicit round status — prevents collect_funds() from running on failed rounds
+    #[derive(Encode, Decode, DecodeWithMemTracking, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]
+    pub enum RoundStatus {
+        /// Created but not yet activated
+        Pending,
+        /// Accepting contributions
+        Active,
+        /// Round ended, min_allocation met, funds collectible by admin
+        Successful,
+        /// Round ended, min_allocation NOT met, refunds available
+        Failed,
+        /// Admin cancelled before end_block, refunds available immediately
+        Cancelled,
+        /// Funds collected, round fully resolved
+        Closed,
+    }
+
+    impl Default for RoundStatus {
+        fn default() -> Self {
+            RoundStatus::Pending
+        }
     }
 
     /// Presale round configuration
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]
+    #[derive(Encode, Decode, DecodeWithMemTracking, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]
     pub struct SaleRound<Balance, BlockNumber> {
         pub label: BoundedVec<u8, ConstU32<32>>,
         /// Price numerator: token_amount = (payment_amount * token_price) / price_precision
-        /// For integer ratios (5 VRDX per 1 payment unit): token_price=5, price_precision=1
-        /// For fractional ratios (0.5 VRDX per 1 payment unit): token_price=5, price_precision=10
-        /// For 9-decimal fixed point: token_price=5*10^9, price_precision=10^9
         pub token_price: Balance,
         /// Denominator for price calculation. Default 1 for backward compatibility.
         pub price_precision: Balance,
         pub total_allocation: Balance,
+        /// Minimum allocation that must be sold for the round to be Successful.
+        /// If sold < min_allocation at end_block, round is Failed.
+        /// Set to 0 to accept any amount sold as success.
+        pub min_allocation: Balance,
         pub sold: Balance,
         pub per_account_cap: Balance,
         pub start_block: BlockNumber,
         pub end_block: BlockNumber,
         pub vesting_label: BoundedVec<u8, ConstU32<64>>,
-        pub is_active: bool,
+        /// Current round status (state machine)
+        pub status: RoundStatus,
         /// If true, only whitelisted accounts can contribute
         pub whitelist_required: bool,
     }
 
     /// User contribution record — per (round_id, account_id)
-    #[derive(Encode, Decode, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug, Default)]
+    #[derive(Encode, Decode, DecodeWithMemTracking, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug, Default)]
     pub struct UserContribution<Balance> {
         pub total_purchased: Balance,
         pub total_paid: Balance,
@@ -207,6 +266,14 @@ pub mod pallet {
         RoundDeactivated {
             round_id: u32,
         },
+        RoundFinalized {
+            round_id: u32,
+            status: RoundStatus,
+            sold: BalanceOf<T>,
+        },
+        RoundCancelled {
+            round_id: u32,
+        },
         Contribution {
             who: T::AccountId,
             round_id: u32,
@@ -276,6 +343,16 @@ pub mod pallet {
         InsufficientEscrowBalance,
         /// Price precision must be non-zero (P2-04 fix)
         InvalidPricePrecision,
+        /// Round is not in the required status for this operation
+        RoundStatusInvalid,
+        /// Round must be finalized before this operation
+        RoundNotFinalized,
+        /// Round has already been finalized
+        RoundAlreadyFinalized,
+        /// Vesting cleanup failed during refund
+        VestingCleanupFailed,
+        /// Min allocation cannot exceed total allocation
+        InvalidMinAllocation,
     }
 
     // === Config ===
@@ -313,7 +390,6 @@ pub mod pallet {
     impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
         fn build(&self) {
             for (label, price, allocation, cap, start, end, vesting_label) in &self.initial_rounds {
-                // Validate genesis — fail loudly on invalid data
                 let label_bv: BoundedVec<u8, ConstU32<32>> = label
                     .clone()
                     .try_into()
@@ -344,12 +420,13 @@ pub mod pallet {
                     token_price: *price,
                     price_precision: <BalanceOf<T> as From<u32>>::from(1u32),
                     total_allocation: *allocation,
+                    min_allocation: BalanceOf::<T>::zero(), // default: any amount sold = success
                     sold: BalanceOf::<T>::zero(),
                     per_account_cap: *cap,
                     start_block: BlockNumberFor::<T>::from(*start),
                     end_block: BlockNumberFor::<T>::from(*end),
                     vesting_label: vesting_bv,
-                    is_active: false,
+                    status: RoundStatus::Pending,
                     whitelist_required: false,
                 };
 
@@ -404,12 +481,13 @@ pub mod pallet {
                 token_price,
                 price_precision: <BalanceOf<T> as From<u32>>::from(1u32),
                 total_allocation,
+                min_allocation: BalanceOf::<T>::zero(),
                 sold: BalanceOf::<T>::zero(),
                 per_account_cap,
                 start_block,
                 end_block,
                 vesting_label: vesting_bv,
-                is_active: false,
+                status: RoundStatus::Pending,
                 whitelist_required: false,
             };
 
@@ -433,20 +511,31 @@ pub mod pallet {
             T::AdminOrigin::ensure_origin(origin)?;
             Rounds::<T>::try_mutate(round_id, |round_opt| {
                 let round = round_opt.as_mut().ok_or(Error::<T>::RoundNotFound)?;
-                round.is_active = true;
+                ensure!(
+                    round.status == RoundStatus::Pending,
+                    Error::<T>::RoundStatusInvalid
+                );
+                round.status = RoundStatus::Active;
                 Self::deposit_event(Event::RoundActivated { round_id });
                 Ok(())
             })
         }
 
-        /// Deactivate a sale round (admin only)
+        /// Deactivate a sale round (admin only) — pauses contributions without changing state
         #[pallet::call_index(2)]
         #[pallet::weight(T::WeightInfo::deactivate_round())]
         pub fn deactivate_round(origin: OriginFor<T>, round_id: u32) -> DispatchResult {
             T::AdminOrigin::ensure_origin(origin)?;
+            // Deactivation is now done via set_paused() or cancel_round()
+            // This extrinsic is kept for backward compatibility but does nothing
+            // unless the round is Active, in which case it reverts to Pending
             Rounds::<T>::try_mutate(round_id, |round_opt| {
                 let round = round_opt.as_mut().ok_or(Error::<T>::RoundNotFound)?;
-                round.is_active = false;
+                ensure!(
+                    round.status == RoundStatus::Active,
+                    Error::<T>::RoundStatusInvalid
+                );
+                round.status = RoundStatus::Pending;
                 Self::deposit_event(Event::RoundDeactivated { round_id });
                 Ok(())
             })
@@ -473,7 +562,10 @@ pub mod pallet {
             );
 
             let round = Rounds::<T>::get(round_id).ok_or(Error::<T>::RoundNotFound)?;
-            ensure!(round.is_active, Error::<T>::RoundNotActive);
+            ensure!(
+                round.status == RoundStatus::Active,
+                Error::<T>::RoundNotActive
+            );
 
             let current_block = frame_system::Pallet::<T>::block_number();
             ensure!(
@@ -491,11 +583,9 @@ pub mod pallet {
             }
 
             // === Price formula: token_amount = (payment_amount * token_price) / price_precision ===
-            // This prevents over-issuance when using fixed-point price representation
             let gross_amount = payment_amount
                 .checked_mul(&round.token_price)
                 .ok_or(Error::<T>::CalculationOverflow)?;
-            // P2-04 FIX: Reject zero price_precision instead of falling back to no-division
             ensure!(
                 round.price_precision > BalanceOf::<T>::zero(),
                 Error::<T>::InvalidPricePrecision
@@ -612,7 +702,7 @@ pub mod pallet {
             // 6. Update round-level raised amount
             RoundRaised::<T>::insert(round_id, new_round_raised);
 
-            // 7. Update global totals (checked — no saturating)
+            // 7. Update global totals
             TotalRaised::<T>::put(new_global_raised);
             TotalSold::<T>::put(new_global_sold);
 
@@ -655,15 +745,18 @@ pub mod pallet {
             Ok(())
         }
 
-        /// Collect raised funds from a completed round (admin only).
+        /// Collect raised funds from a SUCCESSFUL round (admin only).
         ///
         /// O(1) operation — transfers `RoundRaised[round_id]` from the presale
         /// escrow account to the beneficiary. Does NOT iterate over contributors.
         ///
         /// Requirements:
         /// - Round must exist
-        /// - Current block >= round.end_block (round must have ended)
+        /// - Round status must be Successful (admin must call finalize_round first)
         /// - Funds must not have been collected already (no double collection)
+        ///
+        /// CRITICAL: This function CANNOT run on Failed or Cancelled rounds.
+        /// This ensures users always retain refund rights for failed rounds.
         #[pallet::call_index(6)]
         #[pallet::weight(T::WeightInfo::collect_funds())]
         pub fn collect_funds(
@@ -673,12 +766,14 @@ pub mod pallet {
         ) -> DispatchResult {
             T::AdminOrigin::ensure_origin(origin)?;
 
-            // Load round
             let round = Rounds::<T>::get(round_id).ok_or(Error::<T>::RoundNotFound)?;
 
-            // Verify round has ended (block >= end_block)
-            let current_block = frame_system::Pallet::<T>::block_number();
-            ensure!(current_block >= round.end_block, Error::<T>::RoundNotEnded);
+            // CRITICAL: Only Successful rounds can have funds collected.
+            // Failed/Cancelled rounds must allow refunds first.
+            ensure!(
+                round.status == RoundStatus::Successful,
+                Error::<T>::RoundStatusInvalid
+            );
 
             // Prevent double collection
             ensure!(
@@ -700,8 +795,13 @@ pub mod pallet {
                 )?;
             }
 
-            // Mark funds as collected (prevents double collection)
+            // Mark funds as collected and close the round
             RoundFundsCollected::<T>::insert(round_id, true);
+            Rounds::<T>::mutate(round_id, |round_opt| {
+                if let Some(r) = round_opt {
+                    r.status = RoundStatus::Closed;
+                }
+            });
 
             Self::deposit_event(Event::FundsCollected {
                 round_id,
@@ -731,8 +831,18 @@ pub mod pallet {
             Ok(())
         }
 
-        /// Claim a refund for a failed/cancelled presale round.
-        /// Only works when the round is inactive AND past its end block.
+        /// Claim a refund for a Failed or Cancelled presale round.
+        ///
+        /// Requirements:
+        /// - Round status must be Failed or Cancelled
+        /// - User must have a contribution
+        /// - Funds must not have been collected (always true for Failed/Cancelled)
+        ///
+        /// Flow:
+        /// 1. Remove ALL vesting entries for this round's label (unlocks tokens)
+        /// 2. Transfer purchased tokens back from user → escrow
+        /// 3. Transfer payment from escrow → user
+        /// 4. Clean up contribution record (CEI: state cleared first)
         #[pallet::call_index(8)]
         #[pallet::weight(T::WeightInfo::collect_funds())]
         pub fn claim_refund(origin: OriginFor<T>, round_id: u32) -> DispatchResult {
@@ -740,17 +850,15 @@ pub mod pallet {
 
             let round = Rounds::<T>::get(round_id).ok_or(Error::<T>::RoundNotFound)?;
 
-            // Round must be inactive and past its end block
-            ensure!(!round.is_active, Error::<T>::RoundNotRefundable);
-            let current_block = frame_system::Pallet::<T>::block_number();
+            // CRITICAL: Only Failed or Cancelled rounds allow refunds.
+            // Successful rounds must go through collect_funds() — users get vested tokens, not refunds.
             ensure!(
-                current_block >= round.end_block,
+                round.status == RoundStatus::Failed || round.status == RoundStatus::Cancelled,
                 Error::<T>::RoundNotRefundable
             );
 
-            // C1 FIX: Prevent refund after funds have been collected.
-            // If admin already collected the raised funds via collect_funds(),
-            // the escrow no longer holds the payment — refunds would double-spend.
+            // Safety: funds should never be collected on a Failed/Cancelled round,
+            // but we check anyway as a defense-in-depth measure.
             ensure!(
                 !RoundFundsCollected::<T>::get(round_id),
                 Error::<T>::FundsAlreadyCollected
@@ -766,6 +874,7 @@ pub mod pallet {
 
             let refund_amount = contribution.total_paid;
             let tokens_to_return = contribution.total_purchased;
+            let escrow = T::PalletId::get().into_account_truncating();
 
             // CEI: Clear state FIRST (prevents reentrant double-claim)
             Contributions::<T>::remove(round_id, &who);
@@ -778,8 +887,22 @@ pub mod pallet {
                 *total = total.checked_sub(&refund_amount).unwrap_or(0u32.into());
             });
 
-            // Interactions: return purchased tokens to escrow, then refund
-            let escrow = T::PalletId::get().into_account_truncating();
+            // === Fix: Remove vesting FIRST, then transfer tokens back ===
+            // The old code tried to transfer tokens while they were still locked by vesting.
+            // Now we remove all vesting entries for this label first, unlocking the tokens.
+
+            if tokens_to_return > BalanceOf::<T>::zero() && !round.vesting_label.is_empty() {
+                // Use remove_all_vesting_for_label to handle multiple contributions correctly.
+                // The old code called do_remove_vesting with the cumulative amount, which
+                // wouldn't match any individual vesting entry from multiple contributions.
+                T::Vesting::remove_all_vesting_for_label(
+                    &who,
+                    round.vesting_label.clone().into_inner(),
+                )
+                .map_err(|_| Error::<T>::VestingCleanupFailed)?;
+            }
+
+            // Now that vesting is removed and tokens are unlocked, transfer them back to escrow
             if tokens_to_return > BalanceOf::<T>::zero() {
                 T::Currency::transfer(
                     &who,
@@ -788,15 +911,6 @@ pub mod pallet {
                     ExistenceRequirement::KeepAlive,
                 )
                 .map_err(|_| Error::<T>::InsufficientPayment)?;
-            }
-
-            // Remove the vesting schedule for this user (clean up vesting on refund)
-            if tokens_to_return > BalanceOf::<T>::zero() && !round.vesting_label.is_empty() {
-                let _ = T::Vesting::do_remove_vesting(
-                    &who,
-                    round.vesting_label.clone().into_inner(),
-                    tokens_to_return,
-                );
             }
 
             // Transfer refund from escrow to user
@@ -855,6 +969,123 @@ pub mod pallet {
             });
 
             Ok(())
+        }
+
+        /// Finalize a round after end_block (admin only).
+        ///
+        /// Automatically determines if the round was Successful or Failed based on
+        /// whether `sold >= min_allocation`. This must be called before collect_funds()
+        /// or claim_refund() can be used.
+        ///
+        /// Requirements:
+        /// - Round must exist
+        /// - Round status must be Active
+        /// - Current block must be >= round.end_block
+        #[pallet::call_index(9)]
+        #[pallet::weight(T::WeightInfo::activate_round())]
+        pub fn finalize_round(origin: OriginFor<T>, round_id: u32) -> DispatchResult {
+            T::AdminOrigin::ensure_origin(origin)?;
+
+            Rounds::<T>::try_mutate(round_id, |round_opt| {
+                let round = round_opt.as_mut().ok_or(Error::<T>::RoundNotFound)?;
+
+                ensure!(
+                    round.status == RoundStatus::Active,
+                    Error::<T>::RoundAlreadyFinalized
+                );
+
+                let current_block = frame_system::Pallet::<T>::block_number();
+                ensure!(
+                    current_block >= round.end_block,
+                    Error::<T>::RoundNotEnded
+                );
+
+                // Determine success/failure based on min_allocation
+                let new_status = if round.sold >= round.min_allocation {
+                    RoundStatus::Successful
+                } else {
+                    RoundStatus::Failed
+                };
+
+                let sold = round.sold;
+                round.status = new_status.clone();
+
+                Self::deposit_event(Event::RoundFinalized {
+                    round_id,
+                    status: new_status,
+                    sold,
+                });
+
+                Ok(())
+            })
+        }
+
+        /// Cancel an active round (admin only).
+        ///
+        /// Immediately sets the round status to Cancelled, allowing refunds
+        /// without waiting for end_block. Used when admin needs to abort a round
+        /// due to issues (e.g., security concerns, insufficient interest).
+        ///
+        /// Requirements:
+        /// - Round must exist
+        /// - Round status must be Active (can only cancel active rounds)
+        #[pallet::call_index(10)]
+        #[pallet::weight(T::WeightInfo::activate_round())]
+        pub fn cancel_round(origin: OriginFor<T>, round_id: u32) -> DispatchResult {
+            T::AdminOrigin::ensure_origin(origin)?;
+
+            Rounds::<T>::try_mutate(round_id, |round_opt| {
+                let round = round_opt.as_mut().ok_or(Error::<T>::RoundNotFound)?;
+
+                ensure!(
+                    round.status == RoundStatus::Active,
+                    Error::<T>::RoundStatusInvalid
+                );
+
+                round.status = RoundStatus::Cancelled;
+
+                Self::deposit_event(Event::RoundCancelled { round_id });
+
+                Ok(())
+            })
+        }
+
+        /// Set the minimum allocation for a round (admin only).
+        ///
+        /// Must be called while the round is still Pending (before activation).
+        /// min_allocation determines whether the round is Successful or Failed
+        /// when finalized.
+        ///
+        /// Requirements:
+        /// - Round must exist
+        /// - Round status must be Pending
+        /// - min_allocation <= total_allocation
+        #[pallet::call_index(11)]
+        #[pallet::weight(T::WeightInfo::activate_round())]
+        pub fn set_min_allocation(
+            origin: OriginFor<T>,
+            round_id: u32,
+            min_allocation: BalanceOf<T>,
+        ) -> DispatchResult {
+            T::AdminOrigin::ensure_origin(origin)?;
+
+            Rounds::<T>::try_mutate(round_id, |round_opt| {
+                let round = round_opt.as_mut().ok_or(Error::<T>::RoundNotFound)?;
+
+                ensure!(
+                    round.status == RoundStatus::Pending,
+                    Error::<T>::RoundStatusInvalid
+                );
+
+                ensure!(
+                    min_allocation <= round.total_allocation,
+                    Error::<T>::InvalidMinAllocation
+                );
+
+                round.min_allocation = min_allocation;
+
+                Ok(())
+            })
         }
     }
 

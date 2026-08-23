@@ -556,6 +556,91 @@ pub mod pallet {
         }
 
         /// Get the locked balance for an account
+
+        /// Remove ALL vesting entries for an account matching a schedule label.
+        ///
+        /// This is used by the presale pallet during refund to clean up vesting
+        /// entries from multiple contributions to the same round. Each contribution
+        /// creates a separate vesting entry with its individual token amount, so
+        /// removing by the cumulative total (as do_remove_vesting does) would fail.
+        ///
+        /// Returns the total unlocked amount (sum of remaining locked for all matching entries).
+        pub fn remove_all_vesting_for_label(
+            who: &T::AccountId,
+            schedule_label: Vec<u8>,
+        ) -> Result<BalanceOf<T>, DispatchError> {
+            let label_bv: BoundedVec<u8, ConstU32<64>> = schedule_label
+                .clone()
+                .try_into()
+                .map_err(|_| Error::<T>::LabelTooLong)?;
+
+            let mut total_unlocked = BalanceOf::<T>::zero();
+
+            UserVestings::<T>::try_mutate(who, |maybe_vestings| -> Result<(), Error<T>> {
+                let vestings = maybe_vestings
+                    .as_mut()
+                    .ok_or(Error::<T>::NoVestingForAccount)?;
+
+                // Collect indices of ALL entries matching the label
+                let indices: Vec<usize> = vestings
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, v)| v.schedule == label_bv)
+                    .map(|(i, _)| i)
+                    .collect();
+
+                if indices.is_empty() {
+                    return Err(Error::<T>::NoVestingForAccount);
+                }
+
+                // Remove entries in reverse order to maintain valid indices
+                for idx in indices.into_iter().rev() {
+                    let entry = vestings.swap_remove(idx);
+                    let remaining_locked_for_entry = entry
+                        .total_amount
+                        .checked_sub(&entry.released)
+                        .ok_or(Error::<T>::Underflow)?;
+                    total_unlocked = total_unlocked
+                        .checked_add(&remaining_locked_for_entry)
+                        .ok_or(Error::<T>::Overflow)?;
+                }
+
+                // Reduce LockedBalances by total unlocked
+                let new_locked = LockedBalances::<T>::get(who)
+                    .checked_sub(&total_unlocked)
+                    .ok_or(Error::<T>::Underflow)?;
+                LockedBalances::<T>::insert(who, new_locked);
+
+                // If no more vesting entries, remove the storage entirely
+                if vestings.is_empty() {
+                    *maybe_vestings = None;
+                }
+
+                Ok(())
+            })?;
+
+            // Update or remove the native Substrate lock
+            let remaining_locked = LockedBalances::<T>::get(who);
+            if remaining_locked.is_zero() {
+                T::Currency::remove_lock(VESTING_LOCK_ID, who);
+            } else {
+                T::Currency::set_lock(
+                    VESTING_LOCK_ID,
+                    who,
+                    remaining_locked,
+                    WithdrawReasons::TRANSFER,
+                );
+            }
+
+            Self::deposit_event(Event::VestingRemoved {
+                who: who.clone(),
+                schedule: schedule_label,
+                amount: total_unlocked,
+            });
+
+            Ok(total_unlocked)
+        }
+
         pub fn get_locked_balance(who: &T::AccountId) -> BalanceOf<T> {
             LockedBalances::<T>::get(who)
         }

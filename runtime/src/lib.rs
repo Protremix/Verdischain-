@@ -36,7 +36,7 @@ use sp_runtime::{
         NumberFor, Verify,
     },
     transaction_validity::{TransactionSource, TransactionValidity},
-    ApplyExtrinsicResult, ExtrinsicInclusionMode, MultiSignature, Perbill, Permill,
+    ApplyExtrinsicResult, DispatchError, ExtrinsicInclusionMode, MultiSignature, Perbill, Permill,
 };
 use sp_std::prelude::*;
 use sp_version::RuntimeVersion;
@@ -875,7 +875,14 @@ impl pallet_presale::VestingHandler<AccountId, u128> for PresaleVestingHandler {
     fn do_remove_vesting(who: &AccountId, schedule_label: Vec<u8>, amount: u128) -> DispatchResult {
         pallet_vesting::Pallet::<Runtime>::do_remove_vesting(who, schedule_label, amount)
     }
+    fn remove_all_vesting_for_label(
+        who: &AccountId,
+        schedule_label: Vec<u8>,
+    ) -> Result<u128, DispatchError> {
+        pallet_vesting::Pallet::<Runtime>::remove_all_vesting_for_label(who, schedule_label)
+    }
 }
+
 
 // === Verdis Storage ===
 
