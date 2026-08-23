@@ -1164,6 +1164,96 @@ async def tx_last(limit: int = Query(20, ge=1, le=100)):
     return {"success": True, "count": len(txs), "data": txs}
 
 @app.get("/api/v1/tx/count")
+
+@app.get("/api/v1/tx")
+async def tx_list(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    pallet: str = Query(None),
+    category: str = Query(None),
+    signer: str = Query(None),
+    min_block: int = Query(None),
+    max_block: int = Query(None)
+):
+    """Paginated, filterable transaction list."""
+    conn = sqlite3.connect(TX_DB_PATH)
+    conn.row_factory = sqlite3.Row
+
+    where_clauses = []
+    params = []
+
+    if pallet:
+        where_clauses.append("pallet = ?")
+        params.append(pallet)
+    if category:
+        where_clauses.append("category = ?")
+        params.append(category)
+    if signer:
+        # Support both hex and SS58
+        if signer.startswith("0x"):
+            where_clauses.append("signer = ?")
+            params.append(signer)
+        else:
+            where_clauses.append("signer = ?")
+            params.append(signer)
+    if min_block is not None:
+        where_clauses.append("block_number >= ?")
+        params.append(min_block)
+    if max_block is not None:
+        where_clauses.append("block_number <= ?")
+        params.append(max_block)
+
+    where_sql = (" WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+    offset = (page - 1) * limit
+
+    # Get total count
+    count_row = conn.execute(f"SELECT COUNT(*) FROM transactions{where_sql}", params).fetchone()
+    total = count_row[0]
+
+    # Get page
+    rows = conn.execute(
+        f"SELECT * FROM transactions{where_sql} ORDER BY block_number DESC, tx_index ASC LIMIT ? OFFSET ?",
+        params + [limit, offset]
+    ).fetchall()
+
+    txs = []
+    for row in rows:
+        signer_hex = row["signer"]
+        signer_ss58 = ""
+        if signer_hex and signer_hex.startswith("0x") and len(signer_hex) == 66:
+            try:
+                signer_ss58 = _to_ss58(signer_hex)
+            except:
+                pass
+        txs.append({
+            "block": row["block_number"],
+            "index": row["tx_index"],
+            "hash": row["tx_hash"],
+            "signer": row["signer"],
+            "signer_ss58": signer_ss58,
+            "method": row["method"],
+            "pallet": row["pallet"],
+            "call_name": row["call_name"],
+            "value": row["value"],
+            "category": row["category"],
+            "is_signed": True,
+            "decoded": True,
+            "timestamp": row["timestamp"]
+        })
+
+    conn.close()
+
+    return {
+        "success": True,
+        "count": len(txs),
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": (total + limit - 1) // limit,
+        "data": txs
+    }
+
+
 async def tx_count():
     conn = sqlite3.connect(TX_DB_PATH)
     cur = conn.execute("SELECT COUNT(*) FROM transactions")
