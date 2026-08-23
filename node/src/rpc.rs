@@ -956,4 +956,111 @@ where
         }
     }
 }
-// Force rebuild 1787380805
+
+
+use verdis_runtime::DemocracyApi as DemocracyApiRuntimeApi;
+use verdis_runtime::CouncilApi as CouncilApiRuntimeApi;
+
+// === Democracy RPC ===
+#[rpc(server)]
+pub trait DemocracyRpc {
+    /// Get the total number of referendums ever created
+    #[method(name = "democracy_referendumCount")]
+    fn get_referendum_count(&self) -> RpcResult<u32>;
+
+    /// Get all public proposals (index, proposer)
+    #[method(name = "democracy_publicProps")]
+    fn get_public_proposals(&self) -> RpcResult<Vec<(u32, String)>>;
+
+    /// Get the minimum deposit required for a proposal
+    #[method(name = "democracy_minimumDeposit")]
+    fn get_minimum_deposit(&self) -> RpcResult<u128>;
+}
+
+pub struct DemocracyRpcImpl<C> {
+    client: Arc<C>,
+}
+
+impl<C> DemocracyRpcImpl<C> {
+    pub fn new(client: Arc<C>) -> Self {
+        Self { client }
+    }
+}
+
+impl<C> DemocracyRpcServer for DemocracyRpcImpl<C>
+where
+    C: ProvideRuntimeApi<Block> + HeaderBackend<Block> + 'static,
+    C::Api: DemocracyApiRuntimeApi<Block>,
+{
+    fn get_referendum_count(&self) -> RpcResult<u32> {
+        let api = self.client.runtime_api();
+        let at = self.client.info().best_hash;
+        Ok(api.get_referendum_count(at).map_err(rpc_err)?)
+    }
+
+    fn get_public_proposals(&self) -> RpcResult<Vec<(u32, String)>> {
+        let api = self.client.runtime_api();
+        let at = self.client.info().best_hash;
+        let props = api.get_public_proposals(at).map_err(rpc_err)?;
+        Ok(props.into_iter().map(|(idx, proposer)| (idx, format!("{:?}", proposer))).collect())
+    }
+
+    fn get_minimum_deposit(&self) -> RpcResult<u128> {
+        let api = self.client.runtime_api();
+        let at = self.client.info().best_hash;
+        Ok(api.get_minimum_deposit(at).map_err(rpc_err)?)
+    }
+}
+
+// === Council RPC ===
+#[rpc(server)]
+pub trait CouncilRpc {
+    /// Get all council members
+    #[method(name = "council_members")]
+    fn get_members(&self) -> RpcResult<Vec<String>>;
+
+    /// Get all active proposal hashes
+    #[method(name = "council_proposals")]
+    fn get_proposals(&self) -> RpcResult<Vec<String>>;
+
+    /// Get the prime member (if any)
+    #[method(name = "council_prime")]
+    fn get_prime(&self) -> RpcResult<Option<String>>;
+}
+
+pub struct CouncilRpcImpl<C> {
+    client: Arc<C>,
+}
+
+impl<C> CouncilRpcImpl<C> {
+    pub fn new(client: Arc<C>) -> Self {
+        Self { client }
+    }
+}
+
+impl<C> CouncilRpcServer for CouncilRpcImpl<C>
+where
+    C: ProvideRuntimeApi<Block> + HeaderBackend<Block> + 'static,
+    C::Api: CouncilApiRuntimeApi<Block>,
+{
+    fn get_members(&self) -> RpcResult<Vec<String>> {
+        let api = self.client.runtime_api();
+        let at = self.client.info().best_hash;
+        let members = api.get_members(at).map_err(rpc_err)?;
+        Ok(members.into_iter().map(|m| format!("{:?}", m)).collect())
+    }
+
+    fn get_proposals(&self) -> RpcResult<Vec<String>> {
+        let api = self.client.runtime_api();
+        let at = self.client.info().best_hash;
+        let proposals = api.get_proposals(at).map_err(rpc_err)?;
+        Ok(proposals.into_iter().map(|p| format!("{:?}", p)).collect())
+    }
+
+    fn get_prime(&self) -> RpcResult<Option<String>> {
+        let api = self.client.runtime_api();
+        let at = self.client.info().best_hash;
+        let prime = api.get_prime(at).map_err(rpc_err)?;
+        Ok(prime.map(|p| format!("{:?}", p)))
+    }
+}

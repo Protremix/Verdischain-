@@ -1666,6 +1666,30 @@ sp_api::decl_runtime_apis! {
         /// Get the current sudo key
         fn get_key() -> Option<AccountId>;
     }
+
+    /// Democracy API for governance transparency
+    pub trait DemocracyApi {
+        /// Get the total number of referendums ever created
+        fn get_referendum_count() -> u32;
+        /// Get the lowest active referendum index
+        fn get_active_referendum_start() -> u32;
+        /// Get all public proposals (index, proposer)
+        fn get_public_proposals() -> Vec<(u32, AccountId)>;
+        /// Get the minimum deposit required for a proposal
+        fn get_minimum_deposit() -> Balance;
+    }
+
+    /// Council API for governance transparency
+    pub trait CouncilApi {
+        /// Get all council members
+        fn get_members() -> Vec<AccountId>;
+        /// Get all active proposal hashes
+        fn get_proposals() -> Vec<Hash>;
+        /// Get the number of active proposals
+        fn get_proposal_count() -> u32;
+        /// Get the prime member (if any)
+        fn get_prime() -> Option<AccountId>;
+    }
 }
 
 // Register production Verdis pallet benchmarks for the freestanding FRAME bencher.
@@ -2106,6 +2130,48 @@ impl_runtime_apis! {
     impl crate::SudoApi<Block> for Runtime {
         fn get_key() -> Option<AccountId> {
             pallet_sudo::Key::<Runtime>::get()
+        }
+    }
+
+    impl crate::DemocracyApi<Block> for Runtime {
+        fn get_referendum_count() -> u32 {
+            pallet_democracy::ReferendumCount::<Runtime>::get()
+        }
+
+        fn get_active_referendum_start() -> u32 {
+            pallet_democracy::LastTabledWasExternal::<Runtime>::get()
+                .then(|| 0)
+                .unwrap_or(0)
+        }
+
+        fn get_public_proposals() -> Vec<(u32, AccountId)> {
+            pallet_democracy::PublicProps::<Runtime>::get()
+                .to_vec()
+                .into_iter()
+                .map(|(idx, _bounded_call, proposer)| (idx, proposer))
+                .collect()
+        }
+
+        fn get_minimum_deposit() -> Balance {
+            <Runtime as pallet_democracy::Config>::MinimumDeposit::get()
+        }
+    }
+
+    impl crate::CouncilApi<Block> for Runtime {
+        fn get_members() -> Vec<AccountId> {
+            pallet_collective::Members::<Runtime, pallet_collective::Instance1>::get().to_vec()
+        }
+
+        fn get_proposals() -> Vec<Hash> {
+            pallet_collective::Proposals::<Runtime, pallet_collective::Instance1>::get().to_vec()
+        }
+
+        fn get_proposal_count() -> u32 {
+            pallet_collective::Proposals::<Runtime, pallet_collective::Instance1>::get().to_vec().len() as u32
+        }
+
+        fn get_prime() -> Option<AccountId> {
+            pallet_collective::Prime::<Runtime, pallet_collective::Instance1>::get()
         }
     }
 
