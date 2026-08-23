@@ -3,6 +3,8 @@
 mod master7_verification;
 #[path = "master8_tests.rs"]
 mod master8_tests;
+#[path = "master9_tests.rs"]
+mod master9_tests;
 #[path = "luna_adversarial_tests.rs"]
 mod luna_adversarial_tests;
 #[path = "presale_tests.rs"]
