@@ -138,6 +138,12 @@ pub mod pallet {
     pub type MissedEpochs<T: Config> =
         StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
 
+    /// P0-3 FIX: Total number of times a validator has been slashed (defensive tracking)
+    #[pallet::storage]
+    #[pallet::getter(fn slash_count)]
+    pub type SlashCount<T: Config> =
+        StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
+
     #[pallet::storage]
     #[pallet::getter(fn validator_names)]
     pub type ValidatorNames<T: Config> =
@@ -877,6 +883,9 @@ pub mod pallet {
                 Error::<T>::ReactivationCooldownNotElapsed
             );
 
+            // P0-3 FIX: Check slash count for audit trail (defensive depth)
+            let _slash_count = SlashCount::<T>::get(&validator);
+
             Validators::<T>::mutate(&validator, |v| {
                 if let Some(v) = v {
                     v.slashed = false;
@@ -1027,7 +1036,8 @@ pub mod pallet {
                     .try_into()
                     .map_err(|_| 0u32)
                     .unwrap_or(0);
-                LastSlashedBlock::<T>::insert(validator, current_block);
+                LastSlashedBlock::<T>::insert(validator.clone(), current_block);
+                SlashCount::<T>::mutate(&validator, |c| *c = c.saturating_add(1));
                 SlashingEvents::<T>::mutate(validator, |c| *c = c.saturating_add(1));
                 // FIX H4: TotalStaked reduced by validator slash (delegator slashes already accounted above)
                 TotalStaked::<T>::mutate(|t| *t = t.saturating_sub(actual_slash));

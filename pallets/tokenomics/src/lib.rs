@@ -430,7 +430,7 @@ pub mod pallet {
                 .try_into()
                 .map_err(|_| Error::<T>::InvalidCategory)?;
 
-            Distribution::<T>::mutate(&cat_bv, |c| {
+            Distribution::<T>::try_mutate(&cat_bv, |c| {
                 let cat = c.as_mut().ok_or(Error::<T>::InvalidCategory)?;
                 ensure!(
                     cat.released

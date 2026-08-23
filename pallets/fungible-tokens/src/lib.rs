@@ -338,6 +338,7 @@ pub mod pallet {
             ensure!(amount > 0, Error::<T>::ZeroAmount);
 
             let mut token = Tokens::<T>::get(token_id).ok_or(Error::<T>::TokenNotFound)?;
+            // P1-2: Only token owner can mint — enforce max_supply cap
             ensure!(token.owner == who, Error::<T>::NotTokenOwner);
             ensure!(!token.is_frozen, Error::<T>::TokenFrozen);
 

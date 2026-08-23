@@ -408,7 +408,10 @@ pub mod pallet {
         ) -> DispatchResult {
             T::AdminOrigin::ensure_origin(origin)?;
 
-            CarbonCredits::<T>::mutate(&id, |c| {
+            let id_bv: BoundedVec<u8, ConstU32<64>> =
+                id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
+
+            CarbonCredits::<T>::try_mutate(&id_bv, |c| {
                 let credit = c.as_mut().ok_or(Error::<T>::CreditNotFound)?;
                 ensure!(!credit.verified, Error::<T>::AlreadyVerified);
                 credit.verified = true;
@@ -464,10 +467,15 @@ pub mod pallet {
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
-            CarbonCredits::<T>::mutate(&id, |c| {
+            let id_bv: BoundedVec<u8, ConstU32<64>> =
+                id.clone().try_into().map_err(|_| Error::<T>::IdTooLong)?;
+
+            CarbonCredits::<T>::try_mutate(&id_bv, |c| {
                 let credit = c.as_mut().ok_or(Error::<T>::CreditNotFound)?;
                 ensure!(credit.owner == who, Error::<T>::NotCreditOwner);
                 ensure!(!credit.retired, Error::<T>::CreditAlreadyRetired);
+                // P1-1 FIX: Only verified credits can be transferred
+                ensure!(credit.verified, Error::<T>::CreditNotVerified);
                 credit.owner = to.clone();
                 Ok::<(), Error<T>>(())
             })?;
@@ -1382,6 +1390,11 @@ pub mod tests {
                 bv64(b"c1"),
                 bv_name(b"Amazon"),
                 100,
+            ));
+            // P1-1 FIX: Credits must be verified before transfer
+            assert_ok!(Eco::verify_carbon_credit(
+                RuntimeOrigin::root(),
+                bv64(b"c1"),
             ));
             assert_ok!(Eco::transfer_carbon_credit(
                 RuntimeOrigin::signed(alice),

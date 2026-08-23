@@ -663,14 +663,14 @@ impl pallet_contracts::Config for Runtime {
 parameter_types! {
     pub const DposPalletId: PalletId = PalletId(*b"verdisdp");
     pub const MaxStakePerValidator: Balance = 1_000_000_000 * UNITS;
+    pub const MaxValidators: u32 = 21; // P2-2 FIX: was 100, set to target for mainnet
     pub const RegistrationDeposit: Balance = 10_000 * UNITS; // 10k VRDX Sybil resistance deposit
     pub const MaxCommission: u8 = 20; // Maximum 20% commission // 1B VRDX (1% of total supply)
     pub const MinGreenScoreDpos: u8 = 0;
     pub const MaxGreenScoreDpos: u8 = 5;
     pub const ReactivationCooldown: u32 = 100; // ~30 days at 6s blocks (7200 blocks/day)
     pub const MinValidatorStake: Balance = 100_000_000 * UNITS; // 100M VRDX minimum (0.1% supply) for sybil resistance
-    pub const MaxValidators: u32 = 21; // P2-2 FIX: was 100, set to target for mainnet
-    pub const ValidatorCount: u32 = 21; // 6 active validators matching 6 running nodes
+    pub const ValidatorCount: u32 = 21; // 21 active validators for mainnet consensus
     pub const MinimumValidatorCount: u32 = 4; // Below 4 active validators, chain halts
     pub const MaxMissedEpochs: u32 = 50_000; // P0 FIX: was 3, increased to 10 for BABE safety
     pub const BlockReward: Balance = 342 * UNITS; // 342 VRDX per block (1.8B annual, 6% APR at 30% stake)

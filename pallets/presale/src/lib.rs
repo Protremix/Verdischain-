@@ -243,6 +243,12 @@ pub mod pallet {
         ValueQuery,
     >;
 
+    /// P0-4 FIX: Global whitelist enforcement flag.
+    /// When true, ALL rounds require whitelisting regardless of per-round setting.
+    #[pallet::storage]
+    #[pallet::getter(fn whitelist_enforced)]
+    pub type WhitelistEnforced<T: Config> = StorageValue<_, bool, ValueQuery>;
+
     #[pallet::storage]
     #[pallet::getter(fn is_paused)]
     pub type Paused<T: Config> = StorageValue<_, bool, ValueQuery>;
@@ -631,8 +637,8 @@ pub mod pallet {
             );
             ensure!(current_block < round.end_block, Error::<T>::RoundEnded);
 
-            // Per-round whitelist check — enforced when admin sets whitelist_required
-            if round.whitelist_required {
+            // P0-4 FIX: Whitelist check — enforced if per-round OR global flag is set
+            if round.whitelist_required || WhitelistEnforced::<T>::get() {
                 ensure!(
                     Whitelist::<T>::get(round_id, &who),
                     Error::<T>::NotWhitelisted
