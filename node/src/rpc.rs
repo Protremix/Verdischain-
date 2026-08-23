@@ -957,9 +957,8 @@ where
     }
 }
 
-
-use verdis_runtime::DemocracyApi as DemocracyApiRuntimeApi;
 use verdis_runtime::CouncilApi as CouncilApiRuntimeApi;
+use verdis_runtime::DemocracyApi as DemocracyApiRuntimeApi;
 
 // === Democracy RPC ===
 #[rpc(server)]
@@ -1002,7 +1001,10 @@ where
         let api = self.client.runtime_api();
         let at = self.client.info().best_hash;
         let props = api.get_public_proposals(at).map_err(rpc_err)?;
-        Ok(props.into_iter().map(|(idx, proposer)| (idx, format!("{:?}", proposer))).collect())
+        Ok(props
+            .into_iter()
+            .map(|(idx, proposer)| (idx, format!("{:?}", proposer)))
+            .collect())
     }
 
     fn get_minimum_deposit(&self) -> RpcResult<u128> {

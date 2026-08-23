@@ -13,6 +13,7 @@ use crate::*;
 use frame_support::{assert_noop, assert_ok};
 use sp_runtime::traits::AccountIdConversion;
 
+#[allow(dead_code)]
 fn escrow_account() -> u64 {
     PresalePalletId::get().into_account_truncating()
 }
@@ -51,11 +52,19 @@ fn cancel(round_id: u32) {
 }
 
 fn contribute(who: u64, round_id: u32, amount: u64) {
-    assert_ok!(Presale::contribute(RuntimeOrigin::signed(who), round_id, amount));
+    assert_ok!(Presale::contribute(
+        RuntimeOrigin::signed(who),
+        round_id,
+        amount
+    ));
 }
 
 fn set_min(round_id: u32, min: u64) {
-    assert_ok!(Presale::set_min_allocation(RuntimeOrigin::root(), round_id, min));
+    assert_ok!(Presale::set_min_allocation(
+        RuntimeOrigin::root(),
+        round_id,
+        min
+    ));
 }
 
 // ============================================================
@@ -397,7 +406,7 @@ fn halborn_admin_cannot_drain_failed_round() {
         contribute(1, 0, 50); // 250 tokens
         contribute(2, 0, 30); // 150 tokens
         contribute(3, 0, 20); // 100 tokens
-        // Total: 500 tokens, min=1000 → FAILED
+                              // Total: 500 tokens, min=1000 → FAILED
 
         set_block(100);
         finalize(0);

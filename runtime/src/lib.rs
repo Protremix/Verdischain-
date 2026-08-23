@@ -883,7 +883,6 @@ impl pallet_presale::VestingHandler<AccountId, u128> for PresaleVestingHandler {
     }
 }
 
-
 // === Verdis Storage ===
 
 parameter_types! {

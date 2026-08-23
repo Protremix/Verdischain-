@@ -555,8 +555,6 @@ pub mod pallet {
             Ok(())
         }
 
-        /// Get the locked balance for an account
-
         /// Remove ALL vesting entries for an account matching a schedule label.
         ///
         /// This is used by the presale pallet during refund to clean up vesting

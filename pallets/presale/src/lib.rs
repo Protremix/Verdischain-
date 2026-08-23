@@ -133,9 +133,21 @@ pub mod pallet {
     }
 
     /// Explicit round status — prevents collect_funds() from running on failed rounds
-    #[derive(Encode, Decode, DecodeWithMemTracking, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]
+    #[derive(
+        Encode,
+        Decode,
+        DecodeWithMemTracking,
+        Clone,
+        PartialEq,
+        Eq,
+        MaxEncodedLen,
+        TypeInfo,
+        Debug,
+        Default,
+    )]
     pub enum RoundStatus {
         /// Created but not yet activated
+        #[default]
         Pending,
         /// Accepting contributions
         Active,
@@ -149,14 +161,10 @@ pub mod pallet {
         Closed,
     }
 
-    impl Default for RoundStatus {
-        fn default() -> Self {
-            RoundStatus::Pending
-        }
-    }
-
     /// Presale round configuration
-    #[derive(Encode, Decode, DecodeWithMemTracking, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug)]
+    #[derive(
+        Encode, Decode, DecodeWithMemTracking, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug,
+    )]
     pub struct SaleRound<Balance, BlockNumber> {
         pub label: BoundedVec<u8, ConstU32<32>>,
         /// Price numerator: token_amount = (payment_amount * token_price) / price_precision
@@ -180,7 +188,18 @@ pub mod pallet {
     }
 
     /// User contribution record — per (round_id, account_id)
-    #[derive(Encode, Decode, DecodeWithMemTracking, Clone, PartialEq, Eq, MaxEncodedLen, TypeInfo, Debug, Default)]
+    #[derive(
+        Encode,
+        Decode,
+        DecodeWithMemTracking,
+        Clone,
+        PartialEq,
+        Eq,
+        MaxEncodedLen,
+        TypeInfo,
+        Debug,
+        Default,
+    )]
     pub struct UserContribution<Balance> {
         pub total_purchased: Balance,
         pub total_paid: Balance,
@@ -995,10 +1014,7 @@ pub mod pallet {
                 );
 
                 let current_block = frame_system::Pallet::<T>::block_number();
-                ensure!(
-                    current_block >= round.end_block,
-                    Error::<T>::RoundNotEnded
-                );
+                ensure!(current_block >= round.end_block, Error::<T>::RoundNotEnded);
 
                 // Determine success/failure based on min_allocation
                 let new_status = if round.sold >= round.min_allocation {

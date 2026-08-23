@@ -41,7 +41,10 @@ fn test_create_round_succeeds() {
         let round = round.unwrap();
         assert_eq!(round.token_price, 5u64);
         assert_eq!(round.total_allocation, 10_000_000u64);
-        assert!(round.status != RoundStatus::Active, "New round should start inactive");
+        assert!(
+            round.status != RoundStatus::Active,
+            "New round should start inactive"
+        );
     });
 }
 
@@ -142,7 +145,10 @@ fn test_activate_round_succeeds() {
         frame_system::Pallet::<Test>::set_block_number(1);
 
         let round = Rounds::<Test>::get(0).unwrap();
-        assert!(round.status == RoundStatus::Active, "Round should be active after activation");
+        assert!(
+            round.status == RoundStatus::Active,
+            "Round should be active after activation"
+        );
     });
 }
 
