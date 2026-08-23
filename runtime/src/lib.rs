@@ -412,7 +412,10 @@ impl pallet_authorship::Config for Runtime {
     type EventHandler = ();
 }
 
-// === Sudo (testnet only — removed before mainnet) ===
+// === Sudo (testnet only — P1-1 MAINNET GATE: must remove from construct_runtime
+// and delete this impl block before mainnet launch. Sudo gives root key
+// unilateral control over all pallets with EnsureRoot AdminOrigin.
+// Standing instruction: keep on testnet for emergency runtime management.) ===
 impl pallet_sudo::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
@@ -846,7 +849,8 @@ parameter_types! {
 }
 
 impl pallet_tokenomics::Config for Runtime {
-    type AdminOrigin = frame_system::EnsureRoot<AccountId>;
+    // FIX P1-2: Council 2/3 required for mainnet (was EnsureRoot/sudo)
+    type AdminOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type RuntimeEvent = RuntimeEvent;
     type Currency = MaxSupplyCurrency;
     type TotalSupply = TotalSupplyConst;
@@ -885,7 +889,8 @@ impl pallet_presale::Config for Runtime {
     // For mainnet, change this to a stablecoin or other accepted asset.
     type PaymentCurrency = MaxSupplyCurrency;
     type PalletId = PresalePalletId;
-    type AdminOrigin = frame_system::EnsureRoot<AccountId>;
+    // FIX P1-3: Council 2/3 required for mainnet (was EnsureRoot/sudo)
+    type AdminOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, pallet_collective::Instance1, 2, 3>;
     type Vesting = PresaleVestingHandler;
     type WeightInfo = pallet_presale::SubstrateWeight<Runtime>;
     type Treasury = TreasuryAccount;
