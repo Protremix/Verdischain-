@@ -756,10 +756,10 @@ pub mod pallet {
                 receiver: receiver.clone(),
             };
 
-            let timeout: u64 = frame_system::Pallet::<T>::block_number()
+            let current_block: u64 = frame_system::Pallet::<T>::block_number()
                 .try_into()
-                .unwrap_or(0)
-                + 1000;
+                .unwrap_or(0);
+            let timeout: u64 = current_block.saturating_add(1000);
 
             let packet = Packet {
                 sequence,
@@ -773,8 +773,8 @@ pub mod pallet {
             };
 
             IbcPackets::<T>::insert((channel_id, sequence), packet);
-            IbcTotalTransfers::<T>::put(IbcTotalTransfers::<T>::get() + 1);
-            IbcTotalVolume::<T>::put(IbcTotalVolume::<T>::get() + amount);
+            IbcTotalTransfers::<T>::mutate(|t: &mut u64| *t = t.saturating_add(1));
+            IbcTotalVolume::<T>::mutate(|v: &mut u128| *v = v.saturating_add(amount));
 
             Self::deposit_event(Event::TransferInitiated {
                 sender: who,

@@ -5,6 +5,8 @@ mod luna_adversarial_tests;
 mod presale_tests;
 #[path = "regression_tests.rs"]
 mod regression_tests;
+#[path = "luna_regression_tests.rs"]
+mod luna_regression_tests;
 use crate::*;
 use frame_support::{
     assert_noop, assert_ok, construct_runtime, derive_impl, parameter_types,

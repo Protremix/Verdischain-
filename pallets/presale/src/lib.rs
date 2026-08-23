@@ -817,10 +817,10 @@ pub mod pallet {
             // Get the total raised for this round
             let round_raised = RoundRaised::<T>::get(round_id);
 
-            // Transfer from escrow to beneficiary (O(1) — no contributor iteration)
+            // Transfer payment funds from per-round escrow to beneficiary
             if round_raised > BalanceOf::<T>::zero() {
-                let escrow = T::PalletId::get().into_account_truncating();
-                T::Currency::transfer(
+                let escrow = Self::round_escrow(round_id);
+                T::PaymentCurrency::transfer(
                     &escrow,
                     &beneficiary,
                     round_raised,
