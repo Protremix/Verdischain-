@@ -104,7 +104,7 @@ jobs:
         run: |
           LCP=$(llvm-config --libdir 2>/dev/null || echo "/usr/lib/llvm-18/lib:/usr/lib/x86_64-linux-gnu")
           echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
-      - run: cargo build --release --target wasm32-unknown-unknown -p verdis-runtime 2>&1 | tail -5
+      - run: cargo build --release --target wasm32-unknown-unknown -p verdis-runtime --no-default-features 2>&1 | tail -5
 
   repo-hygiene:
     name: 7. Repository Hygiene
