@@ -19,7 +19,7 @@ jobs:
           echo "=== Checking for forbidden files ==="
           RESULTS=""
           for ext in bak tmp apk pyc; do
-            FOUND=
+            FOUND=$(find . -name "*.$ext" -not -path "./.git/*" -not -path "./target/*" -not -path "./node_modules/*" 2>/dev/null)
             if [ -n "$FOUND" ]; then
               echo "Found .$ext files:"
               echo "$FOUND"

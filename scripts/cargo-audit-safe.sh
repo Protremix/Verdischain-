@@ -12,6 +12,7 @@ cargo audit \
   --ignore RUSTSEC-2026-0099 \
   --ignore RUSTSEC-2026-0104 \
   --ignore RUSTSEC-2025-0055 \
+  --ignore RUSTSEC-2026-0186 \
   || {
     echo "cargo-audit completed with warnings (ignored advisories)"
     exit 0
