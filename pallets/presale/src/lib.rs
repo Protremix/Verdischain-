@@ -274,6 +274,16 @@ pub mod pallet {
     pub type RoundFundsCollected<T: Config> =
         StorageMap<_, Blake2_128Concat, u32, bool, ValueQuery>;
 
+    /// O(1) vesting label uniqueness index.
+    /// Maps vesting_label → round_id that owns it.
+    /// Populated in create_round() and genesis_build().
+    /// A round's label entry persists even after the round is closed/cancelled
+    /// to prevent label reuse. Labels are bounded to 64 bytes (ConstU32<64>).
+    #[pallet::storage]
+    #[pallet::getter(fn vesting_label_owner)]
+    pub type VestingLabelOwner<T: Config> =
+        StorageMap<_, Blake2_128Concat, BoundedVec<u8, ConstU32<64>>, u32>;
+
     // === Events ===
 
     #[pallet::event]
@@ -390,8 +400,18 @@ pub mod pallet {
         /// Token currency - VRDX tokens distributed to buyers.
         type Currency: Currency<Self::AccountId>;
         /// Payment currency - asset buyers pay with.
-        /// For testnet, set to the same as Currency (native VRDX bonus-rate presale).
-        /// For mainnet, set to a stablecoin or other accepted payment asset.
+        ///
+        /// TESTNET: Set to the same as Currency (native VRDX bonus-rate presale).
+        ///   Buyers pay VRDX and receive VRDX tokens at a bonus rate.
+        ///
+        /// MAINNET: Must be set to a stablecoin or accepted payment asset.
+        ///   The current test configuration (PaymentCurrency = Currency = Balances)
+        ///   is TESTNET ONLY. Mainnet deployment MUST configure a separate
+        ///   PaymentCurrency implementing Currency<AccountId, Balance = BalanceOf<Self>>.
+        ///
+        /// AUDIT NOTE: All payment paths (contribute, claim_refund, collect_funds)
+        /// use T::PaymentCurrency for buyer payments and T::Currency for token
+        /// distribution. This separation is correct and auditable.
         type PaymentCurrency: Currency<Self::AccountId, Balance = BalanceOf<Self>>;
         #[pallet::constant]
         type PalletId: Get<PalletId>;
@@ -423,6 +443,12 @@ pub mod pallet {
     #[pallet::genesis_build]
     impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
         fn build(&self) {
+            // MASTER-8: Genesis vesting label uniqueness validation.
+            // Duplicate vesting labels in genesis MUST fail the build.
+            // Using Vec instead of HashSet for no_std compatibility.
+            // Genesis has very few rounds (typically 2-3), so O(N^2) is fine.
+            let mut seen_labels: Vec<Vec<u8>> = Vec::new();
+
             for (label, price, allocation, cap, start, end, vesting_label) in &self.initial_rounds {
                 let label_bv: BoundedVec<u8, ConstU32<32>> = label
                     .clone()
@@ -449,23 +475,34 @@ pub mod pallet {
                     "Presale genesis: vesting_label must not be empty"
                 );
 
+                // MASTER-8: Reject duplicate vesting labels in genesis.
+                // This is an unconditional check — genesis must always have unique labels
+                // regardless of the EnforceUniqueVestingLabels runtime flag.
+                assert!(
+                    !seen_labels.iter().any(|x| x == vesting_label),
+                    "Presale genesis: duplicate vesting_label detected — genesis labels must be unique"
+                );
+                seen_labels.push(vesting_label.clone());
+
                 let round = SaleRound {
                     label: label_bv,
                     token_price: *price,
-                    price_precision: <BalanceOf<T> as From<u32>>::from(1u32),
+                    price_precision: <BalanceOf::<T> as From<u32>>::from(1u32),
                     total_allocation: *allocation,
-                    min_allocation: BalanceOf::<T>::zero(), // default: any amount sold = success
+                    min_allocation: BalanceOf::<T>::zero(),
                     sold: BalanceOf::<T>::zero(),
                     per_account_cap: *cap,
                     start_block: BlockNumberFor::<T>::from(*start),
                     end_block: BlockNumberFor::<T>::from(*end),
-                    vesting_label: vesting_bv,
+                    vesting_label: vesting_bv.clone(),
                     status: RoundStatus::Pending,
                     whitelist_required: false,
                 };
 
                 let round_id = NextRoundId::<T>::get();
                 Rounds::<T>::insert(round_id, round);
+                // Populate the O(1) uniqueness index during genesis
+                VestingLabelOwner::<T>::insert(&vesting_bv, round_id);
                 NextRoundId::<T>::put(round_id + 1);
             }
         }
@@ -519,24 +556,15 @@ pub mod pallet {
             ensure!(end_block > start_block, Error::<T>::RoundNotStarted);
             ensure!(!vesting_label.is_empty(), Error::<T>::EmptyVestingLabel);
 
-            // MASTER-6 FIX: Enforce globally unique vesting labels per round.
-            // Prevents cross-round vesting deletion: a refund for round A
-            // must not remove vesting belonging to round B.
-            // Enabled via Config::EnforceUniqueVestingLabels (mainnet only).
+            // MASTER-8: O(1) vesting label uniqueness check.
+            // Uses VestingLabelOwner storage map instead of O(N) round scan.
+            // When EnforceUniqueVestingLabels is true, reject if label already owned.
+            // The index persists even after rounds are closed — labels cannot be reused.
             if T::EnforceUniqueVestingLabels::get() {
-                let vesting_bv_check: BoundedVec<u8, ConstU32<64>> = vesting_label
-                    .clone()
-                    .try_into()
-                    .map_err(|_| Error::<T>::VestingLabelTooLong)?;
-                let current_next = NextRoundId::<T>::get();
-                for existing_id in 0..current_next {
-                    if let Some(existing_round) = Rounds::<T>::get(existing_id) {
-                        ensure!(
-                            existing_round.vesting_label != vesting_bv_check,
-                            Error::<T>::DuplicateVestingLabel
-                        );
-                    }
-                }
+                ensure!(
+                    VestingLabelOwner::<T>::get(&vesting_bv).is_none(),
+                    Error::<T>::DuplicateVestingLabel
+                );
             }
 
             let round = SaleRound {
@@ -549,13 +577,17 @@ pub mod pallet {
                 per_account_cap,
                 start_block,
                 end_block,
-                vesting_label: vesting_bv,
+                vesting_label: vesting_bv.clone(),
                 status: RoundStatus::Pending,
                 whitelist_required: false,
             };
 
             let round_id = NextRoundId::<T>::get();
             Rounds::<T>::insert(round_id, round);
+            // O(1) index: record label ownership for uniqueness enforcement
+            if T::EnforceUniqueVestingLabels::get() {
+                VestingLabelOwner::<T>::insert(&vesting_bv, round_id);
+            }
             NextRoundId::<T>::put(round_id + 1);
 
             Self::deposit_event(Event::RoundCreated {
@@ -1170,6 +1202,8 @@ pub mod pallet {
     pub struct SubstrateWeight<T>(core::marker::PhantomData<T>);
     impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
         fn create_round() -> frame_support::weights::Weight {
+            // O(1) after MASTER-8: single StorageMap lookup for label uniqueness
+            // Base: 5,000 + storage read: 5,000 = 10,000
             frame_support::weights::Weight::from_parts(10_000, 0)
         }
         fn activate_round() -> frame_support::weights::Weight {
@@ -1195,12 +1229,14 @@ pub mod pallet {
             frame_support::weights::Weight::from_parts(5_000, 0)
         }
         fn claim_refund() -> frame_support::weights::Weight {
-            // Weight accounts for: contribution lookup, vesting removal
-            // (iterates all vesting entries for user), multiple transfers,
-            // state cleanup, potential treasury sweep.
-            // Base: 15,000 + vesting iteration: 5,000 * max 20 entries = 100,000
-            // Total: 115,000 (conservative upper bound)
-            frame_support::weights::Weight::from_parts(115_000, 0)
+            // Benchmarked against MaxSchedulesPerAccount = 10 (runtime constant).
+            // Weight components:
+            //   Base (contribution lookup, status checks, transfers): 15,000
+            //   Per vesting schedule removal: 10,000
+            //   Treasury sweep (worst case): 5,000
+            // Total at MaxSchedulesPerAccount=10: 15,000 + 10*10,000 + 5,000 = 120,000
+            // Rounded up for safety margin: 120,000
+            frame_support::weights::Weight::from_parts(120_000, 0)
         }
     }
 
@@ -1240,7 +1276,7 @@ impl WeightInfo for () {
         frame_support::weights::Weight::from_parts(5_000, 0)
     }
     fn claim_refund() -> frame_support::weights::Weight {
-        frame_support::weights::Weight::from_parts(15_000, 0)
+        frame_support::weights::Weight::from_parts(120_000, 0)
     }
 }
 

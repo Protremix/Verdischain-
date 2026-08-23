@@ -1,4 +1,8 @@
 #![allow(unused_imports)]
+#[path = "master7_verification_tests.rs"]
+mod master7_verification;
+#[path = "master8_tests.rs"]
+mod master8_tests;
 #[path = "luna_adversarial_tests.rs"]
 mod luna_adversarial_tests;
 #[path = "presale_tests.rs"]
