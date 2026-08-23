@@ -312,6 +312,8 @@ pub mod pallet {
         KInvariantViolated,
         Overflow,
         InsufficientLpMinted,
+        /// FIX P2-2: Slippage protection on remove_liquidity
+        InsufficientAmountOut,
     }
 
     // === Config ===
@@ -604,6 +606,8 @@ pub mod pallet {
             origin: OriginFor<T>,
             pool_id: u32,
             lp_amount: BalanceOf<T>,
+            min_amount_a: BalanceOf<T>,
+            min_amount_b: BalanceOf<T>,
             deadline: BlockNumberFor<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
@@ -633,6 +637,10 @@ pub mod pallet {
                 .checked_mul(&lp_amount)
                 .ok_or(Error::<T>::ArithmeticOverflow)?
                 / pool.total_lp;
+
+            // FIX P2-2: Slippage protection — ensure outputs meet user-specified minimums
+            ensure!(amount_a >= min_amount_a, Error::<T>::InsufficientAmountOut);
+            ensure!(amount_b >= min_amount_b, Error::<T>::InsufficientAmountOut);
 
             // CEI: Update state FIRST, then transfer (prevents reentrancy)
             pool.reserve_a = pool
@@ -1041,6 +1049,8 @@ pub mod pallet {
             origin: OriginFor<T>,
             pool_id: u32,
             lp_amount: BalanceOf<T>,
+            min_amount_a: BalanceOf<T>,
+            min_amount_b: BalanceOf<T>,
             deadline: BlockNumberFor<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
@@ -1069,6 +1079,10 @@ pub mod pallet {
                 .checked_mul(&lp_amount)
                 .ok_or(Error::<T>::ArithmeticOverflow)?
                 / pool.total_lp;
+
+            // FIX P2-2: Slippage protection — ensure outputs meet user-specified minimums
+            ensure!(amount_a >= min_amount_a, Error::<T>::InsufficientAmountOut);
+            ensure!(amount_b >= min_amount_b, Error::<T>::InsufficientAmountOut);
 
             // CEI: Update state FIRST, then transfer (prevents reentrancy)
             pool.reserve_a = pool

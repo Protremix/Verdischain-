@@ -267,6 +267,27 @@ impl frame_support::traits::Contains<RuntimeCall> for VerdisBaseCallFilter {
             {
                 false
             }
+            // FIX P2-1: Add missing pallets to circuit breaker coverage
+            RuntimeCall::Poh(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Poh") =>
+            {
+                false
+            }
+            RuntimeCall::ZkCompression(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"ZkCompression") =>
+            {
+                false
+            }
+            RuntimeCall::Sealevel(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Sealevel") =>
+            {
+                false
+            }
+            RuntimeCall::Turbine(_)
+                if pallet_circuit_breaker::Pallet::<Runtime>::is_paused(b"Turbine") =>
+            {
+                false
+            }
             // Allow everything else
             _ => true,
         }

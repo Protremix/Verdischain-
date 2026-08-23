@@ -871,6 +871,8 @@ fn test_dex_remove_token_liquidity_returns_assets() {
             RuntimeOrigin::signed(alice.clone()),
             0u32,
             lp_tokens,
+            0u128,
+            0u128,
             DEADLINE,
         ));
 

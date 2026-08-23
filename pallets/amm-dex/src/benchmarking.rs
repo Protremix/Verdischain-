@@ -231,7 +231,7 @@ mod benches {
         let lp_amount: BalanceOf<T> = BENCH_LP_BURN.try_into().unwrap_or_default();
 
         #[extrinsic_call]
-        remove_token_liquidity(RawOrigin::Signed(caller), pool_id, lp_amount);
+        remove_token_liquidity(RawOrigin::Signed(caller), pool_id, lp_amount, 0u128, 0u128);
 
         assert!(TokenPools::<T>::get(pool_id).is_some());
     }

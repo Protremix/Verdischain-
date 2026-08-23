@@ -134,6 +134,7 @@ pub mod pallet {
 
     /// FIX C5: Track consecutive epochs where validator produced 0 blocks
     #[pallet::storage]
+    #[pallet::getter(fn missed_epochs)]
     pub type MissedEpochs<T: Config> =
         StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
 
@@ -209,6 +210,11 @@ pub mod pallet {
         },
         RewardPoolRefilled {
             amount: BalanceOf<T>,
+        },
+        /// FIX P2-6: Emitted when slash transfer fails
+        SlashFailed {
+            validator: T::AccountId,
+            slash_amount: BalanceOf<T>,
         },
     }
 
@@ -398,10 +404,13 @@ pub mod pallet {
         #[pallet::weight(T::WeightInfo::register_validator())]
         pub fn register_validator(
             origin: OriginFor<T>,
-            green_score: u8,
+            _green_score: u8,
             energy_source: Vec<u8>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
+
+            // FIX P2-5: Ignore caller-supplied green_score to prevent self-reporting
+            let green_score = T::MinGreenScore::get();
 
             // FIX H1: Validate green_score bounds — prevents arbitrary voting weight manipulation
             ensure!(
@@ -933,6 +942,10 @@ pub mod pallet {
                 )
                 .is_err()
                 {
+                    Self::deposit_event(Event::SlashFailed {
+                        validator: validator.clone(),
+                        slash_amount: actual_slash,
+                    });
                     return;
                 }
 
@@ -1496,7 +1509,9 @@ mod tests {
             assert!(Validators::<Test>::contains_key(&charlie));
             let val = Validators::<Test>::get(&charlie).unwrap();
             assert_eq!(val.stake, 1000);
-            assert_eq!(val.green_score, 3);
+            // FIX P2-5: green_score is now set to MinGreenScore (0) at registration,
+            // not the caller-supplied value, to prevent self-reporting manipulation.
+            assert_eq!(val.green_score, 0);
             assert_eq!(TotalStaked::<Test>::get(), 9000);
         });
     }

@@ -379,8 +379,12 @@ pub mod pallet {
             };
 
             CarbonCredits::<T>::insert(id.clone(), credit);
-            TotalCO2Offset::<T>::mutate(|t| *t = t.saturating_add(tons_co2));
-            ActiveCO2Offset::<T>::mutate(|t| *t = t.saturating_add(tons_co2));
+            TotalCO2Offset::<T>::mutate(|t| {
+                *t = t.checked_add(tons_co2).unwrap_or(*t);
+            });
+            ActiveCO2Offset::<T>::mutate(|t| {
+                *t = t.checked_add(tons_co2).unwrap_or(*t);
+            });
 
             Self::deposit_event(Event::CarbonCreditMinted {
                 id: id.into(),

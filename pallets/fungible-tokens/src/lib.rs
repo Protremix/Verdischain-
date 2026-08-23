@@ -377,7 +377,8 @@ pub mod pallet {
 
             let balance = TokenBalances::<T>::get(token_id, &who);
             ensure!(balance >= amount, Error::<T>::InsufficientBalance);
-            TokenBalances::<T>::insert(token_id, &who, balance.saturating_sub(amount));
+            let new_balance = balance.checked_sub(amount).ok_or(Error::<T>::Underflow)?;
+            TokenBalances::<T>::insert(token_id, &who, new_balance);
 
             token.total_supply = token
                 .total_supply

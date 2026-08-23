@@ -494,6 +494,8 @@ fn test_token_remove_liquidity() {
             RuntimeOrigin::signed(alice()),
             0,
             alice_lp / 2,
+            0u128,
+            0u128,
             DEADLINE,
         ));
         let alice_lp_after = AmmDex::token_lp(0, &alice()).unwrap_or(0);
@@ -742,6 +744,8 @@ fn prop_remove_liquidity_preserves_ratio() {
             RuntimeOrigin::signed(alice()),
             0,
             half_lp,
+            0u128,
+            0u128,
             1000,
         ));
 
@@ -1046,7 +1050,7 @@ fn test_remove_liquidity_insufficient_lp() {
 
         // Bob has no LP tokens, tries to remove liquidity
         assert_noop!(
-            AmmDex::remove_liquidity(RuntimeOrigin::signed(bob()), 0, 10_000, 1000),
+            AmmDex::remove_liquidity(RuntimeOrigin::signed(bob()), 0, 10_000, 0u128, 0u128, 1000),
             Error::<Test>::InsufficientLpBalance
         );
     });

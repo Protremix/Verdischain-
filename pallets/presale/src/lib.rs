@@ -933,6 +933,12 @@ pub mod pallet {
             let tokens_to_return = contribution.total_purchased;
             let escrow = Self::round_escrow(round_id);
 
+            // FIX P2-4: Verify escrow has sufficient payment balance before mutations
+            ensure!(
+                T::PaymentCurrency::free_balance(&escrow) >= refund_amount,
+                Error::<T>::InsufficientEscrowBalance
+            );
+
             // CEI: Clear state FIRST (prevents reentrant double-claim)
             Contributions::<T>::remove(round_id, &who);
 

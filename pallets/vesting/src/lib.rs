@@ -315,35 +315,45 @@ pub mod pallet {
             );
 
             // Update vesting records
+            // FIX P3-1: Cache release amounts from first calculation instead of recalculating
+            let mut release_map: Vec<(usize, BalanceOf<T>)> = Vec::new();
+            {
+                let vesting = UserVestings::<T>::get(&who).ok_or(Error::<T>::NoVestingForAccount)?;
+                for (i, v) in vesting.iter().enumerate() {
+                    let elapsed_blocks: u32 = current_block
+                        .checked_sub(&v.start_block)
+                        .ok_or(Error::<T>::Overflow)?
+                        .try_into()
+                        .unwrap_or(0);
+                    let elapsed_days = elapsed_blocks / blocks_per_day;
+                    let schedule = Schedules::<T>::get(&v.schedule);
+                    if let Some(s) = schedule {
+                        if elapsed_days >= s.cliff_days {
+                            let vested = if elapsed_days >= s.vesting_days {
+                                v.total_amount
+                            } else {
+                                v.total_amount
+                                    .checked_mul(&elapsed_days.saturated_into())
+                                    .ok_or(Error::<T>::Overflow)?
+                                    / s.vesting_days.saturated_into()
+                            };
+                            let releasable = vested
+                                .checked_sub(&v.released)
+                                .ok_or(Error::<T>::Overflow)?;
+                            release_map.push((i, releasable));
+                        }
+                    }
+                }
+            }
             UserVestings::<T>::try_mutate(&who, |vests| -> Result<(), Error<T>> {
                 if let Some(vests) = vests {
-                    for v in vests.iter_mut() {
-                        let elapsed_blocks: u32 = current_block
-                            .checked_sub(&v.start_block)
-                            .ok_or(Error::<T>::Overflow)?
-                            .try_into()
-                            .unwrap_or(0);
-                        let elapsed_days = elapsed_blocks / blocks_per_day;
-                        let schedule = Schedules::<T>::get(&v.schedule);
-                        if let Some(s) = schedule {
-                            if elapsed_days >= s.cliff_days {
-                                let vested = if elapsed_days >= s.vesting_days {
-                                    v.total_amount
-                                } else {
-                                    v.total_amount
-                                        .checked_mul(&elapsed_days.saturated_into())
-                                        .ok_or(Error::<T>::Overflow)?
-                                        / s.vesting_days.saturated_into()
-                                };
-                                v.vested = vested;
-                                let releasable = vested
-                                    .checked_sub(&v.released)
-                                    .ok_or(Error::<T>::Overflow)?;
-                                v.released = v
-                                    .released
-                                    .checked_add(&releasable)
-                                    .ok_or(Error::<T>::Overflow)?;
-                            }
+                    for (i, releasable) in &release_map {
+                        if let Some(v) = vests.get_mut(*i) {
+                            v.vested = v.vested.checked_add(releasable).ok_or(Error::<T>::Overflow)?;
+                            v.released = v
+                                .released
+                                .checked_add(releasable)
+                                .ok_or(Error::<T>::Overflow)?;
                         }
                     }
                 }

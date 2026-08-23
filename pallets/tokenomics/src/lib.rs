@@ -738,7 +738,8 @@ impl<T: Config> Pallet<T> {
     /// Calculate annual inflation amount
     pub fn calculate_inflation(total_supply: u128, current_supply: u128) -> u128 {
         let rate = Self::annual_inflation_rate() as u128;
-        let remaining = total_supply.saturating_sub(current_supply);
-        remaining.saturating_mul(rate) / 10000
+        // FIX P2-3: Use checked arithmetic instead of saturating
+        let remaining = total_supply.checked_sub(current_supply).unwrap_or(0);
+        remaining.checked_mul(rate).unwrap_or(0) / 10000
     }
 }
