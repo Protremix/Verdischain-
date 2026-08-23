@@ -2022,21 +2022,43 @@ function showExtrinsic(txHash, blockNum, signer, remark) {
 }
 
 // Load all blocks
-async function loadBlocks() {
+var _blockPage = 1;
+var _blockLimit = 20;
+var _latestBlockNum = 0;
+
+async function loadBlocks(page) {
+  if (page) _blockPage = page;
   const tbody = document.getElementById('allBlocks');
   if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="5"><span class="skel" style="width:100%"></span></td></tr>';
-  let html = '';
-  // Fetch current block height if not set
-  if (!blockNum || blockNum === 0) {
-    const hdr = await rpc('chain_getHeader', []);
-    if (hdr && hdr.number) blockNum = parseInt(hdr.number, 16);
+
+  // Fetch current block height
+  const hdr = await rpc('chain_getHeader', []);
+  if (hdr && hdr.number) {
+    _latestBlockNum = parseInt(hdr.number, 16);
+    blockNum = _latestBlockNum;
   }
-  const start = blockNum || 100;
-  if (start === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-3)">No blocks yet</td></tr>'; return; }
-  // PARALLEL: fetch all 20 blocks at once instead of sequentially
+  if (_latestBlockNum === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-3)">No blocks yet</td></tr>';
+    return;
+  }
+
+  const totalPages = Math.ceil(_latestBlockNum / _blockLimit);
+  if (_blockPage > totalPages) _blockPage = totalPages;
+
+  // Calculate block range for this page
+  // Page 1 = latest 20 blocks, page 2 = next 20, etc.
+  const endBlock = _latestBlockNum - ((_blockPage - 1) * _blockLimit);
+  const startBlock = Math.max(0, endBlock - _blockLimit + 1);
+  const count = endBlock - startBlock + 1;
+
   const blockNums_lb = [];
-  for (let i = 0; i < 20; i++) { if (start - i >= 0) blockNums_lb.push(start - i); }
+  for (let i = 0; i < count; i++) {
+    const bn = endBlock - i;
+    if (bn >= 0) blockNums_lb.push(bn);
+  }
+
+  let html = '';
   const lbPromises = blockNums_lb.map(function(bn) {
     return rpc('chain_getBlockHash', [bn]).then(function(h) {
       if (!h) return null;
@@ -2051,16 +2073,58 @@ async function loadBlocks() {
     if (!r || !r.block) continue;
     const exts = r.block.block?.extrinsics || [];
     const extRoot = r.block.block?.header?.extrinsicsRoot || '—';
-    html += `<tr onclick="showBlock('${r.hash}')">
+    const blockTime = r.block.block?.header?.number ? '' : '';
+    // Try to get timestamp from the first extrinsic (Timestamp.set)
+    let timeStr = '—';
+    if (exts.length > 0) {
+      try {
+        const ext = decodeExtrinsic(exts[0]);
+        if (ext && ext.pallet === 1 && ext.call === 0) {
+          // Timestamp.set - decode the compact u64 value
+          const tsResult = decodeCompact(ext.args, 0);
+          if (tsResult && tsResult.value) {
+            const ts = Number(tsResult.value);
+            if (ts > 0) {
+              const now = Date.now();
+              const diff = Math.floor((now - ts) / 1000);
+              if (diff < 60) timeStr = diff + 's ago';
+              else if (diff < 3600) timeStr = Math.floor(diff/60) + 'm ago';
+              else if (diff < 86400) timeStr = Math.floor(diff/3600) + 'h ago';
+              else timeStr = Math.floor(diff/86400) + 'd ago';
+            }
+          }
+        }
+      } catch(e) {}
+    }
+    html += `<tr style="cursor:pointer" onclick="showBlockRich('${r.hash}', ${r.bn})">
       <td class="hash hash-accent">#${r.bn}</td>
-      <td>${i===0?'now':(i*6)+'s ago'}</td>
+      <td>${timeStr}</td>
       <td>${exts.length}</td>
       <td class="hash">${shortHash(extRoot,4)}</td>
       <td class="hash">${shortHash(r.hash)}</td>
     </tr>`;
   }
   tbody.innerHTML = html;
-  document.getElementById('blockCount').textContent = 'Showing latest 20 blocks';
+
+  // Update pagination controls
+  var pgDiv = document.getElementById('blockPagination');
+  if (!pgDiv) {
+    // Create pagination div after the table
+    var tableParent = tbody.parentElement.parentElement;
+    pgDiv = document.createElement('div');
+    pgDiv.id = 'blockPagination';
+    pgDiv.className = 'txPagination';
+    tableParent.appendChild(pgDiv);
+  }
+  pgDiv.innerHTML =
+    '<button onclick="loadBlocks(1)" ' + (_blockPage <= 1 ? 'disabled' : '') + '>First</button>' +
+    '<button onclick="loadBlocks(' + Math.max(1, _blockPage - 1) + ')" ' + (_blockPage <= 1 ? 'disabled' : '') + '>← Prev</button>' +
+    '<span class="txPageInfo">Page ' + _blockPage + ' of ' + totalPages + ' (blocks #' + startBlock + '–#' + endBlock + ')</span>' +
+    '<button onclick="loadBlocks(' + Math.min(totalPages, _blockPage + 1) + ')" ' + (_blockPage >= totalPages ? 'disabled' : '') + '>Next →</button>' +
+    '<button onclick="loadBlocks(' + totalPages + ')" ' + (_blockPage >= totalPages ? 'disabled' : '') + '>Last</button>';
+
+  var bc = document.getElementById('blockCount');
+  if (bc) bc.textContent = 'Page ' + _blockPage + ' of ' + totalPages + ' (latest: #' + _latestBlockNum + ')';
 }
 
 // Load all extrinsics (fetch more blocks for signed txs)
