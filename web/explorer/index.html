@@ -1959,16 +1959,22 @@ function loadLatestTxs() {
 }
 
 // Show transaction detail modal
-function showExtrinsic(method, blockNum, signer, remark) {
-  document.getElementById('modalTitle').textContent = 'Transaction Detail';
-  let html = '<dl>';
-  html += '<dt>Block Number</dt><dd>' + (blockNum ? '#' + escapeHtml(blockNum) : '—') + '</dd>';
-  html += '<dt>Method</dt><dd>' + escapeHtml(method || 'unknown') + '</dd>';
-  html += '<dt>Signer Address</dt><dd>' + escapeHtml(signer || '—') + '</dd>';
-  html += '<dt>Remark Text</dt><dd>' + escapeHtml(remark || '—') + '</dd>';
-  html += '</dl>';
-  document.getElementById('modalBody').innerHTML = html;
-  document.getElementById('modal').classList.add('show');
+function showExtrinsic(txHash, blockNum, signer, remark) {
+  // Redirect to rich detail modal
+  if (txHash && txHash.startsWith('0x')) {
+    showExtrinsicRich(txHash, blockNum);
+  } else {
+    // Fallback for old-style calls
+    document.getElementById('modalTitle').textContent = 'Transaction Detail';
+    var html = '<dl>';
+    html += '<dt>Block Number</dt><dd>' + (blockNum ? '#' + escapeHtml(blockNum) : '—') + '</dd>';
+    html += '<dt>Method</dt><dd>' + escapeHtml(txHash || 'unknown') + '</dd>';
+    html += '<dt>Signer Address</dt><dd>' + escapeHtml(signer || '—') + '</dd>';
+    html += '<dt>Remark Text</dt><dd>' + escapeHtml(remark || '—') + '</dd>';
+    html += '</dl>';
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('modal').classList.add('show');
+  }
 }
 
 // Load all blocks
@@ -2209,43 +2215,23 @@ async function loadEco() {
 }
 
 // Show block detail
-async function showBlock(hash) {
-  const block = await rpc('chain_getBlock', [hash]);
-  if (!block) return;
-  const h = block.block?.header || {};
-  const exts = block.block?.extrinsics || [];
-  const num = parseInt(h.number || '0x0', 16);
-  document.getElementById('modalTitle').textContent = 'Block #'+num;
-  let html = '<dl>';
-  html += '<dt>Block Number</dt><dd>#'+num+'</dd>';
-  html += '<dt>Hash</dt><dd>'+hash+'</dd>';
-  html += '<dt>Parent Hash</dt><dd>'+escapeHtml(h.parentHash||'—')+'</dd>';
-  html += '<dt>State Root</dt><dd>'+escapeHtml(h.stateRoot||'—')+'</dd>';
-  html += '<dt>Extrinsics Root</dt><dd>'+escapeHtml(h.extrinsicsRoot||'—')+'</dd>';
-  html += '<dt>Extrinsics</dt><dd>'+exts.length+'</dd>';
-  html += '</dl>';
-  // Show extrinsic details
-  if (exts.length > 0) {
-    html += '<div style="margin-top:16px"><div style="font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:8px">Extrinsics</div>';
-    exts.forEach((e, i) => {
-      const ext = decodeExtrinsic(e, hash, num);
-      if (!ext) return;
-      const remarkHtml = ext.remark ? '<div style="margin-top:4px;font-size:12px;color:var(--accent)">'+ext.remark.substring(0,80)+'</div>' : '';
-      html += '<div style="padding:8px 0;border-bottom:1px solid var(--border)">' +
-        '<div style="display:flex;align-items:center;gap:8px">' +
-        '<span class="badge '+ext.badge+'">'+ext.type+'</span>' +
-        '<span style="color:var(--text-2);font-size:13px">#'+i+'</span>' +
-        '<span style="color:var(--text-2);font-size:13px">'+escapeHtml(ext.method)+'</span>' +
-        '</div>' +
-        '<div style="margin-top:6px;font-size:12px;color:var(--text-3)">Hash: '+escapeHtml(ext.hash)+'</div>' +
-        (ext.signer !== '—' ? '<div style="margin-top:2px;font-size:12px;color:var(--text-3)">From: '+escapeHtml(ext.signer)+'</div>' : '') +
-        remarkHtml +
-        '</div>';
-    });
-    html += '</div>';
+async function showBlock(hashOrNum) {
+  // If numeric, use rich block detail
+  if (typeof hashOrNum === 'number' || /^\d+$/.test(hashOrNum)) {
+    showBlockRich(parseInt(hashOrNum));
+    return;
   }
-  document.getElementById('modalBody').innerHTML = html;
-  document.getElementById('modal').classList.add('show');
+  // Otherwise it's a hash - resolve to block number first
+  try {
+    var block = await rpc('chain_getBlock', [hashOrNum]);
+    if (block && block.block) {
+      var num = parseInt(block.block.header.number || '0x0', 16);
+      showBlockRich(num);
+      return;
+    }
+  } catch(e) {}
+  // Fallback to old behavior
+  showBlockRich(parseInt(hashOrNum) || 0);
 }
 
 function closeModal() { document.getElementById('modal').classList.remove('show'); }
@@ -4658,6 +4644,175 @@ function renderPriceChart(historyData) {
 }
 
 // Load prices tab on tab switch
+
+
+// ===========================================================================
+// VERDISCAN PROFESSIONAL FRONTEND ENHANCEMENT
+// Replaces basic showExtrinsic/showBlock with rich API-powered detail modals
+// ===========================================================================
+
+function fmtVRDX(amt) {
+  if (!amt && amt !== 0) return "\u2014";
+  return (Number(amt) / 1e9).toLocaleString(undefined, {minimumFractionDigits: 4, maximumFractionDigits: 4}) + " VRDX";
+}
+
+function shortAddr(addr, prefix) {
+  if (!addr) return "\u2014";
+  prefix = prefix || 10;
+  if (addr.length <= prefix * 2) return addr;
+  return addr.substring(0, prefix) + "\u2026" + addr.substring(addr.length - 6);
+}
+
+function fmtTime(ts) {
+  if (!ts) return "\u2014";
+  if (typeof ts === "string") return ts;
+  return new Date(ts * 1000).toISOString().replace("T", " ").substring(0, 19) + " UTC";
+}
+
+function statusBadge(status) {
+  if (status === "success") return '<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:rgba(0,255,136,0.15);color:#00ff88">Success</span>';
+  if (status === "failed") return '<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:rgba(255,68,68,0.15);color:#ff4444">Failed</span>';
+  return '<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:rgba(128,128,128,0.15);color:var(--text-3)">Unknown</span>';
+}
+
+async function showExtrinsicRich(txHash, blockNum, extIndex) {
+  var modalTitle = document.getElementById("modalTitle");
+  var modalBody = document.getElementById("modalBody");
+  modalTitle.textContent = "Transaction Detail";
+  modalBody.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-3)">Loading transaction...</div>';
+  document.getElementById("modal").classList.add("show");
+
+  try {
+    var resp = await fetch("/api/v1/tx/" + txHash + "/detail");
+    if (!resp.ok) throw new Error("Not found");
+    var result = await resp.json();
+    var tx = result.data;
+    if (!tx) throw new Error("No data");
+
+    var html = '<dl>';
+    html += '<dt>Transaction Hash</dt><dd style="font-size:11px">' + escapeHtml(tx.hash || txHash) + '</dd>';
+    html += '<dt>Status</dt><dd>' + statusBadge(tx.status) + '</dd>';
+    html += '<dt>Block</dt><dd><a href="#" onclick="showBlockByNumber(' + tx.block + ');return false" style="color:var(--accent)">#' + tx.block + '</a> (' + (tx.confirmations || 0) + ' confirmations)</dd>';
+    html += '<dt>Timestamp</dt><dd>' + fmtTime(tx.block_timestamp || tx.timestamp) + '</dd>';
+    html += '<dt>Method</dt><dd>' + escapeHtml(tx.method || "unknown") + '</dd>';
+    html += '<dt>Signer</dt><dd>' + (tx.signer_ss58 ? escapeHtml(tx.signer_ss58) + ' <span style="color:var(--text-3);font-size:11px">(' + escapeHtml(tx.signer || "") + ')</span>' : "\u2014 (unsigned)") + '</dd>';
+    if (tx.nonce !== null && tx.nonce !== undefined) html += '<dt>Nonce</dt><dd>' + tx.nonce + '</dd>';
+
+    var args = tx.args || {};
+    if (args.dest) html += '<dt>Recipient</dt><dd>' + escapeHtml(args.dest) + '</dd>';
+    if (args.value !== undefined) html += '<dt>Value</dt><dd style="color:var(--accent);font-weight:600">' + (args.value_formatted || fmtVRDX(args.value)) + '</dd>';
+    if (args.target) html += '<dt>Target</dt><dd>' + escapeHtml(args.target) + '</dd>';
+    if (args.amount) html += '<dt>Amount</dt><dd>' + fmtVRDX(args.amount) + '</dd>';
+    if (args.pool_id !== undefined) html += '<dt>Pool ID</dt><dd>' + args.pool_id + '</dd>';
+    if (args.token_in !== undefined) html += '<dt>Token In</dt><dd>' + args.token_in + '</dd>';
+    if (args.amount_in) html += '<dt>Amount In</dt><dd>' + fmtVRDX(args.amount_in) + '</dd>';
+    if (args.remark) html += '<dt>Remark</dt><dd>' + escapeHtml(args.remark) + '</dd>';
+    if (args.name) html += '<dt>Validator Name</dt><dd>' + escapeHtml(args.name) + '</dd>';
+    if (tx.fee) html += '<dt>Fee</dt><dd>' + (tx.fee_formatted || fmtVRDX(tx.fee)) + '</dd>';
+    if (tx.transfer) {
+      var t = tx.transfer;
+      html += '<dt>Transfer</dt><dd>' + escapeHtml(t.from || "?") + ' \u2192 ' + escapeHtml(t.to || "?") + ' (' + (t.amount_formatted || fmtVRDX(t.amount)) + ')</dd>';
+    }
+    html += '</dl>';
+
+    if (tx.events && tx.events.length > 0) {
+      html += '<div style="margin-top:16px"><div style="font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:8px">Events (' + tx.events.length + ')</div>';
+      tx.events.forEach(function(ev) {
+        var evDetail = "";
+        if (ev.event === "Transfer") evDetail = " " + escapeHtml(ev.from || "") + " \u2192 " + escapeHtml(ev.to || "") + " (" + (ev.amount_formatted || "") + ")";
+        else if (ev.event === "TransactionFeePaid" && ev.fee_formatted) evDetail = " Fee: " + ev.fee_formatted;
+        else if (ev.account) evDetail = " " + escapeHtml(ev.account);
+        html += '<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--accent)">' + escapeHtml(ev.pallet || "?") + "." + escapeHtml(ev.event || "?") + '</span><span style="color:var(--text-3)">' + evDetail + '</span></div>';
+      });
+      html += '</div>';
+    }
+
+    html += '<details style="margin-top:16px"><summary style="cursor:pointer;font-size:12px;color:var(--text-3)">Raw Hex</summary><div style="margin-top:8px;font-family:var(--mono);font-size:10px;color:var(--text-3);word-break:break-all">' + escapeHtml(tx.raw_hex || "") + '</div></details>';
+
+    modalBody.innerHTML = html;
+  } catch (err) {
+    modalBody.innerHTML = '<div style="text-align:center;padding:20px;color:#ff4444">Error loading transaction: ' + escapeHtml(err.message) + '</div>';
+  }
+}
+
+async function showBlockRich(blockNum) {
+  var modalTitle = document.getElementById("modalTitle");
+  var modalBody = document.getElementById("modalBody");
+  modalTitle.textContent = "Block #" + blockNum;
+  modalBody.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-3)">Loading block...</div>';
+  document.getElementById("modal").classList.add("show");
+
+  try {
+    var resp = await fetch("/api/v1/block/" + blockNum + "/detail");
+    if (!resp.ok) throw new Error("Not found");
+    var result = await resp.json();
+    var block = result.data;
+    if (!block) throw new Error("No data");
+
+    var html = '<dl>';
+    html += '<dt>Block Number</dt><dd style="font-weight:600;color:var(--accent)">#' + block.number + '</dd>';
+    html += '<dt>Block Hash</dt><dd style="font-size:11px">' + escapeHtml(block.hash || "\u2014") + '</dd>';
+    html += '<dt>Timestamp</dt><dd>' + fmtTime(block.timestamp) + '</dd>';
+    html += '<dt>Parent Hash</dt><dd style="font-size:11px">' + escapeHtml(block.parent_hash || "\u2014") + '</dd>';
+    html += '<dt>State Root</dt><dd style="font-size:11px">' + escapeHtml(block.state_root || "\u2014") + '</dd>';
+    html += '<dt>Extrinsics Root</dt><dd style="font-size:11px">' + escapeHtml(block.extrinsics_root || "\u2014") + '</dd>';
+    html += '<dt>Extrinsics</dt><dd>' + block.extrinsics_count + ' (' + block.signed_tx_count + ' signed)</dd>';
+    html += '<dt>Events</dt><dd>' + (block.event_count || 0) + '</dd>';
+    if (block.author) html += '<dt>Author</dt><dd>' + escapeHtml(block.author) + '</dd>';
+    html += '</dl>';
+
+    if (block.extrinsics && block.extrinsics.length > 0) {
+      html += '<div style="margin-top:16px"><div style="font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:8px">Extrinsics</div>';
+      block.extrinsics.forEach(function(ext) {
+        var args = ext.args || {};
+        var argDetail = "";
+        if (args.dest) argDetail = " \u2192 " + escapeHtml(shortAddr(args.dest, 8));
+        if (args.value !== undefined) argDetail += " (" + (args.value_formatted || fmtVRDX(args.value)) + ")";
+        if (args.remark) argDetail += " " + escapeHtml(args.remark.substring(0, 50));
+
+        html += '<div style="padding:10px 0;border-bottom:1px solid var(--border)">';
+        html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
+        html += '<span style="color:var(--text-3);font-size:12px">#' + ext.index + '</span>';
+        html += '<span style="color:var(--accent);font-size:12px;font-weight:500">' + escapeHtml(ext.method || "unknown") + '</span>';
+        html += statusBadge(ext.status);
+        html += ext.is_signed ? '<span style="font-size:11px;color:var(--text-3)">signed</span>' : '<span style="font-size:11px;color:var(--text-3)">inherent</span>';
+        html += '</div>';
+        if (ext.signer_ss58) html += '<div style="margin-top:4px;font-size:12px;color:var(--text-3)">From: ' + escapeHtml(ext.signer_ss58) + '</div>';
+        if (argDetail) html += '<div style="margin-top:2px;font-size:12px;color:var(--text-2)">' + argDetail + '</div>';
+        if (ext.events && ext.events.length > 0) {
+          ext.events.forEach(function(ev) {
+            var evExtra = "";
+            if (ev.event === "Transfer") evExtra = " " + shortAddr(ev.from, 6) + "\u2192" + shortAddr(ev.to, 6) + " " + (ev.amount_formatted || "");
+            else if (ev.fee_formatted) evExtra = " " + ev.fee_formatted;
+            html += '<div style="margin-top:2px;font-size:11px;color:var(--text-3);padding-left:12px">' + escapeHtml(ev.pallet + "." + ev.event) + evExtra + '</div>';
+          });
+        }
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    if (block.events && block.events.length > 0) {
+      html += '<details style="margin-top:16px"><summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--text-1)">All Events (' + block.events.length + ')</summary>';
+      block.events.forEach(function(ev) {
+        var evExtra = "";
+        if (ev.event === "Transfer") evExtra = " " + escapeHtml(shortAddr(ev.from, 6)) + " \u2192 " + escapeHtml(shortAddr(ev.to, 6)) + " (" + (ev.amount_formatted || "") + ")";
+        else if (ev.account) evExtra = " " + escapeHtml(ev.account);
+        html += '<div style="padding:4px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--accent)">' + escapeHtml(ev.pallet + "." + ev.event) + '</span><span style="color:var(--text-3)">' + evExtra + '</span></div>';
+      });
+      html += '</details>';
+    }
+
+    modalBody.innerHTML = html;
+  } catch (err) {
+    modalBody.innerHTML = '<div style="text-align:center;padding:20px;color:#ff4444">Error loading block: ' + escapeHtml(err.message) + '</div>';
+  }
+}
+
+function showBlockByNumber(num) {
+  showBlockRich(num);
+}
+
 </script>
 </body>
 </html>
