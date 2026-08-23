@@ -461,7 +461,7 @@ fn test_prop_staking_rewards_capped_at_20b() {
 
         // Attempting a single huge reward distribution of 21B VRDX on fresh state must fail
         let mut fresh_state = TokenomicsState::genesis();
-        let huge_err = fresh_state.distribute_staking_reward(2 * BILLION);
+        let huge_err = fresh_state.distribute_staking_reward(21 * BILLION);
         assert!(huge_err.is_err());
         assert_eq!(fresh_state.staking_rewards_distributed, 0);
     });
