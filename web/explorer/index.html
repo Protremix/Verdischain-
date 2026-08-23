@@ -224,6 +224,21 @@ a{color:inherit;text-decoration:none}
 @keyframes scroll-ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 .market-ticker-scroll-inner{display:flex;gap:24px;animation:scroll-ticker 40s linear infinite}
 .market-ticker-scroll:hover .market-ticker-scroll-inner{animation-play-state:paused}
+
+.allTxFilters { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+.allTxFilters select, .allTxFilters input { background:var(--bg-2); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:6px 10px; font-size:12px; font-family:var(--sans); }
+.allTxFilters select:focus, .allTxFilters input:focus { outline:none; border-color:var(--accent); }
+.allTxFilters button { background:var(--accent); color:#000; border:none; border-radius:6px; padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer; }
+.txPagination { display:flex; justify-content:space-between; align-items:center; margin-top:16px; gap:12px; }
+.txPagination button { background:var(--bg-2); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:6px 14px; font-size:12px; cursor:pointer; }
+.txPagination button:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
+.txPagination button:disabled { opacity:0.4; cursor:default; }
+.txPageInfo { font-size:12px; color:var(--text-3); font-family:var(--mono); }
+.allTxTable { width:100%; border-collapse:collapse; }
+.allTxTable th { text-align:left; font-size:11px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.5px; padding:8px 6px; border-bottom:1px solid var(--border); }
+.allTxTable td { padding:8px 6px; font-size:12px; border-bottom:1px solid var(--border); }
+.allTxTable tr { cursor:pointer; }
+.allTxTable tr:hover { background:var(--bg-2); }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -390,7 +405,7 @@ a{color:inherit;text-decoration:none}
         <table class="tbl"><thead><tr><th>BLOCK</th><th>TIME</th><th>EXT</th><th>HASH</th></tr></thead><tbody id="latestBlocks"></tbody></table>
       </div>
       <div class="panel">
-        <div class="panel-header"><span class="panel-title">Latest Transactions</span><a class="panel-link" onclick="window.location.href=/transactions/">View all →</a></div>
+        <div class="panel-header"><span class="panel-title">Latest Transactions</span><a href="#" onclick="showAllTransactions();return false" style="font-size:12px;color:var(--accent);margin-left:auto;font-weight:400;text-decoration:none">View All →</a><a class="panel-link" onclick="window.location.href=/transactions/">View all →</a></div>
         <table class="tbl"><thead><tr><th>BLOCK</th><th>HASH</th><th>METHOD</th><th>SIGNER</th><th>VALUE</th></tr></thead><tbody id="latestTxs"></tbody></table>
       </div>
     </div>
@@ -4840,6 +4855,113 @@ async function showBlockRich(blockNum) {
 
 function showBlockByNumber(num) {
   showBlockRich(num);
+}
+
+
+// ============================================================
+// ALL TRANSACTIONS VIEW
+// ============================================================
+var _txPage = 1;
+var _txLimit = 20;
+var _txFilter = { pallet: '', category: '', signer: '', minBlock: '', maxBlock: '' };
+
+function showAllTransactions() {
+  _txPage = 1;
+  _txFilter = { pallet: '', category: '', signer: '', minBlock: '', maxBlock: '' };
+  var modalTitle = document.getElementById('modalTitle');
+  var modalBody = document.getElementById('modalBody');
+  modalTitle.innerHTML = 'All Transactions <span style="font-size:12px;color:var(--text-3);margin-left:8px" id="txTotalLabel">Loading...</span>';
+
+  var html = '';
+  html += '<div class="allTxFilters">';
+  html += '<select id="txFilterPallet" onchange="_txPage=1;_txFilter.pallet=this.value;loadAllTxPage()">';
+  html += '<option value="">All Pallets</option>';
+  html += '<option value="Balances">Balances</option>';
+  html += '<option value="System">System</option>';
+  html += '<option value="Dpos">DPoS</option>';
+  html += '<option value="AmmDex">AMM DEX</option>';
+  html += '<option value="Eco">Eco</option>';
+  html += '<option value="Vesting">Vesting</option>';
+  html += '<option value="Presale">Presale</option>';
+  html += '</select>';
+  html += '<select id="txFilterCategory" onchange="_txPage=1;_txFilter.category=this.value;loadAllTxPage()">';
+  html += '<option value="">All Types</option>';
+  html += '<option value="transfer">Transfers</option>';
+  html += '<option value="remark">Remarks</option>';
+  html += '<option value="other">Other</option>';
+  html += '</select>';
+  html += '<input type="text" id="txFilterSigner" placeholder="Signer (SS58 or 0x...)" style="width:180px" onkeyup="if(event.key===\'Enter\'){_txPage=1;_txFilter.signer=this.value;loadAllTxPage()}">';
+  html += '<input type="number" id="txFilterMinBlock" placeholder="Min Block" style="width:100px" onkeyup="if(event.key===\'Enter\'){_txPage=1;_txFilter.minBlock=this.value;loadAllTxPage()}">';
+  html += '<input type="number" id="txFilterMaxBlock" placeholder="Max Block" style="width:100px" onkeyup="if(event.key===\'Enter\'){_txPage=1;_txFilter.maxBlock=this.value;loadAllTxPage()}">';
+  html += '<button onclick="_txPage=1;_txFilter.pallet=document.getElementById(\'txFilterPallet\').value;_txFilter.category=document.getElementById(\'txFilterCategory\').value;_txFilter.signer=document.getElementById(\'txFilterSigner\').value;_txFilter.minBlock=document.getElementById(\'txFilterMinBlock\').value;_txFilter.maxBlock=document.getElementById(\'txFilterMaxBlock\').value;loadAllTxPage()">Filter</button>';
+  html += '</div>';
+  html += '<div id="allTxContent"><div style="text-align:center;padding:24px;color:var(--text-3)">Loading...</div></div>';
+  modalBody.innerHTML = html;
+  document.getElementById('modal').classList.add('show');
+  loadAllTxPage();
+}
+
+async function loadAllTxPage() {
+  var content = document.getElementById('allTxContent');
+  if (!content) return;
+  content.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-3)">Loading transactions...</div>';
+
+  var url = '/api/v1/tx?page=' + _txPage + '&limit=' + _txLimit;
+  if (_txFilter.pallet) url += '&pallet=' + encodeURIComponent(_txFilter.pallet);
+  if (_txFilter.category) url += '&category=' + encodeURIComponent(_txFilter.category);
+  if (_txFilter.signer) url += '&signer=' + encodeURIComponent(_txFilter.signer);
+  if (_txFilter.minBlock) url += '&min_block=' + _txFilter.minBlock;
+  if (_txFilter.maxBlock) url += '&max_block=' + _txFilter.maxBlock;
+
+  try {
+    var resp = await fetch(url);
+    if (!resp.ok) throw new Error('API error');
+    var result = await resp.json();
+    var txs = result.data || [];
+    var total = result.total || 0;
+    var totalPages = result.total_pages || 1;
+
+    var totalLabel = document.getElementById('txTotalLabel');
+    if (totalLabel) totalLabel.textContent = '(' + total + ' transactions)';
+
+    if (txs.length === 0) {
+      content.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text-3)">No transactions found</div>';
+      return;
+    }
+
+    var html = '<table class="allTxTable"><thead><tr>';
+    html += '<th>Block</th><th>Hash</th><th>Method</th><th>Signer</th><th>Value</th><th>Type</th>';
+    html += '</tr></thead><tbody>';
+
+    for (var i = 0; i < txs.length; i++) {
+      var tx = txs[i];
+      var valStr = tx.value ? (Number(tx.value) / 1e9).toFixed(4) + ' VRDX' : '\u2014';
+      var signerDisplay = tx.signer_ss58 ? shortAddr(tx.signer_ss58, 8) : (tx.signer ? shortAddr(tx.signer, 8) : '\u2014');
+      var catBadge = tx.category === 'transfer' ? '<span style="color:#00ff88">' + tx.category + '</span>' : '<span style="color:var(--text-3)">' + tx.category + '</span>';
+      var safeHash = (tx.hash || '').replace(/'/g, '');
+      html += '<tr onclick="showExtrinsicRich(\''+escapeAttr(safeHash)+'\', '+tx.block+')">';
+      html += '<td class="hash hash-accent">#' + tx.block + '</td>';
+      html += '<td class="hash">' + shortHash(tx.hash || '', 6) + '</td>';
+      html += '<td><span style="color:var(--accent);font-size:11px">' + escapeHtml(tx.method || 'unknown') + '</span></td>';
+      html += '<td class="hash">' + escapeHtml(signerDisplay) + '</td>';
+      html += '<td style="font-family:var(--mono)">' + valStr + '</td>';
+      html += '<td>' + catBadge + '</td>';
+      html += '</tr>';
+    }
+    html += '</tbody></table>';
+
+    html += '<div class="txPagination">';
+    html += '<button onclick="_txPage=1;loadAllTxPage()" ' + (_txPage <= 1 ? 'disabled' : '') + '>First</button>';
+    html += '<button onclick="_txPage=' + Math.max(1, _txPage - 1) + ';loadAllTxPage()" ' + (_txPage <= 1 ? 'disabled' : '') + '>\u2190 Prev</button>';
+    html += '<span class="txPageInfo">Page ' + _txPage + ' of ' + totalPages + '</span>';
+    html += '<button onclick="_txPage=' + Math.min(totalPages, _txPage + 1) + ';loadAllTxPage()" ' + (_txPage >= totalPages ? 'disabled' : '') + '>Next \u2192</button>';
+    html += '<button onclick="_txPage=' + totalPages + ';loadAllTxPage()" ' + (_txPage >= totalPages ? 'disabled' : '') + '>Last</button>';
+    html += '</div>';
+
+    content.innerHTML = html;
+  } catch(e) {
+    content.innerHTML = '<div style="text-align:center;padding:24px;color:#ff4444">Error: ' + escapeHtml(e.message) + '</div>';
+  }
 }
 
 </script>
