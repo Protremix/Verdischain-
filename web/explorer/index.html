@@ -1927,9 +1927,11 @@ async function loadVrdxPrice() {
   }
 }
 
-function loadLatestTxs() {
+async function loadLatestTxs() {
   const tbody = document.getElementById('latestTxs');
   if (!tbody) return;
+
+  // First try recent RPC blocks for live transactions
   let html = '';
   let count = 0;
   for (let i = 0; i < blocksData.length && count < 10; i++) {
@@ -1941,7 +1943,7 @@ function loadLatestTxs() {
       const signerDisplay = accountIdToSS58(ext.signer);
       const valStr = ext.value ? (ext.value / 1e9).toFixed(4) : '0';
       const safeMethod = (ext.method || 'unknown').replace(/'/g, '');
-      html += '<tr style="cursor:pointer" onclick="showExtrinsic(\''+escapeAttr(safeMethod)+'\', '+b.num+', \''+escapeHtml(signerDisplay)+'\', \''+'\')">' +
+      html += '<tr style="cursor:pointer" onclick="showExtrinsicRich(\''+escapeAttr(safeMethod)+'\', '+b.num+')">' +
         '<td class="hash hash-accent">#' + b.num + '</td>' +
         '<td class="hash">' + shortHash(b.hash) + '</td>' +
         '<td><span class="badge badge-signed">' + escapeHtml(ext.method || 'unknown') + '</span></td>' +
@@ -1951,8 +1953,35 @@ function loadLatestTxs() {
       count++;
     }
   }
+
+  // If no live txs found, fetch from API (indexed transactions)
   if (count === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-3);padding:24px">Waiting for signed transactions...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5"><span class="skel" style="width:100%"></span></td></tr>';
+    try {
+      const resp = await fetch('/api/v1/tx/last?limit=10');
+      if (resp.ok) {
+        const result = await resp.json();
+        const txs = result.data || [];
+        for (let i = 0; i < txs.length && count < 10; i++) {
+          const tx = txs[i];
+          const valStr = tx.value ? (Number(tx.value) / 1e9).toFixed(4) : '0';
+          const signerDisplay = tx.signer_ss58 || (tx.signer ? tx.signer.substring(0, 20) + '...' : 'unknown');
+          const safeHash = (tx.hash || '').replace(/'/g, '');
+          html += '<tr style="cursor:pointer" onclick="showExtrinsicRich(\''+escapeAttr(safeHash)+'\', '+tx.block+')">' +
+            '<td class="hash hash-accent">#' + tx.block + '</td>' +
+            '<td class="hash">' + shortHash(tx.hash || '', 6) + '</td>' +
+            '<td><span class="badge badge-signed">' + escapeHtml(tx.method || 'unknown') + '</span></td>' +
+            '<td class="hash">' + escapeHtml(signerDisplay) + '</td>' +
+            '<td>' + valStr + '</td>' +
+            '</tr>';
+          count++;
+        }
+      }
+    } catch(e) { console.log('API fetch failed:', e); }
+  }
+
+  if (count === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-3);padding:24px">No transactions yet</td></tr>';
   } else {
     tbody.innerHTML = html;
   }

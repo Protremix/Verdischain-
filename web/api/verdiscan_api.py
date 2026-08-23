@@ -1141,11 +1141,17 @@ async def tx_last(limit: int = Query(20, ge=1, le=100)):
     conn.close()
     txs = []
     for row in rows:
+        signer_hex = row["signer"]
+        signer_ss58 = ""
+        if signer_hex and signer_hex.startswith("0x") and len(signer_hex) == 66:
+            try: signer_ss58 = _to_ss58(signer_hex)
+            except: pass
         txs.append({
             "block": row["block_number"],
             "index": row["tx_index"],
             "hash": row["tx_hash"],
             "signer": row["signer"],
+            "signer_ss58": signer_ss58,
             "method": row["method"],
             "pallet": row["pallet"],
             "call_name": row["call_name"],
