@@ -246,6 +246,18 @@ pub fn new_full<
                     .merge(rpc::SudoRpcServer::into_rpc(sudo))
                     .map_err(|e| Error::Application(Box::new(e)))?;
 
+                // Democracy RPC
+                let democracy = rpc::DemocracyRpcImpl::new(client.clone());
+                module
+                    .merge(rpc::DemocracyRpcServer::into_rpc(democracy))
+                    .map_err(|e| Error::Application(Box::new(e)))?;
+
+                // Council RPC
+                let council = rpc::CouncilRpcImpl::new(client.clone());
+                module
+                    .merge(rpc::CouncilRpcServer::into_rpc(council))
+                    .map_err(|e| Error::Application(Box::new(e)))?;
+
                 // EcoApi RPC
                 let eco = rpc::EcoRpcImpl::new(client.clone());
                 module
