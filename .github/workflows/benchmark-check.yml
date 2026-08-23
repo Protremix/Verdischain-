@@ -1,6 +1,11 @@
 name: Benchmark Weights Check
 
 on:
+  push:
+    branches: [master, main]
+    paths:
+      - 'pallets/**'
+      - 'runtime/**'
   pull_request:
     branches: [master, main]
     paths:
@@ -11,6 +16,7 @@ jobs:
   check-weights:
     name: Verify pallet weight files exist
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Check all production pallets have weight files

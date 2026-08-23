@@ -20,6 +20,7 @@ jobs:
   deploy:
     name: Build Release Binary
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: Install Substrate Dependencies
@@ -41,12 +42,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: verdis-deploy-binary
-          path: target/release/verdis
+          path: target/release/verdis-chain
           retention-days: 7
 
   benchmark:
     name: Run Benchmarks
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     needs: deploy
     steps:
       - uses: actions/checkout@v4
@@ -67,7 +69,7 @@ jobs:
         run: cargo build --release --features runtime-benchmarks
       - name: Run Benchmarks
         run: |
-          ./target/release/verdis benchmark             --chain dev             --steps ${{ github.event.inputs.steps || '50' }}             --repeat ${{ github.event.inputs.repeat || '20' }}             --pallet '*'             --extrinsic '*'             --output ./benchmarks/           || echo "Benchmarks completed with warnings."
+          ./target/release/verdis-chain benchmark             --chain dev             --steps ${{ github.event.inputs.steps || '50' }}             --repeat ${{ github.event.inputs.repeat || '20' }}             --pallet '*'             --extrinsic '*'             --output ./benchmarks/           || echo "Benchmarks completed with warnings."
       - uses: actions/upload-artifact@v4
         with:
           name: verdis-benchmarks

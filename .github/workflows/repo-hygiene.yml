@@ -1,5 +1,9 @@
 name: Repository Hygiene
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [master, main]
@@ -10,6 +14,7 @@ jobs:
   check-artifacts:
     name: Prevent Build Artifacts
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:

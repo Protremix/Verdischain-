@@ -10,6 +10,7 @@ jobs:
   fmt:
     name: 1. Code Format
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -20,6 +21,7 @@ jobs:
   clippy:
     name: 2. Clippy Lint
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Install system dependencies
@@ -40,6 +42,7 @@ jobs:
   test:
     name: 3. Unit Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Install system dependencies
@@ -60,6 +63,7 @@ jobs:
   tokenomics-check:
     name: 4. Tokenomics Consistency
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - run: python3 scripts/check_genesis_consistency.py
@@ -67,6 +71,7 @@ jobs:
   release-build:
     name: 5. Release Build
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: [fmt, clippy, test, tokenomics-check]
     steps:
       - uses: actions/checkout@v4
@@ -88,6 +93,7 @@ jobs:
   wasm-build:
     name: 6. WASM Runtime Build
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: [fmt, clippy, test, tokenomics-check]
     steps:
       - uses: actions/checkout@v4
@@ -109,6 +115,7 @@ jobs:
   repo-hygiene:
     name: 7. Repository Hygiene
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Check for forbidden files
@@ -131,6 +138,7 @@ jobs:
   release-gates-summary:
     name: RELEASE GATES SUMMARY
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: [fmt, clippy, test, tokenomics-check, release-build, wasm-build, repo-hygiene]
     steps:
       - run: echo "All 7 release gates passed. Merge to master is approved."

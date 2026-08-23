@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [master, main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
@@ -14,6 +18,7 @@ jobs:
   fmt:
     name: Format Check
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -24,6 +29,7 @@ jobs:
   check:
     name: Compile Check
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Install system dependencies
@@ -45,6 +51,7 @@ jobs:
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Install system dependencies
@@ -66,6 +73,7 @@ jobs:
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: [check]
     steps:
       - uses: actions/checkout@v4
@@ -88,6 +96,7 @@ jobs:
   release-build:
     name: Release Build
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: [test]
     steps:
       - uses: actions/checkout@v4
@@ -107,13 +116,14 @@ jobs:
       - run: cargo build --release
       - uses: actions/upload-artifact@v4
         with:
-          name: verdis-node-binary
-          path: target/release/verdis
+          name: verdis-chain-binary
+          path: target/release/verdis-chain
           retention-days: 7
 
   wasm-build:
     name: WASM Runtime Build
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: [test]
     steps:
       - uses: actions/checkout@v4
@@ -141,6 +151,7 @@ jobs:
   audit:
     name: Dependency Audit
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: [check]
     steps:
       - uses: actions/checkout@v4
@@ -154,4 +165,3 @@ jobs:
           else
             cargo audit
           fi
-        continue-on-error: true

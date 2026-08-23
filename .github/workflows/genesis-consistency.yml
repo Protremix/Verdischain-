@@ -1,6 +1,13 @@
 name: Genesis Consistency Check
 
 on:
+  push:
+    branches: [master, main]
+    paths:
+      - 'node/src/chain_spec.rs'
+      - 'pallets/tokenomics/**'
+      - 'runtime/**'
+      - 'docs/CANONICAL_FACTS.md'
   pull_request:
     branches: [master, main]
     paths:

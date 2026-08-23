@@ -28,6 +28,7 @@ jobs:
   cargo-audit:
     name: Cargo Vulnerability Audit
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -39,6 +40,7 @@ jobs:
   rpc-security-check:
     name: RPC Safety Scan
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - name: Check RPC Configurations
@@ -67,6 +69,7 @@ jobs:
   secret-scanning:
     name: Secret & Key Leakage Scan
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -75,7 +78,6 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
       - name: Scan for Hardcoded Private Keys in Rust Source
         run: |
           echo "Scanning Rust source code for hardcoded private keys..."
@@ -95,6 +97,7 @@ jobs:
   license-audit:
     name: License Compliance
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable

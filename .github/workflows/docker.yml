@@ -18,6 +18,7 @@ jobs:
   docker-build:
     name: Build & Push Multi-Arch Docker Image (amd64, arm64)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: read
       packages: write
