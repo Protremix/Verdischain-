@@ -21,13 +21,16 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev libclang-14-dev build-essential
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm build-essential
       - uses: dtolnay/rust-toolchain@stable
         with:
+          components: rust-src
           targets: wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
       - name: Set LIBCLANG_PATH
-        run: echo "LIBCLANG_PATH=/usr/lib/llvm-14/lib" >> $GITHUB_ENV
+        run: |
+          LCP=$(llvm-config --libdir 2>/dev/null || echo "/usr/lib/llvm-18/lib:/usr/lib/x86_64-linux-gnu")
+          echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
       - name: Build Node Release Binary
         run: cargo build --release
       - name: Build WASM Runtime
