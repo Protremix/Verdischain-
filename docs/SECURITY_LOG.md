@@ -37,6 +37,7 @@ Verdis Chain classifies all security findings into five severity levels based on
 | `SEC-P1-01` | `pallets/amm-dex` | **P1** | Pool Bricking via Zero-LP State | **FIXED** | 2026-08-07 | `e80119f3` | `test_pool_lifecycle_empty_drain` |
 | `SEC-P1-02` | `web/frontend` | **P1** | XSS Vulnerability in DEX & Faucet DOM Rendering | **FIXED** | 2026-08-08 | `f31209b1` | Static DOM Sanitization Check |
 | `SEC-P1-03` | `pallets/amm-dex` | **P1** | Self-Transfer State Corruption in DEX Swaps | **FIXED** | 2026-08-09 | `a90184c6` | `test_self_swap_prevention` |
+| `SEC-P1-04` | `pallets/tokenomics` / `runtime` | **P1** | Tokenomics allocation and investor-limit sources are inconsistent: pallet invariant/test references include legacy 30B/15B allocation comments and a 12B `InvestorAllocation`, while runtime config references a 5B investor allocation; production genesis/issuance equivalence was not verified | **OPEN** | 2026-08-24 | — | Static review; cargo tests unavailable on host |
 | `SEC-P2-01` | `runtime/chain_spec` | **P2** | Treasury Control Placeholder (`PalletId` fallback) | **PENDING** | 2026-08-10 | Script Ready | Pending Air-Gapped Key Ceremony |
 | `SEC-P2-02` | `pallets/eco` | **P2** | Unbounded `iter().count()` Storage Iteration | **FIXED** | 2026-08-11 | `d20914e8` | `test_eco_bounded_iter` |
 | `SEC-P3-01` | `pallets/dpos` | **P3** | Weight Misattribution in `set_commission` | **FIXED** | 2026-08-12 | `e45612f0` | Benchmark re-run |
@@ -120,3 +121,15 @@ Verdis Chain classifies all security findings into five severity levels based on
 ## 5. SIGN-OFF & CONTINUOUS MONITORING STATEMENT
 
 All P0 Critical and P1 High findings discovered during internal code audits have been fully resolved, verified via unit/integration test cases, and confirmed non-reproducible. Pending item `SEC-P2-01` will be resolved immediately upon execution of the official 3-of-5 cold-storage key ceremony script (`scripts/air-gapped-key-ceremony.sh`).
+
+
+## 6. ARTICLE 19 WEEKLY SECURITY CYCLE — 2026-08-24
+
+| Date | Finding ID | Severity | Component | Description | Status | Fix Commit |
+|---|---|---|---|---|---|---|
+| 2026-08-24 | SEC-P1-04 | P1 | pallets/tokenomics / runtime | Tokenomics allocation and investor-limit sources are inconsistent (legacy 30B/15B references and 12B pallet test limit versus 5B runtime reference); issuance/allocation equivalence not verified | OPEN | — |
+| 2026-08-24 | SEC-P4-01 | P4 | Build/test infrastructure | Full workspace and required regression tests could not execute because cargo, cargo-audit, and cargo-outdated are unavailable on the target host; verdict evidence is incomplete | OPEN | — |
+
+**Cycle evidence:** Repository HEAD `86bec212` (release freeze). Changes since `HEAD~7` include DPoS, DEX security regression tests, eco, fungible-tokens, presale, tokenomics, vesting, runtime, chain-spec, CI, deployment, and key-ceremony files. Static secret scan returned no non-test matches. Static unsafe/unwrap/expect scan returned production-path matches, notably in `pallets/storage`, `pallets/eco`, `pallets/dpos`, and presale genesis code; these require code-level review. `cargo test --workspace --release` and the three requested regression commands were not runnable. `cargo audit` and `cargo outdated` were not runnable. No Cargo.lock diff or new dependency additions were detected in the reviewed commit range.
+
+**Article 21 verdict:** UNKNOWN — insufficient evidence because the full and regression test suites, dependency vulnerability audit, and on-chain supply invariant verification could not be completed. Existing pending `SEC-P2-01` remains unresolved.
