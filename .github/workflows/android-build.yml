@@ -25,21 +25,16 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Android NDK
-        uses: nttvs/setup-ndk@v1
-        with:
-          ndk-version: 27.0.12077973
-
       - name: Flutter pub get
         run: flutter pub get
 
       - name: Build APK (debug for CI verification)
         run: flutter build apk --debug || true
 
-      - name: Find APK
+      - name: Find and list APK files
         run: |
           echo "=== Looking for APK files ==="
-          find build -name "*.apk" -type f 2>/dev/null || echo "No APK found in build/"
+          find build -name "*.apk" -type f 2>/dev/null || echo "No APK in build/"
           find /home/runner -name "*.apk" -type f 2>/dev/null | head -5 || true
 
       - name: Upload APK artifact
