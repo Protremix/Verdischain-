@@ -28,12 +28,20 @@ jobs:
       - name: Flutter pub get
         run: flutter pub get
 
-      - name: Build APK
-        run: flutter build apk --release
+      - name: Build APK (debug for CI verification)
+        run: flutter build apk --debug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: verdis-wallet-android
+          name: verdis-wallet-android-debug
           path: build/app/outputs/flutter-apk/*.apk
           retention-days: 30
+
+      - name: Upload build directory on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build-output
+          path: build/app/
+          retention-days: 7
