@@ -33,17 +33,10 @@ Future<void> main() async {
     FlutterError.dumpErrorToConsole(details);
   };
 
-  // CRITICAL: runApp() FIRST so the user sees UI immediately.
-  // All initialization happens in the background while the splash screen is visible.
-  runApp(
-    ProviderScope(
-      overrides: [],
-      child: const VerdisWalletApp(),
-    ),
-  );
-
-  // Background initialization — non-blocking, each step has a 3s timeout.
-  // Failures are non-fatal; the app still works with reduced functionality.
+  // Initialize Hive BEFORE runApp so the splash page can read onboarding state.
+  // This prevents a race condition where the splash page tries to read Hive
+  // before it's initialized, causing the app to show the welcome page
+  // instead of the PIN lock screen for existing wallets.
   try {
     await configureDependencies().timeout(const Duration(seconds: 3));
   } catch (e) {
@@ -55,6 +48,14 @@ Future<void> main() async {
   } catch (e) {
     debugPrint('HiveHelper.init failed: $e');
   }
+
+  // NOW run the app — Hive is ready, splash page will work correctly.
+  runApp(
+    ProviderScope(
+      overrides: [],
+      child: const VerdisWalletApp(),
+    ),
+  );
 
   try {
     await PlatformSecurityService.setSecureFlag(enabled: true)

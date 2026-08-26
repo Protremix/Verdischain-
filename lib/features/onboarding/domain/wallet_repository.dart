@@ -29,7 +29,7 @@ abstract class WalletRepository {
   });
 
   /// Read active wallet keys and address from secure storage
-  Future<Map<String, String>?> loadWallet();
+  Future<Map<String, String>?> loadWallet({String? pin});
 
   /// Delete stored wallet data
   Future<void> deleteWallet();

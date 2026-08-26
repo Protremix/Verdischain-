@@ -80,10 +80,11 @@ class _LockScreenPageState extends ConsumerState<LockScreenPage> {
     }
   }
 
-  Future<void> _unlockAndGoHome() async {
+  Future<void> _unlockAndGoHome({String? pin}) async {
     try {
       final repo = ref.read(onboardingWalletProvider);
-      final wallet = await repo.loadWallet();
+      // Pass the PIN so loadWallet can decrypt the encrypted mnemonic
+      final wallet = await repo.loadWallet(pin: pin);
       if (wallet != null && wallet.containsKey('address') && mounted) {
         ref.read(selectedAddressProvider.notifier).state = wallet['address']!;
       } else if (_walletAddress != null && mounted) {
@@ -122,7 +123,7 @@ class _LockScreenPageState extends ConsumerState<LockScreenPage> {
 
       if (localCorrect) {
         if (!mounted) return;
-        await _unlockAndGoHome();
+        await _unlockAndGoHome(pin: _enteredPin);
         return;
       }
 
@@ -135,7 +136,7 @@ class _LockScreenPageState extends ConsumerState<LockScreenPage> {
 
         if (success) {
           if (!mounted) return;
-          await _unlockAndGoHome();
+          await _unlockAndGoHome(pin: _enteredPin);
           return;
         }
 

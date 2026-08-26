@@ -16,6 +16,10 @@ class SecureStorageHelper {
       encryptedSharedPreferences: false,
       resetOnError: true,
     ),
+    iOptions: IOSOptions(
+      accessibility: KeychainAccessibility.first_unlock,
+      synchronizable: false,
+    ),
   );
   final FlutterSecureStorage _storage;
 
