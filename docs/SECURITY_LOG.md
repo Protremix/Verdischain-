@@ -134,3 +134,40 @@ All P0 Critical and P1 High findings discovered during internal code audits have
 
 **Article 21 verdict:** UNKNOWN — insufficient evidence because the full and regression test suites, dependency vulnerability audit, and on-chain supply invariant verification could not be completed. Existing pending `SEC-P2-01` remains unresolved.
 | 2026-08-31 | SEC-P4-02 | P4 | Security verification infrastructure | Article 19 automated evidence remains incomplete: cargo, cargo-audit, and cargo-outdated are unavailable on the review host; full workspace tests and all three required regression tests could not execute. Static review found no non-test secret-pattern hits or unsafe operations, and no new pallet/runtime changes since the prior cycle. | OPEN | — |
+
+## 2026-09-02 — Key Ceremony Completed & Mainnet Genesis Injected
+
+**Event:** Air-gapped key ceremony completed. 71 keypairs generated and verified.
+- 21 validators × 3 keys (account + babe + grandpa) = 63
+- 3 council members
+- 5 multisig signers (3-of-5 Treasury control)
+
+**Actions:**
+1. All 71 keypairs generated on air-gapped machine
+2. Public keys uploaded via USB, seeds shredded 3-pass
+3. All public keys injected into mainnet-plain.json on Hetzner:
+   - Session keys: 6 → 21
+   - GRANDPA authorities: 0 → 21
+   - DPOS validators: 21 test → 21 ceremony
+   - Council: 8 → 3 (ceremony members)
+   - Technical committee: → 3
+   - Balance entries updated for all ceremony accounts
+4. Old test keys fully removed (verified zero occurrences)
+5. Runtime WASM code NOT touched — release freeze safe
+6. Treasury multisig addresses documented (PalletId → multisig replacement still pending code change)
+7. Backup saved on Hetzner at /opt/ceremony-keys-20260902/
+
+**Status:** Ceremony gate = PASS. Genesis public keys JSON at ./genesis-public-keys.json.
+
+**Remaining P1 code blockers (break freeze):**
+- P1-1: Remove Sudo pallet from runtime
+- P1-2: Replace 20 ensure_root calls with EnsureCouncil (2/3) across 6 pallets
+- P1-3: Change Circuit Breaker AdminOrigin from EnsureRoot to EnsureCouncil
+- Replace PalletId with 3-of-5 multisig address
+
+**Infrastructure:**
+- Hetzner (91.98.160.145): Boot node + explorer — ONLINE
+- Online.net (195.154.80.40): Validator server — ONLINE, building
+- Hostkey NL (46.17.96.12): Reinstalling
+- Hostkey DE (185.84.224.91): Port 22 open, access pending
+
