@@ -121,7 +121,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("verdis-chain"),
     impl_name: create_runtime_str!("verdis-chain"),
     authoring_version: 2,
-    spec_version: 14,
+    spec_version: 15,
     impl_version: 7,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 3,
@@ -339,7 +339,7 @@ parameter_types! {
     pub const ReportLongevity: u64 = 18_000_000; // 500 blocks * 6 epochs * 6s = covers slash defer period
 }
 impl pallet_babe::Config for Runtime {
-    type EpochDuration = ConstU64<20>;
+    type EpochDuration = ConstU64<500>;
     type ExpectedBlockTime = ConstU64<BLOCK_TIME>;
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = Session;
@@ -410,15 +410,9 @@ impl pallet_authorship::Config for Runtime {
     type EventHandler = ();
 }
 
-// === Sudo (testnet only — P1-1 MAINNET GATE: must remove from construct_runtime
-// and delete this impl block before mainnet launch. Sudo gives root key
-// unilateral control over all pallets with EnsureRoot AdminOrigin.
-// Standing instruction: keep on testnet for emergency runtime management.) ===
-impl pallet_sudo::Config for Runtime {
-    type RuntimeEvent = RuntimeEvent;
-    type RuntimeCall = RuntimeCall;
-    type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
-}
+// P1-1 RESOLVED: Sudo pallet removed from runtime for mainnet.
+// Sudo was removed from construct_runtime! and its Config impl deleted.
+// Council (2/3) governance replaces all former sudo/EnsureRoot origins.
 
 /// Wrapper to implement historical SessionManager for DPoS
 pub struct DposSessionManager;
@@ -695,6 +689,8 @@ impl pallet_dpos::Config for Runtime {
     type MaxMissedEpochs = MaxMissedEpochs;
     type MinimumValidatorCount = MinimumValidatorCount;
     type WeightInfo = pallet_dpos::SubstrateWeight<Runtime>;
+    /// P1-2: Council 2/3 for admin operations
+    type AdminOrigin = EnsureCouncil;
     type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Runtime, Babe>;
 }
 
@@ -875,6 +871,8 @@ impl pallet_vesting::Config for Runtime {
     type PalletId = VestingPalletId;
     type WeightInfo = pallet_vesting::SubstrateWeight<Runtime>;
     type BlockTimeMs = ConstU64<5000>;
+    /// P1-2: Council 2/3 for admin operations
+    type AdminOrigin = EnsureCouncil;
 }
 
 // === Verdis Presale ===
@@ -1170,6 +1168,23 @@ impl pallet_nfts::Config for Runtime {
 
 // === Treasury ===
 
+
+// P1-2: Council (2/3) origin for admin operations — replaces EnsureRoot/sudo
+pub struct EnsureCouncil;
+impl frame_support::traits::EnsureOrigin<RuntimeOrigin> for EnsureCouncil {
+    type Success = ();
+    fn try_origin(o: RuntimeOrigin) -> Result<Self::Success, RuntimeOrigin> {
+        pallet_collective::EnsureProportionAtLeast::<AccountId, pallet_collective::Instance1, 2, 3>
+            ::try_origin(o)
+            .map(|_| ())
+    }
+    #[cfg(feature = "runtime-benchmarks")]
+    fn try_successful_origin() -> Result<RuntimeOrigin, ()> {
+        use frame_system::RawOrigin;
+        Ok(RawOrigin::Root.into())
+    }
+}
+
 // Post-sudo: Council (2/3) spend origin for Treasury with success type
 pub struct EnsureCouncilSpend;
 impl frame_support::traits::EnsureOrigin<RuntimeOrigin> for EnsureCouncilSpend {
@@ -1438,6 +1453,8 @@ pub const GreenTreasuryPalletId: PalletId = PalletId(*b"vrds/trs");
 // === Solana-inspired Config impls ===
 impl pallet_poh::Config for Runtime {
     type WeightInfo = pallet_poh::SubstrateWeight<Runtime>;
+    /// P1-2: Council 2/3 for admin operations
+    type AdminOrigin = EnsureCouncil;
 }
 impl pallet_gulf_stream::ValidatorChecker<AccountId> for Runtime {
     fn is_active_validator(who: &AccountId) -> bool {
@@ -1456,11 +1473,15 @@ impl pallet_turbine::Config for Runtime {
     type RedundancyFactor = RedundancyFactor;
     type MaxValidatorsPerNode = MaxValidatorsPerNode;
     type WeightInfo = pallet_turbine::SubstrateWeight<Runtime>;
+    /// P1-2: Council 2/3 for admin operations
+    type AdminOrigin = EnsureCouncil;
 }
 impl pallet_zk_compression::Config for Runtime {
     type MaxLeaves = MaxZkLeaves;
     type MaxDepth = MaxZkDepth;
     type WeightInfo = pallet_zk_compression::SubstrateWeight<Runtime>;
+    /// P1-2: Council 2/3 for admin operations
+    type AdminOrigin = EnsureCouncil;
 }
 impl pallet_address_lookup_tables::Config for Runtime {
     type MaxAddressesPerTable = MaxAddressesPerTable;
@@ -1502,7 +1523,6 @@ construct_runtime! {
         Session: pallet_session = 7,
         Scheduler: pallet_scheduler = 8,
         Preimage: pallet_preimage = 9,
-        Sudo: pallet_sudo = 10,
         Contracts: pallet_contracts = 20,
         AmmDex: pallet_amm_dex = 31,
         Eco: pallet_eco = 32,
@@ -1692,11 +1712,7 @@ sp_api::decl_runtime_apis! {
         fn get_investor_allocation() -> Balance;
     }
 
-    /// Sudo API for querying sudo key (testnet only)
-    pub trait SudoApi {
-        /// Get the current sudo key
-        fn get_key() -> Option<AccountId>;
-    }
+    // SudoApi removed — Sudo pallet no longer in runtime (P1-1)
 
     /// Democracy API for governance transparency
     pub trait DemocracyApi {
@@ -2158,11 +2174,7 @@ impl_runtime_apis! {
         }
     }
 
-    impl crate::SudoApi<Block> for Runtime {
-        fn get_key() -> Option<AccountId> {
-            pallet_sudo::Key::<Runtime>::get()
-        }
-    }
+    // SudoApi impl removed — Sudo pallet no longer in runtime (P1-1)
 
     impl crate::DemocracyApi<Block> for Runtime {
         fn get_referendum_count() -> u32 {

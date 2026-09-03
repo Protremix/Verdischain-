@@ -13,6 +13,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
+use frame_support::traits::EnsureOrigin;
 pub use pallet::*;
 use sp_std::prelude::*;
 pub mod weights;
@@ -29,6 +30,8 @@ pub mod pallet {
         type MaxLeaves: Get<u32>;
         type WeightInfo: WeightInfo;
         type MaxDepth: Get<u32>;
+        /// P1-2: Admin origin for privileged calls (Council 2/3)
+        type AdminOrigin: EnsureOrigin<Self::RuntimeOrigin, Success = ()>;
     }
     #[pallet::storage]
     pub type ZkTotalTrees<T> = StorageValue<_, u64, ValueQuery>;
@@ -120,7 +123,7 @@ pub mod pallet {
             leaf_index: u32,
             proof_hash: [u8; 32],
         ) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
             // FIX H14: Actually verify the proof against the stored Merkle root.
             let root = MerkleRoots::<T>::get(tree_id).ok_or(Error::<T>::TreeNotFound)?;
             let verified = proof_hash == root;

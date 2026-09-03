@@ -33,6 +33,7 @@ pub mod pallet {
     use super::*;
     use frame_support::pallet_prelude::*;
     use frame_system::pallet_prelude::*;
+use frame_support::traits::EnsureOrigin;
 
     // ============ Types ============
 
@@ -154,6 +155,8 @@ pub mod pallet {
         type MaxHeightJump: Get<u64>;
         /// Timestamp provider for timestamp-based timeouts (milliseconds)
         type TimestampProvider: Get<u64>;
+        /// P1-2: Admin origin for privileged calls (Council 2/3)
+        type AdminOrigin: EnsureOrigin<Self::RuntimeOrigin, Success = ()>;
     }
 
     // ============ Events ============
@@ -283,7 +286,7 @@ pub mod pallet {
             trusting_period: u64,
         ) -> DispatchResult {
             // SECURITY: Only root/governance can create IBC clients
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
 
             let client_id = IbcClientCounter::<T>::get();
             IbcClientCounter::<T>::put(client_id.checked_add(1).unwrap_or(u32::MAX));
@@ -312,7 +315,7 @@ pub mod pallet {
             counterparty_client_id: u32,
         ) -> DispatchResult {
             // SECURITY: Only root/governance can open IBC connections
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
 
             let client = IbcClients::<T>::get(client_id).ok_or(Error::<T>::ClientNotFound)?;
             ensure!(!client.frozen, Error::<T>::ClientFrozen);
@@ -344,7 +347,7 @@ pub mod pallet {
             port_id: Vec<u8>,
         ) -> DispatchResult {
             // SECURITY: Only root/governance can open IBC channels
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
 
             let connection =
                 IbcConnections::<T>::get(connection_id).ok_or(Error::<T>::ConnectionNotFound)?;
@@ -398,7 +401,7 @@ pub mod pallet {
                     ensure!(who == designated_relayer, Error::<T>::UnauthorizedRelayer);
                 }
                 None => {
-                    ensure_root(origin)?;
+                    T::AdminOrigin::ensure_origin(origin)?;
                 }
             }
 
@@ -459,7 +462,7 @@ pub mod pallet {
                     ensure!(who == designated_relayer, Error::<T>::UnauthorizedRelayer);
                 }
                 None => {
-                    ensure_root(origin)?;
+                    T::AdminOrigin::ensure_origin(origin)?;
                 }
             }
 
@@ -547,7 +550,7 @@ pub mod pallet {
                     ensure!(who == designated_relayer, Error::<T>::UnauthorizedRelayer);
                 }
                 None => {
-                    ensure_root(origin)?;
+                    T::AdminOrigin::ensure_origin(origin)?;
                 }
             }
 
@@ -790,7 +793,7 @@ pub mod pallet {
         #[pallet::call_index(8)]
         #[pallet::weight(T::WeightInfo::close_channel())]
         pub fn close_channel(origin: OriginFor<T>, channel_id: u32) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
 
             IbcChannels::<T>::mutate(channel_id, |channel| {
                 if let Some(c) = channel {
@@ -811,7 +814,7 @@ pub mod pallet {
             new_height: u64,
         ) -> DispatchResult {
             // SECURITY: Only root/governance can update client state
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
 
             let mut client = IbcClients::<T>::get(client_id).ok_or(Error::<T>::ClientNotFound)?;
             ensure!(!client.frozen, Error::<T>::ClientFrozen);
@@ -836,7 +839,7 @@ pub mod pallet {
         #[pallet::weight(Weight::from_parts(5_000, 0))]
         pub fn freeze_client(origin: OriginFor<T>, client_id: u32) -> DispatchResult {
             // SECURITY: Only root/governance can freeze clients
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
 
             let mut client = IbcClients::<T>::get(client_id).ok_or(Error::<T>::ClientNotFound)?;
             client.frozen = true;
@@ -853,7 +856,7 @@ pub mod pallet {
             channel_id: u32,
             relayer: T::AccountId,
         ) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
             ChannelRelayers::<T>::insert(channel_id, relayer.clone());
             Self::deposit_event(Event::ChannelRelayerSet {
                 channel_id,

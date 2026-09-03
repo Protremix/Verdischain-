@@ -754,36 +754,7 @@ where
             .get_investor_allocation(at)
             .map_err(rpc_err)
     }
-}
 
-// === SudoApi RPC ===
-use verdis_runtime::SudoApi as SudoRuntimeApi;
-
-#[rpc(server)]
-pub trait SudoRpc {
-    #[method(name = "sudo_getKey")]
-    fn get_key(&self) -> RpcResult<Option<AccountId>>;
-}
-
-pub struct SudoRpcImpl<C> {
-    client: Arc<C>,
-}
-
-impl<C> SudoRpcImpl<C> {
-    pub fn new(client: Arc<C>) -> Self {
-        Self { client }
-    }
-}
-
-impl<C> SudoRpcServer for SudoRpcImpl<C>
-where
-    C: ProvideRuntimeApi<Block> + HeaderBackend<Block> + 'static,
-    C::Api: SudoRuntimeApi<Block>,
-{
-    fn get_key(&self) -> RpcResult<Option<AccountId>> {
-        let at = self.client.info().best_hash;
-        self.client.runtime_api().get_key(at).map_err(rpc_err)
-    }
 }
 
 // === ContractsApi RPC ===

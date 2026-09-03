@@ -28,6 +28,7 @@ use frame_support::{
     DefaultNoBound, PalletId,
 };
 use frame_system::pallet_prelude::*;
+use frame_support::traits::EnsureOrigin;
 use scale_info::TypeInfo;
 use sp_arithmetic::traits::SaturatedConversion;
 
@@ -165,6 +166,8 @@ pub mod pallet {
         /// Target block time in milliseconds — used for vesting schedule calculations
         #[pallet::constant]
         type BlockTimeMs: Get<u64>;
+        /// P1-2: Admin origin for privileged calls (Council 2/3)
+        type AdminOrigin: EnsureOrigin<Self::RuntimeOrigin, Success = ()>;
     }
 
     // === Genesis ===
@@ -214,7 +217,7 @@ pub mod pallet {
             vesting_days: u32,
             cliff_days: u32,
         ) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
 
             let label_bv: BoundedVec<u8, ConstU32<64>> = label
                 .clone()
@@ -253,7 +256,7 @@ pub mod pallet {
             schedule_label: Vec<u8>,
             amount: BalanceOf<T>,
         ) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
             Self::do_assign_vesting(who, schedule_label, amount)
         }
 
@@ -404,7 +407,7 @@ pub mod pallet {
             schedule_label: Vec<u8>,
             amount: BalanceOf<T>,
         ) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
 
             let label_bv: BoundedVec<u8, ConstU32<64>> = schedule_label
                 .clone()

@@ -31,6 +31,7 @@ use frame_support::{
     DefaultNoBound, PalletId,
 };
 use frame_system::pallet_prelude::*;
+use frame_support::traits::EnsureOrigin;
 use scale_info::TypeInfo;
 use sp_runtime::traits::{AccountIdConversion, Saturating};
 use sp_std::prelude::*;
@@ -290,6 +291,8 @@ pub mod pallet {
 
         /// FIX C5: Maximum consecutive epochs with 0 block production before deactivation
         type MaxMissedEpochs: Get<u32>;
+        /// P1-2: Admin origin for privileged calls (Council 2/3)
+        type AdminOrigin: EnsureOrigin<Self::RuntimeOrigin, Success = ()>;
 
         /// FIX C4: Minimum validators required — chain halts if below this count
         type MinimumValidatorCount: Get<u32>;
@@ -727,7 +730,7 @@ pub mod pallet {
             penalty: BalanceOf<T>,
             reason: Vec<u8>,
         ) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
 
             let val = Validators::<T>::get(&validator).ok_or(Error::<T>::ValidatorNotFound)?;
             ensure!(!reason.is_empty(), Error::<T>::InvalidSlashReason);
@@ -802,7 +805,7 @@ pub mod pallet {
             validator: T::AccountId,
             score: u8,
         ) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
 
             ensure!(
                 score >= T::MinGreenScore::get(),

@@ -22,6 +22,7 @@ pub trait WeightInfo {
 pub mod weights;
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
+use frame_support::traits::EnsureOrigin;
 pub use pallet::*;
 use sp_std::prelude::*;
 pub use weights::WeightInfo as SubstrateWeight;
@@ -37,6 +38,8 @@ pub mod pallet {
         type MaxShards: Get<u32>;
         type RedundancyFactor: Get<u32>;
         type MaxValidatorsPerNode: Get<u32>;
+        /// P1-2: Admin origin for privileged calls (Council 2/3)
+        type AdminOrigin: EnsureOrigin<Self::RuntimeOrigin, Success = ()>;
     }
     #[pallet::storage]
     pub type TurbineTotalShards<T> = StorageValue<_, u64, ValueQuery>;
@@ -87,7 +90,7 @@ pub mod pallet {
         #[pallet::weight(T::WeightInfo::rebuild_tree())]
         #[pallet::call_index(1)]
         pub fn rebuild_tree(origin: OriginFor<T>, validator_count: u32) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
             ensure!(validator_count > 0, Error::<T>::NoValidators);
             let depth = Self::calc_depth(validator_count, T::MaxValidatorsPerNode::get());
             TurbineTreeDepth::<T>::put(depth);

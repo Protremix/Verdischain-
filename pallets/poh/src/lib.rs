@@ -22,6 +22,7 @@ pub mod weights;
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
+use frame_support::traits::EnsureOrigin;
 use scale_info::TypeInfo;
 use sp_runtime::traits::Saturating;
 pub use weights::SubstrateWeight;
@@ -59,6 +60,8 @@ pub mod pallet {
     #[pallet::config]
     pub trait Config: frame_system::Config {
         type WeightInfo: WeightInfo;
+        /// P1-2: Admin origin for privileged calls (Council 2/3)
+        type AdminOrigin: EnsureOrigin<Self::RuntimeOrigin, Success = ()>;
     }
 
     /// Map of block_number -> PoH hash
@@ -105,7 +108,7 @@ pub mod pallet {
         #[pallet::call_index(0)]
         #[pallet::weight(T::WeightInfo::record_block())]
         pub fn record_block(origin: OriginFor<T>) -> DispatchResult {
-            let _who = ensure_root(origin)?;
+            let _who = T::AdminOrigin::ensure_origin(origin)?;
             let block_number = <frame_system::Pallet<T>>::block_number();
             let hash = Self::tick();
             <PohHashes<T>>::insert(block_number, hash);
@@ -121,7 +124,7 @@ pub mod pallet {
             seed: [u8; 32],
             last_hash: [u8; 32],
         ) -> DispatchResult {
-            ensure_root(origin)?;
+            T::AdminOrigin::ensure_origin(origin)?;
             let current_tick = PohTick::<T>::get();
             let new_config = PoHConfig {
                 seed,
@@ -137,7 +140,7 @@ pub mod pallet {
         #[pallet::call_index(2)]
         #[pallet::weight(T::WeightInfo::tick_extrinsic())]
         pub fn tick_extrinsic(origin: OriginFor<T>) -> DispatchResult {
-            let _who = ensure_root(origin)?;
+            let _who = T::AdminOrigin::ensure_origin(origin)?;
             Self::tick();
             Ok(())
         }

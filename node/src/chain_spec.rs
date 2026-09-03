@@ -449,10 +449,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             transfer_fee_bps: 50, // 0.5% transfer fee
         },
         presale: Default::default(),
-        sudo: pallet_sudo::GenesisConfig {
-            key: Some(Sr25519Keyring::Alice.to_account_id()),
-        },
-        vesting: pallet_vesting::GenesisConfig {
+                vesting: pallet_vesting::GenesisConfig {
             vesting_schedules: vec![
                 (b"seed".to_vec(), 3 * bn, 730, 365),
                 (b"presale".to_vec(), 2 * bn, 365, 180),
@@ -866,10 +863,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             transfer_fee_bps: 50, // 0.5% transfer fee
         },
         presale: Default::default(),
-        sudo: pallet_sudo::GenesisConfig {
-            key: Some(Sr25519Keyring::Alice.to_account_id()),
-        },
-        vesting: pallet_vesting::GenesisConfig {
+                vesting: pallet_vesting::GenesisConfig {
             vesting_schedules: vec![
                 (b"seed".to_vec(), 3 * bn, 730, 365),
                 (b"presale".to_vec(), 2 * bn, 365, 180),
@@ -1043,7 +1037,6 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
 
     verdis_runtime::RuntimeGenesisConfig {
         system: Default::default(),
-        sudo: Default::default(), // No sudo on mainnet
         balances: BalancesConfig {
             balances,
             dev_accounts: None,
