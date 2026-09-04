@@ -108,7 +108,20 @@ import secrets as _secrets
 PIN_STORE_FILE = os.environ.get('PIN_STORE_FILE', '/opt/verdis-chain-rust/wallet_pin_store.json')
 pin_lock = threading.Lock()
 MAX_PIN_ATTEMPTS = 5
-LOCKOUT_DURATION = 900  # 15 minutes
+BASE_LOCKOUT_DURATION = 900     # 15 minutes
+MAX_LOCKOUT_DURATION = 86400    # 24 hours cap
+
+# SECURITY (2026-08-27 audit remediation, Finding 3.1):
+# The "pin" value received here is ALREADY a client-side SHA-256 hash
+# (see wallet JS hashPinForTransport()) — the raw digit PIN never
+# traverses the network. This function still applies its own
+# independent salt + 100,000-round hash for at-rest storage, treating
+# the transmitted value as an opaque secret regardless of its origin.
+PIN_HASH_HEX_LEN = 64  # SHA-256 hex digest length
+
+def is_valid_transport_pin(value):
+    """Client sends a 64-char lowercase hex SHA-256 digest, never raw digits."""
+    return isinstance(value, str) and len(value) == PIN_HASH_HEX_LEN and all(c in '0123456789abcdef' for c in value)
 
 def load_pin_store():
     try:
@@ -139,6 +152,7 @@ def register_pin(address, pin):
         'salt': salt,
         'failed_attempts': 0,
         'locked_until': 0,
+        'lockout_count': 0,
         'created_at': time.time(),
         'updated_at': time.time(),
     }
@@ -159,6 +173,7 @@ def verify_pin(address, pin):
     if hmac.compare_digest(pin_hash, entry['pin_hash']):
         entry['failed_attempts'] = 0
         entry['locked_until'] = 0
+        entry['lockout_count'] = 0
         entry['updated_at'] = now
         store[addr_key] = entry
         save_pin_store(store)
@@ -166,11 +181,15 @@ def verify_pin(address, pin):
     entry['failed_attempts'] = entry.get('failed_attempts', 0) + 1
     attempts_remaining = MAX_PIN_ATTEMPTS - entry['failed_attempts']
     if entry['failed_attempts'] >= MAX_PIN_ATTEMPTS:
-        entry['locked_until'] = now + LOCKOUT_DURATION
+        # SECURITY (Finding 3.3): exponential backoff — 15m, 30m, 1h, 2h, 4h ... capped at 24h
+        lockout_count = entry.get('lockout_count', 0)
+        duration = min(BASE_LOCKOUT_DURATION * (2 ** lockout_count), MAX_LOCKOUT_DURATION)
+        entry['locked_until'] = now + duration
         entry['failed_attempts'] = 0
+        entry['lockout_count'] = lockout_count + 1
         store[addr_key] = entry
         save_pin_store(store)
-        return False, f"locked:{LOCKOUT_DURATION}", 0
+        return False, f"locked:{duration}", 0
     store[addr_key] = entry
     save_pin_store(store)
     return False, "wrong_pin", attempts_remaining
@@ -183,11 +202,15 @@ def get_pin_status(address):
     entry = store[addr_key]
     now = time.time()
     locked = entry.get('locked_until', 0) > now
+    # SECURITY (Finding 3.7): round remaining lockout to nearest 30s and drop
+    # created_at — keeps enough info for legitimate UX without giving an
+    # unauthenticated caller precise reconnaissance timing.
+    remaining_raw = entry.get('locked_until', 0) - now if locked else 0
+    remaining_rounded = int((remaining_raw // 30 + 1) * 30) if locked else 0
     return {
         'has_pin': True,
         'locked': locked,
-        'locked_remaining': int(entry.get('locked_until', 0) - now) if locked else 0,
-        'created_at': entry.get('created_at', 0),
+        'locked_remaining': remaining_rounded,
     }
 
 
@@ -584,8 +607,8 @@ class RelayHandler(BaseHTTPRequestHandler):
             if len(email) > 256 or len(ciphertext) > 4096:
                 self._error("Payload too large")
                 return
-            if not pin or len(pin) < 4 or len(pin) > 6 or not pin.isdigit():
-                self._error("A valid wallet PIN (4-6 digits) is required to create an email backup")
+            if not is_valid_transport_pin(pin):
+                self._error("A valid wallet PIN is required to create an email backup")
                 return
 
             # Require a PIN to already be registered for this address, and require it to match.
@@ -620,8 +643,8 @@ class RelayHandler(BaseHTTPRequestHandler):
             if not email:
                 self._error("Missing email")
                 return
-            if not pin or len(pin) < 4 or not pin.isdigit():
-                self._error("PIN is required for wallet recovery (4-6 digits)")
+            if not is_valid_transport_pin(pin):
+                self._error("PIN is required for wallet recovery")
                 return
 
             backup = get_backup(email)
@@ -661,8 +684,8 @@ class RelayHandler(BaseHTTPRequestHandler):
             if not address or not pin:
                 self._error("Missing address or PIN")
                 return
-            if len(pin) < 4 or len(pin) > 6 or not pin.isdigit():
-                self._error("PIN must be 4-6 digits")
+            if not is_valid_transport_pin(pin):
+                self._error("Invalid PIN format")
                 return
             if len(address) > 64:
                 self._error("Invalid address")
@@ -679,8 +702,8 @@ class RelayHandler(BaseHTTPRequestHandler):
             if not address or not pin:
                 self._error("Missing address or PIN")
                 return
-            if len(pin) < 4 or len(pin) > 6 or not pin.isdigit():
-                self._error("PIN must be 4-6 digits")
+            if not is_valid_transport_pin(pin):
+                self._error("Invalid PIN format")
                 return
             try:
                 success, message, remaining = verify_pin(address, pin)

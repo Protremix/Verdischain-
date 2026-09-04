@@ -38,7 +38,9 @@ BLOCKED_METHODS = {
     "system_setStorage",
     "system_addLog",
     "system_addWellKnownLog",
-#    "state_call",  # Needed for DEX/staking API queries
+    "state_call",
+    "state_callAt",
+    "state_traceBlock",
 }
 
 # Allow author_submitExtrinsic for signed transactions (dapps need it)

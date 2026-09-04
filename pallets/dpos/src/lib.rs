@@ -278,6 +278,9 @@ pub mod pallet {
         #[pallet::constant]
         type UnbondingPeriod: Get<u32>;
         type PalletId: Get<PalletId>;
+        /// P1-4: Unified governance Treasury account — receives slashed funds.
+        /// MUST match the runtime's TreasuryAccount (multisig-gated pot).
+        type Treasury: Get<Self::AccountId>;
         #[pallet::constant]
         type MaxStakePerValidator: Get<BalanceOf<Self>>;
         type RegistrationDeposit: Get<BalanceOf<Self>>;
@@ -748,10 +751,12 @@ pub mod pallet {
                 .ok_or(Error::<T>::Overflow)?;
             ensure!(!actual_slash.is_zero(), Error::<T>::SlashingFailed);
 
-            // FIX M2: Send slashed funds to the governance Treasury, not the DPoS reward pool.
+            // FIX M2 + P1-4: Send slashed funds to the governance Treasury, not the DPoS reward pool.
             // The DPoS PalletId account holds reward pool funds — mixing slashed
             // funds with rewards creates accounting inconsistency.
-            let treasury = frame_support::PalletId(*b"v/treasy").into_account_truncating();
+            // P1-4: use T::Treasury (unified multisig-gated Treasury pot) instead of
+            // a second, stranded PalletId account (v/treasy fragmentation bug).
+            let treasury = T::Treasury::get();
             T::Currency::transfer(
                 &validator,
                 &treasury,
@@ -941,8 +946,8 @@ pub mod pallet {
                     return;
                 }
 
-                // FIX M2: Send slashed funds to the governance Treasury, not the DPoS reward pool.
-                let treasury = frame_support::PalletId(*b"v/treasy").into_account_truncating();
+                // FIX M2 + P1-4: unified governance Treasury (fragmentation bug fixed)
+                let treasury = T::Treasury::get();
 
                 // Transfer slash to treasury — if it fails, do NOT update storage
                 if T::Currency::transfer(
@@ -1425,6 +1430,11 @@ mod tests {
         }
     }
 
+    parameter_types! {
+        pub const TestTreasuryAccount: sp_core::crypto::AccountId32 =
+            sp_core::crypto::AccountId32::new([0x74; 32]);
+    }
+
     impl Config for Test {
         type RuntimeEvent = RuntimeEvent;
         type Currency = Balances;
@@ -1435,6 +1445,7 @@ mod tests {
         type EpochLength = EpochLength;
         type UnbondingPeriod = UnbondingPeriod;
         type PalletId = DposPalletId;
+        type Treasury = TestTreasuryAccount;
         type MaxStakePerValidator = MaxStakePerValidator;
         type RegistrationDeposit = ConstU128<0>;
         type ReactivationCooldown = ReactivationCooldown;
@@ -1445,6 +1456,8 @@ mod tests {
         type MinimumValidatorCount = MinimumValidatorCountTest;
         type WeightInfo = SubstrateWeight<Test>;
         type FindAuthor = TestFindAuthor;
+        /// Admin origin for tests: root (matches pre-ceremony test expectations)
+        type AdminOrigin = frame_system::EnsureRoot<Self::RuntimeOrigin>;
     }
 
     pub fn new_test_ext() -> TestExternalities {
@@ -1463,6 +1476,7 @@ mod tests {
                 (Sr25519Keyring::Charlie.to_account_id(), 100_000),
                 (Sr25519Keyring::Dave.to_account_id(), 500),
                 (reward_pool, 10_000_000), // Pre-funded reward pool
+                (TestTreasuryAccount::get(), 1_000_000), // Pre-funded treasury (slash destination)
             ],
             ..Default::default()
         }
@@ -1670,8 +1684,7 @@ mod tests {
     fn test_slash_validator_success() {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
-            let treasury: sp_core::crypto::AccountId32 =
-                PalletId(*b"v/treasy").into_account_truncating();
+            let treasury: sp_core::crypto::AccountId32 = TestTreasuryAccount::get();
             let treasury_before = Balances::free_balance(&treasury);
             let total_staked_before = TotalStaked::<Test>::get();
 
@@ -1963,8 +1976,7 @@ mod tests {
     fn test_slashing_updates_accounting() {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
-            let treasury: sp_core::crypto::AccountId32 =
-                PalletId(*b"v/treasy").into_account_truncating();
+            let treasury: sp_core::crypto::AccountId32 = TestTreasuryAccount::get();
             let treasury_before = Balances::free_balance(&treasury);
             let total_staked_before = TotalStaked::<Test>::get();
 
@@ -2059,8 +2071,7 @@ mod tests {
     fn test_slash_exceeds_stake_capped() {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
-            let treasury: sp_core::crypto::AccountId32 =
-                PalletId(*b"v/treasy").into_account_truncating();
+            let treasury: sp_core::crypto::AccountId32 = TestTreasuryAccount::get();
             let treasury_before = Balances::free_balance(&treasury);
 
             // Alice has 5000 stake, try to slash 999999 (should cap at 5000)
@@ -2185,8 +2196,7 @@ mod tests {
     fn test_do_slash_internal() {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
-            let treasury: sp_core::crypto::AccountId32 =
-                PalletId(*b"v/treasy").into_account_truncating();
+            let treasury: sp_core::crypto::AccountId32 = TestTreasuryAccount::get();
             let treasury_before = Balances::free_balance(&treasury);
 
             // Call internal slash function (simulates offence handler)
@@ -2242,8 +2252,7 @@ mod tests {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
             let bob = Sr25519Keyring::Bob.to_account_id();
-            let treasury: sp_core::crypto::AccountId32 =
-                PalletId(*b"v/treasy").into_account_truncating();
+            let treasury: sp_core::crypto::AccountId32 = TestTreasuryAccount::get();
             let treasury_before = Balances::free_balance(&treasury);
 
             // Slash Alice
@@ -2389,8 +2398,7 @@ mod tests {
     fn test_slash_exact_stake_amount() {
         new_test_ext().execute_with(|| {
             let alice = Sr25519Keyring::Alice.to_account_id();
-            let treasury: sp_core::crypto::AccountId32 =
-                PalletId(*b"v/treasy").into_account_truncating();
+            let treasury: sp_core::crypto::AccountId32 = TestTreasuryAccount::get();
             let treasury_before = Balances::free_balance(&treasury);
 
             // Slash exactly the stake amount (5000)

@@ -121,7 +121,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("verdis-chain"),
     impl_name: create_runtime_str!("verdis-chain"),
     authoring_version: 2,
-    spec_version: 15,
+    spec_version: 16,
     impl_version: 7,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 3,
@@ -680,6 +680,8 @@ impl pallet_dpos::Config for Runtime {
     type EpochLength = EpochLength;
     type UnbondingPeriod = UnbondingPeriod;
     type PalletId = DposPalletId;
+    /// P1-4: slashed funds route to the unified multisig-gated Treasury pot
+    type Treasury = TreasuryAccount;
     type MaxStakePerValidator = MaxStakePerValidator;
     type RegistrationDeposit = RegistrationDeposit;
     type MaxCommission = MaxCommission;
@@ -1256,9 +1258,24 @@ impl pallet_treasury::Config for Runtime {
 pub struct TreasuryMultisigSigners;
 impl frame_support::traits::Get<Option<Vec<AccountId>>> for TreasuryMultisigSigners {
     fn get() -> Option<Vec<AccountId>> {
-        // PRE-CEREMONY: return None, fall back to Council 2/3 spend
-        // POST-CEREMONY: return the 5 cold-storage signer addresses
-        None
+        // P1-4 ACTIVATED 2026-09-03: 3-of-5 multisig cold-storage signers
+        // (mini-ceremony #2, generated fresh — original Sep-2 multisig keys were
+        // never backed up and are dead). Council 2/3 remains as emergency
+        // fallback only.
+        use sp_core::crypto::Ss58Codec;
+        let signers = [
+            "5FucH479zS8cvWLbcZXSZschp4qswT8zyRepGxe58ddwA9Rt", // multisig-01
+            "5CdSGiFi8LM35Bo3UqaGmsr71zCHzGz99SHZdbYsgqJT3vem", // multisig-02
+            "5EptohYJnZ2JhPJwAsPHKZMyFA9jyJX6daYB29HBAh3J7NmY", // multisig-03
+            "5D5EGs3je2h5d4SbdYvKDLyDHAgWPBWwtxkZNamZXDRouuAL", // multisig-04
+            "5DJX32TrU4WGG4MizRDmia5yC4hdp1Q1hCzy16CqgFSUehEy", // multisig-05
+        ];
+        Some(
+            signers
+                .iter()
+                .map(|s| AccountId::from_ss58check(s).expect("static multisig signer address"))
+                .collect(),
+        )
     }
 }
 

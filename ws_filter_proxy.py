@@ -41,6 +41,9 @@ BLOCKED_METHODS = {
     "system_setStorage",
     "system_addLog",
     "system_addWellKnownLog",
+    "state_call",
+    "state_callAt",
+    "state_traceBlock",
 }
 
 # author_submitExtrinsic IS needed for dapps to submit signed transactions
