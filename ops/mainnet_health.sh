@@ -16,6 +16,17 @@ KEY=$HOME/.ssh/id_ed25519
 SSH="ssh -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=12 -i $KEY"
 HOSTS="185.84.224.91 195.154.80.40 213.136.78.63 5.223.77.19"
 CRIT=0; WARN=0
+
+# Pick a WORKING python. On this MSYS host `python3` is a stub that prints "Python" and
+# ignores -c, so hardcoding python3 silently produced empty parse results and a bogus
+# "indexer status unparseable" WARN. Probe for one that actually executes -c.
+PY=""
+for c in python3 python python3.11; do
+  command -v "$c" >/dev/null 2>&1 || continue
+  if [ "$("$c" -c "print(1)" 2>/dev/null)" = "1" ]; then PY="$c"; break; fi
+done
+[ -z "$PY" ] && PY=python
+
 say() { echo "$1"; }
 
 say "VERDIS MAINNET  $(date -u '+%Y-%m-%d %H:%M') UTC"
@@ -211,7 +222,7 @@ fi
 # another's name - the exact failure that put testnet data on the public site.
 NETJSON=$(timeout 15 curl -s -m 12 "https://verdischain.com/api/v1/networks" 2>/dev/null)
 if [ -n "$NETJSON" ]; then
-  BADNET=$(printf '%s' "$NETJSON" | python3 -c "
+  BADNET=$(printf '%s' "$NETJSON" | "$PY" -c "
 import json,sys
 try: d=json.load(sys.stdin)
 except Exception: print('unparseable'); raise SystemExit
@@ -227,6 +238,49 @@ print(' '.join(bad))
   fi
 else
   say "WARN  /api/v1/networks unreachable"
+  WARN=$((WARN+1))
+fi
+
+# ---- indexer: the explorer's data layer ----
+# The indexer is what makes address search, account history and holder rankings
+# possible. If it stalls, the explorer silently serves increasingly stale data while
+# every page still returns 200 - so check PROGRESS, not just that the unit runs.
+IDX=$(timeout 15 curl -s -m 12 "https://verdischain.com/api/v2/status" 2>/dev/null)
+if [ -n "$IDX" ]; then
+  IDXVALS=$(printf '%s' "$IDX" | "$PY" -c "
+import json,sys
+try: d=json.load(sys.stdin)['data']
+except Exception: print('ERR 0 0 parse'); raise SystemExit
+print(d.get('last_indexed_block',0), d.get('chain_tip',0),
+      d.get('behind',0), (d.get('last_error') or '-'))
+" 2>/dev/null)
+  set -- $IDXVALS
+  IDX_LAST="${1:-ERR}"; IDX_TIP="${2:-0}"; IDX_BEHIND="${3:-0}"; IDX_ERR="${4:--}"
+  if [ "$IDX_LAST" = "ERR" ]; then
+    say "WARN  indexer status unparseable"
+    WARN=$((WARN+1))
+  else
+    say "index    indexed=$IDX_LAST tip=$IDX_TIP behind=$IDX_BEHIND"
+    # A backfill legitimately runs thousands of blocks behind; the real alarm is a
+    # STALLED indexer, detected by comparing with the previous run's position.
+    STATE=/tmp/verdis_indexer_pos
+    PREV=$(cat "$STATE" 2>/dev/null || echo 0)
+    printf '%s' "$IDX_LAST" > "$STATE" 2>/dev/null
+    if [ "$IDX_BEHIND" -gt 20 ] && [ "$IDX_LAST" -le "$PREV" ]; then
+      say "CRIT  indexer STALLED at $IDX_LAST (was $PREV, still $IDX_BEHIND behind)"
+      CRIT=$((CRIT+1))
+    elif [ "$IDX_BEHIND" -le 20 ]; then
+      say "         indexer at chain tip  OK"
+    else
+      say "         backfilling, +$((IDX_LAST - PREV)) since last check  OK"
+    fi
+    if [ "$IDX_ERR" != "-" ]; then
+      say "WARN  indexer last_error: $IDX_ERR"
+      WARN=$((WARN+1))
+    fi
+  fi
+else
+  say "WARN  /api/v2/status unreachable (index API down?)"
   WARN=$((WARN+1))
 fi
 
