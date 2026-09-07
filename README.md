@@ -244,3 +244,22 @@ Key documents:
 Copyright (c) 2026 Verdis Chain / Protremix. Licensed under the MIT License.
 
 See [LICENSE](LICENSE) for details.
+
+## Repository layout
+
+```
+node/  runtime/  pallets/     the Substrate chain itself
+chain-specs/                  genesis specs (mainnet-raw.json is authoritative)
+web/                          website, wallet, explorer, docs site
+services/                     production services (source of /opt/verdis-chain-rust)
+tools/                        developer and operator helpers, run by hand
+ops/                          mainnet operations, hardening and audit tooling
+docs/                         documentation
+audits/  security/  legal/    audit records, key ceremony, compliance
+scripts/  deploy/  ci-cd/     build and deployment
+monitoring/  backup/          observability and backups
+tests/                        test suites
+```
+
+Start with `ops/README.md` for how the mainnet is actually run: the health check,
+the validator layout across four hosts, and the operational traps that cost downtime.
