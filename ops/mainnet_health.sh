@@ -124,9 +124,15 @@ done
 [ "$WORST_OK" = "1" ] && say "         any single host can fail without halting finality  OK"
 
 # ---- RPC must stay closed to the internet ----
+# Probe EVERY port an authority actually listens on, not just 9933/9944/9945.
+# The recovered authorities (v13m/v14m/v16b/v17b/v18b-v21b, v9-v20 on Contabo)
+# were deployed on 9947-9963, outside the old firewalled 9933-9946 range, so the
+# old three-port probe reported "all RPC closed OK" while 7 authorities and the
+# public-RPC/tunnel ports were never tested at all. Keep this list in sync with
+# the --rpc-port values in the unit files.
 EXPOSED=""
 for ip in $HOSTS; do
-  for p in 9933 9944 9945; do
+  for p in 9933 9934 9935 9936 9944 9945 9946 9947 9948 9951 9955 9960 9961 9962 9963; do
     r=$(timeout 6 curl -s -m 5 -H 'Content-Type: application/json' \
         -d '{"jsonrpc":"2.0","id":1,"method":"system_nodeRoles","params":[]}' \
         "http://$ip:$p" 2>/dev/null)
@@ -181,6 +187,48 @@ for d in verdischain.com explorer.verdischain.com wallet.verdischain.com dex.ver
   [ "$c" != "200" ] && DOWN="$DOWN $d($c)"
 done
 [ -n "$DOWN" ] && { say "WARN  web:$DOWN"; WARN=$((WARN+1)); } || say "web      4/4 up  OK"
+
+# ---- explorer API ----
+# The explorer showed "Loading..." forever because these returned HTML instead of JSON:
+# verdis-api was reading a dead testnet port and nginx never routed /api/v1 to it.
+# Check the CONTENT TYPE, not just the status code - the broken state returned HTTP 200
+# with text/html, so a status-only check would have called it healthy.
+API_BAD=""
+for p in /api/v1/networks /api/v1/network/stats /api/v1/block/last /api/v1/validators; do
+  ct=$(timeout 12 curl -s -o /dev/null -w '%{content_type}' "https://verdischain.com$p" 2>/dev/null)
+  case "$ct" in *json*) : ;; *) API_BAD="$API_BAD $p($ct)" ;; esac
+done
+if [ -n "$API_BAD" ]; then
+  say "CRIT  explorer API not serving JSON:$API_BAD"
+  CRIT=$((CRIT+1))
+else
+  say "api      explorer API serving JSON  OK"
+fi
+
+# ---- network selector: every advertised chain must pass genesis verification ----
+# The whole point of the selector is that a chain is identified by GENESIS, never by
+# name. If genesis_ok goes false the UI would be labelling one chain's data with
+# another's name - the exact failure that put testnet data on the public site.
+NETJSON=$(timeout 15 curl -s -m 12 "https://verdischain.com/api/v1/networks" 2>/dev/null)
+if [ -n "$NETJSON" ]; then
+  BADNET=$(printf '%s' "$NETJSON" | python3 -c "
+import json,sys
+try: d=json.load(sys.stdin)
+except Exception: print('unparseable'); raise SystemExit
+bad=[n['id'] for n in d.get('data',[]) if n.get('enabled') and not n.get('genesis_ok')]
+print(' '.join(bad))
+" 2>/dev/null)
+  if [ -n "$BADNET" ]; then
+    say "CRIT  network genesis verification failed: $BADNET"
+    CRIT=$((CRIT+1))
+  else
+    N=$(printf '%s' "$NETJSON" | grep -o '"genesis_ok":true' | wc -l)
+    say "nets     $N network(s) genesis-verified  OK"
+  fi
+else
+  say "WARN  /api/v1/networks unreachable"
+  WARN=$((WARN+1))
+fi
 
 say ""
 if [ "$CRIT" -gt 0 ]; then say "STATUS: CRIT ($CRIT critical, $WARN warnings)"; exit 2
