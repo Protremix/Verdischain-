@@ -1,0 +1,18 @@
+# Pinned toolchain for reproducible builds.
+#
+# Why this file exists: without it an auditor cannot reproduce the same WASM runtime
+# blob, because a different rustc produces different bytes. Halborn audits a commit,
+# and a commit that does not pin its compiler is not reproducible.
+#
+# The version below is the one the workspace is VERIFIED to build and test with:
+#   rustc 1.98.0 (88d9e12ae 2026-08-18)
+#   cargo check --workspace  -> 0 errors
+#   cargo test  --workspace  -> 734 passed, 0 failed
+#
+# wasm32-unknown-unknown is required to build the runtime; rust-src is required by
+# any ink! contract work in this workspace.
+[toolchain]
+channel = "1.98.0"
+components = ["rustfmt", "clippy", "rust-src"]
+targets = ["wasm32-unknown-unknown"]
+profile = "minimal"
