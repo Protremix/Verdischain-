@@ -67,7 +67,14 @@ cd "${INSTALL_DIR}"
 # 3. Setup Grafana Admin Credentials Environment File
 echo -e "\n${BOLD}[3/7] Setting up environment configuration...${NC}"
 GRAFANA_ADMIN_USER="admin"
-GRAFANA_ADMIN_PASS="${GRAFANA_ADMIN_PASSWORD:-VerdisSecurePass2026!}"
+if [ -z "${GRAFANA_ADMIN_PASSWORD:-}" ]; then
+  echo "ERROR: GRAFANA_ADMIN_PASSWORD is not set." >&2
+  echo "  Set it before running this installer, e.g.:" >&2
+  echo '    export GRAFANA_ADMIN_PASSWORD="$(openssl rand -base64 24)"' >&2
+  echo "  This script deliberately has no default password." >&2
+  exit 1
+fi
+GRAFANA_ADMIN_PASS="${GRAFANA_ADMIN_PASSWORD}"
 
 cat <<EOF > "${INSTALL_DIR}/.env"
 GRAFANA_ADMIN_USER=${GRAFANA_ADMIN_USER}
@@ -171,5 +178,5 @@ echo -e "  - Alertmanager:  http://91.98.160.145:9093"
 echo -e "  - Node Exporter: http://91.98.160.145:9100"
 echo -e "\nGrafana Credentials:"
 echo -e "  - Username: ${GRAFANA_ADMIN_USER}"
-echo -e "  - Password: ${GRAFANA_ADMIN_PASS}"
+echo -e "  - Password: (the value of GRAFANA_ADMIN_PASSWORD)"
 echo -e "===================================================="
