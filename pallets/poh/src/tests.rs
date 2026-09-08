@@ -22,6 +22,7 @@ impl frame_system::Config for Test {
 }
 
 impl Config for Test {
+        type AdminOrigin = frame_system::EnsureRoot<Self::AccountId>;
     type WeightInfo = crate::SubstrateWeight<Test>;
 }
 

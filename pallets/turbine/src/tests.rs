@@ -26,6 +26,7 @@ parameter_types! {
 }
 
 impl Config for Test {
+        type AdminOrigin = frame_system::EnsureRoot<Self::AccountId>;
     type WeightInfo = crate::SubstrateWeight<Test>;
     type MaxShards = MaxShards;
     type RedundancyFactor = RedundancyFactor;

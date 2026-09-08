@@ -51,6 +51,7 @@ parameter_types! {
 }
 
 impl Config for Test {
+        type AdminOrigin = frame_system::EnsureRoot<Self::AccountId>;
     type RuntimeEvent = RuntimeEvent;
     type MaxPortIdLen = IbcMaxPortIdLen;
     type MaxPacketDataLen = IbcMaxPacketDataLen;

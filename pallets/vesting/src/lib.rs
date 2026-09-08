@@ -730,6 +730,7 @@ mod tests {
     }
 
     impl Config for Test {
+        type AdminOrigin = frame_system::EnsureRoot<Self::AccountId>;
         type RuntimeEvent = RuntimeEvent;
         type Currency = Balances;
         type PalletId = VestPalletId;
