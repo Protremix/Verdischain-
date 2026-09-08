@@ -188,6 +188,11 @@ impl frame_support::traits::FindAuthor<sp_core::crypto::AccountId32> for TestFin
 }
 
 impl pallet_dpos::Config for Test {
+    // Required by pallet_dpos::Config. The runtime uses EnsureCouncil;
+    // a test runtime has no Council, so root is the stand-in used by the
+    // other pallet mocks in this repo.
+    type AdminOrigin = frame_system::EnsureRoot<AccountId32>;
+    type Treasury = TreasuryAccount;
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type BlockReward = BlockReward;
@@ -239,6 +244,7 @@ parameter_types! {
 }
 
 impl pallet_vesting::Config for Test {
+    type AdminOrigin = frame_system::EnsureRoot<AccountId32>;
     type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type PalletId = VestingPalletId;
