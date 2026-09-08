@@ -368,7 +368,60 @@ impl fungible::Unbalanced<AccountId> for MaxSupplyCurrency {
     }
 }
 
-impl fungible::Mutate<AccountId> for MaxSupplyCurrency {}
+impl fungible::Mutate<AccountId> for MaxSupplyCurrency {
+    /// Delegate to `pallet_balances` instead of using the trait default.
+    ///
+    /// This method MUST NOT fall back to the default implementation. The default is
+    /// assembled from primitives and finishes with
+    ///     `let _ = Self::increase_balance(dest, amount, BestEffort);`
+    /// discarding the result, so it does not go through `pallet_balances`'
+    /// `try_mutate_account` and therefore never calls `frame_system::inc_providers`
+    /// for a newly created destination account.
+    ///
+    /// `pallet_contracts` relies on exactly that: `storage/meter.rs` transfers the
+    /// existential deposit to the new contract account and then calls
+    /// `System::inc_consumers(contract)`, which fails with `NoProviders` when
+    /// `providers == 0`. With the default implementation every contract instantiation
+    /// on this chain failed; delegating here is what makes ink! contracts deployable.
+    ///
+    /// Safety w.r.t. the supply cap: a transfer moves existing funds and never changes
+    /// `total_issuance`, so no cap check is required. Minting paths (`mint_into`,
+    /// `write_balance`, `set_total_issuance`) keep theirs.
+    #[inline]
+    fn transfer(
+        source: &AccountId,
+        dest: &AccountId,
+        amount: Self::Balance,
+        preservation: Preservation,
+    ) -> Result<Self::Balance, DispatchError> {
+        <Balances as fungible::Mutate<AccountId>>::transfer(source, dest, amount, preservation)
+    }
+
+    /// Delegate, but enforce the cap first: minting is the one path that raises issuance.
+    #[inline]
+    fn mint_into(who: &AccountId, amount: Self::Balance) -> Result<Self::Balance, DispatchError> {
+        Self::check_mint(amount)?;
+        <Balances as fungible::Mutate<AccountId>>::mint_into(who, amount)
+    }
+
+    /// Delegate: burning lowers issuance, so it can never breach the cap.
+    ///
+    /// Note the `preservation` parameter: frame-support 48's `burn_from` takes
+    /// (who, amount, preservation, precision, force). An earlier version of this fix used
+    /// the 4-argument signature from frame-support 32 and failed to compile.
+    #[inline]
+    fn burn_from(
+        who: &AccountId,
+        amount: Self::Balance,
+        preservation: Preservation,
+        precision: frame_support::traits::tokens::Precision,
+        force: Fortitude,
+    ) -> Result<Self::Balance, DispatchError> {
+        <Balances as fungible::Mutate<AccountId>>::burn_from(
+            who, amount, preservation, precision, force,
+        )
+    }
+}
 
 impl fungible::InspectHold<AccountId> for MaxSupplyCurrency {
     type Reason = RuntimeHoldReason;
@@ -402,4 +455,22 @@ impl fungible::UnbalancedHold<AccountId> for MaxSupplyCurrency {
     }
 }
 
-impl fungible::MutateHold<AccountId> for MaxSupplyCurrency {}
+impl fungible::MutateHold<AccountId> for MaxSupplyCurrency {
+    /// Delegate holds to `pallet_balances` rather than the trait defaults, for the same
+    /// reason as `Mutate::transfer`: the defaults bypass `try_mutate_account` and its
+    /// provider/consumer bookkeeping. Holds never change total issuance.
+    #[inline]
+    fn hold(reason: &Self::Reason, who: &AccountId, amount: Self::Balance) -> DispatchResult {
+        <Balances as fungible::MutateHold<AccountId>>::hold(reason, who, amount)
+    }
+
+    #[inline]
+    fn release(
+        reason: &Self::Reason,
+        who: &AccountId,
+        amount: Self::Balance,
+        precision: frame_support::traits::tokens::Precision,
+    ) -> Result<Self::Balance, DispatchError> {
+        <Balances as fungible::MutateHold<AccountId>>::release(reason, who, amount, precision)
+    }
+}

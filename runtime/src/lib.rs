@@ -121,7 +121,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("verdis-chain"),
     impl_name: create_runtime_str!("verdis-chain"),
     authoring_version: 2,
-    spec_version: 16,
+    spec_version: 17,
     impl_version: 7,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 3,
@@ -587,8 +587,14 @@ impl pallet_preimage::Config for Runtime {
 // === WASM Smart Contracts ===
 
 parameter_types! {
-    pub const DepositPerItem: Balance = 1 * UNITS;
-    pub const DepositPerByte: Balance = 1 * UNITS;
+    // Reduced 1000x: at 1 VRDX/byte a 20 KiB contract locked 20,480 VRDX, which
+    // priced third-party developers out entirely. The deposit still scales with
+    // storage used, so spam remains costly.
+    pub const DepositPerItem: Balance = UNITS / 1_000;
+    // Reduced 1000x: at 1 VRDX/byte a 20 KiB contract locked 20,480 VRDX, which
+    // priced third-party developers out entirely. The deposit still scales with
+    // storage used, so spam remains costly.
+    pub const DepositPerByte: Balance = UNITS / 1_000;
     pub const MaxStorageKeyLen: u32 = 128;
     pub Schedule: pallet_contracts::Schedule<Runtime> = Default::default();
     pub CodeHashLockupDepositPercent: Perbill = Perbill::from_percent(30);
@@ -629,7 +635,11 @@ impl pallet_contracts::Config for Runtime {
     type DepositPerByte = DepositPerByte;
     type MaxStorageKeyLen = MaxStorageKeyLen;
     type WeightPrice = pallet_transaction_payment::Pallet<Runtime>;
-    type WeightInfo = ();
+    // `()` makes every benchmarked weight zero, which also makes
+    // InstructionWeights::default().base = instr_i64_load_store(1) - instr_i64_load_store(0)
+    // = 0. With a zero per-instruction cost, contract execution traps
+    // (ContractTrapped) on every instantiate. Use the pallet's real weights.
+    type WeightInfo = pallet_contracts::weights::SubstrateWeight<Runtime>;
     type ChainExtension = ();
     type Schedule = Schedule;
     type CallStack = [pallet_contracts::Frame<Self>; 5];

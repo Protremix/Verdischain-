@@ -163,6 +163,9 @@ mod {name} {{
     }}
 
     impl {struct_name} {{
+        /// NOT payable. An ink! constructor rejects transferred funds unless annotated
+        /// `#[ink(payable)]`, so `instantiate` MUST be called with value 0 - otherwise the
+        /// contract panics and the chain reports the unhelpful `ContractTrapped`.
         #[ink(constructor)]
         pub fn new(initial_supply: Balance) -> Self {{
             let caller = Self::env().caller();
@@ -587,6 +590,26 @@ def cmd_build(args):
     return 0 if found else 1
 
 
+def _ctor_is_payable(contract_dir: Path, ctor_label: str) -> bool:
+    """Read `payable` for a constructor from the built .contract bundle's ABI.
+
+    ink! constructors are NON-payable unless annotated `#[ink(payable)]`, and a non-payable
+    constructor that receives funds calls `seal0.value_transferred` and panics, surfacing as
+    `ContractTrapped` (pallet_contracts error 12). The error names neither the value nor the
+    constructor, so deploying with a non-zero value against the default template is a trap
+    that costs hours. Default to False (safest) when the ABI cannot be read.
+    """
+    try:
+        bundle = next((contract_dir / "target" / "ink").glob("*.contract"))
+        spec = json.loads(bundle.read_text(encoding="utf-8"))["spec"]
+        for c in spec.get("constructors", []):
+            if c.get("label") == ctor_label:
+                return bool(c.get("payable", False))
+    except Exception:                                   # noqa: BLE001
+        pass
+    return False
+
+
 def cmd_deploy(args):
     """check -> build -> upload -> instantiate, with genesis verified first."""
     net = NETWORKS.get(args.network)
@@ -630,9 +653,18 @@ def cmd_deploy(args):
               f"    --suri \"<seed>\" --url {net['url'].replace('http', 'ws')} --execute")
         return 0
 
+    # `--value 0` unless the constructor is payable. ink! constructors are NON-payable by
+    # default and PANIC (ContractTrapped) if they receive funds - the single most common
+    # first-deploy failure, and it costs hours because the error names neither the value nor
+    # the constructor. Read the ABI and warn explicitly.
+    payable = _ctor_is_payable(d, args.constructor)
+    print(f"\nconstructor '{args.constructor}' payable={payable}")
+    if not payable:
+        print("  -> sending value 0 (a non-payable constructor traps if given funds)")
+
     cmd = ["cargo", "contract", "instantiate", "--constructor", args.constructor,
            "--suri", args.suri, "--url", net["url"].replace("http", "ws"), "--execute",
-           "--skip-confirm"]
+           "--skip-confirm", "--value", str(args.value if payable else 0)]
     for a in args.args:
         cmd += ["--args", a]
     print(f"\n--- instantiating on {args.network} ---")
@@ -689,6 +721,9 @@ def main():
     p.add_argument("--constructor", default="new")
     p.add_argument("--args", nargs="*", default=[])
     p.add_argument("--suri", help="signing seed; omitted = build only, nothing signed")
+    p.add_argument("--value", type=int, default=0,
+                   help="funds to send with instantiate; forced to 0 for a non-payable "
+                        "constructor, which would otherwise trap")
     p.add_argument("--force", action="store_true", help="deploy despite blocking findings")
     p.add_argument("--skip-check", action="store_true", help="skip the security review")
     p.add_argument("--yes-i-understand", action="store_true",
