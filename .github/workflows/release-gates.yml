@@ -26,6 +26,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install system dependencies
         run: |
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.list
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm
       - uses: dtolnay/rust-toolchain@stable
@@ -47,6 +48,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install system dependencies
         run: |
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.list
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm
       - uses: dtolnay/rust-toolchain@stable
@@ -77,6 +79,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install system dependencies
         run: |
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.list
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm
       - uses: dtolnay/rust-toolchain@stable
@@ -99,6 +102,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install system dependencies
         run: |
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.list
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm
       - uses: dtolnay/rust-toolchain@stable
