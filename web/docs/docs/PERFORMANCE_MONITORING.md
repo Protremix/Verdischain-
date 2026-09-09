@@ -507,7 +507,7 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?set this}
+      - GF_SECURITY_ADMIN_PASSWORD=VerdisSuperSecure2026!
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SERVER_DOMAIN=verdischain.com
       - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana/

@@ -2,6 +2,7 @@
 
 #![allow(deprecated, unused_imports, unused_variables, clippy::all, dead_code)]
 mod chain_spec;
+pub mod eth;
 mod service;
 
 use clap::Parser;

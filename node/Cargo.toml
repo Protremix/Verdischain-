@@ -13,6 +13,19 @@ path = "src/main.rs"
 
 
 [dependencies]
+# --- Frontier (EVM) node side ---
+fc-api = { workspace = true }
+fc-db = { workspace = true }
+fc-rpc = { workspace = true }
+fc-rpc-core = { workspace = true }
+fc-mapping-sync = { workspace = true }
+fc-storage = { workspace = true }
+fc-consensus = { workspace = true }
+fp-rpc = { workspace = true }
+fp-evm = { workspace = true }
+sc-network-sync = { workspace = true }
+sc-client-db = { workspace = true }
+cumulus-primitives-proof-size-hostfunction = { version = "0.20.0", default-features = false }
 codec = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -32,7 +45,7 @@ sp-block-builder = { workspace = true }
 sp-blockchain = { workspace = true }
 sp-consensus-babe = { workspace = true }
 sp-consensus-grandpa = { workspace = true }
-sp-consensus = { version = "0.41.0" }
+sp-consensus = { version = "0.49.0" }
 sp-inherents = { workspace = true }
 sp-keyring = { workspace = true }
 sp-keystore = { version = "0.45.0" }

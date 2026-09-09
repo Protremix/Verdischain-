@@ -58,6 +58,22 @@ use frame_support::{
     PalletId,
 };
 use frame_system::EnsureRoot;
+// === EVM (Frontier) ===
+use fp_evm::Precompile;
+use fp_rpc::TransactionStatus;
+use frame_support::traits::FindAuthor;
+use pallet_ethereum::{Call::transact, PostLogContent, Transaction as EthereumTransaction};
+use pallet_evm::{
+    Account as EVMAccount, EVMCurrencyAdapter, EnsureAddressTruncated, FeeCalculator,
+    HashedAddressMapping, Runner,
+};
+use sp_core::{H160, H256, U256};
+use sp_runtime::traits::{DispatchInfoOf, Dispatchable, PostDispatchInfoOf};
+// --- EVM / Ethereum RPC support ---
+use sp_runtime::traits::UniqueSaturatedInto;
+
+// ByteArray provides to_raw_vec() on session keys
+use sp_core::crypto::ByteArray;
 
 // === Verdis Custom Pallets ===
 pub use pallet_address_lookup_tables;
@@ -121,10 +137,10 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("verdis-chain"),
     impl_name: create_runtime_str!("verdis-chain"),
     authoring_version: 2,
-    spec_version: 17,
+    spec_version: 19,
     impl_version: 7,
     apis: RUNTIME_API_VERSIONS,
-    transaction_version: 3,
+    transaction_version: 4,
     system_version: 2,
 };
 
@@ -411,6 +427,254 @@ impl pallet_authorship::Config for Runtime {
 }
 
 // P1-1 RESOLVED: Sudo pallet removed from runtime for mainnet.
+// ============================================================================
+// EVM (Frontier) configuration
+//
+// AccountId remains AccountId32 / SS58 909: mainnet is live with 21 validators and real
+// balances, so redefining AccountId as a 20-byte Ethereum address (the Moonbeam pattern) is not
+// possible. HashedAddressMapping derives a Substrate account from each H160 instead, leaving
+// every existing account untouched.
+// ============================================================================
+
+/// Find the block author as an H160, for the EVM `COINBASE` opcode.
+pub struct FindAuthorTruncated<F>(core::marker::PhantomData<F>);
+impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
+    fn find_author<'a, I>(digests: I) -> Option<H160>
+    where
+        I: 'a + IntoIterator<Item = (sp_runtime::ConsensusEngineId, &'a [u8])>,
+    {
+        F::find_author(digests).and_then(|i| {
+            // Babe::authorities() yields (AuthorityId, weight). Public implements
+            // AsRef<[u8]>, so the raw 32 bytes are available without pulling the
+            // ByteArray/RuntimeAppPublic trait into scope. Bytes 4..24 give the
+            // 20-byte H160, matching Frontier's own template.
+            Babe::authorities()
+                .get(i as usize)
+                .map(|(id, _)| H160::from_slice(&id.to_raw_vec()[4..24]))
+        })
+    }
+}
+
+parameter_types! {
+    // NOTE: no `ChainId` const lives here on purpose. pallet_evm::Config uses
+    // `type ChainId = EVMChainId`, i.e. pallet-evm-chain-id's Get<u64>, which reads a
+    // StorageValue seeded from genesis (414) and changeable by governance. A const here
+    // would be dead code able to silently disagree with the live value.
+
+    /// Gas-to-weight ratio derived from THIS runtime's block weight, not copied from elsewhere:
+    /// with a 6 s block and 75% of it available to extrinsics, a 15M block gas limit gives the
+    /// same per-gas cost profile Ethereum tooling expects.
+    pub BlockGasLimit: U256 = U256::from(15_000_000u64);
+    pub TransactionGasLimit: Option<U256> = None;
+    pub const GasLimitPovSizeRatio: u64 = 4;
+    pub const GasLimitStorageGrowthRatio: u64 = 366;
+    pub PrecompilesValue: VerdisPrecompiles<Runtime> = VerdisPrecompiles::<_>::new();
+    pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
+    /// Keep the last 256 block hashes available to the BLOCKHASH opcode, as Ethereum does.
+    pub const PostBlockAndTxnHashes: PostLogContent = PostLogContent::BlockAndTxnHashes;
+}
+
+/// Ethereum-standard precompiles only.
+///
+/// Deliberately NO custom precompiles exposing Substrate pallets to EVM callers: that surface is
+/// where cross-VM privilege escalation bugs occur, and it can be added later with its own audit.
+pub struct VerdisPrecompiles<R>(core::marker::PhantomData<R>);
+impl<R> VerdisPrecompiles<R>
+where
+    R: pallet_evm::Config,
+{
+    pub fn new() -> Self {
+        Self(Default::default())
+    }
+    pub fn used_addresses() -> [H160; 8] {
+        [
+            hash(1), // ecrecover
+            hash(2), // sha256
+            hash(3), // ripemd160
+            hash(4), // identity
+            hash(5), // modexp
+            hash(6), // bn128Add
+            hash(7), // bn128Mul
+            hash(8), // bn128Pairing
+        ]
+    }
+}
+
+fn hash(a: u64) -> H160 {
+    H160::from_low_u64_be(a)
+}
+
+impl<R> pallet_evm::PrecompileSet for VerdisPrecompiles<R>
+where
+    R: pallet_evm::Config,
+{
+    fn execute(
+        &self,
+        handle: &mut impl pallet_evm::PrecompileHandle,
+    ) -> Option<pallet_evm::PrecompileResult> {
+        use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
+        use pallet_evm_precompile_modexp::Modexp;
+        use pallet_evm_precompile_simple::{ECRecover, Identity, Ripemd160, Sha256};
+        match handle.code_address() {
+            a if a == hash(1) => Some(ECRecover::execute(handle)),
+            a if a == hash(2) => Some(Sha256::execute(handle)),
+            a if a == hash(3) => Some(Ripemd160::execute(handle)),
+            a if a == hash(4) => Some(Identity::execute(handle)),
+            a if a == hash(5) => Some(Modexp::execute(handle)),
+            a if a == hash(6) => Some(Bn128Add::execute(handle)),
+            a if a == hash(7) => Some(Bn128Mul::execute(handle)),
+            a if a == hash(8) => Some(Bn128Pairing::execute(handle)),
+            _ => None,
+        }
+    }
+
+    fn is_precompile(&self, address: H160, _gas: u64) -> pallet_evm::IsPrecompileResult {
+        pallet_evm::IsPrecompileResult::Answer {
+            is_precompile: Self::used_addresses().contains(&address),
+            extra_cost: 0,
+        }
+    }
+}
+
+impl pallet_evm_chain_id::Config for Runtime {}
+
+impl pallet_evm::Config for Runtime {
+    type AccountProvider = pallet_evm::FrameSystemAccountProvider<Self>;
+    type FeeCalculator = BaseFee;
+    type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
+    type WeightPerGas = WeightPerGas;
+    type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
+    // Only the owner of the corresponding Substrate account may call as an H160.
+    type CallOrigin = EnsureAddressTruncated;
+    // Was EnsureAddressTruncated, which requires the caller's AccountId32 to share its first 20
+    // bytes with the H160 - no ordinary wallet does, which made EVM::withdraw unusable (measured
+    // on testnet). EnsureLinkedAddress accepts the account that proved ownership of the address.
+    type WithdrawOrigin = pallet_verdis_account_link::EnsureLinkedAddress<Self>;
+    // Was HashedAddressMapping, which sends an H160 to blake2_256("evm:" ++ addr) - an account
+    // nobody holds a key for. On testnet 100 VRDX sent from MetaMask landed on such an account and
+    // became unspendable. LinkedAddressMapping resolves a BOUND address to the owner's real
+    // account, so the EVM and the wallet share ONE balance; unbound addresses keep the old
+    // hashed behaviour, so nothing that works today stops working.
+    type AddressMapping = pallet_verdis_account_link::LinkedAddressMapping<Self>;
+    type Currency = Balances;
+    type PrecompilesType = VerdisPrecompiles<Self>;
+    type PrecompilesValue = PrecompilesValue;
+    type ChainId = EVMChainId;
+    type BlockGasLimit = BlockGasLimit;
+    type Runner = pallet_evm::runner::stack::Runner<Self>;
+    // EVM gas is paid in VRDX through the same Balances pallet as every other fee.
+    type OnChargeTransaction = EVMCurrencyAdapter<Balances, ()>;
+    type OnCreate = ();
+    type FindAuthor = FindAuthorTruncated<Babe>;
+    // Contract creation is permissionless, matching pallet-contracts which is
+    // already open on mainnet. Restricting only the EVM would be inconsistent.
+    type CreateOriginFilter = ();
+    type CreateInnerOriginFilter = ();
+    // No per-transaction gas cap beyond BlockGasLimit, as on Ethereum: a single
+    // transaction cannot exceed the block limit in any case.
+    type TransactionGasLimit = TransactionGasLimit;
+    type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
+    type GasLimitStorageGrowthRatio = GasLimitStorageGrowthRatio;
+    type Timestamp = Timestamp;
+    type WeightInfo = pallet_evm::weights::SubstrateWeight<Self>;
+}
+
+impl pallet_ethereum::Config for Runtime {
+    // Reject pre-EIP-155 transactions: they carry no chain id and are
+    // replayable across networks, so a transaction signed for another
+    // chain could execute here.
+    type AllowUnprotectedTxs = ConstBool<false>;
+    type StateRoot = pallet_ethereum::IntermediateStateRoot<Self::Version>;
+    type PostLogContent = PostBlockAndTxnHashes;
+    // Bound the storage a single Ethereum transaction may grow, as pallet-contracts does.
+    type ExtraDataLength = ConstU32<30>;
+}
+
+parameter_types! {
+    /// EIP-1559 base fee, DERIVED from this chain's own fee model - not copied from Ethereum.
+    ///
+    /// Verdis has 9 decimals and prices weight with `IdentityFee` (1 weight = 1 raw unit).
+    /// An EVM transaction burns `gas * WeightPerGas` weight, so for an EVM transfer to cost the
+    /// same as a substrate transfer the gas price must equal WeightPerGas:
+    ///
+    /// ```text
+    ///     gas * gas_price == gas * WeightPerGas * 1   =>   gas_price = WeightPerGas = 20_000
+    /// ```
+    ///
+    /// A 21000-gas transfer therefore costs 21000 * 20_000 = 420_000_000 raw units = 0.42 VRDX.
+    ///
+    /// The previous value (1_000_000_000, "1 Gwei") assumed Ethereum's 18 decimals and charged
+    /// 18_380 VRDX for one transfer - measured on a dev chain, not theorised. Ethereum tooling
+    /// hardcodes 18 decimals; Verdis does not adopt Ethereum's denomination to satisfy it.
+    pub DefaultBaseFeePerGas: U256 = U256::from(20_000u64);
+    pub DefaultElasticity: Permill = Permill::from_parts(125_000);
+}
+
+pub struct BaseFeeThreshold;
+impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {
+    /// NOTE: this was `Permill::zero()`, which let the base fee decay toward zero on a quiet
+    /// chain - free gas, and therefore a denial-of-service vector: an attacker could fill blocks
+    /// with EVM execution at no cost. A 12.5% floor keeps a price under the fee at all times.
+    fn lower() -> Permill {
+        Permill::from_parts(125_000)
+    }
+    fn ideal() -> Permill {
+        Permill::from_parts(500_000)
+    }
+    fn upper() -> Permill {
+        Permill::from_parts(1_000_000)
+    }
+}
+
+parameter_types! {
+    /// Deposit taken when an account binds an EVM address, paying for the two storage maps and the
+    /// nonce entry the mapping occupies. UNITS = 1 VRDX at 9 decimals (runtime line 156).
+    pub const AccountLinkDeposit: Balance = UNITS;
+}
+
+/// Rejects account types that must not be captured by a single Ethereum key.
+///
+/// Quantstamp finding AST-2 against Astar's equivalent pallet: binding a multisig to one EOA hands
+/// that single key sole control of an account whose entire purpose is shared control. Verdis governs
+/// itself through a 3-member Council with no Sudo, so those accounts are exactly the ones that must
+/// never be bindable.
+pub struct RejectGovernanceAccounts;
+impl pallet_verdis_account_link::LinkFilter<AccountId> for RejectGovernanceAccounts {
+    fn allowed(who: &AccountId) -> bool {
+        // Council and TechnicalCommittee members hold governance power over set_code itself.
+        if pallet_collective::Members::<Runtime, pallet_collective::Instance1>::get().contains(who)
+        {
+            return false;
+        }
+        if pallet_collective::Members::<Runtime, pallet_collective::Instance2>::get().contains(who)
+        {
+            return false;
+        }
+        // An active validator's account controls stake and block production.
+        if pallet_dpos::Validators::<Runtime>::contains_key(who) {
+            return false;
+        }
+        true
+    }
+}
+
+impl pallet_verdis_account_link::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type Currency = Balances;
+    type LinkDeposit = AccountLinkDeposit;
+    // Same source pallet-evm reads, so a signature made for one Verdis network cannot be replayed on
+    // another: the chain id is inside the EIP-712 domain.
+    type ChainId = EVMChainId;
+    type AllowedToLink = RejectGovernanceAccounts;
+    type WeightInfo = ();
+}
+
+impl pallet_base_fee::Config for Runtime {
+    type Threshold = BaseFeeThreshold;
+    type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
+    type DefaultElasticity = DefaultElasticity;
+}
+
 // Sudo was removed from construct_runtime! and its Config impl deleted.
 // Council (2/3) governance replaces all former sudo/EnsureRoot origins.
 
@@ -469,7 +733,7 @@ where
     RuntimeCall: From<LocalCall>,
 {
     fn create_bare(call: RuntimeCall) -> UncheckedExtrinsic {
-        UncheckedExtrinsic::new_unsigned(call)
+        UncheckedExtrinsic::new_bare(call)
     }
 }
 /// Custom offence handler that records equivocation offences.
@@ -1180,7 +1444,6 @@ impl pallet_nfts::Config for Runtime {
 
 // === Treasury ===
 
-
 // P1-2: Council (2/3) origin for admin operations — replaces EnsureRoot/sudo
 pub struct EnsureCouncil;
 impl frame_support::traits::EnsureOrigin<RuntimeOrigin> for EnsureCouncil {
@@ -1578,6 +1841,13 @@ construct_runtime! {
         Sealevel: pallet_sealevel = 56,
         CircuitBreaker: pallet_circuit_breaker = 60,
         TechnicalCommittee: pallet_collective::<Instance2> = 61,
+        // === EVM (Frontier) ===
+        Ethereum: pallet_ethereum = 62,
+        EVM: pallet_evm = 63,
+        EVMChainId: pallet_evm_chain_id = 64,
+        BaseFee: pallet_base_fee = 65,
+        // Binds ki… and 0x… to one balance. Index 66: 65 is the highest in use.
+        AccountLink: pallet_verdis_account_link = 66,
     }
 }
 
@@ -1585,12 +1855,46 @@ construct_runtime! {
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
 /// Executive: the main orchestrator of the runtime
+/// EVM chain id for Verdis. 414 is unregistered in chainid.network/chains.json, unlike 909 which is
+/// held by Portal Fantasy Chain - a collision there would make wallets reject Verdis outright.
+pub const VERDIS_EVM_CHAIN_ID: u64 = 414;
+
+/// Writes `EVMChainId::ChainId` during a runtime upgrade.
+///
+/// A runtime upgrade never executes `GenesisConfig` - genesis runs only at block 0. Pallets added by
+/// `set_code` therefore begin with EMPTY storage, so this value reads as its default (0) on any chain
+/// that did not START with the EVM runtime. A live EVM answering `eth_chainId = 0` is a transaction
+/// replay surface, so the upgrade itself must write the value instead of relying on a follow-up
+/// governance call that leaves a window of exposure.
+///
+/// Idempotent: writes only when unset, so it is safe on a genesis chain, on a chain already
+/// corrected by hand, and on repeated runs.
+pub struct SetEvmChainId;
+
+impl frame_support::traits::OnRuntimeUpgrade for SetEvmChainId {
+    fn on_runtime_upgrade() -> Weight {
+        let current = pallet_evm_chain_id::ChainId::<Runtime>::get();
+        if current == 0 {
+            pallet_evm_chain_id::ChainId::<Runtime>::put(VERDIS_EVM_CHAIN_ID);
+            frame_support::__private::log::info!(target: "runtime::migration", "SetEvmChainId: 0 -> {}", VERDIS_EVM_CHAIN_ID);
+            <Runtime as frame_system::Config>::DbWeight::get().reads_writes(1, 1)
+        } else {
+            frame_support::__private::log::info!(target: "runtime::migration", "SetEvmChainId: already {}", current);
+            <Runtime as frame_system::Config>::DbWeight::get().reads(1)
+        }
+    }
+}
+
+/// Migrations run by `Executive` on runtime upgrade.
+pub type Migrations = (SetEvmChainId,);
+
 pub type Executive = frame_executive::Executive<
     Runtime,
     Block,
     frame_system::ChainContext<Runtime>,
     Runtime,
     AllPalletsWithSystem,
+    Migrations,
 >;
 
 /// Signed extra data for transactions
@@ -1605,9 +1909,82 @@ pub type SignedExtra = (
     pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
 );
 
-/// The UncheckedExtrinsic type
+/// The UncheckedExtrinsic type.
+///
+/// Wrapped in fp_self_contained so a raw Ethereum transaction - which carries an Ethereum ECDSA
+/// signature rather than a Substrate one - can validate itself and enter the transaction pool.
+/// This is required for MetaMask/eth_sendRawTransaction; without it pallet_ethereum::transact
+/// is unsubmittable.
+///
+/// NOTE: this changes the extrinsic encoding, so transaction_version is bumped and clients must
+/// refetch metadata.
 pub type UncheckedExtrinsic =
-    generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
+    fp_self_contained::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
+
+/// The checked counterpart, carrying the recovered H160 for self-contained calls.
+pub type CheckedExtrinsic =
+    fp_self_contained::CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, H160>;
+
+impl fp_self_contained::SelfContainedCall for RuntimeCall {
+    type SignedInfo = H160;
+
+    fn is_self_contained(&self) -> bool {
+        match self {
+            RuntimeCall::Ethereum(call) => call.is_self_contained(),
+            _ => false,
+        }
+    }
+
+    fn check_self_contained(
+        &self,
+    ) -> Option<Result<Self::SignedInfo, sp_runtime::transaction_validity::TransactionValidityError>>
+    {
+        match self {
+            RuntimeCall::Ethereum(call) => call.check_self_contained(),
+            _ => None,
+        }
+    }
+
+    fn validate_self_contained(
+        &self,
+        info: &Self::SignedInfo,
+        dispatch_info: &DispatchInfoOf<RuntimeCall>,
+        len: usize,
+    ) -> Option<sp_runtime::transaction_validity::TransactionValidity> {
+        match self {
+            RuntimeCall::Ethereum(call) => call.validate_self_contained(info, dispatch_info, len),
+            _ => None,
+        }
+    }
+
+    fn pre_dispatch_self_contained(
+        &self,
+        info: &Self::SignedInfo,
+        dispatch_info: &DispatchInfoOf<RuntimeCall>,
+        len: usize,
+    ) -> Option<Result<(), sp_runtime::transaction_validity::TransactionValidityError>> {
+        match self {
+            RuntimeCall::Ethereum(call) => {
+                call.pre_dispatch_self_contained(info, dispatch_info, len)
+            }
+            _ => None,
+        }
+    }
+
+    fn apply_self_contained(
+        self,
+        info: Self::SignedInfo,
+    ) -> Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfoOf<RuntimeCall>>> {
+        match self {
+            call @ RuntimeCall::Ethereum(pallet_ethereum::Call::transact { .. }) => {
+                Some(call.dispatch(RuntimeOrigin::from(
+                    pallet_ethereum::RawOrigin::EthereumTransaction(info),
+                )))
+            }
+            _ => None,
+        }
+    }
+}
 
 // === Custom Runtime API Declaration ===
 sp_api::decl_runtime_apis! {
@@ -1786,6 +2163,26 @@ frame_benchmarking::define_benchmarks!(
 );
 
 // === Runtime API Implementation ===
+/// Converts a raw Ethereum transaction into a Verdis extrinsic.
+///
+/// fc-rpc needs this to accept eth_sendRawTransaction: the wallet sends RLP-encoded Ethereum
+/// bytes, which must become a `pallet_ethereum::transact` call carried by a self-contained
+/// extrinsic.
+/// NOTE: only ONE ConvertTransaction impl is needed here. `opaque::Block` is built from
+/// `super::UncheckedExtrinsic`, i.e. this runtime does not define a separate opaque
+/// extrinsic type the way Frontier's template does, so a second impl would be the same
+/// type twice (E0119).
+#[derive(Clone)]
+pub struct TransactionConverter;
+
+impl fp_rpc::ConvertTransaction<UncheckedExtrinsic> for TransactionConverter {
+    fn convert_transaction(&self, transaction: ethereum::TransactionV3) -> UncheckedExtrinsic {
+        UncheckedExtrinsic::new_bare(
+            pallet_ethereum::Call::<Runtime>::transact { transaction }.into(),
+        )
+    }
+}
+
 impl_runtime_apis! {
     impl crate::AmmDexApi<Block> for Runtime {
         fn get_pool(pool_id: u32) -> Option<pallet_amm_dex::Pool<AccountId, Balance>> {
@@ -2006,7 +2403,6 @@ impl_runtime_apis! {
         }
     }
 
-
     impl crate::ContractsApi<Block>
     for Runtime {
         fn call(
@@ -2102,7 +2498,6 @@ impl_runtime_apis! {
             Ok(batches)
         }
     }
-
 
     impl crate::DposApi<Block> for Runtime {
         fn active_validators() -> Vec<AccountId> {
@@ -2245,7 +2640,6 @@ impl_runtime_apis! {
         }
     }
 
-
     impl sp_genesis_builder::GenesisBuilder<Block> for Runtime {
         fn build_state(json: Vec<u8>) -> sp_genesis_builder::Result {
             frame_support::genesis_builder_helper::build_state::<RuntimeGenesisConfig>(json)
@@ -2262,6 +2656,191 @@ impl_runtime_apis! {
 
         fn preset_names() -> Vec<sp_genesis_builder::PresetId> {
             Default::default()
+        }
+    }
+
+    impl fp_rpc::EthereumRuntimeRPCApi<Block> for Runtime {
+        fn chain_id() -> u64 {
+            <Runtime as pallet_evm::Config>::ChainId::get()
+        }
+
+        fn account_basic(address: H160) -> pallet_evm::Account {
+            let (account, _) = pallet_evm::Pallet::<Runtime>::account_basic(&address);
+            account
+        }
+
+        fn gas_price() -> U256 {
+            let (gas_price, _) = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price();
+            gas_price
+        }
+
+        fn account_code_at(address: H160) -> Vec<u8> {
+            pallet_evm::AccountCodes::<Runtime>::get(address)
+        }
+
+        fn author() -> H160 {
+            <pallet_evm::Pallet<Runtime>>::find_author()
+        }
+
+        fn storage_at(address: H160, index: U256) -> H256 {
+            let tmp: [u8; 32] = index.to_big_endian();
+            pallet_evm::AccountStorages::<Runtime>::get(address, H256::from_slice(&tmp[..]))
+        }
+
+        fn call(
+            from: H160,
+            to: H160,
+            data: Vec<u8>,
+            value: U256,
+            gas_limit: U256,
+            max_fee_per_gas: Option<U256>,
+            max_priority_fee_per_gas: Option<U256>,
+            nonce: Option<U256>,
+            estimate: bool,
+            access_list: Option<Vec<(H160, Vec<H256>)>>,
+            authorization_list: Option<ethereum::AuthorizationList>,
+            state_override: fp_evm::StateOverride,
+        ) -> Result<pallet_evm::CallInfo, sp_runtime::DispatchError> {
+            let config = if estimate {
+                let mut config = <Runtime as pallet_evm::Config>::config().clone();
+                config.estimate = true;
+                Some(config)
+            } else {
+                None
+            };
+
+            let gas_limit = gas_limit.min(u64::MAX.into());
+            <Runtime as pallet_evm::Config>::Runner::call(
+                from,
+                to,
+                data,
+                value,
+                gas_limit.unique_saturated_into(),
+                max_fee_per_gas,
+                max_priority_fee_per_gas,
+                nonce,
+                access_list.unwrap_or_default(),
+                authorization_list.unwrap_or_default(),
+                false,
+                true,
+                None,
+                None,
+                state_override,
+                config.as_ref().unwrap_or(<Runtime as pallet_evm::Config>::config()),
+            )
+            .map_err(|err| err.error.into())
+        }
+
+        fn create(
+            from: H160,
+            data: Vec<u8>,
+            value: U256,
+            gas_limit: U256,
+            max_fee_per_gas: Option<U256>,
+            max_priority_fee_per_gas: Option<U256>,
+            nonce: Option<U256>,
+            estimate: bool,
+            access_list: Option<Vec<(H160, Vec<H256>)>>,
+            authorization_list: Option<ethereum::AuthorizationList>,
+        ) -> Result<pallet_evm::CreateInfo, sp_runtime::DispatchError> {
+            let config = if estimate {
+                let mut config = <Runtime as pallet_evm::Config>::config().clone();
+                config.estimate = true;
+                Some(config)
+            } else {
+                None
+            };
+
+            let gas_limit = gas_limit.min(u64::MAX.into());
+            <Runtime as pallet_evm::Config>::Runner::create(
+                from,
+                data,
+                value,
+                gas_limit.unique_saturated_into(),
+                max_fee_per_gas,
+                max_priority_fee_per_gas,
+                nonce,
+                access_list.unwrap_or_default(),
+                authorization_list.unwrap_or_default(),
+                false,
+                true,
+                None,
+                None,
+                config.as_ref().unwrap_or(<Runtime as pallet_evm::Config>::config()),
+            )
+            .map_err(|err| err.error.into())
+        }
+
+        fn current_transaction_statuses() -> Option<Vec<TransactionStatus>> {
+            pallet_ethereum::CurrentTransactionStatuses::<Runtime>::get()
+        }
+
+        fn current_block() -> Option<ethereum::BlockV3> {
+            pallet_ethereum::CurrentBlock::<Runtime>::get()
+        }
+
+        fn current_receipts() -> Option<Vec<ethereum::ReceiptV4>> {
+            pallet_ethereum::CurrentReceipts::<Runtime>::get()
+        }
+
+        fn current_all() -> (
+            Option<ethereum::BlockV3>,
+            Option<Vec<ethereum::ReceiptV4>>,
+            Option<Vec<TransactionStatus>>,
+        ) {
+            (
+                pallet_ethereum::CurrentBlock::<Runtime>::get(),
+                pallet_ethereum::CurrentReceipts::<Runtime>::get(),
+                pallet_ethereum::CurrentTransactionStatuses::<Runtime>::get(),
+            )
+        }
+
+        fn extrinsic_filter(
+            xts: Vec<<Block as BlockT>::Extrinsic>,
+        ) -> Vec<ethereum::TransactionV3> {
+            xts.into_iter()
+                .filter_map(|xt| match xt.0.function {
+                    RuntimeCall::Ethereum(pallet_ethereum::Call::transact { transaction }) => {
+                        Some(transaction)
+                    }
+                    _ => None,
+                })
+                .collect::<Vec<ethereum::TransactionV3>>()
+        }
+
+        fn elasticity() -> Option<Permill> {
+            Some(pallet_base_fee::Elasticity::<Runtime>::get())
+        }
+
+        fn gas_limit_multiplier_support() {}
+
+        fn pending_block(
+            xts: Vec<<Block as BlockT>::Extrinsic>,
+        ) -> (Option<ethereum::BlockV3>, Option<Vec<TransactionStatus>>) {
+            for ext in xts.into_iter() {
+                let _ = Executive::apply_extrinsic(ext);
+            }
+            <pallet_ethereum::Pallet<Runtime> as frame_support::traits::Hooks<BlockNumber>>::on_finalize(
+                System::block_number() + 1,
+            );
+            (
+                pallet_ethereum::CurrentBlock::<Runtime>::get(),
+                pallet_ethereum::CurrentTransactionStatuses::<Runtime>::get(),
+            )
+        }
+
+        fn initialize_pending_block(header: &<Block as BlockT>::Header) {
+            Executive::initialize_block(header);
+        }
+    }
+
+    impl fp_rpc::ConvertTransactionRuntimeApi<Block> for Runtime {
+        fn convert_transaction(
+            transaction: ethereum::TransactionV3,
+        ) -> <Block as BlockT>::Extrinsic {
+            UncheckedExtrinsic::new_bare(
+                pallet_ethereum::Call::<Runtime>::transact { transaction }.into(),
+            )
         }
     }
 }
@@ -2287,3 +2866,277 @@ mod try_runtime_tests {
     }
 }
 // Force rebuild 1787380805
+
+#[cfg(test)]
+mod evm_integration_tests {
+    //! Tests for the EVM layer as configured on THIS chain.
+    //!
+    //! These do not re-test pallet-evm's internals - upstream Frontier covers that. They test the
+    //! decisions specific to adding an EVM to a live Substrate chain, where getting the address
+    //! mapping or replay protection wrong would be unrecoverable.
+
+    use super::*;
+    use sp_core::{H160, U256};
+
+    #[test]
+    fn migration_sets_chain_id_on_upgrade() {
+        // Regression test for a bug found live on testnet: after upgrading spec 17 -> 18, the EVM was
+        // active and producing blocks but `eth_chainId` answered 0x0.
+        //
+        // Cause: a runtime upgrade never executes `GenesisConfig` - genesis runs only at block 0. A
+        // pallet introduced by `set_code` therefore starts with EMPTY storage, and
+        // `pallet-evm-chain-id`'s value read as its default of 0. An EVM answering chain id 0 lets
+        // transactions be replayed against any other chain reporting 0, so this is a security bug,
+        // not a cosmetic one.
+        //
+        // `chain_id_is_414` cannot catch it: that test BUILDS genesis, which is the case that already
+        // worked. This test starts from empty storage - the upgrade case - and runs the migration.
+        use frame_support::traits::OnRuntimeUpgrade;
+
+        let mut ext: sp_io::TestExternalities = Default::default();
+
+        ext.execute_with(|| {
+            // upgrade case: nothing in storage, exactly as after set_code
+            assert_eq!(
+                pallet_evm_chain_id::ChainId::<Runtime>::get(),
+                0u64,
+                "storage must start empty to reproduce the upgrade case"
+            );
+
+            SetEvmChainId::on_runtime_upgrade();
+
+            assert_eq!(
+                pallet_evm_chain_id::ChainId::<Runtime>::get(),
+                VERDIS_EVM_CHAIN_ID,
+                "migration must write the chain id when storage is empty"
+            );
+            assert_eq!(
+                <Runtime as pallet_evm::Config>::ChainId::get(),
+                414u64,
+                "eth_chainId must report 414 after the migration"
+            );
+        });
+    }
+
+    #[test]
+    fn migration_is_idempotent() {
+        // Governance can change the chain id through `System::set_storage`. If the migration ever ran
+        // again it must NOT overwrite that decision, otherwise a later upgrade would silently revert
+        // a governance action.
+        use frame_support::traits::OnRuntimeUpgrade;
+
+        let mut ext: sp_io::TestExternalities = Default::default();
+
+        ext.execute_with(|| {
+            pallet_evm_chain_id::ChainId::<Runtime>::put(999u64);
+
+            SetEvmChainId::on_runtime_upgrade();
+
+            assert_eq!(
+                pallet_evm_chain_id::ChainId::<Runtime>::get(),
+                999u64,
+                "migration must not overwrite an already-set chain id"
+            );
+        });
+    }
+
+    #[test]
+    fn chain_id_is_414() {
+        // 414 is unregistered in chainid.network/chains.json - the registry MetaMask, Rabby and
+        // Trust all read. 909 belongs to "Portal Fantasy Chain", so a wallet that already has
+        // that network would reject Verdis on a chainId clash, and transactions signed for one
+        // could be replayed on the other if it ever launches.
+        //
+        // SS58 stays 909: a DIFFERENT registry with no conflict. Changing it would re-derive
+        // every ki... address, every balance storage key and all 21 validator accounts.
+        //
+        // The chain id lives in pallet-evm-chain-id's STORAGE, seeded from genesis - not in a
+        // const. So this test builds genesis and reads it back through the same path
+        // eth_chainId uses; a chain_spec/runtime mismatch would fail here.
+        use sp_runtime::BuildStorage;
+
+        let genesis = RuntimeGenesisConfig {
+            evm_chain_id: EVMChainIdConfig {
+                chain_id: 414,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let storage = genesis.build_storage().expect("genesis builds");
+        let mut ext: sp_io::TestExternalities = storage.into();
+
+        ext.execute_with(|| {
+            assert_eq!(
+                <Runtime as pallet_evm::Config>::ChainId::get(),
+                414u64,
+                "eth_chainId must report 414"
+            );
+        });
+
+        // SS58Prefix is a compile-time constant, readable without externalities.
+        assert_eq!(<Runtime as frame_system::Config>::SS58Prefix::get(), 909u16);
+    }
+
+    #[test]
+    fn h160_maps_deterministically_to_account_id32() {
+        // The mapping must be a pure function of the address: the same H160 always yields the
+        // same AccountId32, or funds sent to an Ethereum address would land in different
+        // Substrate accounts on different calls.
+        //
+        // Runs inside TestExternalities because AddressMapping is now LinkedAddressMapping, which
+        // READS the link table. HashedAddressMapping needed no storage; this one does, and a test
+        // without externalities panics in sp-io rather than failing an assertion.
+        use pallet_evm::AddressMapping;
+        let mut ext: sp_io::TestExternalities = Default::default();
+        ext.execute_with(|| {
+            let addr = H160::from_low_u64_be(0x1234_5678);
+            let a = <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(addr);
+            let b = <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(addr);
+            assert_eq!(a, b, "H160 -> AccountId32 mapping is not deterministic");
+        });
+    }
+
+    #[test]
+    fn unbound_address_keeps_the_hashed_fallback() {
+        // Replacing HashedAddressMapping must not change behaviour for addresses nobody has bound,
+        // otherwise enabling the pallet would move existing EVM balances. The fallback must stay
+        // exactly blake2_256("evm:" ++ address).
+        use pallet_evm::AddressMapping;
+        let mut ext: sp_io::TestExternalities = Default::default();
+        ext.execute_with(|| {
+            let addr = H160::from_low_u64_be(0xdead_beef);
+            let got = <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(addr);
+
+            let mut data = [0u8; 24];
+            data[0..4].copy_from_slice(b"evm:");
+            data[4..24].copy_from_slice(&addr[..]);
+            let expected = AccountId::from(sp_io::hashing::blake2_256(&data));
+
+            assert_eq!(
+                got, expected,
+                "an unbound address must keep the historical hashed mapping"
+            );
+        });
+    }
+
+    #[test]
+    fn resolves_bound_address_to_owner() {
+        // The property the whole pallet exists for: once an account has bound an EVM address, the
+        // EVM resolves that address to the OWNER's account, so MetaMask and the Verdis wallet share
+        // one balance. Before this, funds sent from MetaMask landed on a hashed account with no
+        // private key - measured on testnet, 100 VRDX became unspendable that way.
+        use pallet_evm::AddressMapping;
+        let mut ext: sp_io::TestExternalities = Default::default();
+        ext.execute_with(|| {
+            let addr = H160::from_low_u64_be(0xabc_def);
+            let owner = AccountId::from([9u8; 32]);
+
+            // Write the mapping directly: this test covers the EVM-side resolution, while signature
+            // verification is covered by the pallet's own 17 tests.
+            pallet_verdis_account_link::AccountIdOf::<Runtime>::insert(addr, owner.clone());
+
+            let got = <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(addr);
+            assert_eq!(got, owner, "a bound address must resolve to its owner");
+
+            let mut data = [0u8; 24];
+            data[0..4].copy_from_slice(b"evm:");
+            data[4..24].copy_from_slice(&addr[..]);
+            let mirror = AccountId::from(sp_io::hashing::blake2_256(&data));
+            assert_ne!(
+                got, mirror,
+                "a bound address must NOT resolve to the hashed mirror"
+            );
+        });
+    }
+
+    #[test]
+    fn distinct_h160_give_distinct_accounts() {
+        // Two different Ethereum addresses must never share a Substrate account, otherwise one
+        // user could spend another's balance.
+        use pallet_evm::AddressMapping;
+        let mut ext: sp_io::TestExternalities = Default::default();
+        ext.execute_with(|| {
+            let a = <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(
+                H160::from_low_u64_be(1),
+            );
+            let b = <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(
+                H160::from_low_u64_be(2),
+            );
+            assert_ne!(a, b);
+        });
+    }
+
+    #[test]
+    fn unprotected_transactions_are_rejected() {
+        // Pre-EIP-155 transactions carry no chain id and are replayable across networks: a
+        // transaction signed for Ethereum mainnet could otherwise execute here.
+        assert!(!<<Runtime as pallet_ethereum::Config>::AllowUnprotectedTxs
+            as frame_support::traits::Get<bool>>::get(),
+                "pre-EIP-155 transactions must not be accepted");
+    }
+
+    #[test]
+    fn block_gas_limit_is_set_and_finite() {
+        let limit = <Runtime as pallet_evm::Config>::BlockGasLimit::get();
+        assert!(
+            limit > U256::zero(),
+            "a zero block gas limit would reject every EVM call"
+        );
+        assert_eq!(limit, U256::from(15_000_000u64));
+    }
+
+    #[test]
+    fn no_per_transaction_gas_cap_beyond_the_block() {
+        // Ethereum semantics: a transaction is bounded by the block gas limit, not a separate cap.
+        assert_eq!(
+            <Runtime as pallet_evm::Config>::TransactionGasLimit::get(),
+            None
+        );
+    }
+
+    #[test]
+    fn existing_pallets_survived_the_addition() {
+        // Adding pallets must not disturb what mainnet already runs. Contracts (ink!) is live on
+        // mainnet with a deployed token, so its index must not move.
+        use frame_support::traits::PalletInfoAccess;
+        assert_eq!(<Contracts as PalletInfoAccess>::index(), 20);
+        assert_eq!(<Balances as PalletInfoAccess>::index(), 4);
+        assert_eq!(<Council as PalletInfoAccess>::index(), 43);
+        assert_eq!(<Democracy as PalletInfoAccess>::index(), 44);
+        // and the new ones sit above every existing index
+        assert_eq!(<EVM as PalletInfoAccess>::index(), 63);
+        assert_eq!(<Ethereum as PalletInfoAccess>::index(), 62);
+    }
+
+    #[test]
+    fn spec_version_advanced_past_mainnet() {
+        // Mainnet runs 17. An upgrade with an equal or lower version is refused by set_code.
+        assert!(
+            VERSION.spec_version > 17,
+            "spec_version must exceed the live mainnet version (17)"
+        );
+    }
+
+    #[test]
+    fn precompiles_cover_the_ethereum_standard_set() {
+        // Solidity contracts and tooling assume addresses 1..8 exist.
+        use pallet_evm::PrecompileSet;
+        let set = VerdisPrecompiles::<Runtime>::new();
+        for i in 1u64..=8 {
+            let addr = H160::from_low_u64_be(i);
+            match set.is_precompile(addr, 0) {
+                pallet_evm::IsPrecompileResult::Answer { is_precompile, .. } => {
+                    assert!(is_precompile, "precompile {} is missing", i)
+                }
+                _ => panic!("unexpected IsPrecompileResult for {}", i),
+            }
+        }
+        // and nothing beyond it is silently a precompile
+        match set.is_precompile(H160::from_low_u64_be(9), 0) {
+            pallet_evm::IsPrecompileResult::Answer { is_precompile, .. } => {
+                assert!(!is_precompile, "address 9 must not be a precompile")
+            }
+            _ => {}
+        }
+    }
+}

@@ -41,7 +41,18 @@ pub type FullSelectChain = LongestChain<FullBackend, Block>;
 pub struct ExecutorDispatch;
 
 impl NativeExecutionDispatch for ExecutorDispatch {
-    type ExtendHostFunctions = sp_io::SubstrateHostFunctions;
+    // pallet-evm's stack runner calls cumulus's get_proof_size(), which is a
+    // #[runtime_interface] host function that the plain Substrate set does not
+    // register. Without it the node refuses to instantiate the runtime:
+    //   "runtime requires function imports which are not present on the host:
+    //    'env:ext_storage_proof_size_storage_proof_size_version_1'"
+    // On a solo chain it returns PROOF_RECORDING_DISABLED, so get_proof_size()
+    // yields None and pallet-evm uses its unwrap_or_default() path - correct here,
+    // since there is no PoV to meter.
+    type ExtendHostFunctions = (
+        sp_io::SubstrateHostFunctions,
+        cumulus_primitives_proof_size_hostfunction::storage_proof_size::HostFunctions,
+    );
     fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
         verdis_runtime::api::dispatch(method, data)
     }
@@ -189,6 +200,34 @@ pub fn new_full<
             metrics,
         })?;
 
+    // ===================== Frontier (EVM) =====================
+    // Built before the RPC builder because the closure captures these.
+    let frontier_backend = Arc::new(
+        crate::eth::open_frontier_backend(client.clone(), &config)
+            .map_err(|e| Error::Application(Box::new(std::io::Error::other(e))))?,
+    );
+    let crate::eth::FrontierPartial {
+        filter_pool,
+        fee_history_cache,
+        fee_history_cache_limit,
+    } = crate::eth::new_frontier_partial();
+    let storage_override = Arc::new(fc_rpc::StorageOverrideHandler::<Block, _, _>::new(
+        client.clone(),
+    ));
+    let pubsub_notification_sinks: Arc<
+        fc_mapping_sync::EthereumBlockNotificationSinks<
+            fc_mapping_sync::EthereumBlockNotification<Block>,
+        >,
+    > = Default::default();
+    // Match the node's real pruning depth; a wrong value makes the ethereum view stall behind
+    // pruned state instead of failing loudly.
+    let state_pruning_blocks = match config.state_pruning {
+        Some(sc_service::PruningMode::Constrained(ref c)) => c.max_blocks.map(|b| b as u64),
+        _ => None,
+    };
+
+    let prometheus_registry_for_eth = config.prometheus_registry().cloned();
+
     // GRANDPA shared voter state — created here so both RPC and voter share it
     let shared_voter_state = SharedVoterState::empty();
 
@@ -197,6 +236,24 @@ pub fn new_full<
         let client = client.clone();
         let pool = transaction_pool.clone();
         let shared_voter_state = shared_voter_state.clone();
+        let frontier_backend = frontier_backend.clone();
+        let storage_override = storage_override.clone();
+        let filter_pool = filter_pool.clone();
+        let fee_history_cache = fee_history_cache.clone();
+        let sync = sync_service.clone();
+        let eth_network = network.clone();
+        let pubsub_sinks = pubsub_notification_sinks.clone();
+        let is_authority = config.role.is_authority();
+        let max_past_logs: u32 = 10_000;
+        let max_block_range: u32 = 1_000;
+        let babe_slot_duration = babe_link.config().slot_duration();
+        let block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
+            task_manager.spawn_handle(),
+            storage_override.clone(),
+            50,
+            50,
+            prometheus_registry_for_eth.clone(),
+        ));
         Box::new(
             move |_subscription_executor: sc_rpc::SubscriptionTaskExecutor| {
                 let mut module = jsonrpsee::RpcModule::new(());
@@ -240,7 +297,6 @@ pub fn new_full<
                     .merge(rpc::TokenomicsRpcServer::into_rpc(tokenomics))
                     .map_err(|e| Error::Application(Box::new(e)))?;
 
-                
                 // Democracy RPC
                 let democracy = rpc::DemocracyRpcImpl::new(client.clone());
                 module
@@ -263,6 +319,84 @@ pub fn new_full<
                 let contracts = rpc::ContractsRpcImpl::new(client.clone());
                 module
                     .merge(rpc::ContractsRpcServer::into_rpc(contracts))
+                    .map_err(|e| Error::Application(Box::new(e)))?;
+
+                // ===================== Ethereum JSON-RPC =====================
+                // eth_*, net_*, web3_* so MetaMask and Solidity tooling can reach Verdis.
+                //
+                // No dev signer is constructed: signing stays in the user's wallet. A node able to
+                // sign is a node that can move other people's funds if it is compromised.
+                //
+                // Pending-block inherents are BABE's, not Aura's as in Frontier's template - this
+                // chain runs BABE. Only eth_call/eth_estimateGas against the *pending* block
+                // consume them.
+                let pending_create_inherent_data_providers = move |_, ()| {
+                    let slot_duration = babe_slot_duration;
+                    async move {
+                        let current = sp_timestamp::InherentDataProvider::from_system_time();
+                        let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();
+                        let timestamp = sp_timestamp::InherentDataProvider::new(next_slot.into());
+                        let slot = sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
+                            *timestamp,
+                            slot_duration,
+                        );
+                        Ok((slot, timestamp))
+                    }
+                };
+
+                let eth = fc_rpc::Eth::<Block, _, _, _, _, _, ()>::new(
+                    client.clone(),
+                    pool.clone(),
+                    Some(verdis_runtime::TransactionConverter),
+                    sync.clone(),
+                    Vec::new(),
+                    storage_override.clone(),
+                    frontier_backend.clone(),
+                    is_authority,
+                    block_data_cache.clone(),
+                    fee_history_cache.clone(),
+                    fee_history_cache_limit,
+                    // eth_call/eth_estimateGas may use at most 10x the block gas limit.
+                    10,
+                    // Matches the runtime's AllowUnprotectedTxs = false: pre-EIP-155
+                    // transactions carry no chain id and replay across chains.
+                    false,
+                    None,
+                    pending_create_inherent_data_providers,
+                    None,
+                );
+                module
+                    .merge(fc_rpc::EthApiServer::into_rpc(eth))
+                    .map_err(|e| Error::Application(Box::new(e)))?;
+
+                let net = fc_rpc::Net::<Block, _>::new(client.clone(), eth_network.clone(), true);
+                module
+                    .merge(fc_rpc::NetApiServer::into_rpc(net))
+                    .map_err(|e| Error::Application(Box::new(e)))?;
+
+                let web3 = fc_rpc::Web3::<Block, _>::new(client.clone());
+                module
+                    .merge(fc_rpc::Web3ApiServer::into_rpc(web3))
+                    .map_err(|e| Error::Application(Box::new(e)))?;
+
+                let logs_journal = Arc::new(fc_rpc::LogsJournal::new(
+                    _subscription_executor.clone(),
+                    storage_override.clone(),
+                    pubsub_sinks.clone(),
+                ));
+                let filter = fc_rpc::EthFilter::<Block, _, _, _>::new(
+                    client.clone(),
+                    frontier_backend.clone(),
+                    pool.clone(),
+                    filter_pool.clone(),
+                    500_usize,
+                    max_past_logs,
+                    max_block_range,
+                    block_data_cache.clone(),
+                    logs_journal,
+                );
+                module
+                    .merge(fc_rpc::EthFilterApiServer::into_rpc(filter))
                     .map_err(|e| Error::Application(Box::new(e)))?;
 
                 Ok(module)
@@ -293,6 +427,21 @@ pub fn new_full<
         telemetry: None,
         tracing_execute_block: None,
     })?;
+
+    // Frontier background tasks: keep the ethereum view of the chain current.
+    crate::eth::spawn_frontier_tasks(
+        &task_manager,
+        client.clone(),
+        backend.clone(),
+        frontier_backend.clone(),
+        filter_pool.clone(),
+        storage_override.clone(),
+        fee_history_cache.clone(),
+        fee_history_cache_limit,
+        sync_service.clone(),
+        pubsub_notification_sinks.clone(),
+        state_pruning_blocks,
+    );
 
     // Start BABE if authority
     if role.is_authority() {

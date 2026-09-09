@@ -19,10 +19,161 @@ members = [
     "pallets/sealevel",
     "pallets/fungible-tokens",
     "tests/integration-tests",
+    "vendor/base-fee",
+    "vendor/ethereum",
+    "vendor/evm",
+    "vendor/evm-chain-id",
+    "vendor/evm/precompile/blake2",
+    "vendor/evm/precompile/bls12377",
+    "vendor/evm/precompile/bls12381",
+    "vendor/evm/precompile/bn128",
+    "vendor/evm/precompile/bw6761",
+    "vendor/evm/precompile/curve25519",
+    "vendor/evm/precompile/curve25519/benchmarking",
+    "vendor/evm/precompile/dispatch",
+    "vendor/evm/precompile/ed25519",
+    "vendor/evm/precompile/modexp",
+    "vendor/evm/precompile/sha3fips",
+    "vendor/evm/precompile/sha3fips/benchmarking",
+    "vendor/evm/precompile/simple",
+    "vendor/evm/test-vector-support",
+    "vendor/primitives/account",
+    "vendor/primitives/consensus",
+    "vendor/primitives/dynamic-fee",
+    "vendor/primitives/ethereum",
+    "vendor/primitives/evm",
+    "vendor/primitives/rpc",
+    "vendor/primitives/self-contained",
+    "vendor/primitives/storage",
+    "vendor/client/api",
+    "vendor/client/db",
+    "vendor/client/rpc",
+    "vendor/client/rpc-core",
+    "vendor/client/mapping-sync",
+    "vendor/client/consensus",
+    "vendor/client/storage",
+    "pallets/account-link",
 ]
 resolver = "2"
 
+[workspace.package]
+# Inherited by the vendored Frontier crates (vendor/**). Values mirror upstream Frontier
+# stable2603 so the vendored code keeps its provenance.
+authors = ["Frontier developers <legal@bitarray.dev>"]
+edition = "2021"
+repository = "https://github.com/polkadot-evm/frontier/"
+version = "1.0.0"
+license = "Apache-2.0"
+homepage = "https://verdischain.com"
+
 [workspace.dependencies]
+
+# --- Frontier EVM (vendored from stable2603) ---
+# --- Frontier client crates (eth_* JSON-RPC) ---
+prometheus-endpoint = { package = "substrate-prometheus-endpoint", version = "0.17.7" }
+sc-block-builder = { version = "0.51.0" }
+sc-client-api = { version = "47.0.1" }
+sc-client-db = { version = "0.54.1" }
+sc-consensus = { version = "0.57.0" }
+sc-network = { version = "0.58.0" }
+sc-network-sync = { version = "0.57.0" }
+sc-rpc = { version = "54.0.0" }
+sc-service = { version = "0.60.0" }
+sc-transaction-pool-api = { version = "46.0.0" }
+sc-utils = { version = "23.0.0" }
+sp-consensus = { version = "0.49.0" }
+sp-crypto-hashing = { version = "0.1.0" }
+sp-database = { version = "10.0.2" }
+sp-externalities = { version = "0.34.0" }
+sp-storage = { version = "25.0.0" }
+sp-trie = { version = "46.0.0" }
+pallet-utility = { version = "49.0.0", default-features = false }
+sp-state-machine = { version = "0.53.0", default-features = false }
+xcm = { package = "staging-xcm", version = "24.1.0", default-features = false }
+xcm-executor = { package = "staging-xcm-executor", version = "28.0.1", default-features = false }
+xcm-builder = { package = "staging-xcm-builder", version = "29.0.1", default-features = false }
+ark-bls12-377 = { version = "0.4.0", default-features = false, features = ["curve"] }
+ark-bls12-381 = { version = "0.4.0", default-features = false, features = ["curve"] }
+ark-bw6-761 = { version = "0.4.0", default-features = false }
+ark-ec = { version = "0.4.0", default-features = false }
+ark-ff = { version = "0.4.0", default-features = false }
+ark-std = { version = "0.5.0", default-features = false } # Frontier Client
+async-trait = "0.1"
+bitflags = "1.3.2"
+clap = { version = "4.5", features = ["derive", "deprecated"] }
+const-hex = { version = "1.14", default-features = false, features = ["alloc"] }
+derive_more = "1.0"
+fc-api = { path = "vendor/client/api" }
+fc-cli = { path = "vendor/client/cli", default-features = false }
+fc-consensus = { path = "vendor/client/consensus" }
+fc-db = { path = "vendor/client/db", default-features = false, features = ["rocksdb"] }
+fc-mapping-sync = { path = "vendor/client/mapping-sync", default-features = false }
+fc-rpc = { path = "vendor/client/rpc", default-features = false }
+fc-rpc-core = { path = "vendor/client/rpc-core" }
+fc-rpc-v2 = { path = "vendor/client/rpc-v2" }
+fc-rpc-v2-api = { path = "vendor/client/rpc-v2/api" }
+fc-rpc-v2-types = { path = "vendor/client/rpc-v2/types" }
+fc-storage = { path = "vendor/client/storage" }
+fp-dynamic-fee = { path = "vendor/primitives/dynamic-fee", default-features = false }
+frontier-template-runtime = { path = "vendor/template/runtime", default-features = false }
+futures = "0.3.31"
+hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
+impl-trait-for-tuples = "0.2.3"
+jsonrpsee = { version = "0.24.10" }
+jsonrpsee-core = { version = "0.24.10" }
+kvdb-rocksdb = "0.21.0"
+pallet-dynamic-fee = { path = "vendor/dynamic-fee", default-features = false }
+pallet-evm-polkavm = { path = "vendor/evm-polkavm", default-features = false }
+pallet-evm-polkavm-proc-macro = { path = "vendor/evm-polkavm/proc-macro" }
+pallet-evm-polkavm-uapi = { path = "vendor/evm-polkavm/uapi", default-features = false }
+pallet-evm-precompile-curve25519 = { path = "vendor/evm/precompile/curve25519", default-features = false }
+pallet-evm-precompile-curve25519-benchmarking = { path = "vendor/evm/precompile/curve25519/benchmarking", default-features = false }
+pallet-evm-precompile-sha3fips-benchmarking = { path = "vendor/evm/precompile/sha3fips/benchmarking", default-features = false }
+pallet-evm-test-vector-support = { path = "vendor/evm/test-vector-support" }
+pallet-hotfix-sufficients = { path = "vendor/hotfix-sufficients", default-features = false }
+parity-db = "0.5.4"
+parking_lot = "0.12.3"
+precompile-utils = { path = "vendor/precompiles", default-features = false }
+proc-macro2 = "1.0.101"
+quote = "1.0.38"
+similar-asserts = "1.7.0"
+sqlx = { version = "0.8.6", default-features = false, features = ["macros"] }
+syn = "2.0.87"
+thiserror = "2.0"
+tokio = { version = "1.45.0", default-features = false } # Substrate Client
+scale-codec = { package = "parity-scale-codec", version = "3.7.5", default-features = false, features = ["derive"] }
+log = { version = "0.4.27", default-features = false }
+hex-literal = "0.4.1"
+cumulus-primitives-storage-weight-reclaim = { version = "20.0.0", default-features = false }
+environmental = { version = "1.1.4", default-features = false }
+ethereum = { version = "0.18.2", default-features = false }
+ethereum-types = { version = "0.15", default-features = false }
+evm = { git = "https://github.com/rust-ethereum/evm.git", branch = "v0.x", default-features = false }
+hash-db = { version = "0.16.0", default-features = false }
+impl-serde = { version = "0.5.0", default-features = false }
+libsecp256k1 = { version = "0.7.2", default-features = false }
+num_enum = { version = "0.7.6", default-features = false }
+rlp = { version = "0.6", default-features = false }
+sha2 = { version = "0.10.9", default-features = false }
+sha3 = { version = "0.10", default-features = false }
+bn = { package = "substrate-bn", version = "0.6", default-features = false }
+ripemd = { version = "0.1", default-features = false }
+fp-account = { path = "vendor/primitives/account", default-features = false }
+fp-consensus = { path = "vendor/primitives/consensus", default-features = false }
+fp-ethereum = { path = "vendor/primitives/ethereum", default-features = false }
+fp-evm = { path = "vendor/primitives/evm", default-features = false }
+fp-rpc = { path = "vendor/primitives/rpc", default-features = false }
+fp-self-contained = { path = "vendor/primitives/self-contained", default-features = false }
+fp-storage = { path = "vendor/primitives/storage", default-features = false }
+pallet-evm = { path = "vendor/evm", default-features = false }
+pallet-ethereum = { path = "vendor/ethereum", default-features = false }
+pallet-base-fee = { path = "vendor/base-fee", default-features = false }
+pallet-evm-chain-id = { path = "vendor/evm-chain-id", default-features = false }
+pallet-evm-precompile-simple = { path = "vendor/evm/precompile/simple", default-features = false }
+pallet-evm-precompile-sha3fips = { path = "vendor/evm/precompile/sha3fips", default-features = false }
+pallet-evm-precompile-modexp = { path = "vendor/evm/precompile/modexp", default-features = false }
+pallet-evm-precompile-bn128 = { path = "vendor/evm/precompile/bn128", default-features = false }
+
 codec = { package = "parity-scale-codec", version = "3.7.5", default-features = false }
 scale-info = { version = "2.11.6", default-features = false }
 serde = { version = "1.0", default-features = false, features = ["derive", "alloc"] }

@@ -754,7 +754,6 @@ where
             .get_investor_allocation(at)
             .map_err(rpc_err)
     }
-
 }
 
 // === ContractsApi RPC ===

@@ -155,40 +155,10 @@ Manually with `cargo contract` the same deploy is:
 ```bash
 cargo contract instantiate \
   --constructor new --args 1000000 \
-  --value 0 \
   --suri "<your seed>" \
   --url ws://127.0.0.1:9970 \
   --execute
 ```
-
-### ⚠️ `--value 0` is not optional
-
-**ink! constructors are NOT payable by default.** A constructor without
-`#[ink(payable)]` panics if it receives funds, and the chain reports only:
-
-```
-Contracts error 12: ContractTrapped
-```
-
-The error names neither the value nor the constructor, so this is the single most
-expensive beginner trap on any ink! chain. Verified on Verdis devnet:
-
-```
-instantiate value=1000 VRDX  ->  ContractTrapped
-instantiate value=0          ->  Contracts.Instantiated   ✅
-```
-
-`verdis-contract deploy` reads `payable` from the ABI and forces `--value 0` when the
-constructor is non-payable, so use the tool if you want this handled for you. To accept
-funds at construction, annotate it:
-
-```rust
-#[ink(constructor, payable)]
-pub fn new(initial_supply: Balance) -> Self { ... }
-```
-
-The same applies to messages: a non-payable `#[ink(message)]` traps if called with a
-value.
 
 ---
 
@@ -197,22 +167,16 @@ value.
 Read live from the chain, not estimated:
 
 ```
-DepositPerByte                0.001 VRDX per byte of code
-DepositPerItem                0.001 VRDX per storage item
+DepositPerByte                1.0 VRDX per byte of code
+DepositPerItem                1.0 VRDX per storage item
 MaxCodeLen                    125952 bytes (123 KiB)
 CodeHashLockupDepositPercent  30%
-ExistentialDeposit            1 VRDX
 ```
 
-A ~20 KiB contract therefore locks roughly **20 VRDX** as a storage deposit. This is a
-**deposit, not a fee** — it is returned when the code is removed with `remove_code`.
-Contracts larger than 123 KiB are rejected outright.
-
-Measured on devnet: a 5251-byte contract locks **5.25 VRDX**.
-
-> These values were repriced in runtime spec 17. Before that, `DepositPerByte` was
-> **1 VRDX/byte**, which made a 20 KiB contract cost 20,480 VRDX and priced third-party
-> developers out entirely.
+A ~20 KiB contract therefore locks roughly **20,000 VRDX** as a storage deposit. This
+is a **deposit, not a fee** — it is returned when the code is removed with
+`remove_code`. Contracts larger than 123 KiB are rejected outright, so keep the WASM
+small (`--release` and `opt-level = "z"`).
 
 ---
 

@@ -286,6 +286,27 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
         balances.push((acct, 10_001_000 * u));
     }
 
+    // ===== DEV CHAIN ONLY: fund the well-known Frontier dev account "Alith" =====
+    // Under HashedAddressMapping<BlakeTwo256> the EVM reads an H160's balance from
+    // the substrate account blake2_256("evm:" ++ h160). Funding that account is what
+    // makes 0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac spendable from MetaMask.
+    //
+    // Alith's key is published in Frontier's own repository - not a secret. It exists
+    // in this dev spec ONLY; mainnet and testnet genesis contain no such account, and
+    // an audit diff will show it confined to dev_genesis.
+    const ALITH_MAPPED: [u8; 32] = [
+        0xa0, 0x2a, 0x00, 0xe5, 0x49, 0xcb, 0x10, 0x4f, 0x71, 0x0d, 0x3f, 0xe6, 0xf2, 0xf8, 0x3e,
+        0x91, 0x52, 0x4d, 0x2a, 0x40, 0xc4, 0xed, 0x83, 0x16, 0x58, 0xa1, 0x20, 0x88, 0x30, 0x77,
+        0xf9, 0xa9,
+    ];
+    // MEASURED: tokenDecimals = 9, and pallet-evm exposes substrate balances as wei
+    // WITHOUT rescaling. Ethereum tooling assumes 18 decimals, so MetaMask renders a
+    // VRDX balance 10^9 times smaller than it is. That is a display mismatch inherent
+    // to any non-18-decimal chain on pallet-evm, not a wiring bug. Fixing it means
+    // setting BalanceConverter, which changes the EVM<->substrate value relationship
+    // and must be audited - deliberately NOT done here.
+    balances.push((AccountId::new(ALITH_MAPPED), 1_000_000_000 * u));
+
     // Dev DPoS validators (6)
     let dpos_validators: Vec<(AccountId, u128, bool)> = uris
         .iter()
@@ -449,7 +470,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             transfer_fee_bps: 50, // 0.5% transfer fee
         },
         presale: Default::default(),
-                vesting: pallet_vesting::GenesisConfig {
+        vesting: pallet_vesting::GenesisConfig {
             vesting_schedules: vec![
                 (b"seed".to_vec(), 3 * bn, 730, 365),
                 (b"presale".to_vec(), 2 * bn, 365, 180),
@@ -525,6 +546,15 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             carbon_credits: eco_carbon,
             reforest_projects: eco_reforest,
             green_validators,
+        },
+        evm: Default::default(),
+        ethereum: Default::default(),
+        base_fee: Default::default(),
+        // Chain ID 414 is stored on chain; pallet_evm::Config::ChainId reads it from here,
+        // so this is the value eth_chainId and MetaMask report.
+        evm_chain_id: verdis_runtime::EVMChainIdConfig {
+            chain_id: 414,
+            ..Default::default()
         },
     }
 }
@@ -863,7 +893,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             transfer_fee_bps: 50, // 0.5% transfer fee
         },
         presale: Default::default(),
-                vesting: pallet_vesting::GenesisConfig {
+        vesting: pallet_vesting::GenesisConfig {
             vesting_schedules: vec![
                 (b"seed".to_vec(), 3 * bn, 730, 365),
                 (b"presale".to_vec(), 2 * bn, 365, 180),
@@ -931,6 +961,15 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             carbon_credits: eco_carbon,
             reforest_projects: eco_reforest,
             green_validators,
+        },
+        evm: Default::default(),
+        ethereum: Default::default(),
+        base_fee: Default::default(),
+        // Chain ID 414 is stored on chain; pallet_evm::Config::ChainId reads it from here,
+        // so this is the value eth_chainId and MetaMask report.
+        evm_chain_id: verdis_runtime::EVMChainIdConfig {
+            chain_id: 414,
+            ..Default::default()
         },
     }
 }
@@ -1157,6 +1196,15 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             carbon_credits: vec![], // No test eco data on mainnet
             reforest_projects: vec![],
             green_validators: vec![],
+        },
+        evm: Default::default(),
+        ethereum: Default::default(),
+        base_fee: Default::default(),
+        // Chain ID 414 is stored on chain; pallet_evm::Config::ChainId reads it from here,
+        // so this is the value eth_chainId and MetaMask report.
+        evm_chain_id: verdis_runtime::EVMChainIdConfig {
+            chain_id: 414,
+            ..Default::default()
         },
     }
 }

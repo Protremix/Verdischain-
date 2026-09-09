@@ -96,7 +96,7 @@ sudo ./install.sh
 1. Installs Docker & Docker Compose if missing.
 2. Copies stack files to `/opt/verdis-monitoring/`.
 3. Opens firewall ports (`9090`, `3000`, `9093`) via UFW.
-4. Generates `.env` with default or custom Grafana admin credentials (`<your GRAFANA_ADMIN_PASSWORD>`).
+4. Generates `.env` with default or custom Grafana admin credentials (`VerdisSecurePass2026!`).
 5. Launches containers (`docker compose up -d`).
 6. Performs health checks on all endpoints.
 7. Configures Nginx reverse proxy for `grafana.verdischain.com`.

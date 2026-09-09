@@ -418,7 +418,11 @@ impl fungible::Mutate<AccountId> for MaxSupplyCurrency {
         force: Fortitude,
     ) -> Result<Self::Balance, DispatchError> {
         <Balances as fungible::Mutate<AccountId>>::burn_from(
-            who, amount, preservation, precision, force,
+            who,
+            amount,
+            preservation,
+            precision,
+            force,
         )
     }
 }

@@ -7,6 +7,20 @@ edition = "2021"
 publish = false
 
 [dependencies]
+
+ethereum = { workspace = true }
+# --- EVM (Frontier, vendored) ---
+pallet-evm = { workspace = true }
+pallet-verdis-account-link = { path = "../pallets/account-link", default-features = false }
+pallet-ethereum = { workspace = true }
+pallet-base-fee = { workspace = true }
+pallet-evm-chain-id = { workspace = true }
+pallet-evm-precompile-simple = { workspace = true }
+pallet-evm-precompile-modexp = { workspace = true }
+pallet-evm-precompile-bn128 = { workspace = true }
+fp-rpc = { workspace = true }
+fp-evm = { workspace = true }
+fp-self-contained = { workspace = true, features = ["serde"] }
 codec = { workspace = true, features = ["derive", "max-encoded-len"] }
 scale-info = { workspace = true, features = ["derive"] }
 serde = { workspace = true, features = ["derive", "alloc"] }
@@ -146,6 +160,17 @@ std = [
 	"pallet-presale/std",
     "pallet-storage/std",
     "pallet-circuit-breaker/std",
+    "pallet-evm/std",
+    "pallet-ethereum/std",
+    "pallet-base-fee/std",
+    "pallet-evm-chain-id/std",
+    "pallet-evm-precompile-simple/std",
+    "pallet-evm-precompile-modexp/std",
+    "pallet-evm-precompile-bn128/std",
+    "fp-rpc/std",
+    "fp-evm/std",
+    "fp-self-contained/std",
+    "pallet-verdis-account-link/std",
 ]
 runtime-benchmarks = [
     "frame-benchmarking/runtime-benchmarks",

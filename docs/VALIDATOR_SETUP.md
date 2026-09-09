@@ -11,7 +11,7 @@ Verdis Chain is an eco-centric enterprise blockchain built on Rust and the Subst
 | Parameter | Value / Details |
 | :--- | :--- |
 | **Network Name** | Verdis Chain Mainnet / Devnet |
-| **Chain ID** | `909` |
+| **EVM Chain ID** (MetaMask, `eth_chainId`) | `414` |
 | **SS58 Address Format** | `909` |
 | **Native Token** | VRS (100,000,000,000 Total Supply, 9 Decimals) |
 | **Primary Node Server IP** | `91.98.160.145` |
@@ -596,3 +596,23 @@ sudo systemctl start verdis-node.service
 # 5. Monitor logs and finality
 journalctl -u verdis-node.service -f -o cat
 ```
+
+## Two different identifiers — do not confuse them
+
+Verdis carries two network numbers. They come from separate registries and mean different things:
+
+| | Value | What reads it | Registry |
+|---|---|---|---|
+| **SS58 prefix** | `909` | Address encoding — every `ki…` address | `paritytech/ss58-registry` |
+| **EVM Chain ID** | `414` | MetaMask, `eth_chainId`, EIP-155 signatures | `ethereum-lists/chains` |
+
+**Why they differ.** Chain ID 909 is already registered to *Portal Fantasy Chain* in
+`chainid.network/chains.json` — the list MetaMask, Rabby, Trust and OKX all read. Verdis could not
+be listed under it, and a wallet that already had that network would reject Verdis on a chainId
+clash. 414 is unregistered there.
+
+The SS58 prefix has no such conflict, so it stays `909`: changing it would alter how every existing
+address is written while mainnet is live with 21 validators, without fixing anything.
+
+Balances are stored against the 32-byte public key, never against the address text — so the two
+numbers are independent, and neither affects funds.
