@@ -14,7 +14,7 @@ Verdis Chain runtime is constructed using Substrate's FRAME framework and compil
 | **Token Symbol** | `VRS` | Native Verdis Utility & Governance Token |
 | **Token Decimals** | `9` | 1 VRS = 1,000,000,000 Planck (Base Unit) |
 | **SS58 Address Format** | `909` | Address prefix format for SS58 encoding |
-| **Chain ID** | `909` | Network identifier |
+| **EVM Chain ID** | `414` | Ethereum-compatibility id read by MetaMask / `eth_chainId`. Registered to nobody in chainid.network; 909 there belongs to Portal Fantasy Chain. |
 | **Total Token Supply** | `100,000,000,000 VRS` | 100 Billion VRS hard supply cap |
 | **Target Block Time** | `6 seconds` | Slot time duration |
 | **Slots Per Epoch** | `600 slots` | BABE Epoch duration (~1 hour) |
@@ -267,3 +267,23 @@ The total supply of Verdis Chain is **100,000,000,000 VRS** (100 Billion VRS) in
   }
 }
 ```
+
+## Two different identifiers — do not confuse them
+
+Verdis carries two network numbers. They come from separate registries and mean different things:
+
+| | Value | What reads it | Registry |
+|---|---|---|---|
+| **SS58 prefix** | `909` | Address encoding — every `ki…` address | `paritytech/ss58-registry` |
+| **EVM Chain ID** | `414` | MetaMask, `eth_chainId`, EIP-155 signatures | `ethereum-lists/chains` |
+
+**Why they differ.** Chain ID 909 is already registered to *Portal Fantasy Chain* in
+`chainid.network/chains.json` — the list MetaMask, Rabby, Trust and OKX all read. Verdis could not
+be listed under it, and a wallet that already had that network would reject Verdis on a chainId
+clash. 414 is unregistered there.
+
+The SS58 prefix has no such conflict, so it stays `909`: changing it would alter how every existing
+address is written while mainnet is live with 21 validators, without fixing anything.
+
+Balances are stored against the 32-byte public key, never against the address text — so the two
+numbers are independent, and neither affects funds.

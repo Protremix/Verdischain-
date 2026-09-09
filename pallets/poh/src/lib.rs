@@ -20,9 +20,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 pub mod weights;
 use codec::{Decode, Encode, MaxEncodedLen};
+use frame_support::traits::EnsureOrigin;
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
-use frame_support::traits::EnsureOrigin;
 use scale_info::TypeInfo;
 use sp_runtime::traits::Saturating;
 pub use weights::SubstrateWeight;

@@ -23,6 +23,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::traits::tokens::ExistenceRequirement;
+use frame_support::traits::EnsureOrigin;
 use frame_support::{
     dispatch::DispatchResult,
     ensure,
@@ -31,7 +32,6 @@ use frame_support::{
     DefaultNoBound, PalletId,
 };
 use frame_system::pallet_prelude::*;
-use frame_support::traits::EnsureOrigin;
 use scale_info::TypeInfo;
 use sp_runtime::traits::{AccountIdConversion, Saturating};
 use sp_std::prelude::*;

@@ -11,9 +11,9 @@
     clippy::unnecessary_cast
 )]
 #![cfg_attr(not(feature = "std"), no_std)]
+use frame_support::traits::EnsureOrigin;
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
-use frame_support::traits::EnsureOrigin;
 pub use pallet::*;
 use sp_std::prelude::*;
 pub mod weights;

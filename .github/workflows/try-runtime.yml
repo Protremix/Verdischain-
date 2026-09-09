@@ -28,6 +28,7 @@ jobs:
 
       - name: Install system dependencies
         run: |
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.list
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm
 

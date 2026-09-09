@@ -1,0 +1,66 @@
+[package]
+name = "pallet-verdis-account-link"
+version = "1.0.0"
+description = "Two-way binding between a Verdis account (ki…) and an Ethereum address (0x…), so both share one balance and one key"
+# NOT inherited from [workspace.package]: those values describe the VENDORED Frontier crates
+# ("Frontier developers", repository polkadot-evm/frontier) so that vendor/** keeps its provenance for
+# the auditor's diff. This pallet is Verdis's own code and must not claim Frontier authorship.
+authors = ["Verdis Chain <dev@verdischain.com>"]
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/Protremix/Verdischain-"
+homepage = "https://verdischain.com"
+
+[dependencies]
+# Named `scale-codec` in this workspace (package = "parity-scale-codec"), matching how the vendored
+# crates depend on it. Using the workspace alias keeps one version in the graph.
+scale-codec = { workspace = true }
+scale-info = { workspace = true }
+log = { workspace = true }
+hex-literal = { workspace = true }
+
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+sp-core = { workspace = true }
+sp-io = { workspace = true }
+sp-runtime = { workspace = true }
+
+# Provides the AddressMapping and EnsureAddressOrigin traits this pallet implements.
+pallet-evm = { workspace = true }
+
+frame-benchmarking = { workspace = true, optional = true }
+
+[dev-dependencies]
+pallet-balances = { workspace = true, features = ["std"] }
+# `sign` is gated behind `hmac` + a context feature (libsecp256k1 0.7.2 lib.rs:852-857).
+# Without them the test cannot produce a MetaMask-style signature at all.
+libsecp256k1 = { workspace = true, features = ["std", "hmac", "static-context"] }
+sha3 = "0.10"
+
+[features]
+default = ["std"]
+std = [
+    "scale-codec/std",
+    "scale-info/std",
+    "log/std",
+    "frame-support/std",
+    "frame-system/std",
+    "sp-core/std",
+    "sp-io/std",
+    "sp-runtime/std",
+    "pallet-evm/std",
+    "frame-benchmarking?/std",
+]
+runtime-benchmarks = [
+    "frame-benchmarking/runtime-benchmarks",
+    "frame-support/runtime-benchmarks",
+    "frame-system/runtime-benchmarks",
+    "pallet-evm/runtime-benchmarks",
+    "sp-runtime/runtime-benchmarks",
+]
+try-runtime = [
+    "frame-support/try-runtime",
+    "frame-system/try-runtime",
+    "pallet-evm/try-runtime",
+    "sp-runtime/try-runtime",
+]
