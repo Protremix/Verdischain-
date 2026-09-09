@@ -28,41 +28,41 @@ pub trait Config: frame_system::Config {}
 
 #[benchmarks]
 mod benchmarks {
-	use super::*;
+    use super::*;
 
-	#[benchmark]
-	fn sha3_fips_256(n: Linear<1, 4_096>) -> Result<(), BenchmarkError> {
-		// Deterministic preimage content of requested size
-		let mut input: Vec<u8> = vec![0; n as usize];
-		input.resize(n as usize, 0u8);
-		for (i, b) in input.iter_mut().enumerate() {
-			*b = (i as u8).wrapping_mul(31).wrapping_add(7);
-		}
+    #[benchmark]
+    fn sha3_fips_256(n: Linear<1, 4_096>) -> Result<(), BenchmarkError> {
+        // Deterministic preimage content of requested size
+        let mut input: Vec<u8> = vec![0; n as usize];
+        input.resize(n as usize, 0u8);
+        for (i, b) in input.iter_mut().enumerate() {
+            *b = (i as u8).wrapping_mul(31).wrapping_add(7);
+        }
 
-		#[block]
-		{
-			Sha3FIPS256::<(), ()>::execute_inner(&input, 0)
-				.expect("Failed to execute sha3 fips 256");
-		}
+        #[block]
+        {
+            Sha3FIPS256::<(), ()>::execute_inner(&input, 0)
+                .expect("Failed to execute sha3 fips 256");
+        }
 
-		Ok(())
-	}
+        Ok(())
+    }
 
-	#[benchmark]
-	fn sha3_fips_512(n: Linear<1, 4_096>) -> Result<(), BenchmarkError> {
-		// Deterministic preimage content of requested size
-		let mut input: Vec<u8> = vec![0; n as usize];
-		input.resize(n as usize, 0u8);
-		for (i, b) in input.iter_mut().enumerate() {
-			*b = (i as u8).wrapping_mul(17).wrapping_add(13);
-		}
+    #[benchmark]
+    fn sha3_fips_512(n: Linear<1, 4_096>) -> Result<(), BenchmarkError> {
+        // Deterministic preimage content of requested size
+        let mut input: Vec<u8> = vec![0; n as usize];
+        input.resize(n as usize, 0u8);
+        for (i, b) in input.iter_mut().enumerate() {
+            *b = (i as u8).wrapping_mul(17).wrapping_add(13);
+        }
 
-		#[block]
-		{
-			Sha3FIPS512::<(), ()>::execute_inner(&input, 0)
-				.expect("Failed to execute sha3 fips 512");
-		}
+        #[block]
+        {
+            Sha3FIPS512::<(), ()>::execute_inner(&input, 0)
+                .expect("Failed to execute sha3 fips 512");
+        }
 
-		Ok(())
-	}
+        Ok(())
+    }
 }

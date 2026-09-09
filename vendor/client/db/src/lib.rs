@@ -29,7 +29,7 @@ pub mod sql;
 
 #[derive(Clone)]
 pub enum Backend<Block, C> {
-	KeyValue(Arc<kv::Backend<Block, C>>),
-	#[cfg(feature = "sql")]
-	Sql(Arc<sql::Backend<Block>>),
+    KeyValue(Arc<kv::Backend<Block, C>>),
+    #[cfg(feature = "sql")]
+    Sql(Arc<sql::Backend<Block>>),
 }

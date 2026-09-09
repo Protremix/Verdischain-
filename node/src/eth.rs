@@ -65,11 +65,7 @@ pub fn open_frontier_backend(
     client: Arc<BareClient>,
     config: &Configuration,
 ) -> Result<FrontierBackend, String> {
-    fc_db::kv::Backend::<Block, BareClient>::open(
-        client,
-        &config.database,
-        &db_config_dir(config),
-    )
+    fc_db::kv::Backend::<Block, BareClient>::open(client, &config.database, &db_config_dir(config))
 }
 
 /// Spawn the tasks that keep the ethereum view of the chain current.

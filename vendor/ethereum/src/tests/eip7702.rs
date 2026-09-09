@@ -40,349 +40,349 @@ const SIMPLE_CONTRACT_CREATION: &str = "69602a60005260206000f3600052600a6016f3";
 
 /// Helper function to create an EIP-7702 transaction for testing
 fn eip7702_transaction_unsigned(
-	nonce: U256,
-	gas_limit: U256,
-	destination: TransactionAction,
-	value: U256,
-	data: Vec<u8>,
-	authorization_list: Vec<AuthorizationListItem>,
+    nonce: U256,
+    gas_limit: U256,
+    destination: TransactionAction,
+    value: U256,
+    data: Vec<u8>,
+    authorization_list: Vec<AuthorizationListItem>,
 ) -> EIP7702UnsignedTransaction {
-	EIP7702UnsignedTransaction {
-		nonce,
-		max_priority_fee_per_gas: U256::from(1),
-		max_fee_per_gas: U256::from(1),
-		gas_limit,
-		destination,
-		value,
-		data,
-		authorization_list,
-	}
+    EIP7702UnsignedTransaction {
+        nonce,
+        max_priority_fee_per_gas: U256::from(1),
+        max_fee_per_gas: U256::from(1),
+        gas_limit,
+        destination,
+        value,
+        data,
+        authorization_list,
+    }
 }
 
 /// Helper function to create a signed authorization tuple
 fn create_authorization_tuple(
-	chain_id: u64,
-	address: H160,
-	nonce: u64,
-	private_key: &H256,
+    chain_id: u64,
+    address: H160,
+    nonce: u64,
+    private_key: &H256,
 ) -> AuthorizationListItem {
-	use rlp::RlpStream;
+    use rlp::RlpStream;
 
-	let secret = {
-		let mut sk: [u8; 32] = [0u8; 32];
-		sk.copy_from_slice(&private_key[0..]);
-		libsecp256k1::SecretKey::parse(&sk).unwrap()
-	};
+    let secret = {
+        let mut sk: [u8; 32] = [0u8; 32];
+        sk.copy_from_slice(&private_key[0..]);
+        libsecp256k1::SecretKey::parse(&sk).unwrap()
+    };
 
-	// Create the proper EIP-7702 authorization message
-	// msg = keccak(MAGIC || rlp([chain_id, address, nonce]))
-	let magic: u8 = 0x05;
-	let mut stream = RlpStream::new_list(3);
-	stream.append(&chain_id);
-	stream.append(&address);
-	stream.append(&nonce);
+    // Create the proper EIP-7702 authorization message
+    // msg = keccak(MAGIC || rlp([chain_id, address, nonce]))
+    let magic: u8 = 0x05;
+    let mut stream = RlpStream::new_list(3);
+    stream.append(&chain_id);
+    stream.append(&address);
+    stream.append(&nonce);
 
-	let mut msg_data = vec![magic];
-	msg_data.extend_from_slice(&stream.out());
+    let mut msg_data = vec![magic];
+    msg_data.extend_from_slice(&stream.out());
 
-	let msg_hash = sp_io::hashing::keccak_256(&msg_data);
-	let signing_message = libsecp256k1::Message::parse_slice(&msg_hash).unwrap();
-	let (signature, recid) = libsecp256k1::sign(&signing_message, &secret);
-	let rs = signature.serialize();
-	let r = H256::from_slice(&rs[0..32]);
-	let s = H256::from_slice(&rs[32..64]);
+    let msg_hash = sp_io::hashing::keccak_256(&msg_data);
+    let signing_message = libsecp256k1::Message::parse_slice(&msg_hash).unwrap();
+    let (signature, recid) = libsecp256k1::sign(&signing_message, &secret);
+    let rs = signature.serialize();
+    let r = H256::from_slice(&rs[0..32]);
+    let s = H256::from_slice(&rs[32..64]);
 
-	AuthorizationListItem {
-		chain_id,
-		address,
-		nonce: U256::from(nonce),
-		signature: ethereum::eip2930::MalleableTransactionSignature {
-			odd_y_parity: recid.serialize() != 0,
-			r,
-			s,
-		},
-	}
+    AuthorizationListItem {
+        chain_id,
+        address,
+        nonce: U256::from(nonce),
+        signature: ethereum::eip2930::MalleableTransactionSignature {
+            odd_y_parity: recid.serialize() != 0,
+            r,
+            s,
+        },
+    }
 }
 
 #[test]
 fn eip7702_happy_path() {
-	let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
-	let alice = &pairs[0];
-	let bob = &pairs[1];
+    let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
+    let alice = &pairs[0];
+    let bob = &pairs[1];
 
-	ext.execute_with(|| {
-		// Deploy the simple contract using creation bytecode
-		let contract_creation_bytecode = hex::decode(SIMPLE_CONTRACT_CREATION).unwrap();
+    ext.execute_with(|| {
+        // Deploy the simple contract using creation bytecode
+        let contract_creation_bytecode = hex::decode(SIMPLE_CONTRACT_CREATION).unwrap();
 
-		println!(
-			"Creation bytecode length: {}",
-			contract_creation_bytecode.len()
-		);
+        println!(
+            "Creation bytecode length: {}",
+            contract_creation_bytecode.len()
+        );
 
-		// Deploy contract using Alice's account
-		let deploy_tx = LegacyUnsignedTransaction {
-			nonce: U256::zero(),
-			gas_price: U256::from(1),
-			gas_limit: U256::from(0x100000),
-			action: TransactionAction::Create,
-			value: U256::zero(),
-			input: contract_creation_bytecode,
-		}
-		.sign(&alice.private_key);
+        // Deploy contract using Alice's account
+        let deploy_tx = LegacyUnsignedTransaction {
+            nonce: U256::zero(),
+            gas_price: U256::from(1),
+            gas_limit: U256::from(0x100000),
+            action: TransactionAction::Create,
+            value: U256::zero(),
+            input: contract_creation_bytecode,
+        }
+        .sign(&alice.private_key);
 
-		let deploy_result = Ethereum::execute(alice.address, &deploy_tx, None, None);
-		assert_ok!(&deploy_result);
+        let deploy_result = Ethereum::execute(alice.address, &deploy_tx, None, None);
+        assert_ok!(&deploy_result);
 
-		// Get the deployed contract address
-		let (_, _, deploy_info) = deploy_result.unwrap();
+        // Get the deployed contract address
+        let (_, _, deploy_info) = deploy_result.unwrap();
 
-		let CallOrCreateInfo::Create(info) = deploy_info else {
-			panic!("Expected Create info, got Call");
-		};
+        let CallOrCreateInfo::Create(info) = deploy_info else {
+            panic!("Expected Create info, got Call");
+        };
 
-		println!("Contract deployment exit reason: {:?}", info.exit_reason);
-		println!("Contract deployment return address: {:?}", info.value);
-		println!("Contract deployment used gas: {:?}", info.used_gas);
-		assert!(
-			info.exit_reason.is_succeed(),
-			"Contract deployment should succeed"
-		);
+        println!("Contract deployment exit reason: {:?}", info.exit_reason);
+        println!("Contract deployment return address: {:?}", info.value);
+        println!("Contract deployment used gas: {:?}", info.used_gas);
+        assert!(
+            info.exit_reason.is_succeed(),
+            "Contract deployment should succeed"
+        );
 
-		let contract_address = info.value;
+        let contract_address = info.value;
 
-		// Verify contract was deployed correctly
-		let contract_code = pallet_evm::AccountCodes::<Test>::get(contract_address);
-		assert!(
-			!contract_code.is_empty(),
-			"Contract should be deployed with non-empty code"
-		);
+        // Verify contract was deployed correctly
+        let contract_code = pallet_evm::AccountCodes::<Test>::get(contract_address);
+        assert!(
+            !contract_code.is_empty(),
+            "Contract should be deployed with non-empty code"
+        );
 
-		// The nonce = 2 accounts for the increment of Alice's nonce due to contract deployment + EIP-7702 transaction
-		let authorization =
-			create_authorization_tuple(ChainId::get(), contract_address, 2, &alice.private_key);
+        // The nonce = 2 accounts for the increment of Alice's nonce due to contract deployment + EIP-7702 transaction
+        let authorization =
+            create_authorization_tuple(ChainId::get(), contract_address, 2, &alice.private_key);
 
-		let transaction = eip7702_transaction_unsigned(
-			U256::from(1), // nonce 1 (after contract deployment)
-			U256::from(0x100000),
-			TransactionAction::Call(bob.address),
-			U256::from(1000),
-			vec![],
-			vec![authorization],
-		)
-		.sign(&alice.private_key, Some(ChainId::get()));
+        let transaction = eip7702_transaction_unsigned(
+            U256::from(1), // nonce 1 (after contract deployment)
+            U256::from(0x100000),
+            TransactionAction::Call(bob.address),
+            U256::from(1000),
+            vec![],
+            vec![authorization],
+        )
+        .sign(&alice.private_key, Some(ChainId::get()));
 
-		// Store initial balances
-		let substrate_alice =
-			<Test as pallet_evm::Config>::AddressMapping::into_account_id(alice.address);
-		let substrate_bob =
-			<Test as pallet_evm::Config>::AddressMapping::into_account_id(bob.address);
-		let initial_alice_balance = Balances::free_balance(&substrate_alice);
-		let initial_bob_balance = Balances::free_balance(&substrate_bob);
+        // Store initial balances
+        let substrate_alice =
+            <Test as pallet_evm::Config>::AddressMapping::into_account_id(alice.address);
+        let substrate_bob =
+            <Test as pallet_evm::Config>::AddressMapping::into_account_id(bob.address);
+        let initial_alice_balance = Balances::free_balance(&substrate_alice);
+        let initial_bob_balance = Balances::free_balance(&substrate_bob);
 
-		// Execute the transaction
-		let result = Ethereum::execute(alice.address, &transaction, None, None);
-		assert_ok!(&result);
+        // Execute the transaction
+        let result = Ethereum::execute(alice.address, &transaction, None, None);
+        assert_ok!(&result);
 
-		// Check that the delegation code was set as AccountCodes
-		let alice_code = pallet_evm::AccountCodes::<Test>::get(alice.address);
+        // Check that the delegation code was set as AccountCodes
+        let alice_code = pallet_evm::AccountCodes::<Test>::get(alice.address);
 
-		// According to EIP-7702, after processing an authorization, the authorizing account
-		// should have code set to 0xef0100 || address (delegation designator)
-		assert!(
-			!alice_code.is_empty(),
-			"Alice's account should have delegation code after EIP-7702 authorization"
-		);
+        // According to EIP-7702, after processing an authorization, the authorizing account
+        // should have code set to 0xef0100 || address (delegation designator)
+        assert!(
+            !alice_code.is_empty(),
+            "Alice's account should have delegation code after EIP-7702 authorization"
+        );
 
-		assert_eq!(
-			alice_code.len(),
-			evm::delegation::EIP_7702_DELEGATION_SIZE,
-			"Delegation code should be exactly 23 bytes (0xef0100 + 20 byte address)"
-		);
+        assert_eq!(
+            alice_code.len(),
+            evm::delegation::EIP_7702_DELEGATION_SIZE,
+            "Delegation code should be exactly 23 bytes (0xef0100 + 20 byte address)"
+        );
 
-		assert_eq!(
-			&alice_code[0..3],
-			evm::delegation::EIP_7702_DELEGATION_PREFIX,
-			"Delegation code should start with 0xef0100"
-		);
+        assert_eq!(
+            &alice_code[0..3],
+            evm::delegation::EIP_7702_DELEGATION_PREFIX,
+            "Delegation code should start with 0xef0100"
+        );
 
-		// Extract and verify the delegated address
-		let delegated_address: H160 = H160::from_slice(&alice_code[3..23]);
-		assert_eq!(
-			delegated_address, contract_address,
-			"Alice's account should delegate to the authorized contract address"
-		);
+        // Extract and verify the delegated address
+        let delegated_address: H160 = H160::from_slice(&alice_code[3..23]);
+        assert_eq!(
+            delegated_address, contract_address,
+            "Alice's account should delegate to the authorized contract address"
+        );
 
-		// Verify the value transfer still occurred
-		let final_alice_balance = Balances::free_balance(&substrate_alice);
-		let final_bob_balance = Balances::free_balance(&substrate_bob);
+        // Verify the value transfer still occurred
+        let final_alice_balance = Balances::free_balance(&substrate_alice);
+        let final_bob_balance = Balances::free_balance(&substrate_bob);
 
-		assert!(
-			final_alice_balance < initial_alice_balance,
-			"Alice's balance should decrease after transaction"
-		);
+        assert!(
+            final_alice_balance < initial_alice_balance,
+            "Alice's balance should decrease after transaction"
+        );
 
-		assert_eq!(
-			final_bob_balance,
-			initial_bob_balance + 1000u64,
-			"Bob should receive the transaction value"
-		);
+        assert_eq!(
+            final_bob_balance,
+            initial_bob_balance + 1000u64,
+            "Bob should receive the transaction value"
+        );
 
-		// Test that the contract can be called directly (to verify it works)
-		// This simple contract returns 42 for any call (no function selector needed)
-		let direct_call_tx = LegacyUnsignedTransaction {
-			nonce: U256::from(2), // nonce 2 for Alice (after contract deployment + EIP-7702 transaction)
-			gas_price: U256::from(1),
-			gas_limit: U256::from(0x100000),
-			action: TransactionAction::Call(contract_address), // Call contract directly
-			value: U256::zero(),
-			input: vec![], // No input needed - any call returns 42
-		}
-		.sign(&alice.private_key);
+        // Test that the contract can be called directly (to verify it works)
+        // This simple contract returns 42 for any call (no function selector needed)
+        let direct_call_tx = LegacyUnsignedTransaction {
+            nonce: U256::from(2), // nonce 2 for Alice (after contract deployment + EIP-7702 transaction)
+            gas_price: U256::from(1),
+            gas_limit: U256::from(0x100000),
+            action: TransactionAction::Call(contract_address), // Call contract directly
+            value: U256::zero(),
+            input: vec![], // No input needed - any call returns 42
+        }
+        .sign(&alice.private_key);
 
-		let direct_call_result = Ethereum::execute(alice.address, &direct_call_tx, None, None);
-		assert_ok!(&direct_call_result);
+        let direct_call_result = Ethereum::execute(alice.address, &direct_call_tx, None, None);
+        assert_ok!(&direct_call_result);
 
-		let (_, _, direct_call_info) = direct_call_result.unwrap();
+        let (_, _, direct_call_info) = direct_call_result.unwrap();
 
-		let CallOrCreateInfo::Call(info) = direct_call_info else {
-			panic!("Expected Call info, got Create");
-		};
-		println!("Direct call exit reason: {:?}", info.exit_reason);
-		println!("Direct call return value: {:?}", info.value);
+        let CallOrCreateInfo::Call(info) = direct_call_info else {
+            panic!("Expected Call info, got Create");
+        };
+        println!("Direct call exit reason: {:?}", info.exit_reason);
+        println!("Direct call return value: {:?}", info.value);
 
-		// Debug: Check what code Alice actually has
-		let alice_code_after = pallet_evm::AccountCodes::<Test>::get(alice.address);
-		println!("Alice's code after EIP-7702: {alice_code_after:?}");
-		println!("Contract address: {contract_address:?}");
+        // Debug: Check what code Alice actually has
+        let alice_code_after = pallet_evm::AccountCodes::<Test>::get(alice.address);
+        println!("Alice's code after EIP-7702: {alice_code_after:?}");
+        println!("Contract address: {contract_address:?}");
 
-		// Check what code the contract actually has
-		let contract_code_final = pallet_evm::AccountCodes::<Test>::get(contract_address);
-		println!("Contract code length: {}", contract_code_final.len());
-		if contract_code_final.len() > 10 {
-			println!(
-				"Contract code first 10 bytes: {:?}",
-				&contract_code_final[0..10]
-			);
-		}
+        // Check what code the contract actually has
+        let contract_code_final = pallet_evm::AccountCodes::<Test>::get(contract_address);
+        println!("Contract code length: {}", contract_code_final.len());
+        if contract_code_final.len() > 10 {
+            println!(
+                "Contract code first 10 bytes: {:?}",
+                &contract_code_final[0..10]
+            );
+        }
 
-		// Try calling Alice's address instead of the contract directly
-		// This should delegate to the contract if EIP-7702 is working
-		let delegate_call_tx = LegacyUnsignedTransaction {
-			nonce: U256::from(3), // nonce 3 for Alice
-			gas_price: U256::from(1),
-			gas_limit: U256::from(0x100000),
-			action: TransactionAction::Call(alice.address), // Call Alice's delegated address
-			value: U256::zero(),
-			input: vec![], // No input needed - any call returns 42
-		}
-		.sign(&alice.private_key);
+        // Try calling Alice's address instead of the contract directly
+        // This should delegate to the contract if EIP-7702 is working
+        let delegate_call_tx = LegacyUnsignedTransaction {
+            nonce: U256::from(3), // nonce 3 for Alice
+            gas_price: U256::from(1),
+            gas_limit: U256::from(0x100000),
+            action: TransactionAction::Call(alice.address), // Call Alice's delegated address
+            value: U256::zero(),
+            input: vec![], // No input needed - any call returns 42
+        }
+        .sign(&alice.private_key);
 
-		let delegate_call_result = Ethereum::execute(alice.address, &delegate_call_tx, None, None);
-		println!("Delegate call result: {delegate_call_result:?}");
+        let delegate_call_result = Ethereum::execute(alice.address, &delegate_call_tx, None, None);
+        println!("Delegate call result: {delegate_call_result:?}");
 
-		if let Ok((_, _, CallOrCreateInfo::Call(delegate_info))) = delegate_call_result {
-			println!("Delegate call exit reason: {:?}", delegate_info.exit_reason);
-			println!("Delegate call return value: {:?}", delegate_info.value);
-		}
+        if let Ok((_, _, CallOrCreateInfo::Call(delegate_info))) = delegate_call_result {
+            println!("Delegate call exit reason: {:?}", delegate_info.exit_reason);
+            println!("Delegate call return value: {:?}", delegate_info.value);
+        }
 
-		// Verify the contract returns 42
-		let expected_result = {
-			let mut result = vec![0u8; 32];
-			result[31] = 42;
-			result
-		};
+        // Verify the contract returns 42
+        let expected_result = {
+            let mut result = vec![0u8; 32];
+            result[31] = 42;
+            result
+        };
 
-		if info.exit_reason.is_succeed() {
-			assert_eq!(
-				info.value, expected_result,
-				"Direct call to contract should return 42"
-			);
-			println!("✓ Direct contract call succeeded!");
-		} else {
-			println!("✗ Direct contract call failed: {:?}", info.exit_reason);
-		}
-	});
+        if info.exit_reason.is_succeed() {
+            assert_eq!(
+                info.value, expected_result,
+                "Direct call to contract should return 42"
+            );
+            println!("✓ Direct contract call succeeded!");
+        } else {
+            println!("✗ Direct contract call failed: {:?}", info.exit_reason);
+        }
+    });
 }
 
 #[test]
 fn valid_eip7702_transaction_structure() {
-	let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
-	let alice = &pairs[0];
-	let bob = &pairs[1];
+    let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
+    let alice = &pairs[0];
+    let bob = &pairs[1];
 
-	ext.execute_with(|| {
-		let contract_address =
-			H160::from_str("0x1000000000000000000000000000000000000001").unwrap();
-		let authorization =
-			create_authorization_tuple(ChainId::get(), contract_address, 0, &alice.private_key);
+    ext.execute_with(|| {
+        let contract_address =
+            H160::from_str("0x1000000000000000000000000000000000000001").unwrap();
+        let authorization =
+            create_authorization_tuple(ChainId::get(), contract_address, 0, &alice.private_key);
 
-		let transaction = eip7702_transaction_unsigned(
-			U256::zero(),
-			U256::from(0x100000),
-			TransactionAction::Call(bob.address),
-			U256::from(1000),
-			vec![],
-			vec![authorization],
-		)
-		.sign(&alice.private_key, Some(ChainId::get()));
+        let transaction = eip7702_transaction_unsigned(
+            U256::zero(),
+            U256::from(0x100000),
+            TransactionAction::Call(bob.address),
+            U256::from(1000),
+            vec![],
+            vec![authorization],
+        )
+        .sign(&alice.private_key, Some(ChainId::get()));
 
-		let call = crate::Call::<Test>::transact { transaction };
-		let source = call.check_self_contained().unwrap().unwrap();
+        let call = crate::Call::<Test>::transact { transaction };
+        let source = call.check_self_contained().unwrap().unwrap();
 
-		// Transaction should be valid
-		assert_ok!(call
-			.validate_self_contained(&source, &call.get_dispatch_info(), 0)
-			.unwrap());
-	});
+        // Transaction should be valid
+        assert_ok!(call
+            .validate_self_contained(&source, &call.get_dispatch_info(), 0)
+            .unwrap());
+    });
 }
 
 #[test]
 fn eip7702_transaction_with_empty_authorization_list_fails() {
-	let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
-	let alice = &pairs[0];
-	let bob = &pairs[1];
+    let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
+    let alice = &pairs[0];
+    let bob = &pairs[1];
 
-	ext.execute_with(|| {
-		let transaction = eip7702_transaction_unsigned(
-			U256::zero(),
-			U256::from(0x100000),
-			TransactionAction::Call(bob.address),
-			U256::from(1000),
-			vec![],
-			vec![], // Empty authorization list
-		)
-		.sign(&alice.private_key, Some(ChainId::get()));
+    ext.execute_with(|| {
+        let transaction = eip7702_transaction_unsigned(
+            U256::zero(),
+            U256::from(0x100000),
+            TransactionAction::Call(bob.address),
+            U256::from(1000),
+            vec![],
+            vec![], // Empty authorization list
+        )
+        .sign(&alice.private_key, Some(ChainId::get()));
 
-		let call = crate::Call::<Test>::transact { transaction };
+        let call = crate::Call::<Test>::transact { transaction };
 
-		// Transaction with empty authorization list should fail validation
-		let check_result = call.check_self_contained();
+        // Transaction with empty authorization list should fail validation
+        let check_result = call.check_self_contained();
 
-		// The transaction should be recognized as self-contained (signature should be valid)
-		let source = check_result
-			.expect("EIP-7702 transaction should be recognized as self-contained")
-			.expect("EIP-7702 transaction signature should be valid");
+        // The transaction should be recognized as self-contained (signature should be valid)
+        let source = check_result
+            .expect("EIP-7702 transaction should be recognized as self-contained")
+            .expect("EIP-7702 transaction signature should be valid");
 
-		// But validation should fail due to empty authorization list
-		let validation_result = call
-			.validate_self_contained(&source, &call.get_dispatch_info(), 0)
-			.expect("Validation should return a result");
+        // But validation should fail due to empty authorization list
+        let validation_result = call
+            .validate_self_contained(&source, &call.get_dispatch_info(), 0)
+            .expect("Validation should return a result");
 
-		// Assert that validation fails
-		assert!(
-			validation_result.is_err(),
-			"EIP-7702 transaction with empty authorization list should fail validation"
-		);
-	});
+        // Assert that validation fails
+        assert!(
+            validation_result.is_err(),
+            "EIP-7702 transaction with empty authorization list should fail validation"
+        );
+    });
 }
 
 #[test]
 fn eip7702_transaction_execution() {
-	let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
-	let alice = &pairs[0];
-	let bob = &pairs[1];
+    let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
+    let alice = &pairs[0];
+    let bob = &pairs[1];
 
-	ext.execute_with(|| {
+    ext.execute_with(|| {
 		let contract_address =
 			H160::from_str("0x1000000000000000000000000000000000000001").unwrap();
 		// The nonce = 1 accounts for the increment of Alice's nonce due to submitting the transaction
@@ -499,114 +499,114 @@ fn eip7702_transaction_execution() {
 
 #[test]
 fn authorization_with_wrong_chain_id() {
-	let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
-	let alice = &pairs[0];
-	let bob = &pairs[1];
+    let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
+    let alice = &pairs[0];
+    let bob = &pairs[1];
 
-	ext.execute_with(|| {
-		let contract_address =
-			H160::from_str("0x1000000000000000000000000000000000000001").unwrap();
-		// Create authorization with wrong chain ID
-		let authorization =
-			create_authorization_tuple(999, contract_address, 0, &alice.private_key);
+    ext.execute_with(|| {
+        let contract_address =
+            H160::from_str("0x1000000000000000000000000000000000000001").unwrap();
+        // Create authorization with wrong chain ID
+        let authorization =
+            create_authorization_tuple(999, contract_address, 0, &alice.private_key);
 
-		let transaction = eip7702_transaction_unsigned(
-			U256::zero(),
-			U256::from(0x100000),
-			TransactionAction::Call(bob.address),
-			U256::from(1000),
-			vec![],
-			vec![authorization],
-		)
-		.sign(&alice.private_key, Some(ChainId::get()));
+        let transaction = eip7702_transaction_unsigned(
+            U256::zero(),
+            U256::from(0x100000),
+            TransactionAction::Call(bob.address),
+            U256::from(1000),
+            vec![],
+            vec![authorization],
+        )
+        .sign(&alice.private_key, Some(ChainId::get()));
 
-		let call = crate::Call::<Test>::transact { transaction };
-		let check_result = call.check_self_contained();
+        let call = crate::Call::<Test>::transact { transaction };
+        let check_result = call.check_self_contained();
 
-		// Transaction should be structurally valid but authorization should be invalid
-		if let Some(Ok(source)) = check_result {
-			let _validation_result =
-				call.validate_self_contained(&source, &call.get_dispatch_info(), 0);
-			// The transaction might still pass validation but the authorization would be skipped during execution
-			// This documents the expected behavior for invalid chain IDs
-		}
-	});
+        // Transaction should be structurally valid but authorization should be invalid
+        if let Some(Ok(source)) = check_result {
+            let _validation_result =
+                call.validate_self_contained(&source, &call.get_dispatch_info(), 0);
+            // The transaction might still pass validation but the authorization would be skipped during execution
+            // This documents the expected behavior for invalid chain IDs
+        }
+    });
 }
 
 #[test]
 fn authorization_with_zero_chain_id() {
-	let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
-	let alice = &pairs[0];
-	let bob = &pairs[1];
+    let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
+    let alice = &pairs[0];
+    let bob = &pairs[1];
 
-	ext.execute_with(|| {
-		let contract_address =
-			H160::from_str("0x1000000000000000000000000000000000000001").unwrap();
-		// Create authorization with chain ID = 0 (should be universally valid)
-		let authorization = create_authorization_tuple(0, contract_address, 0, &alice.private_key);
+    ext.execute_with(|| {
+        let contract_address =
+            H160::from_str("0x1000000000000000000000000000000000000001").unwrap();
+        // Create authorization with chain ID = 0 (should be universally valid)
+        let authorization = create_authorization_tuple(0, contract_address, 0, &alice.private_key);
 
-		let transaction = eip7702_transaction_unsigned(
-			U256::zero(),
-			U256::from(0x100000),
-			TransactionAction::Call(bob.address),
-			U256::from(1000),
-			vec![],
-			vec![authorization],
-		)
-		.sign(&alice.private_key, Some(ChainId::get()));
+        let transaction = eip7702_transaction_unsigned(
+            U256::zero(),
+            U256::from(0x100000),
+            TransactionAction::Call(bob.address),
+            U256::from(1000),
+            vec![],
+            vec![authorization],
+        )
+        .sign(&alice.private_key, Some(ChainId::get()));
 
-		let call = crate::Call::<Test>::transact { transaction };
-		let source = call.check_self_contained().unwrap().unwrap();
+        let call = crate::Call::<Test>::transact { transaction };
+        let source = call.check_self_contained().unwrap().unwrap();
 
-		// Transaction should be valid - chain_id = 0 is universally accepted
-		assert_ok!(call
-			.validate_self_contained(&source, &call.get_dispatch_info(), 0)
-			.unwrap());
-	});
+        // Transaction should be valid - chain_id = 0 is universally accepted
+        assert_ok!(call
+            .validate_self_contained(&source, &call.get_dispatch_info(), 0)
+            .unwrap());
+    });
 }
 
 #[test]
 fn multiple_authorizations_for_same_authority() {
-	let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
-	let alice = &pairs[0];
-	let bob = &pairs[1];
+    let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
+    let alice = &pairs[0];
+    let bob = &pairs[1];
 
-	ext.execute_with(|| {
-		let contract1 = H160::from_str("0x1000000000000000000000000000000000000001").unwrap();
-		let contract2 = H160::from_str("0x2000000000000000000000000000000000000002").unwrap();
+    ext.execute_with(|| {
+        let contract1 = H160::from_str("0x1000000000000000000000000000000000000001").unwrap();
+        let contract2 = H160::from_str("0x2000000000000000000000000000000000000002").unwrap();
 
-		// Create multiple authorizations for the same authority (Alice)
-		let auth1 = create_authorization_tuple(ChainId::get(), contract1, 0, &alice.private_key);
-		let auth2 = create_authorization_tuple(ChainId::get(), contract2, 0, &alice.private_key);
+        // Create multiple authorizations for the same authority (Alice)
+        let auth1 = create_authorization_tuple(ChainId::get(), contract1, 0, &alice.private_key);
+        let auth2 = create_authorization_tuple(ChainId::get(), contract2, 0, &alice.private_key);
 
-		let transaction = eip7702_transaction_unsigned(
-			U256::zero(),
-			U256::from(0x100000),
-			TransactionAction::Call(bob.address),
-			U256::from(1000),
-			vec![],
-			vec![auth1, auth2], // Multiple authorizations for same authority
-		)
-		.sign(&alice.private_key, Some(ChainId::get()));
+        let transaction = eip7702_transaction_unsigned(
+            U256::zero(),
+            U256::from(0x100000),
+            TransactionAction::Call(bob.address),
+            U256::from(1000),
+            vec![],
+            vec![auth1, auth2], // Multiple authorizations for same authority
+        )
+        .sign(&alice.private_key, Some(ChainId::get()));
 
-		let call = crate::Call::<Test>::transact { transaction };
-		let source = call.check_self_contained().unwrap().unwrap();
+        let call = crate::Call::<Test>::transact { transaction };
+        let source = call.check_self_contained().unwrap().unwrap();
 
-		// Transaction should be valid - multiple authorizations are allowed
-		// The EIP specifies that the last valid authorization should win
-		assert_ok!(call
-			.validate_self_contained(&source, &call.get_dispatch_info(), 0)
-			.unwrap());
-	});
+        // Transaction should be valid - multiple authorizations are allowed
+        // The EIP specifies that the last valid authorization should win
+        assert_ok!(call
+            .validate_self_contained(&source, &call.get_dispatch_info(), 0)
+            .unwrap());
+    });
 }
 
 #[test]
 fn gas_cost_calculation_with_authorizations() {
-	let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
-	let alice = &pairs[0];
-	let bob = &pairs[1];
+    let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
+    let alice = &pairs[0];
+    let bob = &pairs[1];
 
-	ext.execute_with(|| {
+    ext.execute_with(|| {
 		// EIP-7702 gas cost constants according to the specification
 		const BASE_TX_COST: u64 = 21_000;
 		const PER_AUTH_BASE_COST: u64 = 12_500;
@@ -704,11 +704,11 @@ fn gas_cost_calculation_with_authorizations() {
 
 #[test]
 fn authorization_with_zero_address_delegation() {
-	let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
-	let alice = &pairs[0];
-	let bob = &pairs[1];
+    let (pairs, mut ext) = new_test_ext_with_initial_balance(2, 10_000_000_000_000);
+    let alice = &pairs[0];
+    let bob = &pairs[1];
 
-	ext.execute_with(|| {
+    ext.execute_with(|| {
 
 		// Step 1: First create a delegation to a non-zero address (e.g., 0x0...01)
 		let first_delegate_address = H160::from_str("0x0000000000000000000000000000000000000001").unwrap();

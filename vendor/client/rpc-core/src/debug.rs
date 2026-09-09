@@ -27,23 +27,23 @@ use crate::types::{BlockNumberOrHash, Bytes};
 #[rpc(server)]
 #[async_trait]
 pub trait DebugApi {
-	/// Returns an RLP-encoded header with the given number or hash.
-	#[method(name = "debug_getRawHeader")]
-	async fn raw_header(&self, number: BlockNumberOrHash) -> RpcResult<Option<Bytes>>;
+    /// Returns an RLP-encoded header with the given number or hash.
+    #[method(name = "debug_getRawHeader")]
+    async fn raw_header(&self, number: BlockNumberOrHash) -> RpcResult<Option<Bytes>>;
 
-	/// Returns an RLP-encoded block with the given number or hash.
-	#[method(name = "debug_getRawBlock")]
-	async fn raw_block(&self, number: BlockNumberOrHash) -> RpcResult<Option<Bytes>>;
+    /// Returns an RLP-encoded block with the given number or hash.
+    #[method(name = "debug_getRawBlock")]
+    async fn raw_block(&self, number: BlockNumberOrHash) -> RpcResult<Option<Bytes>>;
 
-	/// Returns a EIP-2718 binary-encoded transaction with the given hash.
-	#[method(name = "debug_getRawTransaction")]
-	async fn raw_transaction(&self, hash: H256) -> RpcResult<Option<Bytes>>;
+    /// Returns a EIP-2718 binary-encoded transaction with the given hash.
+    #[method(name = "debug_getRawTransaction")]
+    async fn raw_transaction(&self, hash: H256) -> RpcResult<Option<Bytes>>;
 
-	/// Returns an array of EIP-2718 binary-encoded receipts with the given number of hash.
-	#[method(name = "debug_getRawReceipts")]
-	async fn raw_receipts(&self, number: BlockNumberOrHash) -> RpcResult<Vec<Bytes>>;
+    /// Returns an array of EIP-2718 binary-encoded receipts with the given number of hash.
+    #[method(name = "debug_getRawReceipts")]
+    async fn raw_receipts(&self, number: BlockNumberOrHash) -> RpcResult<Vec<Bytes>>;
 
-	/// Returns an array of recent bad blocks that the client has seen on the network.
-	#[method(name = "debug_getBadBlocks")]
-	fn bad_blocks(&self, number: BlockNumberOrHash) -> RpcResult<Vec<()>>;
+    /// Returns an array of recent bad blocks that the client has seen on the network.
+    #[method(name = "debug_getBadBlocks")]
+    fn bad_blocks(&self, number: BlockNumberOrHash) -> RpcResult<Vec<()>>;
 }

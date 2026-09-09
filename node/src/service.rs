@@ -200,7 +200,6 @@ pub fn new_full<
             metrics,
         })?;
 
-
     // ===================== Frontier (EVM) =====================
     // Built before the RPC builder because the closure captures these.
     let frontier_backend = Arc::new(
@@ -212,11 +211,9 @@ pub fn new_full<
         fee_history_cache,
         fee_history_cache_limit,
     } = crate::eth::new_frontier_partial();
-    let storage_override = Arc::new(fc_rpc::StorageOverrideHandler::<
-        Block,
-        _,
-        _,
-    >::new(client.clone()));
+    let storage_override = Arc::new(fc_rpc::StorageOverrideHandler::<Block, _, _>::new(
+        client.clone(),
+    ));
     let pubsub_notification_sinks: Arc<
         fc_mapping_sync::EthereumBlockNotificationSinks<
             fc_mapping_sync::EthereumBlockNotification<Block>,
@@ -300,7 +297,6 @@ pub fn new_full<
                     .merge(rpc::TokenomicsRpcServer::into_rpc(tokenomics))
                     .map_err(|e| Error::Application(Box::new(e)))?;
 
-                
                 // Democracy RPC
                 let democracy = rpc::DemocracyRpcImpl::new(client.clone());
                 module
@@ -339,8 +335,7 @@ pub fn new_full<
                     async move {
                         let current = sp_timestamp::InherentDataProvider::from_system_time();
                         let next_slot = current.timestamp().as_millis() + slot_duration.as_millis();
-                        let timestamp =
-                            sp_timestamp::InherentDataProvider::new(next_slot.into());
+                        let timestamp = sp_timestamp::InherentDataProvider::new(next_slot.into());
                         let slot = sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
                             *timestamp,
                             slot_duration,
@@ -404,7 +399,6 @@ pub fn new_full<
                     .merge(fc_rpc::EthFilterApiServer::into_rpc(filter))
                     .map_err(|e| Error::Application(Box::new(e)))?;
 
-
                 Ok(module)
             },
         )
@@ -448,7 +442,6 @@ pub fn new_full<
         pubsub_notification_sinks.clone(),
         state_pruning_blocks,
     );
-
 
     // Start BABE if authority
     if role.is_authority() {

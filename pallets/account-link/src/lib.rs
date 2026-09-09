@@ -102,9 +102,8 @@ pub mod pallet {
     };
     use frame_system::pallet_prelude::*;
 
-    type BalanceOf<T> = <<T as Config>::Currency as Inspect<
-        <T as frame_system::Config>::AccountId,
-    >>::Balance;
+    type BalanceOf<T> =
+        <<T as Config>::Currency as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
 
     /// Decides which accounts may be bound to an EVM address.
     ///
@@ -239,10 +238,7 @@ pub mod pallet {
                 !AccountIdOf::<T>::contains_key(evm_address),
                 Error::<T>::EvmAddressAlreadyLinked
             );
-            ensure!(
-                signature.len() == 65,
-                Error::<T>::BadSignatureLength
-            );
+            ensure!(signature.len() == 65, Error::<T>::BadSignatureLength);
 
             // AST-3: refuse while the hashed mirror still holds funds, otherwise they become
             // unreachable once the mapping redirects the address elsewhere.
@@ -256,18 +252,16 @@ pub mod pallet {
 
             let mut sig = [0u8; 65];
             sig.copy_from_slice(&signature);
-            let recovered = Self::recover_signer(&sig, &digest).ok_or(Error::<T>::InvalidSignature)?;
+            let recovered =
+                Self::recover_signer(&sig, &digest).ok_or(Error::<T>::InvalidSignature)?;
             ensure!(recovered == evm_address, Error::<T>::InvalidSignature);
 
             // AST-1: Preservation::Preserve cannot take the account below the existential deposit,
             // so paying the deposit can never reap the very account being bound.
             let deposit = T::LinkDeposit::get();
             if !deposit.is_zero() {
-                let reducible = T::Currency::reducible_balance(
-                    &who,
-                    Preservation::Preserve,
-                    Fortitude::Polite,
-                );
+                let reducible =
+                    T::Currency::reducible_balance(&who, Preservation::Preserve, Fortitude::Polite);
                 ensure!(reducible >= deposit, Error::<T>::InsufficientBalance);
                 T::Currency::burn_from(
                     &who,
@@ -283,10 +277,7 @@ pub mod pallet {
             // AST-4: burn this nonce so the same signature cannot authorise a second bind.
             LinkNonce::<T>::insert(&who, nonce.saturating_add(1));
 
-            Self::deposit_event(Event::AccountLinked {
-                who,
-                evm_address,
-            });
+            Self::deposit_event(Event::AccountLinked { who, evm_address });
             Ok(())
         }
     }
@@ -326,7 +317,8 @@ pub mod pallet {
         /// Returns `None` for a malformed signature rather than panicking, because this runs inside a
         /// dispatchable on caller-supplied bytes.
         pub fn recover_signer(sig: &[u8; 65], digest: &H256) -> Option<H160> {
-            let pubkey = sp_io::crypto::secp256k1_ecdsa_recover(sig, digest.as_fixed_bytes()).ok()?;
+            let pubkey =
+                sp_io::crypto::secp256k1_ecdsa_recover(sig, digest.as_fixed_bytes()).ok()?;
             let hash = keccak(&pubkey);
             Some(H160::from_slice(&hash.as_bytes()[12..32]))
         }
@@ -394,12 +386,10 @@ pub mod pallet {
             origin: OuterOrigin,
         ) -> Result<T::AccountId, OuterOrigin> {
             origin.into().and_then(|o| match o {
-                frame_system::RawOrigin::Signed(who) => {
-                    match AccountIdOf::<T>::get(address) {
-                        Some(owner) if owner == who => Ok(who),
-                        _ => Err(OuterOrigin::from(frame_system::RawOrigin::Signed(who))),
-                    }
-                }
+                frame_system::RawOrigin::Signed(who) => match AccountIdOf::<T>::get(address) {
+                    Some(owner) if owner == who => Ok(who),
+                    _ => Err(OuterOrigin::from(frame_system::RawOrigin::Signed(who))),
+                },
                 r => Err(OuterOrigin::from(r)),
             })
         }

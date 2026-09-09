@@ -1,8 +1,8 @@
 //! Verdis Chain — CLI Entry Point (Substrate v48)
 
 #![allow(deprecated, unused_imports, unused_variables, clippy::all, dead_code)]
-pub mod eth;
 mod chain_spec;
+pub mod eth;
 mod service;
 
 use clap::Parser;

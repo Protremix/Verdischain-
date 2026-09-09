@@ -25,77 +25,77 @@ use fp_storage::EthereumStorageSchema;
 
 #[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
 pub struct TransactionMetadata<Block: BlockT> {
-	pub substrate_block_hash: Block::Hash,
-	pub ethereum_block_hash: H256,
-	pub ethereum_index: u32,
+    pub substrate_block_hash: Block::Hash,
+    pub ethereum_block_hash: H256,
+    pub ethereum_index: u32,
 }
 
 /// The frontier backend interface.
 #[async_trait::async_trait]
 pub trait Backend<Block: BlockT>: Send + Sync {
-	/// Get the substrate hash with the given ethereum block hash.
-	async fn block_hash(
-		&self,
-		ethereum_block_hash: &H256,
-	) -> Result<Option<Vec<Block::Hash>>, String>;
+    /// Get the substrate hash with the given ethereum block hash.
+    async fn block_hash(
+        &self,
+        ethereum_block_hash: &H256,
+    ) -> Result<Option<Vec<Block::Hash>>, String>;
 
-	/// Get the ethereum block hash for a given block number.
-	async fn block_hash_by_number(&self, block_number: u64) -> Result<Option<H256>, String>;
+    /// Get the ethereum block hash for a given block number.
+    async fn block_hash_by_number(&self, block_number: u64) -> Result<Option<H256>, String>;
 
-	/// Persist or repair the ethereum block hash for a given block number.
-	///
-	/// Backends that cannot mutate mappings can rely on the default no-op.
-	async fn set_block_hash_by_number(
-		&self,
-		_block_number: u64,
-		_ethereum_block_hash: H256,
-	) -> Result<(), String> {
-		Ok(())
-	}
+    /// Persist or repair the ethereum block hash for a given block number.
+    ///
+    /// Backends that cannot mutate mappings can rely on the default no-op.
+    async fn set_block_hash_by_number(
+        &self,
+        _block_number: u64,
+        _ethereum_block_hash: H256,
+    ) -> Result<(), String> {
+        Ok(())
+    }
 
-	/// Get the transaction metadata with the given ethereum block hash.
-	async fn transaction_metadata(
-		&self,
-		ethereum_transaction_hash: &H256,
-	) -> Result<Vec<TransactionMetadata<Block>>, String>;
+    /// Get the transaction metadata with the given ethereum block hash.
+    async fn transaction_metadata(
+        &self,
+        ethereum_transaction_hash: &H256,
+    ) -> Result<Vec<TransactionMetadata<Block>>, String>;
 
-	/// Returns reference to log indexer backend.
-	fn log_indexer(&self) -> &dyn LogIndexerBackend<Block>;
+    /// Returns reference to log indexer backend.
+    fn log_indexer(&self) -> &dyn LogIndexerBackend<Block>;
 
-	/// Indicate whether the log indexing feature is supported.
-	fn is_indexed(&self) -> bool {
-		self.log_indexer().is_indexed()
-	}
+    /// Indicate whether the log indexing feature is supported.
+    fn is_indexed(&self) -> bool {
+        self.log_indexer().is_indexed()
+    }
 
-	/// Get the hash of the oldest substrate block fully indexed by the backend.
-	async fn first_block_hash(&self) -> Result<Block::Hash, String>;
+    /// Get the hash of the oldest substrate block fully indexed by the backend.
+    async fn first_block_hash(&self) -> Result<Block::Hash, String>;
 
-	/// Get the hash of the latest substrate block fully indexed by the backend.
-	async fn latest_block_hash(&self) -> Result<Block::Hash, String>;
+    /// Get the hash of the latest substrate block fully indexed by the backend.
+    async fn latest_block_hash(&self) -> Result<Block::Hash, String>;
 }
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct FilteredLog<Block: BlockT> {
-	pub substrate_block_hash: Block::Hash,
-	pub ethereum_block_hash: H256,
-	pub block_number: u32,
-	pub ethereum_storage_schema: EthereumStorageSchema,
-	pub transaction_index: u32,
-	pub log_index: u32,
+    pub substrate_block_hash: Block::Hash,
+    pub ethereum_block_hash: H256,
+    pub block_number: u32,
+    pub ethereum_storage_schema: EthereumStorageSchema,
+    pub transaction_index: u32,
+    pub log_index: u32,
 }
 
 /// The log indexer backend interface.
 #[async_trait::async_trait]
 pub trait LogIndexerBackend<Block: BlockT>: Send + Sync {
-	/// Indicate whether the log indexing feature is supported.
-	fn is_indexed(&self) -> bool;
+    /// Indicate whether the log indexing feature is supported.
+    fn is_indexed(&self) -> bool;
 
-	/// Filter the logs by the parameters.
-	async fn filter_logs(
-		&self,
-		from_block: u64,
-		to_block: u64,
-		addresses: Vec<H160>,
-		topics: Vec<Vec<H256>>,
-	) -> Result<Vec<FilteredLog<Block>>, String>;
+    /// Filter the logs by the parameters.
+    async fn filter_logs(
+        &self,
+        from_block: u64,
+        to_block: u64,
+        addresses: Vec<H160>,
+        topics: Vec<Vec<H256>>,
+    ) -> Result<Vec<FilteredLog<Block>>, String>;
 }

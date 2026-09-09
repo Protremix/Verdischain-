@@ -295,10 +295,9 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
     // in this dev spec ONLY; mainnet and testnet genesis contain no such account, and
     // an audit diff will show it confined to dev_genesis.
     const ALITH_MAPPED: [u8; 32] = [
-        0xa0, 0x2a, 0x00, 0xe5, 0x49, 0xcb, 0x10, 0x4f,
-        0x71, 0x0d, 0x3f, 0xe6, 0xf2, 0xf8, 0x3e, 0x91,
-        0x52, 0x4d, 0x2a, 0x40, 0xc4, 0xed, 0x83, 0x16,
-        0x58, 0xa1, 0x20, 0x88, 0x30, 0x77, 0xf9, 0xa9,
+        0xa0, 0x2a, 0x00, 0xe5, 0x49, 0xcb, 0x10, 0x4f, 0x71, 0x0d, 0x3f, 0xe6, 0xf2, 0xf8, 0x3e,
+        0x91, 0x52, 0x4d, 0x2a, 0x40, 0xc4, 0xed, 0x83, 0x16, 0x58, 0xa1, 0x20, 0x88, 0x30, 0x77,
+        0xf9, 0xa9,
     ];
     // MEASURED: tokenDecimals = 9, and pallet-evm exposes substrate balances as wei
     // WITHOUT rescaling. Ethereum tooling assumes 18 decimals, so MetaMask renders a
@@ -471,7 +470,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             transfer_fee_bps: 50, // 0.5% transfer fee
         },
         presale: Default::default(),
-                vesting: pallet_vesting::GenesisConfig {
+        vesting: pallet_vesting::GenesisConfig {
             vesting_schedules: vec![
                 (b"seed".to_vec(), 3 * bn, 730, 365),
                 (b"presale".to_vec(), 2 * bn, 365, 180),
@@ -557,7 +556,7 @@ fn dev_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             chain_id: 414,
             ..Default::default()
         },
-}
+    }
 }
 
 // ─── TESTNET spec ───────────────────────────────────────────────────────────
@@ -894,7 +893,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             transfer_fee_bps: 50, // 0.5% transfer fee
         },
         presale: Default::default(),
-                vesting: pallet_vesting::GenesisConfig {
+        vesting: pallet_vesting::GenesisConfig {
             vesting_schedules: vec![
                 (b"seed".to_vec(), 3 * bn, 730, 365),
                 (b"presale".to_vec(), 2 * bn, 365, 180),
@@ -972,7 +971,7 @@ fn testnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             chain_id: 414,
             ..Default::default()
         },
-}
+    }
 }
 
 // ─── MAINNET spec ───────────────────────────────────────────────────────────
@@ -1207,7 +1206,7 @@ fn mainnet_genesis() -> verdis_runtime::RuntimeGenesisConfig {
             chain_id: 414,
             ..Default::default()
         },
-}
+    }
 }
 
 // ─── Dispatcher ─────────────────────────────────────────────────────────────

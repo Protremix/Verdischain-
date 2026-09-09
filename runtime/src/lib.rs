@@ -59,18 +59,18 @@ use frame_support::{
 };
 use frame_system::EnsureRoot;
 // === EVM (Frontier) ===
-use pallet_ethereum::{Call::transact, PostLogContent, Transaction as EthereumTransaction};
 use fp_evm::Precompile;
+use fp_rpc::TransactionStatus;
+use frame_support::traits::FindAuthor;
+use pallet_ethereum::{Call::transact, PostLogContent, Transaction as EthereumTransaction};
 use pallet_evm::{
     Account as EVMAccount, EVMCurrencyAdapter, EnsureAddressTruncated, FeeCalculator,
     HashedAddressMapping, Runner,
 };
-use fp_rpc::TransactionStatus;
 use sp_core::{H160, H256, U256};
-use sp_runtime::traits::{Dispatchable, PostDispatchInfoOf, DispatchInfoOf};
-use frame_support::traits::FindAuthor;
+use sp_runtime::traits::{DispatchInfoOf, Dispatchable, PostDispatchInfoOf};
 // --- EVM / Ethereum RPC support ---
-use sp_runtime::traits::{UniqueSaturatedInto};
+use sp_runtime::traits::UniqueSaturatedInto;
 
 // ByteArray provides to_raw_vec() on session keys
 use sp_core::crypto::ByteArray;
@@ -488,14 +488,14 @@ where
     }
     pub fn used_addresses() -> [H160; 8] {
         [
-            hash(1),    // ecrecover
-            hash(2),    // sha256
-            hash(3),    // ripemd160
-            hash(4),    // identity
-            hash(5),    // modexp
-            hash(6),    // bn128Add
-            hash(7),    // bn128Mul
-            hash(8),    // bn128Pairing
+            hash(1), // ecrecover
+            hash(2), // sha256
+            hash(3), // ripemd160
+            hash(4), // identity
+            hash(5), // modexp
+            hash(6), // bn128Add
+            hash(7), // bn128Mul
+            hash(8), // bn128Pairing
         ]
     }
 }
@@ -626,7 +626,6 @@ impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {
     }
 }
 
-
 parameter_types! {
     /// Deposit taken when an account binds an EVM address, paying for the two storage maps and the
     /// nonce entry the mapping occupies. UNITS = 1 VRDX at 9 decimals (runtime line 156).
@@ -643,10 +642,12 @@ pub struct RejectGovernanceAccounts;
 impl pallet_verdis_account_link::LinkFilter<AccountId> for RejectGovernanceAccounts {
     fn allowed(who: &AccountId) -> bool {
         // Council and TechnicalCommittee members hold governance power over set_code itself.
-        if pallet_collective::Members::<Runtime, pallet_collective::Instance1>::get().contains(who) {
+        if pallet_collective::Members::<Runtime, pallet_collective::Instance1>::get().contains(who)
+        {
             return false;
         }
-        if pallet_collective::Members::<Runtime, pallet_collective::Instance2>::get().contains(who) {
+        if pallet_collective::Members::<Runtime, pallet_collective::Instance2>::get().contains(who)
+        {
             return false;
         }
         // An active validator's account controls stake and block production.
@@ -1934,7 +1935,10 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
         }
     }
 
-    fn check_self_contained(&self) -> Option<Result<Self::SignedInfo, sp_runtime::transaction_validity::TransactionValidityError>> {
+    fn check_self_contained(
+        &self,
+    ) -> Option<Result<Self::SignedInfo, sp_runtime::transaction_validity::TransactionValidityError>>
+    {
         match self {
             RuntimeCall::Ethereum(call) => call.check_self_contained(),
             _ => None,
@@ -2936,7 +2940,6 @@ mod evm_integration_tests {
         });
     }
 
-
     #[test]
     fn chain_id_is_414() {
         // 414 is unregistered in chainid.network/chains.json - the registry MetaMask, Rabby and
@@ -3039,7 +3042,10 @@ mod evm_integration_tests {
             data[0..4].copy_from_slice(b"evm:");
             data[4..24].copy_from_slice(&addr[..]);
             let mirror = AccountId::from(sp_io::hashing::blake2_256(&data));
-            assert_ne!(got, mirror, "a bound address must NOT resolve to the hashed mirror");
+            assert_ne!(
+                got, mirror,
+                "a bound address must NOT resolve to the hashed mirror"
+            );
         });
     }
 
@@ -3051,9 +3057,11 @@ mod evm_integration_tests {
         let mut ext: sp_io::TestExternalities = Default::default();
         ext.execute_with(|| {
             let a = <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(
-                H160::from_low_u64_be(1));
+                H160::from_low_u64_be(1),
+            );
             let b = <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(
-                H160::from_low_u64_be(2));
+                H160::from_low_u64_be(2),
+            );
             assert_ne!(a, b);
         });
     }
@@ -3070,14 +3078,20 @@ mod evm_integration_tests {
     #[test]
     fn block_gas_limit_is_set_and_finite() {
         let limit = <Runtime as pallet_evm::Config>::BlockGasLimit::get();
-        assert!(limit > U256::zero(), "a zero block gas limit would reject every EVM call");
+        assert!(
+            limit > U256::zero(),
+            "a zero block gas limit would reject every EVM call"
+        );
         assert_eq!(limit, U256::from(15_000_000u64));
     }
 
     #[test]
     fn no_per_transaction_gas_cap_beyond_the_block() {
         // Ethereum semantics: a transaction is bounded by the block gas limit, not a separate cap.
-        assert_eq!(<Runtime as pallet_evm::Config>::TransactionGasLimit::get(), None);
+        assert_eq!(
+            <Runtime as pallet_evm::Config>::TransactionGasLimit::get(),
+            None
+        );
     }
 
     #[test]
@@ -3097,8 +3111,10 @@ mod evm_integration_tests {
     #[test]
     fn spec_version_advanced_past_mainnet() {
         // Mainnet runs 17. An upgrade with an equal or lower version is refused by set_code.
-        assert!(VERSION.spec_version > 17,
-                "spec_version must exceed the live mainnet version (17)");
+        assert!(
+            VERSION.spec_version > 17,
+            "spec_version must exceed the live mainnet version (17)"
+        );
     }
 
     #[test]
@@ -3109,15 +3125,17 @@ mod evm_integration_tests {
         for i in 1u64..=8 {
             let addr = H160::from_low_u64_be(i);
             match set.is_precompile(addr, 0) {
-                pallet_evm::IsPrecompileResult::Answer { is_precompile, .. } =>
-                    assert!(is_precompile, "precompile {} is missing", i),
+                pallet_evm::IsPrecompileResult::Answer { is_precompile, .. } => {
+                    assert!(is_precompile, "precompile {} is missing", i)
+                }
                 _ => panic!("unexpected IsPrecompileResult for {}", i),
             }
         }
         // and nothing beyond it is silently a precompile
         match set.is_precompile(H160::from_low_u64_be(9), 0) {
-            pallet_evm::IsPrecompileResult::Answer { is_precompile, .. } =>
-                assert!(!is_precompile, "address 9 must not be a precompile"),
+            pallet_evm::IsPrecompileResult::Answer { is_precompile, .. } => {
+                assert!(!is_precompile, "address 9 must not be a precompile")
+            }
             _ => {}
         }
     }

@@ -29,34 +29,34 @@ use sp_runtime::traits::AtLeast32Bit;
 /// just using `frame_system` account provider. The accounts records should store nonce value
 /// for each account at least.
 pub trait AccountProvider {
-	/// The account identifier type.
-	///
-	/// Represent the account itself in accounts records.
-	type AccountId;
+    /// The account identifier type.
+    ///
+    /// Represent the account itself in accounts records.
+    type AccountId;
 
-	/// Account nonce type.
-	///
-	/// The number that helps to ensure that each transaction in the network is unique
-	/// for particular account.
-	type Nonce: AtLeast32Bit;
+    /// Account nonce type.
+    ///
+    /// The number that helps to ensure that each transaction in the network is unique
+    /// for particular account.
+    type Nonce: AtLeast32Bit;
 
-	/// Creates a new account in accounts records.
-	///
-	/// The account associated with new created address EVM.
-	fn create_account(who: &Self::AccountId);
+    /// Creates a new account in accounts records.
+    ///
+    /// The account associated with new created address EVM.
+    fn create_account(who: &Self::AccountId);
 
-	/// Removes an account from accounts records.
-	///
-	/// The account associated with removed address from EVM.
-	fn remove_account(who: &Self::AccountId);
+    /// Removes an account from accounts records.
+    ///
+    /// The account associated with removed address from EVM.
+    fn remove_account(who: &Self::AccountId);
 
-	/// Return current account nonce value.
-	///
-	/// Used to represent account basic information in EVM format.
-	fn account_nonce(who: &Self::AccountId) -> Self::Nonce;
+    /// Return current account nonce value.
+    ///
+    /// Used to represent account basic information in EVM format.
+    fn account_nonce(who: &Self::AccountId) -> Self::Nonce;
 
-	/// Increment a particular account's nonce value.
-	///
-	/// Incremented with each new transaction submitted by the account.
-	fn inc_account_nonce(who: &Self::AccountId);
+    /// Increment a particular account's nonce value.
+    ///
+    /// Incremented with each new transaction submitted by the account.
+    fn inc_account_nonce(who: &Self::AccountId);
 }

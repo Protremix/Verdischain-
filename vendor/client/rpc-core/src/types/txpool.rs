@@ -31,57 +31,57 @@ pub type TransactionMap<T> = HashMap<H160, HashMap<U256, T>>;
 /// The result type of `txpool` API.
 #[derive(Clone, Debug, Serialize)]
 pub struct TxPoolResult<T: Serialize> {
-	pub pending: T,
-	pub queued: T,
+    pub pending: T,
+    pub queued: T,
 }
 
 /// The textual summary of all the transactions currently pending for inclusion in the next block(s).
 #[derive(Clone, Debug)]
 pub struct Summary {
-	/// Recipient
-	pub to: Option<H160>,
-	/// Transferred value
-	pub value: U256,
-	/// Gas
-	pub gas: U256,
-	/// Gas Price
-	pub gas_price: U256,
+    /// Recipient
+    pub to: Option<H160>,
+    /// Transferred value
+    pub value: U256,
+    /// Gas
+    pub gas: U256,
+    /// Gas Price
+    pub gas_price: U256,
 }
 
 impl Serialize for Summary {
-	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-	where
-		S: Serializer,
-	{
-		let res = format!(
-			"0x{:x}: {} wei + {} gas x {} wei",
-			self.to.unwrap_or_default(),
-			self.value,
-			self.gas,
-			self.gas_price
-		);
-		serializer.serialize_str(&res)
-	}
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let res = format!(
+            "0x{:x}: {} wei + {} gas x {} wei",
+            self.to.unwrap_or_default(),
+            self.value,
+            self.gas,
+            self.gas_price
+        );
+        serializer.serialize_str(&res)
+    }
 }
 
 impl BuildFrom for Summary {
-	fn build_from(_from: H160, transaction: &EthereumTransaction) -> Self {
-		let (action, value, gas_price, gas) = match transaction {
-			EthereumTransaction::Legacy(t) => (t.action, t.value, t.gas_price, t.gas_limit),
-			EthereumTransaction::EIP2930(t) => (t.action, t.value, t.gas_price, t.gas_limit),
-			EthereumTransaction::EIP1559(t) => (t.action, t.value, t.max_fee_per_gas, t.gas_limit),
-			EthereumTransaction::EIP7702(t) => {
-				(t.destination, t.value, t.max_fee_per_gas, t.gas_limit)
-			}
-		};
-		Self {
-			to: match action {
-				TransactionAction::Call(to) => Some(to),
-				_ => None,
-			},
-			value,
-			gas_price,
-			gas,
-		}
-	}
+    fn build_from(_from: H160, transaction: &EthereumTransaction) -> Self {
+        let (action, value, gas_price, gas) = match transaction {
+            EthereumTransaction::Legacy(t) => (t.action, t.value, t.gas_price, t.gas_limit),
+            EthereumTransaction::EIP2930(t) => (t.action, t.value, t.gas_price, t.gas_limit),
+            EthereumTransaction::EIP1559(t) => (t.action, t.value, t.max_fee_per_gas, t.gas_limit),
+            EthereumTransaction::EIP7702(t) => {
+                (t.destination, t.value, t.max_fee_per_gas, t.gas_limit)
+            }
+        };
+        Self {
+            to: match action {
+                TransactionAction::Call(to) => Some(to),
+                _ => None,
+            },
+            value,
+            gas_price,
+            gas,
+        }
+    }
 }

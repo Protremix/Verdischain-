@@ -30,47 +30,47 @@ pub trait Config: frame_system::Config {}
 
 #[benchmarks]
 mod benchmarks {
-	use super::*;
+    use super::*;
 
-	#[benchmark]
-	fn curve25519_add_n_points(n: Linear<1, 10>) -> Result<(), BenchmarkError> {
-		// Encode N points into a single buffer
-		let mut points = Vec::new();
-		for i in 0..n {
-			points.extend(
-				RistrettoPoint::hash_from_bytes::<Sha512>(format!("point_{i}").as_bytes())
-					.compress()
-					.to_bytes()
-					.to_vec(),
-			);
-		}
+    #[benchmark]
+    fn curve25519_add_n_points(n: Linear<1, 10>) -> Result<(), BenchmarkError> {
+        // Encode N points into a single buffer
+        let mut points = Vec::new();
+        for i in 0..n {
+            points.extend(
+                RistrettoPoint::hash_from_bytes::<Sha512>(format!("point_{i}").as_bytes())
+                    .compress()
+                    .to_bytes()
+                    .to_vec(),
+            );
+        }
 
-		#[block]
-		{
-			Curve25519Add::<(), ()>::execute_inner(&points, 0)
-				.expect("Failed to execute curve25519 add");
-		}
+        #[block]
+        {
+            Curve25519Add::<(), ()>::execute_inner(&points, 0)
+                .expect("Failed to execute curve25519 add");
+        }
 
-		Ok(())
-	}
+        Ok(())
+    }
 
-	#[benchmark]
-	fn curve25519_scaler_mul() -> Result<(), BenchmarkError> {
-		// Encode input (scalar - 32 bytes, point - 32 bytes)
-		let mut input = [0; 64];
-		input[0..32].copy_from_slice(&Scalar::from(1234567890u64).to_bytes());
-		input[32..64].copy_from_slice(
-			&RistrettoPoint::hash_from_bytes::<Sha512>("point_0".as_bytes())
-				.compress()
-				.to_bytes(),
-		);
+    #[benchmark]
+    fn curve25519_scaler_mul() -> Result<(), BenchmarkError> {
+        // Encode input (scalar - 32 bytes, point - 32 bytes)
+        let mut input = [0; 64];
+        input[0..32].copy_from_slice(&Scalar::from(1234567890u64).to_bytes());
+        input[32..64].copy_from_slice(
+            &RistrettoPoint::hash_from_bytes::<Sha512>("point_0".as_bytes())
+                .compress()
+                .to_bytes(),
+        );
 
-		#[block]
-		{
-			Curve25519ScalarMul::<(), ()>::execute_inner(&input, 0)
-				.expect("Failed to execute curve25519 add");
-		}
+        #[block]
+        {
+            Curve25519ScalarMul::<(), ()>::execute_inner(&input, 0)
+                .expect("Failed to execute curve25519 add");
+        }
 
-		Ok(())
-	}
+        Ok(())
+    }
 }

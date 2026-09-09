@@ -20,9 +20,9 @@ pub trait WeightInfo {
 }
 
 pub mod weights;
+use frame_support::traits::EnsureOrigin;
 use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
-use frame_support::traits::EnsureOrigin;
 pub use pallet::*;
 use sp_std::prelude::*;
 pub use weights::WeightInfo as SubstrateWeight;

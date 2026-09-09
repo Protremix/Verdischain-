@@ -90,7 +90,10 @@ fn linked_address_resolves_to_the_real_account_not_a_mirror() {
         let before =
             <LinkedAddressMapping<Test> as pallet_evm::AddressMapping<_>>::into_account_id(addr);
         let mirror: sp_runtime::AccountId32 = AccountLink::default_mirror_account(addr).into();
-        assert_eq!(before, mirror, "unbound address must keep today's behaviour");
+        assert_eq!(
+            before, mirror,
+            "unbound address must keep today's behaviour"
+        );
         assert_ne!(before, who);
 
         let digest = AccountLink::eip712_digest(&who, 0);
@@ -103,7 +106,10 @@ fn linked_address_resolves_to_the_real_account_not_a_mirror() {
         // After binding, the EVM reads the user's real wallet: ONE balance.
         let after =
             <LinkedAddressMapping<Test> as pallet_evm::AddressMapping<_>>::into_account_id(addr);
-        assert_eq!(after, who, "bound address must resolve to the owner's account");
+        assert_eq!(
+            after, who,
+            "bound address must resolve to the owner's account"
+        );
     });
 }
 
@@ -186,11 +192,7 @@ fn special_accounts_cannot_be_captured() {
         let digest = AccountLink::eip712_digest(&who, 0);
 
         assert_noop!(
-            AccountLink::claim_evm_address(
-                RuntimeOrigin::signed(who),
-                addr,
-                sign(&secret, digest)
-            ),
+            AccountLink::claim_evm_address(RuntimeOrigin::signed(who), addr, sign(&secret, digest)),
             Error::<Test>::AccountNotAllowed
         );
     });
@@ -213,11 +215,7 @@ fn binding_is_refused_while_the_mirror_holds_funds() {
 
         let digest = AccountLink::eip712_digest(&who, 0);
         assert_noop!(
-            AccountLink::claim_evm_address(
-                RuntimeOrigin::signed(who),
-                addr,
-                sign(&secret, digest)
-            ),
+            AccountLink::claim_evm_address(RuntimeOrigin::signed(who), addr, sign(&secret, digest)),
             Error::<Test>::MirrorAccountNotEmpty
         );
     });
@@ -299,11 +297,7 @@ fn an_evm_address_cannot_be_bound_by_two_accounts() {
 
         let d2 = AccountLink::eip712_digest(&second, 0);
         assert_noop!(
-            AccountLink::claim_evm_address(
-                RuntimeOrigin::signed(second),
-                addr,
-                sign(&secret, d2)
-            ),
+            AccountLink::claim_evm_address(RuntimeOrigin::signed(second), addr, sign(&secret, d2)),
             Error::<Test>::EvmAddressAlreadyLinked
         );
     });

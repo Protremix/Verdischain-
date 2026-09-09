@@ -17,14 +17,14 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 use std::{
-	collections::{BTreeMap, HashSet},
-	sync::{Arc, Mutex},
+    collections::{BTreeMap, HashSet},
+    sync::{Arc, Mutex},
 };
 
 use ethereum_types::{Bloom, BloomInput, H160, H256, U256};
 use serde::{
-	de::{DeserializeOwned, Error},
-	Deserialize, Deserializer, Serialize, Serializer,
+    de::{DeserializeOwned, Error},
+    Deserialize, Deserializer, Serialize, Serializer,
 };
 use serde_json::{from_value, Value};
 use sp_core::{bounded_vec::BoundedVec, ConstU32};
@@ -37,47 +37,47 @@ const VARIADIC_MULTIPLE_MAX_SIZE: usize = 1024;
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum VariadicValue<T>
 where
-	T: DeserializeOwned,
+    T: DeserializeOwned,
 {
-	/// Single
-	Single(T),
-	/// List
-	Multiple(Vec<T>),
-	/// None
-	Null,
+    /// Single
+    Single(T),
+    /// List
+    Multiple(Vec<T>),
+    /// None
+    Null,
 }
 
 impl<'a, T> Deserialize<'a> for VariadicValue<T>
 where
-	T: DeserializeOwned,
+    T: DeserializeOwned,
 {
-	fn deserialize<D>(deserializer: D) -> Result<VariadicValue<T>, D::Error>
-	where
-		D: Deserializer<'a>,
-	{
-		let v: Value = Deserialize::deserialize(deserializer)?;
+    fn deserialize<D>(deserializer: D) -> Result<VariadicValue<T>, D::Error>
+    where
+        D: Deserializer<'a>,
+    {
+        let v: Value = Deserialize::deserialize(deserializer)?;
 
-		if v.is_null() {
-			Ok(VariadicValue::Null)
-		} else if let Ok(value) = from_value::<T>(v.clone()) {
-			Ok(VariadicValue::Single(value))
-		} else {
-			match from_value::<Vec<T>>(v) {
-				Ok(vec) => {
-					if vec.len() <= VARIADIC_MULTIPLE_MAX_SIZE {
-						Ok(VariadicValue::Multiple(vec))
-					} else {
-						Err(D::Error::custom(
-							"Invalid variadic value type: too big array".to_string(),
-						))
-					}
-				}
-				Err(err) => Err(D::Error::custom(format!(
-					"Invalid variadic value type: {err}"
-				))),
-			}
-		}
-	}
+        if v.is_null() {
+            Ok(VariadicValue::Null)
+        } else if let Ok(value) = from_value::<T>(v.clone()) {
+            Ok(VariadicValue::Single(value))
+        } else {
+            match from_value::<Vec<T>>(v) {
+                Ok(vec) => {
+                    if vec.len() <= VARIADIC_MULTIPLE_MAX_SIZE {
+                        Ok(VariadicValue::Multiple(vec))
+                    } else {
+                        Err(D::Error::custom(
+                            "Invalid variadic value type: too big array".to_string(),
+                        ))
+                    }
+                }
+                Err(err) => Err(D::Error::custom(format!(
+                    "Invalid variadic value type: {err}"
+                ))),
+            }
+        }
+    }
 }
 
 /// Filter Address
@@ -100,19 +100,19 @@ pub type Topics = BoundedVec<VariadicValue<H256>, ConstU32<4>>;
 pub type BloomFilter = Vec<Bloom>;
 
 impl<T: AsRef<[u8]> + DeserializeOwned> From<&VariadicValue<T>> for BloomFilter {
-	fn from(value: &VariadicValue<T>) -> Self {
-		match value {
-			VariadicValue::Single(item) => {
-				let bloom: Bloom = BloomInput::Raw(item.as_ref()).into();
-				vec![bloom]
-			}
-			VariadicValue::Multiple(items) => items
-				.iter()
-				.map(|item| BloomInput::Raw(item.as_ref()).into())
-				.collect(),
-			_ => vec![],
-		}
-	}
+    fn from(value: &VariadicValue<T>) -> Self {
+        match value {
+            VariadicValue::Single(item) => {
+                let bloom: Bloom = BloomInput::Raw(item.as_ref()).into();
+                vec![bloom]
+            }
+            VariadicValue::Multiple(items) => items
+                .iter()
+                .map(|item| BloomInput::Raw(item.as_ref()).into())
+                .collect(),
+            _ => vec![],
+        }
+    }
 }
 
 /// Filter
@@ -120,205 +120,205 @@ impl<T: AsRef<[u8]> + DeserializeOwned> From<&VariadicValue<T>> for BloomFilter 
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct Filter {
-	/// From Block
-	pub from_block: Option<BlockNumberOrHash>,
-	/// To Block
-	pub to_block: Option<BlockNumberOrHash>,
-	/// Block hash
-	pub block_hash: Option<H256>,
-	/// Address
-	pub address: Option<FilterAddress>,
-	/// Topics
-	pub topics: Option<Topics>,
+    /// From Block
+    pub from_block: Option<BlockNumberOrHash>,
+    /// To Block
+    pub to_block: Option<BlockNumberOrHash>,
+    /// Block hash
+    pub block_hash: Option<H256>,
+    /// Address
+    pub address: Option<FilterAddress>,
+    /// Topics
+    pub topics: Option<Topics>,
 }
 
 impl Filter {
-	pub fn topics(&self) -> Topics {
-		self.topics.clone().unwrap_or_default()
-	}
+    pub fn topics(&self) -> Topics {
+        self.topics.clone().unwrap_or_default()
+    }
 }
 
 /// Helper for Filter matching.
 /// Supports conditional indexed parameters and wildcards.
 #[derive(Clone, Debug, Default)]
 pub struct FilteredParams {
-	pub filter: Filter,
+    pub filter: Filter,
 }
 
 impl FilteredParams {
-	pub fn new(f: Filter) -> Self {
-		FilteredParams { filter: f.clone() }
-	}
+    pub fn new(f: Filter) -> Self {
+        FilteredParams { filter: f.clone() }
+    }
 
-	/// Build an address-based BloomFilter.
-	pub fn address_bloom_filter(address: &Option<FilterAddress>) -> BloomFilter {
-		if let Some(address) = address {
-			return address.into();
-		}
-		Vec::new()
-	}
+    /// Build an address-based BloomFilter.
+    pub fn address_bloom_filter(address: &Option<FilterAddress>) -> BloomFilter {
+        if let Some(address) = address {
+            return address.into();
+        }
+        Vec::new()
+    }
 
-	/// Build a topic-based BloomFilter.
-	pub fn topics_bloom_filter(topics: &Topics) -> Vec<BloomFilter> {
-		topics.into_iter().map(|topic| topic.into()).collect()
-	}
+    /// Build a topic-based BloomFilter.
+    pub fn topics_bloom_filter(topics: &Topics) -> Vec<BloomFilter> {
+        topics.into_iter().map(|topic| topic.into()).collect()
+    }
 
-	/// Evaluates if a Bloom contains a provided sequence of topics.
-	pub fn topics_in_bloom(bloom: Bloom, topic_bloom_filters: &[BloomFilter]) -> bool {
-		// Early return for empty filters - no constraints mean everything matches
-		if topic_bloom_filters.is_empty() {
-			return true;
-		}
+    /// Evaluates if a Bloom contains a provided sequence of topics.
+    pub fn topics_in_bloom(bloom: Bloom, topic_bloom_filters: &[BloomFilter]) -> bool {
+        // Early return for empty filters - no constraints mean everything matches
+        if topic_bloom_filters.is_empty() {
+            return true;
+        }
 
-		// Each subset must match (AND condition between subsets)
-		topic_bloom_filters.iter().all(|subset| {
-			// Within each subset, any element can match (OR condition within subset)
-			subset.is_empty()
-				|| subset
-					.iter()
-					.any(|topic_bloom| bloom.contains_bloom(topic_bloom))
-		})
-	}
+        // Each subset must match (AND condition between subsets)
+        topic_bloom_filters.iter().all(|subset| {
+            // Within each subset, any element can match (OR condition within subset)
+            subset.is_empty()
+                || subset
+                    .iter()
+                    .any(|topic_bloom| bloom.contains_bloom(topic_bloom))
+        })
+    }
 
-	/// Evaluates if a Bloom contains the provided address(es).
-	pub fn address_in_bloom(bloom: Bloom, address_bloom_filter: &BloomFilter) -> bool {
-		if address_bloom_filter.is_empty() {
-			// No filter provided, match.
-			return true;
-		} else {
-			// Wildcards are true.
-			for el in address_bloom_filter {
-				if bloom.contains_bloom(el) {
-					return true;
-				}
-			}
-		}
-		false
-	}
+    /// Evaluates if a Bloom contains the provided address(es).
+    pub fn address_in_bloom(bloom: Bloom, address_bloom_filter: &BloomFilter) -> bool {
+        if address_bloom_filter.is_empty() {
+            // No filter provided, match.
+            return true;
+        } else {
+            // Wildcards are true.
+            for el in address_bloom_filter {
+                if bloom.contains_bloom(el) {
+                    return true;
+                }
+            }
+        }
+        false
+    }
 
-	pub fn filter_block_range(&self, block_number: u64) -> bool {
-		let mut out = true;
-		if let Some(BlockNumberOrHash::Num(from)) = self.filter.from_block {
-			if from > block_number {
-				out = false;
-			}
-		}
-		if let Some(to) = self.filter.to_block {
-			match to {
-				BlockNumberOrHash::Num(to) => {
-					if to < block_number {
-						out = false;
-					}
-				}
-				BlockNumberOrHash::Earliest => {
-					out = false;
-				}
-				_ => {}
-			}
-		}
-		out
-	}
+    pub fn filter_block_range(&self, block_number: u64) -> bool {
+        let mut out = true;
+        if let Some(BlockNumberOrHash::Num(from)) = self.filter.from_block {
+            if from > block_number {
+                out = false;
+            }
+        }
+        if let Some(to) = self.filter.to_block {
+            match to {
+                BlockNumberOrHash::Num(to) => {
+                    if to < block_number {
+                        out = false;
+                    }
+                }
+                BlockNumberOrHash::Earliest => {
+                    out = false;
+                }
+                _ => {}
+            }
+        }
+        out
+    }
 
-	pub fn filter_block_hash(&self, block_hash: H256) -> bool {
-		if let Some(h) = self.filter.block_hash {
-			if h != block_hash {
-				return false;
-			}
-		}
-		true
-	}
+    pub fn filter_block_hash(&self, block_hash: H256) -> bool {
+        if let Some(h) = self.filter.block_hash {
+            if h != block_hash {
+                return false;
+            }
+        }
+        true
+    }
 
-	pub fn filter_address(&self, address: &H160) -> bool {
-		if let Some(input_address) = &self.filter.clone().address {
-			match input_address {
-				VariadicValue::Single(x) => {
-					if address != x {
-						return false;
-					}
-				}
-				VariadicValue::Multiple(x) => {
-					if !x.contains(address) {
-						return false;
-					}
-				}
-				_ => {
-					return true;
-				}
-			}
-		}
-		true
-	}
+    pub fn filter_address(&self, address: &H160) -> bool {
+        if let Some(input_address) = &self.filter.clone().address {
+            match input_address {
+                VariadicValue::Single(x) => {
+                    if address != x {
+                        return false;
+                    }
+                }
+                VariadicValue::Multiple(x) => {
+                    if !x.contains(address) {
+                        return false;
+                    }
+                }
+                _ => {
+                    return true;
+                }
+            }
+        }
+        true
+    }
 
-	pub fn filter_topics(&self, topics: &[H256]) -> bool {
-		for (idx, topic_filter) in self.filter.topics().iter().enumerate() {
-			let log_topic = topics.get(idx);
+    pub fn filter_topics(&self, topics: &[H256]) -> bool {
+        for (idx, topic_filter) in self.filter.topics().iter().enumerate() {
+            let log_topic = topics.get(idx);
 
-			match (log_topic, topic_filter) {
-				// Wildcard matches anything
-				(_, VariadicValue::Null) => {}
+            match (log_topic, topic_filter) {
+                // Wildcard matches anything
+                (_, VariadicValue::Null) => {}
 
-				// Single value must match exactly
-				(Some(actual), VariadicValue::Single(expected)) if actual != expected => {
-					return false;
-				}
+                // Single value must match exactly
+                (Some(actual), VariadicValue::Single(expected)) if actual != expected => {
+                    return false;
+                }
 
-				// Multiple values must contain the actual topic
-				(Some(actual), VariadicValue::Multiple(options)) if !options.contains(actual) => {
-					return false;
-				}
+                // Multiple values must contain the actual topic
+                (Some(actual), VariadicValue::Multiple(options)) if !options.contains(actual) => {
+                    return false;
+                }
 
-				// No topic provided for non-wildcard filter
-				(None, VariadicValue::Single(_) | VariadicValue::Multiple(_)) => {
-					return false;
-				}
+                // No topic provided for non-wildcard filter
+                (None, VariadicValue::Single(_) | VariadicValue::Multiple(_)) => {
+                    return false;
+                }
 
-				// All other combinations are valid
-				_ => {}
-			}
-		}
+                // All other combinations are valid
+                _ => {}
+            }
+        }
 
-		true
-	}
+        true
+    }
 }
 
 /// Results of the filter_changes RPC.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum FilterChanges {
-	/// New logs.
-	Logs(Vec<Log>),
-	/// New hashes (block or transactions)
-	Hashes(Vec<H256>),
-	/// Empty result,
-	Empty,
+    /// New logs.
+    Logs(Vec<Log>),
+    /// New hashes (block or transactions)
+    Hashes(Vec<H256>),
+    /// Empty result,
+    Empty,
 }
 
 impl Serialize for FilterChanges {
-	fn serialize<S>(&self, s: S) -> Result<S::Ok, S::Error>
-	where
-		S: Serializer,
-	{
-		match *self {
-			FilterChanges::Logs(ref logs) => logs.serialize(s),
-			FilterChanges::Hashes(ref hashes) => hashes.serialize(s),
-			FilterChanges::Empty => (&[] as &[Value]).serialize(s),
-		}
-	}
+    fn serialize<S>(&self, s: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match *self {
+            FilterChanges::Logs(ref logs) => logs.serialize(s),
+            FilterChanges::Hashes(ref hashes) => hashes.serialize(s),
+            FilterChanges::Empty => (&[] as &[Value]).serialize(s),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
 pub enum FilterType {
-	Block,
-	PendingTransaction,
-	Log(Filter),
+    Block,
+    PendingTransaction,
+    Log(Filter),
 }
 
 #[derive(Clone, Debug)]
 pub struct FilterPoolItem {
-	pub last_poll: BlockNumberOrHash,
-	pub last_log_journal_seq: Option<u64>,
-	pub filter_type: FilterType,
-	pub at_block: u64,
-	pub pending_transaction_hashes: HashSet<H256>,
+    pub last_poll: BlockNumberOrHash,
+    pub last_log_journal_seq: Option<u64>,
+    pub filter_type: FilterType,
+    pub at_block: u64,
+    pub pending_transaction_hashes: HashSet<H256>,
 }
 
 /// On-memory stored filters created through the `eth_newFilter` RPC.
@@ -326,284 +326,284 @@ pub type FilterPool = Arc<Mutex<BTreeMap<U256, FilterPoolItem>>>;
 
 #[cfg(test)]
 mod tests {
-	use super::*;
-	use std::str::FromStr;
+    use super::*;
+    use std::str::FromStr;
 
-	fn block_bloom() -> Bloom {
-		let test_address = H160::from_str("1000000000000000000000000000000000000000").unwrap();
-		let topic1 =
-			H256::from_str("1000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let topic2 =
-			H256::from_str("2000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
+    fn block_bloom() -> Bloom {
+        let test_address = H160::from_str("1000000000000000000000000000000000000000").unwrap();
+        let topic1 =
+            H256::from_str("1000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let topic2 =
+            H256::from_str("2000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
 
-		let mut block_bloom = Bloom::default();
-		block_bloom.accrue(BloomInput::Raw(&test_address[..]));
-		block_bloom.accrue(BloomInput::Raw(&topic1[..]));
-		block_bloom.accrue(BloomInput::Raw(&topic2[..]));
-		block_bloom
-	}
+        let mut block_bloom = Bloom::default();
+        block_bloom.accrue(BloomInput::Raw(&test_address[..]));
+        block_bloom.accrue(BloomInput::Raw(&topic1[..]));
+        block_bloom.accrue(BloomInput::Raw(&topic2[..]));
+        block_bloom
+    }
 
-	#[test]
-	fn bloom_filter_should_match_by_address() {
-		let test_address = H160::from_str("1000000000000000000000000000000000000000").unwrap();
-		let filter = Filter {
-			from_block: None,
-			to_block: None,
-			block_hash: None,
-			address: Some(VariadicValue::Single(test_address)),
-			topics: Default::default(),
-		};
-		let address_bloom = FilteredParams::address_bloom_filter(&filter.address);
-		assert!(FilteredParams::address_in_bloom(
-			block_bloom(),
-			&address_bloom
-		));
-	}
+    #[test]
+    fn bloom_filter_should_match_by_address() {
+        let test_address = H160::from_str("1000000000000000000000000000000000000000").unwrap();
+        let filter = Filter {
+            from_block: None,
+            to_block: None,
+            block_hash: None,
+            address: Some(VariadicValue::Single(test_address)),
+            topics: Default::default(),
+        };
+        let address_bloom = FilteredParams::address_bloom_filter(&filter.address);
+        assert!(FilteredParams::address_in_bloom(
+            block_bloom(),
+            &address_bloom
+        ));
+    }
 
-	#[test]
-	fn bloom_filter_should_not_match_by_address() {
-		let test_address = H160::from_str("2000000000000000000000000000000000000000").unwrap();
-		let filter = Filter {
-			from_block: None,
-			to_block: None,
-			block_hash: None,
-			address: Some(VariadicValue::Single(test_address)),
-			topics: Default::default(),
-		};
-		let address_bloom = FilteredParams::address_bloom_filter(&filter.address);
-		assert!(!FilteredParams::address_in_bloom(
-			block_bloom(),
-			&address_bloom
-		));
-	}
-	#[test]
-	fn bloom_filter_should_match_by_topic() {
-		let topic1 =
-			H256::from_str("1000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let topic2 =
-			H256::from_str("2000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let topic3 =
-			H256::from_str("3000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let filter = Filter {
-			from_block: None,
-			to_block: None,
-			block_hash: None,
-			address: None,
-			topics: Some(
-				vec![
-					VariadicValue::Single(topic1),
-					VariadicValue::Multiple(vec![topic2, topic3]),
-				]
-				.try_into()
-				.expect("qed"),
-			),
-		};
+    #[test]
+    fn bloom_filter_should_not_match_by_address() {
+        let test_address = H160::from_str("2000000000000000000000000000000000000000").unwrap();
+        let filter = Filter {
+            from_block: None,
+            to_block: None,
+            block_hash: None,
+            address: Some(VariadicValue::Single(test_address)),
+            topics: Default::default(),
+        };
+        let address_bloom = FilteredParams::address_bloom_filter(&filter.address);
+        assert!(!FilteredParams::address_in_bloom(
+            block_bloom(),
+            &address_bloom
+        ));
+    }
+    #[test]
+    fn bloom_filter_should_match_by_topic() {
+        let topic1 =
+            H256::from_str("1000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let topic2 =
+            H256::from_str("2000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let topic3 =
+            H256::from_str("3000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let filter = Filter {
+            from_block: None,
+            to_block: None,
+            block_hash: None,
+            address: None,
+            topics: Some(
+                vec![
+                    VariadicValue::Single(topic1),
+                    VariadicValue::Multiple(vec![topic2, topic3]),
+                ]
+                .try_into()
+                .expect("qed"),
+            ),
+        };
 
-		let topics_bloom = FilteredParams::topics_bloom_filter(&filter.topics());
-		assert!(FilteredParams::topics_in_bloom(
-			block_bloom(),
-			&topics_bloom
-		));
-	}
-	#[test]
-	fn bloom_filter_should_not_match_by_topic() {
-		let topic1 =
-			H256::from_str("1000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let topic2 =
-			H256::from_str("4000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let topic3 =
-			H256::from_str("5000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let filter = Filter {
-			from_block: None,
-			to_block: None,
-			block_hash: None,
-			address: None,
-			topics: Some(
-				vec![
-					VariadicValue::Single(topic1),
-					VariadicValue::Multiple(vec![topic2, topic3]),
-				]
-				.try_into()
-				.expect("qed"),
-			),
-		};
-		let topics_bloom = FilteredParams::topics_bloom_filter(&filter.topics());
-		assert!(!FilteredParams::topics_in_bloom(
-			block_bloom(),
-			&topics_bloom
-		));
-	}
-	#[test]
-	fn bloom_filter_should_match_by_empty_topic() {
-		let filter = Filter {
-			from_block: None,
-			to_block: None,
-			block_hash: None,
-			address: None,
-			topics: Default::default(),
-		};
-		let topics_bloom = FilteredParams::topics_bloom_filter(&filter.topics());
-		assert!(FilteredParams::topics_in_bloom(
-			block_bloom(),
-			&topics_bloom
-		));
-	}
-	#[test]
-	fn bloom_filter_should_match_combined() {
-		let test_address = H160::from_str("1000000000000000000000000000000000000000").unwrap();
-		let topic1 =
-			H256::from_str("1000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let topic2 =
-			H256::from_str("2000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let topic3 =
-			H256::from_str("3000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let filter = Filter {
-			from_block: None,
-			to_block: None,
-			block_hash: None,
-			address: Some(VariadicValue::Single(test_address)),
-			topics: Some(
-				vec![
-					VariadicValue::Single(topic1),
-					VariadicValue::Multiple(vec![topic2, topic3]),
-				]
-				.try_into()
-				.expect("qed"),
-			),
-		};
-		let address_bloom = FilteredParams::address_bloom_filter(&filter.address);
-		let topics_bloom = FilteredParams::topics_bloom_filter(&filter.topics());
-		let matches = FilteredParams::address_in_bloom(block_bloom(), &address_bloom)
-			&& FilteredParams::topics_in_bloom(block_bloom(), &topics_bloom);
-		assert!(matches);
-	}
-	#[test]
-	fn bloom_filter_should_not_match_combined() {
-		let test_address = H160::from_str("2000000000000000000000000000000000000000").unwrap();
-		let topic1 =
-			H256::from_str("1000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let topic2 =
-			H256::from_str("2000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let topic3 =
-			H256::from_str("3000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let filter = Filter {
-			from_block: None,
-			to_block: None,
-			block_hash: None,
-			address: Some(VariadicValue::Single(test_address)),
-			topics: Some(
-				vec![
-					VariadicValue::Single(topic1),
-					VariadicValue::Multiple(vec![topic2, topic3]),
-				]
-				.try_into()
-				.expect("qed"),
-			),
-		};
-		let address_bloom = FilteredParams::address_bloom_filter(&filter.address);
-		let topics_bloom = FilteredParams::topics_bloom_filter(&filter.topics());
-		let matches = FilteredParams::address_in_bloom(block_bloom(), &address_bloom)
-			&& FilteredParams::topics_in_bloom(block_bloom(), &topics_bloom);
-		assert!(!matches);
-	}
-	#[test]
-	fn bloom_filter_should_match_wildcards_by_topic() {
-		let topic2 =
-			H256::from_str("2000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let topic3 =
-			H256::from_str("3000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let filter = Filter {
-			from_block: None,
-			to_block: None,
-			block_hash: None,
-			address: None,
-			topics: Some(
-				vec![
-					VariadicValue::Null,
-					VariadicValue::Multiple(vec![topic2, topic3]),
-				]
-				.try_into()
-				.expect("qed"),
-			),
-		};
-		let topics_bloom = FilteredParams::topics_bloom_filter(&filter.topics());
-		assert!(FilteredParams::topics_in_bloom(
-			block_bloom(),
-			&topics_bloom
-		));
-	}
-	#[test]
-	fn bloom_filter_should_not_match_wildcards_by_topic() {
-		let topic2 =
-			H256::from_str("4000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let topic3 =
-			H256::from_str("5000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let filter = Filter {
-			from_block: None,
-			to_block: None,
-			block_hash: None,
-			address: None,
-			topics: Some(
-				vec![
-					VariadicValue::Null,
-					VariadicValue::Multiple(vec![topic2, topic3]),
-				]
-				.try_into()
-				.expect("qed"),
-			),
-		};
-		let topics_bloom = FilteredParams::topics_bloom_filter(&filter.topics());
-		assert!(!FilteredParams::topics_in_bloom(
-			block_bloom(),
-			&topics_bloom
-		));
-	}
+        let topics_bloom = FilteredParams::topics_bloom_filter(&filter.topics());
+        assert!(FilteredParams::topics_in_bloom(
+            block_bloom(),
+            &topics_bloom
+        ));
+    }
+    #[test]
+    fn bloom_filter_should_not_match_by_topic() {
+        let topic1 =
+            H256::from_str("1000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let topic2 =
+            H256::from_str("4000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let topic3 =
+            H256::from_str("5000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let filter = Filter {
+            from_block: None,
+            to_block: None,
+            block_hash: None,
+            address: None,
+            topics: Some(
+                vec![
+                    VariadicValue::Single(topic1),
+                    VariadicValue::Multiple(vec![topic2, topic3]),
+                ]
+                .try_into()
+                .expect("qed"),
+            ),
+        };
+        let topics_bloom = FilteredParams::topics_bloom_filter(&filter.topics());
+        assert!(!FilteredParams::topics_in_bloom(
+            block_bloom(),
+            &topics_bloom
+        ));
+    }
+    #[test]
+    fn bloom_filter_should_match_by_empty_topic() {
+        let filter = Filter {
+            from_block: None,
+            to_block: None,
+            block_hash: None,
+            address: None,
+            topics: Default::default(),
+        };
+        let topics_bloom = FilteredParams::topics_bloom_filter(&filter.topics());
+        assert!(FilteredParams::topics_in_bloom(
+            block_bloom(),
+            &topics_bloom
+        ));
+    }
+    #[test]
+    fn bloom_filter_should_match_combined() {
+        let test_address = H160::from_str("1000000000000000000000000000000000000000").unwrap();
+        let topic1 =
+            H256::from_str("1000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let topic2 =
+            H256::from_str("2000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let topic3 =
+            H256::from_str("3000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let filter = Filter {
+            from_block: None,
+            to_block: None,
+            block_hash: None,
+            address: Some(VariadicValue::Single(test_address)),
+            topics: Some(
+                vec![
+                    VariadicValue::Single(topic1),
+                    VariadicValue::Multiple(vec![topic2, topic3]),
+                ]
+                .try_into()
+                .expect("qed"),
+            ),
+        };
+        let address_bloom = FilteredParams::address_bloom_filter(&filter.address);
+        let topics_bloom = FilteredParams::topics_bloom_filter(&filter.topics());
+        let matches = FilteredParams::address_in_bloom(block_bloom(), &address_bloom)
+            && FilteredParams::topics_in_bloom(block_bloom(), &topics_bloom);
+        assert!(matches);
+    }
+    #[test]
+    fn bloom_filter_should_not_match_combined() {
+        let test_address = H160::from_str("2000000000000000000000000000000000000000").unwrap();
+        let topic1 =
+            H256::from_str("1000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let topic2 =
+            H256::from_str("2000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let topic3 =
+            H256::from_str("3000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let filter = Filter {
+            from_block: None,
+            to_block: None,
+            block_hash: None,
+            address: Some(VariadicValue::Single(test_address)),
+            topics: Some(
+                vec![
+                    VariadicValue::Single(topic1),
+                    VariadicValue::Multiple(vec![topic2, topic3]),
+                ]
+                .try_into()
+                .expect("qed"),
+            ),
+        };
+        let address_bloom = FilteredParams::address_bloom_filter(&filter.address);
+        let topics_bloom = FilteredParams::topics_bloom_filter(&filter.topics());
+        let matches = FilteredParams::address_in_bloom(block_bloom(), &address_bloom)
+            && FilteredParams::topics_in_bloom(block_bloom(), &topics_bloom);
+        assert!(!matches);
+    }
+    #[test]
+    fn bloom_filter_should_match_wildcards_by_topic() {
+        let topic2 =
+            H256::from_str("2000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let topic3 =
+            H256::from_str("3000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let filter = Filter {
+            from_block: None,
+            to_block: None,
+            block_hash: None,
+            address: None,
+            topics: Some(
+                vec![
+                    VariadicValue::Null,
+                    VariadicValue::Multiple(vec![topic2, topic3]),
+                ]
+                .try_into()
+                .expect("qed"),
+            ),
+        };
+        let topics_bloom = FilteredParams::topics_bloom_filter(&filter.topics());
+        assert!(FilteredParams::topics_in_bloom(
+            block_bloom(),
+            &topics_bloom
+        ));
+    }
+    #[test]
+    fn bloom_filter_should_not_match_wildcards_by_topic() {
+        let topic2 =
+            H256::from_str("4000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let topic3 =
+            H256::from_str("5000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let filter = Filter {
+            from_block: None,
+            to_block: None,
+            block_hash: None,
+            address: None,
+            topics: Some(
+                vec![
+                    VariadicValue::Null,
+                    VariadicValue::Multiple(vec![topic2, topic3]),
+                ]
+                .try_into()
+                .expect("qed"),
+            ),
+        };
+        let topics_bloom = FilteredParams::topics_bloom_filter(&filter.topics());
+        assert!(!FilteredParams::topics_in_bloom(
+            block_bloom(),
+            &topics_bloom
+        ));
+    }
 
-	#[test]
-	fn filter_topics_should_return_false_when_filter_has_more_topics_than_log() {
-		let topic1 =
-			H256::from_str("1000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let topic2 =
-			H256::from_str("2000000000000000000000000000000000000000000000000000000000000000")
-				.unwrap();
-		let filter = Filter {
-			from_block: None,
-			to_block: None,
-			block_hash: None,
-			address: None,
-			topics: Some(
-				vec![
-					VariadicValue::Null,
-					VariadicValue::Single(topic2),
-					VariadicValue::Null,
-				]
-				.try_into()
-				.expect("qed"),
-			),
-		};
-		let filtered_params = FilteredParams::new(filter);
-		// Expected not to match, as the filter has more topics than the log.
-		assert!(!filtered_params.filter_topics(&[]));
-		// Expected to match, as the first topic is a wildcard.
-		assert!(filtered_params.filter_topics(&[topic1, topic2]));
-	}
+    #[test]
+    fn filter_topics_should_return_false_when_filter_has_more_topics_than_log() {
+        let topic1 =
+            H256::from_str("1000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let topic2 =
+            H256::from_str("2000000000000000000000000000000000000000000000000000000000000000")
+                .unwrap();
+        let filter = Filter {
+            from_block: None,
+            to_block: None,
+            block_hash: None,
+            address: None,
+            topics: Some(
+                vec![
+                    VariadicValue::Null,
+                    VariadicValue::Single(topic2),
+                    VariadicValue::Null,
+                ]
+                .try_into()
+                .expect("qed"),
+            ),
+        };
+        let filtered_params = FilteredParams::new(filter);
+        // Expected not to match, as the filter has more topics than the log.
+        assert!(!filtered_params.filter_topics(&[]));
+        // Expected to match, as the first topic is a wildcard.
+        assert!(filtered_params.filter_topics(&[topic1, topic2]));
+    }
 }

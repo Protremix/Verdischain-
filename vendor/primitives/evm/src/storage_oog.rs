@@ -22,13 +22,13 @@ use sp_core::U256;
 
 pub fn handle_storage_oog<R, F>(gas_limit: u64, f: F) -> (ExitReason, R, u64, U256)
 where
-	F: FnOnce() -> (ExitReason, R, u64, U256),
-	R: Default,
+    F: FnOnce() -> (ExitReason, R, u64, U256),
+    R: Default,
 {
-	STORAGE_OOG::using_once(&mut false, || {
-		let (reason, retv, used_gas, effective_gas) = f();
+    STORAGE_OOG::using_once(&mut false, || {
+        let (reason, retv, used_gas, effective_gas) = f();
 
-		STORAGE_OOG::with(|storage_oog| {
+        STORAGE_OOG::with(|storage_oog| {
 			if *storage_oog {
 				(
 					ExitReason::Error(ExitError::OutOfGas),
@@ -42,11 +42,11 @@ where
 		})
 		// This should always return `Some`, but let's play it safe.
 		.expect("STORAGE_OOG not defined")
-	})
+    })
 }
 
 pub fn set_storage_oog() {
-	STORAGE_OOG::with(|storage_oog| {
-		*storage_oog = true;
-	});
+    STORAGE_OOG::with(|storage_oog| {
+        *storage_oog = true;
+    });
 }

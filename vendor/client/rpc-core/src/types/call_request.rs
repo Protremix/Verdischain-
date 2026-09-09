@@ -28,16 +28,16 @@ use crate::types::Bytes;
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct CallStateOverride {
-	/// Fake balance to set for the account before executing the call.
-	pub balance: Option<U256>,
-	/// Fake nonce to set for the account before executing the call.
-	pub nonce: Option<U256>,
-	/// Fake EVM bytecode to inject into the account before executing the call.
-	pub code: Option<Bytes>,
-	/// Fake key-value mapping to override all slots in the account storage before
-	/// executing the call.
-	pub state: Option<BTreeMap<H256, H256>>,
-	/// Fake key-value mapping to override individual slots in the account storage before
-	/// executing the call.
-	pub state_diff: Option<BTreeMap<H256, H256>>,
+    /// Fake balance to set for the account before executing the call.
+    pub balance: Option<U256>,
+    /// Fake nonce to set for the account before executing the call.
+    pub nonce: Option<U256>,
+    /// Fake EVM bytecode to inject into the account before executing the call.
+    pub code: Option<Bytes>,
+    /// Fake key-value mapping to override all slots in the account storage before
+    /// executing the call.
+    pub state: Option<BTreeMap<H256, H256>>,
+    /// Fake key-value mapping to override individual slots in the account storage before
+    /// executing the call.
+    pub state_diff: Option<BTreeMap<H256, H256>>,
 }
