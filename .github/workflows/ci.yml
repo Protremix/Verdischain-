@@ -1,0 +1,167 @@
+name: Verdis Chain CI/CD
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  fmt:
+    name: Format Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --all -- --check
+
+  check:
+    name: Compile Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rust-src
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Set LIBCLANG_PATH
+        run: |
+          LCP=$(llvm-config --libdir 2>/dev/null || echo "/usr/lib/llvm-18/lib:/usr/lib/x86_64-linux-gnu")
+          echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
+      - name: Cargo check
+        run: cargo check --workspace --all-targets
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rust-src
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Set LIBCLANG_PATH
+        run: |
+          LCP=$(llvm-config --libdir 2>/dev/null || echo "/usr/lib/llvm-18/lib:/usr/lib/x86_64-linux-gnu")
+          echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
+      - name: Clippy check
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [check]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rust-src
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Set LIBCLANG_PATH
+        run: |
+          LCP=$(llvm-config --libdir 2>/dev/null || echo "/usr/lib/llvm-18/lib:/usr/lib/x86_64-linux-gnu")
+          echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
+      - name: Run tests
+        run: cargo test --workspace
+
+  release-build:
+    name: Release Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rust-src
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Set LIBCLANG_PATH
+        run: |
+          LCP=$(llvm-config --libdir 2>/dev/null || echo "/usr/lib/llvm-18/lib:/usr/lib/x86_64-linux-gnu")
+          echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
+      - run: cargo build --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verdis-chain-binary
+          path: target/release/verdis-chain
+          retention-days: 7
+
+  wasm-build:
+    name: WASM Runtime Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [test]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rust-src
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Set LIBCLANG_PATH
+        run: |
+          LCP=$(llvm-config --libdir 2>/dev/null || echo "/usr/lib/llvm-18/lib:/usr/lib/x86_64-linux-gnu")
+          echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
+      - run: cargo build --release -p verdis-runtime --no-default-features --target wasm32-unknown-unknown
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verdis-runtime-wasm
+          path: target/wasm32-unknown-unknown/release/*.wasm
+          if-no-files-found: warn
+          retention-days: 7
+
+  audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [check]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install cargo-audit
+        run: cargo install cargo-audit
+      - name: Run audit
+        run: |
+          if [ -f scripts/cargo-audit-safe.sh ]; then
+            bash scripts/cargo-audit-safe.sh
+          else
+            cargo audit
+          fi

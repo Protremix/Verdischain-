@@ -1,0 +1,40 @@
+# Clippy Configuration for Verdis Chain
+
+msrv = "1.75.0"
+
+# Complexity Thresholds
+cognitive-complexity-threshold = 30
+too-many-arguments-threshold = 10
+too-many-lines-threshold = 1000
+array-size-threshold = 512
+vec-box-size-threshold = 4096
+type-complexity-threshold = 250
+
+# API Guidelines
+avoid-breaking-exported-api = true
+
+# Domain-specific valid identifier names
+doc-valid-idents = [
+    "Substrate",
+    "Verdis",
+    "BABE",
+    "GRANDPA",
+    "WASM",
+    "Polkadot",
+    "EVM",
+    "DDoS",
+    "RPC",
+    "JSON-RPC",
+    "AMMDEX",
+    "dPOS",
+    "Tokenomics",
+    "Vesting",
+    "EcoStorage",
+    "SHA256"
+]
+
+# Disallowed methods and types for security & determinism in blockchain runtime
+disallowed-methods = [
+    { path = "std::time::Instant::now", reason = "Non-deterministic; use pallet_timestamp or frame_system instead in runtime code" },
+    { path = "std::thread::sleep", reason = "Blocking thread execution is prohibited in asynchronous node code" }
+]

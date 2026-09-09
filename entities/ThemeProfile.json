@@ -1,0 +1,104 @@
+{
+  "properties": {
+    "color_tokens": {
+      "properties": {
+        "accent": {
+          "type": "string"
+        },
+        "background": {
+          "type": "string"
+        },
+        "border": {
+          "type": "string"
+        },
+        "error": {
+          "type": "string"
+        },
+        "foreground": {
+          "type": "string"
+        },
+        "muted": {
+          "type": "string"
+        },
+        "primary": {
+          "type": "string"
+        },
+        "secondary": {
+          "type": "string"
+        },
+        "success": {
+          "type": "string"
+        },
+        "warning": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "description": {
+      "type": "string"
+    },
+    "is_dark_first": {
+      "type": "boolean"
+    },
+    "is_default": {
+      "type": "boolean"
+    },
+    "name": {
+      "type": "string"
+    },
+    "project": {
+      "enum": [
+        "verdis",
+        "evolvixos",
+        "shared"
+      ],
+      "type": "string"
+    },
+    "radius": {
+      "properties": {
+        "lg": {
+          "type": "string"
+        },
+        "md": {
+          "type": "string"
+        },
+        "sm": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "spacing_scale": {
+      "properties": {
+        "base": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "typography": {
+      "properties": {
+        "body": {
+          "type": "string"
+        },
+        "heading": {
+          "type": "string"
+        },
+        "mono": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "required": [
+    "name",
+    "is_dark_first"
+  ],
+  "type": "object",
+  "name": "ThemeProfile"
+}

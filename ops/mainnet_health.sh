@@ -1,0 +1,290 @@
+#!/usr/bin/env bash
+# Verdis mainnet health check - the numbers that actually predict an outage.
+#
+# Hard-won context this encodes:
+#   * Authority set is 21, finality threshold is 15, and we hold exactly 15 keys.
+#     Headroom is ZERO: losing ONE validator stops finality. So the validator count
+#     is the single most important number on this page.
+#   * The 6 remaining authorities have no key on any server we control and there is
+#     no Sudo pallet, so the set cannot be shrunk without governance.
+#   * Testnet finality died on 2 Sep and nobody noticed for 5 days because the alert
+#     only went to journald. Anything critical must reach Telegram.
+#   * All three hosts had authority RPC exposed to the internet. Re-check that it
+#     stays closed - a unit restart without the drop-in would re-open it.
+
+KEY=$HOME/.ssh/id_ed25519
+SSH="ssh -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=12 -i $KEY"
+HOSTS="185.84.224.91 195.154.80.40 213.136.78.63 5.223.77.19"
+CRIT=0; WARN=0
+
+# Pick a WORKING python. On this MSYS host `python3` is a stub that prints "Python" and
+# ignores -c, so hardcoding python3 silently produced empty parse results and a bogus
+# "indexer status unparseable" WARN. Probe for one that actually executes -c.
+PY=""
+for c in python3 python python3.11; do
+  command -v "$c" >/dev/null 2>&1 || continue
+  if [ "$("$c" -c "print(1)" 2>/dev/null)" = "1" ]; then PY="$c"; break; fi
+done
+[ -z "$PY" ] && PY=python
+
+say() { echo "$1"; }
+
+say "VERDIS MAINNET  $(date -u '+%Y-%m-%d %H:%M') UTC"
+say ""
+
+# ---- chain state ----
+read -r BEST FINAL PEERS AUTH <<<"$($SSH root@185.84.224.91 'R(){ curl -s -m 8 -H "Content-Type: application/json" -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"$1\",\"params\":$2}" http://localhost:9944; }
+B=$(R chain_getHeader "[]"|grep -oP "\"number\":\"\K0x[0-9a-f]+")
+FH=$(R chain_getFinalizedHead "[]"|grep -oP "0x[0-9a-f]{64}")
+F=$(R chain_getHeader "[\"$FH\"]"|grep -oP "\"number\":\"\K0x[0-9a-f]+")
+P=$(R system_health "[]"|grep -oP "\"peers\":\K[0-9]+")
+A=$(R state_call "[\"GrandpaApi_grandpa_authorities\",\"0x\"]"|grep -oP "result\":\"0x\K[0-9a-f]+")
+echo "$((B)) $((F)) ${P:-0} $(( ${#A} / 80 ))"' 2>/dev/null)"
+
+if [ -z "$BEST" ] || [ "$BEST" = "0" ]; then
+  say "CRIT  cannot read mainnet RPC"; CRIT=$((CRIT+1))
+else
+  LAG=$(( BEST - FINAL ))
+  THRESH=$(( AUTH * 2 / 3 + 1 ))
+  say "chain    best=$BEST finalized=$FINAL lag=$LAG peers=$PEERS"
+  say "         authorities=$AUTH threshold=$THRESH"
+  if [ "$LAG" -gt 50 ]; then say "CRIT  finality lag $LAG"; CRIT=$((CRIT+1))
+  elif [ "$LAG" -gt 20 ]; then say "WARN  finality lag $LAG"; WARN=$((WARN+1)); fi
+fi
+
+# ---- validator count: two filters, --validator AND mainnet genesis ----
+# History of this one number: counting by unit-name glob undercounted after renames
+# (verdis-v13m was missed -> fake CRIT); counting by --validator alone OVERcounted 22
+# of 21 because 5.223.77.19 also runs a testnet validator; and a unit without an
+# explicit --rpc-port is invisible unless the default port is probed too.
+# Ground truth = ExecStart has --validator AND chain_getBlockHash(0) is mainnet.
+MAIN_GEN=0x2284393d11797c1a06e8def6a48a79f9d8d7539c5386d9973fce852852817c8e
+count_on() {
+  timeout 60 $SSH "root@$1" "MAIN_GEN=$MAIN_GEN bash -s" <<'RCOUNT' 2>/dev/null | tr -dc '0-9'
+c=0
+for u in $(systemctl list-units 'verdis*' --state=active --no-legend --no-pager 2>/dev/null | awk '{print $1}' | grep '\.service$'); do
+  E=$(systemctl show -p ExecStart --value "$u" 2>/dev/null | grep -oP 'argv\[\]=\K[^;]+' | tail -1)
+  case "$E" in *--validator*) ;; *) continue ;; esac
+  rpc=$(echo "$E" | grep -oP '(?<=--rpc-port[= ])[0-9]+' | head -1)
+  g=""
+  for p in ${rpc:-} 9933 9944; do
+    [ -z "$p" ] && continue
+    g=$(curl -s -m 6 -H 'Content-Type: application/json' \
+        -d '{"jsonrpc":"2.0","id":1,"method":"chain_getBlockHash","params":[0]}' \
+        "http://localhost:$p" 2>/dev/null | grep -oP 'result":"\K[^"]+')
+    [ -n "$g" ] && break
+  done
+  [ "$g" = "$MAIN_GEN" ] && c=$((c+1))
+done
+echo "$c"
+RCOUNT
+}
+
+TOTALV=0
+COUNTFAIL=0
+declare -A PERHOST
+for ip in $HOSTS; do
+  n=""
+  for attempt in 1 2 3; do
+    n=$(count_on "$ip")
+    [ -n "$n" ] && break
+    sleep 3
+  done
+  if [ -z "$n" ]; then
+    say "WARN  $ip validator count UNREADABLE (ssh timeout) - not counted as failure"
+    WARN=$((WARN+1)); COUNTFAIL=1
+    continue
+  fi
+  PERHOST[$ip]=$n
+  TOTALV=$(( TOTALV + n ))
+  say "$ip  validators=$n"
+done
+say "         RUNNING VALIDATORS: $TOTALV  (need ${THRESH:-15})"
+# Headroom is what actually matters. With 21 of 21 running against a threshold of 15
+# we can lose 6 before finality stops. Warn only when that cushion is gone.
+HEAD=$(( TOTALV - ${THRESH:-15} ))
+say "         HEADROOM: $HEAD (can lose $HEAD validators before finality halts)"
+if [ "$COUNTFAIL" = "0" ] && [ -n "${THRESH:-}" ] && [ "$TOTALV" -lt "$THRESH" ]; then
+  if [ -n "${LAG:-}" ] && [ "$LAG" -lt 20 ]; then
+    say "WARN  count says $TOTALV < $THRESH but finality is healthy (lag $LAG) - suspect a read error"
+    WARN=$((WARN+1))
+  else
+    say "CRIT  $TOTALV < $THRESH and finality lag $LAG - FINALITY CANNOT PROCEED"; CRIT=$((CRIT+1))
+  fi
+elif [ "$HEAD" -eq 0 ]; then
+  say "WARN  zero headroom: losing one validator halts finality"; WARN=$((WARN+1))
+elif [ "$HEAD" -le 2 ]; then
+  say "WARN  headroom down to $HEAD - investigate missing validators"; WARN=$((WARN+1))
+fi
+
+# ---- per-HOST survivability: the failure mode that actually bites ----
+# Node-level headroom is not enough. If one HOST holds more than (total - threshold)
+# validators, losing that machine halts finality even though headroom looks fine.
+# Contabo once held 14 of 21 - a single reboot would have stopped the chain.
+# Reuse the counts already measured above; do not re-query (that caused a false CRIT).
+WORST_OK=1
+for ip in $HOSTS; do
+  n=${PERHOST[$ip]:-}
+  [ -z "$n" ] && continue
+  rem=$(( TOTALV - n ))
+  if [ -n "${THRESH:-}" ] && [ "$rem" -lt "$THRESH" ]; then
+    say "CRIT  if $ip is lost: $rem remain < $THRESH - single host can halt finality"
+    CRIT=$((CRIT+1)); WORST_OK=0
+  fi
+done
+[ "$WORST_OK" = "1" ] && say "         any single host can fail without halting finality  OK"
+
+# ---- RPC must stay closed to the internet ----
+# Probe EVERY port an authority actually listens on, not just 9933/9944/9945.
+# The recovered authorities (v13m/v14m/v16b/v17b/v18b-v21b, v9-v20 on Contabo)
+# were deployed on 9947-9963, outside the old firewalled 9933-9946 range, so the
+# old three-port probe reported "all RPC closed OK" while 7 authorities and the
+# public-RPC/tunnel ports were never tested at all. Keep this list in sync with
+# the --rpc-port values in the unit files.
+EXPOSED=""
+for ip in $HOSTS; do
+  for p in 9933 9934 9935 9936 9944 9945 9946 9947 9948 9951 9955 9960 9961 9962 9963; do
+    r=$(timeout 6 curl -s -m 5 -H 'Content-Type: application/json' \
+        -d '{"jsonrpc":"2.0","id":1,"method":"system_nodeRoles","params":[]}' \
+        "http://$ip:$p" 2>/dev/null)
+    [ -n "$r" ] && EXPOSED="$EXPOSED $ip:$p"
+  done
+done
+if [ -n "$EXPOSED" ]; then
+  say "CRIT  authority RPC exposed:$EXPOSED"; CRIT=$((CRIT+1))
+else
+  say "rpc      all authority RPC closed to internet  OK"
+fi
+
+# ---- the public site must serve MAINNET, not testnet ----
+MAIN_GEN=0x2284393d11797c1a06e8def6a48a79f9d8d7539c5386d9973fce852852817c8e
+PUBOK=1
+for u in https://rpc.verdischain.com https://verdischain.com/rpc; do
+  g=$(timeout 12 curl -s -m 10 -H 'Content-Type: application/json' \
+      -d '{"jsonrpc":"2.0","id":1,"method":"chain_getBlockHash","params":[0]}' "$u" 2>/dev/null \
+      | grep -oP 'result":"\K[^"]+')
+  if [ "$g" != "$MAIN_GEN" ]; then
+    say "CRIT  $u serves the WRONG CHAIN (genesis ${g:0:18}…)"; CRIT=$((CRIT+1)); PUBOK=0
+  fi
+done
+[ "$PUBOK" = "1" ] && say "public   rpc + /rpc serve mainnet  OK"
+
+# the tunnel and public node that make that work
+TUN=$($SSH root@91.98.160.145 'systemctl is-active verdis-mainnet-tunnel' 2>/dev/null)
+PUB=$($SSH root@185.84.224.91 'systemctl is-active verdis-public-rpc' 2>/dev/null)
+[ "$TUN" != "active" ] && { say "CRIT  mainnet tunnel on web host is $TUN"; CRIT=$((CRIT+1)); }
+[ "$PUB" != "active" ] && { say "CRIT  public RPC node is $PUB"; CRIT=$((CRIT+1)); }
+[ "$TUN" = "active" ] && [ "$PUB" = "active" ] && say "         tunnel + public node active  OK"
+
+# ---- equivocation (cost me 738 events on testnet today) ----
+EQ=0
+for ip in $HOSTS; do
+  e=$($SSH "root@$ip" "journalctl -u 'verdis*' --since '30 min ago' --no-pager 2>/dev/null | grep -ci equivocat" 2>/dev/null)
+  EQ=$(( EQ + ${e:-0} ))
+done
+if [ "$EQ" -gt 0 ]; then say "CRIT  equivocation events (30min): $EQ"; CRIT=$((CRIT+1))
+else say "keys     no equivocation in last 30 min  OK"; fi
+
+# ---- disk ----
+for ip in $HOSTS; do
+  u=$($SSH "root@$ip" "df / | tail -1 | awk '{print \$5}' | tr -d '%'" 2>/dev/null)
+  [ -n "$u" ] && [ "$u" -gt 85 ] && { say "WARN  $ip disk ${u}%"; WARN=$((WARN+1)); }
+done
+
+# ---- web ----
+DOWN=""
+for d in verdischain.com explorer.verdischain.com wallet.verdischain.com dex.verdischain.com; do
+  c=$(timeout 12 curl -s -o /dev/null -w '%{http_code}' "https://$d" 2>/dev/null)
+  [ "$c" != "200" ] && DOWN="$DOWN $d($c)"
+done
+[ -n "$DOWN" ] && { say "WARN  web:$DOWN"; WARN=$((WARN+1)); } || say "web      4/4 up  OK"
+
+# ---- explorer API ----
+# The explorer showed "Loading..." forever because these returned HTML instead of JSON:
+# verdis-api was reading a dead testnet port and nginx never routed /api/v1 to it.
+# Check the CONTENT TYPE, not just the status code - the broken state returned HTTP 200
+# with text/html, so a status-only check would have called it healthy.
+API_BAD=""
+for p in /api/v1/networks /api/v1/network/stats /api/v1/block/last /api/v1/validators; do
+  ct=$(timeout 12 curl -s -o /dev/null -w '%{content_type}' "https://verdischain.com$p" 2>/dev/null)
+  case "$ct" in *json*) : ;; *) API_BAD="$API_BAD $p($ct)" ;; esac
+done
+if [ -n "$API_BAD" ]; then
+  say "CRIT  explorer API not serving JSON:$API_BAD"
+  CRIT=$((CRIT+1))
+else
+  say "api      explorer API serving JSON  OK"
+fi
+
+# ---- network selector: every advertised chain must pass genesis verification ----
+# The whole point of the selector is that a chain is identified by GENESIS, never by
+# name. If genesis_ok goes false the UI would be labelling one chain's data with
+# another's name - the exact failure that put testnet data on the public site.
+NETJSON=$(timeout 15 curl -s -m 12 "https://verdischain.com/api/v1/networks" 2>/dev/null)
+if [ -n "$NETJSON" ]; then
+  BADNET=$(printf '%s' "$NETJSON" | "$PY" -c "
+import json,sys
+try: d=json.load(sys.stdin)
+except Exception: print('unparseable'); raise SystemExit
+bad=[n['id'] for n in d.get('data',[]) if n.get('enabled') and not n.get('genesis_ok')]
+print(' '.join(bad))
+" 2>/dev/null)
+  if [ -n "$BADNET" ]; then
+    say "CRIT  network genesis verification failed: $BADNET"
+    CRIT=$((CRIT+1))
+  else
+    N=$(printf '%s' "$NETJSON" | grep -o '"genesis_ok":true' | wc -l)
+    say "nets     $N network(s) genesis-verified  OK"
+  fi
+else
+  say "WARN  /api/v1/networks unreachable"
+  WARN=$((WARN+1))
+fi
+
+# ---- indexer: the explorer's data layer ----
+# The indexer is what makes address search, account history and holder rankings
+# possible. If it stalls, the explorer silently serves increasingly stale data while
+# every page still returns 200 - so check PROGRESS, not just that the unit runs.
+IDX=$(timeout 15 curl -s -m 12 "https://verdischain.com/api/v2/status" 2>/dev/null)
+if [ -n "$IDX" ]; then
+  IDXVALS=$(printf '%s' "$IDX" | "$PY" -c "
+import json,sys
+try: d=json.load(sys.stdin)['data']
+except Exception: print('ERR 0 0 parse'); raise SystemExit
+print(d.get('last_indexed_block',0), d.get('chain_tip',0),
+      d.get('behind',0), (d.get('last_error') or '-'))
+" 2>/dev/null)
+  set -- $IDXVALS
+  IDX_LAST="${1:-ERR}"; IDX_TIP="${2:-0}"; IDX_BEHIND="${3:-0}"; IDX_ERR="${4:--}"
+  if [ "$IDX_LAST" = "ERR" ]; then
+    say "WARN  indexer status unparseable"
+    WARN=$((WARN+1))
+  else
+    say "index    indexed=$IDX_LAST tip=$IDX_TIP behind=$IDX_BEHIND"
+    # A backfill legitimately runs thousands of blocks behind; the real alarm is a
+    # STALLED indexer, detected by comparing with the previous run's position.
+    STATE=/tmp/verdis_indexer_pos
+    PREV=$(cat "$STATE" 2>/dev/null || echo 0)
+    printf '%s' "$IDX_LAST" > "$STATE" 2>/dev/null
+    if [ "$IDX_BEHIND" -gt 20 ] && [ "$IDX_LAST" -le "$PREV" ]; then
+      say "CRIT  indexer STALLED at $IDX_LAST (was $PREV, still $IDX_BEHIND behind)"
+      CRIT=$((CRIT+1))
+    elif [ "$IDX_BEHIND" -le 20 ]; then
+      say "         indexer at chain tip  OK"
+    else
+      say "         backfilling, +$((IDX_LAST - PREV)) since last check  OK"
+    fi
+    if [ "$IDX_ERR" != "-" ]; then
+      say "WARN  indexer last_error: $IDX_ERR"
+      WARN=$((WARN+1))
+    fi
+  fi
+else
+  say "WARN  /api/v2/status unreachable (index API down?)"
+  WARN=$((WARN+1))
+fi
+
+say ""
+if [ "$CRIT" -gt 0 ]; then say "STATUS: CRIT ($CRIT critical, $WARN warnings)"; exit 2
+elif [ "$WARN" -gt 0 ]; then say "STATUS: WARN ($WARN warnings)"; exit 1
+else say "STATUS: OK"; exit 0; fi

@@ -1,0 +1,44 @@
+{
+  "name": "Verdis Telegram Channel Updates",
+  "description": "Posts regular blockchain status updates to the @verdischain Telegram channel with live block height, validators, TPS, DEX pools, and eco metrics from the Verdis Chain RPC.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 9,15,21 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Madrid",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "verdis_telegram_update",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "post_update": {
+          "call": "invoke_superagent_step",
+          "with": {
+            "message": "Post a Verdis Chain network status update to the @verdischain Telegram channel.\n\nSteps:\n1. Fetch live blockchain data from the RPC at https://verdischain.com/rpc:\n   - chain_getHeader for current block height\n   - chain_getFinalizedHead for finalized block\n   - system_health for peer count\n   - dpos_allValidators for validator count\n   - eco_getGreenValidatorCount for green validators\n   - eco_getEcoMetrics for CO2 offset, trees, carbon credits\n2. Compose a clean, professional Telegram message with emoji headers:\n   - Block height and finalized status\n   - TPS and transaction count\n   - DPoS validators (total + green)\n   - DEX pools count\n   - Eco metrics (CO2, trees, credits)\n   - Link to https://verdischain.com/explorer/\n3. Send it using: curl -s 'https://api.telegram.org/bot'\"$TELEGRAM_BOT_TOKEN_2\"'/sendMessage' -H 'Content-Type: application/json' -d '{\"chat_id\":\"@verdischain\",\"text\":\"<message>\",\"parse_mode\":\"HTML\"}'\n\nKeep the message concise and professional. Use bold for section headers. Include a link to the explorer at the end."
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Post Telegram Update",
+            "description": "Fetch live chain data and post to @verdischain channel"
+          }
+        }
+      }
+    ]
+  }
+}

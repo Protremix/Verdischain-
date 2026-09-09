@@ -1,0 +1,53 @@
+<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .fav-bg { fill: #0a0e0a; }
+      .fav-hex {
+        stroke: #00ff88;
+        stroke-width: 1.8;
+        stroke-dasharray: 85;
+        stroke-dashoffset: 85;
+        animation: favDrawHex 1.0s cubic-bezier(0.4, 0, 0.2, 1) forwards, favPulseHex 3.5s ease-in-out 1.5s infinite alternate;
+      }
+      .fav-v {
+        stroke: #00ff88;
+        stroke-width: 2.2;
+        stroke-dasharray: 32;
+        stroke-dashoffset: 32;
+        animation: favDrawV 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards, favPulseV 3.5s ease-in-out 1.5s infinite alternate;
+      }
+      .fav-leaf {
+        fill: #00ff88;
+        opacity: 0.3;
+        stroke-dasharray: 35;
+        stroke-dashoffset: 35;
+        animation: favDrawLeaf 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.6s forwards, favPulseLeaf 3.5s ease-in-out 1.5s infinite alternate;
+      }
+      @keyframes favDrawHex { to { stroke-dashoffset: 0; } }
+      @keyframes favDrawV { to { stroke-dashoffset: 0; } }
+      @keyframes favDrawLeaf { to { stroke-dashoffset: 0; opacity: 0.3; } }
+      @keyframes favPulseHex {
+        0% { stroke: #00ff88; }
+        50% { stroke: #00e676; }
+        100% { stroke: #00C853; }
+      }
+      @keyframes favPulseV {
+        0% { stroke: #00ff88; }
+        50% { stroke: #33ff99; }
+        100% { stroke: #00ff88; }
+      }
+      @keyframes favPulseLeaf {
+        0% { fill: #00ff88; opacity: 0.3; }
+        50% { fill: #00ff88; opacity: 0.5; }
+        100% { fill: #00ff88; opacity: 0.3; }
+      }
+    </style>
+  </defs>
+  <rect class="fav-bg" width="32" height="32" rx="7" />
+  <!-- Hexagonal frame (matching brand logo) -->
+  <path class="fav-hex" d="M16 3L27 9.5V22.5L16 29L5 22.5V9.5L16 3Z" stroke-linejoin="round" fill="rgba(0,255,136,0.03)"/>
+  <!-- V shape (matching brand logo) -->
+  <path class="fav-v" d="M10 10.5L16 21.5L22 10.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Leaf accent (matching brand logo) -->
+  <path class="fav-leaf" d="M16 14.5C13.5 14.5 12 16.5 12 18.5C12 20.5 13.5 22.5 16 22.5C18.5 22.5 20 20.5 20 18.5C20 16.5 18.5 14.5 16 14.5Z" stroke="#00ff88" stroke-width="0.8"/>
+</svg>

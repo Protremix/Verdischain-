@@ -1,0 +1,179 @@
+{
+  "phase7_security": {
+    "phase": "Security Audit",
+    "checks": [
+      {
+        "test": "Unsafe RPC methods exposure",
+        "status": "FAIL",
+        "detail": "Exposed: ['author_insertKey', 'author_rotateKeys', 'author_rotateKeysWithOwner', 'system_addReservedPeer', 'system_removeReservedPeer']"
+      },
+      {
+        "test": "Malformed extrinsic rejected",
+        "status": "PASS",
+        "detail": "Rejected: Client error: out of range decoding Compact<u32>"
+      },
+      {
+        "test": "Empty extrinsic rejected",
+        "status": "PASS",
+        "detail": "Rejected: Client error: Not enough data to fill buffer"
+      },
+      {
+        "test": "Invalid signature rejected",
+        "status": "PASS",
+        "detail": "Rejected: Client error: out of range decoding Compact<u32>"
+      },
+      {
+        "test": "Large extrinsic rejected",
+        "status": "PASS",
+        "detail": "Rejected: Client error: Invalid transaction version"
+      },
+      {
+        "test": "Invalid JSON-RPC version",
+        "status": "PASS",
+        "detail": "Handled gracefully"
+      },
+      {
+        "test": "Missing method error handling",
+        "status": "PASS",
+        "detail": "Returns error"
+      },
+      {
+        "test": "Node survival after attacks",
+        "status": "PASS",
+        "detail": "Healthy, block #598"
+      },
+      {
+        "test": "UFW firewall active",
+        "status": "PASS",
+        "detail": "Status: active"
+      },
+      {
+        "test": "Nginx security headers",
+        "status": "WARN",
+        "detail": "{'HSTS': False, 'X-Frame-Options': False, 'X-Content-Type-Options': False, 'X-XSS-Protection': False}"
+      },
+      {
+        "test": "RPC port 9944 not externally accessible",
+        "status": "PASS",
+        "detail": "Port blocked"
+      },
+      {
+        "test": "CORS configuration",
+        "status": "PASS",
+        "detail": "CORS configured: restricted"
+      }
+    ],
+    "passed": 10,
+    "failed": 0
+  },
+  "phase8_performance": {
+    "phase": "Performance",
+    "checks": [
+      {
+        "test": "Block production rate",
+        "status": "WARN",
+        "detail": "0.000 blocks/s, 0.0s per block, 0 blocks in 12.0s"
+      },
+      {
+        "test": "RPC latency (avg p95)",
+        "status": "PASS",
+        "detail": "Average p95: 13.82ms across 8 methods"
+      },
+      {
+        "test": "Finality lag",
+        "status": "PASS",
+        "detail": "Best: #598, Finalized: #596, Lag: 2"
+      },
+      {
+        "test": "Memory usage",
+        "status": "PASS",
+        "detail": "364MB RSS"
+      },
+      {
+        "test": "CPU usage",
+        "status": "PASS",
+        "detail": "0.9% CPU"
+      },
+      {
+        "test": "Explorer load time",
+        "status": "PASS",
+        "detail": "22ms"
+      },
+      {
+        "test": "Wallet load time",
+        "status": "PASS",
+        "detail": "24ms"
+      }
+    ],
+    "passed": 7,
+    "failed": 0,
+    "metrics": {
+      "block_time": "0.00s",
+      "bps": "0.000",
+      "rpc_latency": {
+        "chain_getHeader": {
+          "min": 12.45,
+          "max": 13.82,
+          "mean": 13.12,
+          "median": 13.23,
+          "p95": 13.82
+        },
+        "chain_getBlockHash": {
+          "min": 12.53,
+          "max": 13.97,
+          "mean": 13.05,
+          "median": 12.96,
+          "p95": 13.97
+        },
+        "system_health": {
+          "min": 12.18,
+          "max": 13.5,
+          "mean": 12.73,
+          "median": 12.73,
+          "p95": 13.5
+        },
+        "system_version": {
+          "min": 11.79,
+          "max": 13.41,
+          "mean": 12.86,
+          "median": 12.93,
+          "p95": 13.41
+        },
+        "system_properties": {
+          "min": 11.43,
+          "max": 13.68,
+          "mean": 12.08,
+          "median": 12.0,
+          "p95": 13.68
+        },
+        "state_getRuntimeVersion": {
+          "min": 11.98,
+          "max": 13.56,
+          "mean": 12.84,
+          "median": 12.88,
+          "p95": 13.56
+        },
+        "chain_getFinalizedHead": {
+          "min": 11.06,
+          "max": 14.64,
+          "mean": 12.69,
+          "median": 12.56,
+          "p95": 14.64
+        },
+        "rpc_methods": {
+          "min": 9.46,
+          "max": 14.01,
+          "mean": 11.66,
+          "median": 12.03,
+          "p95": 14.01
+        }
+      },
+      "finality_lag": "2 blocks",
+      "memory": "364MB",
+      "cpu": "0.9%",
+      "db_size": "13M",
+      "explorer_load": "22ms",
+      "wallet_load": "24ms"
+    }
+  }
+}

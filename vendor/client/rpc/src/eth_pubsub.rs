@@ -1,0 +1,369 @@
+// This file is part of Frontier.
+
+// Copyright (C) Parity Technologies (UK) Ltd.
+// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+use std::{marker::PhantomData, sync::Arc};
+
+use ethereum::TransactionV3 as EthereumTransaction;
+use futures::{future, stream::BoxStream, FutureExt as _, StreamExt as _};
+use jsonrpsee::{core::traits::IdProvider, server::PendingSubscriptionSink};
+use log::debug;
+use tokio::sync::broadcast::error::RecvError;
+// Substrate
+use sc_client_api::{
+	backend::{Backend, StorageProvider},
+	client::BlockchainEvents,
+};
+use sc_network_sync::SyncingService;
+use sc_rpc::{
+	utils::{BoundedVecDeque, PendingSubscription, Subscription},
+	SubscriptionTaskExecutor,
+};
+use sc_service::config::RpcSubscriptionIdProvider;
+use sc_transaction_pool_api::{InPoolTransaction, TransactionPool, TxHash};
+use sp_api::{ApiExt, ProvideRuntimeApi};
+use sp_blockchain::HeaderBackend;
+use sp_consensus::SyncOracle;
+use sp_runtime::traits::{Block as BlockT, UniqueSaturatedInto};
+// Frontier
+use fc_mapping_sync::{EthereumBlockNotification, EthereumBlockNotificationSinks};
+use fc_rpc_core::{
+	types::{
+		pubsub::{Kind, Params, PubSubResult, PubSubSyncing, SyncingStatus},
+		FilteredParams,
+	},
+	EthPubSubApiServer,
+};
+use fc_storage::StorageOverride;
+use fp_rpc::EthereumRuntimeRPCApi;
+
+use crate::{eth::filter::log_matches_filter, LogsJournal};
+
+#[derive(Clone, Debug)]
+pub struct EthereumSubIdProvider;
+impl IdProvider for EthereumSubIdProvider {
+	fn next_id(&self) -> jsonrpsee::types::SubscriptionId<'static> {
+		format!("0x{}", hex::encode(rand::random::<u128>().to_le_bytes())).into()
+	}
+}
+impl RpcSubscriptionIdProvider for EthereumSubIdProvider {}
+
+/// Eth pub-sub API implementation.
+pub struct EthPubSub<B: BlockT, P, C, BE> {
+	pool: Arc<P>,
+	client: Arc<C>,
+	sync: Arc<SyncingService<B>>,
+	executor: SubscriptionTaskExecutor,
+	storage_override: Arc<dyn StorageOverride<B>>,
+	starting_block: u64,
+	pubsub_notification_sinks: Arc<EthereumBlockNotificationSinks<EthereumBlockNotification<B>>>,
+	logs_journal: Arc<LogsJournal>,
+	_marker: PhantomData<BE>,
+}
+
+impl<B: BlockT, P, C, BE> Clone for EthPubSub<B, P, C, BE> {
+	fn clone(&self) -> Self {
+		Self {
+			pool: self.pool.clone(),
+			client: self.client.clone(),
+			sync: self.sync.clone(),
+			executor: self.executor.clone(),
+			storage_override: self.storage_override.clone(),
+			starting_block: self.starting_block,
+			pubsub_notification_sinks: self.pubsub_notification_sinks.clone(),
+			logs_journal: self.logs_journal.clone(),
+			_marker: PhantomData::<BE>,
+		}
+	}
+}
+
+impl<B: BlockT, P, C, BE> EthPubSub<B, P, C, BE>
+where
+	P: TransactionPool<Block = B, Hash = B::Hash> + 'static,
+	C: ProvideRuntimeApi<B>,
+	C::Api: EthereumRuntimeRPCApi<B>,
+	C: HeaderBackend<B> + StorageProvider<B, BE>,
+	BE: Backend<B> + 'static,
+{
+	pub fn new(
+		pool: Arc<P>,
+		client: Arc<C>,
+		sync: Arc<SyncingService<B>>,
+		executor: SubscriptionTaskExecutor,
+		storage_override: Arc<dyn StorageOverride<B>>,
+		pubsub_notification_sinks: Arc<
+			EthereumBlockNotificationSinks<EthereumBlockNotification<B>>,
+		>,
+		logs_journal: Arc<LogsJournal>,
+	) -> Self {
+		// Capture the best block as seen on initialization. Used for syncing subscriptions.
+		let best_number = client.info().best_number;
+		let starting_block = UniqueSaturatedInto::<u64>::unique_saturated_into(best_number);
+		Self {
+			pool,
+			client,
+			sync,
+			executor,
+			storage_override,
+			starting_block,
+			pubsub_notification_sinks,
+			logs_journal,
+			_marker: PhantomData,
+		}
+	}
+
+	/// Convert a block notification into a stream of `newHeads` items.
+	/// For reorgs this emits enacted headers followed by the new best block.
+	fn new_heads_from_notification(
+		&self,
+		notification: EthereumBlockNotification<B>,
+	) -> BoxStream<'static, PubSubResult> {
+		if !notification.is_new_best {
+			return futures::stream::empty().boxed();
+		}
+
+		if let Some(reorg_info) = notification.reorg_info {
+			debug!(
+				target: "eth-pubsub",
+				"Reorg detected: new_best={:?}, {} blocks retracted, {} blocks enacted",
+				reorg_info.new_best,
+				reorg_info.retracted.len(),
+				reorg_info.enacted.len()
+			);
+
+			let pubsub = self.clone();
+			let enacted = reorg_info.enacted.clone();
+			let new_best = reorg_info.new_best;
+			return futures::stream::iter(
+				enacted
+					.into_iter()
+					.chain(std::iter::once(new_best))
+					.filter_map(move |hash| pubsub.storage_override.current_block(hash))
+					.map(PubSubResult::header),
+			)
+			.boxed();
+		}
+
+		let maybe_header = self
+			.storage_override
+			.current_block(notification.hash)
+			.map(PubSubResult::header);
+		futures::stream::iter(maybe_header).boxed()
+	}
+
+	fn pending_transactions(&self, hash: &TxHash<P>) -> future::Ready<Option<PubSubResult>> {
+		let res = if let Some(xt) = self.pool.ready_transaction(hash) {
+			let best_block = self.client.info().best_hash;
+
+			let api = self.client.runtime_api();
+
+			let api_version = if let Ok(Some(api_version)) =
+				api.api_version::<dyn EthereumRuntimeRPCApi<B>>(best_block)
+			{
+				api_version
+			} else {
+				return future::ready(None);
+			};
+
+			let xts = vec![xt.data().as_ref().clone()];
+
+			let txs: Option<Vec<EthereumTransaction>> = if api_version > 1 {
+				api.extrinsic_filter(best_block, xts).ok()
+			} else {
+				#[allow(deprecated)]
+				if let Ok(legacy) = api.extrinsic_filter_before_version_2(best_block, xts) {
+					Some(legacy.into_iter().map(|tx| tx.into()).collect())
+				} else {
+					None
+				}
+			};
+
+			match txs {
+				Some(txs) => {
+					if txs.len() == 1 {
+						Some(txs[0].clone())
+					} else {
+						None
+					}
+				}
+				_ => None,
+			}
+		} else {
+			None
+		};
+		future::ready(res.map(|tx| PubSubResult::transaction_hash(&tx)))
+	}
+
+	async fn syncing_status(&self) -> PubSubSyncing {
+		if self.sync.is_major_syncing() {
+			// Best imported block.
+			let current_number = self.client.info().best_number;
+			// Get the target block to sync.
+			let highest_number = self
+				.sync
+				.status()
+				.await
+				.ok()
+				.and_then(|status| status.best_seen_block);
+
+			PubSubSyncing::Syncing(SyncingStatus {
+				starting_block: self.starting_block,
+				current_block: UniqueSaturatedInto::<u64>::unique_saturated_into(current_number),
+				highest_block: highest_number
+					.map(UniqueSaturatedInto::<u64>::unique_saturated_into),
+			})
+		} else {
+			PubSubSyncing::Synced(false)
+		}
+	}
+}
+
+impl<B: BlockT, P, C, BE> EthPubSubApiServer for EthPubSub<B, P, C, BE>
+where
+	B: BlockT,
+	P: TransactionPool<Block = B, Hash = B::Hash> + 'static,
+	C: ProvideRuntimeApi<B>,
+	C::Api: EthereumRuntimeRPCApi<B>,
+	C: BlockchainEvents<B> + 'static,
+	C: HeaderBackend<B> + StorageProvider<B, BE>,
+	BE: Backend<B> + 'static,
+{
+	fn subscribe(&self, pending: PendingSubscriptionSink, kind: Kind, params: Option<Params>) {
+		let filtered_params = match params {
+			Some(Params::Logs(filter)) => FilteredParams::new(filter),
+			_ => FilteredParams::default(),
+		};
+
+		let pubsub = self.clone();
+
+		let fut = async move {
+			match kind {
+				Kind::NewHeads => {
+					let (inner_sink, block_notification_stream) =
+						sc_utils::mpsc::tracing_unbounded("pubsub_notification_stream", 100_000);
+					pubsub.pubsub_notification_sinks.lock().push(inner_sink);
+					// Per Ethereum spec, when a reorg occurs, we must emit all headers
+					// for the new canonical chain. The reorg_info field in the notification
+					// contains the enacted blocks when a reorg occurred.
+					let flat_stream = block_notification_stream.flat_map(move |notification| {
+						pubsub.new_heads_from_notification(notification)
+					});
+
+					PendingSubscription::from(pending)
+						.pipe_from_stream(flat_stream, BoundedVecDeque::new(16))
+						.await
+				}
+				Kind::Logs => {
+					let logs_params = filtered_params.clone();
+					let journal_rx = pubsub.logs_journal.subscribe();
+					let stream = futures::stream::unfold(journal_rx, move |mut rx| {
+						let logs_params = logs_params.clone();
+						async move {
+							loop {
+								let entry = match rx.recv().await {
+									Ok(e) => e,
+									Err(RecvError::Lagged(n)) => {
+										debug!(
+											target: "eth-pubsub",
+											"Closing logs subscription; lagged behind logs journal by {n} entries"
+										);
+										return None;
+									}
+									Err(RecvError::Closed) => return None,
+								};
+
+								if !entry.complete {
+									debug!(
+										target: "eth-pubsub",
+										"Closing logs subscription after incomplete journal entry",
+									);
+									return None;
+								}
+
+								let results: Vec<PubSubResult> = entry
+									.logs
+									.iter()
+									.filter(|log| log_matches_filter(&logs_params, log, false))
+									.map(|log| PubSubResult::Log(Box::new(log.clone())))
+									.collect();
+
+								if !results.is_empty() {
+									return Some((results, rx));
+								}
+							}
+						}
+					})
+					.flat_map(futures::stream::iter);
+					PendingSubscription::from(pending)
+						.pipe_from_stream(Box::pin(stream), BoundedVecDeque::new(16))
+						.await
+				}
+				Kind::NewPendingTransactions => {
+					let pool = pubsub.pool.clone();
+					let stream = pool
+						.import_notification_stream()
+						.filter_map(move |hash| pubsub.pending_transactions(&hash));
+					PendingSubscription::from(pending)
+						.pipe_from_stream(stream, BoundedVecDeque::new(16))
+						.await;
+				}
+				Kind::Syncing => {
+					let Ok(sink) = pending.accept().await else {
+						return;
+					};
+					// On connection subscriber expects a value.
+					// Because import notifications are only emitted when the node is synced or
+					// in case of reorg, the first event is emitted right away.
+					let syncing_status = pubsub.syncing_status().await;
+					let subscription = Subscription::from(sink);
+					if subscription
+						.send(&PubSubResult::SyncingStatus(syncing_status))
+						.await
+						.is_err()
+					{
+						return;
+					}
+
+					// When the node is not under a major syncing (i.e. from genesis), react
+					// normally to import notifications.
+					//
+					// Only send new notifications down the pipe when the syncing status changed.
+					let mut stream = pubsub.client.import_notification_stream();
+					let mut last_syncing_status = pubsub.sync.is_major_syncing();
+					while (stream.next().await).is_some() {
+						let syncing_status = pubsub.sync.is_major_syncing();
+						if syncing_status != last_syncing_status {
+							let syncing_status = pubsub.syncing_status().await;
+							if subscription
+								.send(&PubSubResult::SyncingStatus(syncing_status))
+								.await
+								.is_err()
+							{
+								break;
+							}
+						}
+						last_syncing_status = syncing_status;
+					}
+				}
+			}
+		}
+		.boxed();
+
+		self.executor
+			.spawn("frontier-rpc-subscription", Some("rpc"), fut);
+	}
+}

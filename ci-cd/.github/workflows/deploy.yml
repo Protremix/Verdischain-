@@ -1,0 +1,170 @@
+name: Deployment Pipeline
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag to deploy (e.g. v1.0.0)'
+        required: false
+        default: 'latest'
+
+env:
+  SERVER_IP: "91.98.160.145"
+  DOMAIN: "verdischain.com"
+  SSH_USER: "root"
+
+jobs:
+  deploy-staging:
+    name: Deploy to Staging (verdischain.com)
+    runs-on: ubuntu-22.04
+    environment: staging
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH Key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add SSH Host Keys
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ env.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy Staging via SSH
+        run: |
+          echo "Deploying Verdis node to Staging on ${{ env.SERVER_IP }} (${{ env.DOMAIN }})..."
+          ssh ${{ env.SSH_USER }}@${{ env.SERVER_IP }} << 'EOF'
+            set -e
+            echo "=== Staging Deployment Starting ==="
+            cd /opt/verdis-chain-rust || mkdir -p /opt/verdis-chain-rust
+            git fetch --all
+            git checkout main || true
+            git pull || true
+            
+            # Backup current active binary
+            if [ -f /usr/local/bin/verdis-staging ]; then
+              cp /usr/local/bin/verdis-staging /usr/local/bin/verdis-staging.bak
+            fi
+
+            # Rebuild binary or pull docker container
+            docker pull ghcr.io/verdischain/verdis-chain:latest || cargo build --release
+            
+            if [ -f target/release/verdis ]; then
+              cp target/release/verdis /usr/local/bin/verdis-staging
+            fi
+
+            # Restart verdis staging service
+            systemctl restart verdis-staging || docker compose -f /opt/verdis-chain-rust/docker-compose.yml up -d staging
+            sleep 5
+          EOF
+
+      - name: Staging Health Check
+        run: |
+          echo "Performing post-deploy health check on Staging node..."
+          for i in {1..12}; do
+            STATUS=$(curl -s -X POST -H "Content-Type: application/json" \
+              --data '{"jsonrpc":"2.0","method":"system_health","params":[],"id":1}' \
+              http://${{ env.SERVER_IP }}:9933 || echo "")
+            if echo "$STATUS" | grep -q "result"; then
+              echo "Staging node health check PASSED!"
+              exit 0
+            fi
+            echo "Waiting for Staging RPC endpoint (attempt $i/12)..."
+            sleep 5
+          done
+          echo "Staging health check FAILED!"
+          exit 1
+
+  integration-tests-staging:
+    name: Run Integration Test Suite against Staging
+    runs-on: ubuntu-22.04
+    needs: [deploy-staging]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y curl jq
+
+      - name: Execute Integration Tests
+        run: |
+          chmod +x ci-cd/integration-tests.sh
+          ./ci-cd/integration-tests.sh \
+            --node-url "http://${{ env.SERVER_IP }}:9933" \
+            --ws-url "ws://${{ env.SERVER_IP }}:9944" \
+            --target-blocks 10
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-22.04
+    needs: [integration-tests-staging]
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH Key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add SSH Host Keys
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ env.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy Production via SSH
+        run: |
+          echo "Deploying Verdis Production node on ${{ env.SERVER_IP }} (${{ env.DOMAIN }})..."
+          ssh ${{ env.SSH_USER }}@${{ env.SERVER_IP }} << 'EOF'
+            set -e
+            echo "=== Production Deployment Starting ==="
+            cd /opt/verdis-chain-rust
+            
+            # Backup active binary
+            if [ -f /usr/local/bin/verdis-prod ]; then
+              cp /usr/local/bin/verdis-prod /usr/local/bin/verdis-prod.bak
+            fi
+
+            # Update repository and rebuild
+            git pull origin main
+            cargo build --release
+            
+            # Atomic binary replacement
+            cp target/release/verdis /usr/local/bin/verdis-prod
+            
+            # Restart production systemd service
+            systemctl restart verdis-production
+          EOF
+
+      - name: Production Health Check & Automated Rollback
+        run: |
+          echo "Executing Health Check on Production Node..."
+          HEALTH_OK=false
+          for i in {1..15}; do
+            RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" \
+              --data '{"jsonrpc":"2.0","method":"system_health","params":[],"id":1}' \
+              http://${{ env.SERVER_IP }}:9933 || echo "")
+            if echo "$RESPONSE" | grep -q "isSyncing"; then
+              HEALTH_OK=true
+              echo "Production node health check PASSED!"
+              break
+            fi
+            sleep 4
+          done
+
+          if [ "$HEALTH_OK" = false ]; then
+            echo "PRODUCTION HEALTH CHECK FAILED! Initiating Rollback..."
+            ssh ${{ env.SSH_USER }}@${{ env.SERVER_IP }} << 'EOF'
+              if [ -f /usr/local/bin/verdis-prod.bak ]; then
+                echo "Rolling back to previous working binary..."
+                cp /usr/local/bin/verdis-prod.bak /usr/local/bin/verdis-prod
+                systemctl restart verdis-production
+              fi
+EOF
+            exit 1
+          fi

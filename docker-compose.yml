@@ -1,0 +1,121 @@
+services:
+  verdis-node:
+    build: .
+    container_name: verdis-node
+    restart: unless-stopped
+    ports:
+      - "30333:30333"
+      - "127.0.0.1:9933:9933"
+      - "9615:9615"
+    command:
+      - --chain
+      - testnet
+      - --validator
+      - --unsafe-rpc-external
+      - --rpc-cors
+      - all
+      - --rpc-methods
+      - unsafe
+      - --alice
+      - --base-path
+      - /data
+      - --port
+      - "30333"
+      - --rpc-port
+      - "9933"
+      - --prometheus-port
+      - "9615"
+    volumes:
+      - verdis-node-data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4G
+    networks:
+      - verdis-net
+
+  verdis-node2:
+    build: .
+    container_name: verdis-node2
+    restart: unless-stopped
+    ports:
+      - "30334:30334"
+      - "127.0.0.1:9934:9934"
+      - "9616:9616"
+    command:
+      - --chain
+      - testnet
+      - --validator
+      - --unsafe-rpc-external
+      - --rpc-cors
+      - all
+      - --rpc-methods
+      - unsafe
+      - --bob
+      - --bootnodes
+      - /ip4/91.98.160.145/tcp/30333/p2p/12D3KooWGWwWss2u6BHijo6rhq9wzMWDnV8HBhtvw4DWoaCxCqWY
+      - --base-path
+      - /data
+      - --port
+      - "30334"
+      - --rpc-port
+      - "9934"
+      - --prometheus-port
+      - "9616"
+    volumes:
+      - verdis-node2-data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4G
+    networks:
+      - verdis-net
+
+  verdis-node3:
+    build: .
+    container_name: verdis-node3
+    restart: unless-stopped
+    ports:
+      - "30335:30335"
+      - "127.0.0.1:9935:9935"
+      - "9617:9617"
+    command:
+      - --chain
+      - testnet
+      - --validator
+      - --unsafe-rpc-external
+      - --rpc-cors
+      - all
+      - --rpc-methods
+      - unsafe
+      - --charlie
+      - --bootnodes
+      - /ip4/91.98.160.145/tcp/30333/p2p/12D3KooWGWwWss2u6BHijo6rhq9wzMWDnV8HBhtvw4DWoaCxCqWY
+      - --base-path
+      - /data
+      - --port
+      - "30335"
+      - --rpc-port
+      - "9935"
+      - --prometheus-port
+      - "9617"
+    volumes:
+      - verdis-node3-data:/data
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4G
+    networks:
+      - verdis-net
+
+volumes:
+  verdis-node-data:
+  verdis-node2-data:
+  verdis-node3-data:
+
+networks:
+  verdis-net:
+    driver: bridge

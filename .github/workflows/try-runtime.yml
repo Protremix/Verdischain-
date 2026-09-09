@@ -1,0 +1,73 @@
+name: Try-Runtime Validation
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  try-runtime:
+    name: Try-Runtime Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler libssl-dev pkg-config clang libclang-dev llvm
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rust-src
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Set LIBCLANG_PATH
+        run: |
+          LCP=$(llvm-config --libdir 2>/dev/null || echo "/usr/lib/llvm-18/lib:/usr/lib/x86_64-linux-gnu")
+          echo "LIBCLANG_PATH=$LCP" >> $GITHUB_ENV
+
+      - name: Install try-runtime CLI
+        run: cargo install --git https://github.com/paritytech/try-runtime-cli --locked
+
+      - name: Build runtime with try-runtime feature
+        run: cargo build -p verdis-runtime --features try-runtime
+
+      - name: Verify WASM artifact exists
+        run: |
+          echo "Verifying WASM artifact existence..."
+          WASM_FILE=$(find target/ -name "*.wasm" | grep -E "verdis_runtime|verdis-runtime" | head -n 1)
+          if [ -z "$WASM_FILE" ]; then
+            WASM_FILE=$(find target/ -name "*.wasm" | head -n 1)
+          fi
+          if [ -n "$WASM_FILE" ] && [ -f "$WASM_FILE" ]; then
+            echo "Successfully found WASM artifact: $WASM_FILE"
+            ls -lh "$WASM_FILE"
+          else
+            echo "Error: No WASM artifact found in target directory!"
+            exit 1
+          fi
+
+      - name: Verify try-runtime CLI installation
+        run: try-runtime --help
+
+      - name: Run try-runtime state validation tests
+        run: cargo test -p verdis-runtime --features try-runtime -- try_runtime

@@ -1,0 +1,38 @@
+name: Repository Hygiene
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  check-artifacts:
+    name: Prevent Build Artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: List all files with forbidden extensions
+        run: |
+          echo "=== Checking for forbidden files ==="
+          RESULTS=""
+          for ext in bak tmp apk pyc; do
+            FOUND=$(find . -name "*.$ext" -not -path "./.git/*" -not -path "./target/*" -not -path "./node_modules/*" 2>/dev/null)
+            if [ -n "$FOUND" ]; then
+              echo "Found .$ext files:"
+              echo "$FOUND"
+              RESULTS="$RESULTS$FOUND"
+            fi
+          done
+          if [ -n "$RESULTS" ]; then
+            echo "ERROR: Forbidden files found!"
+            exit 1
+          fi
+          echo "No forbidden artifacts found."

@@ -1,0 +1,71 @@
+{
+  "properties": {
+    "a11y_score": {
+      "maximum": 100,
+      "minimum": 0,
+      "type": "number"
+    },
+    "consistency_score": {
+      "maximum": 100,
+      "minimum": 0,
+      "type": "number"
+    },
+    "content_ref": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "framework": {
+      "enum": [
+        "react",
+        "html"
+      ],
+      "type": "string"
+    },
+    "penpot_file_id": {
+      "type": "string"
+    },
+    "project": {
+      "enum": [
+        "verdis",
+        "evolvixos"
+      ],
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "review",
+        "published"
+      ],
+      "type": "string"
+    },
+    "theme_id": {
+      "type": "string"
+    },
+    "thumbnail_ref": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "type": {
+      "enum": [
+        "landing_page",
+        "dashboard",
+        "explorer",
+        "docs",
+        "component"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "type",
+    "project"
+  ],
+  "type": "object",
+  "name": "WebArtifact"
+}

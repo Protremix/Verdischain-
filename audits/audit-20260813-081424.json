@@ -1,0 +1,106 @@
+{
+  "timestamp": "2026-08-13T08:11:52.491222",
+  "rpc_endpoint": "http://localhost:9949",
+  "phases": {
+    "phase1": {
+      "phase": "Explorer Verification",
+      "checks": [
+        {
+          "test": "RPC connectivity",
+          "status": "FAIL",
+          "detail": "Cannot get header: {'message': 'Parse error: '}"
+        }
+      ],
+      "passed": 0,
+      "failed": 1,
+      "warnings": 0
+    },
+    "phase2": {
+      "phase": "RPC Validation",
+      "checks": [
+        {
+          "test": "Unsafe RPC methods exposure",
+          "status": "PASS",
+          "detail": "No unsafe methods exposed"
+        },
+        {
+          "test": "Custom RPC methods present",
+          "status": "FAIL",
+          "detail": "Missing: ['dpos_activeValidators', 'dpos_allValidators', 'dpos_currentEpoch', 'dpos_validatorStake', 'amm_dex_getPool', 'amm_dex_getAllPools', 'amm_dex_getPrice', 'contracts_call', 'contracts_getStorage', 'contracts_instantiate']"
+        },
+        {
+          "test": "RPC method count",
+          "status": "PASS",
+          "detail": "0 methods"
+        }
+      ],
+      "passed": 2,
+      "failed": 1,
+      "warnings": 0
+    },
+    "phase3": {
+      "phase": "Economic Invariants",
+      "checks": [
+        {
+          "test": "Total supply = 100B VRDX",
+          "status": "WARN",
+          "detail": "Cannot read: {'message': 'Parse error: '}"
+        },
+        {
+          "test": "Token properties",
+          "status": "FAIL",
+          "detail": "No properties returned"
+        }
+      ],
+      "passed": 0,
+      "failed": 1,
+      "warnings": 1
+    },
+    "phase4": {
+      "phase": "Security Audit",
+      "checks": [
+        {
+          "test": "Unsafe RPC methods blocked",
+          "status": "PASS",
+          "detail": "All unsafe methods blocked"
+        },
+        {
+          "test": "Malformed extrinsic rejected",
+          "status": "PASS",
+          "detail": "Rejected: Parse error: "
+        },
+        {
+          "test": "Empty extrinsic rejected",
+          "status": "PASS",
+          "detail": "Rejected: Parse error: "
+        },
+        {
+          "test": "Invalid signature rejected",
+          "status": "PASS",
+          "detail": "Rejected: Parse error: "
+        }
+      ],
+      "passed": 4,
+      "failed": 0,
+      "warnings": 0
+    },
+    "phase5": {
+      "phase": "Performance",
+      "checks": [
+        {
+          "test": "RPC latency",
+          "status": "WARN",
+          "detail": "Avg: 3038.5ms, p95: 3040.0ms"
+        },
+        {
+          "test": "Finality lag",
+          "status": "WARN",
+          "detail": "Cannot determine"
+        }
+      ],
+      "passed": 0,
+      "failed": 0,
+      "warnings": 2
+    }
+  }
+}

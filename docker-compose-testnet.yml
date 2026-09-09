@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  val-1:
+    image: verdis-chain:latest
+    container_name: verdis-val-1
+    command: --chain=/chain-spec-raw.json --name=verdis-val-1 --validator --base-path=/data/val-1 --port=30333 --rpc-port=9944 --prometheus-external --no-mdns
+    ports: ["30333:30333", "9615:9615"]
+    volumes: [val-1-data:/data/val-1]
+  val-2:
+    image: verdis-chain:latest
+    container_name: verdis-val-2
+    command: --chain=/chain-spec-raw.json --name=verdis-val-2 --validator --base-path=/data/val-2 --port=30333 --rpc-port=9944 --prometheus-external --no-mdns
+    ports: ["30334:30333", "9616:9615"]
+    volumes: [val-2-data:/data/val-2]
+  boot-node:
+    image: verdis-chain:latest
+    container_name: verdis-boot
+    command: --chain=/chain-spec-raw.json --name=verdis-boot --base-path=/data/boot --port=30333 --rpc-port=9944 --prometheus-external --no-mdns
+    ports: ["30335:30333", "9946:9944"]
+    volumes: [boot-data:/data/boot]
+volumes: {val-1-data: , val-2-data: , boot-data: }
